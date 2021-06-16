@@ -3,10 +3,9 @@ package no.nav.pto.veilarbportefolje.service;
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -95,7 +94,7 @@ public class BrukerService {
             brukerRepository.setGjeldeneFlaggTilNull(personId);
             brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
         }
-        if(unleashService.isEnabled(AUTO_SLETT)) {
+        if (unleashService.isEnabled(AUTO_SLETT)) {
             brukerRepository.hentGamleAktorIder(personId).ifPresent(elasticServiceV2::slettDokumenter);
         }
     }
@@ -105,7 +104,7 @@ public class BrukerService {
     }
 
     private Optional<Fnr> hentFnrFraAktoerregister(AktorId aktoerId) {
-            return Optional.ofNullable(aktorClient.hentFnr(aktoerId));
+        return Optional.ofNullable(aktorClient.hentFnr(aktoerId));
     }
 
 }

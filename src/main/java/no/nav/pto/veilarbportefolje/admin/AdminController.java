@@ -36,6 +36,7 @@ public class AdminController {
     private final VedtakService vedtakService;
     private final ElasticServiceV2 elasticServiceV2;
     private final OppfolgingService oppfolgingService;
+    private final AuthContextHolder authContextHolder;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -95,7 +96,7 @@ public class AdminController {
     }
 
     private void authorizeAdmin() {
-        final String ident = AuthContextHolder.getNavIdent().map(Id::toString).orElseThrow();
+        final String ident = authContextHolder.getNavIdent().map(Id::toString).orElseThrow();
         if (!environmentProperties.getAdmins().contains(ident)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }

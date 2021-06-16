@@ -1,11 +1,10 @@
 package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Try;
-import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
@@ -22,7 +21,6 @@ import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.never;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)

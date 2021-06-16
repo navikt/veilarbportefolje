@@ -7,7 +7,9 @@ import no.nav.pto.veilarbportefolje.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
+import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,15 +17,26 @@ import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class UtdanningsAktivitetService {
     private final AktivitetService aktivitetService;
     private final AktorClient aktorClient;
     private final ArenaHendelseRepository arenaHendelseRepository;
 
-    @Transactional
+    public void behandleKafkaRecord(ConsumerRecord<String, UtdanningsAktivitetDTO> kafkaMelding) {
+        UtdanningsAktivitetDTO melding = kafkaMelding.value();
+        log.info(
+                "Behandler kafka-melding med key {} og offset {} på topic {}",
+                kafkaMelding.key(),
+                kafkaMelding.offset(),
+                kafkaMelding.topic()
+        );
+        behandleKafkaMelding(melding);
+
+    }
+
     public void behandleKafkaMelding(UtdanningsAktivitetDTO kafkaMelding) {
-        log.info("Behandler utdannings-aktivtet-melding");
         UtdanningsAktivitetInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
@@ -41,6 +54,7 @@ public class UtdanningsAktivitetService {
     static boolean skalSletteUtdanningsAktivitet(UtdanningsAktivitetInnhold utdanningsInnhold) {
         return utdanningsInnhold.getAktivitetperiodeTil() == null || utdanningsInnhold.getAktivitetperiodeFra() == null;
     }
+
     /**
      Har side effekt med a lagre hvilken arena meldinger som er lest i DB
      */
