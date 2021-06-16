@@ -64,7 +64,7 @@ public class ClientConfig {
     public Pep veilarbPep(EnvironmentProperties properties) {
         Credentials serviceUserCredentials = getCredentials("service_user");
         return VeilarbPepFactory.get(
-                properties.getAbacUrl(), serviceUserCredentials.username,
+                properties.getAbacVeilarbUrl(), serviceUserCredentials.username,
                 serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
         );
     }
