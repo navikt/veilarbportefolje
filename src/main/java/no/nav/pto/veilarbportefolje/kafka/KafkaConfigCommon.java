@@ -16,6 +16,7 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -67,6 +68,7 @@ public class KafkaConfigCommon {
         return props;
     }
 
+    @Autowired
     public KafkaConfigCommon(CVServiceFromAiven cvServiceFromAiven, Properties kafkaAivenProperties, @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
         KafkaConsumerRepository consumerRepository = new PostgresConsumerRepository(dataSource);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
