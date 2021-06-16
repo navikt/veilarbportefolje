@@ -59,4 +59,4 @@ spec:
     - name: JAVA_OPTS
       value: "-Xms4098m -Xmx8096m"
     - name: ABAC_MODIA_URL
-      value: https://abac-modia.intern.nav.no/application/asm-pdp/authorize
+      value: https://abac-modia.dev.intern.nav.no/application/asm-pdp/authorize
