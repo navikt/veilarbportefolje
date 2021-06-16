@@ -27,8 +27,11 @@ public class CVService implements KafkaConsumerService<Melding> {
 
     @Override
     public void behandleKafkaMelding(Melding kafkaMelding) {
-
-        log.info("Fikk endring pa cv: {}, topic: {}", KafkaConfig.Topic.CV_ENDRET, kafkaMelding.getAktoerId());
+        log.info(
+                "Behandler kafka-melding med key {} på topic {}",
+                kafkaMelding.getAktoerId(),
+                KafkaConfig.Topic.CV_ENDRET
+        );
         AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
 
         if (cvEksistere(kafkaMelding)) {
