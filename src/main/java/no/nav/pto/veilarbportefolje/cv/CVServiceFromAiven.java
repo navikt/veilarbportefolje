@@ -19,12 +19,17 @@ public class CVServiceFromAiven {
     private final CvRepository cvRepository;
 
     public void behandleKafkaMelding(ConsumerRecord<String, CVMelding> kafkaMelding) {
+        log.info(
+                "Behandler kafka-melding med key {} og offset {} på topic {}",
+                kafkaMelding.key(),
+                kafkaMelding.offset(),
+                kafkaMelding.topic()
+        );
         CVMelding cvMelding = kafkaMelding.value();
         behandleCVMelding(cvMelding);
     }
 
     public void behandleCVMelding(CVMelding cvMelding) {
-        log.info("CV melding pa bruker: {}", cvMelding.getAktoerId());
         AktorId aktoerId = cvMelding.getAktoerId();
 
         if (cvMelding.getRessurs() != CV_HJEMMEL) {
