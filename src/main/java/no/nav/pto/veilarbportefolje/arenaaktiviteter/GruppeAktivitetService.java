@@ -5,11 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetDTO;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetInnhold;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakInnhold;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakStatuser;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.*;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,15 +15,25 @@ import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class GruppeAktivitetService {
     private final AktivitetService aktivitetService;
     private final AktorClient aktorClient;
     private final ArenaHendelseRepository arenaHendelseRepository;
 
-    @Transactional
+    public void behandleKafkaRecord(ConsumerRecord<String, GruppeAktivitetDTO> kafkaMelding) {
+        GruppeAktivitetDTO melding = kafkaMelding.value();
+        log.info(
+                "Behandler kafka-melding med key {} og offset {} på topic {}",
+                kafkaMelding.key(),
+                kafkaMelding.offset(),
+                kafkaMelding.topic()
+        );
+        behandleKafkaMelding(melding);
+    }
+
     public void behandleKafkaMelding(GruppeAktivitetDTO kafkaMelding) {
-        log.info("Behandler utdannings-aktivtet-melding");
         GruppeAktivitetInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;

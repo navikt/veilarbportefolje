@@ -9,7 +9,9 @@ import no.nav.common.kafka.consumer.feilhandtering.PostgresConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
@@ -36,7 +38,7 @@ public class KafkaConfigCommon {
     private final KafkaConsumerClient consumerClient;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVServiceFromAiven cvServiceFromAiven, UtdanningsAktivitetService utdanningsAktivitetService, @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
+    public KafkaConfigCommon(CVServiceFromAiven cvServiceFromAiven, UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService, @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
         KafkaConsumerRepository consumerRepository = new PostgresConsumerRepository(dataSource);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
@@ -60,6 +62,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(UtdanningsAktivitetDTO.class),
                                         utdanningsAktivitetService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, GruppeAktivitetDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        GRUPPE_AKTIVITET_TOPIC,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(GruppeAktivitetDTO.class),
+                                        gruppeAktivitetService::behandleKafkaRecord
                                 )
                 );
 
