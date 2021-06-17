@@ -23,11 +23,13 @@ import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 @Service
 public class AuthService {
 
+    private final ModiaPep modiaPep;
     private final Pep veilarbPep;
     private final Cache<VeilederPaEnhet, Boolean > harVeilederTilgangTilEnhetCache;
 
     @Autowired
-    public AuthService(Pep veilarbPep) {
+    public AuthService(Pep veilarbPep, ModiaPep modiaPep) {
+        this.modiaPep =  modiaPep;
         this.veilarbPep = veilarbPep;
         this.harVeilederTilgangTilEnhetCache = Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
@@ -36,7 +38,7 @@ public class AuthService {
     }
 
     public void tilgangTilOppfolging() {
-        AuthUtils.test("oppfølgingsbruker", AuthUtils.getInnloggetVeilederIdent(), veilarbPep.harVeilederTilgangTilModia(AuthUtils.getInnloggetBrukerToken()));
+        AuthUtils.test("oppfølgingsbruker", AuthUtils.getInnloggetVeilederIdent(), modiaPep.harVeilederTilgangTilModia(AuthUtils.getInnloggetBrukerToken()));
     }
 
     public void tilgangTilEnhet(String enhet) {

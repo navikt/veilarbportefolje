@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,10 +22,10 @@ public class OppfolginsbrukerService implements KafkaConsumerService<String> {
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
         OppfolgingsbrukerKafkaDTO oppfolginsbruker = fromJson(kafkaMelding, OppfolgingsbrukerKafkaDTO.class);
-        log.info("Fikk endring pa oppfolginsbruker: {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v1",oppfolginsbruker.getAktoerid());
-        if(erPostgresPa(unleashService)){
+        log.info("Fikk endring pa oppfolginsbruker: {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v1", oppfolginsbruker.getAktoerid());
+        if (erPostgresPa(unleashService)) {
             int rader = OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolginsbruker);
-            log.info("Oppdatert oppfolginsbruker info for bruker: {}, i postgres rader pavirket: {}",oppfolginsbruker.getAktoerid(), rader);
+            log.info("Oppdatert oppfolginsbruker info for bruker: {}, i postgres rader pavirket: {}", oppfolginsbruker.getAktoerid(), rader);
         }
     }
 
