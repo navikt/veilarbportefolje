@@ -41,7 +41,7 @@ public class UtdanningsAktivitetService {
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding) || skalSletteUtdanningsAktivitet(innhold)) {
-            aktivitetService.slettAktivitet(innhold.getAktivitetid(), aktorId);
+            aktivitetService.slettOgIndekserAktivitet(innhold.getAktivitetid(), aktorId);
         } else {
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
             aktivitetService.upsertOgIndekserAktiviteter(melding);
@@ -49,7 +49,8 @@ public class UtdanningsAktivitetService {
     }
 
     static boolean skalSletteUtdanningsAktivitet(UtdanningsAktivitetInnhold utdanningsInnhold) {
-        return utdanningsInnhold.getAktivitetperiodeTil() == null || utdanningsInnhold.getAktivitetperiodeFra() == null;
+        return utdanningsInnhold.getAktivitetperiodeTil() == null || utdanningsInnhold.getAktivitetperiodeFra() == null
+                || erUtgatt(utdanningsInnhold.getAktivitetperiodeTil(), true);
     }
 
     /**

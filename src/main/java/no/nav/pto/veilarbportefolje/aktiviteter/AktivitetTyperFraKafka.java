@@ -8,7 +8,5 @@ public enum AktivitetTyperFraKafka {
     ijobb,
     mote,
 
-    tiltak,
-    gruppeaktivitet,
     utdanningaktivitet
 }

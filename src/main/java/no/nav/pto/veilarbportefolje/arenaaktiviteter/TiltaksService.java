@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakStatuser;
@@ -45,7 +44,7 @@ public class TiltaksService {
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
-            aktivitetService.slettAktivitet(innhold.getAktivitetid(), aktorId);
+            aktivitetService.slettOgIndekserAktivitet(innhold.getAktivitetid(), aktorId);
         } else {
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
             aktivitetService.upsertOgIndekserAktiviteter(melding);
@@ -83,7 +82,7 @@ public class TiltaksService {
         kafkaAktivitetMelding.setEndretDato(getDateOrNull(melding.getEndretDato()));
 
         kafkaAktivitetMelding.setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
-        kafkaAktivitetMelding.setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK);
+        //kafkaAktivitetMelding.setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK);
         kafkaAktivitetMelding.setAvtalt(true);
         kafkaAktivitetMelding.setHistorisk(false);
         kafkaAktivitetMelding.setVersion(-1L);

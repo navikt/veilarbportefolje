@@ -11,6 +11,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
+
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.*;
 
 @Slf4j
@@ -41,7 +43,7 @@ public class GruppeAktivitetService {
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding) || skalSletteGruppeAktivitet(innhold)) {
-            aktivitetService.slettAktivitet(innhold.getAktivitetid(), aktorId);
+            aktivitetService.slettOgIndekserAktivitet(innhold.getAktivitetid(), aktorId);
         } else {
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
             aktivitetService.upsertOgIndekserAktiviteter(melding);
@@ -49,7 +51,7 @@ public class GruppeAktivitetService {
     }
 
     static boolean skalSletteGruppeAktivitet(GruppeAktivitetInnhold gruppeInnhold) {
-        return gruppeInnhold.getAktivitetperiodeTil() == null || gruppeInnhold.getAktivitetperiodeFra() == null;
+        return gruppeInnhold.getAktivitetperiodeTil() == null || erUtgatt(gruppeInnhold.getAktivitetperiodeTil(), true);
     }
 
     /**
@@ -70,15 +72,20 @@ public class GruppeAktivitetService {
         if(melding == null || aktorId == null){
             return null;
         }
+
+        // Fra dato kan ha verdien null, det tilsier at aktiviteten varer en hel dag
+        ZonedDateTime tilDato = getDateOrNull(melding.getAktivitetperiodeTil(), true);
+        ZonedDateTime fraDato = melding.getAktivitetperiodeFra() == null ? tilDato.minusDays(1) : getDateOrNull(melding.getAktivitetperiodeFra());
+
         KafkaAktivitetMelding kafkaAktivitetMelding = new KafkaAktivitetMelding();
         kafkaAktivitetMelding.setAktorId(aktorId.get());
         kafkaAktivitetMelding.setAktivitetId(melding.getAktivitetid()); //TODO: Sjekk om denne er unik i forhold til de andre
-        kafkaAktivitetMelding.setFraDato(getDateOrNull(melding.getAktivitetperiodeFra()));
-        kafkaAktivitetMelding.setTilDato(getDateOrNull(melding.getAktivitetperiodeTil(), true));
+        kafkaAktivitetMelding.setTilDato(tilDato);
+        kafkaAktivitetMelding.setFraDato(fraDato);
         kafkaAktivitetMelding.setEndretDato(getDateOrNull(melding.getEndretDato()));
 
         kafkaAktivitetMelding.setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
-        kafkaAktivitetMelding.setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.GRUPPEAKTIVITET);
+        //kafkaAktivitetMelding.setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.GRUPPEAKTIVITET);
         kafkaAktivitetMelding.setAvtalt(true);
         kafkaAktivitetMelding.setHistorisk(false);
         kafkaAktivitetMelding.setVersion(-1L);

@@ -1,11 +1,12 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import io.vavr.control.Try;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.util.AktivitetData;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

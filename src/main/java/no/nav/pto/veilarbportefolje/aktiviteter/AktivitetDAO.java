@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import static java.util.Collections.emptyList;
@@ -183,6 +184,29 @@ public class AktivitetDAO {
                         (Timestamp) row.get("TILDATO"))
                 )
                 .collect(toList());
+    }
+
+    public List<ArenaAktivitetDTO> hentUtgatteAktivteter(String aktivitetsType){
+        String sql = "SELECT " + AKTIVITETID + ", " + AKTIVITETID+ " FROM " + TABLE_NAME
+                + " WHERE " + AKTIVITETTYPE + "= ? AND " + TILDATO +" < CURRENT_TIMESTAMP";
+        return db.queryForList(sql, aktivitetsType)
+                .stream()
+                .map(row -> new ArenaAktivitetDTO()
+                                .setAktivitetId((String) row.get(AKTIVITETID))
+                                .setAktoerid((String) row.get(AKTIVITETID))
+                )
+                .collect(toList());
+    }
+
+    /**
+     * Sletter kun hvis aktiviteten er utgatt.
+     * Implementert til aa forhindre race condition mellom daglig jobb og kafka.
+     */
+    public int slettUtgattAktivtet(String aktivitetid){
+        return SqlUtils.delete(db, Table.AKTIVITETER.TABLE_NAME)
+                .where(WhereClause.equals(AKTIVITETID, aktivitetid)
+                        .and(WhereClause.lt(TILDATO, Timestamp.from(ZonedDateTime.now().toInstant())))
+                ).execute();
     }
 
     private String hentBrukertiltakForListeAvFnrSQL() {

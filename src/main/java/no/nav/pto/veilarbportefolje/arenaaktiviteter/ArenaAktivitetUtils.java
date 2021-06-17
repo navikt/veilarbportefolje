@@ -55,4 +55,13 @@ public interface ArenaAktivitetUtils {
         }
         return date.getDato();
     }
+
+    static boolean erUtgatt(ArenaDato tilDato, boolean tilOgMedDato) {
+         if(tilDato == null){
+             return false;
+         }
+         ZonedDateTime tilZonedDato = getDateOrNull(tilDato, tilOgMedDato);
+         ZonedDateTime now = ZonedDateTime.now();
+         return tilZonedDato.isBefore(now);
+    }
 }

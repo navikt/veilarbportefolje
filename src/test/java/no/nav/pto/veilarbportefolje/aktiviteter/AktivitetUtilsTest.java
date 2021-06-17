@@ -21,8 +21,8 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraAktivitetsplanList;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperList;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.*;
+import static no.nav.pto.veilarbportefolje.util.AktivitetData.aktivitetTyperList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
