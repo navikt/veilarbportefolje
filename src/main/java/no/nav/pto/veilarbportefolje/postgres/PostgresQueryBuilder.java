@@ -167,6 +167,16 @@ public class PostgresQueryBuilder {
         orStatement.add("("+FODSELS_DATO + " >= '" + eldsteFodselsDag.toString() + "'::date AND "+FODSELS_DATO + " <= '" + nyesteFodselsdag.toString() + "'::date"+")");
     }
 
+    public void harDeltCvFilter() {
+        brukKunEssensiellInfo = false;
+        whereStatement.add(HAR_DELT_CV + " = TRUE");
+    }
+
+    public void harIkkeDeltCvFilter() {
+        brukKunEssensiellInfo = false;
+        whereStatement.add(HAR_DELT_CV + " = FALSE");
+    }
+
     @SneakyThrows
     private Bruker mapTilBruker(Map<String, Object> row) {
         Bruker bruker = new Bruker();

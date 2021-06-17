@@ -82,16 +82,20 @@ public class PostgresService {
             query.kjonnfilter(filtervalg.kjonn);
         }
 
+        if (filtervalg.harCvFilter()) {
+            if(filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)){
+                query.harDeltCvFilter();
+            } else if(filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_IKKE_DELT_CV)) {
+                query.harIkkeDeltCvFilter();
+            }
+        }
+
         /*
         if (filtervalg.harYtelsefilter()) {
             BoolQueryBuilder subQuery = boolQuery();
             filtervalg.ytelse.underytelser.forEach(
                     ytelse -> queryBuilder.must(subQuery.should(matchQuery("ytelse", ytelse.name())))
             );
-        }
-
-        if (filtervalg.harCvFilter()) {
-            queryBuilder.filter(matchQuery("har_delt_cv", filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)));
         }
 
         if (filtervalg.harAktivitetFilter()) {
