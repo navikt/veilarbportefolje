@@ -29,15 +29,11 @@ public class CVServiceFromAiven {
     public void behandleCVMelding(CVMelding cvMelding) {
         log.info("CV melding pa bruker: {}", cvMelding.getAktoerId());
         AktorId aktoerId = cvMelding.getAktoerId();
-        boolean harDeltCv = false;
+        boolean harDeltCv = (cvMelding.getSlettetDato() == null);
 
         if (cvMelding.getRessurs() != CV_HJEMMEL) {
             log.info("Ignorer melding for ressurs {} for bruker {}", cvMelding.getRessurs(), aktoerId);
             return;
-        }
-
-        if (cvMelding.getSlettetDato() == null) {
-            harDeltCv = true;
         }
 
         if (erPostgresPa(unleashService)) {

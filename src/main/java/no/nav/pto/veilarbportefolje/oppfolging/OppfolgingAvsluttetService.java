@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
@@ -12,6 +11,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
