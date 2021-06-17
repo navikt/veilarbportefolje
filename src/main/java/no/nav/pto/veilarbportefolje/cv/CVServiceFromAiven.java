@@ -5,13 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
-import no.nav.common.featuretoggle.UnleashService;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
-
 
 @RequiredArgsConstructor
 @Service
@@ -30,6 +29,7 @@ public class CVServiceFromAiven {
     public void behandleCVMelding(CVMelding cvMelding) {
         log.info("CV melding pa bruker: {}", cvMelding.getAktoerId());
         AktorId aktoerId = cvMelding.getAktoerId();
+        boolean harDeltCv = false;
 
         if (cvMelding.getRessurs() != CV_HJEMMEL) {
             log.info("Ignorer melding for ressurs {} for bruker {}", cvMelding.getRessurs(), aktoerId);
@@ -37,12 +37,13 @@ public class CVServiceFromAiven {
         }
 
         if (cvMelding.getSlettetDato() == null) {
-            cvRepository.upsert(aktoerId, true);
-            elasticServiceV2.updateHarDeltCv(aktoerId, true);
-        } else {
-            cvRepository.upsert(aktoerId, false);
-            elasticServiceV2.updateHarDeltCv(aktoerId, false);
+            harDeltCv = true;
         }
-    }
 
+        if (erPostgresPa(unleashService)) {
+            cvRepositoryV2.upsert(aktoerId, harDeltCv);
+        }
+        cvRepository.upsert(aktoerId, harDeltCv);
+        elasticServiceV2.updateHarDeltCv(aktoerId, harDeltCv);
+    }
 }
