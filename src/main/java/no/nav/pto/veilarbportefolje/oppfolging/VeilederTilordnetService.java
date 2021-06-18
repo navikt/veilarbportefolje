@@ -1,11 +1,11 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;

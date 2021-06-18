@@ -22,11 +22,12 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.*;
 public class PostgresQueryBuilder {
     private final StringJoiner whereStatement = new StringJoiner(" AND ", " WHERE ", ";");
     private final JdbcTemplate db;
-
+    private boolean vedtaksPilot;
     private boolean brukKunEssensiellInfo = true;
 
-    public PostgresQueryBuilder(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, String navKontor) {
+    public PostgresQueryBuilder(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, String navKontor, boolean vedtaksPilot) {
         this.db = jdbcTemplate;
+        this.vedtaksPilot = vedtaksPilot;
         whereStatement.add(eq(NAV_KONTOR, navKontor));
         whereStatement.add(eq(OPPFOLGING, true));
 
@@ -172,7 +173,7 @@ public class PostgresQueryBuilder {
         if (brukKunEssensiellInfo) {
             return bruker.fraEssensiellInfo(row);
         } else {
-            return bruker.fraBrukerView(row);
+            return bruker.fraBrukerView(row, vedtaksPilot);
         }
     }
 

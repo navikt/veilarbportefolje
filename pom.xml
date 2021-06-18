@@ -16,7 +16,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.02.03_08.08-9d0c8281f06b</common.version>
+        <common.version>2.2021.06.11_06.26-ecbd6c9186d9</common.version>
         <common1.version>1.2020.05.06_16.29-028d26fc1c42</common1.version>
         <no.nav.tjenestespesifikasjoner.version>1.2018.11.20-18.20-f058c54de62c</no.nav.tjenestespesifikasjoner.version>
         <jsch.version>0.1.54</jsch.version>
@@ -26,7 +26,7 @@
         <veilarbregistrering.skjema.version>1.202010190947-866fe12</veilarbregistrering.skjema.version>
         <prometheus.version>0.4.0</prometheus.version>
         <jaxb.version>2.3.1</jaxb.version>
-        <testcontainers.version>1.15.1</testcontainers.version>
+        <testcontainers.version>1.15.3</testcontainers.version>
 
         <sonar.projectKey>navikt_veilarbportefolje</sonar.projectKey>
         <sonar.organization>navit</sonar.organization>
@@ -220,18 +220,13 @@
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
-            <artifactId>leader-election</artifactId>
-            <version>${common.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
             <artifactId>log</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>kafka</artifactId>
-            <version>2.2021.04.26_06.01-1ff0f73a2fa4</version>
+            <version>${common.version}</version>
         </dependency>
 
         <!--Logging-->
@@ -308,7 +303,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.5</version>
+            <version>[2.7,)</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -354,6 +349,7 @@
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
+            <version>2.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -401,8 +397,12 @@
                 <repository>
                     <id>central</id>
                     <url>https://repo1.maven.org/maven2</url>
-                    <releases><enabled>true</enabled></releases>
-                    <snapshots><enabled>true</enabled></snapshots>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
                 </repository>
                 <repository>
                     <id>github</id>

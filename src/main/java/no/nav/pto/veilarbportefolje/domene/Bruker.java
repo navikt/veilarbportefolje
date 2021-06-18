@@ -226,12 +226,13 @@ public class Bruker {
 
     }
 
-    public Bruker fraBrukerView(Map<String, Object> row) {
+    public Bruker fraBrukerView(Map<String, Object> row, boolean erVedtakstottePilotPa) {
         String diskresjonskode = (String) row.get(DISKRESJONSKODE);
         String kvalifiseringsgruppekode = (String) row.get(KVALIFISERINGSGRUPPEKODE);
         String formidlingsgruppekode = (String) row.get(FORMIDLINGSGRUPPEKODE);
         String vedtakstatus = (String) row.get(VEDTAKSTATUS);
         String sikkerhetstiltak = (String) row.get(SIKKERHETSTILTAK_TYPE_KODE);
+        String profileringResultat = (String) row.get(PROFILERING_RESULTAT);
         boolean trengerVurdering = OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode);
         boolean trengerRevurdering = OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus);
         boolean erSykmeldtMedArbeidsgiver = OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode);
@@ -256,7 +257,8 @@ public class Bruker {
                 .setAnsvarligVeilederForVedtak((String) row.get(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN))
                 .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
                 .setTrengerRevurdering(trengerRevurdering)
-                .setArbeidsliste(Arbeidsliste.of(row));
+                .setArbeidsliste(Arbeidsliste.of(row))
+                .setVurderingsBehov(trengerVurdering ? vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode, profileringResultat, erVedtakstottePilotPa) : null);
         //TODO: utledd manuell
     }
 

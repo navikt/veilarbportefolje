@@ -26,7 +26,6 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 class ElasticServiceIntegrationTest extends EndToEndTest {
@@ -34,7 +33,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
     private static final String TEST_ENHET = "0000";
     private static final String TEST_VEILEDER_0 = "Z000000";
     private static final String TEST_VEILEDER_1 = "Z000001";
-    private static final String LITE_PRIVILEGERT_VEILEDER = "Z000001";
+    private static final String LITE_PRIVILEGERT_VEILEDER = "Z000002";
 
     @Autowired
     private ElasticService elasticService;
@@ -541,6 +540,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_anse_bruker_som_ufordelt_om_bruker_har_veileder_som_ikke_har_tilgang_til_enhet() {
+        when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
         val brukerMedUfordeltStatus = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
@@ -17,15 +18,21 @@ public class CVServiceFromAiven {
     private final ElasticServiceV2 elasticServiceV2;
     private final CvRepository cvRepository;
 
-    public void behandleKafkaMelding(CVMelding melding) {
-        AktorId aktoerId = melding.getAktoerId();
+    public void behandleKafkaMelding(ConsumerRecord<String, CVMelding> kafkaMelding) {
+        CVMelding cvMelding = kafkaMelding.value();
+        behandleCVMelding(cvMelding);
+    }
 
-        if (melding.getRessurs() != CV_HJEMMEL) {
-            log.info("Ignorer melding for ressurs {} for bruker {}", melding.getRessurs(), aktoerId);
+    public void behandleCVMelding(CVMelding cvMelding) {
+        log.info("CV melding pa bruker: {}", cvMelding.getAktoerId());
+        AktorId aktoerId = cvMelding.getAktoerId();
+
+        if (cvMelding.getRessurs() != CV_HJEMMEL) {
+            log.info("Ignorer melding for ressurs {} for bruker {}", cvMelding.getRessurs(), aktoerId);
             return;
         }
 
-        if (melding.getSlettetDato() == null) {
+        if (cvMelding.getSlettetDato() == null) {
             cvRepository.upsert(aktoerId, true);
             elasticServiceV2.updateHarDeltCv(aktoerId, true);
         } else {

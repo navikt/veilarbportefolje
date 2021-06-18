@@ -32,6 +32,7 @@ public class PostgresTable {
         public static final String VEDTAKSTATUS = "VEDTAKSTATUS";
         public static final String VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN = "VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN";
         public static final String VEDTAKSTATUS_ENDRET_TIDSPUNKT = "VEDTAKSTATUS_ENDRET_TIDSPUNKT";
+        public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
 
         public static final String ARB_SIST_ENDRET_AV_VEILEDERIDENT = "ARB_SIST_ENDRET_AV_VEILEDERIDENT";
         public static final String ARB_ENDRINGSTIDSPUNKT = "ARB_ENDRINGSTIDSPUNKT";
@@ -90,45 +91,6 @@ public class PostgresTable {
         public static final String ER_DOED = "ER_DOED";
         public static final String DOED_FRA_DATO = "DOED_FRA_DATO";
         public static final String ENDRET_DATO = "ENDRET_DATO";
-
-        public static final String SQLINSERT_STRING = AKTOERID +
-                ", " + FODSELSNR +
-                ", " + FORMIDLINGSGRUPPEKODE +
-                ", " + ISERV_FRA_DATO +
-                ", " + ETTERNAVN +
-                ", " + FORNAVN +
-                ", " + NAV_KONTOR +
-                ", " + KVALIFISERINGSGRUPPEKODE +
-                ", " + RETTIGHETSGRUPPEKODE +
-                ", " + HOVEDMAALKODE +
-                ", " + SIKKERHETSTILTAK_TYPE_KODE +
-                ", " + DISKRESJONSKODE +
-                ", " + HAR_OPPFOLGINGSSAK +
-                ", " + SPERRET_ANSATT +
-                ", " + ER_DOED +
-                ", " + DOED_FRA_DATO +
-                ", " + ENDRET_DATO +
-                ", " + KJONN +
-                ", " + FODSELS_DATO;
-
-        public static final String SQLUPDATE_STRING = FODSELSNR +
-                ", " + FORMIDLINGSGRUPPEKODE +
-                ", " + ISERV_FRA_DATO +
-                ", " + ETTERNAVN +
-                ", " + FORNAVN +
-                ", " + NAV_KONTOR +
-                ", " + KVALIFISERINGSGRUPPEKODE +
-                ", " + RETTIGHETSGRUPPEKODE +
-                ", " + HOVEDMAALKODE +
-                ", " + SIKKERHETSTILTAK_TYPE_KODE +
-                ", " + DISKRESJONSKODE +
-                ", " + HAR_OPPFOLGINGSSAK +
-                ", " + SPERRET_ANSATT +
-                ", " + ER_DOED +
-                ", " + DOED_FRA_DATO +
-                ", " + ENDRET_DATO +
-                ", " + KJONN +
-                ", " + FODSELS_DATO;
     }
 
     public static final class DIALOG {
@@ -137,16 +99,6 @@ public class PostgresTable {
         public static final String AKTOERID = "AKTOERID";
         public static final String VENTER_PA_BRUKER = "VENTER_PA_BRUKER";
         public static final String VENTER_PA_NAV = "VENTER_PA_NAV";
-
-        public static final String SQLINSERT_STRING =
-                AKTOERID +
-                        ", " + VENTER_PA_BRUKER +
-                        ", " + VENTER_PA_NAV;
-
-        public static final String SQLUPDATE_STRING =
-                VENTER_PA_BRUKER +
-                        ", " + VENTER_PA_NAV;
-
     }
 
     public static final class ARBEIDSLISTE {
@@ -172,24 +124,14 @@ public class PostgresTable {
         public static final String ANSVARLIG_VEILDERIDENT = "ANSVARLIG_VEILDERIDENT";
         public static final String ANSVARLIG_VEILDERNAVN = "ANSVARLIG_VEILDERNAVN";
         public static final String ENDRET_TIDSPUNKT = "ENDRET_TIDSPUNKT";
+    }
 
-        public static final String SQLINSERT_STRING = AKTOERID +
-                ", " + VEDTAKID +
-                ", " + VEDTAKSTATUS +
-                ", " + INNSATSGRUPPE +
-                ", " + HOVEDMAL +
-                ", " + ANSVARLIG_VEILDERIDENT +
-                ", " + ANSVARLIG_VEILDERNAVN +
-                ", " + ENDRET_TIDSPUNKT;
+    public static final class BRUKER_PROFILERING {
+        public static final String TABLE_NAME = "BRUKER_PROFILERING";
 
-        public static final String SQLUPDATE_STRING =
-                VEDTAKID +
-                        ", " + VEDTAKSTATUS +
-                        ", " + INNSATSGRUPPE +
-                        ", " + HOVEDMAL +
-                        ", " + ANSVARLIG_VEILDERIDENT +
-                        ", " + ANSVARLIG_VEILDERNAVN +
-                        ", " + ENDRET_TIDSPUNKT;
+        public static final String AKTOERID = "AKTOERID";
+        public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
+        public static final String PROFILERING_TIDSPUNKT = "PROFILERING_TIDSPUNKT";
     }
 
     public static String safeNull(Object o) {

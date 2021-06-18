@@ -151,4 +151,11 @@ public class DateUtils {
         }
         return date.toLocalDate().atStartOfDay();
     }
+
+    public static java.sql.Date toSqlDateOrNull(String date) {
+        if(date == null){
+            return null;
+        }
+        return java.sql.Date.valueOf(ZonedDateTime.parse(date).toLocalDate());
+    }
 }

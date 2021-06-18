@@ -2,11 +2,11 @@ package no.nav.pto.veilarbportefolje.util;
 
 import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRequest;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.common.types.identer.Fnr;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -53,7 +53,7 @@ public class ValideringsRegler {
             "vedtak_status_endret",
             "arbeidslistekategori",
             "siste_endring_tidspunkt"
-            );
+    );
 
     public static void sjekkEnhet(String enhet) {
         test("enhet", enhet, enhet.matches("\\d{4}"));
@@ -80,11 +80,12 @@ public class ValideringsRegler {
 
     private static void test(String navn, Object data, boolean matches) {
         if (!matches) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,format("sjekk av %s feilet, %s", navn, data));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, format("sjekk av %s feilet, %s", navn, data));
         }
     }
 
     public static Validation<Seq<String>, ArbeidslisteDTO> validerArbeidsliste(ArbeidslisteRequest arbeidsliste, boolean redigering) {
+
         return
                 Validation
                         .combine(
@@ -112,7 +113,7 @@ public class ValideringsRegler {
         return timestamp.toLocalDateTime().toLocalDate().isBefore(LocalDate.now());
     }
 
-    private static Validation<String, Arbeidsliste.Kategori> validateKategori (String kategori) {
+    private static Validation<String, Arbeidsliste.Kategori> validateKategori(String kategori) {
         try {
             return valid(Arbeidsliste.Kategori.valueOf(kategori));
         } catch (Exception e) {

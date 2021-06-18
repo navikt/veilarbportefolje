@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.cv;
 import no.nav.common.types.identer.AktorId;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -18,7 +17,6 @@ public class CvRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
     public CvRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
