@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.database;
 
+import java.sql.Timestamp;
+
 public class PostgresTable {
 
     public static final class BRUKER_VIEW {
@@ -33,13 +35,17 @@ public class PostgresTable {
         public static final String VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN = "VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN";
         public static final String VEDTAKSTATUS_ENDRET_TIDSPUNKT = "VEDTAKSTATUS_ENDRET_TIDSPUNKT";
         public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
-
         public static final String ARB_SIST_ENDRET_AV_VEILEDERIDENT = "ARB_SIST_ENDRET_AV_VEILEDERIDENT";
         public static final String ARB_ENDRINGSTIDSPUNKT = "ARB_ENDRINGSTIDSPUNKT";
         public static final String ARB_OVERSKRIFT = "ARB_OVERSKRIFT";
         public static final String ARB_KOMMENTAR = "ARB_KOMMENTAR";
         public static final String ARB_FRIST = "ARB_FRIST";
         public static final String ARB_KATEGORI = "ARB_KATEGORI";
+        public static final String BRUKERS_SITUASJON = "BRUKERS_SITUASJON";
+        public static final String UTDANNING = "UTDANNING";
+        public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
+        public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
+
     }
 
 
@@ -133,6 +139,19 @@ public class PostgresTable {
         public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
         public static final String PROFILERING_TIDSPUNKT = "PROFILERING_TIDSPUNKT";
     }
+
+    public static final class BRUKER_REGISTRERING {
+        public static final String TABLE_NAME = "BRUKER_REGISTRERING";
+
+        public static final String AKTOERID = "AKTOERID";
+        public static final String BRUKERS_SITUASJON = "BRUKERS_SITUASJON";
+        public static final String KAFKA_MELDING_MOTTATT = "KAFKA_MELDING_MOTTATT";
+        public static final String REGISTRERING_OPPRETTET = "REGISTRERING_OPPRETTET";
+        public static final String UTDANNING = "UTDANNING";
+        public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
+        public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
+    }
+
 
     public static String safeNull(Object o) {
         if (o == null) {
