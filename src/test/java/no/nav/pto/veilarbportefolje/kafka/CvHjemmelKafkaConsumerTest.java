@@ -16,10 +16,10 @@ import static java.util.Arrays.stream;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CvKafkaConsumerTest extends EndToEndTest {
+class CvHjemmelKafkaConsumerTest extends EndToEndTest {
 
     @Autowired
-    private CVServiceFromAiven cvService;
+    private CVServiceFromAiven cvServiceFromAiven;
 
     @Test
     void skal_populere_elastic_med_cv_og_spole_tilbake() throws ExecutionException, InterruptedException {
@@ -55,7 +55,7 @@ class CvKafkaConsumerTest extends EndToEndTest {
     private boolean harDeltCv(AktorId... aktoerIds) {
         return stream(aktoerIds)
                 .map(aktoerId -> elasticTestClient.fetchDocument(aktoerId))
-                .allMatch(CvKafkaConsumerTest::harDeltCv);
+                .allMatch(CvHjemmelKafkaConsumerTest::harDeltCv);
     }
 
     private void createCvDocumentsInElastic(AktorId... aktoerIds) {
@@ -90,7 +90,7 @@ class CvKafkaConsumerTest extends EndToEndTest {
             cvMelding.setAktoerId(aktoerId);
             cvMelding.setRessurs(Ressurs.CV_HJEMMEL);
 
-            cvService.behandleCVMelding(cvMelding);
+            cvServiceFromAiven.behandleCVMelding(cvMelding);
         }
     }
 }

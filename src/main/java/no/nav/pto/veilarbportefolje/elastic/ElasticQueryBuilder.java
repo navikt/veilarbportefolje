@@ -81,8 +81,9 @@ public class ElasticQueryBuilder {
 
         if (filtervalg.harCvFilter()) {
             queryBuilder.filter(matchQuery("har_delt_cv", filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)));
+            queryBuilder.filter(matchQuery("cv_eksistere", true));
         }
-        
+
 
         if (filtervalg.harAktivitetFilter()) {
             byggAktivitetFilterQuery(filtervalg, queryBuilder);
