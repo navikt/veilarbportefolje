@@ -9,7 +9,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.pto.veilarbportefolje.cv.CVService;
+import no.nav.pto.veilarbportefolje.cv.CVHjemmelService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
@@ -38,7 +38,7 @@ public class AdminController {
     private final ElasticServiceV2 elasticServiceV2;
     private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
-    private final CVService cvService;
+    private final CVHjemmelService cvHjemmelService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -97,10 +97,10 @@ public class AdminController {
         return "Innlastning av oppfolgingsdata har startet";
     }
 
-    @PostMapping("/rewind/cv-eksistere")
+    @PostMapping("/rewind/cv-eksisterer")
     public String rewindCVEksistere() {
         authorizeAdmin();
-        cvService.setRewind(true);
+        cvHjemmelService.setRewind(true);
         return "Rewind av cv har startet";
     }
 

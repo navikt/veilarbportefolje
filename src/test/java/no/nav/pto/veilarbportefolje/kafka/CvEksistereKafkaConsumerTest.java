@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.kafka;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.cv.CVService;
+import no.nav.pto.veilarbportefolje.cv.CVHjemmelService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.elasticsearch.action.get.GetResponse;
 import org.json.JSONObject;
@@ -19,7 +19,7 @@ import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUnt
 class CvEksistereKafkaConsumerTest extends EndToEndTest {
 
     @Autowired
-    private CVService cvService;
+    private CVHjemmelService cvHjemmelService;
 
     @Test
     void skal_populere_elastic_med_cv_og_spole_tilbake() throws ExecutionException, InterruptedException {
@@ -82,7 +82,7 @@ class CvEksistereKafkaConsumerTest extends EndToEndTest {
             cvMelding.setAktoerId(aktoerId.toString());
             cvMelding.setMeldingstype(Meldingstype.ENDRE);
 
-            cvService.behandleKafkaMelding(cvMelding);
+            cvHjemmelService.behandleKafkaMelding(cvMelding);
         }
     }
 }

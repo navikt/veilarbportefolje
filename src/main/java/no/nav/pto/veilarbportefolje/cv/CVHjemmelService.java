@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class CVService implements KafkaConsumerService<Melding> {
+public class CVHjemmelService implements KafkaConsumerService<Melding> {
     private final ElasticServiceV2 elasticServiceV2;
     private final CvRepository cvRepository;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
@@ -34,13 +34,9 @@ public class CVService implements KafkaConsumerService<Melding> {
         );
         AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
 
-        if (cvEksistere(kafkaMelding)) {
-            cvRepository.upsertCvEksistere(aktoerId, true);
-            elasticServiceV2.updateCvEksistere(aktoerId, true);
-        } else {
-            cvRepository.upsertCvEksistere(aktoerId, false);
-            elasticServiceV2.updateCvEksistere(aktoerId, false);
-        }
+        boolean cvEksisterer = cvEksistere(kafkaMelding);
+        cvRepository.upsertCvEksistere(aktoerId, cvEksisterer);
+        elasticServiceV2.updateCvEksistere(aktoerId, cvEksisterer);
     }
 
     @Override

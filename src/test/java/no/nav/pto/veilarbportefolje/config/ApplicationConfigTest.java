@@ -14,7 +14,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.cv.CVService;
+import no.nav.pto.veilarbportefolje.cv.CVHjemmelService;
 import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -97,7 +97,7 @@ import static org.mockito.Mockito.when;
         ElasticIndexer.class,
         CvRepository.class,
         CVServiceFromAiven.class,
-        CVService.class,
+        CVHjemmelService.class,
         RegistreringRepository.class,
         PersonRepository.class,
         NyForVeilederService.class,
