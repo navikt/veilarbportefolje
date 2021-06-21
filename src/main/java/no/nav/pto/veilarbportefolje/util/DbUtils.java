@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
+import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil;
 import org.apache.commons.lang3.text.WordUtils;
 
 import javax.sql.DataSource;
