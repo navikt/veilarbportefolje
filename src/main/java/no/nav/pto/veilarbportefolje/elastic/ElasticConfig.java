@@ -2,20 +2,19 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import no.nav.common.health.HealthCheckResult;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
-import okhttp3.OkHttpClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
-import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_PASSWORD_PROPERTY;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_USERNAME_PROPERTY;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.*;
@@ -63,8 +62,8 @@ public class ElasticConfig {
 
 
     @Bean
-    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, RestHighLevelClient restHighLevelClient, SisteEndringRepository sisteEndringRepository) {
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, sisteEndringRepository, new IndexName(getAlias()));
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, RestHighLevelClient restHighLevelClient, SisteEndringRepository sisteEndringRepository, GruppeAktivitetRepository gruppeAktivitetRepository) {
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, sisteEndringRepository, new IndexName(getAlias()), gruppeAktivitetRepository);
 
 
     }

@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.common.types.identer.AktorId;
@@ -50,19 +51,21 @@ public class ElasticIndexer {
     private final BrukerRepository brukerRepository;
     private final IndexName alias;
     private final SisteEndringRepository sisteEndringRepository;
+    private final GruppeAktivitetRepository gruppeAktivitetRepository;
 
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient restHighLevelClient,
             SisteEndringRepository sisteEndringRepository,
-            IndexName alias) {
+            IndexName alias, GruppeAktivitetRepository gruppeAktivitetRepository) {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.restHighLevelClient = restHighLevelClient;
         this.sisteEndringRepository = sisteEndringRepository;
         this.alias = alias;
+        this.gruppeAktivitetRepository = gruppeAktivitetRepository;
     }
 
     static int utregnTil(int from, int batchSize) {
@@ -249,7 +252,6 @@ public class ElasticIndexer {
             bruker.setAktiviteter(aktiviteterSomErAktive);
         });
     }
-
 
     private void leggTilSisteEndring(List<OppfolgingsBruker> brukere) {
         if (brukere == null || brukere.isEmpty()) {

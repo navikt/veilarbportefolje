@@ -40,7 +40,6 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class ArenaAktivitetIntegrasjonsTest {
     private final UtdanningsAktivitetService utdanningsAktivitetService;
-    private final GruppeAktivitetService gruppeAktivitetService;
     private final TiltaksService tiltaksService;
     private final JdbcTemplate jdbcTemplate;
     private final UnleashService unleashService;
@@ -67,7 +66,6 @@ public class ArenaAktivitetIntegrasjonsTest {
 
         this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService, sisteEndringService, unleashService);
         this.tiltaksService = new TiltaksService(aktivitetService, aktorClient, arenaHendelseRepository);
-        this.gruppeAktivitetService = new GruppeAktivitetService(aktivitetService, aktorClient, arenaHendelseRepository);
         this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient, arenaHendelseRepository);
     }
 
@@ -107,26 +105,6 @@ public class ArenaAktivitetIntegrasjonsTest {
 
         assertThat(utdanningsAktivitet).isPresent();
         assertThat(ijobbAktivitet).isPresent();
-    }
-
-    @Test
-    @Disabled
-    public void skal_komme_i_gruppe_aktivitet() {
-        insertBruker();
-        GruppeAktivitetDTO gruppeAktivitet = new GruppeAktivitetDTO()
-                .setAfter(new GruppeAktivitetInnhold()
-                        .setFnr(fnr.get())
-                        .setHendelseId(1)
-                        .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
-                        .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
-                        .setEndretDato(new ArenaDato("2021-01-01"))
-                        .setAktivitetid("UA-123456789")
-                );
-        gruppeAktivitet.setOperationType(GoldenGateOperations.INSERT);
-        gruppeAktivitetService.behandleKafkaMelding(gruppeAktivitet);
-
-        //Optional<AktivitetStatus> gruppe = hentAktivitetStatus(AktivitetTyperFraKafka.gruppeaktivitet);
-        //assertThat(gruppe).isPresent();
     }
 
     @Test
