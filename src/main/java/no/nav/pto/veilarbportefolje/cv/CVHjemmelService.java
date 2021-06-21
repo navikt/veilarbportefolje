@@ -30,7 +30,7 @@ public class CVHjemmelService implements KafkaConsumerService<Melding> {
         log.info(
                 "Behandler kafka-melding med key {} på topic {}",
                 kafkaMelding.getAktoerId(),
-                KafkaConfig.Topic.CV_ENDRET
+                KafkaConfig.Topic.CV_ENDRET.getTopicName()
         );
         AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
 

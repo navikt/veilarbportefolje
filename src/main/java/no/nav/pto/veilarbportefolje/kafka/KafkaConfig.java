@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import lombok.Getter;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
@@ -42,6 +43,7 @@ public class KafkaConfig {
         ENDRING_PAA_OPPFOLGINGSBRUKER("aapen-fo-endringPaaOppfoelgingsBruker-v1-" + requireKafkaTopicPostfix()),
         CV_ENDRET("arbeid-pam-cv-endret-v6");
 
+        @Getter
         final String topicName;
 
         Topic(String topicName) {
