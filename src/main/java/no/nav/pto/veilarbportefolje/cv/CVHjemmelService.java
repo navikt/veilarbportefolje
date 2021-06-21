@@ -6,7 +6,6 @@ import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.stereotype.Service;
 
@@ -27,11 +26,6 @@ public class CVHjemmelService implements KafkaConsumerService<Melding> {
 
     @Override
     public void behandleKafkaMelding(Melding kafkaMelding) {
-        log.info(
-                "Behandler kafka-melding med key {} på topic {}",
-                kafkaMelding.getAktoerId(),
-                KafkaConfig.Topic.CV_ENDRET.getTopicName()
-        );
         AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
 
         boolean cvEksisterer = cvEksistere(kafkaMelding);
