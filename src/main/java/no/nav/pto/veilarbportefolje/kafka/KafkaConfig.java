@@ -6,7 +6,7 @@ import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.cv.CVHjemmelService;
+import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
@@ -195,9 +195,9 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaConsumerRunnable<Melding> kafkaEndringCV(CVHjemmelService cvHjemmelService, UnleashService unleashService, MetricsClient metricsClient) {
+    public KafkaConsumerRunnable<Melding> kafkaEndringCV(CVService cvService, UnleashService unleashService, MetricsClient metricsClient) {
         return new KafkaConsumerRunnable<>(
-                cvHjemmelService,
+                cvService,
                 unleashService,
                 KafkaProperties.kafkaMedAvroProperties(KafkaAutoOffset.EARLIEST),
                 Topic.CV_ENDRET,
