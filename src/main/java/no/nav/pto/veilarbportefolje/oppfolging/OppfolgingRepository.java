@@ -1,12 +1,14 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import io.vavr.control.Try;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,19 +19,18 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erNyForVeilederFixPa;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class OppfolgingRepository {
 
     private final JdbcTemplate db;
-
-    public OppfolgingRepository(JdbcTemplate db) {
-        this.db = db;
-    }
+    private final UnleashService unleashService;
 
     public boolean settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
         return SqlUtils.upsert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
@@ -48,6 +49,12 @@ public class OppfolgingRepository {
     }
 
     public int settVeileder(AktorId aktorId, VeilederId veilederId) {
+        if(erNyForVeilederFixPa(unleashService)){
+            return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
+                    .set(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.toString())
+                    .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktorId.toString())
+                    .execute();
+        }
         return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
                 .set(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.toString())
                 .set(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER, "J")
