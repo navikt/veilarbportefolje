@@ -18,4 +18,7 @@ public class FeatureToggle {
     public static boolean erPostgresPa(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.POSTGRES);
     }
+    public static boolean erNyForVeilederFixPa(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.FIKS_NY_FOR_VEILEDER);
+    }
 }

@@ -43,7 +43,6 @@ public class OppfolgingRepositoryV2 {
     public int settVeileder(AktorId aktorId, VeilederId veilederId) {
         return SqlUtils.update(db, TABLE_NAME)
                 .set(VEILEDERID, veilederId.getValue())
-                .set(NY_FOR_VEILEDER, true)
                 .whereEquals(AKTOERID, aktorId.get())
                 .execute();
     }
