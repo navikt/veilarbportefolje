@@ -9,7 +9,7 @@ import no.nav.common.kafka.consumer.feilhandtering.PostgresConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
-import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
+import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,7 +31,7 @@ public class KafkaConfigCommon {
     private final KafkaConsumerClient consumerClient;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVServiceFromAiven cvServiceFromAiven, @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
+    public KafkaConfigCommon(CVService cvService, @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
         KafkaConsumerRepository consumerRepository = new PostgresConsumerRepository(dataSource);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
@@ -44,7 +44,7 @@ public class KafkaConfigCommon {
                                 CV_TOPIC,
                                 Deserializers.stringDeserializer(),
                                 Deserializers.jsonDeserializer(CVMelding.class),
-                                cvServiceFromAiven::behandleKafkaMelding
+                                cvService::behandleKafkaMeldingCVHjemmel
                         ));
 
         consumerClient = KafkaConsumerClientBuilder.builder()

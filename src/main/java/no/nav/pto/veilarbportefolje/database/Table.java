@@ -68,6 +68,7 @@ public class Table {
 
         public static final String AKTOERID = "AKTOERID";
         public static final String HAR_DELT_CV = "HAR_DELT_CV";
+        public static final String CV_EKSISTERE = "CV_EKSISTERE";
         public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
     }
 
