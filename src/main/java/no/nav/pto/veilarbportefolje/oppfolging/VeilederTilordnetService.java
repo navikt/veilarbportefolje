@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
@@ -21,6 +23,7 @@ public class VeilederTilordnetService implements KafkaConsumerService<String> {
     private final ArbeidslisteService arbeidslisteServicePostgres;
     private final UnleashService unleashService;
     private final ElasticServiceV2 elasticServiceV2;
+    private final AtomicBoolean rewind = new AtomicBoolean(false);
 
     @Autowired
     public VeilederTilordnetService(@Qualifier("PostgresArbeidslisteService") ArbeidslisteService arbeidslisteServicePostgres, OppfolgingRepository oppfolgingRepository, OppfolgingRepositoryV2 oppfolgingRepositoryV2, ArbeidslisteService arbeidslisteService, ElasticServiceV2 elasticServiceV2, UnleashService unleashService) {
@@ -58,10 +61,11 @@ public class VeilederTilordnetService implements KafkaConsumerService<String> {
 
     @Override
     public boolean shouldRewind() {
-        return false;
+        return rewind.get();
     }
 
     @Override
     public void setRewind(boolean rewind) {
+        this.rewind.set(rewind);
     }
 }

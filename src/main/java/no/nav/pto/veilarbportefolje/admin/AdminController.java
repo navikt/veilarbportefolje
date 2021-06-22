@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ public class AdminController {
     private final RegistreringService registreringService;
     private final AktorClient aktorClient;
     private final NyForVeilederService nyForVeilederService;
+    private final VeilederTilordnetService veilederTilordnetService;
     private final AktivitetService aktivitetService;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final VedtakService vedtakService;
@@ -93,6 +95,13 @@ public class AdminController {
         authorizeAdmin();
         oppfolgingService.lastInnDataPaNytt();
         return "Innlastning av oppfolgingsdata har startet";
+    }
+
+    @PostMapping("/rewind/tilordnet-veileder")
+    public String rewindTilordnetVeileder() {
+        authorizeAdmin();
+        veilederTilordnetService.setRewind(true);
+        return "Rewind av tilordnet veileder har startet";
     }
 
     private void authorizeAdmin() {
