@@ -1,0 +1,22 @@
+{
+  "table": "ARENA_GOLDENGATE.UTDANNINGSAKTIVITET",
+  "op_type": "I",
+  "op_ts": "2021-06-23 09:01:28.693329",
+  "current_ts": "2021-06-23T09:03:55.677014",
+  "pos": "00000000000000599300",
+  "after": {
+    "AKTIVITET_ID": 111111111,
+    "AKTIVITETID": "UA111111111",
+    "AKTIVITETSTYPE": "OUTDEF",
+    "AKTIVITETSNAVN": "Ordinær utdanning for enslige forsørgere mv",
+    "AKTIVITETPERIODE_FOM": "2020-07-13 00:00:00",
+    "AKTIVITETPERIODE_TOM": "2021-06-30 00:00:00",
+    "PERSON_ID": 123,
+    "PERSONIDENT": "12345",
+    "HENDELSE_ID": 2400,
+    "OPPRETTET_DATO": "2021-06-18 07:14:31",
+    "OPPRETTET_AV": "SKRIPT",
+    "ENDRET_DATO": "2021-06-18 07:14:31",
+    "ENDRET_AV": "SKRIPT"
+  }
+}

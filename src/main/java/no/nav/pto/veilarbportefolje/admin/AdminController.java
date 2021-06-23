@@ -88,7 +88,7 @@ public class AdminController {
     public String fjernBrukerFraElastic(@RequestBody String aktoerId) {
         authorizeAdmin();
         elasticServiceV2.slettDokumenter(List.of(AktorId.of(aktoerId)));
-        return "Slettet oppfølgingsbruker " + aktoerId;
+        return "Slettet bruker fra elastic " + aktoerId;
     }
 
 

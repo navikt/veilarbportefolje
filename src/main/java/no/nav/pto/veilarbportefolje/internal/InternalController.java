@@ -65,7 +65,8 @@ public class InternalController {
                 .body(html);
     }
 
-    @Scheduled(cron = "0 0 1 * * ?")
+    // Daglig kl 00:05
+    @Scheduled(cron = "5 0 0 * * ?")
     private void metrikkOppdatering() {
         String sql =  "SELECT count(*) FROM AKTOERID_TO_PERSONID "
                 + "WHERE PERSONID IN "

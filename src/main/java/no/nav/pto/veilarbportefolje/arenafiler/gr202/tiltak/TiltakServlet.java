@@ -22,23 +22,18 @@ import java.io.IOException;
 )
 public class TiltakServlet extends HttpServlet {
 
-    private TiltakHandler tiltakHandler;
     private Credentials serviceUserCredentials;
 
 
     @Autowired
-    public TiltakServlet(TiltakHandler tiltakHandler, Credentials serviceUserCredentials) {
-        this.tiltakHandler = tiltakHandler;
+    public TiltakServlet(Credentials serviceUserCredentials) {
         this.serviceUserCredentials = serviceUserCredentials;
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req, serviceUserCredentials)) {
-            RunningJob runningJob = JobUtils.runAsyncJob(tiltakHandler::startOppdateringAvTiltakIDatabasen);
-            resp.getWriter().write(String.format("Oppdatering av tiltak startet med jobId %s på pod %s", runningJob.getJobId(), runningJob.getPodName()));
-
-            resp.setStatus(200);
+            resp.setStatus(410);
         } else {
             AuthorizationUtils.writeUnauthorized(resp);
         }
