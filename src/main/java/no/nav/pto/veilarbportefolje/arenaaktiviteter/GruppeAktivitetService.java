@@ -68,7 +68,7 @@ public class GruppeAktivitetService {
      * Sletter kun hvis aktiviteten er utgatt.
      * Implementert til aa forhindre race condition mellom daglig jobb og kafka.
      */
-    public void settSomUtgatt(int moteplanId, int veiledningdeltakerId) {
+    public void settSomUtgatt(int moteplanId, Long veiledningdeltakerId) {
         gruppeAktivitetRepository.hentAktivtet(moteplanId, veiledningdeltakerId)
                 .ifPresent(gruppeAktivitetSchedueldDTO -> {
                     AktorId aktorId = gruppeAktivitetSchedueldDTO.getAktorId();

@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 @Data
 @Accessors(chain = true)
 public class GruppeAktivitetSchedueldDTO {
-    int veiledningdeltakerId;
+    Long veiledningdeltakerId;
     int moteplanId;
 
     AktorId aktorId;

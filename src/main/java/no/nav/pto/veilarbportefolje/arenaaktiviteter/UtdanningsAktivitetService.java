@@ -41,10 +41,13 @@ public class UtdanningsAktivitetService {
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding) || skalSletteUtdanningsAktivitet(innhold)) {
+            log.info("Sletter aktivitet: {}", innhold.getAktivitetid());
             aktivitetService.slettOgIndekserAktivitet(innhold.getAktivitetid(), aktorId);
         } else {
+            log.info("Lagrer aktivitet: {}", innhold.getAktivitetid());
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
             aktivitetService.upsertOgIndekserAktiviteter(melding);
+            log.debug("Skal ha lagret aktivitet: {}, pa aktor: {}, hendelse: {}", melding.getAktivitetId(), melding.getAktorId(), innhold.getHendelseId());
         }
     }
 
@@ -54,21 +57,22 @@ public class UtdanningsAktivitetService {
     }
 
     /**
-     Har side effekt med a lagre hvilken arena meldinger som er lest i DB
+     * Har side effekt med a lagre hvilken arena meldinger som er lest i DB
      */
-    private boolean erGammelMelding(UtdanningsAktivitetDTO kafkaMelding, UtdanningsAktivitetInnhold innhold ){
+    private boolean erGammelMelding(UtdanningsAktivitetDTO kafkaMelding, UtdanningsAktivitetInnhold innhold) {
         Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
 
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), kafkaMelding.getOperationType())) {
-            log.info("Fikk tilsendt gammel utdannings-aktivtet-melding");
+            log.info("Fikk tilsendt gammel utdannings-aktivtet-melding hendelse: {}", innhold.getHendelseId());
             return true;
         }
+        log.info("Fikk ny hendelse: {}", innhold.getHendelseId());
         arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
         return false;
     }
 
     private KafkaAktivitetMelding mapTilKafkaAktivitetMelding(UtdanningsAktivitetInnhold melding, AktorId aktorId) {
-        if(melding == null || aktorId == null){
+        if (melding == null || aktorId == null) {
             return null;
         }
         KafkaAktivitetMelding kafkaAktivitetMelding = new KafkaAktivitetMelding();

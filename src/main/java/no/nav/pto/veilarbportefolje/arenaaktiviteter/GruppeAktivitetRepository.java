@@ -142,7 +142,7 @@ public class GruppeAktivitetRepository {
     private GruppeAktivitetSchedueldDTO mapTilDto(ResultSet rs) {
         boolean aktiv = "J".equals(rs.getString(AKTIV));
         return new GruppeAktivitetSchedueldDTO()
-                .setVeiledningdeltakerId(rs.getInt(VEILEDNINGDELTAKER_ID))
+                .setVeiledningdeltakerId(rs.getLong(VEILEDNINGDELTAKER_ID))
                 .setAktivitetperiodeFra(rs.getTimestamp(MOTEPLAN_STARTDATO))
                 .setAktivitetperiodeTil(rs.getTimestamp(MOTEPLAN_SLUTTDATO))
                 .setMoteplanId(rs.getInt(MOTEPLAN_ID))
@@ -155,7 +155,7 @@ public class GruppeAktivitetRepository {
     private GruppeAktivitetSchedueldDTO mapTilDto(Map<String, Object> rs) {
         boolean aktiv = "J".equals(rs.get(AKTIV));
         return new GruppeAktivitetSchedueldDTO()
-                .setVeiledningdeltakerId((Integer) rs.get(VEILEDNINGDELTAKER_ID))
+                .setVeiledningdeltakerId((Long) rs.get(VEILEDNINGDELTAKER_ID))
                 .setAktivitetperiodeFra((Timestamp) rs.get(MOTEPLAN_STARTDATO))
                 .setAktivitetperiodeTil((Timestamp) rs.get(MOTEPLAN_SLUTTDATO))
                 .setMoteplanId((Integer) rs.get(MOTEPLAN_ID))
