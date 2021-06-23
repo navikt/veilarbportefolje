@@ -2,9 +2,9 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonUtils;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
@@ -60,7 +60,7 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
         arbeidslisteService.slettArbeidsliste(aktoerId);
         arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);// TODO: slett denne linjen når vi kun bruker postgres
         sisteEndringService.slettSisteEndringer(aktoerId);
-        cvRepository.slettCVData(aktoerId);
+        cvRepository.resetHarDeltCV(aktoerId);
 
         elasticServiceV2.slettDokumenter(List.of(aktoerId));
     }
