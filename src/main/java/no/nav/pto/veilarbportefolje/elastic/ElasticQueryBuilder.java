@@ -86,9 +86,11 @@ public class ElasticQueryBuilder {
                 MatchQueryBuilder cvEksistere = matchQuery("cv_eksistere", true);
                 queryBuilder.must(harDeltCV).must(cvEksistere);
             } else {
-                MatchQueryBuilder harDeltCV = matchQuery("har_delt_cv", false);
-                MatchQueryBuilder cvEksistere = matchQuery("cv_eksistere", false);
-                queryBuilder.should(harDeltCV).should(cvEksistere);
+                BoolQueryBuilder orQuery = QueryBuilders.boolQuery();
+                orQuery.should(matchQuery("har_delt_cv", false));
+                orQuery.should(matchQuery("cv_eksistere", false));
+                orQuery.minimumShouldMatch(1);
+                queryBuilder.must(orQuery);
             }
         }
 
