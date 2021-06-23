@@ -15,10 +15,17 @@ public class FeatureToggle {
 
     public static final String FIKS_NY_FOR_VEILEDER = "veilarbportefolje.fiks_ny_for_veileder";
 
+    public static final String CV_EKSISTERE_PRODSETTE = "veilarbportefolje.cv_eksistere";
+
     public static boolean erPostgresPa(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.POSTGRES);
     }
+
     public static boolean erNyForVeilederFixPa(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.FIKS_NY_FOR_VEILEDER);
+    }
+
+    public static boolean erCvEksistereIProd(UnleashService unleashService) {
+        return unleashService.isEnabled(CV_EKSISTERE_PRODSETTE);
     }
 }
