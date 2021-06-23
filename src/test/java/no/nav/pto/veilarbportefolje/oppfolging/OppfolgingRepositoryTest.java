@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.junit.Before;
@@ -13,6 +14,7 @@ import javax.sql.DataSource;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository.safeToJaNei;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class OppfolgingRepositoryTest {
 
@@ -23,7 +25,7 @@ public class OppfolgingRepositoryTest {
     public void setup() {
         DataSource ds = setupInMemoryDatabase();
         db = new JdbcTemplate(ds);
-        oppfolgingRepository = new OppfolgingRepository(db);
+        oppfolgingRepository = new OppfolgingRepository(db, mock(UnleashService.class));
     }
 
     @Test
