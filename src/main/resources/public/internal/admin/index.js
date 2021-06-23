@@ -131,6 +131,20 @@ function handleRewindNyForVeiledere(e) {
     }
 }
 
+const cvEksistereForm = document.getElementById('cvEksistere');
+cvEksistereForm.addEventListener('submit', handleRewindCVEksistere);
+
+function handleRewindCVEksistere(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil lese inn alle kafka meldinger fra topiken fra starten av.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/rewind/cv-eksisterer',
+            {method: 'POST', credentials: 'same-origin'},
+            'cvEksistereResponse'
+        );
+    }
+}
+
 const tilordnetVeileder = document.getElementById('tilordnetVeileder');
 tilordnetVeileder.addEventListener('submit', handleRewindTilordnetVeileder);
 
