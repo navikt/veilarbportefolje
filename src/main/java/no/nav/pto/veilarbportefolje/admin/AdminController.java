@@ -99,6 +99,7 @@ public class AdminController {
         return "Innlastning av oppfolgingsdata har startet";
     }
 
+
     @PostMapping("/rewind/cv-eksisterer")
     public String rewindCVEksistere() {
         authorizeAdmin();
