@@ -31,9 +31,9 @@ import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsume
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
     public final static String CV_TOPIC = "teampam.samtykke-status-1";
-    public final static String TILTAK_TOPIC = "aapen-arena-tiltaksaktivitetendret-v1-q1";
-    public final static String UTDANNINGS_AKTIVITET_TOPIC = "aapen-arena-utdanningsaktivitetendret-v1-q1";
-    public final static String GRUPPE_AKTIVITET_TOPIC = "aapen-arena-gruppeaktivitetendret-v1-q1";
+    public final static String TILTAK_TOPIC = "teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-q1";
+    public final static String UTDANNINGS_AKTIVITET_TOPIC = "teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-q1";
+    public final static String GRUPPE_AKTIVITET_TOPIC = "teamarenanais.aapen-arena-gruppeaktivitetendret-v1-q1";
 
     private final KafkaConsumerClient consumerClient;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
