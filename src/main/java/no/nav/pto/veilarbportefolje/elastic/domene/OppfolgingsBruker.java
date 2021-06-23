@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.elastic.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 
 import static java.util.Collections.emptySet;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
@@ -28,6 +28,7 @@ public class OppfolgingsBruker {
     String sikkerhetstiltak;
     String diskresjonskode;
     boolean har_delt_cv;
+    boolean cv_eksistere;
     boolean egen_ansatt;
     boolean er_doed;
     String doed_fra_dato;

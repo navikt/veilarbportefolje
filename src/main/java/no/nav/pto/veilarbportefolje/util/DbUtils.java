@@ -1,11 +1,11 @@
 package no.nav.pto.veilarbportefolje.util;
 
 import com.zaxxer.hikari.HikariConfig;
-import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
+import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil;
 import org.apache.commons.lang3.text.WordUtils;
 
 import javax.sql.DataSource;
@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.CV_EKSISTERE;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
@@ -54,8 +55,8 @@ public class DbUtils {
     }
 
     /***
-    Oracle
-    ***/
+     Oracle
+     ***/
 
     @SneakyThrows
     public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
@@ -120,6 +121,7 @@ public class DbUtils {
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus))
                 .setProfilering_resultat(rs.getString("profilering_resultat"))
                 .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
+                .setCv_eksistere(parseJaNei(rs.getString(CV_EKSISTERE), CV_EKSISTERE))
                 .setUtdanning(rs.getString("UTDANNING"))
                 .setUtdanning_bestatt(rs.getString("UTDANNING_BESTATT"))
                 .setUtdanning_godkjent(rs.getString("UTDANNING_GODKJENT"));

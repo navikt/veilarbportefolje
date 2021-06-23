@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
@@ -80,9 +81,19 @@ public class ElasticQueryBuilder {
         }
 
         if (filtervalg.harCvFilter()) {
-            queryBuilder.filter(matchQuery("har_delt_cv", filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)));
+            if (filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)) {
+                MatchQueryBuilder harDeltCV = matchQuery("har_delt_cv", true);
+                MatchQueryBuilder cvEksistere = matchQuery("cv_eksistere", true);
+                queryBuilder.must(harDeltCV).must(cvEksistere);
+            } else {
+                BoolQueryBuilder orQuery = QueryBuilders.boolQuery();
+                orQuery.should(matchQuery("har_delt_cv", false));
+                orQuery.should(matchQuery("cv_eksistere", false));
+                orQuery.minimumShouldMatch(1);
+                queryBuilder.must(orQuery);
+            }
         }
-        
+
 
         if (filtervalg.harAktivitetFilter()) {
             byggAktivitetFilterQuery(filtervalg, queryBuilder);
