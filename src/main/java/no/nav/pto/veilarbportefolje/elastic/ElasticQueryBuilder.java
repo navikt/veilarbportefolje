@@ -95,7 +95,6 @@ public class ElasticQueryBuilder {
                 orQuery.should(matchQuery("har_delt_cv", false));
                 if (FeatureToggle.erCvEksistereIProd(unleashService)) {
                     orQuery.should(matchQuery("cv_eksistere", false));
-                    orQuery.minimumShouldMatch(1);
                 }
                 queryBuilder.must(orQuery);
             }
