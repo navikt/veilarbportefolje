@@ -83,20 +83,18 @@ public class ElasticQueryBuilder {
         }
 
         if (filtervalg.harCvFilter()) {
-            if (filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)) {
-                MatchQueryBuilder harDeltCV = matchQuery("har_delt_cv", true);
-                queryBuilder.must(harDeltCV);
-                if (FeatureToggle.erCvEksistereIProd(unleashService)) {
-                    MatchQueryBuilder cvEksistere = matchQuery("cv_eksistere", true);
-                    queryBuilder.must(cvEksistere);
+            if (FeatureToggle.erCvEksistereIProd(unleashService)) {
+                if (filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)) {
+                    queryBuilder.must(matchQuery("har_delt_cv", true));
+                    queryBuilder.must(matchQuery("cv_eksistere", true));
+                } else {
+                    BoolQueryBuilder orQuery = QueryBuilders.boolQuery();
+                    orQuery.should(matchQuery("har_delt_cv", false));
+                    orQuery.should(matchQuery("cv_eksistere", false));
+                    queryBuilder.must(orQuery);
                 }
             } else {
-                BoolQueryBuilder orQuery = QueryBuilders.boolQuery();
-                orQuery.should(matchQuery("har_delt_cv", false));
-                if (FeatureToggle.erCvEksistereIProd(unleashService)) {
-                    orQuery.should(matchQuery("cv_eksistere", false));
-                }
-                queryBuilder.must(orQuery);
+                queryBuilder.filter(matchQuery("har_delt_cv", filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)));
             }
         }
 
