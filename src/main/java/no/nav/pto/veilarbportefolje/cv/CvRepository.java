@@ -56,9 +56,9 @@ public class CvRepository {
     }
 
     public void resetHarDeltCV(AktorId aktoerId) {
-        SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
-                .set(HAR_DELT_CV, 'N')
-                .where(WhereClause.equals(AKTOERID, aktoerId.get()))
+        SqlUtils.update(jdbcTemplate, TABLE_NAME)
+                .set(HAR_DELT_CV, false)
+                .whereEquals(AKTOERID, aktoerId.get())
                 .execute();
     }
 
