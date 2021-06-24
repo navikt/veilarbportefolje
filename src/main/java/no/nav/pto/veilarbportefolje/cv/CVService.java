@@ -37,6 +37,9 @@ public class CVService implements KafkaConsumerService<Melding> {
         AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
 
         boolean cvEksisterer = cvEksistere(kafkaMelding);
+        if (erPostgresPa(unleashService)) {
+            cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
+        }
         cvRepository.upsertCvEksistere(aktoerId, cvEksisterer);
         elasticServiceV2.updateCvEksistere(aktoerId, cvEksisterer);
     }
@@ -62,7 +65,7 @@ public class CVService implements KafkaConsumerService<Melding> {
         }
 
         if (erPostgresPa(unleashService)) {
-            cvRepositoryV2.upsert(aktoerId, harDeltCv);
+            cvRepositoryV2.upsertHarDeltCv(aktoerId, harDeltCv);
         }
         cvRepository.upsertHarDeltCv(aktoerId, harDeltCv);
         elasticServiceV2.updateHarDeltCv(aktoerId, harDeltCv);

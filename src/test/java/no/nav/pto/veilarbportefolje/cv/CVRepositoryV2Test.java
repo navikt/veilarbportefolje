@@ -20,23 +20,35 @@ public class CVRepositoryV2Test {
     }
 
     @Test
-    public void skal_upserte_database() {
+    public void skal_teste_om_bruker_har_delt_CV_i_database() {
         AktorId aktoerId = AktorId.of("0");
 
-        cvRepositoryV2.upsert(aktoerId, true);
+        cvRepositoryV2.upsertHarDeltCv(aktoerId, true);
         assertThat(cvRepositoryV2.harDeltCv(aktoerId).get()).isTrue();
 
-        cvRepositoryV2.upsert(aktoerId, false);
+        cvRepositoryV2.upsertHarDeltCv(aktoerId, false);
         assertThat(cvRepositoryV2.harDeltCv(aktoerId).get()).isFalse();
     }
 
     @Test
-    public void skal_slette_CV_for_aktoer() {
+    public void skal_teste_om_bruker_CV_eksisterer_i_database() {
+        AktorId aktoerId = AktorId.of("0");
+
+        cvRepositoryV2.upsertCVEksisterer(aktoerId, true);
+        assertThat(cvRepositoryV2.cvEksisterer(aktoerId).get()).isTrue();
+
+        cvRepositoryV2.upsertCVEksisterer(aktoerId, false);
+        assertThat(cvRepositoryV2.cvEksisterer(aktoerId).get()).isFalse();
+    }
+
+
+    @Test
+    public void skal_resette_CV_for_aktoer() {
         AktorId aktoerId = AktorId.of("1");
-        cvRepositoryV2.upsert(aktoerId, true);
+        cvRepositoryV2.upsertHarDeltCv(aktoerId, true);
         assertThat(cvRepositoryV2.harDeltCv(aktoerId).get()).isTrue();
 
-        cvRepositoryV2.slettCVData(aktoerId);
-        assertThat(cvRepositoryV2.harDeltCv(aktoerId).isEmpty());
+        cvRepositoryV2.resetHarDeltCV(aktoerId);
+        assertThat(cvRepositoryV2.harDeltCv(aktoerId).get()).isFalse();
     }
 }

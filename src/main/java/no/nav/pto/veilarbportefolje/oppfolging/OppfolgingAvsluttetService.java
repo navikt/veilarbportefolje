@@ -67,7 +67,7 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
         sisteEndringService.slettSisteEndringer(aktoerId);
         cvRepository.resetHarDeltCV(aktoerId);
         if (erPostgresPa(unleashService)) {
-            cvRepositoryV2.slettCVData(aktoerId);
+            cvRepositoryV2.resetHarDeltCV(aktoerId);
         }
         elasticServiceV2.slettDokumenter(List.of(aktoerId));
     }
