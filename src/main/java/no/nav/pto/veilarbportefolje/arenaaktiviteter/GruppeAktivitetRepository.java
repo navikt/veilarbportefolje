@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
@@ -154,12 +155,13 @@ public class GruppeAktivitetRepository {
     @SneakyThrows
     private GruppeAktivitetSchedueldDTO mapTilDto(Map<String, Object> rs) {
         boolean aktiv = "J".equals(rs.get(AKTIV));
+        long hendelse = (rs.get(HENDELSE_ID) instanceof BigDecimal) ? ((BigDecimal) rs.get(HENDELSE_ID)).longValue() :(Integer) rs.get(HENDELSE_ID);
         return new GruppeAktivitetSchedueldDTO()
                 .setVeiledningdeltakerId((String) rs.get(VEILEDNINGDELTAKER_ID))
                 .setMoteplanId((String) rs.get(MOTEPLAN_ID))
                 .setAktivitetperiodeFra((Timestamp) rs.get(MOTEPLAN_STARTDATO))
                 .setAktivitetperiodeTil((Timestamp) rs.get(MOTEPLAN_SLUTTDATO))
-                .setHendelseId((Integer) rs.get(HENDELSE_ID))
+                .setHendelseId(hendelse)
                 .setAktorId(AktorId.of(AKTOERID))
                 .setAktiv(aktiv);
     }
