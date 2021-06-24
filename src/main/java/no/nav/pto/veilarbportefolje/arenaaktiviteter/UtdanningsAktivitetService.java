@@ -47,8 +47,9 @@ public class UtdanningsAktivitetService {
             log.info("Lagrer aktivitet: {}", innhold.getAktivitetid());
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
             aktivitetService.upsertOgIndekserAktiviteter(melding);
-            log.debug("Skal ha lagret aktivitet: {}, pa aktor: {}, hendelse: {}", melding.getAktivitetId(), melding.getAktorId(), innhold.getHendelseId());
         }
+        log.debug("Ferdig behandlet aktivitet: {}, pa aktor: {}, hendelse: {}", innhold.getAktivitetid(), aktorId, innhold.getHendelseId());
+        arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
     }
 
     static boolean skalSletteUtdanningsAktivitet(UtdanningsAktivitetInnhold utdanningsInnhold) {
@@ -67,7 +68,6 @@ public class UtdanningsAktivitetService {
             return true;
         }
         log.info("Fikk ny hendelse: {}", innhold.getHendelseId());
-        arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
         return false;
     }
 

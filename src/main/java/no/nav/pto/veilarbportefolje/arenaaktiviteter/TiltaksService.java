@@ -49,6 +49,7 @@ public class TiltaksService {
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
             aktivitetService.upsertOgIndekserAktiviteter(melding);
         }
+        arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
     }
 
     /**
@@ -61,7 +62,6 @@ public class TiltaksService {
             log.info("Fikk tilsendt gammel tiltaks-melding");
             return true;
         }
-        arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
         return false;
     }
 
