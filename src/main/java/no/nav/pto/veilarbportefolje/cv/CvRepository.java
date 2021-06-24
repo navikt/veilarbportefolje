@@ -55,9 +55,10 @@ public class CvRepository {
                 .execute();
     }
 
-    public void slettCVData(AktorId aktoerId) {
-        SqlUtils.delete(jdbcTemplate, TABLE_NAME)
-                .where(WhereClause.equals(AKTOERID, aktoerId.get()))
+    public void resetHarDeltCV(AktorId aktoerId) {
+        SqlUtils.update(jdbcTemplate, TABLE_NAME)
+                .set(HAR_DELT_CV, false)
+                .whereEquals(AKTOERID, aktoerId.get())
                 .execute();
     }
 
