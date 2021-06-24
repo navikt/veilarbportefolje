@@ -9,8 +9,8 @@ import java.sql.Timestamp;
 @Data
 @Accessors(chain = true)
 public class GruppeAktivitetSchedueldDTO {
-    Long veiledningdeltakerId;
-    int moteplanId;
+    String veiledningdeltakerId;
+    String moteplanId;
 
     AktorId aktorId;
     Timestamp aktivitetperiodeFra;

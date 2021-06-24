@@ -9,10 +9,10 @@ import java.time.LocalDate;
 @Data
 @Accessors(chain = true)
 public class GruppeAktivitetInnhold implements ArenaInnholdKafka {
-    @JsonAlias("VEILEDNINGDELTAKER_ID") int veiledningdeltakerId;
-    @JsonAlias("MOTEPLAN_ID") int moteplanId;
+    @JsonAlias("VEILEDNINGDELTAKER_ID") String veiledningdeltakerId;
+    @JsonAlias("MOTEPLAN_ID") String moteplanId;
 
-    @JsonAlias("AKTIVITET_ID") long aktivitetIdNr;
+    @JsonAlias("AKTIVITET_ID") String aktivitetIdNr;
     @JsonAlias("VEILEDNINGAKTIVITET_ID") int veiledningAktivitetId;
     @JsonAlias("AKTIVITETID") String aktivitetid;
 

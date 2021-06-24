@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class TiltakInnhold implements ArenaInnholdKafka {
-    @JsonAlias("TILTAKDELTAKER_ID") long aktivitetIdNr;
+    @JsonAlias("TILTAKDELTAKER_ID") String aktivitetIdNr;
     @JsonAlias("AKTIVITETID") String aktivitetid;
 
     @JsonAlias("TILTAKSTYPE") String tiltakstype;

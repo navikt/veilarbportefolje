@@ -60,7 +60,7 @@ public class GruppeAktivitetRepository {
      * Setter aktivitet til inaktiv kun hvis aktiviteten er utgatt.
      * Implementert til aa forhindre race condition mellom daglig jobb og kafka.
      */
-    public int oppdaterUtgattAktivStatus(long moteplanId, long veiledningdeltakerId, AktorId aktorId, PersonId personId) {
+    public int oppdaterUtgattAktivStatus(String moteplanId, String veiledningdeltakerId, AktorId aktorId, PersonId personId) {
         String updateSql = String.format(
                 "UPDATE %s SET %s = 'N' WHERE %s = ? AND %s = ? AND %s < CURRENT_TIMESTAMP",
                 TABLE_NAME, AKTIV, MOTEPLAN_ID, VEILEDNINGDELTAKER_ID, MOTEPLAN_SLUTTDATO
@@ -85,7 +85,7 @@ public class GruppeAktivitetRepository {
         );
     }
 
-    public Optional<GruppeAktivitetSchedueldDTO> hentAktivtet(long moteplanId, long veiledningdeltakerId) {
+    public Optional<GruppeAktivitetSchedueldDTO> hentAktivtet(String moteplanId, String veiledningdeltakerId) {
         return Optional.ofNullable(
                 SqlUtils.select(db, TABLE_NAME, this::mapTilDto)
                         .column("*")
@@ -106,7 +106,7 @@ public class GruppeAktivitetRepository {
     }
 
     private void utledOgLagreGruppeaktiviteter(PersonId personId, AktorId aktorId) {
-        List<GruppeAktivitetSchedueldDTO> gruppeAktiviteter = hentAktiveAktivteter();
+        List<GruppeAktivitetSchedueldDTO> gruppeAktiviteter = hentAktiveAktivteter(aktorId);
         Timestamp nesteStart = gruppeAktiviteter.stream()
                 .filter(GruppeAktivitetSchedueldDTO::isAktiv)
                 .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeFra)
@@ -114,11 +114,11 @@ public class GruppeAktivitetRepository {
                 .orElse(null);
         Timestamp nesteUtlopsdato = gruppeAktiviteter.stream()
                 .filter(GruppeAktivitetSchedueldDTO::isAktiv)
-                .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeFra)
+                .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeTil)
                 .max(Comparator.naturalOrder())
                 .orElse(null);
 
-        boolean aktiv = (nesteStart != null && nesteUtlopsdato !=null);
+        boolean aktiv = (nesteStart != null && nesteUtlopsdato != null);
         AktivitetStatus aktivitetStatus = new AktivitetStatus()
                 .setAktivitetType(AktivitetTyper.gruppeaktivitet.name())
                 .setAktiv(aktiv)
@@ -129,10 +129,10 @@ public class GruppeAktivitetRepository {
         aktivitetDAO.upsertAktivitetStatus(aktivitetStatus);
     }
 
-    private List<GruppeAktivitetSchedueldDTO> hentAktiveAktivteter() {
+    private List<GruppeAktivitetSchedueldDTO> hentAktiveAktivteter(AktorId aktorId) {
         String sql = "SELECT * FROM " + TABLE_NAME
-                + " WHERE " + AKTIV + " = 'J'";
-        return db.queryForList(sql)
+                + " WHERE " + AKTIV + " = 'J' AND " + AKTOERID + " = ?";
+        return db.queryForList(sql, aktorId.get())
                 .stream()
                 .map(this::mapTilDto)
                 .collect(toList());
@@ -142,10 +142,10 @@ public class GruppeAktivitetRepository {
     private GruppeAktivitetSchedueldDTO mapTilDto(ResultSet rs) {
         boolean aktiv = "J".equals(rs.getString(AKTIV));
         return new GruppeAktivitetSchedueldDTO()
-                .setVeiledningdeltakerId(rs.getLong(VEILEDNINGDELTAKER_ID))
+                .setVeiledningdeltakerId(rs.getString(VEILEDNINGDELTAKER_ID))
                 .setAktivitetperiodeFra(rs.getTimestamp(MOTEPLAN_STARTDATO))
                 .setAktivitetperiodeTil(rs.getTimestamp(MOTEPLAN_SLUTTDATO))
-                .setMoteplanId(rs.getInt(MOTEPLAN_ID))
+                .setMoteplanId(rs.getString(MOTEPLAN_ID))
                 .setHendelseId(rs.getLong(HENDELSE_ID))
                 .setAktorId(AktorId.of(AKTOERID))
                 .setAktiv(aktiv);
@@ -155,10 +155,10 @@ public class GruppeAktivitetRepository {
     private GruppeAktivitetSchedueldDTO mapTilDto(Map<String, Object> rs) {
         boolean aktiv = "J".equals(rs.get(AKTIV));
         return new GruppeAktivitetSchedueldDTO()
-                .setVeiledningdeltakerId((Long) rs.get(VEILEDNINGDELTAKER_ID))
+                .setVeiledningdeltakerId((String) rs.get(VEILEDNINGDELTAKER_ID))
+                .setMoteplanId((String) rs.get(MOTEPLAN_ID))
                 .setAktivitetperiodeFra((Timestamp) rs.get(MOTEPLAN_STARTDATO))
                 .setAktivitetperiodeTil((Timestamp) rs.get(MOTEPLAN_SLUTTDATO))
-                .setMoteplanId((Integer) rs.get(MOTEPLAN_ID))
                 .setHendelseId((Integer) rs.get(HENDELSE_ID))
                 .setAktorId(AktorId.of(AKTOERID))
                 .setAktiv(aktiv);

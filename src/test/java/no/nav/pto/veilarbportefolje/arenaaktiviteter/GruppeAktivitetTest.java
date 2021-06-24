@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +29,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class GruppeAktivitetTest {
     private final GruppeAktivitetService gruppeAktivitetService;
     private final JdbcTemplate jdbcTemplate;
-    private final UnleashService unleashService;
     private final AktivitetDAO aktivitetDAO;
 
     private final AktorId aktorId = AktorId.of("1000123");
@@ -40,9 +38,8 @@ public class GruppeAktivitetTest {
     private final PersonId personId = PersonId.of("123");
 
     @Autowired
-    public GruppeAktivitetTest(BrukerService brukerService, AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, UnleashService unleashService, GruppeAktivitetRepository gruppeAktivitetRepository) {
+    public GruppeAktivitetTest(BrukerService brukerService, AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, GruppeAktivitetRepository gruppeAktivitetRepository) {
         this.jdbcTemplate = jdbcTemplate;
-        this.unleashService = unleashService;
         this.aktivitetDAO = aktivitetDAO;
 
         AktorClient aktorClient = Mockito.mock(AktorClient.class);
@@ -86,6 +83,8 @@ public class GruppeAktivitetTest {
     private GruppeAktivitetDTO getInsertDTO() {
         GruppeAktivitetDTO utdanningsAktivitet = new GruppeAktivitetDTO()
                 .setAfter(new GruppeAktivitetInnhold()
+                        .setVeiledningdeltakerId("1")
+                        .setMoteplanId("1")
                         .setFnr(fnr.get())
                         .setPersonId(personId.toInteger())
                         .setHendelseId(1)
@@ -101,6 +100,8 @@ public class GruppeAktivitetTest {
     private GruppeAktivitetDTO getDeleteDTO() {
         GruppeAktivitetDTO gruppeAktivitet = new GruppeAktivitetDTO()
                 .setBefore(new GruppeAktivitetInnhold()
+                        .setVeiledningdeltakerId("1")
+                        .setMoteplanId("1")
                         .setFnr(fnr.get())
                         .setPersonId(personId.toInteger())
                         .setHendelseId(1)
