@@ -107,4 +107,16 @@ public class Table {
         public static final String ANSVARLIG_VEILEDER_NAVN = "ANSVARLIG_VEILEDER_NAVN";
     }
 
+    public static final class GRUPPE_AKTIVITER {
+        public static final String TABLE_NAME = "GRUPPE_AKTIVITER";
+        public static final String MOTEPLAN_ID = "MOTEPLAN_ID";
+        public static final String VEILEDNINGDELTAKER_ID = "VEILEDNINGDELTAKER_ID";
+
+        public static final String AKTOERID = "AKTOERID";
+        public static final String MOTEPLAN_STARTDATO = "MOTEPLAN_STARTDATO";
+        public static final String MOTEPLAN_SLUTTDATO = "MOTEPLAN_SLUTTDATO";
+        public static final String HENDELSE_ID = "HENDELSE_ID";
+        public static final String AKTIV = "AKTIV";
+    }
+
 }

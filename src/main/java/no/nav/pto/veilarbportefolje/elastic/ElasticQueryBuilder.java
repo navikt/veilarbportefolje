@@ -1,10 +1,12 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -42,7 +44,7 @@ import static org.elasticsearch.search.sort.SortMode.MIN;
 
 public class ElasticQueryBuilder {
 
-    static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg) {
+    static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg, UnleashService unleashService) {
 
         if (!filtervalg.alder.isEmpty()) {
             BoolQueryBuilder subQuery = boolQuery();
@@ -81,16 +83,18 @@ public class ElasticQueryBuilder {
         }
 
         if (filtervalg.harCvFilter()) {
-            if (filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)) {
-                MatchQueryBuilder harDeltCV = matchQuery("har_delt_cv", true);
-                MatchQueryBuilder cvEksistere = matchQuery("cv_eksistere", true);
-                queryBuilder.must(harDeltCV).must(cvEksistere);
+            if (FeatureToggle.erCvEksistereIProd(unleashService)) {
+                if (filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)) {
+                    queryBuilder.must(matchQuery("har_delt_cv", true));
+                    queryBuilder.must(matchQuery("cv_eksistere", true));
+                } else {
+                    BoolQueryBuilder orQuery = QueryBuilders.boolQuery();
+                    orQuery.should(matchQuery("har_delt_cv", false));
+                    orQuery.should(matchQuery("cv_eksistere", false));
+                    queryBuilder.must(orQuery);
+                }
             } else {
-                BoolQueryBuilder orQuery = QueryBuilders.boolQuery();
-                orQuery.should(matchQuery("har_delt_cv", false));
-                orQuery.should(matchQuery("cv_eksistere", false));
-                orQuery.minimumShouldMatch(1);
-                queryBuilder.must(orQuery);
+                queryBuilder.filter(matchQuery("har_delt_cv", filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)));
             }
         }
 

@@ -127,6 +127,12 @@ public class PostgresTable {
         public static final String ENDRET_TIDSPUNKT = "ENDRET_TIDSPUNKT";
     }
 
+    public static final class LEST_ARENA_HENDELSE {
+        public static final String TABLE_NAME = "LEST_ARENA_HENDELSE";
+        public static final String ID = "ID";
+        public static final String HENDELSE_ID = "HENDELSE_ID";
+    }
+
     public static final class BRUKER_PROFILERING {
         public static final String TABLE_NAME = "BRUKER_PROFILERING";
 
@@ -135,26 +141,11 @@ public class PostgresTable {
         public static final String PROFILERING_TIDSPUNKT = "PROFILERING_TIDSPUNKT";
     }
 
-
     public static final class BRUKER_CV {
         public static final String TABLE_NAME = "BRUKER_CV";
 
         public static final String AKTOERID = "AKTOERID";
         public static final String HAR_DELT_CV = "HAR_DELT_CV";
         public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
-    }
-
-    public static String safeNull(Object o) {
-        if (o == null) {
-            return "NULL";
-        }
-        return "'" + o.toString() + "'";
-    }
-
-    public static String safeBool(Object o) {
-        if (o == null) {
-            return "false";
-        }
-        return "'" + o.toString() + "'";
     }
 }
