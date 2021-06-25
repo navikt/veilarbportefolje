@@ -156,7 +156,7 @@ public class PostgresQueryBuilder {
         whereStatement.add(orStatement.toString());
     }
 
-    private void alderFilter(String alder, StringJoiner orStatement){
+    private void alderFilter(String alder, StringJoiner orStatement) {
         LocalDate today = LocalDate.now();
         String[] fraTilAlder = alder.split("-");
         int fraAlder = parseInt(fraTilAlder[0]);
@@ -164,17 +164,18 @@ public class PostgresQueryBuilder {
 
         LocalDate nyesteFodselsdag = today.minusYears(fraAlder);
         LocalDate eldsteFodselsDag = today.minusYears(tilAlder + 1).plusDays(1);
-        orStatement.add("("+FODSELS_DATO + " >= '" + eldsteFodselsDag.toString() + "'::date AND "+FODSELS_DATO + " <= '" + nyesteFodselsdag.toString() + "'::date"+")");
+        orStatement.add("(" + FODSELS_DATO + " >= '" + eldsteFodselsDag.toString() + "'::date AND " + FODSELS_DATO + " <= '" + nyesteFodselsdag.toString() + "'::date" + ")");
     }
 
     public void harDeltCvFilter() {
         brukKunEssensiellInfo = false;
         whereStatement.add(HAR_DELT_CV + " = TRUE");
+        whereStatement.add(CV_EKSISTERER + " = TRUE");
     }
 
     public void harIkkeDeltCvFilter() {
         brukKunEssensiellInfo = false;
-        whereStatement.add(HAR_DELT_CV + " = FALSE");
+        whereStatement.add("NOT (" + HAR_DELT_CV + " = TRUE AND " + CV_EKSISTERER + " = TRUE)");
     }
 
     @SneakyThrows

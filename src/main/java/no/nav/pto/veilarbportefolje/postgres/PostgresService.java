@@ -83,7 +83,6 @@ public class PostgresService {
         }
 
         if (filtervalg.harCvFilter()) {
-            //TODO: Legg til sjekk for CV_EKSISTERER
             if(filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)){
                 query.harDeltCvFilter();
             } else if(filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_IKKE_DELT_CV)) {

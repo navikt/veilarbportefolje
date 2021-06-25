@@ -34,6 +34,7 @@ public class PostgresTable {
         public static final String VEDTAKSTATUS_ENDRET_TIDSPUNKT = "VEDTAKSTATUS_ENDRET_TIDSPUNKT";
         public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
         public static final String HAR_DELT_CV = "HAR_DELT_CV";
+        public static final String CV_EKSISTERER = "CV_EKSISTERER";
 
         public static final String ARB_SIST_ENDRET_AV_VEILEDERIDENT = "ARB_SIST_ENDRET_AV_VEILEDERIDENT";
         public static final String ARB_ENDRINGSTIDSPUNKT = "ARB_ENDRINGSTIDSPUNKT";

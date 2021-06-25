@@ -1,8 +1,8 @@
 CREATE TABLE BRUKER_CV
 (
     AKTOERID              VARCHAR(20) NOT NULL,
-    HAR_DELT_CV           boolean DEFAULT false,
-    CV_EKSISTERER         boolean DEFAULT false,
+    HAR_DELT_CV           boolean DEFAULT false NOT NULL,
+    CV_EKSISTERER         boolean DEFAULT false NOT NULL,
     SISTE_MELDING_MOTTATT TIMESTAMP,
 
     PRIMARY KEY (AKTOERID)
