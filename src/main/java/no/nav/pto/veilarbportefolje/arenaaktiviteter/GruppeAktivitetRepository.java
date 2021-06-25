@@ -54,7 +54,6 @@ public class GruppeAktivitetRepository {
                         WhereClause.equals(MOTEPLAN_ID, gruppeAktivitet.getMoteplanId())
                                 .and(WhereClause.equals(VEILEDNINGDELTAKER_ID, gruppeAktivitet.getVeiledningdeltakerId()))
                 ).execute();
-        utledOgLagreGruppeaktiviteter(PersonId.of(String.valueOf(gruppeAktivitet.getPersonId())), aktorId);
     }
 
     /**
@@ -106,7 +105,7 @@ public class GruppeAktivitetRepository {
                 .collect(toList());
     }
 
-    private void utledOgLagreGruppeaktiviteter(PersonId personId, AktorId aktorId) {
+    public void utledOgLagreGruppeaktiviteter(PersonId personId, AktorId aktorId) {
         List<GruppeAktivitetSchedueldDTO> gruppeAktiviteter = hentAktiveAktivteter(aktorId);
         Timestamp nesteStart = gruppeAktiviteter.stream()
                 .filter(GruppeAktivitetSchedueldDTO::isAktiv)
