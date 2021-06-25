@@ -152,7 +152,6 @@ public class PostgresTable {
 
         public static final String AKTOERID = "AKTOERID";
         public static final String BRUKERS_SITUASJON = "BRUKERS_SITUASJON";
-        public static final String KAFKA_MELDING_MOTTATT = "KAFKA_MELDING_MOTTATT";
         public static final String REGISTRERING_OPPRETTET = "REGISTRERING_OPPRETTET";
         public static final String UTDANNING = "UTDANNING";
         public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";

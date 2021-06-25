@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
@@ -8,7 +10,6 @@ import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -18,7 +19,6 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
-import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
@@ -26,14 +26,11 @@ import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class RegistreringRepositoryV2 {
+    @NonNull
+    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
-
-    @Autowired
-    public RegistreringRepositoryV2(@Qualifier("PostgresJdbc") JdbcTemplate db) {
-        this.db = db;
-    }
-
 
     public int upsertBrukerRegistrering(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
         Timestamp registreringOpprettetTimestamp = ofNullable(kafkaRegistreringMelding.getRegistreringOpprettet())
@@ -44,29 +41,25 @@ public class RegistreringRepositoryV2 {
                         " ("
                         + AKTOERID + ", "
                         + BRUKERS_SITUASJON + ", "
-                        + KAFKA_MELDING_MOTTATT + ", "
                         + REGISTRERING_OPPRETTET + ", "
                         + UTDANNING + ", "
                         + UTDANNING_BESTATT + ", "
                         + UTDANNING_GODKJENT + ") " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                        "VALUES (?, ?, ?, ?, ?, ?) " +
                         "ON CONFLICT (" + AKTOERID + ") " +
                         "DO UPDATE SET ("
                         + BRUKERS_SITUASJON + ", "
-                        + KAFKA_MELDING_MOTTATT + ", "
                         + REGISTRERING_OPPRETTET + ", "
                         + UTDANNING + ", "
                         + UTDANNING_BESTATT + ", "
-                        + UTDANNING_GODKJENT + ") = (?, ?, ?, ?, ?, ?)",
+                        + UTDANNING_GODKJENT + ") = (?, ?, ?, ?, ?)",
                 kafkaRegistreringMelding.getAktorid(),
                 kafkaRegistreringMelding.getBrukersSituasjon(),
-                Timestamp.from(now()),
                 registreringOpprettetTimestamp,
                 kafkaRegistreringMelding.getUtdanning().toString(),
                 kafkaRegistreringMelding.getUtdanningBestatt().toString(),
                 kafkaRegistreringMelding.getUtdanningGodkjent().toString(),
                 kafkaRegistreringMelding.getBrukersSituasjon(),
-                Timestamp.from(now()),
                 registreringOpprettetTimestamp,
                 kafkaRegistreringMelding.getUtdanning().toString(),
                 kafkaRegistreringMelding.getUtdanningBestatt().toString(),
