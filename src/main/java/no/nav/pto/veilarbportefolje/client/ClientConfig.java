@@ -17,6 +17,7 @@ import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -42,6 +43,19 @@ public class ClientConfig {
         );
 
 
+        return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient), new CachedAktorOppslagClient(aktorregisterClient), unleashService);
+    }
+
+    @Bean("systemClient")
+    public AktorClient aktorClientSystem(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider, UnleashService unleashService) {
+        AktorOppslagClient aktorOppslagClient = new PdlAktorOppslagClient(
+                createServiceUrl("pdl-api", "default", false),
+                systemUserTokenProvider::getSystemUserToken,
+                systemUserTokenProvider::getSystemUserToken
+        );
+        AktorregisterClient aktorregisterClient = new AktorregisterHttpClient(
+                properties.getAktorregisterUrl(), APPLICATION_NAME, systemUserTokenProvider::getSystemUserToken
+        );
         return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient), new CachedAktorOppslagClient(aktorregisterClient), unleashService);
     }
 
