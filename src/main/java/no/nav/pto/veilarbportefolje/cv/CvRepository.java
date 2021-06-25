@@ -21,10 +21,19 @@ public class CvRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void upsert(AktorId aktoerId, boolean harDeltCv) {
+    public void upsertHarDeltCv(AktorId aktoerId, boolean harDeltCv) {
         SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
                 .set(AKTOERID, aktoerId.get())
                 .set(HAR_DELT_CV, boolToJaNei(harDeltCv))
+                .set(SISTE_MELDING_MOTTATT, Timestamp.from(now()))
+                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
+                .execute();
+    }
+
+    public void upsertCvEksistere(AktorId aktoerId, boolean cvEksistere) {
+        SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
+                .set(AKTOERID, aktoerId.get())
+                .set(CV_EKSISTERE, boolToJaNei(cvEksistere))
                 .set(SISTE_MELDING_MOTTATT, Timestamp.from(now()))
                 .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
                 .execute();
@@ -38,9 +47,18 @@ public class CvRepository {
                 .execute();
     }
 
-    public void slettCVData(AktorId aktoerId) {
-        SqlUtils.delete(jdbcTemplate, TABLE_NAME)
-                .where(WhereClause.equals(AKTOERID, aktoerId.get()))
+    public String cvEksistere(AktorId aktoerId) {
+        return SqlUtils
+                .select(jdbcTemplate, TABLE_NAME, rs -> rs.getString(CV_EKSISTERE))
+                .column(CV_EKSISTERE)
+                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
+                .execute();
+    }
+
+    public void resetHarDeltCV(AktorId aktoerId) {
+        SqlUtils.update(jdbcTemplate, TABLE_NAME)
+                .set(HAR_DELT_CV, false)
+                .whereEquals(AKTOERID, aktoerId.get())
                 .execute();
     }
 

@@ -32,10 +32,10 @@ public class CvRepositoryTest {
     public void skal_upserte_database() {
         AktorId aktoerId = AktorId.of("0");
 
-        cvRepository.upsert(aktoerId, true);
+        cvRepository.upsertHarDeltCv(aktoerId, true);
         assertThat(cvRepository.harDeltCv(aktoerId)).isEqualTo("J");
 
-        cvRepository.upsert(aktoerId, false);
+        cvRepository.upsertHarDeltCv(aktoerId, false);
         assertThat(cvRepository.harDeltCv(aktoerId)).isEqualTo("N");
     }
 

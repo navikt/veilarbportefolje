@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
@@ -30,12 +31,14 @@ public class ElasticService {
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final VedtakstottePilotRequest vedtakstottePilotRequest;
     private final IndexName indexName;
+    private final UnleashService unleashService;
 
-    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName, VedtakstottePilotRequest vedtakstottePilotRequest) {
+    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName, VedtakstottePilotRequest vedtakstottePilotRequest, UnleashService unleashService) {
         this.restHighLevelClient = restHighLevelClient;
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.indexName = indexName;
         this.vedtakstottePilotRequest = vedtakstottePilotRequest;
+        this.unleashService = unleashService;
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
@@ -66,7 +69,7 @@ public class ElasticService {
                     filter -> boolQuery.filter(leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet, erVedtakstottePilotPa))
             );
 
-            leggTilManuelleFilter(boolQuery, filtervalg);
+            leggTilManuelleFilter(boolQuery, filtervalg, unleashService);
         }
 
         searchSourceBuilder.query(boolQuery);

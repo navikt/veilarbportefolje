@@ -9,6 +9,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
+import no.nav.sbl.sql.InsertBatchQuery;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import static java.util.Collections.emptyList;
@@ -115,6 +117,24 @@ public class AktivitetDAO {
         aktiviteter.forEach(this::upsertAktivitet);
     }
 
+    public void upsertAktivitetStatus(AktivitetStatus status) {
+        if (status.getPersonid() == null || status.getAktoerid() == null || status.getAktivitetType() == null) {
+            log.warn("Kunne ikke lagre aktivitet pga. null verdier");
+            return;
+        }
+        String aktivChar = status.isAktiv() ? "1" : "0";
+        SqlUtils.upsert(db, "BRUKERSTATUS_AKTIVITETER")
+                .set("PERSONID", status.getPersonid().getValue())
+                .set("AKTOERID", status.getAktoerid().get())
+                .set("AKTIVITETTYPE", status.getAktivitetType())
+                .set("STATUS", aktivChar)
+                .set("NESTE_UTLOPSDATO", status.getNesteUtlop())
+                .set("NESTE_STARTDATO", status.getNesteStart())
+                .where(WhereClause.equals("PERSONID", status.getPersonid().getValue())
+                        .and(WhereClause.equals("AKTIVITETTYPE", status.getAktivitetType())))
+                .execute();
+    }
+
     public void insertAktivitetstatuser(List<AktivitetStatus> statuser) {
         io.vavr.collection.List.ofAll(statuser).sliding(1000, 1000)
                 .forEach((statuserBatch) -> {
@@ -183,6 +203,29 @@ public class AktivitetDAO {
                         (Timestamp) row.get("TILDATO"))
                 )
                 .collect(toList());
+    }
+
+    public List<ArenaAktivitetDTO> hentUtgatteAktivteter(String aktivitetsType) {
+        String sql = "SELECT " + AKTIVITETID + ", " + AKTIVITETID + " FROM " + TABLE_NAME
+                + " WHERE " + AKTIVITETTYPE + "= ? AND " + TILDATO + " < CURRENT_TIMESTAMP";
+        return db.queryForList(sql, aktivitetsType)
+                .stream()
+                .map(row -> new ArenaAktivitetDTO()
+                        .setAktivitetId((String) row.get(AKTIVITETID))
+                        .setAktoerid((String) row.get(AKTIVITETID))
+                )
+                .collect(toList());
+    }
+
+    /**
+     * Sletter kun hvis aktiviteten er utgatt.
+     * Implementert til aa forhindre race condition mellom daglig jobb og kafka.
+     */
+    public int slettUtgattAktivtet(String aktivitetid) {
+        return SqlUtils.delete(db, Table.AKTIVITETER.TABLE_NAME)
+                .where(WhereClause.equals(AKTIVITETID, aktivitetid)
+                        .and(WhereClause.lt(TILDATO, Timestamp.from(ZonedDateTime.now().toInstant())))
+                ).execute();
     }
 
     private String hentBrukertiltakForListeAvFnrSQL() {

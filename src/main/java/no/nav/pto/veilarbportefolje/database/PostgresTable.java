@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.database;
 
-import java.sql.Timestamp;
-
 public class PostgresTable {
 
     public static final class BRUKER_VIEW {
@@ -35,6 +33,9 @@ public class PostgresTable {
         public static final String VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN = "VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN";
         public static final String VEDTAKSTATUS_ENDRET_TIDSPUNKT = "VEDTAKSTATUS_ENDRET_TIDSPUNKT";
         public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
+        public static final String HAR_DELT_CV = "HAR_DELT_CV";
+        public static final String CV_EKSISTERER = "CV_EKSISTERER";
+
         public static final String ARB_SIST_ENDRET_AV_VEILEDERIDENT = "ARB_SIST_ENDRET_AV_VEILEDERIDENT";
         public static final String ARB_ENDRINGSTIDSPUNKT = "ARB_ENDRINGSTIDSPUNKT";
         public static final String ARB_OVERSKRIFT = "ARB_OVERSKRIFT";
@@ -132,6 +133,12 @@ public class PostgresTable {
         public static final String ENDRET_TIDSPUNKT = "ENDRET_TIDSPUNKT";
     }
 
+    public static final class LEST_ARENA_HENDELSE {
+        public static final String TABLE_NAME = "LEST_ARENA_HENDELSE";
+        public static final String ID = "ID";
+        public static final String HENDELSE_ID = "HENDELSE_ID";
+    }
+
     public static final class BRUKER_PROFILERING {
         public static final String TABLE_NAME = "BRUKER_PROFILERING";
 
@@ -152,18 +159,12 @@ public class PostgresTable {
         public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
     }
 
+    public static final class BRUKER_CV {
+        public static final String TABLE_NAME = "BRUKER_CV";
 
-    public static String safeNull(Object o) {
-        if (o == null) {
-            return "NULL";
-        }
-        return "'" + o.toString() + "'";
-    }
-
-    public static String safeBool(Object o) {
-        if (o == null) {
-            return "false";
-        }
-        return "'" + o.toString() + "'";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String HAR_DELT_CV = "HAR_DELT_CV";
+        public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
+        public static final String CV_EKSISTERER = "CV_EKSISTERER";
     }
 }

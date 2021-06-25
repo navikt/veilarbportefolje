@@ -58,6 +58,13 @@ public class DateUtils {
         return ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("Europe/Oslo"));
     }
 
+    public static ZonedDateTime toZonedDateTime(LocalDate localDate) {
+        if (localDate == null) {
+            return null;
+        }
+        return localDate.atStartOfDay(ZoneOffset.UTC);
+    }
+
     public static Timestamp toTimestamp(ZonedDateTime zonedDateTime) {
         if(zonedDateTime == null){
             return null;

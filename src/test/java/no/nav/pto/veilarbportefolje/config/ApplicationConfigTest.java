@@ -11,11 +11,15 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaHendelseRepository;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetRepository;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
+import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
+import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
@@ -46,6 +50,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -96,7 +101,8 @@ import static org.mockito.Mockito.when;
         DialogRepository.class,
         ElasticIndexer.class,
         CvRepository.class,
-        CVServiceFromAiven.class,
+        CVRepositoryV2.class,
+        CVService.class,
         RegistreringRepository.class,
         RegistreringRepositoryV2.class,
         PersonRepository.class,
@@ -109,7 +115,10 @@ import static org.mockito.Mockito.when;
         MalService.class,
         OppfolgingService.class,
         ArbeidslisteRepositoryV1.class,
-        ArbeidslisteRepositoryV2.class
+        ArbeidslisteRepositoryV2.class,
+        UtdanningsAktivitetService.class,
+        ArenaHendelseRepository.class,
+        GruppeAktivitetRepository.class
 })
 public class ApplicationConfigTest {
 
@@ -182,6 +191,11 @@ public class ApplicationConfigTest {
 
     @Bean
     public AktorClient aktorClient() {
+        return mock(AktorClient.class);
+    }
+
+    @Bean("systemClient")
+    public AktorClient aktorClientSystem() {
         return mock(AktorClient.class);
     }
 
