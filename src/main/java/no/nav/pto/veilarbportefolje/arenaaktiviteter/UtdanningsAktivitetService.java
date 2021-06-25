@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.arenaaktiviteter;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -8,6 +9,7 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivite
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +21,7 @@ import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.
 @RequiredArgsConstructor
 public class UtdanningsAktivitetService {
     private final AktivitetService aktivitetService;
-    private final AktorClient aktorClient;
+    @NonNull @Qualifier("systemClient") private final AktorClient aktorClient;
     private final ArenaHendelseRepository arenaHendelseRepository;
 
     public void behandleKafkaRecord(ConsumerRecord<String, UtdanningsAktivitetDTO> kafkaMelding) {

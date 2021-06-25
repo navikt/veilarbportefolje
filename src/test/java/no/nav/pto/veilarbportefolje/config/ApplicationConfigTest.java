@@ -48,6 +48,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -186,6 +187,11 @@ public class ApplicationConfigTest {
 
     @Bean
     public AktorClient aktorClient() {
+        return mock(AktorClient.class);
+    }
+
+    @Bean("systemClient")
+    public AktorClient aktorClientSystem() {
         return mock(AktorClient.class);
     }
 
