@@ -19,6 +19,7 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
+import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
@@ -99,6 +100,7 @@ import static org.mockito.Mockito.when;
         DialogRepository.class,
         ElasticIndexer.class,
         CvRepository.class,
+        CVRepositoryV2.class,
         CVService.class,
         RegistreringRepository.class,
         PersonRepository.class,
