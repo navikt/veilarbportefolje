@@ -119,14 +119,14 @@ public class AdminController {
     @PostMapping("/stopp/aiven-konsumering")
     public String stoppConsume() {
         authorizeAdmin();
-        kafkaConfigCommon.stop();
+        kafkaConfigCommon.stoppConsumer();
         return "Stopper konsumering for aiven kafka topics";
     }
 
     @PostMapping("/start/aiven-konsumering")
     public String startConsume() {
         authorizeAdmin();
-        kafkaConfigCommon.stop();
+        kafkaConfigCommon.startConsumer();
         return "Starter konsumering for aiven kafka topics";
     }
 

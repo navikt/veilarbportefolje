@@ -96,9 +96,11 @@ public class KafkaConfigCommon {
         consumerClient.start();
     }
 
-
-    public void stop() {
-        consumerRecordProcessor.close();
+    public void stoppConsumer() {
         consumerClient.stop();
+    }
+
+    public void startConsumer() {
+        consumerClient.start();
     }
 }
