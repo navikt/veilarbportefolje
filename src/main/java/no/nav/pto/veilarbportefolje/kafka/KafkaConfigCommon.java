@@ -95,4 +95,12 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClient.start();
     }
+
+    public void stoppConsumer() {
+        consumerClient.stop();
+    }
+
+    public void startConsumer() {
+        consumerClient.start();
+    }
 }

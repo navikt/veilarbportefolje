@@ -159,6 +159,35 @@ function handleRewindTilordnetVeileder(e) {
     }
 }
 
+const startAiven = document.getElementById('startAiven');
+startAiven.addEventListener('submit', handleStartAiven);
+
+function handleStartAiven(e) {
+    e.preventDefault();
+    if (window.confirm('Vil du starte konsumering av Aiven?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/start/aiven-konsumering',
+            {method: 'POST', credentials: 'same-origin'},
+            'startAivenResponse'
+        );
+    }
+}
+
+
+const stoppAiven = document.getElementById('stoppAiven');
+stoppAiven.addEventListener('submit', handleStoppAiven);
+
+function handleStoppAiven(e) {
+    e.preventDefault();
+    if (window.confirm('Vil du stoppe konsumering av Aiven?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/stopp/aiven-konsumering',
+            {method: 'POST', credentials: 'same-origin'},
+            'stoppAivenResponse'
+        );
+    }
+}
+
 const aktoerIdSamtykkeForm = document.getElementById('aktoerIdSamtykkeForm');
 aktoerIdSamtykkeForm.addEventListener('submit', handleSamtykkeDeltCV);
 const aktoerIdSamtykkeInput = document.getElementById('aktoerIdSamtykkeInput');

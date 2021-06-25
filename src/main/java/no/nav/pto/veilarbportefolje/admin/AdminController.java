@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
@@ -41,6 +42,7 @@ public class AdminController {
     private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
     private final CVService cvService;
+    private final KafkaConfigCommon kafkaConfigCommon;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -113,6 +115,21 @@ public class AdminController {
         veilederTilordnetService.setRewind(true);
         return "Rewind av tilordnet veileder har startet";
     }
+
+    @PostMapping("/stopp/aiven-konsumering")
+    public String stoppConsume() {
+        authorizeAdmin();
+        kafkaConfigCommon.stoppConsumer();
+        return "Stopper konsumering for aiven kafka topics";
+    }
+
+    @PostMapping("/start/aiven-konsumering")
+    public String startConsume() {
+        authorizeAdmin();
+        kafkaConfigCommon.startConsumer();
+        return "Starter konsumering for aiven kafka topics";
+    }
+
 
     private void authorizeAdmin() {
         final String ident = authContextHolder.getNavIdent().map(Id::toString).orElseThrow();
