@@ -1,151 +1,106 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import lombok.RequiredArgsConstructor;
-import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
-import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.PostgresConsumerRepository;
-import no.nav.common.kafka.consumer.feilhandtering.StoredRecordConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
-import no.nav.common.kafka.consumer.util.ConsumerUtils;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
+import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetService;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltaksService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetDTO;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
-import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
+import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
-import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.config.SslConfigs;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
+import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
-import java.util.Map;
-import java.util.Properties;
+import java.util.List;
 
-import static no.nav.common.kafka.consumer.util.ConsumerUtils.jsonConsumer;
-import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
+import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 
 @Configuration
-@RequiredArgsConstructor
-@EnableConfigurationProperties({KafkaAivenProperties.class})
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
-    public final static String GROUP_ID_CONFIG = "veilarbportefolje-consumer";
     public final static String CV_TOPIC = "teampam.samtykke-status-1";
-    public final static String TILTAK_TOPIC = "aapen-arena-tiltaksaktivitetendret-v1-q1";
-    public final static String UTDANNINGS_AKTIVITET_TOPIC = "aapen-arena-utdanningsaktivitetendret-v1-q1";
-    public final static String GRUPPE_AKTIVITET_TOPIC = "aapen-arena-gruppeaktivitetendret-v1-q1";
+    public final static String TILTAK_TOPIC = "teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-q1";
+    public final static String UTDANNINGS_AKTIVITET_TOPIC = "teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-q1";
+    public final static String GRUPPE_AKTIVITET_TOPIC = "teamarenanais.aapen-arena-gruppeaktivitetendret-v1-q1";
 
-    private final KafkaConsumerClient<String, String> consumerClient;
+    private final KafkaConsumerClient consumerClient;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    @Bean
-    public LockProvider lockProvider(JdbcTemplate jdbcTemplate) {
-        return new JdbcTemplateLockProvider(jdbcTemplate);
-    }
+    public KafkaConfigCommon(CVService cvService, UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService, @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
+        KafkaConsumerRepository consumerRepository = new PostgresConsumerRepository(dataSource);
+        MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
-    @Bean
-    public KafkaConsumerRepository kafkaConsumerRepository(@Qualifier("Postgres") DataSource dataSource) {
-        return new PostgresConsumerRepository(dataSource);
-    }
+        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs =
+                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        CV_TOPIC,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(CVMelding.class),
+                                        cvService::behandleKafkaMeldingCVHjemmel
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, UtdanningsAktivitetDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        UTDANNINGS_AKTIVITET_TOPIC,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(UtdanningsAktivitetDTO.class),
+                                        utdanningsAktivitetService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, GruppeAktivitetDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        GRUPPE_AKTIVITET_TOPIC,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(GruppeAktivitetDTO.class),
+                                        gruppeAktivitetService::behandleKafkaRecord
+                                )
+                );
 
-    @Bean
-    public KafkaConsumerRecordProcessor consumerRecordProcessor(
-            LockProvider lockProvider,
-            KafkaConsumerRepository kafkaConsumerRepository,
-            Map<String, TopicConsumer<String, String>> topicConsumers
-    ) {
-        Map<String, StoredRecordConsumer> storedRecordConsumers = ConsumerUtils.toStoredRecordConsumerMap(
-                topicConsumers,
-                new StringDeserializer(),
-                new StringDeserializer()
-        );
+        consumerClient = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
+                .withTopicConfigs(topicConfigs)
+                .build();
 
-        return KafkaConsumerRecordProcessorBuilder
+        consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
-                .withLockProvider(lockProvider)
-                .withKafkaConsumerRepository(kafkaConsumerRepository)
-                .withRecordConsumers(storedRecordConsumers)
+                .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
+                .withKafkaConsumerRepository(consumerRepository)
+                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
                 .build();
+
     }
 
-    @Bean
-    public Map<String, TopicConsumer<String, String>> topicConsumers(
-            CVServiceFromAiven cvService,
-            UtdanningsAktivitetService utdanningsAktivitetService,
-            GruppeAktivitetService gruppeAktivitetService,
-            TiltaksService tiltaksService
-    ) {
-        return Map.of(
-                CV_TOPIC, jsonConsumer(CVMelding.class, cvService::behandleKafkaMelding),
-                UTDANNINGS_AKTIVITET_TOPIC, jsonConsumer(UtdanningsAktivitetDTO.class, utdanningsAktivitetService::behandleKafkaMelding),
-                GRUPPE_AKTIVITET_TOPIC, jsonConsumer(GruppeAktivitetDTO.class, gruppeAktivitetService::behandleKafkaMelding),
-                TILTAK_TOPIC, jsonConsumer(TiltakDTO.class, tiltaksService::behandleKafkaMelding)
-        );
-     }
-
-    @Bean
-    public Properties kafkaAivenProperties(KafkaAivenProperties kafkaProperties) {
-        Properties props = new Properties();
-
-        props.put(CLIENT_ID_CONFIG, CLIENT_ID_CONFIG);
-        props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSecurityProtocol());
-        props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getKafkaBrokers());
-
-
-        props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, kafkaProperties.getKafkaCredstorePass());
-        props.put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, kafkaProperties.getKafkaCredstorePass());
-        props.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, kafkaProperties.getKafkaTrustorePath());
-        props.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, kafkaProperties.getKafkaKeystorePath());
-
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 500000);
-        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 10000);
-        props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 3000);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID_CONFIG);
-
-        return props;
-    }
-
-    @Bean
-    public KafkaConsumerClient<String, String> consumerClient(
-            Map<String, TopicConsumer<String, String>> topicConsumers,
-            KafkaConsumerRepository kafkaConsumerRepository,
-            Properties kafkaAivenProperties,
-            MeterRegistry meterRegistry
-    ) {
-        return KafkaConsumerClientBuilder.<String, String>builder()
-                .withProps(kafkaAivenProperties)
-                .withRepository(kafkaConsumerRepository)
-                .withStoreOnFailureConsumers(topicConsumers)
-                .withSerializers(new StringSerializer(), new StringSerializer())
-                .withMetrics(meterRegistry)
-                .withLogging()
-                .build();
-    }
 
     @PostConstruct
     public void start() {
         consumerRecordProcessor.start();
+        consumerClient.start();
+    }
+
+    public void stoppConsumer() {
+        consumerClient.stop();
+    }
+
+    public void startConsumer() {
         consumerClient.start();
     }
 }

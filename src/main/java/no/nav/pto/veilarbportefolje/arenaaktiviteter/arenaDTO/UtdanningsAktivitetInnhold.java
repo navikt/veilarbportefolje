@@ -4,12 +4,10 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.time.LocalDate;
-
 @Data
 @Accessors(chain = true)
 public class UtdanningsAktivitetInnhold implements ArenaInnholdKafka {
-    @JsonAlias("AKTIVITET_ID") long aktivitetIdNr;
+    @JsonAlias("AKTIVITET_ID") String aktivitetIdNr;
     @JsonAlias("AKTIVITETID") String aktivitetid;
 
     @JsonAlias("AKTIVITETSTYPE") String aktivitetstype;

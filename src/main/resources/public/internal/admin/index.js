@@ -131,6 +131,63 @@ function handleRewindNyForVeiledere(e) {
     }
 }
 
+const cvEksistereForm = document.getElementById('cvEksistere');
+cvEksistereForm.addEventListener('submit', handleRewindCVEksistere);
+
+function handleRewindCVEksistere(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil lese inn alle kafka meldinger fra topiken fra starten av.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/rewind/cv-eksisterer',
+            {method: 'POST', credentials: 'same-origin'},
+            'cvEksistereResponse'
+        );
+    }
+}
+
+const tilordnetVeileder = document.getElementById('tilordnetVeileder');
+tilordnetVeileder.addEventListener('submit', handleRewindTilordnetVeileder);
+
+function handleRewindTilordnetVeileder(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil lese inn alle kafka meldinger fra topiken fra starten av.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/rewind/tilordnet-veileder',
+            {method: 'POST', credentials: 'same-origin'},
+            'tilordnetVeilederResponse'
+        );
+    }
+}
+
+const startAiven = document.getElementById('startAiven');
+startAiven.addEventListener('submit', handleStartAiven);
+
+function handleStartAiven(e) {
+    e.preventDefault();
+    if (window.confirm('Vil du starte konsumering av Aiven?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/start/aiven-konsumering',
+            {method: 'POST', credentials: 'same-origin'},
+            'startAivenResponse'
+        );
+    }
+}
+
+
+const stoppAiven = document.getElementById('stoppAiven');
+stoppAiven.addEventListener('submit', handleStoppAiven);
+
+function handleStoppAiven(e) {
+    e.preventDefault();
+    if (window.confirm('Vil du stoppe konsumering av Aiven?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/stopp/aiven-konsumering',
+            {method: 'POST', credentials: 'same-origin'},
+            'stoppAivenResponse'
+        );
+    }
+}
+
 const aktoerIdSamtykkeForm = document.getElementById('aktoerIdSamtykkeForm');
 aktoerIdSamtykkeForm.addEventListener('submit', handleSamtykkeDeltCV);
 const aktoerIdSamtykkeInput = document.getElementById('aktoerIdSamtykkeInput');

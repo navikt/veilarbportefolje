@@ -4,18 +4,18 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.time.LocalDate;
-
 @Data
 @Accessors(chain = true)
 public class TiltakInnhold implements ArenaInnholdKafka {
-    @JsonAlias("TILTAKDELTAKER_ID") long aktivitetIdNr;
+    @JsonAlias("TILTAKDELTAKER_ID") String aktivitetIdNr;
     @JsonAlias("AKTIVITETID") String aktivitetid;
 
-    @JsonAlias("AKTIVITETSTYPE") String aktivitetstype;
-    @JsonAlias("AKTIVITETSNAVN") String aktivitetsnavn;
-    @JsonAlias("AKTIVITETPERIODE_FOM") ArenaDato aktivitetperiodeFra;
-    @JsonAlias("AKTIVITETPERIODE_TOM") ArenaDato aktivitetperiodeTil;
+    @JsonAlias("TILTAKSTYPE") String tiltakstype;
+    @JsonAlias("TILTAKSNAVN") String tiltaksnavn;
+    @JsonAlias("DELTAKERSTATUS") String deltakerStatus;
+    @JsonAlias("DELTAKERSTATUSNAVN") String deltakerStatusNavn;
+    @JsonAlias("DELTAKERPERIODE_FOM") ArenaDato aktivitetperiodeFra;
+    @JsonAlias("DELTAKERPERIODE_TOM") ArenaDato aktivitetperiodeTil;
     @JsonAlias("PERSON_ID") int personId;
     @JsonAlias("PERSONIDENT") String fnr; // eller dnr
     @JsonAlias("HENDELSE_ID") long hendelseId;

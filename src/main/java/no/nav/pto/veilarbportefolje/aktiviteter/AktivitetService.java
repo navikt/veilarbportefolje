@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.featuretoggle.UnleashService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
@@ -88,7 +88,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
                 .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(Collections.singletonList(oppdatering)));
     }
 
-    public void slettAktivitet(String aktivitetid, AktorId aktorId) {
+    public void slettOgIndekserAktivitet(String aktivitetid, AktorId aktorId) {
         aktivitetDAO.deleteById(aktivitetid);
         utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
     }
@@ -96,6 +96,22 @@ public class AktivitetService implements KafkaConsumerService<String> {
     public void upsertOgIndekserAktiviteter(KafkaAktivitetMelding melding) {
         aktivitetDAO.upsertAktivitet(melding);
         utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(melding.getAktorId()));
+    }
+
+    public List<ArenaAktivitetDTO> hentUtgatteUtdanningAktiviteter() {
+        return aktivitetDAO.hentUtgatteAktivteter(AktivitetTyperFraKafka.utdanningaktivitet.name());
+    }
+
+    public void slettUtgatteAktivitet(String aktivitetId, AktorId aktorId) {
+        if(aktivitetId == null || aktorId == null){
+            return;
+        }
+        int rows = aktivitetDAO.slettUtgattAktivtet(aktivitetId);
+        if(rows == 0){
+            return;
+        }
+        log.info("Slettet utgatt aktivitet: {} pa bruker: {} ", aktivitetId, aktorId);
+        utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
     }
 
     @Override

@@ -1,14 +1,16 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
@@ -21,6 +23,7 @@ public class VeilederTilordnetService implements KafkaConsumerService<String> {
     private final ArbeidslisteService arbeidslisteServicePostgres;
     private final UnleashService unleashService;
     private final ElasticServiceV2 elasticServiceV2;
+    private final AtomicBoolean rewind = new AtomicBoolean(false);
 
     @Autowired
     public VeilederTilordnetService(@Qualifier("PostgresArbeidslisteService") ArbeidslisteService arbeidslisteServicePostgres, OppfolgingRepository oppfolgingRepository, OppfolgingRepositoryV2 oppfolgingRepositoryV2, ArbeidslisteService arbeidslisteService, ElasticServiceV2 elasticServiceV2, UnleashService unleashService) {
@@ -58,10 +61,11 @@ public class VeilederTilordnetService implements KafkaConsumerService<String> {
 
     @Override
     public boolean shouldRewind() {
-        return false;
+        return rewind.get();
     }
 
     @Override
     public void setRewind(boolean rewind) {
+        this.rewind.set(rewind);
     }
 }

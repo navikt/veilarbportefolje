@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -11,12 +12,14 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaHendelseRepository;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
+import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
+import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
@@ -35,6 +38,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
@@ -45,6 +49,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -95,7 +100,8 @@ import static org.mockito.Mockito.when;
         DialogRepository.class,
         ElasticIndexer.class,
         CvRepository.class,
-        CVServiceFromAiven.class,
+        CVRepositoryV2.class,
+        CVService.class,
         RegistreringRepository.class,
         PersonRepository.class,
         NyForVeilederService.class,
@@ -109,7 +115,8 @@ import static org.mockito.Mockito.when;
         ArbeidslisteRepositoryV1.class,
         ArbeidslisteRepositoryV2.class,
         UtdanningsAktivitetService.class,
-        ArenaHendelseRepository.class
+        ArenaHendelseRepository.class,
+        GruppeAktivitetRepository.class
 })
 public class ApplicationConfigTest {
 
@@ -182,6 +189,11 @@ public class ApplicationConfigTest {
 
     @Bean
     public AktorClient aktorClient() {
+        return mock(AktorClient.class);
+    }
+
+    @Bean("systemClient")
+    public AktorClient aktorClientSystem() {
         return mock(AktorClient.class);
     }
 
@@ -274,9 +286,14 @@ public class ApplicationConfigTest {
         return new ArbeidslisteService(aktorClient, arbeidslisteRepository, brukerService, elasticServiceV2, metricsClient);
     }
 
-    @Bean(name="PostgresJdbc")
+    @Bean(name = "PostgresJdbc")
     public JdbcTemplate db() {
         return SingletonPostgresContainer.init().createJdbcTemplate();
+    }
+
+    @Bean
+    public AuthContextHolder authContextHolder() {
+        return AuthContextHolderThreadLocal.instance();
     }
 
 }

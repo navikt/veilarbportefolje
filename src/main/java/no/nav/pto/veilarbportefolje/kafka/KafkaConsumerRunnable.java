@@ -2,11 +2,11 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig.Topic;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

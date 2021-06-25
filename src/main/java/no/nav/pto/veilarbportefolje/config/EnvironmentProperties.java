@@ -11,7 +11,6 @@ import java.util.List;
 @ConfigurationProperties(prefix = "app.env")
 public class EnvironmentProperties {
     private String veilarbVeilederUrl;
-    private String abacUrl;
     private String difiUrl;
     private String aktorregisterUrl;
     private String stsDiscoveryUrl;
@@ -27,4 +26,7 @@ public class EnvironmentProperties {
     private String soapStsUrl;
     private String dbUrl;
     private List<String> admins;
+    private String unleashUrl;
+    private String abacVeilarbUrl;
+    private String abacModiaUrl;
 }

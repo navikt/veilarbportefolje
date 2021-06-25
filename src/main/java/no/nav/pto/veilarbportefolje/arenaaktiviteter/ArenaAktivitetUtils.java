@@ -2,14 +2,10 @@ package no.nav.pto.veilarbportefolje.arenaaktiviteter;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.ArenaDato;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.ArenaInnholdKafka;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateDTO;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateOperations;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.*;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 
 import java.time.ZonedDateTime;
-import java.util.Optional;
 
 public interface ArenaAktivitetUtils {
      static <T extends ArenaInnholdKafka> T getInnhold(GoldenGateDTO<T> goldenGateDTO) {
@@ -24,7 +20,7 @@ public interface ArenaAktivitetUtils {
         }
     }
 
-    static boolean skalSlettes(GoldenGateDTO<?> kafkaMelding) {
+    static boolean skalSlettesGoldenGate(GoldenGateDTO<?> kafkaMelding) {
         return GoldenGateOperations.DELETE.equals(kafkaMelding.getOperationType());
     }
 
@@ -58,5 +54,14 @@ public interface ArenaAktivitetUtils {
             return date.getDato().plusDays(1);
         }
         return date.getDato();
+    }
+
+    static boolean erUtgatt(ArenaDato tilDato, boolean tilOgMedDato) {
+         if(tilDato == null){
+             return false;
+         }
+         ZonedDateTime tilZonedDato = getDateOrNull(tilDato, tilOgMedDato);
+         ZonedDateTime now = ZonedDateTime.now();
+         return tilZonedDato.isBefore(now);
     }
 }

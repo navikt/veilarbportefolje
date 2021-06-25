@@ -57,13 +57,13 @@ public class ElasticServiceV2 {
 
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                    .startObject("siste_endringer")
-                        .startObject(kategori)
-                            .field("tidspunkt", tidspunkt)
-                            .field("aktivtetId", dto.getAktivtetId())
-                            .field("er_sett", "N")
-                        .endObject()
-                    .endObject()
+                .startObject("siste_endringer")
+                .startObject(kategori)
+                .field("tidspunkt", tidspunkt)
+                .field("aktivtetId", dto.getAktivtetId())
+                .field("er_sett", "N")
+                .endObject()
+                .endObject()
                 .endObject();
         update(dto.getAktoerId(), content, format("Oppdaterte siste endring med tidspunkt: %s", tidspunkt));
     }
@@ -73,13 +73,13 @@ public class ElasticServiceV2 {
     public void updateSisteEndring(AktorId aktorId, SisteEndringsKategori kategori) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                    .startObject("siste_endringer")
-                        .startObject(kategori.name())
-                            .field("er_sett", "J")
-                        .endObject()
-                    .endObject()
+                .startObject("siste_endringer")
+                .startObject(kategori.name())
+                .field("er_sett", "J")
+                .endObject()
+                .endObject()
                 .endObject();
-        update(aktorId, content, format("Oppdaterte siste endring, kategori %s er nå sett",kategori.name()));
+        update(aktorId, content, format("Oppdaterte siste endring, kategori %s er nå sett", kategori.name()));
     }
 
     @SneakyThrows
@@ -90,6 +90,16 @@ public class ElasticServiceV2 {
                 .endObject();
 
         update(aktoerId, content, format("Har delt cv: %s", harDeltCv));
+    }
+
+    @SneakyThrows
+    public void updateCvEksistere(AktorId aktoerId, boolean cvEksistere) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("cv_eksistere", cvEksistere)
+                .endObject();
+
+        update(aktoerId, content, format("CV eksistere: %s", cvEksistere));
     }
 
     @SneakyThrows
@@ -158,7 +168,7 @@ public class ElasticServiceV2 {
         final String frist = toIsoUTC(arbeidslisteDTO.getFrist());
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("arbeidsliste_aktiv",true)
+                .field("arbeidsliste_aktiv", true)
                 .field("arbeidsliste_overskrift", arbeidslisteDTO.getOverskrift())
                 .field("arbeidsliste_kommentar", arbeidslisteDTO.getKommentar())
                 .field("arbeidsliste_frist", Optional.ofNullable(frist).orElse(getFarInTheFutureDate()))
@@ -175,12 +185,12 @@ public class ElasticServiceV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("arbeidsliste_aktiv", false)
-                .field("arbeidsliste_sist_endret_av_veilederid", (String)null)
-                .field("arbeidsliste_endringstidspunkt", (String)null)
-                .field("arbeidsliste_kommentar", (String)null)
-                .field("arbeidsliste_overskrift", (String)null)
-                .field("arbeidsliste_frist", (String)null)
-                .field("arbeidsliste_kategori", (String)null)
+                .field("arbeidsliste_sist_endret_av_veilederid", (String) null)
+                .field("arbeidsliste_endringstidspunkt", (String) null)
+                .field("arbeidsliste_kommentar", (String) null)
+                .field("arbeidsliste_overskrift", (String) null)
+                .field("arbeidsliste_frist", (String) null)
+                .field("arbeidsliste_kategori", (String) null)
                 .endObject();
 
         update(aktoerId, content, "Sletter arbeidsliste");
@@ -190,7 +200,7 @@ public class ElasticServiceV2 {
     public void slettDokumenter(List<AktorId> aktorIds) {
         log.info("Sletter gamle aktorIder {}", aktorIds);
         for (AktorId aktorId : aktorIds) {
-            if(aktorId != null){
+            if (aktorId != null) {
                 delete(aktorId);
             }
         }

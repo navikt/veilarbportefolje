@@ -1,14 +1,13 @@
 package no.nav.pto.veilarbportefolje.client;
 
-import no.nav.common.abac.*;
-import no.nav.common.abac.audit.*;
+import no.nav.common.abac.Pep;
+import no.nav.common.abac.VeilarbPepFactory;
+import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
+import no.nav.common.client.aktoroppslag.PdlAktorOppslagClient;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.client.aktorregister.AktorregisterHttpClient;
-import no.nav.common.client.aktorregister.CachedAktorregisterClient;
-import no.nav.common.client.pdl.AktorOppslagClient;
-import no.nav.common.client.pdl.CachedAktorOppslagClient;
-import no.nav.common.client.pdl.PdlAktorOppslagClient;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
@@ -16,7 +15,9 @@ import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -41,7 +42,21 @@ public class ClientConfig {
                 properties.getAktorregisterUrl(), APPLICATION_NAME, systemUserTokenProvider::getSystemUserToken
         );
 
-        return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient), new CachedAktorregisterClient(aktorregisterClient), unleashService);
+
+        return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient), new CachedAktorOppslagClient(aktorregisterClient), unleashService);
+    }
+
+    @Bean("systemClient")
+    public AktorClient aktorClientSystem(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider, UnleashService unleashService) {
+        AktorOppslagClient aktorOppslagClient = new PdlAktorOppslagClient(
+                createServiceUrl("pdl-api", "default", false),
+                systemUserTokenProvider::getSystemUserToken,
+                systemUserTokenProvider::getSystemUserToken
+        );
+        AktorregisterClient aktorregisterClient = new AktorregisterHttpClient(
+                properties.getAktorregisterUrl(), APPLICATION_NAME, systemUserTokenProvider::getSystemUserToken
+        );
+        return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient), new CachedAktorOppslagClient(aktorregisterClient), unleashService);
     }
 
     @Bean
@@ -63,7 +78,7 @@ public class ClientConfig {
     public Pep veilarbPep(EnvironmentProperties properties) {
         Credentials serviceUserCredentials = getCredentials("service_user");
         return VeilarbPepFactory.get(
-                properties.getAbacUrl(), serviceUserCredentials.username,
+                properties.getAbacVeilarbUrl(), serviceUserCredentials.username,
                 serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
         );
     }

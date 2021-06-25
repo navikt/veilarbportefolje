@@ -1,71 +1,82 @@
 package no.nav.pto.veilarbportefolje.arenaaktiviteter;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetInnhold;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.*;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class GruppeAktivitetService {
-    private final AktivitetService aktivitetService;
-    private final AktorClient aktorClient;
-    private final ArenaHendelseRepository arenaHendelseRepository;
+    private final GruppeAktivitetRepository gruppeAktivitetRepository;
+    @NonNull @Qualifier("systemClient") private final AktorClient aktorClient;
+    private final BrukerService brukerService;
 
-    @Transactional
+    public void behandleKafkaRecord(ConsumerRecord<String, GruppeAktivitetDTO> kafkaMelding) {
+        GruppeAktivitetDTO melding = kafkaMelding.value();
+        log.info(
+                "Behandler kafka-melding med key {} og offset {} på topic {}",
+                kafkaMelding.key(),
+                kafkaMelding.offset(),
+                kafkaMelding.topic()
+        );
+        behandleKafkaMelding(melding);
+    }
+
+    public List<GruppeAktivitetSchedueldDTO> hentUtgatteUtdanningAktiviteter() {
+        return gruppeAktivitetRepository.hentUtgatteAktivteter();
+    }
+
     public void behandleKafkaMelding(GruppeAktivitetDTO kafkaMelding) {
-        log.info("Behandler utdannings-aktivtet-melding");
         GruppeAktivitetInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
         }
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
-        if (skalSlettes(kafkaMelding)) {
-            aktivitetService.slettAktivitet(innhold.getAktivitetid(), aktorId);
-        } else {
-            KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
-            aktivitetService.upsertOgIndekserAktiviteter(melding);
-        }
+        boolean aktiv = !(skalSlettesGoldenGate(kafkaMelding) || skalSletteGruppeAktivitet(innhold));
+        gruppeAktivitetRepository.upsertGruppeAktivitet(innhold, aktorId, aktiv);
     }
 
-    private boolean erGammelMelding(GruppeAktivitetDTO kafkaMelding, GruppeAktivitetInnhold innhold ){
-        Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
+    static boolean skalSletteGruppeAktivitet(GruppeAktivitetInnhold gruppeInnhold) {
+        return gruppeInnhold.getAktivitetperiodeTil() == null || erUtgatt(gruppeInnhold.getAktivitetperiodeTil(), true);
+    }
 
+    private boolean erGammelMelding(GruppeAktivitetDTO kafkaMelding, GruppeAktivitetInnhold innhold){
+        Long hendelseIDB = gruppeAktivitetRepository.retrieveHendelse(innhold).orElse(-1L);
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), kafkaMelding.getOperationType())) {
             log.info("Fikk tilsendt gammel gruppe-aktivtet-melding");
             return true;
         }
-        arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
         return false;
     }
 
-    private KafkaAktivitetMelding mapTilKafkaAktivitetMelding(GruppeAktivitetInnhold melding, AktorId aktorId) {
-        if(melding == null || aktorId == null){
-            return null;
-        }
-        KafkaAktivitetMelding kafkaAktivitetMelding = new KafkaAktivitetMelding();
-        kafkaAktivitetMelding.setAktorId(aktorId.get());
-        kafkaAktivitetMelding.setAktivitetId(melding.getAktivitetid()); //TODO: Sjekk om denne er unik i forhold til de andre
-        kafkaAktivitetMelding.setFraDato(getDateOrNull(melding.getAktivitetperiodeFra()));
-        kafkaAktivitetMelding.setTilDato(getDateOrNull(melding.getAktivitetperiodeTil(), true));
-        kafkaAktivitetMelding.setEndretDato(getDateOrNull(melding.getEndretDato()));
-
-        kafkaAktivitetMelding.setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
-        kafkaAktivitetMelding.setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.GRUPPEAKTIVITET);
-        kafkaAktivitetMelding.setAvtalt(true);
-        kafkaAktivitetMelding.setHistorisk(false);
-        kafkaAktivitetMelding.setVersion(-1L);
-
-        return kafkaAktivitetMelding;
+    /**
+     * Sletter kun hvis aktiviteten er utgatt.
+     * Implementert til aa forhindre race condition mellom daglig jobb og kafka.
+     */
+    public void settSomUtgatt(String moteplanId, String veiledningdeltakerId) {
+        gruppeAktivitetRepository.hentAktivtet(moteplanId, veiledningdeltakerId)
+                .ifPresent(gruppeAktivitetSchedueldDTO -> {
+                    AktorId aktorId = gruppeAktivitetSchedueldDTO.getAktorId();
+                    brukerService.hentPersonidFraAktoerid(aktorId).onSuccess(personId ->
+                        gruppeAktivitetRepository.oppdaterUtgattAktivStatus(moteplanId, veiledningdeltakerId, aktorId, personId)
+                    );
+        });
     }
 }

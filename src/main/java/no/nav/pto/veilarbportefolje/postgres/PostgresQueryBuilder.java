@@ -22,11 +22,12 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.*;
 public class PostgresQueryBuilder {
     private final StringJoiner whereStatement = new StringJoiner(" AND ", " WHERE ", ";");
     private final JdbcTemplate db;
-
+    private boolean vedtaksPilot;
     private boolean brukKunEssensiellInfo = true;
 
-    public PostgresQueryBuilder(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, String navKontor) {
+    public PostgresQueryBuilder(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, String navKontor, boolean vedtaksPilot) {
         this.db = jdbcTemplate;
+        this.vedtaksPilot = vedtaksPilot;
         whereStatement.add(eq(NAV_KONTOR, navKontor));
         whereStatement.add(eq(OPPFOLGING, true));
 
@@ -155,7 +156,7 @@ public class PostgresQueryBuilder {
         whereStatement.add(orStatement.toString());
     }
 
-    private void alderFilter(String alder, StringJoiner orStatement){
+    private void alderFilter(String alder, StringJoiner orStatement) {
         LocalDate today = LocalDate.now();
         String[] fraTilAlder = alder.split("-");
         int fraAlder = parseInt(fraTilAlder[0]);
@@ -163,7 +164,18 @@ public class PostgresQueryBuilder {
 
         LocalDate nyesteFodselsdag = today.minusYears(fraAlder);
         LocalDate eldsteFodselsDag = today.minusYears(tilAlder + 1).plusDays(1);
-        orStatement.add("("+FODSELS_DATO + " >= '" + eldsteFodselsDag.toString() + "'::date AND "+FODSELS_DATO + " <= '" + nyesteFodselsdag.toString() + "'::date"+")");
+        orStatement.add("(" + FODSELS_DATO + " >= '" + eldsteFodselsDag.toString() + "'::date AND " + FODSELS_DATO + " <= '" + nyesteFodselsdag.toString() + "'::date" + ")");
+    }
+
+    public void harDeltCvFilter() {
+        brukKunEssensiellInfo = false;
+        whereStatement.add(HAR_DELT_CV + " = TRUE");
+        whereStatement.add(CV_EKSISTERER + " = TRUE");
+    }
+
+    public void harIkkeDeltCvFilter() {
+        brukKunEssensiellInfo = false;
+        whereStatement.add("NOT (" + HAR_DELT_CV + " = TRUE AND " + CV_EKSISTERER + " = TRUE)");
     }
 
     @SneakyThrows
@@ -172,7 +184,7 @@ public class PostgresQueryBuilder {
         if (brukKunEssensiellInfo) {
             return bruker.fraEssensiellInfo(row);
         } else {
-            return bruker.fraBrukerView(row);
+            return bruker.fraBrukerView(row, vedtaksPilot);
         }
     }
 

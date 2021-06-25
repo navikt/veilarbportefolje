@@ -34,7 +34,7 @@ public class PostgresService {
         List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
         boolean vedtaksPilot = erVedtakstottePilotPa(EnhetId.of(enhetId));
 
-        PostgresQueryBuilder query = new PostgresQueryBuilder(jdbcTemplate, enhetId);
+        PostgresQueryBuilder query = new PostgresQueryBuilder(jdbcTemplate, enhetId, vedtaksPilot);
 
         boolean kallesFraMinOversikt = StringUtils.isNotBlank(veilederIdent);
         if (kallesFraMinOversikt) {
@@ -82,16 +82,20 @@ public class PostgresService {
             query.kjonnfilter(filtervalg.kjonn);
         }
 
+        if (filtervalg.harCvFilter()) {
+            if(filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)){
+                query.harDeltCvFilter();
+            } else if(filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_IKKE_DELT_CV)) {
+                query.harIkkeDeltCvFilter();
+            }
+        }
+
         /*
         if (filtervalg.harYtelsefilter()) {
             BoolQueryBuilder subQuery = boolQuery();
             filtervalg.ytelse.underytelser.forEach(
                     ytelse -> queryBuilder.must(subQuery.should(matchQuery("ytelse", ytelse.name())))
             );
-        }
-
-        if (filtervalg.harCvFilter()) {
-            queryBuilder.filter(matchQuery("har_delt_cv", filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)));
         }
 
         if (filtervalg.harAktivitetFilter()) {

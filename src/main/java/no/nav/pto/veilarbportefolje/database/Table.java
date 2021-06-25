@@ -65,9 +65,10 @@ public class Table {
 
     public static final class BRUKER_CV {
         public static final String TABLE_NAME = "BRUKER_CV";
+
         public static final String AKTOERID = "AKTOERID";
-        public static final String FNR = "FNR";
         public static final String HAR_DELT_CV = "HAR_DELT_CV";
+        public static final String CV_EKSISTERE = "CV_EKSISTERE";
         public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
     }
 
@@ -118,12 +119,23 @@ public class Table {
         public static final String TILTAKSKODE = "TILTAKSKODE";
     }
 
-    public static final class BRUKERTILTAK {
-        public static final String TABLE_NAME = "ENHETTILTAK";
-        public static final String FODSELSNR = "FODSELSNR";
+    public static final class BRUKERTILTAK_V2 {
+        public static final String TABLE_NAME = "BRUKERTILTAK_V2";
+        public static final String AKTOERID = "AKTOERID";
         public static final String TILTAKSKODE = "TILTAKSKODE";
         public static final String TILDATO = "TILDATO";
+    }
 
+    public static final class GRUPPE_AKTIVITER {
+        public static final String TABLE_NAME = "GRUPPE_AKTIVITER";
+        public static final String MOTEPLAN_ID = "MOTEPLAN_ID";
+        public static final String VEILEDNINGDELTAKER_ID = "VEILEDNINGDELTAKER_ID";
+
+        public static final String AKTOERID = "AKTOERID";
+        public static final String MOTEPLAN_STARTDATO = "MOTEPLAN_STARTDATO";
+        public static final String MOTEPLAN_SLUTTDATO = "MOTEPLAN_SLUTTDATO";
+        public static final String HENDELSE_ID = "HENDELSE_ID";
+        public static final String AKTIV = "AKTIV";
     }
 
 }

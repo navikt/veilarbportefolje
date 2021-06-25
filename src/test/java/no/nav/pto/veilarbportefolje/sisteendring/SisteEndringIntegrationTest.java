@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
 import io.vavr.control.Try;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
@@ -14,6 +13,7 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
