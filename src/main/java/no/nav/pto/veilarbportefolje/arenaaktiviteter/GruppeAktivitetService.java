@@ -8,6 +8,8 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetDTO
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,6 +28,7 @@ public class GruppeAktivitetService {
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     @NonNull @Qualifier("systemClient") private final AktorClient aktorClient;
     private final BrukerService brukerService;
+    private final ElasticIndexer elasticIndexer;
 
     public void behandleKafkaRecord(ConsumerRecord<String, GruppeAktivitetDTO> kafkaMelding) {
         GruppeAktivitetDTO melding = kafkaMelding.value();
@@ -51,6 +54,9 @@ public class GruppeAktivitetService {
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         boolean aktiv = !(skalSlettesGoldenGate(kafkaMelding) || skalSletteGruppeAktivitet(innhold));
         gruppeAktivitetRepository.upsertGruppeAktivitet(innhold, aktorId, aktiv);
+        gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(PersonId.of(String.valueOf(innhold.getPersonId())), aktorId);
+
+        elasticIndexer.indekser(aktorId);
     }
 
     static boolean skalSletteGruppeAktivitet(GruppeAktivitetInnhold gruppeInnhold) {
