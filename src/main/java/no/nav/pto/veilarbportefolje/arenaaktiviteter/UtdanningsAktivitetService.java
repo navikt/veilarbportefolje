@@ -27,9 +27,10 @@ public class UtdanningsAktivitetService {
     public void behandleKafkaRecord(ConsumerRecord<String, UtdanningsAktivitetDTO> kafkaMelding) {
         UtdanningsAktivitetDTO melding = kafkaMelding.value();
         log.info(
-                "Behandler kafka-melding med key {} og offset {} på topic {}",
+                "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
                 kafkaMelding.key(),
                 kafkaMelding.offset(),
+                kafkaMelding.partition(),
                 kafkaMelding.topic()
         );
         behandleKafkaMelding(melding);

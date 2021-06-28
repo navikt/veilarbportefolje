@@ -11,6 +11,8 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakStatuser;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,7 +23,6 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.*;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @Slf4j
 @Service
@@ -33,20 +34,22 @@ public class TiltaksService {
     @Qualifier("systemClient")
     private final AktorClient aktorClient;
     private final ArenaHendelseRepository arenaHendelseRepository;
+    private final ElasticIndexer elasticIndexer;
 
     public void behandleKafkaRecord(ConsumerRecord<String, TiltakDTO> kafkaMelding) {
         TiltakDTO melding = kafkaMelding.value();
         log.info(
-                "Behandler kafka-melding med key {} og offset {} på topic {}",
+                "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
                 kafkaMelding.key(),
                 kafkaMelding.offset(),
+                kafkaMelding.partition(),
                 kafkaMelding.topic()
         );
         behandleKafkaMelding(melding);
     }
 
     public void behandleKafkaMelding(TiltakDTO kafkaMelding) {
-        log.info("Behandler utdannings-aktivtet-melding");
+        log.info("Behandler tiltaks-melding");
         TiltakInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
@@ -55,12 +58,13 @@ public class TiltaksService {
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
             tiltakRepositoryV2.delete(innhold.getAktivitetid());
-            //aktivitetService.slettOgIndekserAktivitet(innhold.getAktivitetid(), aktorId);
         } else {
             Brukertiltak tiltak = mapTiltiltak(innhold);
             tiltakRepositoryV2.upsert(tiltak, aktorId, innhold.getAktivitetid());
         }
+        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(PersonId.of(String.valueOf(innhold.getPersonId())), aktorId);
         arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
+        elasticIndexer.indekser(aktorId);
     }
 
     private Brukertiltak mapTiltiltak(TiltakInnhold innhold) {
