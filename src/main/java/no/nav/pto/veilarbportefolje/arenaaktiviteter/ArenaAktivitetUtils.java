@@ -50,10 +50,7 @@ public interface ArenaAktivitetUtils {
         if(date == null){
             return null;
         }
-        if(tilOgMedDato){
-            return date.getDato().plusHours(23).plusMinutes(59);
-        }
-        return date.getDato();
+        return date.getDato(tilOgMedDato);
     }
 
     static boolean erUtgatt(ArenaDato tilDato, boolean tilOgMedDato) {

@@ -16,7 +16,15 @@ public class ArenaDato {
     }
 
     public ZonedDateTime getDato() {
+        return getDato(false);
+    }
+
+    public ZonedDateTime getDato(boolean tilOgMedDato) {
         if (dato.length() == localDateLength) {
+            if(tilOgMedDato){
+                return ZonedDateTime.of(LocalDate.parse(dato).atStartOfDay(), ZoneId.of("Europe/Oslo"))
+                        .plusHours(23).plusMinutes(59);
+            }
             return ZonedDateTime.of(LocalDate.parse(dato).atStartOfDay(), ZoneId.of("Europe/Oslo"));
         }
         return ZonedDateTime.of(LocalDateTime.parse(dato, format), ZoneId.of("Europe/Oslo"));
