@@ -6,7 +6,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyperFraKafka;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.ArenaDato;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateOperations;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakDTO;
@@ -37,7 +36,7 @@ import static org.mockito.Mockito.mock;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class TiltakTest {
-    private final TiltaksService tiltaksService;
+    private final TiltakServiceV2 tiltakServiceV2;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final JdbcTemplate jdbcTemplate;
     private final UnleashService unleashService;
@@ -63,7 +62,7 @@ public class TiltakTest {
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
-        this.tiltaksService = new TiltaksService(tiltakRepositoryV2, aktorClient, arenaHendelseRepository, mock(ElasticIndexer.class));
+        this.tiltakServiceV2 = new TiltakServiceV2(tiltakRepositoryV2, aktorClient, arenaHendelseRepository, mock(ElasticIndexer.class));
     }
 
     @Test
@@ -80,7 +79,7 @@ public class TiltakTest {
                         .setAktivitetid("UA-123456789")
                 );
         tiltakDTO.setOperationType(GoldenGateOperations.INSERT);
-        tiltaksService.behandleKafkaMelding(tiltakDTO);
+        tiltakServiceV2.behandleKafkaMelding(tiltakDTO);
 
         Optional<AktivitetStatus> tiltak = hentAktivitetStatus();
         assertThat(tiltak).isPresent();

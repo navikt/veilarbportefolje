@@ -4,13 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.BrukertiltakV2;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.database.Table;
+import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
+import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -23,6 +27,7 @@ import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.getDateOrNull;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2.*;
 
 @Slf4j
@@ -33,14 +38,24 @@ public class TiltakRepositoryV2 {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final AktivitetDAO aktivitetDAO;
 
-    public void upsert(Brukertiltak tiltak, AktorId aktorId, String aktivitetId) {
-        log.info("Lagrer tiltak: {}", aktivitetId);
+    public void upsert(TiltakInnhold innhold, AktorId aktorId) {
+        Timestamp tilDato = Optional.ofNullable(getDateOrNull(innhold.getAktivitetperiodeTil(), true))
+                .map(DateUtils::toTimestamp)
+                .orElse(null);
+
+        log.info("Lagrer tiltak: {}", innhold.getAktivitetid());
         SqlUtils.upsert(db, TABLE_NAME)
-                .set(AKTIVITETID, aktivitetId)
+                .set(AKTIVITETID, innhold.getAktivitetid())
                 .set(AKTOERID, aktorId.get())
-                .set(TILTAKSKODE, tiltak.getTiltak())
-                .set(TILDATO, tiltak.getTildato())
-                .where(WhereClause.equals(AKTIVITETID, aktivitetId))
+                .set(TILTAKSKODE, innhold.getTiltakstype())
+                .set(TILDATO, tilDato)
+                .where(WhereClause.equals(AKTIVITETID, innhold.getAktivitetid()))
+                .execute();
+
+        SqlUtils.upsert(db, Table.TILTAKKODEVERK.TABLE_NAME)
+                .set(Table.TILTAKKODEVERK.KODE, innhold.getTiltakstype())
+                .set(Table.TILTAKKODEVERK.VERDI, innhold.getTiltaksnavn())
+                .where(WhereClause.equals(Table.TILTAKKODEVERK.KODE, innhold.getTiltakstype()))
                 .execute();
     }
 
@@ -58,6 +73,30 @@ public class TiltakRepositoryV2 {
                 .stream()
                 .map(this::mapTilBrukertiltakV2)
                 .collect(toList());
+    }
+
+    public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
+        final String hentKoderPaEnhetSql = "SELECT DISTINCT " + TILTAKSKODE + " FROM " + TABLE_NAME +
+                " INNER JOIN OPPFOLGINGSBRUKER OP ON BRUKERTILTAK_V2." + PERSONID + " = OP.PERSON_ID" +
+                " WHERE OP.NAV_KONTOR=?";
+
+        List<String> tiltakskoder = db.queryForList(hentKoderPaEnhetSql, enhetId.get())
+                .stream()
+                .map(rs -> (String) rs.get(TILTAKSKODE))
+                .collect(toList());
+
+        final String hentNavnPaKoderSql = "SELECT * FROM " + Table.TILTAKKODEVERK.TABLE_NAME +
+                " WHERE " + Table.TILTAKKODEVERK.KODE + " in (:tiltakskoder)";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("tiltakskoder", tiltakskoder);
+
+        return new EnhetTiltak().setTiltak(
+                    namedParameterJdbcTemplate
+                        .queryForList(hentNavnPaKoderSql, params)
+                        .stream().map(this::mapTilTiltak)
+                        .collect(toMap(Tiltakkodeverk::getKode, Tiltakkodeverk::getVerdi))
+        );
     }
 
     public void utledOgLagreTiltakInformasjon(PersonId personId, AktorId aktorId) {
@@ -112,18 +151,16 @@ public class TiltakRepositoryV2 {
                         "AKTOERID in (:aktorIder)";
     }
 
-    private String getTiltaksTyperPaEnhet() {
-        return "SELECT DISTINCT TILTAKSKODE FROM" +
-                " BRUKERTILTAK_V2" +
-                " INNER JOIN VEILARBPORTEFOLJE.OPPFOLGINGSBRUKER OP ON BRUKERTILTAK_V2."+PERSONID+" = OP.PERSON_ID" +
-                " WHERE OP.NAV_KONTOR=?";
-    }
-
     @SneakyThrows
     private BrukertiltakV2 mapTilBrukertiltakV2(Map<String, Object> rs) {
         return new BrukertiltakV2()
                 .setTiltak((String) rs.get(TILTAKSKODE))
                 .setTildato((Timestamp) rs.get(TILDATO))
                 .setAktorId(AktorId.of((String) rs.get(AKTOERID)));
+    }
+
+    @SneakyThrows
+    private Tiltakkodeverk mapTilTiltak(Map<String, Object> rs) {
+        return Tiltakkodeverk.of((String) rs.get(Table.TILTAKKODEVERK.KODE), (String) rs.get(Table.TILTAKKODEVERK.VERDI));
     }
 }

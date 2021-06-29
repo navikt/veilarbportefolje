@@ -113,6 +113,7 @@ public class Table {
         public static final String VERDI = "verdi";
     }
 
+    @Deprecated
     public static final class ENHETTILTAK {
         public static final String TABLE_NAME = "ENHETTILTAK";
         public static final String ENHETID = "ENHETID";
