@@ -51,7 +51,7 @@ public interface ArenaAktivitetUtils {
             return null;
         }
         if(tilOgMedDato){
-            return date.getDato().plusDays(1);
+            return date.getDato().plusHours(23).plusMinutes(59);
         }
         return date.getDato();
     }
