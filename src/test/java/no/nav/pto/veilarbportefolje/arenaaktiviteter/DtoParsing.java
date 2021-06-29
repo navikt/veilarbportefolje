@@ -21,7 +21,7 @@ public class DtoParsing {
         UtdanningsAktivitetDTO goldenGateDTO = fromJson(goldenGateDtoString, UtdanningsAktivitetDTO.class);
         assertThat(goldenGateDTO.getCurrentTimestamp()).isEqualTo("2021-06-23T09:03:55.677014");
         assertThat(goldenGateDTO.getAfter().getClass()).isEqualTo(UtdanningsAktivitetInnhold.class);
-        assertThat(goldenGateDTO.getAfter().getEndretDato().getDato().toString()).isEqualTo("2021-06-18T07:14:31Z");
+        assertThat(goldenGateDTO.getAfter().getEndretDato().getDato().toString()).isEqualTo("2021-06-18T07:14:31+02:00[Europe/Oslo]");
         assertThat(goldenGateDTO.getAfter()).isNotNull();
         assertThat(goldenGateDTO.getBefore()).isNull();
     }

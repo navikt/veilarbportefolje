@@ -46,6 +46,7 @@ public class TiltakRepositoryV2 {
         log.info("Lagrer tiltak: {}", innhold.getAktivitetid());
         SqlUtils.upsert(db, TABLE_NAME)
                 .set(AKTIVITETID, innhold.getAktivitetid())
+                .set(PERSONID, String.valueOf(innhold.getPersonId()))
                 .set(AKTOERID, aktorId.get())
                 .set(TILTAKSKODE, innhold.getTiltakstype())
                 .set(TILDATO, tilDato)
@@ -79,11 +80,10 @@ public class TiltakRepositoryV2 {
         final String hentKoderPaEnhetSql = "SELECT DISTINCT " + TILTAKSKODE + " FROM " + TABLE_NAME +
                 " INNER JOIN OPPFOLGINGSBRUKER OP ON BRUKERTILTAK_V2." + PERSONID + " = OP.PERSON_ID" +
                 " WHERE OP.NAV_KONTOR=?";
-
-        List<String> tiltakskoder = db.queryForList(hentKoderPaEnhetSql, enhetId.get())
-                .stream()
-                .map(rs -> (String) rs.get(TILTAKSKODE))
-                .collect(toList());
+        List<String> tiltakskoder = db.queryForList(hentKoderPaEnhetSql, String.class, enhetId.get());
+        if(tiltakskoder.isEmpty()){
+            return new EnhetTiltak().setTiltak(Map.of());
+        }
 
         final String hentNavnPaKoderSql = "SELECT * FROM " + Table.TILTAKKODEVERK.TABLE_NAME +
                 " WHERE " + Table.TILTAKKODEVERK.KODE + " in (:tiltakskoder)";
@@ -140,15 +140,14 @@ public class TiltakRepositoryV2 {
     }
 
     private String getTiltaksTyperForListOfAktorIds() {
-        return
-                "SELECT " +
-                        "TILTAKSKODE, " +
-                        "AKTOERID, " +
-                        "TILDATO" +
-                        "FROM " +
-                        "BRUKERTILTAK_V2 " +
-                        "WHERE " +
-                        "AKTOERID in (:aktorIder)";
+        return "SELECT " +
+                    "TILTAKSKODE, " +
+                    "AKTOERID, " +
+                    "TILDATO " +
+                    "FROM " +
+                    "BRUKERTILTAK_V2 " +
+                    "WHERE " +
+                    "AKTOERID in (:aktorIder)";
     }
 
     @SneakyThrows

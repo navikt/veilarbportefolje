@@ -13,12 +13,13 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,21 +40,20 @@ public class TiltakTest {
     private final TiltakServiceV2 tiltakServiceV2;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final JdbcTemplate jdbcTemplate;
-    private final UnleashService unleashService;
     private final AktivitetDAO aktivitetDAO;
 
     private final AktorId aktorId = AktorId.of("1000123");
     private final Fnr fnr = Fnr.of("12345678912");
     private final VeilederId veilederId = VeilederId.of("Z123456");
     private final EnhetId testEnhet = EnhetId.of("0000");
+    private final EnhetId annenEnhet = EnhetId.of("0001");
     private final PersonId personId = PersonId.of("123");
 
 
     @Autowired
-    public TiltakTest(TiltakRepositoryV2 tiltakRepositoryV2, JdbcTemplate jdbcTemplate, UnleashService unleashService, AktivitetDAO aktivitetDAO) {
+    public TiltakTest(TiltakRepositoryV2 tiltakRepositoryV2, JdbcTemplate jdbcTemplate, AktivitetDAO aktivitetDAO) {
         this.tiltakRepositoryV2 = tiltakRepositoryV2;
         this.jdbcTemplate = jdbcTemplate;
-        this.unleashService = unleashService;
         this.aktivitetDAO = aktivitetDAO;
 
         ArenaHendelseRepository arenaHendelseRepository = mock(ArenaHendelseRepository.class);
@@ -65,24 +65,65 @@ public class TiltakTest {
         this.tiltakServiceV2 = new TiltakServiceV2(tiltakRepositoryV2, aktorClient, arenaHendelseRepository, mock(ElasticIndexer.class));
     }
 
+
+    @BeforeEach
+    public void reset() {
+        jdbcTemplate.execute("truncate table " + Table.OPPFOLGINGSBRUKER.TABLE_NAME);
+        jdbcTemplate.execute("truncate table " + Table.OPPFOLGING_DATA.TABLE_NAME);
+        jdbcTemplate.execute("truncate table " + Table.AKTOERID_TO_PERSONID.TABLE_NAME);
+        jdbcTemplate.execute("truncate table " + Table.BRUKERTILTAK_V2.TABLE_NAME);
+        jdbcTemplate.execute("truncate table " + Table.TILTAKKODEVERK.TABLE_NAME);
+        jdbcTemplate.execute("truncate table BRUKERSTATUS_AKTIVITETER");
+    }
+
     @Test
-    @Disabled
     public void skal_komme_i_tiltak() {
         insertBruker();
         TiltakDTO tiltakDTO = new TiltakDTO()
                 .setAfter(new TiltakInnhold()
                         .setFnr(fnr.get())
+                        .setPersonId(personId.toInteger())
                         .setHendelseId(1)
+                        .setTiltaksnavn("Test")
+                        .setTiltakstype("T123")
+                        .setDeltakerStatus("GJENN")
                         .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
                         .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
                         .setEndretDato(new ArenaDato("2021-01-01"))
-                        .setAktivitetid("UA-123456789")
+                        .setAktivitetid("TA-123456789")
                 );
         tiltakDTO.setOperationType(GoldenGateOperations.INSERT);
         tiltakServiceV2.behandleKafkaMelding(tiltakDTO);
 
         Optional<AktivitetStatus> tiltak = hentAktivitetStatus();
         assertThat(tiltak).isPresent();
+    }
+
+
+    @Test
+    public void skal_ha_tiltak_pa_enhet() {
+        insertBruker();
+        TiltakDTO tiltakDTO = new TiltakDTO()
+                .setAfter(new TiltakInnhold()
+                        .setFnr(fnr.get())
+                        .setPersonId(personId.toInteger())
+                        .setHendelseId(1)
+                        .setTiltaksnavn("Test")
+                        .setTiltakstype("T123")
+                        .setDeltakerStatus("GJENN")
+                        .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
+                        .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
+                        .setEndretDato(new ArenaDato("2021-01-01"))
+                        .setAktivitetid("TA-123456789")
+                );
+        tiltakDTO.setOperationType(GoldenGateOperations.INSERT);
+        tiltakServiceV2.behandleKafkaMelding(tiltakDTO);
+        EnhetTiltak enhetTiltak = tiltakServiceV2.hentEnhettiltak(testEnhet);
+        EnhetTiltak annenEnhetTiltak = tiltakServiceV2.hentEnhettiltak(annenEnhet);
+
+        assertThat(enhetTiltak.getTiltak().size()).isEqualTo(1);
+        assertThat(annenEnhetTiltak.getTiltak().size()).isEqualTo(0);
+        assertThat(enhetTiltak.getTiltak().get("T123")).isEqualTo("Test");
     }
 
     private Optional<AktivitetStatus> hentAktivitetStatus() {
@@ -95,6 +136,7 @@ public class TiltakTest {
                 .filter(x -> x.getAktivitetType().equals(AktivitetTyper.tiltak.name()))
                 .findFirst();
     }
+
     private void insertBruker() {
         SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
                 .value(Table.OPPFOLGINGSBRUKER.FODSELSNR, fnr.toString())
