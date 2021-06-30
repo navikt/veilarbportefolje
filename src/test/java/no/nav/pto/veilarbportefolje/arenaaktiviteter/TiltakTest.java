@@ -72,7 +72,7 @@ public class TiltakTest {
         jdbcTemplate.execute("truncate table " + Table.OPPFOLGING_DATA.TABLE_NAME);
         jdbcTemplate.execute("truncate table " + Table.AKTOERID_TO_PERSONID.TABLE_NAME);
         jdbcTemplate.execute("truncate table " + Table.BRUKERTILTAK_V2.TABLE_NAME);
-        jdbcTemplate.execute("truncate table " + Table.TILTAKKODEVERK.TABLE_NAME);
+        jdbcTemplate.execute("truncate table " + Table.TILTAKKODEVERK_V2.TABLE_NAME);
         jdbcTemplate.execute("truncate table BRUKERSTATUS_AKTIVITETER");
     }
 
