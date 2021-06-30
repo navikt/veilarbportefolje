@@ -1,10 +1,9 @@
 package no.nav.pto.veilarbportefolje.database;
 
 public class Table {
-    public static final String METADATA = "METADATA";
-
-    public class Kolonner {
-        static final String SIST_INDEKSERT_ES = "SIST_INDEKSERT_ES";
+    public static final class METADATA {
+        public static final String TABLE_NAME = "METADATA";
+        public static final String SIST_INDEKSERT_ES = "SIST_INDEKSERT_ES";
     }
 
     public static final class BRUKER_REGISTRERING {
@@ -148,4 +147,9 @@ public class Table {
         public static final String AKTIV = "AKTIV";
     }
 
+    public static final class HOVEDINDEKSERING {
+        public static final String TABLE_NAME = "HOVEDINDEKSERING";
+        public static final String ID = "ID";
+        public static final String SISTE_HOVEDINDEKSERING_TIDSPUNKT = "SISTE_HOVEDINDEKSERING_TIDSPUNKT";
+    }
 }
