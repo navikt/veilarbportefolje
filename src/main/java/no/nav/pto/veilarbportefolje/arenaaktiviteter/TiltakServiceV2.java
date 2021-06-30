@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.LocalDate;
+
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.*;
 
 @Slf4j
@@ -25,6 +27,7 @@ import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.
 @Transactional
 @RequiredArgsConstructor
 public class TiltakServiceV2 {
+    private static final LocalDate LANSERING_AV_OVERSIKTEN = LocalDate.of(2017,12, 4);
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     @NonNull
     @Qualifier("systemClient")
@@ -80,6 +83,7 @@ public class TiltakServiceV2 {
     }
 
     static boolean skalSlettesTiltak(TiltakInnhold tiltakInnhold) {
-        return tiltakInnhold.getAktivitetperiodeTil() == null || !TiltakStatuser.GJENNOMFORER.equals(tiltakInnhold.getDeltakerStatus());
+        return tiltakInnhold.getAktivitetperiodeTil() == null || !TiltakStatuser.GJENNOMFORER.equals(tiltakInnhold.getDeltakerStatus())
+                || LANSERING_AV_OVERSIKTEN.isAfter(tiltakInnhold.getAktivitetperiodeTil().getDato().toLocalDate());
     }
 }
