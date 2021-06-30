@@ -27,17 +27,6 @@ public class FilmottakConfig {
         return new KopierGR199FraArena(indekserYtelserHandler, aktivitetService, metricsClient, environmentProperties);
     }
 
-    @Bean
-    public TiltakHandler tiltakHandler(
-            TiltakRepository tiltakRepository,
-            AktivitetDAO aktivitetDAO,
-            BrukerService brukerService,
-            BrukerRepository brukerRepository,
-            EnvironmentProperties environmentProperties
-            ) {
-        return new TiltakHandler(tiltakRepository, aktivitetDAO, brukerService, brukerRepository, environmentProperties);
-    }
-
     public static class SftpConfig {
         private String url;
         private String username;
