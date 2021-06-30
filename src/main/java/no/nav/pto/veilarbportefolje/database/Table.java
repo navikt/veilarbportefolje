@@ -107,10 +107,17 @@ public class Table {
         public static final String ANSVARLIG_VEILEDER_NAVN = "ANSVARLIG_VEILEDER_NAVN";
     }
 
+    @Deprecated
     public static final class TILTAKKODEVERK {
         public static final String TABLE_NAME = "tiltakkodeverk";
         public static final String KODE = "kode";
         public static final String VERDI = "verdi";
+    }
+
+    public static final class TILTAKKODEVERK_V2 {
+        public static final String TABLE_NAME = "TILTAKKODEVERKET_V2";
+        public static final String KODE = "KODE";
+        public static final String VERDI = "VERDI";
     }
 
     @Deprecated

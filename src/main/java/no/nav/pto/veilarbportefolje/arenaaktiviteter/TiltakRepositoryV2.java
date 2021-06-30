@@ -29,6 +29,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.getDateOrNull;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2.*;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
 @Repository
@@ -44,6 +45,14 @@ public class TiltakRepositoryV2 {
                 .orElse(null);
 
         log.info("Lagrer tiltak: {}", innhold.getAktivitetid());
+
+        if (oppdaterTiltakskodeVerk(innhold.getTiltakstype(), innhold.getTiltaksnavn())) {
+            SqlUtils.upsert(db, Table.TILTAKKODEVERK_V2.TABLE_NAME)
+                    .set(Table.TILTAKKODEVERK_V2.KODE, innhold.getTiltakstype())
+                    .set(Table.TILTAKKODEVERK_V2.VERDI, innhold.getTiltaksnavn())
+                    .where(WhereClause.equals(Table.TILTAKKODEVERK_V2.KODE, innhold.getTiltakstype()))
+                    .execute();
+        }
         SqlUtils.upsert(db, TABLE_NAME)
                 .set(AKTIVITETID, innhold.getAktivitetid())
                 .set(PERSONID, String.valueOf(innhold.getPersonId()))
@@ -53,11 +62,6 @@ public class TiltakRepositoryV2 {
                 .where(WhereClause.equals(AKTIVITETID, innhold.getAktivitetid()))
                 .execute();
 
-        SqlUtils.upsert(db, Table.TILTAKKODEVERK.TABLE_NAME)
-                .set(Table.TILTAKKODEVERK.KODE, innhold.getTiltakstype())
-                .set(Table.TILTAKKODEVERK.VERDI, innhold.getTiltaksnavn())
-                .where(WhereClause.equals(Table.TILTAKKODEVERK.KODE, innhold.getTiltakstype()))
-                .execute();
     }
 
     public void delete(String tiltakId) {
@@ -67,59 +71,33 @@ public class TiltakRepositoryV2 {
                 .execute();
     }
 
-    private List<BrukertiltakV2> hentTiltak(AktorId aktorId) {
-        String sql = "SELECT * FROM " + TABLE_NAME
-                + " WHERE " + AKTOERID + " = ?";
-        return db.queryForList(sql, aktorId.get())
-                .stream()
-                .map(this::mapTilBrukertiltakV2)
-                .collect(toList());
-    }
-
     public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
         final String hentKoderPaEnhetSql = "SELECT DISTINCT " + TILTAKSKODE + " FROM " + TABLE_NAME +
                 " INNER JOIN OPPFOLGINGSBRUKER OP ON BRUKERTILTAK_V2." + PERSONID + " = OP.PERSON_ID" +
                 " WHERE OP.NAV_KONTOR=?";
         List<String> tiltakskoder = db.queryForList(hentKoderPaEnhetSql, String.class, enhetId.get());
-        if(tiltakskoder.isEmpty()){
+        if (tiltakskoder.isEmpty()) {
             return new EnhetTiltak().setTiltak(Map.of());
         }
 
-        final String hentNavnPaKoderSql = "SELECT * FROM " + Table.TILTAKKODEVERK.TABLE_NAME +
-                " WHERE " + Table.TILTAKKODEVERK.KODE + " in (:tiltakskoder)";
+        final String hentNavnPaKoderSql = "SELECT * FROM " + Table.TILTAKKODEVERK_V2.TABLE_NAME +
+                " WHERE " + Table.TILTAKKODEVERK_V2.KODE + " in (:tiltakskoder)";
 
         Map<String, Object> params = new HashMap<>();
         params.put("tiltakskoder", tiltakskoder);
 
         return new EnhetTiltak().setTiltak(
-                    namedParameterJdbcTemplate
+                namedParameterJdbcTemplate
                         .queryForList(hentNavnPaKoderSql, params)
                         .stream().map(this::mapTilTiltak)
                         .collect(toMap(Tiltakkodeverk::getKode, Tiltakkodeverk::getVerdi))
         );
     }
 
-    public void utledOgLagreTiltakInformasjon(PersonId personId, AktorId aktorId) {
-        List<BrukertiltakV2> gruppeAktiviteter = hentTiltak(aktorId);
-        Timestamp nesteUtlopsdato = gruppeAktiviteter.stream()
-                .map(BrukertiltakV2::getTildato)
-                .max(Comparator.naturalOrder())
-                .orElse(null);
-
-        boolean aktiv = (nesteUtlopsdato != null);
-        AktivitetStatus aktivitetStatus = new AktivitetStatus()
-                .setAktivitetType(AktivitetTyper.tiltak.name())
-                .setAktiv(aktiv)
-                .setAktoerid(aktorId)
-                .setPersonid(personId)
-                .setNesteUtlop(nesteUtlopsdato);
-        aktivitetDAO.upsertAktivitetStatus(aktivitetStatus);
-    }
-
     /*
     Kan forenkles til kun en bruker ved overgang til postgres
     String sql = "SELECT DISTINCT " + Table.BRUKERTILTAK_V2.TILTAKSKODE + " FROM " + Table.BRUKERTILTAK_V2.TABLE_NAME
-                + " WHERE " + Table.BRUKERTILTAK_V2.AKTOERID + " = ?";
+            + " WHERE " + Table.BRUKERTILTAK_V2.AKTOERID + " = ?";
      */
     public Map<AktorId, Set<BrukertiltakV2>> hentBrukertiltak(List<AktorId> aktorIder) {
         if (aktorIder == null || aktorIder.isEmpty()) {
@@ -139,16 +117,56 @@ public class TiltakRepositoryV2 {
                         }));
     }
 
+    public void utledOgLagreTiltakInformasjon(PersonId personId, AktorId aktorId) {
+        List<BrukertiltakV2> gruppeAktiviteter = hentTiltak(aktorId);
+        Timestamp nesteUtlopsdato = gruppeAktiviteter.stream()
+                .map(BrukertiltakV2::getTildato)
+                .max(Comparator.naturalOrder())
+                .orElse(null);
+
+        boolean aktiv = (nesteUtlopsdato != null);
+        AktivitetStatus aktivitetStatus = new AktivitetStatus()
+                .setAktivitetType(AktivitetTyper.tiltak.name())
+                .setAktiv(aktiv)
+                .setAktoerid(aktorId)
+                .setPersonid(personId)
+                .setNesteUtlop(nesteUtlopsdato);
+        aktivitetDAO.upsertAktivitetStatus(aktivitetStatus);
+    }
+
     private String getTiltaksTyperForListOfAktorIds() {
         return "SELECT " +
-                    "TILTAKSKODE, " +
-                    "AKTOERID, " +
-                    "TILDATO " +
-                    "FROM " +
-                    "BRUKERTILTAK_V2 " +
-                    "WHERE " +
-                    "AKTOERID in (:aktorIder)";
+                "TILTAKSKODE, " +
+                "AKTOERID, " +
+                "TILDATO " +
+                "FROM " +
+                "BRUKERTILTAK_V2 " +
+                "WHERE " +
+                "AKTOERID in (:aktorIder)";
     }
+
+    private List<BrukertiltakV2> hentTiltak(AktorId aktorId) {
+        String sql = "SELECT * FROM " + TABLE_NAME
+                + " WHERE " + AKTOERID + " = ?";
+        return db.queryForList(sql, aktorId.get())
+                .stream()
+                .map(this::mapTilBrukertiltakV2)
+                .collect(toList());
+    }
+
+    private boolean oppdaterTiltakskodeVerk(String tiltaksKode, String verdiFraKafka) {
+        Optional<String> verdiITiltakskodeVerk = hentVerdiITiltakskodeVerk(tiltaksKode);
+        return verdiITiltakskodeVerk.map(lagretVerdi -> !lagretVerdi.equals(verdiFraKafka)).orElse(true);
+    }
+
+    private Optional<String> hentVerdiITiltakskodeVerk(String kode) {
+        String sql = "SELECT " + Table.TILTAKKODEVERK_V2.VERDI + " FROM " + Table.TILTAKKODEVERK_V2.TABLE_NAME
+                + " WHERE " + Table.TILTAKKODEVERK_V2.KODE + " = ?";
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject(sql, String.class, kode))
+        );
+    }
+
 
     @SneakyThrows
     private BrukertiltakV2 mapTilBrukertiltakV2(Map<String, Object> rs) {
@@ -160,6 +178,6 @@ public class TiltakRepositoryV2 {
 
     @SneakyThrows
     private Tiltakkodeverk mapTilTiltak(Map<String, Object> rs) {
-        return Tiltakkodeverk.of((String) rs.get(Table.TILTAKKODEVERK.KODE), (String) rs.get(Table.TILTAKKODEVERK.VERDI));
+        return Tiltakkodeverk.of((String) rs.get(Table.TILTAKKODEVERK_V2.KODE), (String) rs.get(Table.TILTAKKODEVERK_V2.VERDI));
     }
 }
