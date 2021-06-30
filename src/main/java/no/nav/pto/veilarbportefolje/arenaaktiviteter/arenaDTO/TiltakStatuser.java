@@ -1,5 +1,5 @@
 package no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO;
 
-public enum TiltakStatuser {
-    GJENNOMFORER
+public class TiltakStatuser {
+    public static String GJENNOMFORER = "GJENN";
 }

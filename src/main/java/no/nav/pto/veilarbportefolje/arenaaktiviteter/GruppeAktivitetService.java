@@ -33,9 +33,10 @@ public class GruppeAktivitetService {
     public void behandleKafkaRecord(ConsumerRecord<String, GruppeAktivitetDTO> kafkaMelding) {
         GruppeAktivitetDTO melding = kafkaMelding.value();
         log.info(
-                "Behandler kafka-melding med key {} og offset {} på topic {}",
+                "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
                 kafkaMelding.key(),
                 kafkaMelding.offset(),
+                kafkaMelding.partition(),
                 kafkaMelding.topic()
         );
         behandleKafkaMelding(melding);

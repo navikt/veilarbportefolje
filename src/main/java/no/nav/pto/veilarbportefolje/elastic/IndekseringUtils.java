@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -14,6 +15,13 @@ import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper.mote;
 
 @Slf4j
 public class IndekseringUtils {
+
+    static OppfolgingsBruker finnBruker(List<OppfolgingsBruker> brukere, AktorId aktorId) {
+        return brukere.stream()
+                .filter(bruker -> bruker.getAktoer_id().equals(aktorId.get()))
+                .findFirst()
+                .orElseThrow(IllegalStateException::new);
+    }
 
     static OppfolgingsBruker finnBruker(List<OppfolgingsBruker> brukere, Fnr fnr) {
         return brukere.stream()
