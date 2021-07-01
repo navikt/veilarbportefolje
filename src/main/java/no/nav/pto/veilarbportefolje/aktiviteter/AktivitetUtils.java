@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -22,11 +21,10 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraAktivitetsplanList;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraKafka;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 
 @Slf4j
 public class AktivitetUtils {
-
+    private static final String ARENA_AKTIVITET_DATOFILTER = "2017-12-04";
     private static final String DATO_FORMAT = "yyyy-MM-dd";
 
     public static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(AktoerAktiviteter aktoerAktiviteter,
@@ -187,7 +185,7 @@ public class AktivitetUtils {
 
 
     public static boolean etterFilterDato(Timestamp tilDato) {
-        Timestamp datofilter = TiltakHandler.getDatoFilter();
+        Timestamp datofilter = parseDato(ARENA_AKTIVITET_DATOFILTER);
         return tilDato == null || datofilter == null || datofilter.before(tilDato);
     }
 

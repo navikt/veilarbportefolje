@@ -60,6 +60,22 @@ public class Table {
         public static final String TABLE_NAME = "BRUKER_DATA";
         public static final String PERSONID = "PERSONID";
         public static final String AKTOERID = "AKTOERID";
+
+        public static final String YTELSE = "YTELSE";
+        public static final String UTLOPSDATO = "UTLOPSDATO";
+        public static final String UTLOPSDATOFASETT = "UTLOPSDATOFASETT";
+        public static final String DAGPUTLOPUKE = "DAGPUTLOPUKE";
+        public static final String DAGPUTLOPUKEFASETT = "DAGPUTLOPUKEFASETT";
+        public static final String PERMUTLOPUKE = "PERMUTLOPUKE";
+        public static final String PERMUTLOPUKEFASETT = "PERMUTLOPUKEFASETT";
+        public static final String AAPMAXTIDUKE = "AAPMAXTIDUKE";
+        public static final String AAPMAXTIDUKEFASETT = "AAPMAXTIDUKEFASETT";
+        public static final String AAPUNNTAKDAGERIGJEN = "AAPUNNTAKDAGERIGJEN";
+        public static final String AAPUNNTAKUKERIGJENFASETT = "AAPUNNTAKUKERIGJENFASETT";
+        public static final String NYESTEUTLOPTEAKTIVITET = "NYESTEUTLOPTEAKTIVITET";
+        public static final String AKTIVITET_START = "AKTIVITET_START";
+        public static final String NESTE_AKTIVITET_START = "NESTE_AKTIVITET_START";
+        public static final String FORRIGE_AKTIVITET_START = "FORRIGE_AKTIVITET_START";
     }
 
     public static final class BRUKER_CV {
