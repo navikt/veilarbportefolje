@@ -19,8 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.*;
+import static no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakStatuser.AKTUELL;
 
 @Slf4j
 @Service
@@ -82,7 +84,16 @@ public class TiltakServiceV2 {
         return false;
     }
 
+    /*
+    GodkjenteStatuser: Aktuell (AKTUELL), Gjennomføres (GJENN), Informasjonsmøte (INFOMOETE), Takket ja til tilbud (JATAKK), Godkjent tiltaksplass (TILBUD), Venteliste (VENTELISTE)
+        * AKTUELL gjelder kun for Arbeidsmarkedopplæring (AMO) og er da unntatt dersom det gjelder Individuelt tiltak (IND) eller Institusjonelt tiltak (INST)
+     https://confluence.adeo.no/pages/viewpage.action?pageId=409961201
+     */
     static boolean skalSlettesTiltak(TiltakInnhold tiltakInnhold) {
+        List<String> godkjenteStatuser = TiltakStatuser.godkjenteTiltaksStatuser;
+        if("GRUPPEAMO".equals(tiltakInnhold.getTiltakstype())){
+            godkjenteStatuser.add(AKTUELL);
+        }
         return tiltakInnhold.getAktivitetperiodeTil() == null || !TiltakStatuser.godkjenteTiltaksStatuser.contains(tiltakInnhold.getDeltakerStatus())
                 || LANSERING_AV_OVERSIKTEN.isAfter(tiltakInnhold.getAktivitetperiodeTil().getDato().toLocalDate());
     }
