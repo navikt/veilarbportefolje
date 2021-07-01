@@ -15,10 +15,13 @@ public class ArenaDato {
         this.dato = dato;
     }
 
+    /*
+        NB: Klokkelsett i arena datoer kan ikke stoles pa.
+     */
     public ZonedDateTime getDato() {
         if (dato.length() == localDateLength) {
             return ZonedDateTime.of(LocalDate.parse(dato).atStartOfDay(), ZoneId.of("Europe/Oslo"));
         }
-        return ZonedDateTime.of(LocalDateTime.parse(dato, format), ZoneId.of("Europe/Oslo"));
+        return ZonedDateTime.of(LocalDateTime.parse(dato, format).toLocalDate().atStartOfDay(), ZoneId.of("Europe/Oslo"));
     }
 }

@@ -1,10 +1,9 @@
 package no.nav.pto.veilarbportefolje.database;
 
 public class Table {
-    public static final String METADATA = "METADATA";
-
-    public class Kolonner {
-        static final String SIST_INDEKSERT_ES = "SIST_INDEKSERT_ES";
+    public static final class METADATA {
+        public static final String TABLE_NAME = "METADATA";
+        public static final String SIST_INDEKSERT_ES = "SIST_INDEKSERT_ES";
     }
 
     public static final class BRUKER_REGISTRERING {
@@ -107,6 +106,35 @@ public class Table {
         public static final String ANSVARLIG_VEILEDER_NAVN = "ANSVARLIG_VEILEDER_NAVN";
     }
 
+    @Deprecated
+    public static final class TILTAKKODEVERK {
+        public static final String TABLE_NAME = "tiltakkodeverk";
+        public static final String KODE = "kode";
+        public static final String VERDI = "verdi";
+    }
+
+    public static final class TILTAKKODEVERK_V2 {
+        public static final String TABLE_NAME = "TILTAKKODEVERKET_V2";
+        public static final String KODE = "KODE";
+        public static final String VERDI = "VERDI";
+    }
+
+    @Deprecated
+    public static final class ENHETTILTAK {
+        public static final String TABLE_NAME = "ENHETTILTAK";
+        public static final String ENHETID = "ENHETID";
+        public static final String TILTAKSKODE = "TILTAKSKODE";
+    }
+
+    public static final class BRUKERTILTAK_V2 {
+        public static final String TABLE_NAME = "BRUKERTILTAK_V2";
+        public static final String AKTIVITETID = "AKTIVITETID";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String PERSONID = "PERSONID";
+        public static final String TILTAKSKODE = "TILTAKSKODE";
+        public static final String TILDATO = "TILDATO";
+    }
+
     public static final class GRUPPE_AKTIVITER {
         public static final String TABLE_NAME = "GRUPPE_AKTIVITER";
         public static final String MOTEPLAN_ID = "MOTEPLAN_ID";
@@ -119,4 +147,9 @@ public class Table {
         public static final String AKTIV = "AKTIV";
     }
 
+    public static final class HOVEDINDEKSERING {
+        public static final String TABLE_NAME = "HOVEDINDEKSERING";
+        public static final String ID = "ID";
+        public static final String SISTE_HOVEDINDEKSERING_TIDSPUNKT = "SISTE_HOVEDINDEKSERING_TIDSPUNKT";
+    }
 }

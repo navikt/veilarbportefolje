@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.mock;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class GruppeAktivitetTest {
@@ -42,10 +44,10 @@ public class GruppeAktivitetTest {
         this.jdbcTemplate = jdbcTemplate;
         this.aktivitetDAO = aktivitetDAO;
 
-        AktorClient aktorClient = Mockito.mock(AktorClient.class);
+        AktorClient aktorClient = mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
-        this.gruppeAktivitetService = new GruppeAktivitetService(gruppeAktivitetRepository, aktorClient, brukerService);
+        this.gruppeAktivitetService = new GruppeAktivitetService(gruppeAktivitetRepository, aktorClient, brukerService, mock(ElasticIndexer.class));
   }
 
     @BeforeEach

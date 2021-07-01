@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetRepository;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
@@ -50,7 +51,6 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -118,7 +118,8 @@ import static org.mockito.Mockito.when;
         ArbeidslisteRepositoryV2.class,
         UtdanningsAktivitetService.class,
         ArenaHendelseRepository.class,
-        GruppeAktivitetRepository.class
+        GruppeAktivitetRepository.class,
+        TiltakRepositoryV2.class
 })
 public class ApplicationConfigTest {
 

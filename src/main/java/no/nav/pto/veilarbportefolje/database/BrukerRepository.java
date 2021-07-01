@@ -36,7 +36,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.Table.AKTOERID_TO_PERSONID;
-import static no.nav.pto.veilarbportefolje.database.Table.Kolonner.SIST_INDEKSERT_ES;
 import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.FODSELSNR;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
@@ -112,8 +111,8 @@ public class BrukerRepository {
         db.setFetchSize(1000);
 
         Timestamp sistIndeksert = SqlUtils
-                .select(db, Table.METADATA, rs -> rs.getTimestamp(SIST_INDEKSERT_ES))
-                .column(SIST_INDEKSERT_ES)
+                .select(db, Table.METADATA.TABLE_NAME, rs -> rs.getTimestamp(Table.METADATA.SIST_INDEKSERT_ES))
+                .column(Table.METADATA.SIST_INDEKSERT_ES)
                 .execute();
 
         return SqlUtils

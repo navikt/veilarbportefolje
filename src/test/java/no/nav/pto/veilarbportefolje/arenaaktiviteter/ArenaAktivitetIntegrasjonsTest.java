@@ -20,7 +20,6 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.sbl.sql.SqlUtils;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +39,6 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class ArenaAktivitetIntegrasjonsTest {
     private final UtdanningsAktivitetService utdanningsAktivitetService;
-    private final TiltaksService tiltaksService;
     private final JdbcTemplate jdbcTemplate;
     private final UnleashService unleashService;
     private final AktivitetService aktivitetService;
@@ -65,7 +63,6 @@ public class ArenaAktivitetIntegrasjonsTest {
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
         this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService, sisteEndringService, unleashService);
-        this.tiltaksService = new TiltaksService(aktivitetService, aktorClient, arenaHendelseRepository);
         this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient, arenaHendelseRepository);
     }
 
@@ -105,26 +102,6 @@ public class ArenaAktivitetIntegrasjonsTest {
 
         assertThat(utdanningsAktivitet).isPresent();
         assertThat(ijobbAktivitet).isPresent();
-    }
-
-    @Test
-    @Disabled
-    public void skal_komme_i_tiltak() {
-        insertBruker();
-        TiltakDTO tiltakDTO = new TiltakDTO()
-                .setAfter(new TiltakInnhold()
-                        .setFnr(fnr.get())
-                        .setHendelseId(1)
-                        .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
-                        .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
-                        .setEndretDato(new ArenaDato("2021-01-01"))
-                        .setAktivitetid("UA-123456789")
-                );
-        tiltakDTO.setOperationType(GoldenGateOperations.INSERT);
-        tiltaksService.behandleKafkaMelding(tiltakDTO);
-
-        //Optional<AktivitetStatus> tiltak = hentAktivitetStatus(AktivitetTyperFraKafka.tiltak);
-        //assertThat(tiltak).isPresent();
     }
 
     @Test
