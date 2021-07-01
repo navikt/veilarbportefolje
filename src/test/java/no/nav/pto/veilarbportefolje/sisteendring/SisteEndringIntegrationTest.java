@@ -2,9 +2,11 @@ package no.nav.pto.veilarbportefolje.sisteendring;
 
 import io.vavr.control.Try;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
@@ -13,6 +15,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
@@ -41,16 +44,19 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final ElasticService elasticService;
     private final SistLestService sistLestService;
     private final VeilederId veilederId = VeilederId.of("Z123456");
-    private final String testEnhet = "0000";
+    private final EnhetId testEnhet = EnhetId.of("0000");
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService) {
+    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService , UnleashService unleashService) {
         brukerService = Mockito.mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
 
-        this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering,  brukerService, sisteEndringService);
-        this.sistLestService = new SistLestService(brukerService, sisteEndringService);
+        unleashService = Mockito.mock(UnleashService.class);
+        Mockito.when(unleashService.isEnabled(FeatureToggle.NY_KAFKA_COMMON_LIB)).thenReturn(false);
+
+        this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService, sisteEndringService, unleashService);
+        this.sistLestService = new SistLestService(brukerService, sisteEndringService, unleashService);
         this.elasticService = elasticService;
         this.malService = malService;
     }
@@ -120,11 +126,11 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         ZonedDateTime zonedDateTime = ZonedDateTime.parse(endretTid);
         ZonedDateTime zonedDateTime_NY_IJOBB = ZonedDateTime.parse(endretTid_ny);
 
-        populateElastic(aktoerId.toString());
+        populateElastic(testEnhet, veilederId, aktoerId.toString());
 
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
-                    testEnhet,
+                    testEnhet.get(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -147,7 +153,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
-                    testEnhet,
+                    testEnhet.get(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -159,7 +165,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         });
 
         var responseBrukere = elasticService.hentBrukere(
-                testEnhet,
+                testEnhet.get(),
                 empty(),
                 "asc",
                 "ikke_satt",
@@ -171,7 +177,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt()).isEqualTo(zonedDateTime.toLocalDateTime());
 
         var responseBrukere_2 = elasticService.hentBrukere(
-                testEnhet,
+                testEnhet.get(),
                 empty(),
                 "asc",
                 "ikke_satt",
@@ -190,10 +196,10 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void siste_endring_ulest_skal_ikke_krasje_med_null_verdier() {
         final AktorId aktoerId = randomAktorId();
-        populateElastic(aktoerId.toString());
+        populateElastic(testEnhet, veilederId, aktoerId.toString());
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
-                    testEnhet,
+                    testEnhet.get(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -205,7 +211,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         });
 
         var responseBrukere = elasticService.hentBrukere(
-                testEnhet,
+                testEnhet.get(),
                 empty(),
                 "asc",
                 "ikke_satt",
@@ -224,10 +230,10 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         String lestAvVeilederTid = "2019-07-28T09:47:42.48+02:00";
 
-        populateElastic(aktoerId.toString());
+        populateElastic(testEnhet, veilederId, aktoerId.toString());
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
-                    testEnhet,
+                    testEnhet.get(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -249,7 +255,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
-                    testEnhet,
+                    testEnhet.get(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -263,7 +269,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
-                    testEnhet,
+                    testEnhet.get(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -274,7 +280,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         });
 
         var responseBrukere1 = elasticService.hentBrukere(
-                testEnhet,
+                testEnhet.get(),
                 empty(),
                 "asc",
                 "ikke_satt",
@@ -285,7 +291,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseBrukere1.getAntall()).isEqualTo(1);
 
         var responseBrukere2 = elasticService.hentBrukere(
-                testEnhet,
+                testEnhet.get(),
                 empty(),
                 "asc",
                 "ikke_satt",
@@ -309,10 +315,10 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         String endret_Tid_EGEN_bruker_2_i_2020 = "2020-05-28T06:47:42.480Z";
         String endret_Tid_EGEN_bruker_3_i_2019 = "2019-05-28T00:47:42.480Z";
 
-        populateElastic(aktoerId_1.get(), aktoerId_2.get(), aktoerId_3.get());
+        populateElastic(testEnhet, veilederId, aktoerId_1.get(), aktoerId_2.get(), aktoerId_3.get());
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
-                    testEnhet,
+                    testEnhet.get(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -345,7 +351,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
-                    testEnhet,
+                    testEnhet.get(),
                     empty(),
                     "ascending",
                     "ikke_satt",
@@ -358,7 +364,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
-                    testEnhet,
+                    testEnhet.get(),
                     empty(),
                     "ascending",
                     "ikke_satt",
@@ -370,7 +376,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         });
 
         var responseSortertFULLFORT_IJOBB = elasticService.hentBrukere(
-                testEnhet,
+                testEnhet.get(),
                 empty(),
                 "descending",
                 "siste_endring_tidspunkt",
@@ -383,7 +389,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertFULLFORT_IJOBB.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_IJOBB_bruker_1_i_2024).getYear());
 
         var responseSortertFULLFORT_EGEN = elasticService.hentBrukere(
-                testEnhet,
+                testEnhet.get(),
                 empty(),
                 "ascending",
                 "siste_endring_tidspunkt",
@@ -397,7 +403,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(2).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_EGEN_bruker_1_i_2021).getYear());
 
         var responseSortertFULLFORT_MIX = elasticService.hentBrukere(
-                testEnhet,
+                testEnhet.get(),
                 empty(),
                 "descending",
                 "siste_endring_tidspunkt",
@@ -411,7 +417,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertFULLFORT_MIX.getBrukere().get(2).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_EGEN_bruker_3_i_2019).getYear());
 
         var responseSortertTomRes1 = elasticService.hentBrukere(
-                testEnhet,
+                testEnhet.get(),
                 empty(),
                 "descending",
                 "siste_endring_tidspunkt",
@@ -421,7 +427,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertTomRes1.getAntall()).isEqualTo(0);
 
         var responseSortertTomRes2 = elasticService.hentBrukere(
-                testEnhet,
+                testEnhet.get(),
                 empty(),
                 "descending",
                 "siste_endring_tidspunkt",

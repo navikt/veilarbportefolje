@@ -4,6 +4,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
-public class VeilederTilordnetService implements KafkaConsumerService<String> {
+public class VeilederTilordnetService extends KafkaCommonConsumerService<VeilederTilordnetDTO> implements KafkaConsumerService<String> {
 
     private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
@@ -37,7 +38,15 @@ public class VeilederTilordnetService implements KafkaConsumerService<String> {
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
+        if (isNyKafkaLibraryEnabled()) {
+            return;
+        }
         final VeilederTilordnetDTO dto = JsonUtils.fromJson(kafkaMelding, VeilederTilordnetDTO.class);
+        behandleKafkaMeldingLogikk(dto);
+    }
+
+    @Override
+    protected void behandleKafkaMeldingLogikk(VeilederTilordnetDTO dto) {
         final AktorId aktoerId = dto.getAktorId();
 
         oppfolgingRepository.settVeileder(aktoerId, dto.getVeilederId());

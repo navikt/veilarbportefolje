@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.mal;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,7 @@ import static no.nav.common.json.JsonUtils.fromJson;
 
 @Slf4j
 @Service
-public class MalService implements KafkaConsumerService<String> {
+public class MalService extends KafkaCommonConsumerService<MalEndringKafkaDTO> implements KafkaConsumerService<String> {
 
     private final SisteEndringService sisteEndringService;
     private final AtomicBoolean rewind;
@@ -25,7 +26,15 @@ public class MalService implements KafkaConsumerService<String> {
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
+        if (isNyKafkaLibraryEnabled()) {
+            return;
+        }
         MalEndringKafkaDTO melding = fromJson(kafkaMelding, MalEndringKafkaDTO.class);
+        behandleKafkaMeldingLogikk(melding);
+    }
+
+    @Override
+    protected void behandleKafkaMeldingLogikk(MalEndringKafkaDTO melding) {
         sisteEndringService.behandleMal(melding);
     }
 
