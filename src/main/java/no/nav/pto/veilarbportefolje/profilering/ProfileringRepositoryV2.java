@@ -1,12 +1,13 @@
 package no.nav.pto.veilarbportefolje.profilering;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -22,13 +23,11 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class ProfileringRepositoryV2 {
+    @NonNull
+    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
-
-    @Autowired
-    public ProfileringRepositoryV2(@Qualifier("PostgresJdbc") JdbcTemplate db) {
-        this.db = db;
-    }
 
     public int upsertBrukerProfilering(ArbeidssokerProfilertEvent kafkaMelding) {
         log.info("Oppdaterer brukerprofilering i postgres for: {}, {}, {}", kafkaMelding.getAktorid(), kafkaMelding.getProfilertTil().name(), DateUtils.zonedDateStringToTimestamp(kafkaMelding.getProfileringGjennomfort()));
