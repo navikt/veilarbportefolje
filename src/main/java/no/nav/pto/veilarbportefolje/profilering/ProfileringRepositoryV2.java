@@ -12,14 +12,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
+import java.util.Optional;
+
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.*;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.AKTOERID;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-
-import java.sql.ResultSet;
-import java.util.Optional;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Repository

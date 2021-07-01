@@ -12,7 +12,6 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import static java.time.Instant.now;
-
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 

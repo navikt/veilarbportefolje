@@ -3,8 +3,6 @@ package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.util.AuthorizationUtils;
-import no.nav.pto.veilarbportefolje.util.JobUtils;
-import no.nav.pto.veilarbportefolje.util.RunningJob;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.annotation.WebServlet;
