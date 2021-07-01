@@ -50,7 +50,6 @@ public class TiltakServiceV2 {
     }
 
     public void behandleKafkaMelding(TiltakDTO kafkaMelding) {
-        log.info("Behandler tiltaks-melding");
         TiltakInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
@@ -58,10 +57,13 @@ public class TiltakServiceV2 {
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
+            log.info("Sletter tiltak: {}", innhold.getAktivitetid());
             tiltakRepositoryV2.delete(innhold.getAktivitetid());
         } else {
+            log.info("Lagrer tiltak: {}", innhold.getAktivitetid());
             tiltakRepositoryV2.upsert(innhold, aktorId);
         }
+        log.debug("Ferdig behandlet aktivitet: {}, pa aktor: {}, hendelse: {}", innhold.getAktivitetid(), aktorId, innhold.getHendelseId());
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(PersonId.of(String.valueOf(innhold.getPersonId())), aktorId);
         arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
         elasticIndexer.indekser(aktorId);
