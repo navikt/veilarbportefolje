@@ -22,7 +22,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.*;
-import static no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakStatuser.AKTUELL;
 
 @Slf4j
 @Service
