@@ -89,11 +89,13 @@ public class TiltakServiceV2 {
      @link https://confluence.adeo.no/pages/viewpage.action?pageId=409961201
      */
     static boolean skalSlettesTiltak(TiltakInnhold tiltakInnhold) {
-        List<String> godkjenteStatuser = TiltakStatuser.godkjenteTiltaksStatuser;
+        List<String> godkjenteStatuser;
         if("GRUPPEAMO".equals(tiltakInnhold.getTiltakstype())){
-            godkjenteStatuser.add(AKTUELL);
+            godkjenteStatuser = TiltakStatuser.godkjenteTiltaksStatuser;
+        }else {
+            godkjenteStatuser = TiltakStatuser.godkjenteTiltaksStatuserGruppeAMO;
         }
-        return tiltakInnhold.getAktivitetperiodeTil() == null || !TiltakStatuser.godkjenteTiltaksStatuser.contains(tiltakInnhold.getDeltakerStatus())
+        return tiltakInnhold.getAktivitetperiodeTil() == null || !godkjenteStatuser.contains(tiltakInnhold.getDeltakerStatus())
                 || LANSERING_AV_OVERSIKTEN.isAfter(tiltakInnhold.getAktivitetperiodeTil().getDato().toLocalDate());
     }
 }
