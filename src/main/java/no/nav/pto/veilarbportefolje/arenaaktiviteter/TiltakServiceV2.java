@@ -82,11 +82,7 @@ public class TiltakServiceV2 {
         return false;
     }
 
-    /**
-    GodkjenteStatuser: Aktuell (AKTUELL), Gjennomføres (GJENN), Informasjonsmøte (INFOMOETE), Takket ja til tilbud (JATAKK), Godkjent tiltaksplass (TILBUD), Venteliste (VENTELISTE)
-        * AKTUELL gjelder kun for Arbeidsmarkedopplæring (AMO) og er da unntatt dersom det gjelder Individuelt tiltak (IND) eller Institusjonelt tiltak (INST)
-     @link https://confluence.adeo.no/pages/viewpage.action?pageId=409961201
-     */
+
     static boolean skalSlettesTiltak(TiltakInnhold tiltakInnhold) {
         List<String> godkjenteStatuser;
         if("GRUPPEAMO".equals(tiltakInnhold.getTiltakstype())){
