@@ -117,17 +117,31 @@ public class AdminController {
     }
 
     @PostMapping("/stopp/aiven-konsumering")
-    public String stoppConsume() {
+    public String stoppConsumeAiven() {
         authorizeAdmin();
-        kafkaConfigCommon.stoppConsumer();
+        kafkaConfigCommon.stoppConsumerAiven();
         return "Stopper konsumering for aiven kafka topics";
     }
 
     @PostMapping("/start/aiven-konsumering")
-    public String startConsume() {
+    public String startConsumeAiven() {
         authorizeAdmin();
-        kafkaConfigCommon.startConsumer();
+        kafkaConfigCommon.startConsumerAiven();
         return "Starter konsumering for aiven kafka topics";
+    }
+
+    @PostMapping("/stopp/onprem-konsumering")
+    public String stoppConsumeOnPrem() {
+        authorizeAdmin();
+        kafkaConfigCommon.stoppConsumerOnPrem();
+        return "Stopper konsumering for onprem kafka topics";
+    }
+
+    @PostMapping("/start/onprem-konsumering")
+    public String startConsumeOnPrem() {
+        authorizeAdmin();
+        kafkaConfigCommon.startConsumerOnPrem();
+        return "Starter konsumering for onprem kafka topics";
     }
 
 

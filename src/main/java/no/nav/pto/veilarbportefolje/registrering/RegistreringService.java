@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class RegistreringService implements KafkaConsumerService<ArbeidssokerRegistrertEvent> {
+public class RegistreringService extends KafkaCommonConsumerService<ArbeidssokerRegistrertEvent> implements KafkaConsumerService<ArbeidssokerRegistrertEvent> {
     private final RegistreringRepository registreringRepository;
     private final RegistreringRepositoryV2 registreringRepositoryV2;
     private final ElasticServiceV2 elastic;
@@ -24,13 +25,21 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
     private final UnleashService unleashService;
 
     public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
-        if (erPostgresPa(unleashService)) {
-            registreringRepositoryV2.upsertBrukerRegistrering(kafkaRegistreringMelding);
+        if (isNyKafkaLibraryEnabled()) {
+            return;
         }
-        registreringRepository.upsertBrukerRegistrering(kafkaRegistreringMelding);
 
-        final AktorId aktoerId = AktorId.of(kafkaRegistreringMelding.getAktorid());
-        elastic.updateRegistering(aktoerId, kafkaRegistreringMelding);
+        behandleKafkaMeldingLogikk(kafkaRegistreringMelding);
+    }
+
+    public void behandleKafkaMeldingLogikk(ArbeidssokerRegistrertEvent kafkaMelding) {
+        if (erPostgresPa(unleashService)) {
+            registreringRepositoryV2.upsertBrukerRegistrering(kafkaMelding);
+        }
+        registreringRepository.upsertBrukerRegistrering(kafkaMelding);
+
+        final AktorId aktoerId = AktorId.of(kafkaMelding.getAktorid());
+        elastic.updateRegistering(aktoerId, kafkaMelding);
     }
 
     public void slettRegistering(AktorId aktoerId) {
@@ -39,7 +48,7 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
         }
         registreringRepository.slettBrukerRegistrering(aktoerId);
     }
-
+    
     @Override
     public boolean shouldRewind() {
         return rewind.get();
@@ -49,4 +58,6 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
     public void setRewind(boolean rewind) {
         this.rewind.set(rewind);
     }
+
+
 }

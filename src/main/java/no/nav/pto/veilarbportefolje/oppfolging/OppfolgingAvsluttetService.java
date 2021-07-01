@@ -5,13 +5,14 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
+import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
-import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
 @RequiredArgsConstructor
-public class OppfolgingAvsluttetService implements KafkaConsumerService<String> {
+public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<OppfolgingAvsluttetDTO> implements KafkaConsumerService<String> {
     private static final Logger log = LoggerFactory.getLogger(OppfolgingAvsluttetService.class);
 
     private final ArbeidslisteService arbeidslisteService;
@@ -42,7 +43,15 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
+        if (isNyKafkaLibraryEnabled()) {
+            return;
+        }
         final OppfolgingAvsluttetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingAvsluttetDTO.class);
+        behandleKafkaMeldingLogikk(dto);
+    }
+
+    @Override
+    public void behandleKafkaMeldingLogikk(OppfolgingAvsluttetDTO dto) {
         final AktorId aktoerId = dto.getAktorId();
 
 

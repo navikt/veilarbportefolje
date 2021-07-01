@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ public abstract class EndToEndTest {
     @Autowired
     protected IndexName indexName;
 
+    @Autowired
+    protected UnleashService unleashService;
+
     @BeforeEach
     void setUp() {
         try {
@@ -45,9 +49,9 @@ public abstract class EndToEndTest {
     }
 
     public void populateElastic(EnhetId enhetId, VeilederId veilederId, String... aktoerIder) {
-        List<OppfolgingsBruker> brukere =  new ArrayList<>();
-        for (String aktoerId: aktoerIder) {
-            brukere.add( new OppfolgingsBruker()
+        List<OppfolgingsBruker> brukere = new ArrayList<>();
+        for (String aktoerId : aktoerIder) {
+            brukere.add(new OppfolgingsBruker()
                     .setAktoer_id(aktoerId)
                     .setOppfolging(true)
                     .setEnhet_id(enhetId.get())

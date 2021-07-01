@@ -188,6 +188,36 @@ function handleStoppAiven(e) {
     }
 }
 
+
+const startOnPrem = document.getElementById('startOnPrem');
+startOnPrem.addEventListener('submit', handleStartOnPrem);
+
+function handleStartOnPrem(e) {
+    e.preventDefault();
+    if (window.confirm('Vil du starte konsumering av OnPrem Kafka?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/start/onprem-konsumering',
+            {method: 'POST', credentials: 'same-origin'},
+            'startOnPremResponse'
+        );
+    }
+}
+
+
+const stoppOnPrem = document.getElementById('stoppOnPrem');
+stoppOnPrem.addEventListener('submit', handleStoppOnPrem);
+
+function handleStoppOnPrem(e) {
+    e.preventDefault();
+    if (window.confirm('Vil du stoppe konsumering av OnPrem Kafka?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/stopp/onprem-konsumering',
+            {method: 'POST', credentials: 'same-origin'},
+            'stoppOnPremResponse'
+        );
+    }
+}
+
 const aktoerIdSamtykkeForm = document.getElementById('aktoerIdSamtykkeForm');
 aktoerIdSamtykkeForm.addEventListener('submit', handleSamtykkeDeltCV);
 const aktoerIdSamtykkeInput = document.getElementById('aktoerIdSamtykkeInput');

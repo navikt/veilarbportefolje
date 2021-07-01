@@ -3,8 +3,10 @@ package no.nav.pto.veilarbportefolje.sistelest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
@@ -16,14 +18,23 @@ import static no.nav.common.json.JsonUtils.fromJson;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class SistLestService implements KafkaConsumerService<String> {
+public class SistLestService extends KafkaCommonConsumerService<SistLestKafkaMelding> implements KafkaConsumerService<String> {
     private final BrukerService brukerService;
     private final SisteEndringService sisteEndringService;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
+    protected final UnleashService unleashService;
+
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
+        if (isNyKafkaLibraryEnabled()) {
+            return;
+        }
         SistLestKafkaMelding melding = fromJson(kafkaMelding, SistLestKafkaMelding.class);
+        behandleKafkaMeldingLogikk(melding);
+    }
+
+    protected void behandleKafkaMeldingLogikk(SistLestKafkaMelding melding) {
         log.info("Aktivitetsplanen for {} ble lest av {}, lest: {}", melding.getAktorId(), melding.getVeilederId(), melding.getHarLestTidspunkt());
         Optional<VeilederId> veilederId = brukerService.hentVeilederForBruker(melding.getAktorId());
         if (veilederId.isEmpty()) {
@@ -43,5 +54,6 @@ public class SistLestService implements KafkaConsumerService<String> {
     public void setRewind(boolean rewind) {
         this.rewind.set(rewind);
     }
+
 
 }
