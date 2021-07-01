@@ -83,7 +83,7 @@ public class TiltakServiceV2 {
     }
 
     static boolean skalSlettesTiltak(TiltakInnhold tiltakInnhold) {
-        return tiltakInnhold.getAktivitetperiodeTil() == null || !TiltakStatuser.GJENNOMFORER.equals(tiltakInnhold.getDeltakerStatus())
+        return tiltakInnhold.getAktivitetperiodeTil() == null || !TiltakStatuser.godkjenteTiltaksStatuser.contains(tiltakInnhold.getDeltakerStatus())
                 || LANSERING_AV_OVERSIKTEN.isAfter(tiltakInnhold.getAktivitetperiodeTil().getDato().toLocalDate());
     }
 }
