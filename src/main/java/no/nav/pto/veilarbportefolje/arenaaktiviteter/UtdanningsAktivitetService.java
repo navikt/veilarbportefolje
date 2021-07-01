@@ -60,9 +60,6 @@ public class UtdanningsAktivitetService {
                 || erUtgatt(utdanningsInnhold.getAktivitetperiodeTil(), true);
     }
 
-    /**
-     * Har side effekt med a lagre hvilken arena meldinger som er lest i DB
-     */
     private boolean erGammelMelding(UtdanningsAktivitetDTO kafkaMelding, UtdanningsAktivitetInnhold innhold) {
         Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
 

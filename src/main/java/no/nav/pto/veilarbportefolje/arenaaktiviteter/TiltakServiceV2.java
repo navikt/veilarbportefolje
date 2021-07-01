@@ -71,9 +71,6 @@ public class TiltakServiceV2 {
         return tiltakRepositoryV2.hentTiltakPaEnhet(enhet);
     }
 
-    /**
-     * Har side effekt med a lagre hvilken arena meldinger som er lest i DB
-     */
     private boolean erGammelMelding(TiltakDTO kafkaMelding, TiltakInnhold innhold) {
         Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
 
@@ -84,10 +81,10 @@ public class TiltakServiceV2 {
         return false;
     }
 
-    /*
+    /**
     GodkjenteStatuser: Aktuell (AKTUELL), Gjennomføres (GJENN), Informasjonsmøte (INFOMOETE), Takket ja til tilbud (JATAKK), Godkjent tiltaksplass (TILBUD), Venteliste (VENTELISTE)
         * AKTUELL gjelder kun for Arbeidsmarkedopplæring (AMO) og er da unntatt dersom det gjelder Individuelt tiltak (IND) eller Institusjonelt tiltak (INST)
-     https://confluence.adeo.no/pages/viewpage.action?pageId=409961201
+     @link https://confluence.adeo.no/pages/viewpage.action?pageId=409961201
      */
     static boolean skalSlettesTiltak(TiltakInnhold tiltakInnhold) {
         List<String> godkjenteStatuser = TiltakStatuser.godkjenteTiltaksStatuser;
