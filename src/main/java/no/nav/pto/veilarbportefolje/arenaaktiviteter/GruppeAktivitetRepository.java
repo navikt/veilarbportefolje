@@ -129,7 +129,7 @@ public class GruppeAktivitetRepository {
         aktivitetDAO.upsertAktivitetStatus(aktivitetStatus);
     }
 
-    private List<GruppeAktivitetSchedueldDTO> hentAktiveAktivteter(AktorId aktorId) {
+    public List<GruppeAktivitetSchedueldDTO> hentAktiveAktivteter(AktorId aktorId) {
         String sql = "SELECT * FROM " + TABLE_NAME
                 + " WHERE " + AKTIV + " = 'J' AND " + AKTOERID + " = ?";
         return db.queryForList(sql, aktorId.get())

@@ -50,7 +50,7 @@ public class PersistentOppdatering {
                                     .flatMap(Collection::stream)
                                     .collect(toList());
 
-                            lagreBrukerdata(javaList);
+                            lagreBrukerdata(javaList); // TODO: legg bak toggle
                             lagreAktivitetstatuser(aktivitetStatuser);
                         });
     }

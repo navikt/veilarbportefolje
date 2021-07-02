@@ -199,7 +199,7 @@ public class AktivitetUtils {
         }
     }
 
-    private static boolean harIkkeStatusFullfort(AktivitetDTO aktivitetDTO) {
+    public static boolean harIkkeStatusFullfort(AktivitetDTO aktivitetDTO) {
         return !AktivitetIkkeAktivStatuser.contains(aktivitetDTO.getStatus());
     }
 

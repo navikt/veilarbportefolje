@@ -149,6 +149,7 @@ public class Table {
         public static final String PERSONID = "PERSONID";
         public static final String TILTAKSKODE = "TILTAKSKODE";
         public static final String TILDATO = "TILDATO";
+        public static final String FRADATO = "FRADATO";
     }
 
     public static final class GRUPPE_AKTIVITER {

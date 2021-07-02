@@ -43,6 +43,9 @@ public class TiltakRepositoryV2 {
         Timestamp tilDato = Optional.ofNullable(getDateOrNull(innhold.getAktivitetperiodeTil(), true))
                 .map(DateUtils::toTimestamp)
                 .orElse(null);
+        Timestamp fraDato = Optional.ofNullable(getDateOrNull(innhold.getAktivitetperiodeFra(), false))
+                .map(DateUtils::toTimestamp)
+                .orElse(null);
 
         log.info("Lagrer tiltak: {}", innhold.getAktivitetid());
 
@@ -58,6 +61,7 @@ public class TiltakRepositoryV2 {
                 .set(PERSONID, String.valueOf(innhold.getPersonId()))
                 .set(AKTOERID, aktorId.get())
                 .set(TILTAKSKODE, innhold.getTiltakstype())
+                .set(FRADATO, fraDato)
                 .set(TILDATO, tilDato)
                 .where(WhereClause.equals(AKTIVITETID, innhold.getAktivitetid()))
                 .execute();
@@ -92,6 +96,27 @@ public class TiltakRepositoryV2 {
                         .stream().map(this::mapTilTiltak)
                         .collect(toMap(Tiltakkodeverk::getKode, Tiltakkodeverk::getVerdi))
         );
+    }
+
+    public List<Timestamp> hentSluttdatoer(PersonId personId) {
+        if (personId == null) {
+            throw new IllegalArgumentException("Trenger personId for å hente ut sluttdatoer");
+        }
+
+        final String hentSluttDatoerSql = "SELECT " + TILDATO + " FROM " + TABLE_NAME +
+                " WHERE "+PERSONID+"=?";
+        return db.queryForList(hentSluttDatoerSql, Timestamp.class, personId.getValue());
+    }
+
+
+    public List<Timestamp> hentStartDatoer(PersonId personId) {
+        if (personId == null) {
+            throw new IllegalArgumentException("Trenger personId for å hente ut startdatoer");
+        }
+
+        final String hentSluttDatoerSql = "SELECT " + FRADATO + " FROM " + TABLE_NAME +
+                " WHERE "+PERSONID+"=?";
+        return db.queryForList(hentSluttDatoerSql, Timestamp.class, personId.getValue());
     }
 
     /*
