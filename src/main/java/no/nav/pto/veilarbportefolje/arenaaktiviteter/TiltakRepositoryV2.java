@@ -124,7 +124,7 @@ public class TiltakRepositoryV2 {
                 .max(Comparator.naturalOrder())
                 .orElse(null);
 
-        boolean aktiv = (nesteUtlopsdato != null);
+        boolean aktiv = (gruppeAktiviteter.size() != 0);
         AktivitetStatus aktivitetStatus = new AktivitetStatus()
                 .setAktivitetType(AktivitetTyper.tiltak.name())
                 .setAktiv(aktiv)
