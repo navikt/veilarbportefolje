@@ -87,8 +87,6 @@ public class TiltakTest {
                         .setTiltaksnavn("Test")
                         .setTiltakstype("T123")
                         .setDeltakerStatus("GJENN")
-                        .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
-                        .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
                         .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("TA-123456789")
                 );

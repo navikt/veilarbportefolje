@@ -89,6 +89,11 @@ public class TiltakServiceV2 {
         }else {
             godkjenteStatuser = TiltakStatuser.godkjenteTiltaksStatuserGruppeAMO;
         }
+
+        if(tiltakInnhold.getAktivitetperiodeTil() == null){
+            return !godkjenteStatuser.contains(tiltakInnhold.getDeltakerStatus());
+        }
         return !godkjenteStatuser.contains(tiltakInnhold.getDeltakerStatus()) || LANSERING_AV_OVERSIKTEN.isAfter(tiltakInnhold.getAktivitetperiodeTil().getDato().toLocalDate());
+
     }
 }

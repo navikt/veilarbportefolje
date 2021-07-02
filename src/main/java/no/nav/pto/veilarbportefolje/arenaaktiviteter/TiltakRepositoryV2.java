@@ -121,6 +121,7 @@ public class TiltakRepositoryV2 {
         List<BrukertiltakV2> gruppeAktiviteter = hentTiltak(aktorId);
         Timestamp nesteUtlopsdato = gruppeAktiviteter.stream()
                 .map(BrukertiltakV2::getTildato)
+                .filter(Objects::nonNull)
                 .max(Comparator.naturalOrder())
                 .orElse(null);
 
