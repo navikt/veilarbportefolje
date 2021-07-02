@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
@@ -17,6 +18,7 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 @RequiredArgsConstructor
 public class OppfolginsbrukerService extends KafkaCommonConsumerService<OppfolgingsbrukerKafkaDTO> implements KafkaConsumerService<String> {
     private final OppfolginsbrukerRepositoryV2 OppfolginsbrukerRepositoryV2;
+    @Getter
     private final UnleashService unleashService;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
 

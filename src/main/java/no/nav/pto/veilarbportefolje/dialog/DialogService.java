@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.dialog;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
@@ -21,6 +22,7 @@ public class DialogService extends KafkaCommonConsumerService<Dialogdata> implem
     private final DialogRepository dialogRepository;
     private final ElasticServiceV2 elasticServiceV2;
     private final DialogRepositoryV2 dialogRepositoryV2;
+    @Getter
     private final UnleashService unleashService;
     private final AtomicBoolean rewind = new AtomicBoolean();
 

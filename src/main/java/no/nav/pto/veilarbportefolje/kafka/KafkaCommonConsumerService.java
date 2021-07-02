@@ -8,10 +8,9 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.NY_KAFKA_COMMON_
 
 @Slf4j
 public abstract class KafkaCommonConsumerService<T> {
-    protected UnleashService unleashService;
 
     protected boolean isNyKafkaLibraryEnabled() {
-        return unleashService.isEnabled(NY_KAFKA_COMMON_LIB);
+        return getUnleashService().isEnabled(NY_KAFKA_COMMON_LIB);
     }
 
     public void behandleKafkaRecord(ConsumerRecord<String, T> kafkaMelding) {
@@ -29,4 +28,6 @@ public abstract class KafkaCommonConsumerService<T> {
     }
 
     protected abstract void behandleKafkaMeldingLogikk(T kafkaMelding);
+
+    protected abstract UnleashService getUnleashService();
 }

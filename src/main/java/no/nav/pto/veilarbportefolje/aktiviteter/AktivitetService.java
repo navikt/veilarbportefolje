@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
@@ -30,6 +31,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final PersistentOppdatering persistentOppdatering;
     private final AtomicBoolean rewind;
     private final SisteEndringService sisteEndringService;
+    @Getter
     private final UnleashService unleashService;
 
     @Autowired
