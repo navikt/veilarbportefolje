@@ -1,11 +1,11 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import io.vavr.control.Try;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.aktiviteter.UtdanningaktivitetTyper;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
+import no.nav.pto.veilarbportefolje.aktiviteter.UtdanningaktivitetTyper;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;

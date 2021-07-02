@@ -17,9 +17,8 @@ import java.util.Optional;
 
 import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.*;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
-
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Repository

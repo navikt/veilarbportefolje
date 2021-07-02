@@ -16,13 +16,12 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-
-import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Repository

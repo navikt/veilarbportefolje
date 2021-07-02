@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Objects;
 
-import static no.nav.common.utils.NaisUtils.getCredentials;
-
 
 @Slf4j
 public class AuthorizationUtils {
