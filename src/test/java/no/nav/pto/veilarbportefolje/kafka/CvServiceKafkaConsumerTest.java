@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.cv.dto.Ressurs;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.elasticsearch.action.get.GetResponse;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -133,7 +134,7 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
             cvMelding.setAktoerId(aktoerId.toString());
             cvMelding.setMeldingstype(Meldingstype.ENDRE);
 
-            cvService.behandleKafkaMelding(cvMelding);
+            cvService.behandleKafkaRecord(new ConsumerRecord("test topic", 0, 0, 0, cvMelding));
         }
     }
 }

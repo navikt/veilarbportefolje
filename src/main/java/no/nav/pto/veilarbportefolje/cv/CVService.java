@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.cv;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.cv.avro.Melding;
@@ -27,6 +28,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> implements Ka
     private final CvRepository cvRepository;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
     private final CVRepositoryV2 cvRepositoryV2;
+    @Getter
     private final UnleashService unleashService;
 
     @Override
