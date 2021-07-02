@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.cv.dto.Ressurs;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.elasticsearch.action.get.GetResponse;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -26,7 +25,6 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
 
     @Test
     void testCVHjemmel() throws ExecutionException, InterruptedException {
-
         AktorId aktoerId1 = AktorId.of("11111111111");
         AktorId aktoerId2 = AktorId.of("22222222222");
         AktorId aktoerId3 = AktorId.of("33333333333");
@@ -134,7 +132,7 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
             cvMelding.setAktoerId(aktoerId.toString());
             cvMelding.setMeldingstype(Meldingstype.ENDRE);
 
-            cvService.behandleKafkaRecord(new ConsumerRecord("test topic", 0, 0, 0, cvMelding));
+            cvService.behandleKafkaMelding(cvMelding);
         }
     }
 }
