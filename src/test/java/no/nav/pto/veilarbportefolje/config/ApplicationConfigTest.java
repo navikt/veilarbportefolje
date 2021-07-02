@@ -16,7 +16,6 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
@@ -91,7 +90,6 @@ import static org.mockito.Mockito.when;
         OppfolgingAvsluttetService.class,
         ElasticService.class,
         ElasticServiceV2.class,
-        TiltakRepository.class,
         AktivitetDAO.class,
         BrukerRepository.class,
         OppfolgingRepository.class,
