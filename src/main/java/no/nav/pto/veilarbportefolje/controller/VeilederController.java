@@ -1,14 +1,14 @@
 package no.nav.pto.veilarbportefolje.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.elastic.ElasticService;
-import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
-import no.nav.common.metrics.Event;
+import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

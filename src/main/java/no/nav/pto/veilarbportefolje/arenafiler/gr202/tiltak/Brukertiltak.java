@@ -2,9 +2,9 @@ package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import lombok.Value;
 import lombok.experimental.Wither;
+import no.nav.common.types.identer.Fnr;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
-import no.nav.common.types.identer.Fnr;
 import no.nav.sbl.sql.InsertBatchQuery;
 import org.springframework.jdbc.core.JdbcTemplate;
 
