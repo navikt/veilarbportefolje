@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
@@ -39,6 +40,7 @@ public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<Oppfo
     private final CVRepositoryV2 cvRepositoryV2;
     private final ElasticServiceV2 elasticServiceV2;
     private final SisteEndringService sisteEndringService;
+    @Getter
     private final UnleashService unleashService;
 
     @Override

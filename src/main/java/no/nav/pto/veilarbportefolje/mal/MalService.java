@@ -1,8 +1,10 @@
 package no.nav.pto.veilarbportefolje.mal;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,10 +19,13 @@ public class MalService extends KafkaCommonConsumerService<MalEndringKafkaDTO> i
 
     private final SisteEndringService sisteEndringService;
     private final AtomicBoolean rewind;
+    @Getter
+    private final UnleashService unleashService;
 
     @Autowired
-    public MalService(SisteEndringService sisteEndringService) {
+    public MalService(SisteEndringService sisteEndringService, UnleashService unleashService) {
         this.sisteEndringService = sisteEndringService;
+        this.unleashService = unleashService;
         this.rewind = new AtomicBoolean();
     }
 

@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import lombok.Getter;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
@@ -22,6 +23,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final ArbeidslisteService arbeidslisteService;
     private final ArbeidslisteService arbeidslisteServicePostgres;
+    @Getter
     private final UnleashService unleashService;
     private final ElasticServiceV2 elasticServiceV2;
     private final AtomicBoolean rewind = new AtomicBoolean(false);

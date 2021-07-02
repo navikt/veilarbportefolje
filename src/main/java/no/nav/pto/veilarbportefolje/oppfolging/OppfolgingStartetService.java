@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
@@ -17,6 +18,7 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
     private final OppfolgingRepository oppfolgingRepository;
     private final ElasticIndexer elasticIndexer;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+    @Getter
     private final UnleashService unleashService;
 
     @Override

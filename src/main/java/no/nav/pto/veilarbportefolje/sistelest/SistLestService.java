@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.sistelest;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -22,6 +23,7 @@ public class SistLestService extends KafkaCommonConsumerService<SistLestKafkaMel
     private final BrukerService brukerService;
     private final SisteEndringService sisteEndringService;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
+    @Getter
     protected final UnleashService unleashService;
 
 

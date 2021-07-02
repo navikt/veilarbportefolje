@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -22,6 +23,7 @@ public class VedtakService extends KafkaCommonConsumerService<KafkaVedtakStatusE
     private final VedtakStatusRepository vedtakStatusRepository;
     private final VedtakStatusRepositoryV2 vedtakStatusRepositoryV2;
     private final ElasticIndexer elasticIndexer;
+    @Getter
     private final UnleashService unleashService;
     private final AtomicBoolean rewind = new AtomicBoolean();
 

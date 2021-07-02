@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.profilering;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
@@ -19,6 +20,7 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 public class ProfileringService extends KafkaCommonConsumerService<ArbeidssokerProfilertEvent> implements KafkaConsumerService<ArbeidssokerProfilertEvent> {
     private final ProfileringRepository profileringRepository;
     private final ProfileringRepositoryV2 profileringRepositoryV2;
+    @Getter
     private final UnleashService unleashService;
     private final AtomicBoolean rewind = new AtomicBoolean();
 

@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
@@ -22,6 +23,7 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
     private final RegistreringRepositoryV2 registreringRepositoryV2;
     private final ElasticServiceV2 elastic;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
+    @Getter
     private final UnleashService unleashService;
 
     public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
@@ -48,7 +50,7 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
         }
         registreringRepository.slettBrukerRegistrering(aktoerId);
     }
-    
+
     @Override
     public boolean shouldRewind() {
         return rewind.get();

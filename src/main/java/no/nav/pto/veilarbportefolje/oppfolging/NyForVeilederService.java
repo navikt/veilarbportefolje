@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
@@ -20,6 +21,7 @@ public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeiled
     private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final ElasticServiceV2 elasticServiceV2;
+    @Getter
     private final UnleashService unleashService;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
 
