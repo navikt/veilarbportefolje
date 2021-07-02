@@ -6,7 +6,6 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
@@ -53,7 +52,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
 
         unleashService = Mockito.mock(UnleashService.class);
-        Mockito.when(unleashService.isEnabled(FeatureToggle.NY_KAFKA_COMMON_LIB)).thenReturn(false);
 
         this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService, sisteEndringService, unleashService);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService, unleashService);

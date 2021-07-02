@@ -188,6 +188,7 @@ public class ApplicationConfigTest {
     public UnleashService unleashService() {
         final UnleashService mock = mock(UnleashService.class);
         when(mock.isEnabled(anyString())).thenReturn(true);
+        when(mock.isEnabled(FeatureToggle.NY_KAFKA_COMMON_LIB)).thenReturn(false);
         return mock;
     }
 
