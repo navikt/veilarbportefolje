@@ -41,6 +41,7 @@ public class BrukerDataService {
     }
 
     public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId) {
+        log.info("Oppdaterer brukerdata for aktor: {}, personId: {}", aktorId, personId);
         Brukerdata brukerAktivitetTilstand = new Brukerdata();
         LocalDate idag = LocalDate.now();
 
@@ -104,7 +105,7 @@ public class BrukerDataService {
                 .filter(Objects::nonNull).collect(toList());
         List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
-                .map(AktivitetDTO::getTilDato)
+                .map(AktivitetDTO::getFraDato)
                 .filter(Objects::nonNull).collect(toList());
         List<Timestamp> gruppeAktiviteter = gruppeAktivitetRepository.hentAktiveAktivteter(aktorId).stream()
                 .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeFra)
@@ -122,7 +123,7 @@ public class BrukerDataService {
                 .filter(Objects::nonNull).collect(toList());
         List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
-                .map(AktivitetDTO::getFraDato)
+                .map(AktivitetDTO::getTilDato)
                 .filter(Objects::nonNull).collect(toList());
         List<Timestamp> gruppeAktiviteter = gruppeAktivitetRepository.hentAktiveAktivteter(aktorId).stream()
                 .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeTil)
