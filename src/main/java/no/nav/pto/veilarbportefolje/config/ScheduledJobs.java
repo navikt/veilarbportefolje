@@ -1,10 +1,11 @@
-package no.nav.pto.veilarbportefolje.arenaaktiviteter;
+package no.nav.pto.veilarbportefolje.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.ArenaAktivitetDTO;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -15,7 +16,7 @@ import java.util.List;
 @Slf4j
 @EnableScheduling
 @RequiredArgsConstructor
-public class ArenaScheduler {
+public class ScheduledJobs {
     private final AktivitetService aktivitetService;
     private final BrukerDataService brukerDataService;
     private final GruppeAktivitetService gruppeAktivitetService;
