@@ -31,13 +31,15 @@ public class BrukerDataService {
     private final BrukerDataRepository brukerDataRepository;
     private final BrukerService brukerService;
 
-    public void oppdaterAktivitetBrukerData(AktorId aktorId) {
-        if (aktorId == null) {
+    public void oppdaterAktivitetDataBrukerOgHentPersonId(List<AktorId> aktorIder) {
+        if (aktorIder == null) {
             return;
         }
-        brukerService.hentPersonidFraAktoerid(aktorId)
-                .onSuccess(personId -> oppdaterAktivitetBrukerData(aktorId, personId))
-                .onFailure(error -> log.error("Kunne ikke hente personId pa bruker: {}", aktorId));
+        aktorIder.forEach(aktorId ->
+                brukerService.hentPersonidFraAktoerid(aktorId)
+                        .onSuccess(personId -> oppdaterAktivitetBrukerData(aktorId, personId))
+                        .onFailure(error -> log.error("Kunne ikke hente personId pa bruker: {}", aktorId))
+        );
     }
 
     public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId) {
