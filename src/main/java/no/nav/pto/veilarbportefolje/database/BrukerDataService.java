@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.database;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDTO;
@@ -10,17 +11,17 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BrukerDataService {
@@ -28,6 +29,16 @@ public class BrukerDataService {
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerDataRepository brukerDataRepository;
+    private final BrukerService brukerService;
+
+    public void oppdaterAktivitetBrukerData(AktorId aktorId) {
+        if (aktorId == null) {
+            return;
+        }
+        brukerService.hentPersonidFraAktoerid(aktorId)
+                .onSuccess(personId -> oppdaterAktivitetBrukerData(aktorId, personId))
+                .onFailure(error -> log.error("Kunne ikke hente personId pa bruker: {}", aktorId));
+    }
 
     public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId) {
         Brukerdata brukerAktivitetTilstand = new Brukerdata();
@@ -52,6 +63,15 @@ public class BrukerDataService {
                 .setNesteAktivitetStart(nesteAktivitetStart);
 
         brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
+    }
+
+    public List<AktorId> hentBrukerSomMaOppdaters() {
+        Set<AktorId> rs = new HashSet<>();
+        rs.addAll(tiltakRepositoryV2.hentBrukereMedUtlopteTiltak());
+        rs.addAll(aktivitetDAO.hentBrukereMedUtlopteAktiviteter());
+        rs.addAll(brukerDataRepository.hentBrukereMedUtlopteAktivitetStartDato());
+
+        return new ArrayList<>(rs);
     }
 
     public static Timestamp finnNyesteUtlopteAktivAktivitet(List<Timestamp> aktiviteter, LocalDate today) {

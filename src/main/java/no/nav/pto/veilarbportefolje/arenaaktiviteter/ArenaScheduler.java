@@ -6,6 +6,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.ArenaAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetSchedueldDTO;
+import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -16,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ArenaScheduler {
     private final AktivitetService aktivitetService;
+    private final BrukerDataService brukerDataService;
     private final GruppeAktivitetService gruppeAktivitetService;
 
     @Scheduled(cron = "0 1 0 * * ?")
@@ -34,8 +36,8 @@ public class ArenaScheduler {
 
     @Scheduled(cron = "0 0 1 * * ?")
     private void oppdaterBrukerData() {
-        List<GruppeAktivitetSchedueldDTO> utgatteGruppeAktiviteter = gruppeAktivitetService.hentUtgatteUtdanningAktiviteter();
-        log.info("Inaktiverer: {} utgatte gruppeaktivteter", utgatteGruppeAktiviteter.size());
-        utgatteGruppeAktiviteter.forEach(gruppeAktivitet -> gruppeAktivitetService.settSomUtgatt(gruppeAktivitet.getMoteplanId(), gruppeAktivitet.getVeiledningdeltakerId()));
+        List<AktorId> brukereSomMaOppdateres = brukerDataService.hentBrukerSomMaOppdaters();
+        log.info("Oppdaterer brukerdata for: {} brukere", brukereSomMaOppdateres.size());
+        brukereSomMaOppdateres.forEach(brukerDataService::oppdaterAktivitetBrukerData);
     }
 }

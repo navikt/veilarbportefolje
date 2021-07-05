@@ -200,7 +200,11 @@ public class AktivitetUtils {
     }
 
     public static boolean harIkkeStatusFullfort(AktivitetDTO aktivitetDTO) {
-        return !AktivitetIkkeAktivStatuser.contains(aktivitetDTO.getStatus());
+        return harIkkeStatusFullfort(aktivitetDTO.getStatus());
+    }
+
+    public static boolean harIkkeStatusFullfort(String status) {
+        return !AktivitetIkkeAktivStatuser.contains(status);
     }
 
     private static Stream<String> kafkaAktiviteter(boolean erGR202PaKafka){
