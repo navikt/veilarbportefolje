@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateOperatio
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
@@ -62,7 +63,7 @@ public class TiltakTest {
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
-        this.tiltakServiceV2 = new TiltakServiceV2(tiltakRepositoryV2, aktorClient, arenaHendelseRepository, mock(ElasticIndexer.class));
+        this.tiltakServiceV2 = new TiltakServiceV2(tiltakRepositoryV2, aktorClient, arenaHendelseRepository, mock(BrukerDataService.class), mock(ElasticIndexer.class));
     }
 
 
