@@ -2,10 +2,9 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -25,7 +24,7 @@ import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTy
 
 @Slf4j
 public class AktivitetUtils {
-
+    private static final String ARENA_AKTIVITET_DATOFILTER = "2017-12-04";
     private static final String DATO_FORMAT = "yyyy-MM-dd";
 
     public static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(AktoerAktiviteter aktoerAktiviteter,
@@ -186,7 +185,7 @@ public class AktivitetUtils {
 
 
     public static boolean etterFilterDato(Timestamp tilDato) {
-        Timestamp datofilter = TiltakHandler.getDatoFilter();
+        Timestamp datofilter = parseDato(ARENA_AKTIVITET_DATOFILTER);
         return tilDato == null || datofilter == null || datofilter.before(tilDato);
     }
 
@@ -200,8 +199,12 @@ public class AktivitetUtils {
         }
     }
 
-    private static boolean harIkkeStatusFullfort(AktivitetDTO aktivitetDTO) {
-        return !AktivitetIkkeAktivStatuser.contains(aktivitetDTO.getStatus());
+    public static boolean harIkkeStatusFullfort(AktivitetDTO aktivitetDTO) {
+        return harIkkeStatusFullfort(aktivitetDTO.getStatus());
+    }
+
+    public static boolean harIkkeStatusFullfort(String status) {
+        return !AktivitetIkkeAktivStatuser.contains(status);
     }
 
     private static Stream<String> kafkaAktiviteter(boolean erGR202PaKafka){

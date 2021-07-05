@@ -1,16 +1,12 @@
 package no.nav.pto.veilarbportefolje.arenafiler;
 
 import no.nav.common.metrics.MetricsClient;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.IndekserYtelserHandler;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -25,17 +21,6 @@ public class FilmottakConfig {
     @Bean
     public KopierGR199FraArena kopierGR199FraArena(AktivitetService aktivitetService, IndekserYtelserHandler indekserYtelserHandler, MetricsClient metricsClient, EnvironmentProperties environmentProperties) {
         return new KopierGR199FraArena(indekserYtelserHandler, aktivitetService, metricsClient, environmentProperties);
-    }
-
-    @Bean
-    public TiltakHandler tiltakHandler(
-            TiltakRepository tiltakRepository,
-            AktivitetDAO aktivitetDAO,
-            BrukerService brukerService,
-            BrukerRepository brukerRepository,
-            EnvironmentProperties environmentProperties
-            ) {
-        return new TiltakHandler(tiltakRepository, aktivitetDAO, brukerService, brukerRepository, environmentProperties);
     }
 
     public static class SftpConfig {

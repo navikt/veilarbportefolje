@@ -16,11 +16,12 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
+import no.nav.pto.veilarbportefolje.database.BrukerDataRepository;
+import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
@@ -92,7 +93,6 @@ import static org.mockito.Mockito.when;
         OppfolgingAvsluttetService.class,
         ElasticService.class,
         ElasticServiceV2.class,
-        TiltakRepository.class,
         AktivitetDAO.class,
         BrukerRepository.class,
         OppfolgingRepository.class,
@@ -119,7 +119,9 @@ import static org.mockito.Mockito.when;
         UtdanningsAktivitetService.class,
         ArenaHendelseRepository.class,
         GruppeAktivitetRepository.class,
-        TiltakRepositoryV2.class
+        TiltakRepositoryV2.class,
+        BrukerDataService.class,
+        BrukerDataRepository.class
 })
 public class ApplicationConfigTest {
 

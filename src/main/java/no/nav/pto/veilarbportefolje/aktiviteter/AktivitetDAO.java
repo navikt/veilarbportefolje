@@ -26,8 +26,9 @@ import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.*;
-import static no.nav.pto.veilarbportefolje.database.Table.AKTIVITETER.*;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.harIkkeStatusFullfort;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
+import static no.nav.pto.veilarbportefolje.database.Table.AKTIVITETER.*;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
 
 @Slf4j
@@ -66,6 +67,16 @@ public class AktivitetDAO {
 
     public void slettAlleAktivitetstatus(String aktivitettype) {
         db.execute("DELETE FROM BRUKERSTATUS_AKTIVITETER WHERE AKTIVITETTYPE = '" + aktivitettype + "'");
+    }
+
+    public List<AktorId> hentBrukereMedUtlopteAktiviteter() {
+        String sql = "SELECT " + AKTOERID + ", " + STATUS + " FROM " + TABLE_NAME
+                + " WHERE " + TILDATO + " < CURRENT_TIMESTAMP";
+
+        return db.queryForList(sql).stream()
+                .filter(rs -> harIkkeStatusFullfort((String) rs.get(STATUS)))
+                .map(rs -> AktorId.of((String) rs.get(AKTOERID)))
+                .collect(toList());
     }
 
     public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid) {

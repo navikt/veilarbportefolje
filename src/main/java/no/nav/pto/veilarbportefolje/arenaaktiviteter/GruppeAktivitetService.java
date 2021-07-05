@@ -7,6 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetSchedueldDTO;
+import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
@@ -28,6 +29,7 @@ public class GruppeAktivitetService {
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     @NonNull @Qualifier("systemClient") private final AktorClient aktorClient;
     private final BrukerService brukerService;
+    private final BrukerDataService brukerDataService;
     private final ElasticIndexer elasticIndexer;
 
     public void behandleKafkaRecord(ConsumerRecord<String, GruppeAktivitetDTO> kafkaMelding) {
@@ -56,6 +58,7 @@ public class GruppeAktivitetService {
         boolean aktiv = !(skalSlettesGoldenGate(kafkaMelding) || skalSletteGruppeAktivitet(innhold));
         gruppeAktivitetRepository.upsertGruppeAktivitet(innhold, aktorId, aktiv);
         gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(PersonId.of(String.valueOf(innhold.getPersonId())), aktorId);
+        brukerDataService.oppdaterAktivitetBrukerData(aktorId, PersonId.of(String.valueOf(innhold.getPersonId())));
 
         elasticIndexer.indekser(aktorId);
     }

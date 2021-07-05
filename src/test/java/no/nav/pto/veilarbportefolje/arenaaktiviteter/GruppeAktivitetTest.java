@@ -6,6 +6,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.*;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -47,7 +48,7 @@ public class GruppeAktivitetTest {
         AktorClient aktorClient = mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
-        this.gruppeAktivitetService = new GruppeAktivitetService(gruppeAktivitetRepository, aktorClient, brukerService, mock(ElasticIndexer.class));
+        this.gruppeAktivitetService = new GruppeAktivitetService(gruppeAktivitetRepository, aktorClient, brukerService, mock(BrukerDataService.class), mock(ElasticIndexer.class));
   }
 
     @BeforeEach

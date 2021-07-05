@@ -8,6 +8,7 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakStatuser;
+import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -33,6 +34,7 @@ public class TiltakServiceV2 {
     @Qualifier("systemClient")
     private final AktorClient aktorClient;
     private final ArenaHendelseRepository arenaHendelseRepository;
+    private final BrukerDataService brukerDataService;
     private final ElasticIndexer elasticIndexer;
 
     public void behandleKafkaRecord(ConsumerRecord<String, TiltakDTO> kafkaMelding) {
@@ -64,6 +66,8 @@ public class TiltakServiceV2 {
         log.debug("Ferdig behandlet aktivitet: {}, pa aktor: {}, hendelse: {}", innhold.getAktivitetid(), aktorId, innhold.getHendelseId());
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(PersonId.of(String.valueOf(innhold.getPersonId())), aktorId);
         arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
+        brukerDataService.oppdaterAktivitetBrukerData(aktorId, PersonId.of(String.valueOf(innhold.getPersonId())));
+
         elasticIndexer.indekser(aktorId);
     }
 
