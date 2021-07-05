@@ -4,7 +4,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aktiviteter.*;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
+import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -60,9 +61,6 @@ public class UtdanningsAktivitetService {
                 || erUtgatt(utdanningsInnhold.getAktivitetperiodeTil(), true);
     }
 
-    /**
-     * Har side effekt med a lagre hvilken arena meldinger som er lest i DB
-     */
     private boolean erGammelMelding(UtdanningsAktivitetDTO kafkaMelding, UtdanningsAktivitetInnhold innhold) {
         Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
 

@@ -1,8 +1,9 @@
 package no.nav.pto.veilarbportefolje.cv;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -11,20 +12,16 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import static java.time.Instant.now;
-
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class CVRepositoryV2 {
-
+    @NonNull
+    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
-
-    @Autowired
-    public CVRepositoryV2(@Qualifier("PostgresJdbc") JdbcTemplate db) {
-        this.db = db;
-    }
 
     public int upsertHarDeltCv(AktorId aktoerId, boolean harDeltCv) {
         log.info("Oppdater delt CV for bruker: {}, harDeltCV: {}", aktoerId.get(), harDeltCv);

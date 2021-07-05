@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

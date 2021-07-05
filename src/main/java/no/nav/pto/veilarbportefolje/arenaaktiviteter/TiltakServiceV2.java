@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.*;
 
@@ -26,6 +28,7 @@ import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.
 @Transactional
 @RequiredArgsConstructor
 public class TiltakServiceV2 {
+    private static final LocalDate LANSERING_AV_OVERSIKTEN = LocalDate.of(2017,12, 4);
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     @NonNull
     @Qualifier("systemClient")
@@ -47,7 +50,6 @@ public class TiltakServiceV2 {
     }
 
     public void behandleKafkaMelding(TiltakDTO kafkaMelding) {
-        log.info("Behandler tiltaks-melding");
         TiltakInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
@@ -55,10 +57,13 @@ public class TiltakServiceV2 {
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
+            log.info("Sletter tiltak: {}", innhold.getAktivitetid());
             tiltakRepositoryV2.delete(innhold.getAktivitetid());
         } else {
+            log.info("Lagrer tiltak: {}", innhold.getAktivitetid());
             tiltakRepositoryV2.upsert(innhold, aktorId);
         }
+        log.debug("Ferdig behandlet aktivitet: {}, pa aktor: {}, hendelse: {}", innhold.getAktivitetid(), aktorId, innhold.getHendelseId());
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(PersonId.of(String.valueOf(innhold.getPersonId())), aktorId);
         arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
         brukerDataService.oppdaterAktivitetBrukerData(aktorId, PersonId.of(String.valueOf(innhold.getPersonId())));
@@ -70,9 +75,6 @@ public class TiltakServiceV2 {
         return tiltakRepositoryV2.hentTiltakPaEnhet(enhet);
     }
 
-    /**
-     * Har side effekt med a lagre hvilken arena meldinger som er lest i DB
-     */
     private boolean erGammelMelding(TiltakDTO kafkaMelding, TiltakInnhold innhold) {
         Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
 
@@ -83,7 +85,19 @@ public class TiltakServiceV2 {
         return false;
     }
 
+
     static boolean skalSlettesTiltak(TiltakInnhold tiltakInnhold) {
-        return tiltakInnhold.getAktivitetperiodeTil() == null || !TiltakStatuser.GJENNOMFORER.equals(tiltakInnhold.getDeltakerStatus());
+        List<String> godkjenteStatuser;
+        if("GRUPPEAMO".equals(tiltakInnhold.getTiltakstype())){
+            godkjenteStatuser = TiltakStatuser.godkjenteTiltaksStatuser;
+        }else {
+            godkjenteStatuser = TiltakStatuser.godkjenteTiltaksStatuserGruppeAMO;
+        }
+
+        if(tiltakInnhold.getAktivitetperiodeTil() == null){
+            return !godkjenteStatuser.contains(tiltakInnhold.getDeltakerStatus());
+        }
+        return !godkjenteStatuser.contains(tiltakInnhold.getDeltakerStatus()) || LANSERING_AV_OVERSIKTEN.isAfter(tiltakInnhold.getAktivitetperiodeTil().getDato().toLocalDate());
+
     }
 }

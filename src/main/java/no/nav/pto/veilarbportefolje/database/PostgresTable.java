@@ -42,6 +42,11 @@ public class PostgresTable {
         public static final String ARB_KOMMENTAR = "ARB_KOMMENTAR";
         public static final String ARB_FRIST = "ARB_FRIST";
         public static final String ARB_KATEGORI = "ARB_KATEGORI";
+        public static final String BRUKERS_SITUASJON = "BRUKERS_SITUASJON";
+        public static final String UTDANNING = "UTDANNING";
+        public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
+        public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
+
     }
 
 
@@ -142,6 +147,17 @@ public class PostgresTable {
         public static final String PROFILERING_TIDSPUNKT = "PROFILERING_TIDSPUNKT";
     }
 
+    public static final class BRUKER_REGISTRERING {
+        public static final String TABLE_NAME = "BRUKER_REGISTRERING";
+
+        public static final String AKTOERID = "AKTOERID";
+        public static final String BRUKERS_SITUASJON = "BRUKERS_SITUASJON";
+        public static final String REGISTRERING_OPPRETTET = "REGISTRERING_OPPRETTET";
+        public static final String UTDANNING = "UTDANNING";
+        public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
+        public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
+    }
+
     public static final class BRUKER_CV {
         public static final String TABLE_NAME = "BRUKER_CV";
 
@@ -149,6 +165,5 @@ public class PostgresTable {
         public static final String HAR_DELT_CV = "HAR_DELT_CV";
         public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
         public static final String CV_EKSISTERER = "CV_EKSISTERER";
-
     }
 }

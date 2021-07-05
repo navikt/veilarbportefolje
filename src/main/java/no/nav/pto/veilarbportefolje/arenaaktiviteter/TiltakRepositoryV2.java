@@ -152,10 +152,11 @@ public class TiltakRepositoryV2 {
         List<BrukertiltakV2> gruppeAktiviteter = hentTiltak(aktorId);
         Timestamp nesteUtlopsdato = gruppeAktiviteter.stream()
                 .map(BrukertiltakV2::getTildato)
+                .filter(Objects::nonNull)
                 .max(Comparator.naturalOrder())
                 .orElse(null);
 
-        boolean aktiv = (nesteUtlopsdato != null);
+        boolean aktiv = (gruppeAktiviteter.size() != 0);
         AktivitetStatus aktivitetStatus = new AktivitetStatus()
                 .setAktivitetType(AktivitetTyper.tiltak.name())
                 .setAktiv(aktiv)

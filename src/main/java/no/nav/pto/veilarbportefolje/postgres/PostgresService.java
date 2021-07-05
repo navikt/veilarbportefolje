@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
-import static java.lang.Integer.parseInt;
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -41,7 +39,7 @@ public class PostgresService {
             query.minOversiktFilter(veilederIdent);
         }
         if (filtervalg.harAktiveFilter()) {
-            if(filtervalg.harFerdigFilter()) {
+            if (filtervalg.harFerdigFilter()) {
                 filtervalg.ferdigfilterListe.forEach(
                         filter -> leggTilFerdigFilter(query, filter, veiledereMedTilgangTilEnhet, vedtaksPilot)
                 );
@@ -49,7 +47,7 @@ public class PostgresService {
             leggTilManuelleFilter(query, filtervalg);
         }
 
-        return query.search(fra,antall);
+        return query.search(fra, antall);
     }
 
     private void leggTilManuelleFilter(PostgresQueryBuilder query, Filtervalg filtervalg) {
@@ -58,25 +56,26 @@ public class PostgresService {
 
         query.leggTilListeFilter(filtervalg.arbeidslisteKategori, PostgresTable.BRUKER_VIEW.ARB_KATEGORI);
         query.leggTilListeFilter(filtervalg.veiledere, PostgresTable.BRUKER_VIEW.VEILEDERID);
-        query.leggTilListeFilter(filtervalg.formidlingsgruppe,PostgresTable.BRUKER_VIEW.FORMIDLINGSGRUPPEKODE);
+        query.leggTilListeFilter(filtervalg.formidlingsgruppe, PostgresTable.BRUKER_VIEW.FORMIDLINGSGRUPPEKODE);
         query.leggTilListeFilter(filtervalg.innsatsgruppe, PostgresTable.BRUKER_VIEW.KVALIFISERINGSGRUPPEKODE); // TODO: er det litt rart at disse to går mot samme felt?
         query.leggTilListeFilter(filtervalg.servicegruppe, PostgresTable.BRUKER_VIEW.KVALIFISERINGSGRUPPEKODE); // TODO: er det litt rart at disse to går mot samme felt?
         query.leggTilListeFilter(filtervalg.hovedmal, PostgresTable.BRUKER_VIEW.HOVEDMAALKODE);
         query.leggTilListeFilter(filtervalg.rettighetsgruppe, PostgresTable.BRUKER_VIEW.RETTIGHETSGRUPPEKODE);
+        query.leggTilListeFilter(filtervalg.registreringstype, PostgresTable.BRUKER_VIEW.BRUKERS_SITUASJON);
+        query.leggTilListeFilter(filtervalg.utdanning, PostgresTable.BRUKER_VIEW.UTDANNING);
+        query.leggTilListeFilter(filtervalg.utdanningBestatt, PostgresTable.BRUKER_VIEW.UTDANNING_BESTATT);
+        query.leggTilListeFilter(filtervalg.utdanningGodkjent, PostgresTable.BRUKER_VIEW.UTDANNING_GODKJENT);
+
         /*
         byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker");
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
-        byggManuellFilter(filtervalg.registreringstype, queryBuilder, "brukers_situasjon");
-        byggManuellFilter(filtervalg.utdanning, queryBuilder, "utdanning");
-        byggManuellFilter(filtervalg.utdanningBestatt, queryBuilder, "utdanning_bestatt");
-        byggManuellFilter(filtervalg.utdanningGodkjent, queryBuilder, "utdanning_godkjent");
         byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter");
         */
         if (filtervalg.harNavnEllerFnrQuery()) {
             query.navnOgFodselsnummerSok(filtervalg.getNavnEllerFnrQuery());
         }
         if (!filtervalg.alder.isEmpty()) {
-           query.alderFilter(filtervalg.alder);
+            query.alderFilter(filtervalg.alder);
         }
         if (filtervalg.harKjonnfilter()) {
             query.kjonnfilter(filtervalg.kjonn);

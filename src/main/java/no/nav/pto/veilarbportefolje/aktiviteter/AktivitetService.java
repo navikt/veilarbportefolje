@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.common.types.identer.AktorId;
