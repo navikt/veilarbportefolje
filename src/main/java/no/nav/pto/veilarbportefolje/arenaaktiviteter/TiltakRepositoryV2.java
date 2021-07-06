@@ -101,7 +101,8 @@ public class TiltakRepositoryV2 {
     public List<AktorId> hentBrukereMedUtlopteTiltak() {
         String sql = "SELECT "+AKTOERID+" FROM " + TABLE_NAME
                 + " WHERE " + TILDATO + " < CURRENT_TIMESTAMP";
-        return db.queryForList(sql, String.class).stream().map(AktorId::new).collect(toList());
+        return db.queryForList(sql, String.class).stream()
+                .filter(Objects::nonNull).map(AktorId::new).collect(toList());
     }
 
     public List<Timestamp> hentSluttdatoer(PersonId personId) {

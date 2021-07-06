@@ -28,7 +28,7 @@ import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.
 @Transactional
 @RequiredArgsConstructor
 public class TiltakServiceV2 {
-    private static final LocalDate LANSERING_AV_OVERSIKTEN = LocalDate.of(2017,12, 4);
+    private static final LocalDate LANSERING_AV_OVERSIKTEN = LocalDate.of(2017, 12, 4);
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     @NonNull
     @Qualifier("systemClient")
@@ -88,13 +88,13 @@ public class TiltakServiceV2 {
 
     static boolean skalSlettesTiltak(TiltakInnhold tiltakInnhold) {
         List<String> godkjenteStatuser;
-        if("GRUPPEAMO".equals(tiltakInnhold.getTiltakstype())){
+        if ("GRUPPEAMO" .equals(tiltakInnhold.getTiltakstype())) {
             godkjenteStatuser = TiltakStatuser.godkjenteTiltaksStatuser;
-        }else {
+        } else {
             godkjenteStatuser = TiltakStatuser.godkjenteTiltaksStatuserGruppeAMO;
         }
 
-        if(tiltakInnhold.getAktivitetperiodeTil() == null){
+        if (tiltakInnhold.getAktivitetperiodeTil() == null) {
             return !godkjenteStatuser.contains(tiltakInnhold.getDeltakerStatus());
         }
         return !godkjenteStatuser.contains(tiltakInnhold.getDeltakerStatus()) || LANSERING_AV_OVERSIKTEN.isAfter(tiltakInnhold.getAktivitetperiodeTil().getDato().toLocalDate());

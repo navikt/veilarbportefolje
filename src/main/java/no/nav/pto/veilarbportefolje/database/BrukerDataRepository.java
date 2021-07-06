@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_DATA.*;
@@ -32,6 +33,9 @@ public class BrukerDataRepository {
     public List<AktorId> hentBrukereMedUtlopteAktivitetStartDato() {
         String sql = "SELECT " + AKTOERID + " FROM " + TABLE_NAME
                 + " WHERE " + AKTIVITET_START + " < CURRENT_TIMESTAMP";
-        return db.queryForList(sql, String.class).stream().map(AktorId::new).collect(toList());
+        return db.queryForList(sql, String.class).stream()
+                .filter(Objects::nonNull)
+                .map(AktorId::new)
+                .collect(toList());
     }
 }

@@ -40,7 +40,7 @@ public class ScheduledJobs {
         utgatteGruppeAktiviteter.forEach(gruppeAktivitet -> gruppeAktivitetService.settSomUtgatt(gruppeAktivitet.getMoteplanId(), gruppeAktivitet.getVeiledningdeltakerId()));
     }
 
-    @Scheduled(cron = "0 30 10 * * ?")
+    @Scheduled(cron = "0 30 11 * * ?")
     public void oppdaterBrukerData() {
         log.info("Hello world!");
         List<AktorId> brukereSomMaOppdateres = brukerDataService.hentBrukerSomMaOppdaters();

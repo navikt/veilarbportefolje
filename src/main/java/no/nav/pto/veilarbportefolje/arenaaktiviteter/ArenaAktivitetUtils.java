@@ -10,6 +10,8 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 
 import java.time.ZonedDateTime;
 
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
+
 public interface ArenaAktivitetUtils {
      static <T extends ArenaInnholdKafka> T getInnhold(GoldenGateDTO<T> goldenGateDTO) {
         switch (goldenGateDTO.getOperationType()) {
@@ -41,7 +43,14 @@ public interface ArenaAktivitetUtils {
     }
 
     static AktorId getAktorId(AktorClient aktorClient, String personident) {
-        return aktorClient.hentAktorId(Fnr.ofValidFnr(personident));
+        try {
+            return aktorClient.hentAktorId(Fnr.ofValidFnr(personident));
+        } catch (RuntimeException exception) {
+            if (isDevelopment().orElse(false)) {
+                return AktorId.of("-1");       // TODO: Diskuter dette.
+            }
+            throw exception;
+        }
     }
 
 
