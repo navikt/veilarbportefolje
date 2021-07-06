@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
@@ -41,10 +42,10 @@ public class BrukerDataServiceTest {
 
 
     @Autowired
-    public BrukerDataServiceTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, TiltakRepositoryV2 tiltakRepositoryV2, GruppeAktivitetRepository gruppeAktivitetRepository, BrukerDataRepository brukerDataRepository, BrukerService brukerService, BrukerRepository brukerRepository) {
+    public BrukerDataServiceTest(AktivitetService aktivitetService, JdbcTemplate jdbcTemplate, TiltakRepositoryV2 tiltakRepositoryV2, GruppeAktivitetRepository gruppeAktivitetRepository, BrukerDataRepository brukerDataRepository, BrukerService brukerService, BrukerRepository brukerRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.brukerRepository = brukerRepository;
-        brukerDataService = new BrukerDataService(aktivitetDAO, tiltakRepositoryV2, gruppeAktivitetRepository, brukerDataRepository, brukerService);
+        brukerDataService = new BrukerDataService(aktivitetService, tiltakRepositoryV2, gruppeAktivitetRepository, brukerDataRepository, brukerService);
     }
 
     @BeforeEach
