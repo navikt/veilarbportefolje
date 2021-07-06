@@ -31,16 +31,30 @@ public class BrukerDataService {
     private final BrukerDataRepository brukerDataRepository;
     private final BrukerService brukerService;
 
-    public void oppdaterAktivitetDataBrukerOgHentPersonId(AktorId aktorId) {
+    public void oppdaterAktivitetBrukerDataOgHentPersonId(List<AktorId> aktorIder) {
+        if (aktorIder == null) {
+            return;
+        }
+        aktorIder.forEach(this::oppdaterAktivitetBrukerData);
+    }
+
+    public void oppdaterAktivitetBrukerData(AktorId aktorId) {
         if (aktorId == null) {
             return;
         }
-        brukerService.hentPersonidFraAktoerid(aktorId)
-                .onSuccess(personId -> oppdaterAktivitetBrukerData(aktorId, personId))
-                .onFailure(error -> log.error("Kunne ikke hente personId pa bruker: {}", aktorId));
+        try {
+            brukerService.hentPersonidFraAktoerid(aktorId)
+                    .onSuccess(personId -> oppdaterAktivitetBrukerData(aktorId, personId))
+                    .onFailure(error -> log.error("Kunne ikke hente personId pa bruker: {}", aktorId));
+        } catch (Exception exception) {
+            log.error("Feil ved oppdatering av brukerdata for: {}", aktorId);
+        }
     }
 
     public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId) {
+        if (personId == null || aktorId == null) {
+            log.error("PersonId null pa bruker: {}", aktorId);
+        }
         log.info("Oppdaterer brukerdata for aktor: {}, personId: {}", aktorId, personId);
         Brukerdata brukerAktivitetTilstand = new Brukerdata();
         LocalDate idag = LocalDate.now();
