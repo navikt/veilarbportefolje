@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.util.BatchConsumer;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -17,6 +18,7 @@ import java.util.List;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
+@Configuration
 @EnableScheduling
 @RequiredArgsConstructor
 public class ScheduledJobs {
@@ -38,8 +40,9 @@ public class ScheduledJobs {
         utgatteGruppeAktiviteter.forEach(gruppeAktivitet -> gruppeAktivitetService.settSomUtgatt(gruppeAktivitet.getMoteplanId(), gruppeAktivitet.getVeiledningdeltakerId()));
     }
 
-    @Scheduled(cron = "0 15 9 * * ?")
+    @Scheduled(cron = "0 30 10 * * ?")
     public void oppdaterBrukerData() {
+        log.info("Hello world!");
         List<AktorId> brukereSomMaOppdateres = brukerDataService.hentBrukerSomMaOppdaters();
         log.info("Oppdaterer brukerdata for: {} brukere", brukereSomMaOppdateres.size());
 
