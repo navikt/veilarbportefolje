@@ -26,23 +26,11 @@ import static java.util.stream.Collectors.toList;
 @Service
 @RequiredArgsConstructor
 public class BrukerDataService {
-    private final AktivitetService aktivitetService;
+    private final AktivitetDAO aktivitetDAO;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerDataRepository brukerDataRepository;
     private final BrukerService brukerService;
-
-    public void syncAktivitetOgBrukerData(AktorId aktorId) {
-        PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
-        if(personId == null){
-           log.info("Fant ingen personId pa aktor: {}", aktorId);
-        }
-        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(personId, aktorId);
-        gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(personId, aktorId);
-        aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
-
-        oppdaterAktivitetBrukerData(aktorId);
-    }
 
     public void oppdaterAktivitetBrukerDataOgHentPersonId(List<AktorId> aktorIder) {
         if (aktorIder == null) {
@@ -96,7 +84,7 @@ public class BrukerDataService {
     public List<AktorId> hentBrukerSomMaOppdaters() {
         Set<AktorId> rs = new HashSet<>();
         rs.addAll(tiltakRepositoryV2.hentBrukereMedUtlopteTiltak());
-        rs.addAll(aktivitetService.hentBrukereMedUtlopteAktiviteter());
+        rs.addAll(aktivitetDAO.hentBrukereMedUtlopteAktiviteter());
         rs.addAll(brukerDataRepository.hentBrukereMedUtlopteAktivitetStartDato());
 
         return new ArrayList<>(rs);
@@ -130,7 +118,7 @@ public class BrukerDataService {
     private List<Timestamp> hentAlleStartdatoer(AktorId aktorId, PersonId personId) {
         List<Timestamp> sluttdatoer = tiltakRepositoryV2.hentStartDatoer(personId).stream()
                 .filter(Objects::nonNull).collect(toList());
-        List<Timestamp> aktiviteter = aktivitetService.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
+        List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .map(AktivitetDTO::getFraDato)
                 .filter(Objects::nonNull).collect(toList());
@@ -148,7 +136,7 @@ public class BrukerDataService {
     private List<Timestamp> hentAlleSluttdatoer(AktorId aktorId, PersonId personId) {
         List<Timestamp> sluttdatoer = tiltakRepositoryV2.hentSluttdatoer(personId).stream()
                 .filter(Objects::nonNull).collect(toList());
-        List<Timestamp> aktiviteter = aktivitetService.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
+        List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .map(AktivitetDTO::getTilDato)
                 .filter(Objects::nonNull).collect(toList());

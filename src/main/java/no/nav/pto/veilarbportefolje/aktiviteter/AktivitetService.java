@@ -102,14 +102,6 @@ public class AktivitetService implements KafkaConsumerService<String> {
         return aktivitetDAO.hentUtgatteAktivteter(AktivitetTyperFraKafka.utdanningaktivitet.name());
     }
 
-    public List<AktorId> hentBrukereMedUtlopteAktiviteter() {
-        return aktivitetDAO.hentBrukereMedUtlopteAktiviteter();
-    }
-
-    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktorId) {
-        return aktivitetDAO.getAktiviteterForAktoerid(aktorId);
-    }
-
     public void slettUtgatteAktivitet(String aktivitetId, AktorId aktorId) {
         if (aktivitetId == null || aktorId == null) {
             return;

@@ -10,7 +10,7 @@ import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.cv.CVService;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
+import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
@@ -46,7 +46,7 @@ public class AdminController {
     private final CVService cvService;
     private final KafkaConfigCommon kafkaConfigCommon;
     private final ElasticIndexer elasticIndexer;
-    private final BrukerDataService brukerDataService;
+    private final BrukerAktiviteterService brukerAktiviteterService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -148,7 +148,7 @@ public class AdminController {
     public String syncBrukerAktiviteter(@RequestBody String fnr) {
         authorizeAdmin();
         String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
-        brukerDataService.syncAktivitetOgBrukerData(AktorId.of(aktorId));
+        brukerAktiviteterService.syncAktivitetOgBrukerData(AktorId.of(aktorId));
 
         elasticIndexer.indekser(AktorId.of(aktorId));
         return "Aktiviteter er naa i sync";

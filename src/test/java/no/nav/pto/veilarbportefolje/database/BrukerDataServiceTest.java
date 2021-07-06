@@ -42,10 +42,10 @@ public class BrukerDataServiceTest {
 
 
     @Autowired
-    public BrukerDataServiceTest(AktivitetService aktivitetService, JdbcTemplate jdbcTemplate, TiltakRepositoryV2 tiltakRepositoryV2, GruppeAktivitetRepository gruppeAktivitetRepository, BrukerDataRepository brukerDataRepository, BrukerService brukerService, BrukerRepository brukerRepository) {
+    public BrukerDataServiceTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, TiltakRepositoryV2 tiltakRepositoryV2, GruppeAktivitetRepository gruppeAktivitetRepository, BrukerDataRepository brukerDataRepository, BrukerService brukerService, BrukerRepository brukerRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.brukerRepository = brukerRepository;
-        brukerDataService = new BrukerDataService(aktivitetService, tiltakRepositoryV2, gruppeAktivitetRepository, brukerDataRepository, brukerService);
+        brukerDataService = new BrukerDataService(aktivitetDAO, tiltakRepositoryV2, gruppeAktivitetRepository, brukerDataRepository, brukerService);
     }
 
     @BeforeEach
