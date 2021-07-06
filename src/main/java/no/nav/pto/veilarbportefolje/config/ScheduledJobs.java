@@ -25,21 +25,21 @@ public class ScheduledJobs {
     private final GruppeAktivitetService gruppeAktivitetService;
 
     @Scheduled(cron = "0 1 0 * * ?")
-    private void slettUtgatteUtdanningAktivteter() {
+    public void slettUtgatteUtdanningAktivteter() {
         List<ArenaAktivitetDTO> utgatteUtdanningAktiviteter = aktivitetService.hentUtgatteUtdanningAktiviteter();
         log.info("Sletter: {} utgatte utdanningaktiviteter",utgatteUtdanningAktiviteter.size());
         utgatteUtdanningAktiviteter.forEach(utgattAktivitet -> aktivitetService.slettUtgatteAktivitet(utgattAktivitet.getAktivitetId(), AktorId.of(utgattAktivitet.getAktoerid())));
     }
 
     @Scheduled(cron = "0 1 0 * * ?")
-    private void slettGruppeAktiviteter() {
+    public void slettGruppeAktiviteter() {
         List<GruppeAktivitetSchedueldDTO> utgatteGruppeAktiviteter = gruppeAktivitetService.hentUtgatteUtdanningAktiviteter();
         log.info("Inaktiverer: {} utgatte gruppeaktivteter", utgatteGruppeAktiviteter.size());
         utgatteGruppeAktiviteter.forEach(gruppeAktivitet -> gruppeAktivitetService.settSomUtgatt(gruppeAktivitet.getMoteplanId(), gruppeAktivitet.getVeiledningdeltakerId()));
     }
 
-    @Scheduled(cron = "0 0 1 * * ?")
-    private void oppdaterBrukerData() {
+    @Scheduled(cron = "0 15 9 * * ?")
+    public void oppdaterBrukerData() {
         List<AktorId> brukereSomMaOppdateres = brukerDataService.hentBrukerSomMaOppdaters();
         log.info("Oppdaterer brukerdata for: {} brukere", brukereSomMaOppdateres.size());
 
