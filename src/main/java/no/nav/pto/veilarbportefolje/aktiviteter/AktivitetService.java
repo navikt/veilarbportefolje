@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.common.types.identer.AktorId;
@@ -31,16 +30,14 @@ public class AktivitetService implements KafkaConsumerService<String> {
     private final AtomicBoolean rewind;
     private final SisteEndringService sisteEndringService;
     private final UnleashService unleashService;
-    private final BrukerDataService brukerDataService;
 
     @Autowired
-    public AktivitetService(AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, BrukerService brukerService, SisteEndringService sisteEndringService, UnleashService unleashService, BrukerDataService brukerDataService) {
+    public AktivitetService(AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, BrukerService brukerService, SisteEndringService sisteEndringService, UnleashService unleashService) {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerService = brukerService;
         this.persistentOppdatering = persistentOppdatering;
         this.sisteEndringService = sisteEndringService;
         this.unleashService = unleashService;
-        this.brukerDataService = brukerDataService;
         this.rewind = new AtomicBoolean();
     }
 
@@ -103,6 +100,14 @@ public class AktivitetService implements KafkaConsumerService<String> {
 
     public List<ArenaAktivitetDTO> hentUtgatteUtdanningAktiviteter() {
         return aktivitetDAO.hentUtgatteAktivteter(AktivitetTyperFraKafka.utdanningaktivitet.name());
+    }
+
+    public List<AktorId> hentBrukereMedUtlopteAktiviteter() {
+        return aktivitetDAO.hentBrukereMedUtlopteAktiviteter();
+    }
+
+    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktorId) {
+        return aktivitetDAO.getAktiviteterForAktoerid(aktorId);
     }
 
     public void slettUtgatteAktivitet(String aktivitetId, AktorId aktorId) {

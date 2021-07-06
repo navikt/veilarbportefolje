@@ -207,6 +207,40 @@ function handleSamtykkeDeltCV(e) {
     }
 }
 
+const oppdaterBrukerForm = document.getElementById('oppdaterbruker');
+oppdaterBrukerForm.addEventListener('submit', handleOppdaterBruker)
+const fnrInputOppdater = document.getElementById('fnrInputOppdater');
+
+function handleOppdaterBruker(e) {
+    e.preventDefault();
+
+    const fnr = fnrInputOppdater.value;
+    if (fnr && fnr.length > 0) {
+        fetchData(
+            `/veilarbportefolje/api/admin/indeks/bruker`,
+            {method: 'PUT', credentials: 'same-origin', body: fnr},
+            'oppdaterbrukerResponse'
+        );
+    }
+}
+
+
+const oppdaterbrukerAktiviteterForm = document.getElementById('oppdaterbrukerAktiviteter');
+oppdaterbrukerAktiviteterForm.addEventListener('submit', handleOppdaterBrukerAktiviteter)
+const fnrInputOppdaterAktiviteter = document.getElementById('fnroppdaterbrukerAktiviteter');
+
+function handleOppdaterBrukerAktiviteter(e) {
+    e.preventDefault();
+
+    const fnr = fnrInputOppdaterAktiviteter.value;
+    if (fnr && fnr.length > 0) {
+        fetchData(
+            `/veilarbportefolje/api/admin/brukerAktiviteter`,
+            {method: 'PUT', credentials: 'same-origin', body: fnr},
+            'oppdaterbrukerAktiviteterResponse'
+        );
+    }
+}
 
 function sjekkStatus(resp) {
     if (!resp.ok) {
