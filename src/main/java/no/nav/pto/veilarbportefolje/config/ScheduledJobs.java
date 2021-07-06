@@ -40,14 +40,18 @@ public class ScheduledJobs {
         utgatteGruppeAktiviteter.forEach(gruppeAktivitet -> gruppeAktivitetService.settSomUtgatt(gruppeAktivitet.getMoteplanId(), gruppeAktivitet.getVeiledningdeltakerId()));
     }
 
-    @Scheduled(cron = "0 30 11 * * ?")
+    @Scheduled(cron = "0 19 12 * * ?")
     public void oppdaterBrukerData() {
-        log.info("Hello world!");
         List<AktorId> brukereSomMaOppdateres = brukerDataService.hentBrukerSomMaOppdaters();
         log.info("Oppdaterer brukerdata for: {} brukere", brukereSomMaOppdateres.size());
+        /*
 
-        BatchConsumer<AktorId> consumer = batchConsumer(1000, brukerDataService::oppdaterAktivitetDataBrukerOgHentPersonId);
-        brukereSomMaOppdateres.forEach(consumer);
-        consumer.flush();
+            BatchConsumer<AktorId> consumer = batchConsumer(1000, brukerDataService::oppdaterAktivitetDataBrukerOgHentPersonId);
+            brukereSomMaOppdateres.forEach(consumer);
+
+            consumer.flush();
+         */
+        brukereSomMaOppdateres.forEach(brukerDataService::oppdaterAktivitetDataBrukerOgHentPersonId);
+
     }
 }

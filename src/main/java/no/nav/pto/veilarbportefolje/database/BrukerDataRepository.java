@@ -32,9 +32,8 @@ public class BrukerDataRepository {
 
     public List<AktorId> hentBrukereMedUtlopteAktivitetStartDato() {
         String sql = "SELECT " + AKTOERID + " FROM " + TABLE_NAME
-                + " WHERE " + AKTIVITET_START + " < CURRENT_TIMESTAMP";
+                + " WHERE " + AKTIVITET_START + " < CURRENT_TIMESTAMP AND " + AKTOERID + " IS NOT NULL";
         return db.queryForList(sql, String.class).stream()
-                .filter(Objects::nonNull)
                 .map(AktorId::new)
                 .collect(toList());
     }
