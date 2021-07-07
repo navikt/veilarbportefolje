@@ -46,20 +46,11 @@ public class ScheduledJobs {
         }
     }
 
-
-    @Scheduled(cron = "0 0 * * * ?")
-    public void oppdater() {
-        log.info("Debug jobb start min.");
-        if (leaderElectionClient.isLeader()) {
-            log.info("Debug jobb min.");
-        }
-    }
-
     @Scheduled(cron = "0 0 1 * * ?")
     public void oppdaterBrukerData() {
-        log.info("Debug jobb start");
+        log.info("(Debug) jobb start");
         if (leaderElectionClient.isLeader()) {
-            log.debug("Starter jobb: oppdaterBrukerData");
+            log.info("Starter jobb: oppdaterBrukerData");
             List<AktorId> brukereSomMaOppdateres = brukerDataService.hentBrukerSomMaOppdaters();
             log.info("Oppdaterer brukerdata for: {} brukere", brukereSomMaOppdateres.size());
 
@@ -68,7 +59,7 @@ public class ScheduledJobs {
 
             consumer.flush();
         } else {
-            log.debug("Starter ikke jobb: oppdaterBrukerData");
+            log.info("Starter ikke jobb: oppdaterBrukerData");
         }
     }
 }

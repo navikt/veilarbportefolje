@@ -82,11 +82,14 @@ public class BrukerDataService {
     }
 
     public List<AktorId> hentBrukerSomMaOppdaters() {
-        Set<AktorId> rs = new HashSet<>();
-        rs.addAll(tiltakRepositoryV2.hentBrukereMedUtlopteTiltak());
-        rs.addAll(aktivitetDAO.hentBrukereMedUtlopteAktiviteter());
-        rs.addAll(brukerDataRepository.hentBrukereMedUtlopteAktivitetStartDato());
+        List<AktorId> tiltak = tiltakRepositoryV2.hentBrukereMedUtlopteTiltak();
+        List<AktorId> aktiviteter = aktivitetDAO.hentBrukereMedUtlopteAktiviteter();
+        List<AktorId> utloptStartDato = brukerDataRepository.hentBrukereMedUtlopteAktivitetStartDato();
 
+        Set<AktorId> rs = new HashSet<>(tiltak);
+        rs.addAll(aktiviteter);
+        rs.addAll(utloptStartDato);
+        log.info("Fant: {} med utlopt tiltak, {} med utlopte aktiviteter, og {} med utlopt start dato.", tiltak.size(), aktiviteter.size(), utloptStartDato.size());
         return new ArrayList<>(rs);
     }
 
