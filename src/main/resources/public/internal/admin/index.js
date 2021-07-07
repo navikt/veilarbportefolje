@@ -1,17 +1,3 @@
-const oppfolgingRefreshForm = document.getElementById('oppfolgingRefresh');
-oppfolgingRefreshForm.addEventListener('submit', handleOppfolgingRefreshForm);
-
-function handleOppfolgingRefreshForm(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil hente inn data pa nytt for alle brukere under oppfolging.')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/lastInnOppfolging',
-            {method: 'POST', credentials: 'same-origin'},
-            'oppfolgingRefreshResponse'
-        );
-    }
-}
-
 const slettElasticForm = document.getElementById('slettElasticForm')
 slettElasticForm.addEventListener('submit', handleslettElastic);
 const aktoerIdInputSlett = document.getElementById('aktoerIdInputSlett')
@@ -71,6 +57,21 @@ function handleAktorId(e) {
             {method: 'POST', credentials: 'same-origin', body: fnr},
             'aktoerIdResponse'
         )
+    }
+}
+
+/*
+const oppfolgingRefreshForm = document.getElementById('oppfolgingRefresh');
+oppfolgingRefreshForm.addEventListener('submit', handleOppfolgingRefreshForm);
+
+function handleOppfolgingRefreshForm(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil hente inn data pa nytt for alle brukere under oppfolging.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/lastInnOppfolging',
+            {method: 'POST', credentials: 'same-origin'},
+            'oppfolgingRefreshResponse'
+        );
     }
 }
 
@@ -159,35 +160,6 @@ function handleRewindTilordnetVeileder(e) {
     }
 }
 
-const startAiven = document.getElementById('startAiven');
-startAiven.addEventListener('submit', handleStartAiven);
-
-function handleStartAiven(e) {
-    e.preventDefault();
-    if (window.confirm('Vil du starte konsumering av Aiven?')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/start/aiven-konsumering',
-            {method: 'POST', credentials: 'same-origin'},
-            'startAivenResponse'
-        );
-    }
-}
-
-
-const stoppAiven = document.getElementById('stoppAiven');
-stoppAiven.addEventListener('submit', handleStoppAiven);
-
-function handleStoppAiven(e) {
-    e.preventDefault();
-    if (window.confirm('Vil du stoppe konsumering av Aiven?')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/stopp/aiven-konsumering',
-            {method: 'POST', credentials: 'same-origin'},
-            'stoppAivenResponse'
-        );
-    }
-}
-
 const aktoerIdSamtykkeForm = document.getElementById('aktoerIdSamtykkeForm');
 aktoerIdSamtykkeForm.addEventListener('submit', handleSamtykkeDeltCV);
 const aktoerIdSamtykkeInput = document.getElementById('aktoerIdSamtykkeInput');
@@ -204,6 +176,36 @@ function handleSamtykkeDeltCV(e) {
                 'aktoerIdSamtykkeResponse'
             )
         }
+    }
+}
+
+ */
+
+const startAiven = document.getElementById('startAiven');
+startAiven.addEventListener('submit', handleStartAiven);
+
+function handleStartAiven(e) {
+    e.preventDefault();
+    if (window.confirm('Vil du starte konsumering av Aiven?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/start/aiven-konsumering',
+            {method: 'POST', credentials: 'same-origin'},
+            'startAivenResponse'
+        );
+    }
+}
+
+const stoppAiven = document.getElementById('stoppAiven');
+stoppAiven.addEventListener('submit', handleStoppAiven);
+
+function handleStoppAiven(e) {
+    e.preventDefault();
+    if (window.confirm('Vil du stoppe konsumering av Aiven?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/stopp/aiven-konsumering',
+            {method: 'POST', credentials: 'same-origin'},
+            'stoppAivenResponse'
+        );
     }
 }
 
