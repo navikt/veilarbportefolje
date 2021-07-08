@@ -154,7 +154,13 @@ public class AdminController {
         return "Aktiviteter er naa i sync";
     }
 
+    @PutMapping("/brukerAktiviteter/allUsers")
+    public String syncBrukerAktiviteterForAlle() {
+        authorizeAdmin();
+        brukerAktiviteterService.syncAktivitetOgBrukerData();
 
+        return "Aktiviteter er naa i sync, men ikke i elastic";
+    }
 
 
     private void authorizeAdmin() {

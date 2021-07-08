@@ -244,6 +244,20 @@ function handleOppdaterBrukerAktiviteter(e) {
     }
 }
 
+const oppdaterbrukerAktiviteterForAlleForm = document.getElementById('oppdaterallebrukerAktiviteter');
+oppdaterbrukerAktiviteterForAlleForm.addEventListener('submit', handleOppdaterBrukerAktiviteterForAlle)
+
+function handleOppdaterBrukerAktiviteterForAlle(e) {
+    e.preventDefault();
+    if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/brukerAktiviteter/allUsers`,
+            {method: 'PUT', credentials: 'same-origin'},
+            'oppdaterallebrukerAktiviteterResponse'
+        );
+    }
+}
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);
