@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.domene;
 
 
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -46,9 +46,9 @@ public enum YtelseMapping {
             (vedtak) -> "INDIV".equals(vedtak.getSakstypeKode()) && "BASI".equals(vedtak.getRettighetstypeKode())
     );
 
-    public final Predicate<LoependeVedtak> sjekk;
+    public final Predicate<YtelsesInnhold> sjekk;
 
-    YtelseMapping(Predicate<LoependeVedtak> sjekk) {
+    YtelseMapping(Predicate<YtelsesInnhold> sjekk) {
         this.sjekk = sjekk;
     }
 
@@ -59,7 +59,7 @@ public enum YtelseMapping {
         return valueOf(s);
     }
 
-    public static Optional<YtelseMapping> of(LoependeVedtak vedtak) {
+    public static Optional<YtelseMapping> of(YtelsesInnhold vedtak) {
         return Stream.of(values())
                 .filter((YtelseMapping mapping) -> mapping.sjekk.test(vedtak))
                 .findAny();

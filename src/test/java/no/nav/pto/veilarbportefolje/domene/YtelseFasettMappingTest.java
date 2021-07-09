@@ -1,14 +1,12 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-import no.nav.melding.virksomhet.loependeytelser.v1.AAPtellere;
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import org.junit.Test;
 
-import java.math.BigInteger;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.domene.YtelseMapping.*;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class YtelseFasettMappingTest {
     @Test
@@ -42,16 +40,16 @@ public class YtelseFasettMappingTest {
 
     @Test
     public void skalKlassifisereAAPMaxTid() throws Exception {
-        LoependeVedtak vedtak = lagVedtak("AA", "AAP");
-        vedtak.setAaptellere(new AAPtellere());
+        YtelsesInnhold vedtak = lagVedtak("AA", "AAP");
+        vedtak.setAaptellere(new YtelsesInnhold.Aaptellere());
         assertThat(YtelseMapping.of(vedtak)).isEqualTo(Optional.of(AAP_MAXTID));
     }
 
     @Test
     public void skalKlassifisereAAPUnntak() throws Exception {
-        LoependeVedtak vedtak = lagVedtak("AA", "AAP");
-        AAPtellere teller = new AAPtellere();
-        teller.setAntallDagerIgjenUnntak(BigInteger.ONE);
+        YtelsesInnhold vedtak = lagVedtak("AA", "AAP");
+        YtelsesInnhold.Aaptellere teller =new YtelsesInnhold.Aaptellere();
+        teller.setAntallDagerIgjenUnntak(1);
         vedtak.setAaptellere(teller);
 
         assertThat(YtelseMapping.of(vedtak)).isEqualTo(Optional.of(AAP_UNNTAK));
@@ -67,8 +65,8 @@ public class YtelseFasettMappingTest {
         assertThat(YtelseMapping.of(lagVedtak("TULL", "BALL"))).isEqualTo(Optional.empty());
     }
 
-    private LoependeVedtak lagVedtak(String sakstypekode, String rettighetstypekode) {
-        LoependeVedtak vedtak = new LoependeVedtak();
+    private YtelsesInnhold lagVedtak(String sakstypekode, String rettighetstypekode) {
+        YtelsesInnhold vedtak = new YtelsesInnhold();
         vedtak.setSakstypeKode(sakstypekode);
         vedtak.setRettighetstypeKode(rettighetstypekode);
         return vedtak;

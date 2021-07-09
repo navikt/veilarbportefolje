@@ -12,11 +12,10 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaHendelseRepository;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetRepository;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakRepositoryV2;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
-import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
@@ -85,7 +84,6 @@ import static org.mockito.Mockito.when;
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
 @Import({
-        FilmottakConfig.class,
         BrukerService.class,
         RegistreringService.class,
         RegistreringRepository.class,

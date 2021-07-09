@@ -5,18 +5,21 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDTO;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetRepository;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakRepositoryV2;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetSchedueldDTO;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
+import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,7 +47,7 @@ public class BrukerDataService {
             return;
         }
         PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
-        if(personId == null){
+        if (personId == null) {
             log.info("Fant ingen personId pa aktor: {}", aktorId);
         }
 
@@ -81,6 +84,15 @@ public class BrukerDataService {
         brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
     }
 
+    public void oppdaterYtelser(AktorId aktorId, YtelsesInnhold innhold, boolean skalSlettes) {
+        Brukerdata ytelsesTilstand = new Brukerdata()
+                .setAktoerid(aktorId.get())
+                .setPersonid(innhold.getPersonId());
+        leggTilRelevantYtelsesData(ytelsesTilstand, innhold, skalSlettes);
+
+        brukerDataRepository.upsertYtelser(ytelsesTilstand);
+    }
+
     public List<AktorId> hentBrukerSomMaOppdaters() {
         List<AktorId> tiltak = tiltakRepositoryV2.hentBrukereMedUtlopteTiltak();
         List<AktorId> aktiviteter = aktivitetDAO.hentBrukereMedUtlopteAktiviteter();
@@ -93,7 +105,33 @@ public class BrukerDataService {
         return new ArrayList<>(rs);
     }
 
-    public static Timestamp finnNyesteUtlopteAktivAktivitet(List<Timestamp> aktiviteter, LocalDate today) {
+
+    private void leggTilRelevantYtelsesData(Brukerdata ytelsesTilstand, YtelsesInnhold innhold, boolean skalSlettes) {
+        if (skalSlettes) {
+            return;
+        }
+        YtelseMapping ytelseMapping = YtelseMapping.of(innhold)
+                .orElseThrow(() -> new RuntimeException(innhold.toString()));
+
+        LocalDateTime utlopsDato = Optional.ofNullable(innhold.getVedtaksperiode())
+                .map(periode ->
+                        ArenaAktivitetUtils.getLocalDateOrNull(periode.getTilogMedDato(), true)
+                ).orElseThrow(() -> new RuntimeException("Ytelse mangler til og med-dato"));
+
+        ;
+        Optional<YtelsesInnhold.Dagpengetellere> dagpengetellere = Optional.ofNullable(innhold.getDagpengetellere());
+        Optional<YtelsesInnhold.Aaptellere> aaptellere = Optional.ofNullable(innhold.getAaptellere());
+
+        ytelsesTilstand
+                .setYtelse(ytelseMapping)
+                .setUtlopsdato(utlopsDato)
+                .setDagputlopUke(dagpengetellere.map(YtelsesInnhold.Dagpengetellere::getAntallUkerIgjen).orElse(null))
+                .setPermutlopUke(dagpengetellere.map(YtelsesInnhold.Dagpengetellere::getAntallUkerIgjenUnderPermittering).orElse(null))
+                .setAapmaxtidUke(aaptellere.map(YtelsesInnhold.Aaptellere::getAntallUkerIgjen).orElse(null))
+                .setAapUnntakDagerIgjen(aaptellere.map(YtelsesInnhold.Aaptellere::getAntallDagerIgjenUnntak).orElse(null));
+    }
+
+    private static Timestamp finnNyesteUtlopteAktivAktivitet(List<Timestamp> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()
                 .filter(aktivitet -> aktivitet.toLocalDateTime().toLocalDate().isBefore(today))

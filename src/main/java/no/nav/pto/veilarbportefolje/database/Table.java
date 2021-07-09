@@ -72,6 +72,7 @@ public class Table {
         public static final String AAPMAXTIDUKEFASETT = "AAPMAXTIDUKEFASETT";
         public static final String AAPUNNTAKDAGERIGJEN = "AAPUNNTAKDAGERIGJEN";
         public static final String AAPUNNTAKUKERIGJENFASETT = "AAPUNNTAKUKERIGJENFASETT";
+
         public static final String NYESTEUTLOPTEAKTIVITET = "NYESTEUTLOPTEAKTIVITET";
         public static final String AKTIVITET_START = "AKTIVITET_START";
         public static final String NESTE_AKTIVITET_START = "NESTE_AKTIVITET_START";
