@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 
 import static io.micrometer.prometheus.PrometheusConfig.DEFAULT;
 import static java.util.Arrays.asList;
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
 
 @Component
 @Slf4j
@@ -24,14 +23,6 @@ public class MetricsReporter {
         this.elasticIndexer = elasticIndexer;
 
         Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
-        Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(getMeterRegistry());
-
-    }
-
-    private Number sjekkIndeksSistOpprettet() {
-        String indeksNavn = elasticIndexer.hentGammeltIndeksNavn().orElseThrow(IllegalStateException::new);
-        LocalDateTime tidspunktForSisteHovedIndeksering = hentIndekseringsdato(indeksNavn);
-        return hoursSinceLastChanged(tidspunktForSisteHovedIndeksering);
     }
 
     static LocalDateTime hentIndekseringsdato(String indeksNavn) {

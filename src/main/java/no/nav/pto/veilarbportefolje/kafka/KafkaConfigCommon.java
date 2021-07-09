@@ -9,12 +9,12 @@ import no.nav.common.kafka.consumer.feilhandtering.PostgresConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetService;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakServiceV2;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetDTO;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakDTO;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakServiceV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetDTO;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
@@ -28,7 +28,6 @@ import java.util.List;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
-import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.requireKafkaTopicPostfix;
 
 @Configuration
