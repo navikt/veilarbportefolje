@@ -2,6 +2,7 @@
 
 # Beskrivelse
 
+
 Tjeneste som aggregerer data fra andre baksystemer og håndterer oppdatering av søkeindeks brukt i modia oversikten.
 
 Følgende data aggregeres:
