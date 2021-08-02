@@ -19,7 +19,6 @@ import java.time.ZoneId;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.getLastModifiedTimeInMillis;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
 import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
-import static no.nav.pto.veilarbportefolje.util.StreamUtils.log;
 
 @Slf4j
 public class KopierGR199FraArena {

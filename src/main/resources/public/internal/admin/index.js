@@ -1,17 +1,3 @@
-const oppfolgingRefreshForm = document.getElementById('oppfolgingRefresh');
-oppfolgingRefreshForm.addEventListener('submit', handleOppfolgingRefreshForm);
-
-function handleOppfolgingRefreshForm(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil hente inn data pa nytt for alle brukere under oppfolging.')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/lastInnOppfolging',
-            {method: 'POST', credentials: 'same-origin'},
-            'oppfolgingRefreshResponse'
-        );
-    }
-}
-
 const slettElasticForm = document.getElementById('slettElasticForm')
 slettElasticForm.addEventListener('submit', handleslettElastic);
 const aktoerIdInputSlett = document.getElementById('aktoerIdInputSlett')
@@ -71,6 +57,21 @@ function handleAktorId(e) {
             {method: 'POST', credentials: 'same-origin', body: fnr},
             'aktoerIdResponse'
         )
+    }
+}
+
+/*
+const oppfolgingRefreshForm = document.getElementById('oppfolgingRefresh');
+oppfolgingRefreshForm.addEventListener('submit', handleOppfolgingRefreshForm);
+
+function handleOppfolgingRefreshForm(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil hente inn data pa nytt for alle brukere under oppfolging.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/lastInnOppfolging',
+            {method: 'POST', credentials: 'same-origin'},
+            'oppfolgingRefreshResponse'
+        );
     }
 }
 
@@ -178,6 +179,84 @@ function handleSamtykkeDeltCV(e) {
     }
 }
 
+ */
+
+const startAiven = document.getElementById('startAiven');
+startAiven.addEventListener('submit', handleStartAiven);
+
+function handleStartAiven(e) {
+    e.preventDefault();
+    if (window.confirm('Vil du starte konsumering av Aiven?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/start/aiven-konsumering',
+            {method: 'POST', credentials: 'same-origin'},
+            'startAivenResponse'
+        );
+    }
+}
+
+const stoppAiven = document.getElementById('stoppAiven');
+stoppAiven.addEventListener('submit', handleStoppAiven);
+
+function handleStoppAiven(e) {
+    e.preventDefault();
+    if (window.confirm('Vil du stoppe konsumering av Aiven?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/stopp/aiven-konsumering',
+            {method: 'POST', credentials: 'same-origin'},
+            'stoppAivenResponse'
+        );
+    }
+}
+
+const oppdaterBrukerForm = document.getElementById('oppdaterbruker');
+oppdaterBrukerForm.addEventListener('submit', handleOppdaterBruker)
+const fnrInputOppdater = document.getElementById('fnrInputOppdater');
+
+function handleOppdaterBruker(e) {
+    e.preventDefault();
+
+    const fnr = fnrInputOppdater.value;
+    if (fnr && fnr.length > 0) {
+        fetchData(
+            `/veilarbportefolje/api/admin/indeks/bruker`,
+            {method: 'PUT', credentials: 'same-origin', body: fnr},
+            'oppdaterbrukerResponse'
+        );
+    }
+}
+
+
+const oppdaterbrukerAktiviteterForm = document.getElementById('oppdaterbrukerAktiviteter');
+oppdaterbrukerAktiviteterForm.addEventListener('submit', handleOppdaterBrukerAktiviteter)
+const fnrInputOppdaterAktiviteter = document.getElementById('fnroppdaterbrukerAktiviteter');
+
+function handleOppdaterBrukerAktiviteter(e) {
+    e.preventDefault();
+
+    const fnr = fnrInputOppdaterAktiviteter.value;
+    if (fnr && fnr.length > 0) {
+        fetchData(
+            `/veilarbportefolje/api/admin/brukerAktiviteter`,
+            {method: 'PUT', credentials: 'same-origin', body: fnr},
+            'oppdaterbrukerAktiviteterResponse'
+        );
+    }
+}
+
+const oppdaterbrukerAktiviteterForAlleForm = document.getElementById('oppdaterallebrukerAktiviteter');
+oppdaterbrukerAktiviteterForAlleForm.addEventListener('submit', handleOppdaterBrukerAktiviteterForAlle)
+
+function handleOppdaterBrukerAktiviteterForAlle(e) {
+    e.preventDefault();
+    if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/brukerAktiviteter/allUsers`,
+            {method: 'PUT', credentials: 'same-origin'},
+            'oppdaterallebrukerAktiviteterResponse'
+        );
+    }
+}
 
 function sjekkStatus(resp) {
     if (!resp.ok) {

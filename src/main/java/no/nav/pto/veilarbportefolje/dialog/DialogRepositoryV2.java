@@ -1,9 +1,10 @@
 package no.nav.pto.veilarbportefolje.dialog;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -18,13 +19,11 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class DialogRepositoryV2 {
+    @NonNull
+    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
-
-    @Autowired
-    public DialogRepositoryV2(@Qualifier("PostgresJdbc") JdbcTemplate db) {
-        this.db = db;
-    }
 
     public int oppdaterDialogInfoForBruker(Dialogdata dialog) {
         log.info("Oppdaterer dialog i postgres for: {}, med sist endret: {}", dialog.getAktorId(), dialog.getSisteEndring());

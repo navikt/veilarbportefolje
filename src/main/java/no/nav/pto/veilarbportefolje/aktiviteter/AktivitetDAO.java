@@ -3,10 +3,10 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
-import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
@@ -21,10 +21,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.*;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.harIkkeStatusFullfort;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.database.Table.AKTIVITETER.*;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
@@ -65,6 +67,16 @@ public class AktivitetDAO {
 
     public void slettAlleAktivitetstatus(String aktivitettype) {
         db.execute("DELETE FROM BRUKERSTATUS_AKTIVITETER WHERE AKTIVITETTYPE = '" + aktivitettype + "'");
+    }
+
+    public List<AktorId> hentBrukereMedUtlopteAktiviteter() {
+        String sql = "SELECT " + AKTOERID + ", " + STATUS + " FROM " + TABLE_NAME
+                + " WHERE " + TILDATO + " < CURRENT_TIMESTAMP";
+
+        return db.queryForList(sql).stream()
+                .filter(rs -> harIkkeStatusFullfort((String) rs.get(STATUS)))
+                .map(rs -> AktorId.of((String) rs.get(AKTOERID)))
+                .collect(toList());
     }
 
     public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid) {
@@ -113,6 +125,24 @@ public class AktivitetDAO {
 
     void upsertAktivitet(Collection<KafkaAktivitetMelding> aktiviteter) {
         aktiviteter.forEach(this::upsertAktivitet);
+    }
+
+    public void upsertAktivitetStatus(AktivitetStatus status) {
+        if (status.getPersonid() == null || status.getAktoerid() == null || status.getAktivitetType() == null) {
+            log.warn("Kunne ikke lagre aktivitet pga. null verdier");
+            return;
+        }
+        String aktivChar = status.isAktiv() ? "1" : "0";
+        SqlUtils.upsert(db, "BRUKERSTATUS_AKTIVITETER")
+                .set("PERSONID", status.getPersonid().getValue())
+                .set("AKTOERID", status.getAktoerid().get())
+                .set("AKTIVITETTYPE", status.getAktivitetType())
+                .set("STATUS", aktivChar)
+                .set("NESTE_UTLOPSDATO", status.getNesteUtlop())
+                .set("NESTE_STARTDATO", status.getNesteStart())
+                .where(WhereClause.equals("PERSONID", status.getPersonid().getValue())
+                        .and(WhereClause.equals("AKTIVITETTYPE", status.getAktivitetType())))
+                .execute();
     }
 
     public void insertAktivitetstatuser(List<AktivitetStatus> statuser) {
@@ -183,6 +213,29 @@ public class AktivitetDAO {
                         (Timestamp) row.get("TILDATO"))
                 )
                 .collect(toList());
+    }
+
+    public List<ArenaAktivitetDTO> hentUtgatteAktivteter(String aktivitetsType) {
+        String sql = "SELECT " + AKTIVITETID + ", " + AKTIVITETID + " FROM " + TABLE_NAME
+                + " WHERE " + AKTIVITETTYPE + "= ? AND " + TILDATO + " < CURRENT_TIMESTAMP";
+        return db.queryForList(sql, aktivitetsType)
+                .stream()
+                .map(row -> new ArenaAktivitetDTO()
+                        .setAktivitetId((String) row.get(AKTIVITETID))
+                        .setAktoerid((String) row.get(AKTIVITETID))
+                )
+                .collect(toList());
+    }
+
+    /**
+     * Sletter kun hvis aktiviteten er utgatt.
+     * Implementert til aa forhindre race condition mellom daglig jobb og kafka.
+     */
+    public int slettUtgattAktivtet(String aktivitetid) {
+        return SqlUtils.delete(db, Table.AKTIVITETER.TABLE_NAME)
+                .where(WhereClause.equals(AKTIVITETID, aktivitetid)
+                        .and(WhereClause.lt(TILDATO, Timestamp.from(ZonedDateTime.now().toInstant())))
+                ).execute();
     }
 
     private String hentBrukertiltakForListeAvFnrSQL() {

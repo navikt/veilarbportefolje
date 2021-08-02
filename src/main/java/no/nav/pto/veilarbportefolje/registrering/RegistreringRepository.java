@@ -1,8 +1,11 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
-import no.nav.arbeid.soker.registrering.*;
-import no.nav.pto.veilarbportefolje.database.Table;
+import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
+import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
+import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
+import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;

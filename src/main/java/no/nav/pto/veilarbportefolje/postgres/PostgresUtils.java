@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.postgres;
 
 import org.springframework.dao.EmptyResultDataAccessException;
+
 import java.util.function.Supplier;
 
 public class PostgresUtils {

@@ -5,7 +5,10 @@ import lombok.experimental.Accessors;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BinaryOperator;
 
 @Data()

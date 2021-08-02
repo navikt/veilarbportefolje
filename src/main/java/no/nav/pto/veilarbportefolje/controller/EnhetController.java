@@ -1,42 +1,36 @@
 package no.nav.pto.veilarbportefolje.controller;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakServiceV2;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/enhet")
 public class EnhetController {
-
     private final ElasticService elasticService;
     private final AuthService authService;
     private final TiltakService tiltakService;
+    private final TiltakServiceV2 tiltakServiceV2;
     private final MetricsClient metricsClient;
-
-    @Autowired
-    public EnhetController(
-            ElasticService elasticService,
-            AuthService authService,
-            MetricsClient metricsClient,
-            TiltakService tiltakService) {
-        this.elasticService = elasticService;
-        this.tiltakService = tiltakService;
-        this.authService = authService;
-        this.metricsClient = metricsClient;
-    }
-
+    private final UnleashService unleashService;
 
     @PostMapping("/{enhet}/portefolje")
     public Portefolje hentPortefoljeForEnhet(
@@ -93,7 +87,9 @@ public class EnhetController {
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
-
+        if (erGR202PaKafka(unleashService)) {
+            return tiltakServiceV2.hentEnhettiltak(EnhetId.of(enhet));
+        }
         return tiltakService.hentEnhettiltak(enhet)
                 .getOrElse(new EnhetTiltak());
     }

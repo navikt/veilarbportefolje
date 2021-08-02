@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -11,11 +12,17 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaHendelseRepository;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetRepository;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
+import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
+import no.nav.pto.veilarbportefolje.database.BrukerDataRepository;
+import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
@@ -32,6 +39,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
+import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -86,7 +94,6 @@ import static org.mockito.Mockito.when;
         OppfolgingAvsluttetService.class,
         ElasticService.class,
         ElasticServiceV2.class,
-        TiltakRepository.class,
         AktivitetDAO.class,
         BrukerRepository.class,
         OppfolgingRepository.class,
@@ -95,8 +102,10 @@ import static org.mockito.Mockito.when;
         DialogRepository.class,
         ElasticIndexer.class,
         CvRepository.class,
+        CVRepositoryV2.class,
         CVService.class,
         RegistreringRepository.class,
+        RegistreringRepositoryV2.class,
         PersonRepository.class,
         NyForVeilederService.class,
         VeilederTilordnetService.class,
@@ -107,7 +116,13 @@ import static org.mockito.Mockito.when;
         MalService.class,
         OppfolgingService.class,
         ArbeidslisteRepositoryV1.class,
-        ArbeidslisteRepositoryV2.class
+        ArbeidslisteRepositoryV2.class,
+        UtdanningsAktivitetService.class,
+        ArenaHendelseRepository.class,
+        GruppeAktivitetRepository.class,
+        TiltakRepositoryV2.class,
+        BrukerDataService.class,
+        BrukerDataRepository.class
 })
 public class ApplicationConfigTest {
 
@@ -183,6 +198,11 @@ public class ApplicationConfigTest {
         return mock(AktorClient.class);
     }
 
+    @Bean("systemClient")
+    public AktorClient aktorClientSystem() {
+        return mock(AktorClient.class);
+    }
+
     @Bean
     public UnleashService unleashService() {
         final UnleashService mock = mock(UnleashService.class);
@@ -253,6 +273,11 @@ public class ApplicationConfigTest {
     @Bean
     public SystemUserTokenProvider systemUserTokenProvider() {
         return mock(SystemUserTokenProvider.class);
+    }
+
+    @Bean
+    public LeaderElectionClient leaderElectionClient(){
+        return mock(LeaderElectionClient.class);
     }
 
     @Bean
