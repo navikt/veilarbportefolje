@@ -11,7 +11,6 @@ import no.nav.common.utils.UrlUtils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
-import no.nav.pto.veilarbportefolje.util.RunningJob;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -34,27 +33,30 @@ public class OppfolgingService {
     private final OkHttpClient client;
     private final BrukerRepository brukerRepository;
     private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final SystemUserTokenProvider systemUserTokenProvider;
 
     @Autowired
-    public OppfolgingService(BrukerRepository brukerRepository, OppfolgingRepository oppfolgingRepository, SystemUserTokenProvider systemUserTokenProvider) {
+    public OppfolgingService(BrukerRepository brukerRepository, OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider) {
         this.brukerRepository = brukerRepository;
         this.oppfolgingRepository = oppfolgingRepository;
+        this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.client = RestClient.baseClient();
         this.veilarboppfolgingUrl = UrlUtils.createServiceUrl("veilarboppfolging", "pto", true);
     }
 
-    public OppfolgingService(BrukerRepository brukerRepository, OppfolgingRepository oppfolgingRepository, SystemUserTokenProvider systemUserTokenProvider, String url) {
+    public OppfolgingService(BrukerRepository brukerRepository, OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, String url) {
         this.brukerRepository = brukerRepository;
         this.oppfolgingRepository = oppfolgingRepository;
         this.systemUserTokenProvider = systemUserTokenProvider;
+        this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.client = RestClient.baseClient();
         this.veilarboppfolgingUrl = url;
     }
 
     public void lastInnDataPaNytt() {
-        RunningJob job = JobUtils.runAsyncJob(
+        JobUtils.runAsyncJob(
                 () -> {
                     String jobId = generateId();
                     MDC.put("jobId", jobId);
@@ -76,23 +78,35 @@ public class OppfolgingService {
         Optional<OppfolgingPeriodeDTO> oppfolgingPeriode = hentSisteOppfolgingsPeriode(bruker.getFnr());
 
         if (oppfolgingPeriode.isPresent()) {
-            ZonedDateTime korrektStartDato = oppfolgingPeriode.get().startDato;
-            if (korrektStartDato != null) {
-                log.info("OppfolgingsJobb: skal bytte startdato fra: {}, til:{} ", bruker.getOppfolging_startdato(), korrektStartDato);
-                int rows = oppfolgingRepository.oppdaterStartdato(AktorId.of(bruker.getAktoer_id()), korrektStartDato);
-                if (rows != 1) {
-                    log.error("OppfolgingsJobb: feil antall rader påvirket ({}) pa bruker: {} ", rows, bruker.getAktoer_id());
-                }
-            } else {
-                log.error("OppfolgingsJobb: startdato fra veialrboppfolging var null pa bruker: {} ", bruker.getAktoer_id());
-            }
+            oppdaterStartDato(bruker, oppfolgingPeriode.get().startDato);
+            avsluttOppfolgingHvisNodvendig(bruker, oppfolgingPeriode.get());
         } else {
             log.error("OppfolgingsJobb: Fant ikke oppfolgingsperiode for: " + bruker.getAktoer_id());
+            oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
+        }
+    }
+
+    private void oppdaterStartDato(OppfolgingsBruker bruker, ZonedDateTime korrektStartDato) {
+        if (korrektStartDato != null) {
+            log.info("OppfolgingsJobb: skal bytte startdato fra: {}, til:{} ", bruker.getOppfolging_startdato(), korrektStartDato);
+            int rows = oppfolgingRepository.oppdaterStartdato(AktorId.of(bruker.getAktoer_id()), korrektStartDato);
+            if (rows != 1) {
+                log.error("OppfolgingsJobb: feil antall rader påvirket ({}) pa bruker: {} ", rows, bruker.getAktoer_id());
+            }
+        } else {
+            log.warn("OppfolgingsJobb: startdato fra veilarboppfolging var null pa bruker: {} ", bruker.getAktoer_id());
+        }
+    }
+
+    private void avsluttOppfolgingHvisNodvendig(OppfolgingsBruker bruker, OppfolgingPeriodeDTO oppfolgingPeriode) {
+        if (!underOppfolging(oppfolgingPeriode)) {
+            log.info("OppfolgingsJobb: Oppfolging avsluttet for:" + bruker.getAktoer_id());
+            oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
         }
     }
 
     @SneakyThrows
-    public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(String fnr) {
+    private List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(String fnr) {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarboppfolgingUrl, "/api/oppfolging/oppfolgingsperioder?fnr=" + fnr))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
@@ -108,7 +122,7 @@ public class OppfolgingService {
         }
     }
 
-    public Optional<OppfolgingPeriodeDTO> hentSisteOppfolgingsPeriode(String fnr) {
+    private Optional<OppfolgingPeriodeDTO> hentSisteOppfolgingsPeriode(String fnr) {
         List<OppfolgingPeriodeDTO> oppfolgingPerioder = hentOppfolgingsperioder(fnr);
         if (oppfolgingPerioder == null) {
             return Optional.empty();
@@ -135,4 +149,7 @@ public class OppfolgingService {
         });
     }
 
+    private boolean underOppfolging(OppfolgingPeriodeDTO oppfolgingPeriode){
+        return oppfolgingPeriode.sluttDato == null;
+    }
 }
