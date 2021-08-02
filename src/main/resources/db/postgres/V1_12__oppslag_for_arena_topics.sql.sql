@@ -1,6 +1,0 @@
-CREATE TABLE LEST_ARENA_HENDELSE
-(
-    ID                VARCHAR(25) NOT NULL,
-    HENDELSE_ID       bigint,
-    PRIMARY KEY (ID)
-);

@@ -5,8 +5,6 @@ import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.util.AktivitetData;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,15 +38,12 @@ public class AktivitetServiceTest {
     @Mock
     private PersistentOppdatering persistentOppdatering;
 
-    @Mock
-    private UnleashService unleashService;
-
     @InjectMocks
     private AktivitetService aktivitetService;
 
     @Before
     public void resetMock() {
-        reset(brukerService, persistentOppdatering, aktivitetDAO, unleashService);
+        reset(brukerService, persistentOppdatering, aktivitetDAO);
     }
 
     private static final String AKTOERID_TEST = "AKTOERID_TEST";
@@ -70,7 +65,6 @@ public class AktivitetServiceTest {
         String ikkeFullfortStatus = "ikkeFullfortStatus";
 
         when(aktivitetDAO.getDistinctAktorIdsFromAktivitet()).thenReturn(aktoerids);
-        when(unleashService.isEnabled(any())).thenReturn(true);
 
         when(aktivitetDAO.getAktiviteterForAktoerid(any(AktorId.class))).thenAnswer(invocationOnMock -> {
                     AktorId aktoer = (AktorId) invocationOnMock.getArguments()[0];
@@ -114,7 +108,6 @@ public class AktivitetServiceTest {
         when(aktivitetDAO.getDistinctAktorIdsFromAktivitet()).thenReturn(singletonList(AKTOERID_TEST));
         when(aktivitetDAO.getAktiviteterForAktoerid(any())).thenReturn(aktiviteter);
         when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of(PERSONID_TEST)));
-        when(unleashService.isEnabled(any())).thenReturn(true);
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
 

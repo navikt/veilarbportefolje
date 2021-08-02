@@ -10,11 +10,8 @@ import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.cv.CVService;
-import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
@@ -44,9 +41,6 @@ public class AdminController {
     private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
     private final CVService cvService;
-    private final KafkaConfigCommon kafkaConfigCommon;
-    private final ElasticIndexer elasticIndexer;
-    private final BrukerAktiviteterService brukerAktiviteterService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -94,7 +88,7 @@ public class AdminController {
     public String fjernBrukerFraElastic(@RequestBody String aktoerId) {
         authorizeAdmin();
         elasticServiceV2.slettDokumenter(List.of(AktorId.of(aktoerId)));
-        return "Slettet bruker fra elastic " + aktoerId;
+        return "Slettet oppfølgingsbruker " + aktoerId;
     }
 
 
@@ -119,49 +113,6 @@ public class AdminController {
         veilederTilordnetService.setRewind(true);
         return "Rewind av tilordnet veileder har startet";
     }
-
-    @PostMapping("/stopp/aiven-konsumering")
-    public String stoppConsume() {
-        authorizeAdmin();
-        kafkaConfigCommon.stoppConsumer();
-        return "Stopper konsumering for aiven kafka topics";
-    }
-
-    @PostMapping("/start/aiven-konsumering")
-    public String startConsume() {
-        authorizeAdmin();
-        kafkaConfigCommon.startConsumer();
-        return "Starter konsumering for aiven kafka topics";
-    }
-
-    @PutMapping("/indeks/bruker")
-    public String indeks(@RequestBody String fnr) {
-
-        authorizeAdmin();
-        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
-        elasticIndexer.indekser(AktorId.of(aktorId));
-        return "Indeksering fullfort";
-    }
-
-
-    @PutMapping("/brukerAktiviteter")
-    public String syncBrukerAktiviteter(@RequestBody String fnr) {
-        authorizeAdmin();
-        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
-        brukerAktiviteterService.syncAktivitetOgBrukerData(AktorId.of(aktorId));
-
-        elasticIndexer.indekser(AktorId.of(aktorId));
-        return "Aktiviteter er naa i sync";
-    }
-
-    @PutMapping("/brukerAktiviteter/allUsers")
-    public String syncBrukerAktiviteterForAlle() {
-        authorizeAdmin();
-        brukerAktiviteterService.syncAktivitetOgBrukerData();
-
-        return "Aktiviteter er naa i sync, men ikke i elastic";
-    }
-
 
     private void authorizeAdmin() {
         final String ident = authContextHolder.getNavIdent().map(Id::toString).orElseThrow();

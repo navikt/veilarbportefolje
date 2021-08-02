@@ -1,15 +1,11 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.abac.VeilarbPepFactory;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.featuretoggle.UnleashClientImpl;
-import no.nav.common.job.leader_election.LeaderElectionClient;
-import no.nav.common.job.leader_election.ShedLockLeaderElectionClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -20,7 +16,6 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
@@ -48,16 +43,6 @@ public class ApplicationConfig {
         ConcurrentTaskScheduler scheduler = new ConcurrentTaskScheduler();
         scheduler.setErrorHandler(new ScheduledErrorHandler());
         return scheduler;
-    }
-
-    @Bean
-    public LockProvider lockProvider(JdbcTemplate jdbcTemplate) {
-        return new JdbcTemplateLockProvider(jdbcTemplate);
-    }
-
-    @Bean
-    public LeaderElectionClient leaderElectionClient(LockProvider lockProvider) {
-        return new ShedLockLeaderElectionClient(lockProvider);
     }
 
     @Bean

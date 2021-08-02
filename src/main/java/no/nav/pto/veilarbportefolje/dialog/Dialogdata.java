@@ -5,6 +5,9 @@ import lombok.experimental.Accessors;
 
 import java.time.ZonedDateTime;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.safeNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
+
 @Data
 @Accessors(chain = true)
 public class Dialogdata {
@@ -12,4 +15,16 @@ public class Dialogdata {
     public ZonedDateTime sisteEndring;
     public ZonedDateTime tidspunktEldsteVentende;
     public ZonedDateTime tidspunktEldsteUbehandlede;
+
+    public String toSqlInsertString() {
+        return  safeNull(getAktorId()) + ", " +
+                safeNull(toTimestamp(getTidspunktEldsteVentende())) + ", " +
+                safeNull(toTimestamp(getTidspunktEldsteUbehandlede()));
+
+    }
+
+    public String toSqlUpdateString() {
+        return  safeNull(toTimestamp(getTidspunktEldsteVentende())) + ", " +
+                safeNull(toTimestamp(getTidspunktEldsteUbehandlede()));
+    }
 }
