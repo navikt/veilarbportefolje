@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -9,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -23,11 +22,13 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Repository
-@RequiredArgsConstructor
 public class OppfolgingRepositoryV2 {
-    @NonNull
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
+
+    @Autowired
+    public OppfolgingRepositoryV2(@Qualifier("PostgresJdbc") JdbcTemplate db) {
+        this.db = db;
+    }
 
     public int settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
         return db.update(

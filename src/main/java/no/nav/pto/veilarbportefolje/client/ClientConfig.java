@@ -45,19 +45,6 @@ public class ClientConfig {
         return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient), new CachedAktorOppslagClient(aktorregisterClient), unleashService);
     }
 
-    @Bean("systemClient")
-    public AktorClient aktorClientSystem(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider, UnleashService unleashService) {
-        AktorOppslagClient aktorOppslagClient = new PdlAktorOppslagClient(
-                createServiceUrl("pdl-api", "default", false),
-                systemUserTokenProvider::getSystemUserToken,
-                systemUserTokenProvider::getSystemUserToken
-        );
-        AktorregisterClient aktorregisterClient = new AktorregisterHttpClient(
-                properties.getAktorregisterUrl(), APPLICATION_NAME, systemUserTokenProvider::getSystemUserToken
-        );
-        return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient), new CachedAktorOppslagClient(aktorregisterClient), unleashService);
-    }
-
     @Bean
     public MetricsClient metricsClient() {
         return new InfluxClient();

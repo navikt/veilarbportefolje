@@ -2,17 +2,14 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakRepositoryV2;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.BrukertiltakV2;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
@@ -38,7 +35,6 @@ import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
@@ -54,24 +50,18 @@ public class ElasticIndexer {
     private final BrukerRepository brukerRepository;
     private final IndexName alias;
     private final SisteEndringRepository sisteEndringRepository;
-    private final TiltakRepositoryV2 tiltakRepositoryV2;
-    private final UnleashService unleashService;
 
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient restHighLevelClient,
             SisteEndringRepository sisteEndringRepository,
-            IndexName alias,
-            TiltakRepositoryV2 tiltakRepositoryV2,
-            UnleashService unleashService) {
+            IndexName alias) {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.restHighLevelClient = restHighLevelClient;
         this.sisteEndringRepository = sisteEndringRepository;
-        this.tiltakRepositoryV2 = tiltakRepositoryV2;
-        this.unleashService = unleashService;
         this.alias = alias;
     }
 
@@ -224,33 +214,8 @@ public class ElasticIndexer {
         });
     }
 
-    private void leggTilTiltakV2(List<OppfolgingsBruker> brukere) {
-        validateBatchSize(brukere);
-
-        List<AktorId> aktorIder = brukere.stream()
-                .map(OppfolgingsBruker::getAktoer_id)
-                .map(AktorId::of)
-                .collect(toList());
-
-        Map<AktorId, Set<BrukertiltakV2>> alleTiltakForBrukere = tiltakRepositoryV2.hentBrukertiltak(aktorIder);
-
-        alleTiltakForBrukere.forEach((aktorId, brukerMedTiltak) -> {
-            Set<String> tiltak = brukerMedTiltak.stream()
-                    .map(BrukertiltakV2::getTiltak)
-                    .collect(toSet());
-
-            OppfolgingsBruker bruker = finnBruker(brukere, aktorId);
-            bruker.setTiltak(tiltak);
-        });
-    }
-
-
     private void leggTilTiltak(OppfolgingsBruker bruker) {
-        if (erGR202PaKafka(unleashService)) {
-            leggTilTiltakV2(Collections.singletonList(bruker));
-        } else {
-            leggTilTiltak(Collections.singletonList(bruker));
-        }
+        leggTilTiltak(Collections.singletonList(bruker));
     }
 
     private void leggTilAktiviteter(List<OppfolgingsBruker> brukere) {
@@ -284,6 +249,7 @@ public class ElasticIndexer {
             bruker.setAktiviteter(aktiviteterSomErAktive);
         });
     }
+
 
     private void leggTilSisteEndring(List<OppfolgingsBruker> brukere) {
         if (brukere == null || brukere.isEmpty()) {

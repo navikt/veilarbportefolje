@@ -27,7 +27,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
-import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -71,7 +70,7 @@ public class OppfolgingServiceTest {
                 List.of(new OppfolgingsBruker().setFnr(FNR).setAktoer_id(AKTORID).setOppfolging_startdato(startDato_portefolje_string))
         );
 
-        String response = readFileAsJsonString("/veilarboppfolging_hentOppfolgingsperioder.json", getClass());
+        String response = readFileAsJsonString("/veilarboppfolging_hentOppfolgingsperioder.json");
 
         givenThat(get(urlEqualTo("/api/oppfolging/oppfolgingsperioder?fnr=" + FNR))
                 .withQueryParam("fnr", equalTo(FNR))
@@ -91,4 +90,10 @@ public class OppfolgingServiceTest {
 
     }
 
+    @SneakyThrows
+    private String readFileAsJsonString(String pathname) {
+        val URI = getClass().getResource(pathname).toURI();
+        val encodedBytes = Files.readAllBytes(Paths.get(URI));
+        return new String(encodedBytes, UTF_8).trim();
+    }
 }

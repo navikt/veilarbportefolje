@@ -4,11 +4,11 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
+import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 
 import java.time.LocalDateTime;
 import java.util.*;

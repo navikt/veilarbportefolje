@@ -8,13 +8,11 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
 
 
@@ -25,8 +23,6 @@ public class CVService implements KafkaConsumerService<Melding> {
     private final ElasticServiceV2 elasticServiceV2;
     private final CvRepository cvRepository;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
-    private final CVRepositoryV2 cvRepositoryV2;
-    private final UnleashService unleashService;
 
     private boolean cvEksistere(Melding melding) {
         return melding.getMeldingstype() == Meldingstype.ENDRE || melding.getMeldingstype() == Meldingstype.OPPRETT;
@@ -37,9 +33,6 @@ public class CVService implements KafkaConsumerService<Melding> {
         AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
 
         boolean cvEksisterer = cvEksistere(kafkaMelding);
-        if (erPostgresPa(unleashService)) {
-            cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
-        }
         cvRepository.upsertCvEksistere(aktoerId, cvEksisterer);
         elasticServiceV2.updateCvEksistere(aktoerId, cvEksisterer);
     }
@@ -57,18 +50,19 @@ public class CVService implements KafkaConsumerService<Melding> {
 
     public void behandleCVHjemmelMelding(CVMelding cvMelding) {
         AktorId aktoerId = cvMelding.getAktoerId();
-        boolean harDeltCv = (cvMelding.getSlettetDato() == null);
 
         if (cvMelding.getRessurs() != CV_HJEMMEL) {
             log.info("Ignorer melding for ressurs {} for bruker {}", cvMelding.getRessurs(), aktoerId);
             return;
         }
 
-        if (erPostgresPa(unleashService)) {
-            cvRepositoryV2.upsertHarDeltCv(aktoerId, harDeltCv);
+        if (cvMelding.getSlettetDato() == null) {
+            cvRepository.upsertHarDeltCv(aktoerId, true);
+            elasticServiceV2.updateHarDeltCv(aktoerId, true);
+        } else {
+            cvRepository.upsertHarDeltCv(aktoerId, false);
+            elasticServiceV2.updateHarDeltCv(aktoerId, false);
         }
-        cvRepository.upsertHarDeltCv(aktoerId, harDeltCv);
-        elasticServiceV2.updateHarDeltCv(aktoerId, harDeltCv);
     }
 
     @Override

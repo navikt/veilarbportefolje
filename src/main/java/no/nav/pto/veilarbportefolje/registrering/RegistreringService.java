@@ -1,32 +1,30 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
-
-@RequiredArgsConstructor
-@Service
 @Slf4j
+@Service
 public class RegistreringService implements KafkaConsumerService<ArbeidssokerRegistrertEvent> {
     private final RegistreringRepository registreringRepository;
-    private final RegistreringRepositoryV2 registreringRepositoryV2;
     private final ElasticServiceV2 elastic;
-    private final AtomicBoolean rewind = new AtomicBoolean(false);
-    private final UnleashService unleashService;
+    private final AtomicBoolean rewind;
+
+    @Autowired
+    public RegistreringService(RegistreringRepository registreringRepository, ElasticServiceV2 elastic) {
+        this.registreringRepository = registreringRepository;
+        this.elastic = elastic;
+        this.rewind = new AtomicBoolean();
+    }
 
     public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
-        if (erPostgresPa(unleashService)) {
-            registreringRepositoryV2.upsertBrukerRegistrering(kafkaRegistreringMelding);
-        }
         registreringRepository.upsertBrukerRegistrering(kafkaRegistreringMelding);
 
         final AktorId aktoerId = AktorId.of(kafkaRegistreringMelding.getAktorid());
@@ -34,9 +32,6 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
     }
 
     public void slettRegistering(AktorId aktoerId) {
-        if (erPostgresPa(unleashService)) {
-            registreringRepositoryV2.slettBrukerRegistrering(aktoerId);
-        }
         registreringRepository.slettBrukerRegistrering(aktoerId);
     }
 
