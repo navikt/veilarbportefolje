@@ -36,6 +36,8 @@ public class OppfolgingService {
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final SystemUserTokenProvider systemUserTokenProvider;
 
+    private static int antallBrukereSlettet;
+
     @Autowired
     public OppfolgingService(BrukerRepository brukerRepository, OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider) {
         this.brukerRepository = brukerRepository;
@@ -58,12 +60,15 @@ public class OppfolgingService {
     public void lastInnDataPaNytt() {
         JobUtils.runAsyncJob(
                 () -> {
+                    antallBrukereSlettet = 0;
                     String jobId = generateId();
                     MDC.put("jobId", jobId);
                     log.info("Startet oppfolgingsjobb med id: {}", jobId);
 
                     List<OppfolgingsBruker> oppfolgingsBruker = brukerRepository.hentAlleBrukereUnderOppfolging();
                     oppfolgingsBruker.forEach(this::oppdaterBruker);
+
+                    log.info("OppfolgingsJobb: oppdaterte informasjon pa: {} brukere der av: {} ble slettet", oppfolgingsBruker.size(), antallBrukereSlettet);
                 });
     }
 
@@ -82,7 +87,8 @@ public class OppfolgingService {
             avsluttOppfolgingHvisNodvendig(bruker, oppfolgingPeriode.get());
         } else {
             log.error("OppfolgingsJobb: Fant ikke oppfolgingsperiode for: " + bruker.getAktoer_id());
-            oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
+            //oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
+            antallBrukereSlettet++;
         }
     }
 
@@ -101,7 +107,8 @@ public class OppfolgingService {
     private void avsluttOppfolgingHvisNodvendig(OppfolgingsBruker bruker, OppfolgingPeriodeDTO oppfolgingPeriode) {
         if (!underOppfolging(oppfolgingPeriode)) {
             log.info("OppfolgingsJobb: Oppfolging avsluttet for:" + bruker.getAktoer_id());
-            oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
+            //oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
+            antallBrukereSlettet++;
         }
     }
 
@@ -149,7 +156,7 @@ public class OppfolgingService {
         });
     }
 
-    private boolean underOppfolging(OppfolgingPeriodeDTO oppfolgingPeriode){
+    private boolean underOppfolging(OppfolgingPeriodeDTO oppfolgingPeriode) {
         return oppfolgingPeriode.sluttDato == null;
     }
 }
