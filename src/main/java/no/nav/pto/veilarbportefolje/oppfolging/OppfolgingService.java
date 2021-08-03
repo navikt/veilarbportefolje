@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.job.JobRunner;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
@@ -10,8 +11,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.utils.UrlUtils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.util.JobUtils;
-import no.nav.pto.veilarbportefolje.util.RunningJob;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -26,6 +25,7 @@ import java.util.Optional;
 
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.common.utils.UrlUtils.joinPaths;
+import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
 @Service
@@ -59,13 +59,9 @@ public class OppfolgingService {
     }
 
     public void lastInnDataPaNytt() {
-        RunningJob job = JobUtils.runAsyncJob(
+        JobRunner.runAsync("OppfolgingSync",
                 () -> {
                     antallBrukereSlettet = 0;
-                    String jobId = generateId();
-                    MDC.put("jobId", jobId);
-                    log.info("Startet oppfolgingsjobb med id: {}", jobId);
-
                     List<OppfolgingsBruker> oppfolgingsBruker = brukerRepository.hentAlleBrukereUnderOppfolging();
                     log.info("Hentet ut: {} brukere", oppfolgingsBruker.size());
 
