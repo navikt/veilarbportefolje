@@ -55,7 +55,7 @@ public class OppfolgingServiceTest {
         db = new JdbcTemplate(ds);
         oppfolgingRepository = new OppfolgingRepository(db, mock(UnleashService.class));
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        oppfolgingService = new OppfolgingService(brukerRepository, oppfolgingRepository, systemUserTokenProvider, apiUrl);
+        oppfolgingService = new OppfolgingService(brukerRepository, oppfolgingRepository, mock(OppfolgingAvsluttetService.class), systemUserTokenProvider, apiUrl);
 
     }
 
