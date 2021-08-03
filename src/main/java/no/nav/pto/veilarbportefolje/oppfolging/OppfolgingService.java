@@ -87,7 +87,7 @@ public class OppfolgingService {
             avsluttOppfolgingHvisNodvendig(bruker, oppfolgingPeriode.get());
         } else {
             log.error("OppfolgingsJobb: Fant ikke oppfolgingsperiode for: " + bruker.getAktoer_id());
-            oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
+            //oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
             antallBrukereSlettet++;
         }
     }
@@ -107,7 +107,7 @@ public class OppfolgingService {
     private void avsluttOppfolgingHvisNodvendig(OppfolgingsBruker bruker, OppfolgingPeriodeDTO oppfolgingPeriode) {
         if (!underOppfolging(oppfolgingPeriode)) {
             log.info("OppfolgingsJobb: Oppfolging avsluttet for:" + bruker.getAktoer_id());
-            oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
+            //oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
             antallBrukereSlettet++;
         }
     }
