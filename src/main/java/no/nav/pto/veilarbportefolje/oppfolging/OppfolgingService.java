@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.job.JobRunner;
 import no.nav.common.json.JsonUtils;
@@ -14,18 +13,16 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.common.utils.UrlUtils.joinPaths;
-import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
 @Service
@@ -63,8 +60,6 @@ public class OppfolgingService {
                 () -> {
                     antallBrukereSlettet = 0;
                     List<OppfolgingsBruker> oppfolgingsBruker = brukerRepository.hentAlleBrukereUnderOppfolging();
-                    log.info("Hentet ut: {} brukere", oppfolgingsBruker.size());
-
                     oppfolgingsBruker.forEach(this::oppdaterBruker);
 
                     log.info("OppfolgingsJobb: oppdaterte informasjon pa: {} brukere der av: {} ble slettet", oppfolgingsBruker.size(), antallBrukereSlettet);
@@ -79,15 +74,23 @@ public class OppfolgingService {
             log.error("Fnr var null pa bruker: " + bruker.getAktoer_id());
             return;
         }
-        Optional<OppfolgingPeriodeDTO> oppfolgingPeriode = hentSisteOppfolgingsPeriode(bruker.getFnr());
 
-        if (oppfolgingPeriode.isPresent()) {
-            oppdaterStartDato(bruker, oppfolgingPeriode.get().startDato);
-            avsluttOppfolgingHvisNodvendig(bruker, oppfolgingPeriode.get());
-        } else {
-            log.error("OppfolgingsJobb: Fant ikke oppfolgingsperiode for: " + bruker.getAktoer_id());
-            //oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
-            antallBrukereSlettet++;
+        try {
+            Optional<OppfolgingPeriodeDTO> oppfolgingPeriode = hentSisteOppfolgingsPeriode(bruker.getFnr());
+            if (oppfolgingPeriode.isPresent()) {
+                oppdaterStartDato(bruker, oppfolgingPeriode.get().startDato);
+                avsluttOppfolgingHvisNodvendig(bruker, oppfolgingPeriode.get());
+            } else {
+                log.info("OppfolgingsJobb: Fant ikke oppfolgingsperiode for: " + bruker.getAktoer_id());
+                //oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
+                antallBrukereSlettet++;
+            }
+        } catch (RuntimeException e) {
+            log.error("RuntimeException i OppfolgingsJobb for bruker {}", bruker.getAktoer_id());
+            log.error("RuntimeException i OppfolgingsJobb", e);
+        } catch (Exception e) {
+            log.error("Exception i OppfolgingsJobb for bruker {}", bruker.getAktoer_id());
+            log.error("Exception i OppfolgingsJobb", e);
         }
     }
 
@@ -111,8 +114,7 @@ public class OppfolgingService {
         }
     }
 
-    @SneakyThrows
-    private List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(String fnr) {
+    private List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(String fnr) throws RuntimeException, IOException {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarboppfolgingUrl, "/api/oppfolging/oppfolgingsperioder?fnr=" + fnr))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
@@ -123,16 +125,11 @@ public class OppfolgingService {
             return RestUtils.getBodyStr(response)
                     .map((bodyStr) -> JsonUtils.fromJsonArray(bodyStr, OppfolgingPeriodeDTO.class))
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
-        } catch (RuntimeException exception) {
-            return null;
         }
     }
 
-    private Optional<OppfolgingPeriodeDTO> hentSisteOppfolgingsPeriode(String fnr) {
+    private Optional<OppfolgingPeriodeDTO> hentSisteOppfolgingsPeriode(String fnr) throws RuntimeException, IOException {
         List<OppfolgingPeriodeDTO> oppfolgingPerioder = hentOppfolgingsperioder(fnr);
-        if (oppfolgingPerioder == null) {
-            return Optional.empty();
-        }
 
         return oppfolgingPerioder.stream().min((o1, o2) -> {
             if (o1.sluttDato == null) {
