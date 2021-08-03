@@ -1,19 +1,13 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import lombok.SneakyThrows;
-import lombok.val;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import javax.sql.DataSource;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TestUtil {
 
@@ -56,12 +50,5 @@ public class TestUtil {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @SneakyThrows
-    public static String readFileAsJsonString(String pathname, Class currentLocation) {
-        val URI = currentLocation.getResource(pathname).toURI();
-        val encodedBytes = Files.readAllBytes(Paths.get(URI));
-        return new String(encodedBytes, UTF_8).trim();
     }
 }

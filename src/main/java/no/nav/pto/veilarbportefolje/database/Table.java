@@ -1,9 +1,10 @@
 package no.nav.pto.veilarbportefolje.database;
 
 public class Table {
-    public static final class METADATA {
-        public static final String TABLE_NAME = "METADATA";
-        public static final String SIST_INDEKSERT_ES = "SIST_INDEKSERT_ES";
+    public static final String METADATA = "METADATA";
+
+    public class Kolonner {
+        static final String SIST_INDEKSERT_ES = "SIST_INDEKSERT_ES";
     }
 
     public static final class BRUKER_REGISTRERING {
@@ -60,28 +61,12 @@ public class Table {
         public static final String TABLE_NAME = "BRUKER_DATA";
         public static final String PERSONID = "PERSONID";
         public static final String AKTOERID = "AKTOERID";
-
-        public static final String YTELSE = "YTELSE";
-        public static final String UTLOPSDATO = "UTLOPSDATO";
-        public static final String UTLOPSDATOFASETT = "UTLOPSDATOFASETT";
-        public static final String DAGPUTLOPUKE = "DAGPUTLOPUKE";
-        public static final String DAGPUTLOPUKEFASETT = "DAGPUTLOPUKEFASETT";
-        public static final String PERMUTLOPUKE = "PERMUTLOPUKE";
-        public static final String PERMUTLOPUKEFASETT = "PERMUTLOPUKEFASETT";
-        public static final String AAPMAXTIDUKE = "AAPMAXTIDUKE";
-        public static final String AAPMAXTIDUKEFASETT = "AAPMAXTIDUKEFASETT";
-        public static final String AAPUNNTAKDAGERIGJEN = "AAPUNNTAKDAGERIGJEN";
-        public static final String AAPUNNTAKUKERIGJENFASETT = "AAPUNNTAKUKERIGJENFASETT";
-        public static final String NYESTEUTLOPTEAKTIVITET = "NYESTEUTLOPTEAKTIVITET";
-        public static final String AKTIVITET_START = "AKTIVITET_START";
-        public static final String NESTE_AKTIVITET_START = "NESTE_AKTIVITET_START";
-        public static final String FORRIGE_AKTIVITET_START = "FORRIGE_AKTIVITET_START";
     }
 
     public static final class BRUKER_CV {
         public static final String TABLE_NAME = "BRUKER_CV";
-
         public static final String AKTOERID = "AKTOERID";
+        public static final String FNR = "FNR";
         public static final String HAR_DELT_CV = "HAR_DELT_CV";
         public static final String CV_EKSISTERE = "CV_EKSISTERE";
         public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
@@ -122,51 +107,4 @@ public class Table {
         public static final String ANSVARLIG_VEILEDER_NAVN = "ANSVARLIG_VEILEDER_NAVN";
     }
 
-    @Deprecated
-    public static final class TILTAKKODEVERK {
-        public static final String TABLE_NAME = "tiltakkodeverk";
-        public static final String KODE = "kode";
-        public static final String VERDI = "verdi";
-    }
-
-    public static final class TILTAKKODEVERK_V2 {
-        public static final String TABLE_NAME = "TILTAKKODEVERKET_V2";
-        public static final String KODE = "KODE";
-        public static final String VERDI = "VERDI";
-    }
-
-    @Deprecated
-    public static final class ENHETTILTAK {
-        public static final String TABLE_NAME = "ENHETTILTAK";
-        public static final String ENHETID = "ENHETID";
-        public static final String TILTAKSKODE = "TILTAKSKODE";
-    }
-
-    public static final class BRUKERTILTAK_V2 {
-        public static final String TABLE_NAME = "BRUKERTILTAK_V2";
-        public static final String AKTIVITETID = "AKTIVITETID";
-        public static final String AKTOERID = "AKTOERID";
-        public static final String PERSONID = "PERSONID";
-        public static final String TILTAKSKODE = "TILTAKSKODE";
-        public static final String TILDATO = "TILDATO";
-        public static final String FRADATO = "FRADATO";
-    }
-
-    public static final class GRUPPE_AKTIVITER {
-        public static final String TABLE_NAME = "GRUPPE_AKTIVITER";
-        public static final String MOTEPLAN_ID = "MOTEPLAN_ID";
-        public static final String VEILEDNINGDELTAKER_ID = "VEILEDNINGDELTAKER_ID";
-
-        public static final String AKTOERID = "AKTOERID";
-        public static final String MOTEPLAN_STARTDATO = "MOTEPLAN_STARTDATO";
-        public static final String MOTEPLAN_SLUTTDATO = "MOTEPLAN_SLUTTDATO";
-        public static final String HENDELSE_ID = "HENDELSE_ID";
-        public static final String AKTIV = "AKTIV";
-    }
-
-    public static final class HOVEDINDEKSERING {
-        public static final String TABLE_NAME = "HOVEDINDEKSERING";
-        public static final String ID = "ID";
-        public static final String SISTE_HOVEDINDEKSERING_TIDSPUNKT = "SISTE_HOVEDINDEKSERING_TIDSPUNKT";
-    }
 }
