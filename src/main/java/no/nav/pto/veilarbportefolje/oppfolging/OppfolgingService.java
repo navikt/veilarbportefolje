@@ -11,6 +11,7 @@ import no.nav.common.utils.UrlUtils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
+import no.nav.pto.veilarbportefolje.util.RunningJob;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -58,7 +59,7 @@ public class OppfolgingService {
     }
 
     public void lastInnDataPaNytt() {
-        JobUtils.runAsyncJob(
+        RunningJob job = JobUtils.runAsyncJob(
                 () -> {
                     antallBrukereSlettet = 0;
                     String jobId = generateId();
@@ -66,6 +67,8 @@ public class OppfolgingService {
                     log.info("Startet oppfolgingsjobb med id: {}", jobId);
 
                     List<OppfolgingsBruker> oppfolgingsBruker = brukerRepository.hentAlleBrukereUnderOppfolging();
+                    log.info("Hentet ut: {} brukere", oppfolgingsBruker.size());
+
                     oppfolgingsBruker.forEach(this::oppdaterBruker);
 
                     log.info("OppfolgingsJobb: oppdaterte informasjon pa: {} brukere der av: {} ble slettet", oppfolgingsBruker.size(), antallBrukereSlettet);
