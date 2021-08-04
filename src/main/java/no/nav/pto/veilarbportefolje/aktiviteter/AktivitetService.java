@@ -19,7 +19,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.common.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
@@ -85,7 +84,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
         aktoerider.forEach(aktoerId -> {
             AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(AktorId.of(aktoerId));
-            AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, brukerService, erGR202PaKafka(unleashService));
+            AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, brukerService);
             Optional.ofNullable(aktivitetBrukerOppdateringer)
                     .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(Collections.singletonList(oppdatering)));
         });
@@ -93,36 +92,11 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     }
 
     public void utledOgIndekserAktivitetstatuserForAktoerid(AktorId aktoerId) {
-        AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO, erGR202PaKafka(unleashService));
+        AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO);
         Optional.ofNullable(aktivitetBrukerOppdateringer)
                 .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(Collections.singletonList(oppdatering)));
     }
 
-    public void slettOgIndekserAktivitet(String aktivitetid, AktorId aktorId) {
-        aktivitetDAO.deleteById(aktivitetid);
-        utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
-    }
-
-    public void upsertOgIndekserAktiviteter(KafkaAktivitetMelding melding) {
-        aktivitetDAO.upsertAktivitet(melding);
-        utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(melding.getAktorId()));
-    }
-
-    public List<ArenaAktivitetDTO> hentUtgatteUtdanningAktiviteter() {
-        return aktivitetDAO.hentUtgatteAktivteter(AktivitetTyperFraKafka.utdanningaktivitet.name());
-    }
-
-    public void slettUtgatteAktivitet(String aktivitetId, AktorId aktorId) {
-        if (aktivitetId == null || aktorId == null) {
-            return;
-        }
-        int rows = aktivitetDAO.slettUtgattAktivtet(aktivitetId);
-        if (rows == 0) {
-            return;
-        }
-        log.info("Slettet utgatt aktivitet: {} pa bruker: {} ", aktivitetId, aktorId);
-        utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
-    }
 
     @Override
     public boolean shouldRewind() {
