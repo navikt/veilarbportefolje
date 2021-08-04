@@ -62,7 +62,7 @@ public class BrukerRepository {
         db.setFetchSize(10_000);
 
         return SqlUtils
-                .select(db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> harOppfolgingsFlaggSatt(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .executeToList()
                 .stream()
