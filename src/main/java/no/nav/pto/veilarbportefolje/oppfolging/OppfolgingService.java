@@ -95,14 +95,17 @@ public class OppfolgingService {
     }
 
     private void oppdaterStartDato(OppfolgingsBruker bruker, ZonedDateTime korrektStartDato) {
-        if (korrektStartDato != null) {
-            log.info("OppfolgingsJobb: skal bytte startdato fra: {}, til:{} ", bruker.getOppfolging_startdato(), korrektStartDato);
-            int rows = oppfolgingRepository.oppdaterStartdato(AktorId.of(bruker.getAktoer_id()), korrektStartDato);
-            if (rows != 1) {
-                log.error("OppfolgingsJobb: feil antall rader påvirket ({}) pa bruker: {} ", rows, bruker.getAktoer_id());
-            }
-        } else {
+        if (korrektStartDato == null) {
             log.warn("OppfolgingsJobb: startdato fra veilarboppfolging var null pa bruker: {} ", bruker.getAktoer_id());
+            return;
+        }
+        if (bruker.getOppfolging_startdato() != null && korrektStartDato.isEqual(ZonedDateTime.parse(bruker.getOppfolging_startdato()))) {
+            return;
+        }
+        log.info("OppfolgingsJobb: skal bytte startdato fra: {}, til:{} ", bruker.getOppfolging_startdato(), korrektStartDato);
+        int rows = oppfolgingRepository.oppdaterStartdato(AktorId.of(bruker.getAktoer_id()), korrektStartDato);
+        if (rows != 1) {
+            log.error("OppfolgingsJobb: feil antall rader påvirket ({}) pa bruker: {} ", rows, bruker.getAktoer_id());
         }
     }
 
