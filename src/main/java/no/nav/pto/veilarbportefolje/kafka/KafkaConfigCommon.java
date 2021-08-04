@@ -12,17 +12,12 @@ import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.PostgresConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
+import no.nav.common.kafka.consumer.util.ToggledKafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetService;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakServiceV2;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetDTO;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakDTO;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
@@ -35,6 +30,7 @@ import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerKafkaDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
@@ -94,59 +90,29 @@ public class KafkaConfigCommon {
     private final KafkaConsumerClient consumerClientOnPrem;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVService cvService, TiltakServiceV2 tiltakServiceV2,
-                             UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
+    public KafkaConfigCommon(CVService cvService,
                              SistLestService sistLestService, RegistreringService registreringService,
                              ProfileringService profileringService, AktivitetService aktivitetService,
                              VedtakService vedtakService, DialogService dialogService, OppfolgingStartetService oppfolgingStartetService,
                              OppfolgingAvsluttetService oppfolgingAvsluttetService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
                              MalService malService, OppfolginsbrukerService oppfolginsbrukerService,
-                             @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
+                             @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
+                             UnleashService unleashService) {
         KafkaConsumerRepository consumerRepository = new PostgresConsumerRepository(dataSource);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsAiven =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.CV_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(CVMelding.class),
-                                        cvService::behandleKafkaMeldingCVHjemmel
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, UtdanningsAktivitetDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.UTDANNINGS_AKTIVITET_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(UtdanningsAktivitetDTO.class),
-                                        utdanningsAktivitetService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, GruppeAktivitetDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.GRUPPE_AKTIVITET_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(GruppeAktivitetDTO.class),
-                                        gruppeAktivitetService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, TiltakDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.TILTAK_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(TiltakDTO.class),
-                                        tiltakServiceV2::behandleKafkaRecord
-                                )
+                        .withLogging()
+                        .withMetrics(prometheusMeterRegistry)
+                        .withStoreOnFailure(consumerRepository)
+                        .withConsumerConfig(
+                                Topic.CV_TOPIC.topicName,
+                                Deserializers.stringDeserializer(),
+                                Deserializers.jsonDeserializer(CVMelding.class),
+                                cvService::behandleKafkaMeldingCVHjemmel
+                        )
                 );
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
@@ -292,16 +258,19 @@ public class KafkaConfigCommon {
                                 )
                 );
 
-
-        consumerClientAiven = KafkaConsumerClientBuilder.builder()
+        KafkaConsumerClient kafkaConsumerAiven = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfigs(topicConfigsAiven)
                 .build();
 
-        consumerClientOnPrem = KafkaConsumerClientBuilder.builder()
+        consumerClientAiven = new ToggledKafkaConsumerClient(kafkaConsumerAiven, new KafkaAivenUnleash(unleashService));
+
+        KafkaConsumerClient kafkaConsumerOnPrem = KafkaConsumerClientBuilder.builder()
                 .withProperties(onPremDefaultConsumerProperties(CLIENT_ID_CONFIG, KAFKA_BROKERS, serviceUserCredentials))
                 .withTopicConfigs(topicConfigsOnPrem)
                 .build();
+
+        consumerClientOnPrem = new ToggledKafkaConsumerClient(kafkaConsumerOnPrem, new KafkaOnpremUnleash(unleashService));
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
@@ -318,22 +287,6 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClientAiven.start();
         consumerClientOnPrem.start();
-    }
-
-    public void startConsumerAiven() {
-        consumerClientAiven.start();
-    }
-
-    public void stoppConsumerAiven() {
-        consumerClientAiven.stop();
-    }
-
-    public void startConsumerOnPrem() {
-        consumerClientOnPrem.start();
-    }
-
-    public void stoppConsumerOnPrem() {
-        consumerClientOnPrem.stop();
     }
 
 

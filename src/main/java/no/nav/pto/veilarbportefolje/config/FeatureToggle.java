@@ -21,6 +21,9 @@ public class FeatureToggle {
 
     public static final String NY_KAFKA_COMMON_LIB = "veilarbportefolje.ny_kafka_common_lib_enabled";
 
+    public static final String KAFKA_AIVEN_CONSUMERS_RUNNING = "veilarbportefolje.kafka_aiven_consumers_running";
+    public static final String KAFKA_ONPREM_CONSUMERS_RUNNING = "veilarbportefolje.kafka_onprem_consumers_running";
+
     public static boolean erPostgresPa(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.POSTGRES);
     }
