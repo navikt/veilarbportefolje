@@ -47,17 +47,9 @@ public class CvRepository {
                 .execute();
     }
 
-    public String cvEksistere(AktorId aktoerId) {
-        return SqlUtils
-                .select(jdbcTemplate, TABLE_NAME, rs -> rs.getString(CV_EKSISTERE))
-                .column(CV_EKSISTERE)
-                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
-                .execute();
-    }
-
     public void resetHarDeltCV(AktorId aktoerId) {
         SqlUtils.update(jdbcTemplate, TABLE_NAME)
-                .set(HAR_DELT_CV, false)
+                .set(HAR_DELT_CV, boolToJaNei(false))
                 .whereEquals(AKTOERID, aktoerId.get())
                 .execute();
     }
