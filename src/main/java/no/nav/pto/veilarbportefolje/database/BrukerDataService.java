@@ -5,13 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDTO;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +31,7 @@ public class BrukerDataService {
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerDataRepository brukerDataRepository;
     private final BrukerService brukerService;
+    private final ElasticIndexer elasticIndexer;
 
     public void oppdaterAktivitetBrukerDataOgHentPersonId(List<AktorId> aktorIder) {
         if (aktorIder == null) {
@@ -49,6 +50,7 @@ public class BrukerDataService {
         }
 
         oppdaterAktivitetBrukerData(aktorId, personId);
+        elasticIndexer.indekser(aktorId);
     }
 
     public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId) {
