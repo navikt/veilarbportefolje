@@ -33,7 +33,6 @@ import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -83,7 +82,6 @@ import static org.mockito.Mockito.when;
         BrukerService.class,
         RegistreringService.class,
         RegistreringRepository.class,
-        RegistreringRepositoryV2.class,
         AktivitetService.class,
         PersistentOppdatering.class,
         OppfolgingAvsluttetService.class,
