@@ -35,9 +35,9 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
     }
 
     public void behandleKafkaMeldingLogikk(ArbeidssokerRegistrertEvent kafkaMelding) {
-        if (erPostgresPa(unleashService)) {
-            registreringRepositoryV2.upsertBrukerRegistrering(kafkaMelding);
-        }
+        //if (erPostgresPa(unleashService)) {
+        //registreringRepositoryV2.upsertBrukerRegistrering(kafkaMelding);
+        //}
         registreringRepository.upsertBrukerRegistrering(kafkaMelding);
 
         final AktorId aktoerId = AktorId.of(kafkaMelding.getAktorid());
