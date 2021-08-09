@@ -9,11 +9,11 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
-import no.nav.common.kafka.consumer.feilhandtering.PostgresConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
+import no.nav.common.kafka.consumer.util.FeatureToggledKafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
-import no.nav.common.kafka.consumer.util.ToggledKafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
+import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
@@ -40,7 +40,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
 import java.util.List;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
@@ -97,9 +96,9 @@ public class KafkaConfigCommon {
                              OppfolgingAvsluttetService oppfolgingAvsluttetService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
                              MalService malService, OppfolginsbrukerService oppfolginsbrukerService,
-                             @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
+                             @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
                              UnleashService unleashService) {
-        KafkaConsumerRepository consumerRepository = new PostgresConsumerRepository(dataSource);
+        KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsAiven =
@@ -263,14 +262,14 @@ public class KafkaConfigCommon {
                 .withTopicConfigs(topicConfigsAiven)
                 .build();
 
-        consumerClientAiven = new ToggledKafkaConsumerClient(kafkaConsumerAiven, new KafkaAivenUnleash(unleashService));
+        consumerClientAiven = new FeatureToggledKafkaConsumerClient(kafkaConsumerAiven, new KafkaAivenUnleash(unleashService));
 
         KafkaConsumerClient kafkaConsumerOnPrem = KafkaConsumerClientBuilder.builder()
                 .withProperties(onPremDefaultConsumerProperties(CLIENT_ID_CONFIG, KAFKA_BROKERS, serviceUserCredentials))
                 .withTopicConfigs(topicConfigsOnPrem)
                 .build();
 
-        consumerClientOnPrem = new ToggledKafkaConsumerClient(kafkaConsumerOnPrem, new KafkaOnpremUnleash(unleashService));
+        consumerClientOnPrem = new FeatureToggledKafkaConsumerClient(kafkaConsumerOnPrem, new KafkaOnpremUnleash(unleashService));
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
