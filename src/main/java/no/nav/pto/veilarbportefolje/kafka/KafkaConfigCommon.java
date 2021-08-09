@@ -252,7 +252,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.CV_ENDRET.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(Melding.class),
+                                        Deserializers.aivenAvroDeserializer(),
                                         cvService::behandleKafkaRecord
                                 )
                 );
