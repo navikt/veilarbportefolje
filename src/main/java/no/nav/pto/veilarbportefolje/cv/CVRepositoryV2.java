@@ -11,9 +11,9 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import static java.time.Instant.now;
-
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
 
 @Slf4j
 @Repository
@@ -34,9 +34,9 @@ public class CVRepositoryV2 {
                         "ON CONFLICT (" + AKTOERID + ") " +
                         "DO UPDATE SET (" + HAR_DELT_CV + ", " + SISTE_MELDING_MOTTATT + ") = (?, ?)",
                 aktoerId.get(),
-                harDeltCv,
+                boolToJaNei(harDeltCv),
                 Timestamp.from(now()),
-                harDeltCv,
+                boolToJaNei(harDeltCv),
                 Timestamp.from(now()));
     }
 
@@ -48,9 +48,9 @@ public class CVRepositoryV2 {
                         "ON CONFLICT (" + AKTOERID + ") " +
                         "DO UPDATE SET (" + CV_EKSISTERER + ", " + SISTE_MELDING_MOTTATT + ") = (?, ?)",
                 aktoerId.get(),
-                cvEksisterer,
+                boolToJaNei(cvEksisterer),
                 Timestamp.from(now()),
-                cvEksisterer,
+                boolToJaNei(cvEksisterer),
                 Timestamp.from(now()));
     }
 
@@ -76,7 +76,7 @@ public class CVRepositoryV2 {
                 "UPDATE %s SET %s = ? WHERE %s = ?",
                 TABLE_NAME, HAR_DELT_CV, AKTOERID
         );
-        return db.update(updateSql, false, aktoerId.get());
+        return db.update(updateSql, boolToJaNei(false), aktoerId.get());
     }
 
     public int slettCVData(AktorId aktoerId) {

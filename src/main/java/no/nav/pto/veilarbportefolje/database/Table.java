@@ -107,4 +107,16 @@ public class Table {
         public static final String ANSVARLIG_VEILEDER_NAVN = "ANSVARLIG_VEILEDER_NAVN";
     }
 
+    public static final class FEILET_KAFKA_MELDING {
+        public static final String TABLE_NAME = "FEILET_KAFKA_MELDING";
+        public static final String ID = "ID";
+    }
+
+    public static final class KAFKA_CONSUMER_RECORD {
+        public static final String TABLE_NAME = "KAFKA_CONSUMER_RECORD";
+        public static final String ID = "ID";
+        public static final String RETRIES = "RETRIES";
+        public static final String CREATED_AT = "CREATED_AT";
+    }
+
 }
