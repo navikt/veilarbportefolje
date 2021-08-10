@@ -19,7 +19,6 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erNyForVeilederFixPa;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
@@ -49,15 +48,8 @@ public class OppfolgingRepository {
     }
 
     public int settVeileder(AktorId aktorId, VeilederId veilederId) {
-        if(erNyForVeilederFixPa(unleashService)){
-            return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                    .set(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.toString())
-                    .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktorId.toString())
-                    .execute();
-        }
         return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
                 .set(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.toString())
-                .set(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER, "J")
                 .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktorId.toString())
                 .execute();
     }

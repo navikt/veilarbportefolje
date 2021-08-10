@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erNyForVeilederFixPa;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
@@ -26,19 +25,13 @@ public class NyForVeilederService implements KafkaConsumerService<String> {
     public void behandleKafkaMelding(String kafkaMelding) {
         final NyForVeilederDTO dto = JsonUtils.fromJson(kafkaMelding, NyForVeilederDTO.class);
 
-        final boolean brukerIkkeErNyForVeileder = !dto.isNyForVeileder();
-        if (brukerIkkeErNyForVeileder) {
-            oppfolgingRepository.settNyForVeileder(dto.getAktorId(), false);
-            elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), false);
-        } else if (erNyForVeilederFixPa(unleashService)) {
-            oppfolgingRepository.settNyForVeileder(dto.getAktorId(), true);
-            elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), true);
-        }
-        // Vi trenger ikke å opppdatere db/indeks når bruker er ny for veileder, siden dette gjøres i VeilederTilordnetService
-
+        final boolean brukerErNyForVeileder = dto.isNyForVeileder();
+        oppfolgingRepository.settNyForVeileder(dto.getAktorId(), brukerErNyForVeileder);
         if (erPostgresPa(unleashService)) {
-            oppfolgingRepositoryV2.settNyForVeileder(dto.getAktorId(), brukerIkkeErNyForVeileder);
+            oppfolgingRepositoryV2.settNyForVeileder(dto.getAktorId(), brukerErNyForVeileder);
         }
+
+        elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), brukerErNyForVeileder);
     }
 
     @Override
