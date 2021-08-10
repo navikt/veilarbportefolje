@@ -23,6 +23,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -52,8 +53,8 @@ public class BrukerRepository {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Autowired
-    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        this.db = db;
+    public BrukerRepository(DataSource dataSource, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        this.db = new JdbcTemplate(dataSource);
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 

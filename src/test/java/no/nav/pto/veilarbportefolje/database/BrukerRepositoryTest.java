@@ -57,7 +57,7 @@ public class BrukerRepositoryTest {
         SingleConnectionDataSource ds = setupInMemoryDatabase();
 
         jdbcTemplate = new JdbcTemplate(ds);
-        brukerRepository = new BrukerRepository(jdbcTemplate, new NamedParameterJdbcTemplate(ds));
+        brukerRepository = new BrukerRepository(ds, new NamedParameterJdbcTemplate(ds));
     }
 
     @Before

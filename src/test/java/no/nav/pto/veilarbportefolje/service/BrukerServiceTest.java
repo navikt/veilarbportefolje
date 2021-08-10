@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
@@ -45,9 +46,9 @@ public class BrukerServiceTest {
 
     @Before
     public void setUp() {
-
-        db = new JdbcTemplate(setupInMemoryDatabase());
-        brukerRepository = new BrukerRepository(db, null);
+        SingleConnectionDataSource ds = setupInMemoryDatabase();
+        db = new JdbcTemplate(ds);
+        brukerRepository = new BrukerRepository(ds, null);
         aktorClient = mock(AktorClient.class);
         UnleashService unleashService = mock(UnleashService.class);
         when(unleashService.isEnabled(FeatureToggle.AUTO_SLETT)).thenReturn(true);
