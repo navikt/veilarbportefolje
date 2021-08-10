@@ -63,8 +63,8 @@ class CvServiceTest extends EndToEndTest {
 
         cvService.behandleCVHjemmelMelding(cvMelding);
 
-        String harDeltCvDb = cvRepository.harDeltCv(aktoerId);
-        assertThat(harDeltCvDb).isEqualTo("J");
+        Boolean harDeltCvDb = cvRepository.harDeltCv(aktoerId);
+        assertThat(harDeltCvDb).isTrue();
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();

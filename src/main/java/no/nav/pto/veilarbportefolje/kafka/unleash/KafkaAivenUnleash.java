@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.kafka;
+package no.nav.pto.veilarbportefolje.kafka.unleash;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
