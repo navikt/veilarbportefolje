@@ -10,7 +10,6 @@ import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
-import no.nav.common.kafka.consumer.util.FeatureToggledKafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
@@ -259,19 +258,17 @@ public class KafkaConfigCommon {
                                 )
                 );
 
-        KafkaConsumerClient kafkaConsumerAiven = KafkaConsumerClientBuilder.builder()
+        consumerClientAiven = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfigs(topicConfigsAiven)
+                .withToggle(new KafkaAivenUnleash(unleashService))
                 .build();
-
-        consumerClientAiven = new FeatureToggledKafkaConsumerClient(kafkaConsumerAiven, new KafkaAivenUnleash(unleashService));
-
-        KafkaConsumerClient kafkaConsumerOnPrem = KafkaConsumerClientBuilder.builder()
+        
+        consumerClientOnPrem = KafkaConsumerClientBuilder.builder()
                 .withProperties(onPremDefaultConsumerProperties(CLIENT_ID_CONFIG, KAFKA_BROKERS, serviceUserCredentials))
                 .withTopicConfigs(topicConfigsOnPrem)
+                .withToggle(new KafkaOnpremUnleash(unleashService))
                 .build();
-
-        consumerClientOnPrem = new FeatureToggledKafkaConsumerClient(kafkaConsumerOnPrem, new KafkaOnpremUnleash(unleashService));
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
