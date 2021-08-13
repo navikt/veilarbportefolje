@@ -5,12 +5,12 @@ import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGING_DATA;
 import no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -36,7 +36,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.Table.AKTOERID_TO_PERSONID;
-import static no.nav.pto.veilarbportefolje.database.Table.Kolonner.SIST_INDEKSERT_ES;
 import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.FODSELSNR;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
@@ -112,8 +111,8 @@ public class BrukerRepository {
         db.setFetchSize(1000);
 
         Timestamp sistIndeksert = SqlUtils
-                .select(db, Table.METADATA, rs -> rs.getTimestamp(SIST_INDEKSERT_ES))
-                .column(SIST_INDEKSERT_ES)
+                .select(db, Table.METADATA.TABLE_NAME, rs -> rs.getTimestamp(Table.METADATA.SIST_INDEKSERT_ES))
+                .column(Table.METADATA.SIST_INDEKSERT_ES)
                 .execute();
 
         return SqlUtils

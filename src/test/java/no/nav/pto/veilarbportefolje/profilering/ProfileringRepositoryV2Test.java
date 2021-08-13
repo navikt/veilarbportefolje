@@ -3,14 +3,10 @@ package no.nav.pto.veilarbportefolje.profilering;
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;

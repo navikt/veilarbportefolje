@@ -5,7 +5,8 @@
     <title>Admin</title>
 </head>
 <body>
-<h1>Admin-panel for indexer</h1>
+<h1>Admin-panel for veilarbportefolje</h1>
+<!--
 <div>
     <h2>Rewind registrering</h2>
     <form id="registrering">
@@ -51,6 +52,14 @@
     <div id="cvEksistereResponse"></div>
 </div>
 
+<div>
+    <h2>Start innlastning av oppfolgings data</h2>
+    <form id="oppfolgingRefresh">
+        <input type="submit" value="Start innlastning av oppfolgings data"/>
+    </form>
+    <div id="oppfolgingRefreshResponse"></div>
+</div>
+-->
 
 <div>
     <h2>AktorId</h2>
@@ -77,11 +86,42 @@
     <div id="slettingResponse"></div>
 </div>
 <div>
-    <h2>Start innlastning av oppfolgings data</h2>
-    <form id="oppfolgingRefresh">
-        <input type="submit" value="Start innlastning av oppfolgings data"/>
+    <h2>Start/Stop kafka pa Aiven topics</h2>
+    <form id="startAiven">
+        <input type="submit" value="Start"/>
     </form>
-    <div id="oppfolgingRefreshResponse"></div>
+    <div id="startAivenResponse"></div>
+    <form id="stoppAiven">
+        <input type="submit" value="Stopp"/>
+    </form>
+    <div id="stoppAivenResponse"></div>
+</div>
+
+<h2>Oppdater bruker i Elastic</h2>
+
+<div>
+    <form id="oppdaterbruker">
+        <input type="text" id="fnrInputOppdater" placeholder="fnr">
+        <input type="submit" value="Oppdater bruker"/>
+    </form>
+    <div id="oppdaterbrukerResponse"></div>
+    </div>
+</body>
+
+<h2>Sync aktiviteter med kafka eller fil</h2>
+<div>
+    <form id="oppdaterbrukerAktiviteter">
+        <input type="text" id="fnroppdaterbrukerAktiviteter" placeholder="fnr">
+        <input type="submit" value="Oppdater brukeraktiviteter"/>
+    </form>
+    <div id="oppdaterbrukerAktiviteterResponse"></div>
+</div>
+</br>
+<div>
+    <form id="oppdaterallebrukerAktiviteter">
+        <input type="submit" value="Oppdater brukeraktiviteter for alle brukere"/>
+    </form>
+    <div id="oppdaterallebrukerAktiviteterResponse"></div>
 </div>
 </body>
 <script src="index.js" type="application/javascript"></script>
