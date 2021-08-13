@@ -26,6 +26,7 @@ public abstract class KafkaCommonConsumerService<T> {
         if (!isNyKafkaLibraryEnabled()) {
             return;
         }
+        
         log.info(
                 "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
                 kafkaMelding.key(),
