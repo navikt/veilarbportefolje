@@ -82,7 +82,7 @@ public class OppfolgingService {
                 avsluttOppfolgingHvisNodvendig(bruker, oppfolgingPeriode.get());
             } else {
                 log.info("OppfolgingsJobb: Fant ikke oppfolgingsperiode for: " + bruker.getAktoer_id());
-                //oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
+                oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
                 antallBrukereSlettet++;
             }
         } catch (RuntimeException e) {
@@ -95,21 +95,24 @@ public class OppfolgingService {
     }
 
     private void oppdaterStartDato(OppfolgingsBruker bruker, ZonedDateTime korrektStartDato) {
-        if (korrektStartDato != null) {
-            log.info("OppfolgingsJobb: skal bytte startdato fra: {}, til:{} ", bruker.getOppfolging_startdato(), korrektStartDato);
-            int rows = oppfolgingRepository.oppdaterStartdato(AktorId.of(bruker.getAktoer_id()), korrektStartDato);
-            if (rows != 1) {
-                log.error("OppfolgingsJobb: feil antall rader påvirket ({}) pa bruker: {} ", rows, bruker.getAktoer_id());
-            }
-        } else {
+        if (korrektStartDato == null) {
             log.warn("OppfolgingsJobb: startdato fra veilarboppfolging var null pa bruker: {} ", bruker.getAktoer_id());
+            return;
+        }
+        if (bruker.getOppfolging_startdato() != null && korrektStartDato.isEqual(ZonedDateTime.parse(bruker.getOppfolging_startdato()))) {
+            return;
+        }
+        log.info("OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker.getAktoer_id(), bruker.getOppfolging_startdato(), korrektStartDato);
+        int rows = oppfolgingRepository.oppdaterStartdato(AktorId.of(bruker.getAktoer_id()), korrektStartDato);
+        if (rows != 1) {
+            log.error("OppfolgingsJobb: feil antall rader påvirket ({}) pa bruker: {} ", rows, bruker.getAktoer_id());
         }
     }
 
     private void avsluttOppfolgingHvisNodvendig(OppfolgingsBruker bruker, OppfolgingPeriodeDTO oppfolgingPeriode) {
         if (!underOppfolging(oppfolgingPeriode)) {
             log.info("OppfolgingsJobb: Oppfolging avsluttet for:" + bruker.getAktoer_id());
-            //oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
+            oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
             antallBrukereSlettet++;
         }
     }

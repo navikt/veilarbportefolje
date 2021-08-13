@@ -16,7 +16,7 @@ public class FeatureToggle {
     public static final String FIKS_NY_FOR_VEILEDER = "veilarbportefolje.fiks_ny_for_veileder";
 
     public static final String GR202_PA_KAFKA = "veilarbportefolje.GR202_pa_kafka";
-    
+
     public static final String CV_EKSISTERE_PRODSETTE = "veilarbportefolje.cv_eksistere";
 
     public static boolean erPostgresPa(UnleashService unleashService) {
