@@ -84,8 +84,7 @@ public class KafkaConfigCommon {
             this.topicName = topicName;
         }
     }
-
-
+    
     private final KafkaConsumerClient consumerClientAiven;
     private final KafkaConsumerClient consumerClientOnPrem;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
@@ -263,7 +262,7 @@ public class KafkaConfigCommon {
                 .withTopicConfigs(topicConfigsAiven)
                 .withToggle(new KafkaAivenUnleash(unleashService))
                 .build();
-        
+
         consumerClientOnPrem = KafkaConsumerClientBuilder.builder()
                 .withProperties(onPremDefaultConsumerProperties(CLIENT_ID_CONFIG, KAFKA_BROKERS, serviceUserCredentials))
                 .withTopicConfigs(topicConfigsOnPrem)
