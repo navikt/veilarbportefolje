@@ -16,7 +16,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.08.08_19.12-15c8da197925</common.version>
+        <common.version>2.2021.08.16_13.46-d90f8c15f6ff</common.version>
         <common1.version>1.2020.05.06_16.29-028d26fc1c42</common1.version>
         <no.nav.tjenestespesifikasjoner.version>1.2018.11.20-18.20-f058c54de62c</no.nav.tjenestespesifikasjoner.version>
         <jsch.version>0.1.54</jsch.version>
