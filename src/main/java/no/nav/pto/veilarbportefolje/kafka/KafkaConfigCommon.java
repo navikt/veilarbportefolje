@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
@@ -36,18 +38,22 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
+import org.apache.kafka.common.serialization.Deserializer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.NaisUtils.getCredentials;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
 
 @Configuration
 public class KafkaConfigCommon {
@@ -84,7 +90,7 @@ public class KafkaConfigCommon {
             this.topicName = topicName;
         }
     }
-    
+
     private final KafkaConsumerClient consumerClientAiven;
     private final KafkaConsumerClient consumerClientOnPrem;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
@@ -113,6 +119,12 @@ public class KafkaConfigCommon {
                                 cvService::behandleKafkaMeldingCVHjemmel
                         )
                 );
+
+        Map props = new HashMap<>();
+        props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
+        props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
+        Deserializer<Melding> avroDeserializer = Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL);
+        avroDeserializer.configure(props, false);
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
@@ -252,7 +264,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.CV_ENDRET.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL),
+                                        avroDeserializer,
                                         cvService::behandleKafkaRecord
                                 )
                 );
