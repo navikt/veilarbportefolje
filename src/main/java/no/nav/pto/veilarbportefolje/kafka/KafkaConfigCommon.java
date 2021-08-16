@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
@@ -37,15 +36,12 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
-import org.apache.kafka.common.serialization.Deserializer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
@@ -117,11 +113,6 @@ public class KafkaConfigCommon {
                                 cvService::behandleKafkaMeldingCVHjemmel
                         )
                 );
-
-        Map<String, Boolean> avroConfig = new HashMap<>();
-        avroConfig.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
-        Deserializer<Melding> onPremAvroDeserializer = Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL);
-        onPremAvroDeserializer.configure(avroConfig, false);
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
@@ -261,7 +252,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.CV_ENDRET.topicName,
                                         Deserializers.stringDeserializer(),
-                                        onPremAvroDeserializer,
+                                        Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL),
                                         cvService::behandleKafkaRecord
                                 )
                 );
