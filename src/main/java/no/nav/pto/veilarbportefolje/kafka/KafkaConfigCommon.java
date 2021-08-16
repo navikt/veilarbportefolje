@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
@@ -53,7 +52,6 @@ import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsume
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.NaisUtils.getCredentials;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
 
 @Configuration
 public class KafkaConfigCommon {
@@ -120,11 +118,10 @@ public class KafkaConfigCommon {
                         )
                 );
 
-        Map props = new HashMap<>();
-        props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
-        props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
-        Deserializer<Melding> avroDeserializer = Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL);
-        avroDeserializer.configure(props, false);
+        Map<String, Boolean> avroConfig = new HashMap<>();
+        avroConfig.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
+        Deserializer<Melding> onPremAvroDeserializer = Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL);
+        onPremAvroDeserializer.configure(avroConfig, false);
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
@@ -264,7 +261,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.CV_ENDRET.topicName,
                                         Deserializers.stringDeserializer(),
-                                        avroDeserializer,
+                                        onPremAvroDeserializer,
                                         cvService::behandleKafkaRecord
                                 )
                 );
