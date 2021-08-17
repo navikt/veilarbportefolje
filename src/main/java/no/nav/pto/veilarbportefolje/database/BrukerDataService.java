@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,7 @@ public class BrukerDataService {
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerDataRepository brukerDataRepository;
     private final BrukerService brukerService;
+    private final ElasticIndexer elasticIndexer;
 
     public void oppdaterAktivitetBrukerDataOgHentPersonId(List<AktorId> aktorIder) {
         if (aktorIder == null) {
@@ -52,6 +54,7 @@ public class BrukerDataService {
         }
 
         oppdaterAktivitetBrukerData(aktorId, personId);
+        elasticIndexer.indekser(aktorId);
     }
 
     public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId) {

@@ -60,7 +60,6 @@ function handleAktorId(e) {
     }
 }
 
-/*
 const oppfolgingRefreshForm = document.getElementById('oppfolgingRefresh');
 oppfolgingRefreshForm.addEventListener('submit', handleOppfolgingRefreshForm);
 
@@ -75,6 +74,7 @@ function handleOppfolgingRefreshForm(e) {
     }
 }
 
+/*
 const registreringForm = document.getElementById('registrering');
 registreringForm.addEventListener('submit', handleRewindRegistrering);
 

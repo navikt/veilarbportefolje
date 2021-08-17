@@ -57,13 +57,12 @@ public class TiltakServiceV2 {
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
-            log.info("Sletter tiltak: {}", innhold.getAktivitetid());
+            log.info("Sletter tiltak: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
             tiltakRepositoryV2.delete(innhold.getAktivitetid());
         } else {
-            log.info("Lagrer tiltak: {}", innhold.getAktivitetid());
+            log.info("Lagrer tiltak: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
             tiltakRepositoryV2.upsert(innhold, aktorId);
         }
-        log.debug("Ferdig behandlet aktivitet: {}, pa aktor: {}, hendelse: {}", innhold.getAktivitetid(), aktorId, innhold.getHendelseId());
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(PersonId.of(String.valueOf(innhold.getPersonId())), aktorId);
         arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
         brukerDataService.oppdaterAktivitetBrukerData(aktorId, PersonId.of(String.valueOf(innhold.getPersonId())));
@@ -87,17 +86,10 @@ public class TiltakServiceV2 {
 
 
     static boolean skalSlettesTiltak(TiltakInnhold tiltakInnhold) {
-        List<String> godkjenteStatuser;
-        if ("GRUPPEAMO" .equals(tiltakInnhold.getTiltakstype())) {
-            godkjenteStatuser = TiltakStatuser.godkjenteTiltaksStatuser;
-        } else {
-            godkjenteStatuser = TiltakStatuser.godkjenteTiltaksStatuserGruppeAMO;
-        }
-
         if (tiltakInnhold.getAktivitetperiodeTil() == null) {
-            return !godkjenteStatuser.contains(tiltakInnhold.getDeltakerStatus());
+            return !TiltakStatuser.godkjenteTiltaksStatuser.contains(tiltakInnhold.getDeltakerStatus());
         }
-        return !godkjenteStatuser.contains(tiltakInnhold.getDeltakerStatus()) || LANSERING_AV_OVERSIKTEN.isAfter(tiltakInnhold.getAktivitetperiodeTil().getDato().toLocalDate());
+        return !TiltakStatuser.godkjenteTiltaksStatuser.contains(tiltakInnhold.getDeltakerStatus()) || LANSERING_AV_OVERSIKTEN.isAfter(tiltakInnhold.getAktivitetperiodeTil().getDato().toLocalDate());
 
     }
 }
