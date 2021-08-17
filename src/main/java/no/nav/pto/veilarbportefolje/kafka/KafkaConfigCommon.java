@@ -256,7 +256,7 @@ public class KafkaConfigCommon {
                                         cvService::behandleKafkaRecord
                                 )
                 );
-
+        
         consumerClientAiven = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfigs(topicConfigsAiven)
