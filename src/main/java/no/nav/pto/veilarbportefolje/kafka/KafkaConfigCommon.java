@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
@@ -42,6 +43,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Properties;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
@@ -100,6 +102,9 @@ public class KafkaConfigCommon {
                              UnleashService unleashService) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
+
+        Properties onPremDefaultConsumerProperties = onPremDefaultConsumerProperties(CLIENT_ID_CONFIG, KAFKA_BROKERS, serviceUserCredentials);
+        onPremDefaultConsumerProperties.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsAiven =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
@@ -256,7 +261,7 @@ public class KafkaConfigCommon {
                                         cvService::behandleKafkaRecord
                                 )
                 );
-        
+
         consumerClientAiven = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfigs(topicConfigsAiven)
@@ -264,7 +269,7 @@ public class KafkaConfigCommon {
                 .build();
 
         consumerClientOnPrem = KafkaConsumerClientBuilder.builder()
-                .withProperties(onPremDefaultConsumerProperties(CLIENT_ID_CONFIG, KAFKA_BROKERS, serviceUserCredentials))
+                .withProperties(onPremDefaultConsumerProperties)
                 .withTopicConfigs(topicConfigsOnPrem)
                 .withToggle(new KafkaOnpremUnleash(unleashService))
                 .build();
