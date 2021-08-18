@@ -26,7 +26,7 @@ public class YtelsesService {
     private final BrukerDataService brukerDataService;
     private final ElasticIndexer elasticIndexer;
 
-    public void behandleKafkaRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding) {
+    public void behandleKafkaDagPengerRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding) {
         YtelsesDTO melding = kafkaMelding.value();
         log.info(
                 "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
@@ -35,7 +35,9 @@ public class YtelsesService {
                 kafkaMelding.partition(),
                 kafkaMelding.topic()
         );
-        behandleKafkaMelding(melding);
+
+        //TODO: STIAN fix flag <3
+        behandleKafkaMelding(melding, "DAGPENGER");
     }
 
     public void behandleKafkaMelding(YtelsesDTO kafkaMelding) {
@@ -48,6 +50,10 @@ public class YtelsesService {
 
         brukerDataService.oppdaterYtelser(aktorId, innhold, skalSlettesGoldenGate(kafkaMelding));
         elasticIndexer.indekser(aktorId);
+    }
+
+    public void behandleKafkaMelding(YtelseAAPDTO kafkaMelding) {
+
     }
 
 

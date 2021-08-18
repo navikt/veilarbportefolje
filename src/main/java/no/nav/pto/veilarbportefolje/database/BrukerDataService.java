@@ -6,6 +6,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDTO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
+import no.nav.pto.veilarbportefolje.arenapakafka.ArenaDato;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
@@ -91,8 +92,11 @@ public class BrukerDataService {
         Brukerdata ytelsesTilstand = new Brukerdata()
                 .setAktoerid(aktorId.get())
                 .setPersonid(innhold.getPersonId());
-        leggTilRelevantYtelsesData(ytelsesTilstand, innhold, skalSlettes);
-
+        if(!skalSlettes){
+            leggTilRelevantAAPData(ytelsesTilstand, innhold);
+            leggTilRelevantTiltaksPengerData(ytelsesTilstand, innhold);
+            leggTilRelevantDagpengeData(ytelsesTilstand, innhold);
+        }
         brukerDataRepository.upsertYtelser(ytelsesTilstand);
     }
 
@@ -109,29 +113,47 @@ public class BrukerDataService {
     }
 
 
-    private void leggTilRelevantYtelsesData(Brukerdata ytelsesTilstand, YtelsesInnhold innhold, boolean skalSlettes) {
-        if (skalSlettes) {
-            return;
-        }
+    private void leggTilRelevantDagpengeData(Brukerdata ytelsesTilstand, YtelsesInnhold innhold) {
         YtelseMapping ytelseMapping = YtelseMapping.of(innhold)
                 .orElseThrow(() -> new RuntimeException(innhold.toString()));
 
-        LocalDateTime utlopsDato = Optional.ofNullable(innhold.getVedtaksperiode())
-                .map(periode ->
-                        ArenaAktivitetUtils.getLocalDateOrNull(periode.getTilogMedDato(), true)
-                ).orElseThrow(() -> new RuntimeException("Ytelse mangler til og med-dato"));
-
-        ;
-        Optional<YtelsesInnhold.Dagpengetellere> dagpengetellere = Optional.ofNullable(innhold.getDagpengetellere());
-        Optional<YtelsesInnhold.Aaptellere> aaptellere = Optional.ofNullable(innhold.getAaptellere());
+        LocalDateTime utlopsDato = Optional.ofNullable(innhold.getTilOgMedDato())
+                .map(ArenaDato::getLocalDate)
+                .orElse(null);
 
         ytelsesTilstand
                 .setYtelse(ytelseMapping)
                 .setUtlopsdato(utlopsDato)
-                .setDagputlopUke(dagpengetellere.map(YtelsesInnhold.Dagpengetellere::getAntallUkerIgjen).orElse(null))
-                .setPermutlopUke(dagpengetellere.map(YtelsesInnhold.Dagpengetellere::getAntallUkerIgjenUnderPermittering).orElse(null))
-                .setAapmaxtidUke(aaptellere.map(YtelsesInnhold.Aaptellere::getAntallUkerIgjen).orElse(null))
-                .setAapUnntakDagerIgjen(aaptellere.map(YtelsesInnhold.Aaptellere::getAntallDagerIgjenUnntak).orElse(null));
+                .setDagputlopUke(innhold.getAntallUkerIgjen())
+                .setPermutlopUke(innhold.getAntallUkerIgjenUnderPermittering());
+    }
+
+    private void leggTilRelevantAAPData(Brukerdata ytelsesTilstand, YtelsesInnhold innhold) {
+        YtelseMapping ytelseMapping = YtelseMapping.of(innhold)
+                .orElseThrow(() -> new RuntimeException(innhold.toString()));
+
+        LocalDateTime utlopsDato = Optional.ofNullable(innhold.getTilOgMedDato())
+                .map(ArenaDato::getLocalDate)
+                .orElse(null);
+
+        ytelsesTilstand
+                .setYtelse(ytelseMapping)
+                .setUtlopsdato(utlopsDato)
+                .setAapmaxtidUke(innhold.getAntallUkerIgjen())
+                .setAapUnntakDagerIgjen(innhold.getAntallDagerIgjenUnntak());
+    }
+
+    private void leggTilRelevantTiltaksPengerData(Brukerdata ytelsesTilstand, YtelsesInnhold innhold) {
+        YtelseMapping ytelseMapping = YtelseMapping.of(innhold)
+                .orElseThrow(() -> new RuntimeException(innhold.toString()));
+
+        LocalDateTime utlopsDato = Optional.ofNullable(innhold.getTilOgMedDato())
+                .map(ArenaDato::getLocalDate)
+                .orElse(null);
+
+        ytelsesTilstand
+                .setYtelse(ytelseMapping)
+                .setUtlopsdato(utlopsDato);
     }
 
     private static Timestamp finnNyesteUtlopteAktivAktivitet(List<Timestamp> aktiviteter, LocalDate today) {
