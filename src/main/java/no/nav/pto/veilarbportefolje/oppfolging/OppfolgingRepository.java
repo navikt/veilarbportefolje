@@ -16,9 +16,12 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
+import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
@@ -29,7 +32,6 @@ import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
 public class OppfolgingRepository {
 
     private final JdbcTemplate db;
-    private final UnleashService unleashService;
 
     public boolean settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
         return SqlUtils.upsert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
@@ -128,5 +130,18 @@ public class OppfolgingRepository {
         SqlUtils.delete(db, Table.OPPFOLGING_DATA.TABLE_NAME)
                 .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.get()))
                 .execute();
+    }
+
+    public List<AktorId> hentAlleBrukereUnderOppfolging() {
+        db.setFetchSize(10_000); //TODO: diskuter bruk av denne linjen
+
+        return SqlUtils
+                .select(db, Table.OPPFOLGING_DATA.TABLE_NAME, rs -> AktorId.of(rs.getString(Table.OPPFOLGING_DATA.AKTOERID)))
+                .column(Table.OPPFOLGING_DATA.AKTOERID)
+                .where(WhereClause.equals(Table.OPPFOLGING_DATA.OPPFOLGING,"J"))
+                .executeToList()
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(toList());
     }
 }

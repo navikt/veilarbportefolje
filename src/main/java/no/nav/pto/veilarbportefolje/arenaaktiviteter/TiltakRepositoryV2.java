@@ -23,6 +23,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
@@ -150,14 +151,16 @@ public class TiltakRepositoryV2 {
     }
 
     public void utledOgLagreTiltakInformasjon(PersonId personId, AktorId aktorId) {
-        List<BrukertiltakV2> gruppeAktiviteter = hentTiltak(aktorId);
-        Timestamp nesteUtlopsdato = gruppeAktiviteter.stream()
+        List<BrukertiltakV2> tiltak = hentTiltak(aktorId);
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        Timestamp nesteUtlopsdato = tiltak.stream()
                 .map(BrukertiltakV2::getTildato)
                 .filter(Objects::nonNull)
+                .filter(utlopsdato -> utlopsdato.toLocalDateTime().toLocalDate().isAfter(yesterday))
                 .max(Comparator.naturalOrder())
                 .orElse(null);
 
-        boolean aktiv = (gruppeAktiviteter.size() != 0);
+        boolean aktiv = (tiltak.size() != 0);
         AktivitetStatus aktivitetStatus = new AktivitetStatus()
                 .setAktivitetType(AktivitetTyper.tiltak.name())
                 .setAktiv(aktiv)
