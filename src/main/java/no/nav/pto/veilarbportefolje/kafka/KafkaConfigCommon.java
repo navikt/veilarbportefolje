@@ -134,7 +134,9 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL),
+                                        Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL,
+                                                Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true,
+                                                        KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL)),
                                         registreringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerProfilertEvent>()
@@ -144,7 +146,9 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.KAFKA_PROFILERING_CONSUMER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL),
+                                        Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL,
+                                                Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true,
+                                                        KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL)),
                                         profileringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
