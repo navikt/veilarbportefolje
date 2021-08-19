@@ -255,7 +255,8 @@ public class KafkaConfigCommon {
                                         Topic.CV_ENDRET.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL,
-                                                Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true)),
+                                                Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true,
+                                                        KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL)),
                                         cvService::behandleKafkaRecord
                                 )
                 );
