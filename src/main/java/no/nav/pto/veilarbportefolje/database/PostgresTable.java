@@ -133,9 +133,15 @@ public class PostgresTable {
         public static final String ENDRET_TIDSPUNKT = "ENDRET_TIDSPUNKT";
     }
 
-    public static final class LEST_ARENA_HENDELSE {
-        public static final String TABLE_NAME = "LEST_ARENA_HENDELSE";
-        public static final String ID = "ID";
+    public static final class LEST_ARENA_HENDELSE_AKTIVITETER {
+        public static final String TABLE_NAME = "LEST_ARENA_HENDELSE_AKTIVITET";
+        public static final String AKTIVITETID = "AKTIVITETID";
+        public static final String HENDELSE_ID = "HENDELSE_ID";
+    }
+
+    public static final class LEST_ARENA_HENDELSE_YTELSER {
+        public static final String TABLE_NAME = "LEST_ARENA_HENDELSE_YTELSE";
+        public static final String AKTIVITETID = "AKTIVITETID";
         public static final String HENDELSE_ID = "HENDELSE_ID";
     }
 

@@ -22,7 +22,7 @@ public class ArenaAktivitetUtilsTest {
         db = SingletonPostgresContainer.init().createJdbcTemplate();
         arenaHendelseRepository = new ArenaHendelseRepository(db);
 
-        db.execute("DELETE FROM "+ PostgresTable.LEST_ARENA_HENDELSE.TABLE_NAME);
+        db.execute("DELETE FROM "+ PostgresTable.LEST_ARENA_HENDELSE_AKTIVITETER.TABLE_NAME);
     }
 
     @Test
