@@ -49,7 +49,7 @@ public class BrukerAktiviteterService {
     }
 
     public void syncAktivitetOgBrukerData(List<AktorId> brukere) {
-        brukere.forEach(aktorId -> {
+        brukere.parallelStream().forEach(aktorId -> {
                     if (aktorId != null) {
                         try {
                             PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);

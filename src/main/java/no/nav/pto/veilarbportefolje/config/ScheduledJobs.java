@@ -59,7 +59,7 @@ public class ScheduledJobs {
             List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
             log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
 
-            BatchConsumer<AktorId> consumer = batchConsumer(1000, brukerAktiviteterService::syncAktivitetOgBrukerData);
+            BatchConsumer<AktorId> consumer = batchConsumer(10_000, brukerAktiviteterService::syncAktivitetOgBrukerData);
             brukereSomMaOppdateres.forEach(consumer);
 
             consumer.flush();
