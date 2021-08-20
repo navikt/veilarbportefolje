@@ -209,6 +209,7 @@ public class ElasticQueryBuilder {
             default:
                 defaultSort(sortField, searchSourceBuilder, order);
         }
+        searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
         return searchSourceBuilder;
     }
 
