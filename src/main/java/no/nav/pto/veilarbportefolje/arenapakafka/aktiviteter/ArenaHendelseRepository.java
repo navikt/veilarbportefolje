@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.LEST_ARENA_HENDELSE.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.LEST_ARENA_HENDELSE_AKTIVITETER.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
@@ -24,9 +24,9 @@ public class ArenaHendelseRepository {
     public int upsertHendelse(String id, long hendelse) {
         log.info("Lagrer pa id: {}, ny hendelse: {}", id, hendelse);
         return db.update("INSERT INTO " + TABLE_NAME +
-                        " (" + ID + ", " + HENDELSE_ID + ") " +
+                        " (" + AKTIVITETID + ", " + HENDELSE_ID + ") " +
                         "VALUES (?, ?) " +
-                        "ON CONFLICT (" + ID + ") " +
+                        "ON CONFLICT (" + AKTIVITETID + ") " +
                         "DO UPDATE SET " + HENDELSE_ID + " = ?",
                 id, hendelse,
                 hendelse
@@ -34,7 +34,7 @@ public class ArenaHendelseRepository {
     }
 
     public Long retrieveHendelse(String id) {
-        String sql = String.format("SELECT %s FROM %s WHERE %s = ?", HENDELSE_ID, TABLE_NAME, ID);
+        String sql = String.format("SELECT %s FROM %s WHERE %s = ?", HENDELSE_ID, TABLE_NAME, AKTIVITETID);
         return queryForObjectOrNull(() -> db.queryForObject(sql, (ResultSet rs, int i) -> rs.getLong(HENDELSE_ID), id));
     }
 
