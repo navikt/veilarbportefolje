@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
@@ -58,7 +59,6 @@ public class ScheduledJobs {
             log.info("Starter jobb: oppdater BrukerAktiviteter og BrukerData");
             List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
             log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
-
             BatchConsumer<AktorId> consumer = batchConsumer(10_000, brukerAktiviteterService::syncAktivitetOgBrukerData);
             brukereSomMaOppdateres.forEach(consumer);
 

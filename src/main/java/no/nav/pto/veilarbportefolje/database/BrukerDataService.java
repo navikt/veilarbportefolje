@@ -76,18 +76,6 @@ public class BrukerDataService {
         brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
     }
 
-    public List<AktorId> hentBrukerSomMaOppdaters() {
-        List<AktorId> tiltak = tiltakRepositoryV2.hentBrukereMedUtlopteTiltak();
-        List<AktorId> aktiviteter = aktivitetDAO.hentBrukereMedUtlopteAktiviteter();
-        List<AktorId> utloptStartDato = brukerDataRepository.hentBrukereMedUtlopteAktivitetStartDato();
-
-        Set<AktorId> rs = new HashSet<>(tiltak);
-        rs.addAll(aktiviteter);
-        rs.addAll(utloptStartDato);
-        log.info("Fant: {} med utlopt tiltak, {} med utlopte aktiviteter, og {} med utlopt start dato.", tiltak.size(), aktiviteter.size(), utloptStartDato.size());
-        return new ArrayList<>(rs);
-    }
-
     public static Timestamp finnNyesteUtlopteAktivAktivitet(List<Timestamp> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()

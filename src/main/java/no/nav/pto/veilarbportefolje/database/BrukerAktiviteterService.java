@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.database;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
@@ -12,6 +13,8 @@ import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -48,18 +51,21 @@ public class BrukerAktiviteterService {
         );
     }
 
+    @SneakyThrows
     public void syncAktivitetOgBrukerData(List<AktorId> brukere) {
-        brukere.parallelStream().forEach(aktorId -> {
-                    if (aktorId != null) {
-                        try {
-                            PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
-                            syncAktiviteterOgBrukerData(personId, aktorId);
-                        } catch (Exception e) {
-                            log.warn("Fikk error under sync jobb, men fortsetter aktoer: {}, exception: {}", aktorId, e);
+        ForkJoinPool pool = new ForkJoinPool(8);
+        pool.submit(() ->
+                brukere.parallelStream().forEach(aktorId -> {
+                            if (aktorId != null) {
+                                try {
+                                    PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
+                                    syncAktiviteterOgBrukerData(personId, aktorId);
+                                } catch (Exception e) {
+                                    log.warn("Fikk error under sync jobb, men fortsetter aktoer: {}, exception: {}", aktorId, e);
+                                }
+                            }
                         }
-                    }
-                }
-        );
+                )).get(30, TimeUnit.MINUTES);
     }
 
     private void syncAktiviteterOgBrukerData(PersonId personId, AktorId aktorId) {
