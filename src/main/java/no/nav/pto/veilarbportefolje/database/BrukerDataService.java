@@ -38,13 +38,6 @@ public class BrukerDataService {
     private final BrukerService brukerService;
     private final ElasticIndexer elasticIndexer;
 
-    public void oppdaterAktivitetBrukerDataOgHentPersonId(List<AktorId> aktorIder) {
-        if (aktorIder == null) {
-            return;
-        }
-        aktorIder.forEach(this::oppdaterAktivitetBrukerData);
-    }
-
     public void oppdaterAktivitetBrukerData(AktorId aktorId) {
         if (aktorId == null) {
             return;

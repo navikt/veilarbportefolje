@@ -8,7 +8,9 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.ArenaAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
+import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.BatchConsumer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -16,6 +18,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.List;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
@@ -24,9 +27,11 @@ import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 @RequiredArgsConstructor
 public class ScheduledJobs {
     private final AktivitetService aktivitetService;
-    private final BrukerDataService brukerDataService;
+    private final BrukerAktiviteterService brukerAktiviteterService;
+    private final OppfolgingRepository oppfolgingRepository;
     private final GruppeAktivitetService gruppeAktivitetService;
     private final LeaderElectionClient leaderElectionClient;
+    private final UnleashService unleashService;
 
     @Scheduled(cron = "0 1 0 * * ?")
     public void slettUtgatteUtdanningAktivteter() {
@@ -46,15 +51,15 @@ public class ScheduledJobs {
         }
     }
 
+    // TODO: multi threading?
     @Scheduled(cron = "0 0 1 * * ?")
-    public void oppdaterBrukerData() {
-        log.info("(Debug) jobb start");
-        if (leaderElectionClient.isLeader()) {
-            log.info("Starter jobb: oppdaterBrukerData");
-            List<AktorId> brukereSomMaOppdateres = brukerDataService.hentBrukerSomMaOppdaters();
-            log.info("Oppdaterer brukerdata for: {} brukere", brukereSomMaOppdateres.size());
+    public void oppdaterBrukerAktiviteter() {
+        if (leaderElectionClient.isLeader() && erGR202PaKafka(unleashService)) {
+            log.info("Starter jobb: oppdater BrukerAktiviteter og BrukerData");
+            List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
+            log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
 
-            BatchConsumer<AktorId> consumer = batchConsumer(1000, brukerDataService::oppdaterAktivitetBrukerDataOgHentPersonId);
+            BatchConsumer<AktorId> consumer = batchConsumer(1000, brukerAktiviteterService::syncAktivitetOgBrukerData);
             brukereSomMaOppdateres.forEach(consumer);
 
             consumer.flush();

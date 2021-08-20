@@ -38,11 +38,25 @@ public class BrukerAktiviteterService {
                     if (bruker.getAktoer_id() != null && bruker.getAktoer_id() != null) {
                         try {
                             syncAktiviteterOgBrukerData(PersonId.of(bruker.getPerson_id()), AktorId.of(bruker.getAktoer_id()));
-                        } catch (Exception e){
+                        } catch (Exception e) {
                             log.warn("Fikk error under sync jobb, men fortsetter aktoer: {}, exception: {}", bruker.getAktoer_id(), e);
                         }
                     } else {
                         log.info("Fant ikke baade aktoerId: {} og personId: {}", bruker.getAktoer_id(), bruker.getAktoer_id());
+                    }
+                }
+        );
+    }
+
+    public void syncAktivitetOgBrukerData(List<AktorId> brukere) {
+        brukere.forEach(aktorId -> {
+                    if (aktorId != null) {
+                        try {
+                            PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
+                            syncAktiviteterOgBrukerData(personId, aktorId);
+                        } catch (Exception e) {
+                            log.warn("Fikk error under sync jobb, men fortsetter aktoer: {}, exception: {}", aktorId, e);
+                        }
                     }
                 }
         );
