@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
@@ -209,7 +208,7 @@ public class ElasticQueryBuilder {
             default:
                 defaultSort(sortField, searchSourceBuilder, order);
         }
-        searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
+        addSecondarySort(searchSourceBuilder);
         return searchSourceBuilder;
     }
 
@@ -635,6 +634,10 @@ public class ElasticQueryBuilder {
 
         String medKlammer = format("%s%s%s", "[", veiledere, "]");
         return format("%s.contains(doc.veileder_id.value)", medKlammer);
+    }
+
+    private static void addSecondarySort(SearchSourceBuilder searchSourceBuilder){
+        searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
     }
 }
 
