@@ -52,7 +52,6 @@ public class ScheduledJobs {
         }
     }
 
-    // TODO: multi threading?
     @Scheduled(cron = "0 0 1 * * ?")
     public void oppdaterBrukerAktiviteter() {
         if (leaderElectionClient.isLeader() && erGR202PaKafka(unleashService)) {

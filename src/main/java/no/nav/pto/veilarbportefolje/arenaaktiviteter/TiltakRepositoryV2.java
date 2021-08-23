@@ -78,7 +78,7 @@ public class TiltakRepositoryV2 {
 
     public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
         final String hentKoderPaEnhetSql = "SELECT DISTINCT " + TILTAKSKODE + " FROM " + TABLE_NAME +
-                " INNER JOIN OPPFOLGINGSBRUKER OP ON BRUKERTILTAK_V2." + PERSONID + " = OP.PERSON_ID" +
+                " BT INNER JOIN OPPFOLGINGSBRUKER OP ON BT." + PERSONID + " = OP.PERSON_ID" +
                 " WHERE OP.NAV_KONTOR=?";
         List<String> tiltakskoder = db.queryForList(hentKoderPaEnhetSql, String.class, enhetId.get());
         if (tiltakskoder.isEmpty()) {
