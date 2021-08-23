@@ -21,7 +21,6 @@ import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
 @Configuration
 public class FilterConfig {
 
-    // TODO VILKE ANDRA KALLER PORTEFOLJE ???
     private final List<String> ALLOWED_SERVICE_USERS = List.of(
             "srvveilarbperson",
             "srvveilarboppfolging"
