@@ -93,19 +93,6 @@ public class BrukerDataService {
         brukerDataRepository.upsertYtelser(ytelsesTilstand);
     }
 
-    public List<AktorId> hentBrukerSomMaOppdaters() {
-        List<AktorId> tiltak = tiltakRepositoryV2.hentBrukereMedUtlopteTiltak();
-        List<AktorId> aktiviteter = aktivitetDAO.hentBrukereMedUtlopteAktiviteter();
-        List<AktorId> utloptStartDato = brukerDataRepository.hentBrukereMedUtlopteAktivitetStartDato();
-
-        Set<AktorId> rs = new HashSet<>(tiltak);
-        rs.addAll(aktiviteter);
-        rs.addAll(utloptStartDato);
-        log.info("Fant: {} med utlopt tiltak, {} med utlopte aktiviteter, og {} med utlopt start dato.", tiltak.size(), aktiviteter.size(), utloptStartDato.size());
-        return new ArrayList<>(rs);
-    }
-
-
     private void leggTilRelevantDagpengeData(Brukerdata ytelsesTilstand, YtelsesInnhold innhold) {
         YtelseMapping ytelseMapping = YtelseMapping.of(innhold)
                 .orElseThrow(() -> new RuntimeException(innhold.toString()));
@@ -149,7 +136,7 @@ public class BrukerDataService {
                 .setUtlopsdato(utlopsDato);
     }
 
-    private static Timestamp finnNyesteUtlopteAktivAktivitet(List<Timestamp> aktiviteter, LocalDate today) {
+    public static Timestamp finnNyesteUtlopteAktivAktivitet(List<Timestamp> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()
                 .filter(aktivitet -> aktivitet.toLocalDateTime().toLocalDate().isBefore(today))

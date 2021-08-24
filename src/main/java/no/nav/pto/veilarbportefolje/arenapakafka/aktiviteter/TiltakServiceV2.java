@@ -77,7 +77,7 @@ public class TiltakServiceV2 {
         Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
 
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), kafkaMelding.getOperationType())) {
-            log.info("Fikk tilsendt gammel tiltaks-melding");
+            log.info("Fikk tilsendt gammel tiltaks-melding, aktivitet: {}", innhold.getAktivitetid());
             return true;
         }
         return false;

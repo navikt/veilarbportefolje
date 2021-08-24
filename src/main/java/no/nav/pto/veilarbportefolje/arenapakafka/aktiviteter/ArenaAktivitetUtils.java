@@ -49,7 +49,7 @@ public interface ArenaAktivitetUtils {
             return aktorClient.hentAktorId(Fnr.ofValidFnr(personident));
         } catch (RuntimeException exception) {
             if (isDevelopment().orElse(false)) {
-                return AktorId.of("-1");       // TODO: Diskuter dette.
+                return AktorId.of("-1");
             }
             throw exception;
         }

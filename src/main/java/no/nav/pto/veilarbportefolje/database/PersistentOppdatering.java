@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.GR202_PA_KAFKA;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 
 @Service
@@ -39,7 +40,9 @@ public class PersistentOppdatering {
         lagreBrukeroppdateringerIDB(Collections.singletonList(brukerOppdateringer));
         PersonId personId = Optional.ofNullable(brukerOppdateringer.getPersonid()).map(PersonId::of).orElse(null);
 
-        brukerDataService.oppdaterAktivitetBrukerData(aktoerId, personId);
+        if(unleashService.isEnabled(GR202_PA_KAFKA)){
+            brukerDataService.oppdaterAktivitetBrukerData(aktoerId, personId);
+        }
         elasticIndexer.indekser(aktoerId);
     }
 

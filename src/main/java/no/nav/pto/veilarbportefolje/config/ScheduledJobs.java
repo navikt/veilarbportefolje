@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
@@ -51,15 +52,13 @@ public class ScheduledJobs {
         }
     }
 
-    // TODO: multi threading?
     @Scheduled(cron = "0 0 1 * * ?")
     public void oppdaterBrukerAktiviteter() {
         if (leaderElectionClient.isLeader() && erGR202PaKafka(unleashService)) {
             log.info("Starter jobb: oppdater BrukerAktiviteter og BrukerData");
             List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
             log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
-
-            BatchConsumer<AktorId> consumer = batchConsumer(1000, brukerAktiviteterService::syncAktivitetOgBrukerData);
+            BatchConsumer<AktorId> consumer = batchConsumer(10_000, brukerAktiviteterService::syncAktivitetOgBrukerData);
             brukereSomMaOppdateres.forEach(consumer);
 
             consumer.flush();
