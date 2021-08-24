@@ -103,8 +103,8 @@ public class AdminController {
         return "Innlastning av oppfolgingsdata har startet";
     }
 
-    @PostMapping("/lastInnOppfolging/{fnr}")
-    public String lastInnOppfolgingsDataForBruker(@PathVariable("fnr") String fnr) {
+    @PostMapping("/lastInnOppfolgingForBruker")
+    public String lastInnOppfolgingsDataForBruker(@RequestBody String fnr) {
         authorizeAdmin();
         Optional<OppfolgingsBruker> oppfolgingsBruker = brukerRepository.hentBrukerFraView(Fnr.of(fnr));
         if (oppfolgingsBruker.isPresent()) {

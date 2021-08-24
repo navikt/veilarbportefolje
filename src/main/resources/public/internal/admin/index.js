@@ -20,8 +20,8 @@ function handleOppfolgingRefreshForUserForm(e) {
     e.preventDefault();
     if (window.confirm('Dette vil hente inn data pa nytt for brukeren.')) {
         fetchData(
-            '/veilarbportefolje/api/admin/lastInnOppfolging/' + oppfolgingRefreshForFnr.value,
-            {method: 'POST', credentials: 'same-origin'},
+            '/veilarbportefolje/api/admin/lastInnOppfolgingForBruker/',
+            {method: 'POST', credentials: 'same-origin', body: oppfolgingRefreshForFnr.value},
             'oppfolgingRefreshForUserResponse'
         );
     }
