@@ -12,6 +12,21 @@ function handleOppfolgingRefreshForm(e) {
     }
 }
 
+const oppfolgingRefreshForUserForm = document.getElementById('oppfolgingRefreshForUser');
+oppfolgingRefreshForUserForm.addEventListener('submit', handleOppfolgingRefreshForUserForm);
+const oppfolgingRefreshForFnr = document.getElementById('oppfolgingRefreshForFnr')
+
+function handleOppfolgingRefreshForUserForm(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil hente inn data pa nytt for brukeren.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/lastInnOppfolging/' + oppfolgingRefreshForFnr.value,
+            {method: 'POST', credentials: 'same-origin'},
+            'oppfolgingRefreshForUserResponse'
+        );
+    }
+}
+
 const slettElasticForm = document.getElementById('slettElasticForm')
 slettElasticForm.addEventListener('submit', handleslettElastic);
 const aktoerIdInputSlett = document.getElementById('aktoerIdInputSlett')
