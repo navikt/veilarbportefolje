@@ -201,13 +201,13 @@ public class AktivitetDAO {
     }
 
     public List<ArenaAktivitetDTO> hentUtgatteAktivteter(String aktivitetsType) {
-        String sql = "SELECT " + AKTIVITETID + ", " + AKTIVITETID + " FROM " + TABLE_NAME
+        String sql = "SELECT " + AKTIVITETID + ", " + AKTOERID + " FROM " + TABLE_NAME
                 + " WHERE " + AKTIVITETTYPE + "= ? AND " + TILDATO + " < CURRENT_TIMESTAMP";
         return db.queryForList(sql, aktivitetsType)
                 .stream()
                 .map(row -> new ArenaAktivitetDTO()
                         .setAktivitetId((String) row.get(AKTIVITETID))
-                        .setAktoerid((String) row.get(AKTIVITETID))
+                        .setAktoerid((String) row.get(AKTOERID))
                 )
                 .collect(toList());
     }
