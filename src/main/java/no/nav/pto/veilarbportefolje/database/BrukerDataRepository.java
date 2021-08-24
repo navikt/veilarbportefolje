@@ -45,14 +45,6 @@ public class BrukerDataRepository {
                 .set(PERSONID, brukerdata.getPersonid())
                 .where(WhereClause.equals(PERSONID, brukerdata.getPersonid()))
                 .execute();
-
-        /*
-        .set(UTLOPSDATOFASETT, brukerdata.getUtlopsFasett())
-                .set(DAGPUTLOPUKEFASETT, brukerdata.getDagputlopUkeFasett())
-                .set(PERMUTLOPUKEFASETT, brukerdata.getPermutlopUkeFasett())
-                .set(AAPMAXTIDUKEFASETT, brukerdata.getAapmaxtidUkeFasett())
-                .set(AAPUNNTAKUKERIGJENFASETT, brukerdata.getAapunntakUkerIgjenFasett())
-         */
     }
 
     public List<AktorId> hentBrukereMedUtlopteAktivitetStartDato() {

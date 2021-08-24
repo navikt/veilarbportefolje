@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepo
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -81,14 +82,22 @@ public class BrukerDataService {
         brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
     }
 
-    public void oppdaterYtelser(AktorId aktorId, YtelsesInnhold innhold, boolean skalSlettes) {
+    public void oppdaterYtelser(AktorId aktorId, YtelsesInnhold innhold, TypeKafkaYtelse ytsele, boolean skalSlettes) {
         Brukerdata ytelsesTilstand = new Brukerdata()
                 .setAktoerid(aktorId.get())
                 .setPersonid(innhold.getPersonId());
         if(!skalSlettes){
-            leggTilRelevantAAPData(ytelsesTilstand, innhold);
-            leggTilRelevantTiltaksPengerData(ytelsesTilstand, innhold);
-            leggTilRelevantDagpengeData(ytelsesTilstand, innhold);
+            switch (ytsele) {
+                case DAGPENGER:
+                    leggTilRelevantDagpengeData(ytelsesTilstand, innhold);
+                    break;
+                case AAP:
+                    leggTilRelevantAAPData(ytelsesTilstand, innhold);
+                    break;
+                case TILTAKSPENGER:
+                    leggTilRelevantTiltaksPengerData(ytelsesTilstand, innhold);
+                    break;
+            }
         }
         brukerDataRepository.upsertYtelser(ytelsesTilstand);
     }

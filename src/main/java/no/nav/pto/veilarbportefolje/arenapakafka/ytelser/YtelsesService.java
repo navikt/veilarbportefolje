@@ -26,7 +26,7 @@ public class YtelsesService {
     private final BrukerDataService brukerDataService;
     private final ElasticIndexer elasticIndexer;
 
-    public void behandleKafkaDagPengerRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding) {
+    public void behandleKafkaRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding, TypeKafkaYtelse ytsele) {
         YtelsesDTO melding = kafkaMelding.value();
         log.info(
                 "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
@@ -36,11 +36,10 @@ public class YtelsesService {
                 kafkaMelding.topic()
         );
 
-        //TODO: STIAN fix flag <3
-        behandleKafkaMelding(melding, "DAGPENGER");
+        behandleKafkaMelding(melding, ytsele);
     }
 
-    public void behandleKafkaMelding(YtelsesDTO kafkaMelding) {
+    public void behandleKafkaMelding(YtelsesDTO kafkaMelding, TypeKafkaYtelse ytsele) {
         YtelsesInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
@@ -48,14 +47,9 @@ public class YtelsesService {
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
 
-        brukerDataService.oppdaterYtelser(aktorId, innhold, skalSlettesGoldenGate(kafkaMelding));
+        brukerDataService.oppdaterYtelser(aktorId, innhold, ytsele, skalSlettesGoldenGate(kafkaMelding));
         elasticIndexer.indekser(aktorId);
     }
-
-    public void behandleKafkaMelding(YtelseAAPDTO kafkaMelding) {
-
-    }
-
 
     private boolean erGammelMelding(YtelsesDTO kafkaMelding, YtelsesInnhold innhold) {
         return false;
