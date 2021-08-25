@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.domene;
 
 
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
 
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -44,9 +44,9 @@ public enum YtelseMapping {
             (vedtak) -> "INDIV".equals(vedtak.getSakstypeKode()) && "BASI".equals(vedtak.getRettighetstypeKode())
     );
 
-    public final Predicate<YtelsesInnhold> sjekk;
+    public final Predicate<YtelseDAO> sjekk;
 
-    YtelseMapping(Predicate<YtelsesInnhold> sjekk) {
+    YtelseMapping(Predicate<YtelseDAO> sjekk) {
         this.sjekk = sjekk;
     }
 
@@ -57,7 +57,7 @@ public enum YtelseMapping {
         return valueOf(s);
     }
 
-    public static Optional<YtelseMapping> of(YtelsesInnhold vedtak) {
+    public static Optional<YtelseMapping> of(YtelseDAO vedtak) {
         return Stream.of(values())
                 .filter((YtelseMapping mapping) -> mapping.sjekk.test(vedtak))
                 .findAny();

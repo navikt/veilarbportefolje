@@ -6,13 +6,10 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDTO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
-import no.nav.pto.veilarbportefolje.arenapakafka.ArenaDato;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
-import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -82,67 +79,52 @@ public class BrukerDataService {
         brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
     }
 
-    public void oppdaterYtelser(AktorId aktorId, YtelsesInnhold innhold, TypeKafkaYtelse ytsele, boolean skalSlettes) {
+    public void oppdaterYtelser(AktorId aktorId, PersonId personId, Optional<YtelseDAO> innhold) {
         Brukerdata ytelsesTilstand = new Brukerdata()
                 .setAktoerid(aktorId.get())
-                .setPersonid(innhold.getPersonId());
-        if(!skalSlettes){
-            switch (ytsele) {
-                case DAGPENGER:
-                    leggTilRelevantDagpengeData(ytelsesTilstand, innhold);
-                    break;
-                case AAP:
-                    leggTilRelevantAAPData(ytelsesTilstand, innhold);
-                    break;
-                case TILTAKSPENGER:
-                    leggTilRelevantTiltaksPengerData(ytelsesTilstand, innhold);
-                    break;
-            }
+                .setPersonid(personId.getValue());
+        if(innhold.isEmpty()){
+            brukerDataRepository.upsertYtelser(ytelsesTilstand);
+            return;
         }
+
+        switch (innhold.get().getType()) {
+            case DAGPENGER:
+                leggTilYtelsesData(ytelsesTilstand, innhold.get());
+                leggTilRelevantDagpengeData(ytelsesTilstand, innhold.get());
+                break;
+            case AAP:
+                leggTilYtelsesData(ytelsesTilstand, innhold.get());
+                leggTilRelevantAAPData(ytelsesTilstand, innhold.get());
+                break;
+            case TILTAKSPENGER:
+                leggTilYtelsesData(ytelsesTilstand, innhold.get());
+                break;
+        }
+
         brukerDataRepository.upsertYtelser(ytelsesTilstand);
     }
 
-    private void leggTilRelevantDagpengeData(Brukerdata ytelsesTilstand, YtelsesInnhold innhold) {
+    private void leggTilYtelsesData(Brukerdata ytelsesTilstand, YtelseDAO innhold){
         YtelseMapping ytelseMapping = YtelseMapping.of(innhold)
                 .orElseThrow(() -> new RuntimeException(innhold.toString()));
-
-        LocalDateTime utlopsDato = Optional.ofNullable(innhold.getTilOgMedDato())
-                .map(ArenaDato::getLocalDate)
+        LocalDateTime utlopsDato = Optional.ofNullable(innhold.getUtlopsDato())
+                .map(Timestamp::toLocalDateTime)
                 .orElse(null);
 
-        ytelsesTilstand
-                .setYtelse(ytelseMapping)
-                .setUtlopsdato(utlopsDato)
-                .setDagputlopUke(innhold.getAntallUkerIgjen())
-                .setPermutlopUke(innhold.getAntallUkerIgjenUnderPermittering());
+        ytelsesTilstand.setYtelse(ytelseMapping).setUtlopsdato(utlopsDato);
     }
 
-    private void leggTilRelevantAAPData(Brukerdata ytelsesTilstand, YtelsesInnhold innhold) {
-        YtelseMapping ytelseMapping = YtelseMapping.of(innhold)
-                .orElseThrow(() -> new RuntimeException(innhold.toString()));
-
-        LocalDateTime utlopsDato = Optional.ofNullable(innhold.getTilOgMedDato())
-                .map(ArenaDato::getLocalDate)
-                .orElse(null);
-
+    private void leggTilRelevantDagpengeData(Brukerdata ytelsesTilstand, YtelseDAO innhold) {
         ytelsesTilstand
-                .setYtelse(ytelseMapping)
-                .setUtlopsdato(utlopsDato)
+                .setDagputlopUke(innhold.getAntallUkerIgjen())
+                .setPermutlopUke(innhold.getAntallUkerIgjenPermittert());
+    }
+
+    private void leggTilRelevantAAPData(Brukerdata ytelsesTilstand, YtelseDAO innhold) {
+        ytelsesTilstand
                 .setAapmaxtidUke(innhold.getAntallUkerIgjen())
                 .setAapUnntakDagerIgjen(innhold.getAntallDagerIgjenUnntak());
-    }
-
-    private void leggTilRelevantTiltaksPengerData(Brukerdata ytelsesTilstand, YtelsesInnhold innhold) {
-        YtelseMapping ytelseMapping = YtelseMapping.of(innhold)
-                .orElseThrow(() -> new RuntimeException(innhold.toString()));
-
-        LocalDateTime utlopsDato = Optional.ofNullable(innhold.getTilOgMedDato())
-                .map(ArenaDato::getLocalDate)
-                .orElse(null);
-
-        ytelsesTilstand
-                .setYtelse(ytelseMapping)
-                .setUtlopsdato(utlopsDato);
     }
 
     public static Timestamp finnNyesteUtlopteAktivAktivitet(List<Timestamp> aktiviteter, LocalDate today) {

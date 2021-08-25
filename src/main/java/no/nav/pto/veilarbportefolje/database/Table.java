@@ -170,4 +170,22 @@ public class Table {
         public static final String ID = "ID";
         public static final String SISTE_HOVEDINDEKSERING_TIDSPUNKT = "SISTE_HOVEDINDEKSERING_TIDSPUNKT";
     }
+
+    public static final class YTELSER {
+        public static final String TABLE_NAME = "YTELSER";
+        public static final String VEDTAKID = "VEDTAKID";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String PERSONID = "PERSONID";
+        public static final String YTELSESTYPE ="YTELSESTYPE";
+        public static final String SAKSID = "SAKSID";
+
+        public static final String SAKSTYPEKODE = "SAKSTYPEKODE";
+        public static final String RETTIGHETSTYPEKODE = "RETTIGHETSTYPEKODE";
+
+        public static final String STARTDATO = "STARTDATO";
+        public static final String UTLOPSDATO = "UTLOPSDATO";
+        public static final String ANTALLUKERIGJEN = "ANTALLUKERIGJEN";
+        public static final String ANTALLPERMITTERINGUKER = "ANTALLPERMITTERINGUKER";
+        public static final String ANTALLUKERIGJENUNNTAK = "ANTALLUKERIGJENUNNTAK";
+    }
 }

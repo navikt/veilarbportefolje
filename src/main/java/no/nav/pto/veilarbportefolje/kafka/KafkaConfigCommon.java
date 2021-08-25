@@ -15,6 +15,9 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitet
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
@@ -38,10 +41,14 @@ public class KafkaConfigCommon {
     public final static String UTDANNINGS_AKTIVITET_TOPIC = "teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix();
     public final static String GRUPPE_AKTIVITET_TOPIC = "teamarenanais.aapen-arena-gruppeaktivitetendret-v1-" + requireKafkaTopicPostfix();
 
+    public final static String AAP_TOPIC = "teamarenanais.aapen-arena-aapvedtakendret-v1-" + requireKafkaTopicPostfix();
+    public final static String DAGPENGE_TOPIC = "teamarenanais.aapen-arena-dagpengevedtakendret-v1-" + requireKafkaTopicPostfix();
+    public final static String TILTAKSPENGER_TOPIC = "teamarenanais.aapen-arena-tiltakspengevedtakendret-v1-" + requireKafkaTopicPostfix();
+
     private final KafkaConsumerClient consumerClient;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVService cvService, TiltakServiceV2 tiltakServiceV2,
+    public KafkaConfigCommon(CVService cvService, TiltakServiceV2 tiltakServiceV2, YtelsesService ytelsesService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
                              @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
         KafkaConsumerRepository consumerRepository = new PostgresConsumerRepository(dataSource);
@@ -87,6 +94,42 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(TiltakDTO.class),
                                         tiltakServiceV2::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        AAP_TOPIC,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(YtelsesDTO.class),
+                                        (melding -> {
+                                            ytelsesService.behandleKafkaRecord(melding, TypeKafkaYtelse.AAP);
+                                        })
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        DAGPENGE_TOPIC,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(YtelsesDTO.class),
+                                        (melding -> {
+                                            ytelsesService.behandleKafkaRecord(melding, TypeKafkaYtelse.DAGPENGER);
+                                        })
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        TILTAKSPENGER_TOPIC,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(YtelsesDTO.class),
+                                        (melding -> {
+                                            ytelsesService.behandleKafkaRecord(melding, TypeKafkaYtelse.TILTAKSPENGER);
+                                        })
                                 )
                 );
 
