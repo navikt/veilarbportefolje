@@ -50,7 +50,7 @@ public class TiltakRepositoryV2 {
 
         log.info("Lagrer tiltak: {}", innhold.getAktivitetid());
 
-        if (oppdaterTiltakskodeVerk(innhold.getTiltakstype(), innhold.getTiltaksnavn())) {
+        if (skalOppdatereTiltakskodeVerk(innhold.getTiltakstype(), innhold.getTiltaksnavn())) {
             SqlUtils.upsert(db, Table.TILTAKKODEVERK_V2.TABLE_NAME)
                     .set(Table.TILTAKKODEVERK_V2.KODE, innhold.getTiltakstype())
                     .set(Table.TILTAKKODEVERK_V2.VERDI, innhold.getTiltaksnavn())
@@ -176,7 +176,7 @@ public class TiltakRepositoryV2 {
                 .collect(toList());
     }
 
-    private boolean oppdaterTiltakskodeVerk(String tiltaksKode, String verdiFraKafka) {
+    private boolean skalOppdatereTiltakskodeVerk(String tiltaksKode, String verdiFraKafka) {
         Optional<String> verdiITiltakskodeVerk = hentVerdiITiltakskodeVerk(tiltaksKode);
         return verdiITiltakskodeVerk.map(lagretVerdi -> !lagretVerdi.equals(verdiFraKafka)).orElse(true);
     }
