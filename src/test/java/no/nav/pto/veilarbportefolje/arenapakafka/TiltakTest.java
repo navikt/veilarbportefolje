@@ -39,7 +39,6 @@ import static org.mockito.Mockito.mock;
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class TiltakTest {
     private final TiltakServiceV2 tiltakServiceV2;
-    private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final JdbcTemplate jdbcTemplate;
     private final AktivitetDAO aktivitetDAO;
 
@@ -53,7 +52,6 @@ public class TiltakTest {
 
     @Autowired
     public TiltakTest(TiltakRepositoryV2 tiltakRepositoryV2, JdbcTemplate jdbcTemplate, AktivitetDAO aktivitetDAO) {
-        this.tiltakRepositoryV2 = tiltakRepositoryV2;
         this.jdbcTemplate = jdbcTemplate;
         this.aktivitetDAO = aktivitetDAO;
 

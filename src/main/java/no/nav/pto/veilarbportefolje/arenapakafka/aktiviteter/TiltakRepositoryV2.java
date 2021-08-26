@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.BrukertiltakV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.database.Table;
+import no.nav.pto.veilarbportefolje.database.Table.TILTAKKODEVERK_V2;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -29,7 +30,9 @@ import java.util.*;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.getDateOrNull;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2.*;
+import static no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER.PERSON_ID;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
@@ -50,11 +53,11 @@ public class TiltakRepositoryV2 {
 
         log.info("Lagrer tiltak: {}", innhold.getAktivitetid());
 
-        if (oppdaterTiltakskodeVerk(innhold.getTiltakstype(), innhold.getTiltaksnavn())) {
-            SqlUtils.upsert(db, Table.TILTAKKODEVERK_V2.TABLE_NAME)
-                    .set(Table.TILTAKKODEVERK_V2.KODE, innhold.getTiltakstype())
-                    .set(Table.TILTAKKODEVERK_V2.VERDI, innhold.getTiltaksnavn())
-                    .where(WhereClause.equals(Table.TILTAKKODEVERK_V2.KODE, innhold.getTiltakstype()))
+        if (skalOppdatereTiltakskodeVerk(innhold.getTiltakstype(), innhold.getTiltaksnavn())) {
+            SqlUtils.upsert(db, TILTAKKODEVERK_V2.TABLE_NAME)
+                    .set(TILTAKKODEVERK_V2.KODE, innhold.getTiltakstype())
+                    .set(TILTAKKODEVERK_V2.VERDI, innhold.getTiltaksnavn())
+                    .where(WhereClause.equals(TILTAKKODEVERK_V2.KODE, innhold.getTiltakstype()))
                     .execute();
         }
         SqlUtils.upsert(db, TABLE_NAME)
@@ -77,33 +80,17 @@ public class TiltakRepositoryV2 {
     }
 
     public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
-        final String hentKoderPaEnhetSql = "SELECT DISTINCT " + TILTAKSKODE + " FROM " + TABLE_NAME +
-                " BT INNER JOIN OPPFOLGINGSBRUKER OP ON BT." + PERSONID + " = OP.PERSON_ID" +
-                " WHERE OP.NAV_KONTOR=?";
-        List<String> tiltakskoder = db.queryForList(hentKoderPaEnhetSql, String.class, enhetId.get());
-        if (tiltakskoder.isEmpty()) {
-            return new EnhetTiltak().setTiltak(Map.of());
-        }
-
-        final String hentNavnPaKoderSql = "SELECT * FROM " + Table.TILTAKKODEVERK_V2.TABLE_NAME +
-                " WHERE " + Table.TILTAKKODEVERK_V2.KODE + " in (:tiltakskoder)";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("tiltakskoder", tiltakskoder);
+        final String hentTiltakPaEnhetSql = "SELECT * FROM " + TILTAKKODEVERK_V2.TABLE_NAME + " WHERE " +
+                TILTAKKODEVERK_V2.KODE + " IN (SELECT DISTINCT " + TILTAKSKODE + " FROM " + BRUKERTILTAK_V2.TABLE_NAME +
+                " BT INNER JOIN " + Table.OPPFOLGINGSBRUKER.TABLE_NAME + " OP ON BT." + PERSONID + " = OP." + PERSON_ID +
+                " WHERE OP.NAV_KONTOR=:nav_kontor)";
 
         return new EnhetTiltak().setTiltak(
                 namedParameterJdbcTemplate
-                        .queryForList(hentNavnPaKoderSql, params)
+                        .queryForList(hentTiltakPaEnhetSql, Map.of("nav_kontor", enhetId.get()))
                         .stream().map(this::mapTilTiltak)
                         .collect(toMap(Tiltakkodeverk::getKode, Tiltakkodeverk::getVerdi))
         );
-    }
-
-    public List<AktorId> hentBrukereMedUtlopteTiltak() {
-        String sql = "SELECT "+AKTOERID+" FROM " + TABLE_NAME
-                + " WHERE " + TILDATO + " < CURRENT_TIMESTAMP";
-        return db.queryForList(sql, String.class).stream()
-                .filter(Objects::nonNull).map(AktorId::new).collect(toList());
     }
 
     public List<Timestamp> hentSluttdatoer(PersonId personId) {
@@ -112,7 +99,7 @@ public class TiltakRepositoryV2 {
         }
 
         final String hentSluttDatoerSql = "SELECT " + TILDATO + " FROM " + TABLE_NAME +
-                " WHERE "+PERSONID+"=?";
+                " WHERE " + PERSONID + "=?";
         return db.queryForList(hentSluttDatoerSql, Timestamp.class, personId.getValue());
     }
 
@@ -122,9 +109,9 @@ public class TiltakRepositoryV2 {
             throw new IllegalArgumentException("Trenger personId for å hente ut startdatoer");
         }
 
-        final String hentSluttDatoerSql = "SELECT " + FRADATO + " FROM " + TABLE_NAME +
-                " WHERE "+PERSONID+"=?";
-        return db.queryForList(hentSluttDatoerSql, Timestamp.class, personId.getValue());
+        final String hentStartDatoerSql = "SELECT " + FRADATO + " FROM " + TABLE_NAME +
+                " WHERE " + PERSONID + "=?";
+        return db.queryForList(hentStartDatoerSql, Timestamp.class, personId.getValue());
     }
 
     /*
@@ -139,8 +126,12 @@ public class TiltakRepositoryV2 {
         Map<String, Object> params = new HashMap<>();
         params.put("aktorIder", aktorIder.stream().map(AktorId::toString).collect(toList()));
 
+        final String tiltaksTyperForListOfAktorIdsSql =
+                "SELECT TILTAKSKODE, AKTOERID, TILDATO " +
+                        "FROM  BRUKERTILTAK_V2 " +
+                        "WHERE  AKTOERID in (:aktorIder)";
         return namedParameterJdbcTemplate
-                .queryForList(getTiltaksTyperForListOfAktorIds(), params)
+                .queryForList(tiltaksTyperForListOfAktorIdsSql, params)
                 .stream()
                 .map(this::mapTilBrukertiltakV2)
                 .collect(toMap(BrukertiltakV2::getAktorId, DbUtils::toSet,
@@ -157,10 +148,10 @@ public class TiltakRepositoryV2 {
                 .map(BrukertiltakV2::getTildato)
                 .filter(Objects::nonNull)
                 .filter(utlopsdato -> utlopsdato.toLocalDateTime().toLocalDate().isAfter(yesterday))
-                .max(Comparator.naturalOrder())
+                .min(Comparator.naturalOrder())
                 .orElse(null);
 
-        boolean aktiv = (tiltak.size() != 0);
+        boolean aktiv = !tiltak.isEmpty();
         AktivitetStatus aktivitetStatus = new AktivitetStatus()
                 .setAktivitetType(AktivitetTyper.tiltak.name())
                 .setAktiv(aktiv)
@@ -168,17 +159,6 @@ public class TiltakRepositoryV2 {
                 .setPersonid(personId)
                 .setNesteUtlop(nesteUtlopsdato);
         aktivitetDAO.upsertAktivitetStatus(aktivitetStatus);
-    }
-
-    private String getTiltaksTyperForListOfAktorIds() {
-        return "SELECT " +
-                "TILTAKSKODE, " +
-                "AKTOERID, " +
-                "TILDATO " +
-                "FROM " +
-                "BRUKERTILTAK_V2 " +
-                "WHERE " +
-                "AKTOERID in (:aktorIder)";
     }
 
     private List<BrukertiltakV2> hentTiltak(AktorId aktorId) {
@@ -190,14 +170,14 @@ public class TiltakRepositoryV2 {
                 .collect(toList());
     }
 
-    private boolean oppdaterTiltakskodeVerk(String tiltaksKode, String verdiFraKafka) {
+    private boolean skalOppdatereTiltakskodeVerk(String tiltaksKode, String verdiFraKafka) {
         Optional<String> verdiITiltakskodeVerk = hentVerdiITiltakskodeVerk(tiltaksKode);
         return verdiITiltakskodeVerk.map(lagretVerdi -> !lagretVerdi.equals(verdiFraKafka)).orElse(true);
     }
 
     private Optional<String> hentVerdiITiltakskodeVerk(String kode) {
-        String sql = "SELECT " + Table.TILTAKKODEVERK_V2.VERDI + " FROM " + Table.TILTAKKODEVERK_V2.TABLE_NAME
-                + " WHERE " + Table.TILTAKKODEVERK_V2.KODE + " = ?";
+        String sql = "SELECT " + TILTAKKODEVERK_V2.VERDI + " FROM " + TILTAKKODEVERK_V2.TABLE_NAME
+                + " WHERE " + TILTAKKODEVERK_V2.KODE + " = ?";
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, String.class, kode))
         );
@@ -214,6 +194,6 @@ public class TiltakRepositoryV2 {
 
     @SneakyThrows
     private Tiltakkodeverk mapTilTiltak(Map<String, Object> rs) {
-        return Tiltakkodeverk.of((String) rs.get(Table.TILTAKKODEVERK_V2.KODE), (String) rs.get(Table.TILTAKKODEVERK_V2.VERDI));
+        return Tiltakkodeverk.of((String) rs.get(TILTAKKODEVERK_V2.KODE), (String) rs.get(TILTAKKODEVERK_V2.VERDI));
     }
 }

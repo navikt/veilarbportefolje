@@ -11,10 +11,12 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
+import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon;
+import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -47,6 +50,7 @@ public class AdminController {
     private final KafkaConfigCommon kafkaConfigCommon;
     private final ElasticIndexer elasticIndexer;
     private final BrukerAktiviteterService brukerAktiviteterService;
+    private final BrukerRepository brukerRepository;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -103,6 +107,17 @@ public class AdminController {
         authorizeAdmin();
         oppfolgingService.lastInnDataPaNytt();
         return "Innlastning av oppfolgingsdata har startet";
+    }
+
+    @PostMapping("/lastInnOppfolgingForBruker")
+    public String lastInnOppfolgingsDataForBruker(@RequestBody String fnr) {
+        authorizeAdmin();
+        Optional<OppfolgingsBruker> oppfolgingsBruker = brukerRepository.hentBrukerFraView(Fnr.of(fnr));
+        if (oppfolgingsBruker.isPresent()) {
+            oppfolgingService.oppdaterBruker(oppfolgingsBruker.get());
+            return "Innlastning av oppfolgingsdata har startet";
+        }
+        return "Bruker eksistere ikke";
     }
 
 

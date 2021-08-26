@@ -17,7 +17,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
@@ -59,23 +58,6 @@ public class GruppeAktivitetRepository {
                 ).execute();
     }
 
-    /**
-     * Setter aktivitet til inaktiv kun hvis aktiviteten er utgatt.
-     * Implementert til aa forhindre race condition mellom daglig jobb og kafka.
-     */
-    public int oppdaterUtgattAktivStatus(String moteplanId, String veiledningdeltakerId, AktorId aktorId, PersonId personId) {
-        String updateSql = String.format(
-                "UPDATE %s SET %s = 'N' WHERE %s = ? AND %s = ? AND %s < CURRENT_TIMESTAMP",
-                TABLE_NAME, AKTIV, MOTEPLAN_ID, VEILEDNINGDELTAKER_ID, MOTEPLAN_SLUTTDATO
-        );
-
-        int updated = db.update(updateSql, moteplanId, veiledningdeltakerId);
-        if (updated != 0) {
-            utledOgLagreGruppeaktiviteter(personId, aktorId);
-        }
-        return updated;
-    }
-
     public Optional<Long> retrieveHendelse(GruppeAktivitetInnhold aktivitet) {
         return Optional.ofNullable(
                 SqlUtils.select(db, TABLE_NAME, rs -> rs.getLong(HENDELSE_ID))
@@ -86,26 +68,6 @@ public class GruppeAktivitetRepository {
                         )
                         .execute()
         );
-    }
-
-    public Optional<GruppeAktivitetSchedueldDTO> hentAktivtet(String moteplanId, String veiledningdeltakerId) {
-        return Optional.ofNullable(
-                SqlUtils.select(db, TABLE_NAME, this::mapTilDto)
-                        .column("*")
-                        .where(WhereClause.equals(MOTEPLAN_ID, moteplanId)
-                                .and(WhereClause.equals(VEILEDNINGDELTAKER_ID, veiledningdeltakerId))
-                        ).execute()
-        );
-    }
-
-    public List<GruppeAktivitetSchedueldDTO> hentUtgatteAktivteter() {
-        String sql = "SELECT * FROM " + TABLE_NAME
-                + " WHERE " + MOTEPLAN_SLUTTDATO + " < CURRENT_TIMESTAMP";
-        return db.queryForList(sql)
-                .stream()
-                .map(result -> (ResultSet) result)
-                .map(this::mapTilDto)
-                .collect(toList());
     }
 
     public void utledOgLagreGruppeaktiviteter(PersonId personId, AktorId aktorId) {
@@ -139,19 +101,6 @@ public class GruppeAktivitetRepository {
                 .stream()
                 .map(this::mapTilDto)
                 .collect(toList());
-    }
-
-    @SneakyThrows
-    private GruppeAktivitetSchedueldDTO mapTilDto(ResultSet rs) {
-        boolean aktiv = "J".equals(rs.getString(AKTIV));
-        return new GruppeAktivitetSchedueldDTO()
-                .setVeiledningdeltakerId(rs.getString(VEILEDNINGDELTAKER_ID))
-                .setAktivitetperiodeFra(rs.getTimestamp(MOTEPLAN_STARTDATO))
-                .setAktivitetperiodeTil(rs.getTimestamp(MOTEPLAN_SLUTTDATO))
-                .setMoteplanId(rs.getString(MOTEPLAN_ID))
-                .setHendelseId(rs.getLong(HENDELSE_ID))
-                .setAktorId(AktorId.of(AKTOERID))
-                .setAktiv(aktiv);
     }
 
     @SneakyThrows

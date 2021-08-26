@@ -6,18 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetInnhold;
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.*;
 
@@ -28,7 +24,6 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivit
 public class GruppeAktivitetService {
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     @NonNull @Qualifier("systemClient") private final AktorClient aktorClient;
-    private final BrukerService brukerService;
     private final BrukerDataService brukerDataService;
     private final ElasticIndexer elasticIndexer;
 
@@ -42,10 +37,6 @@ public class GruppeAktivitetService {
                 kafkaMelding.topic()
         );
         behandleKafkaMelding(melding);
-    }
-
-    public List<GruppeAktivitetSchedueldDTO> hentUtgatteUtdanningAktiviteter() {
-        return gruppeAktivitetRepository.hentUtgatteAktivteter();
     }
 
     public void behandleKafkaMelding(GruppeAktivitetDTO kafkaMelding) {
@@ -63,7 +54,7 @@ public class GruppeAktivitetService {
         elasticIndexer.indekser(aktorId);
     }
 
-    static boolean skalSletteGruppeAktivitet(GruppeAktivitetInnhold gruppeInnhold) {
+    private boolean skalSletteGruppeAktivitet(GruppeAktivitetInnhold gruppeInnhold) {
         return gruppeInnhold.getAktivitetperiodeTil() == null || erUtgatt(gruppeInnhold.getAktivitetperiodeTil(), true);
     }
 
@@ -74,19 +65,5 @@ public class GruppeAktivitetService {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Sletter kun hvis aktiviteten er utgatt.
-     * Implementert til aa forhindre race condition mellom daglig jobb og kafka.
-     */
-    public void settSomUtgatt(String moteplanId, String veiledningdeltakerId) {
-        gruppeAktivitetRepository.hentAktivtet(moteplanId, veiledningdeltakerId)
-                .ifPresent(gruppeAktivitetSchedueldDTO -> {
-                    AktorId aktorId = gruppeAktivitetSchedueldDTO.getAktorId();
-                    brukerService.hentPersonidFraAktoerid(aktorId).onSuccess(personId ->
-                        gruppeAktivitetRepository.oppdaterUtgattAktivStatus(moteplanId, veiledningdeltakerId, aktorId, personId)
-                    );
-        });
     }
 }

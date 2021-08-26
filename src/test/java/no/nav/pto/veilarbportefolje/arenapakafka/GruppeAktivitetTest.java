@@ -43,14 +43,14 @@ public class GruppeAktivitetTest {
     private final PersonId personId = PersonId.of("123");
 
     @Autowired
-    public GruppeAktivitetTest(BrukerService brukerService, AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, GruppeAktivitetRepository gruppeAktivitetRepository) {
+    public GruppeAktivitetTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, GruppeAktivitetRepository gruppeAktivitetRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.aktivitetDAO = aktivitetDAO;
 
         AktorClient aktorClient = mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
-        this.gruppeAktivitetService = new GruppeAktivitetService(gruppeAktivitetRepository, aktorClient, brukerService, mock(BrukerDataService.class), mock(ElasticIndexer.class));
+        this.gruppeAktivitetService = new GruppeAktivitetService(gruppeAktivitetRepository, aktorClient, mock(BrukerDataService.class), mock(ElasticIndexer.class));
   }
 
     @BeforeEach
