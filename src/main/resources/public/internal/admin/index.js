@@ -1,3 +1,32 @@
+const oppfolgingRefreshForm = document.getElementById('oppfolgingRefresh');
+oppfolgingRefreshForm.addEventListener('submit', handleOppfolgingRefreshForm);
+
+function handleOppfolgingRefreshForm(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil hente inn data pa nytt for alle brukere under oppfolging.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/lastInnOppfolging',
+            {method: 'POST', credentials: 'same-origin'},
+            'oppfolgingRefreshResponse'
+        );
+    }
+}
+
+const oppfolgingRefreshForUserForm = document.getElementById('oppfolgingRefreshForUser');
+oppfolgingRefreshForUserForm.addEventListener('submit', handleOppfolgingRefreshForUserForm);
+const oppfolgingRefreshForFnr = document.getElementById('oppfolgingRefreshForFnr')
+
+function handleOppfolgingRefreshForUserForm(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil hente inn data pa nytt for brukeren.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/lastInnOppfolgingForBruker/',
+            {method: 'POST', credentials: 'same-origin', body: oppfolgingRefreshForFnr.value},
+            'oppfolgingRefreshForUserResponse'
+        );
+    }
+}
+
 const slettElasticForm = document.getElementById('slettElasticForm')
 slettElasticForm.addEventListener('submit', handleslettElastic);
 const aktoerIdInputSlett = document.getElementById('aktoerIdInputSlett')
@@ -57,20 +86,6 @@ function handleAktorId(e) {
             {method: 'POST', credentials: 'same-origin', body: fnr},
             'aktoerIdResponse'
         )
-    }
-}
-
-const oppfolgingRefreshForm = document.getElementById('oppfolgingRefresh');
-oppfolgingRefreshForm.addEventListener('submit', handleOppfolgingRefreshForm);
-
-function handleOppfolgingRefreshForm(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil hente inn data pa nytt for alle brukere under oppfolging.')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/lastInnOppfolging',
-            {method: 'POST', credentials: 'same-origin'},
-            'oppfolgingRefreshResponse'
-        );
     }
 }
 

@@ -208,6 +208,7 @@ public class ElasticQueryBuilder {
             default:
                 defaultSort(sortField, searchSourceBuilder, order);
         }
+        addSecondarySort(searchSourceBuilder);
         return searchSourceBuilder;
     }
 
@@ -633,6 +634,10 @@ public class ElasticQueryBuilder {
 
         String medKlammer = format("%s%s%s", "[", veiledere, "]");
         return format("%s.contains(doc.veileder_id.value)", medKlammer);
+    }
+
+    private static void addSecondarySort(SearchSourceBuilder searchSourceBuilder){
+        searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
     }
 }
 
