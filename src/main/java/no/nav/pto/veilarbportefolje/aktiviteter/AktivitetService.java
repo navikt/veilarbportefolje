@@ -98,22 +98,6 @@ public class AktivitetService implements KafkaConsumerService<String> {
         utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(melding.getAktorId()));
     }
 
-    public List<ArenaAktivitetDTO> hentUtgatteUtdanningAktiviteter() {
-        return aktivitetDAO.hentUtgatteAktivteter(AktivitetTyperFraKafka.utdanningaktivitet.name());
-    }
-
-    public void slettUtgatteAktivitet(String aktivitetId, AktorId aktorId) {
-        if (aktivitetId == null || aktorId == null) {
-            return;
-        }
-        int rows = aktivitetDAO.slettUtgattAktivtet(aktivitetId);
-        if (rows == 0) {
-            return;
-        }
-        log.info("Slettet utgatt aktivitet: {} pa bruker: {} ", aktivitetId, aktorId);
-        utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
-    }
-
     @Override
     public boolean shouldRewind() {
         return rewind.get();
