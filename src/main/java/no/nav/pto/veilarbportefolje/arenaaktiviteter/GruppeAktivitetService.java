@@ -63,7 +63,7 @@ public class GruppeAktivitetService {
         elasticIndexer.indekser(aktorId);
     }
 
-    static boolean skalSletteGruppeAktivitet(GruppeAktivitetInnhold gruppeInnhold) {
+    boolean skalSletteGruppeAktivitet(GruppeAktivitetInnhold gruppeInnhold) {
         return gruppeInnhold.getAktivitetperiodeTil() == null || erUtgatt(gruppeInnhold.getAktivitetperiodeTil(), true);
     }
 

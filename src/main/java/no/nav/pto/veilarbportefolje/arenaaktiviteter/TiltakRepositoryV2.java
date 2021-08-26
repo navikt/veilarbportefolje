@@ -99,20 +99,13 @@ public class TiltakRepositoryV2 {
         );
     }
 
-    public List<AktorId> hentBrukereMedUtlopteTiltak() {
-        String sql = "SELECT "+AKTOERID+" FROM " + TABLE_NAME
-                + " WHERE " + TILDATO + " < CURRENT_TIMESTAMP";
-        return db.queryForList(sql, String.class).stream()
-                .filter(Objects::nonNull).map(AktorId::new).collect(toList());
-    }
-
     public List<Timestamp> hentSluttdatoer(PersonId personId) {
         if (personId == null) {
             throw new IllegalArgumentException("Trenger personId for å hente ut sluttdatoer");
         }
 
         final String hentSluttDatoerSql = "SELECT " + TILDATO + " FROM " + TABLE_NAME +
-                " WHERE "+PERSONID+"=?";
+                " WHERE " + PERSONID + "=?";
         return db.queryForList(hentSluttDatoerSql, Timestamp.class, personId.getValue());
     }
 
@@ -122,9 +115,9 @@ public class TiltakRepositoryV2 {
             throw new IllegalArgumentException("Trenger personId for å hente ut startdatoer");
         }
 
-        final String hentSluttDatoerSql = "SELECT " + FRADATO + " FROM " + TABLE_NAME +
-                " WHERE "+PERSONID+"=?";
-        return db.queryForList(hentSluttDatoerSql, Timestamp.class, personId.getValue());
+        final String hentStartDatoerSql = "SELECT " + FRADATO + " FROM " + TABLE_NAME +
+                " WHERE " + PERSONID + "=?";
+        return db.queryForList(hentStartDatoerSql, Timestamp.class, personId.getValue());
     }
 
     /*
@@ -139,8 +132,12 @@ public class TiltakRepositoryV2 {
         Map<String, Object> params = new HashMap<>();
         params.put("aktorIder", aktorIder.stream().map(AktorId::toString).collect(toList()));
 
+        final String tiltaksTyperForListOfAktorIdsSql =
+                "SELECT TILTAKSKODE, AKTOERID, TILDATO " +
+                        "FROM  BRUKERTILTAK_V2 " +
+                        "WHERE  AKTOERID in (:aktorIder)";
         return namedParameterJdbcTemplate
-                .queryForList(getTiltaksTyperForListOfAktorIds(), params)
+                .queryForList(tiltaksTyperForListOfAktorIdsSql, params)
                 .stream()
                 .map(this::mapTilBrukertiltakV2)
                 .collect(toMap(BrukertiltakV2::getAktorId, DbUtils::toSet,
@@ -157,10 +154,10 @@ public class TiltakRepositoryV2 {
                 .map(BrukertiltakV2::getTildato)
                 .filter(Objects::nonNull)
                 .filter(utlopsdato -> utlopsdato.toLocalDateTime().toLocalDate().isAfter(yesterday))
-                .max(Comparator.naturalOrder())
+                .min(Comparator.naturalOrder())
                 .orElse(null);
 
-        boolean aktiv = (tiltak.size() != 0);
+        boolean aktiv = !tiltak.isEmpty();
         AktivitetStatus aktivitetStatus = new AktivitetStatus()
                 .setAktivitetType(AktivitetTyper.tiltak.name())
                 .setAktiv(aktiv)
@@ -168,17 +165,6 @@ public class TiltakRepositoryV2 {
                 .setPersonid(personId)
                 .setNesteUtlop(nesteUtlopsdato);
         aktivitetDAO.upsertAktivitetStatus(aktivitetStatus);
-    }
-
-    private String getTiltaksTyperForListOfAktorIds() {
-        return "SELECT " +
-                "TILTAKSKODE, " +
-                "AKTOERID, " +
-                "TILDATO " +
-                "FROM " +
-                "BRUKERTILTAK_V2 " +
-                "WHERE " +
-                "AKTOERID in (:aktorIder)";
     }
 
     private List<BrukertiltakV2> hentTiltak(AktorId aktorId) {
