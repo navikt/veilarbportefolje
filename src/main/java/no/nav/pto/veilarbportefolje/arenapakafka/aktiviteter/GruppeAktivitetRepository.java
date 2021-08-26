@@ -118,7 +118,7 @@ public class GruppeAktivitetRepository {
         Timestamp nesteUtlopsdato = gruppeAktiviteter.stream()
                 .filter(GruppeAktivitetSchedueldDTO::isAktiv)
                 .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeTil)
-                .max(Comparator.naturalOrder())
+                .min(Comparator.naturalOrder())
                 .orElse(null);
 
         boolean aktiv = (nesteStart != null && nesteUtlopsdato != null);

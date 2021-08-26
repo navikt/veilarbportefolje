@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -40,17 +40,14 @@ public class YtelseFasettMappingTest {
 
     @Test
     public void skalKlassifisereAAPMaxTid() throws Exception {
-        YtelsesInnhold vedtak = lagVedtak("AA", "AAP");
-        vedtak.setAaptellere(new YtelsesInnhold.Aaptellere());
+        YtelseDAO vedtak = lagVedtak("AA", "AAP");
         assertThat(YtelseMapping.of(vedtak)).isEqualTo(Optional.of(AAP_MAXTID));
     }
 
     @Test
     public void skalKlassifisereAAPUnntak() throws Exception {
-        YtelsesInnhold vedtak = lagVedtak("AA", "AAP");
-        YtelsesInnhold.Aaptellere teller =new YtelsesInnhold.Aaptellere();
-        teller.setAntallDagerIgjenUnntak(1);
-        vedtak.setAaptellere(teller);
+        YtelseDAO vedtak = lagVedtak("AA", "AAP");
+        vedtak.setAntallDagerIgjenUnntak(1);
 
         assertThat(YtelseMapping.of(vedtak)).isEqualTo(Optional.of(AAP_UNNTAK));
     }
@@ -65,8 +62,8 @@ public class YtelseFasettMappingTest {
         assertThat(YtelseMapping.of(lagVedtak("TULL", "BALL"))).isEqualTo(Optional.empty());
     }
 
-    private YtelsesInnhold lagVedtak(String sakstypekode, String rettighetstypekode) {
-        YtelsesInnhold vedtak = new YtelsesInnhold();
+    private YtelseDAO lagVedtak(String sakstypekode, String rettighetstypekode) {
+        YtelseDAO vedtak = new YtelseDAO();
         vedtak.setSakstypeKode(sakstypekode);
         vedtak.setRettighetstypeKode(rettighetstypekode);
         return vedtak;
