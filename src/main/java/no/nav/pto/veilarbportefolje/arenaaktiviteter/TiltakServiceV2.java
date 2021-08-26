@@ -55,6 +55,7 @@ public class TiltakServiceV2 {
         }
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
+        PersonId personId = PersonId.of(String.valueOf(innhold.getPersonId()));
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
             log.info("Sletter tiltak: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
             tiltakRepositoryV2.delete(innhold.getAktivitetid());
@@ -62,9 +63,9 @@ public class TiltakServiceV2 {
             log.info("Lagrer tiltak: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
             tiltakRepositoryV2.upsert(innhold, aktorId);
         }
-        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(PersonId.of(String.valueOf(innhold.getPersonId())), aktorId);
+        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId, personId);
         arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
-        brukerDataService.oppdaterAktivitetBrukerData(aktorId, PersonId.of(String.valueOf(innhold.getPersonId())));
+        brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
 
         elasticIndexer.indekser(aktorId);
     }

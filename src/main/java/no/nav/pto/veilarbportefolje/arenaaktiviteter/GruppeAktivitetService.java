@@ -46,10 +46,11 @@ public class GruppeAktivitetService {
         }
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
+        PersonId personId = PersonId.of(String.valueOf(innhold.getPersonId()));
         boolean aktiv = !(skalSlettesGoldenGate(kafkaMelding) || skalSletteGruppeAktivitet(innhold));
         gruppeAktivitetRepository.upsertGruppeAktivitet(innhold, aktorId, aktiv);
-        gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(PersonId.of(String.valueOf(innhold.getPersonId())), aktorId);
-        brukerDataService.oppdaterAktivitetBrukerData(aktorId, PersonId.of(String.valueOf(innhold.getPersonId())));
+        gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(aktorId, personId);
+        brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
 
         elasticIndexer.indekser(aktorId);
     }
