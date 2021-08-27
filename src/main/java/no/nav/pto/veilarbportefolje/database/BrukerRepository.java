@@ -60,13 +60,15 @@ public class BrukerRepository {
     public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
         db.setFetchSize(10_000);
 
-        return SqlUtils
+        List<OppfolgingsBruker> alleBrukere = SqlUtils
                 .select(db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> harOppfolgingsFlaggSatt(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .executeToList()
                 .stream()
                 .filter(Objects::nonNull)
                 .collect(toList());
+        db.setFetchSize(-1);
+        return alleBrukere;
     }
 
     public List<String> hentFnrFraOppfolgingBrukerTabell(int fromExclusive, int toInclusive) {
