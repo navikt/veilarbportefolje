@@ -133,9 +133,9 @@ public class OppfolgingRepository {
     }
 
     public List<AktorId> hentAlleBrukereUnderOppfolging() {
-        db.setFetchSize(10_000); //TODO: diskuter bruk av denne linjen
+        db.setFetchSize(10_000);
 
-        return SqlUtils
+        List<AktorId> alleIder = SqlUtils
                 .select(db, Table.OPPFOLGING_DATA.TABLE_NAME, rs -> AktorId.of(rs.getString(Table.OPPFOLGING_DATA.AKTOERID)))
                 .column(Table.OPPFOLGING_DATA.AKTOERID)
                 .where(WhereClause.equals(Table.OPPFOLGING_DATA.OPPFOLGING,"J"))
@@ -143,5 +143,8 @@ public class OppfolgingRepository {
                 .stream()
                 .filter(Objects::nonNull)
                 .collect(toList());
+        db.setFetchSize(-1);
+
+        return alleIder;
     }
 }
