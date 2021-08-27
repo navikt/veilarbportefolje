@@ -56,7 +56,7 @@ public class TiltakTest {
         this.aktivitetDAO = aktivitetDAO;
 
         ArenaHendelseRepository arenaHendelseRepository = mock(ArenaHendelseRepository.class);
-        Mockito.when(arenaHendelseRepository.upsertHendelse(anyString(), anyLong())).thenReturn(1);
+        Mockito.when(arenaHendelseRepository.upsertAktivitetHendelse(anyString(), anyLong())).thenReturn(1);
         AktorClient aktorClient = Mockito.mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);

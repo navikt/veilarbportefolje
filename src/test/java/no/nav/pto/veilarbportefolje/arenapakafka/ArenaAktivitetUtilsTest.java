@@ -28,7 +28,7 @@ public class ArenaAktivitetUtilsTest {
 
     @Test
     public void skalLagreNyMeldinger(){
-        Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(hendelsesId);
+        Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(hendelsesId);
         boolean erGammelHendelse = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, 1L, GoldenGateOperations.INSERT);
 
         assertThat(hendelseIDB).isNull();
@@ -38,8 +38,8 @@ public class ArenaAktivitetUtilsTest {
     @Test
     public void skalIkkeLagreGammelMelding(){
         long lagretHendelse = 3L;
-        arenaHendelseRepository.upsertHendelse(hendelsesId, lagretHendelse);
-        Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(hendelsesId);
+        arenaHendelseRepository.upsertAktivitetHendelse(hendelsesId, lagretHendelse);
+        Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(hendelsesId);
         boolean erGammelHendelse = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, 1L, GoldenGateOperations.INSERT);
 
         assertThat(erGammelHendelse).isTrue();
@@ -49,8 +49,8 @@ public class ArenaAktivitetUtilsTest {
     @Test
     public void deleteMeldingerSkalLagresHvisHendelsesIDErLikSomIDB(){
         long lagretHendelse = 4L;
-        arenaHendelseRepository.upsertHendelse(hendelsesId, lagretHendelse);
-        Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(hendelsesId);
+        arenaHendelseRepository.upsertAktivitetHendelse(hendelsesId, lagretHendelse);
+        Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(hendelsesId);
         boolean deleteHendelseErGammel = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, lagretHendelse, GoldenGateOperations.DELETE);
         boolean insertHendelseErGammel = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, lagretHendelse, GoldenGateOperations.INSERT);
 

@@ -53,7 +53,7 @@ public class UtdanningsAktivitetService {
             aktivitetService.upsertOgIndekserAktiviteter(melding);
         }
         log.debug("Ferdig behandlet aktivitet: {}, pa aktor: {}, hendelse: {}", innhold.getAktivitetid(), aktorId, innhold.getHendelseId());
-        arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
+        arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
     }
 
     static boolean skalSletteUtdanningsAktivitet(UtdanningsAktivitetInnhold utdanningsInnhold) {
@@ -62,7 +62,7 @@ public class UtdanningsAktivitetService {
     }
 
     private boolean erGammelMelding(UtdanningsAktivitetDTO kafkaMelding, UtdanningsAktivitetInnhold innhold) {
-        Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
+        Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(innhold.getAktivitetid());
 
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), kafkaMelding.getOperationType())) {
             log.info("Fikk tilsendt gammel utdannings-aktivtet-melding hendelse: {}", innhold.getHendelseId());

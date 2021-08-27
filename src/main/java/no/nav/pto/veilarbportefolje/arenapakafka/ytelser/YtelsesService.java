@@ -4,6 +4,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.*;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -32,6 +33,7 @@ public class YtelsesService {
     private final AktorClient aktorClient;
     private final BrukerDataService brukerDataService;
     private final YtelsesRepository ytelsesRepository;
+    private final ArenaHendelseRepository arenaHendelseRepository;
     private final ElasticIndexer elasticIndexer;
 
     public void behandleKafkaRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding, TypeKafkaYtelse ytsele) {
@@ -64,6 +66,8 @@ public class YtelsesService {
         Optional<YtelseDAO> lopendeYtelse = finnLopendeYtelse(aktorId);
         log.info("AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, lopendeYtelse.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
         brukerDataService.oppdaterYtelser(aktorId, PersonId.of(innhold.getPersonId()), lopendeYtelse);
+        arenaHendelseRepository.upsertYtelsesHendelse(innhold.getVedtakId(), innhold.getHendelseId());
+
         elasticIndexer.indekser(aktorId);
     }
 
@@ -90,7 +94,12 @@ public class YtelsesService {
     }
 
     private boolean erGammelMelding(YtelsesDTO kafkaMelding, YtelsesInnhold innhold) {
-        // TODO: legg til logikk
+        Long hendelseIDB = arenaHendelseRepository.retrieveYtelsesHendelse(innhold.getVedtakId());
+
+        if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), kafkaMelding.getOperationType())) {
+            log.info("Fikk tilsendt gammel ytelses-melding, vedtak: {}, personId: {}", innhold.getVedtakId(), innhold.getPersonId());
+            return true;
+        }
         return false;
     }
 }

@@ -63,7 +63,7 @@ public class TiltakServiceV2 {
             tiltakRepositoryV2.upsert(innhold, aktorId);
         }
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(PersonId.of(String.valueOf(innhold.getPersonId())), aktorId);
-        arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
+        arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
         brukerDataService.oppdaterAktivitetBrukerData(aktorId, PersonId.of(String.valueOf(innhold.getPersonId())));
 
         elasticIndexer.indekser(aktorId);
@@ -74,7 +74,7 @@ public class TiltakServiceV2 {
     }
 
     private boolean erGammelMelding(TiltakDTO kafkaMelding, TiltakInnhold innhold) {
-        Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
+        Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(innhold.getAktivitetid());
 
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), kafkaMelding.getOperationType())) {
             log.info("Fikk tilsendt gammel tiltaks-melding, aktivitet: {}", innhold.getAktivitetid());
