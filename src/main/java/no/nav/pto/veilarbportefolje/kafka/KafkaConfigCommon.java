@@ -265,7 +265,6 @@ public class KafkaConfigCommon {
                                 )
                 );
         
-
         consumerClientAiven = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfigs(topicConfigsAiven)
