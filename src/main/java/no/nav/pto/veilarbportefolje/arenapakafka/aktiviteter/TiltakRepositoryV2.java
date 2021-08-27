@@ -141,7 +141,7 @@ public class TiltakRepositoryV2 {
                         }));
     }
 
-    public void utledOgLagreTiltakInformasjon(PersonId personId, AktorId aktorId) {
+    public void utledOgLagreTiltakInformasjon(AktorId aktorId, PersonId personId) {
         List<BrukertiltakV2> tiltak = hentTiltak(aktorId);
         LocalDate yesterday = LocalDate.now().minusDays(1);
         Timestamp nesteUtlopsdato = tiltak.stream()

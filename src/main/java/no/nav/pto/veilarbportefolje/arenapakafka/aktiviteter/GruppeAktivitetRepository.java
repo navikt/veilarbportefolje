@@ -70,7 +70,7 @@ public class GruppeAktivitetRepository {
         );
     }
 
-    public void utledOgLagreGruppeaktiviteter(PersonId personId, AktorId aktorId) {
+    public void utledOgLagreGruppeaktiviteter(AktorId aktorId, PersonId personId) {
         List<GruppeAktivitetSchedueldDTO> gruppeAktiviteter = hentAktiveAktivteter(aktorId);
         Timestamp nesteStart = gruppeAktiviteter.stream()
                 .filter(GruppeAktivitetSchedueldDTO::isAktiv)

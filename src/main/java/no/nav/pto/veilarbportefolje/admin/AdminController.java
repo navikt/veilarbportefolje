@@ -173,8 +173,7 @@ public class AdminController {
     public String syncBrukerAktiviteterForAlle() {
         authorizeAdmin();
         brukerAktiviteterService.syncAktivitetOgBrukerData();
-
-        return "Aktiviteter er naa i sync, men ikke i elastic";
+        return "Aktiviteter er nå i sync";
     }
 
 

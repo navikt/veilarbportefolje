@@ -23,20 +23,13 @@ import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 @RequiredArgsConstructor
 public class ScheduledJobs {
     private final BrukerAktiviteterService brukerAktiviteterService;
-    private final OppfolgingRepository oppfolgingRepository;
     private final LeaderElectionClient leaderElectionClient;
     private final UnleashService unleashService;
 
     @Scheduled(cron = "0 0 1 * * ?")
     public void oppdaterBrukerAktiviteter() {
         if (leaderElectionClient.isLeader() && erGR202PaKafka(unleashService)) {
-            log.info("Starter jobb: oppdater BrukerAktiviteter og BrukerData");
-            List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
-            log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
-            BatchConsumer<AktorId> consumer = batchConsumer(10_000, brukerAktiviteterService::syncAktivitetOgBrukerData);
-            brukereSomMaOppdateres.forEach(consumer);
-
-            consumer.flush();
+            brukerAktiviteterService.syncAktivitetOgBrukerData();
         } else {
             log.info("Starter ikke jobb: oppdaterBrukerData");
         }

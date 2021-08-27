@@ -153,7 +153,7 @@ public class BrukerDataService {
 
     // TODO: vurder aa merge de to metodene under
     private List<Timestamp> hentAlleStartdatoer(AktorId aktorId, PersonId personId) {
-        List<Timestamp> sluttdatoer = tiltakRepositoryV2.hentStartDatoer(personId).stream()
+        List<Timestamp> startDatoer = tiltakRepositoryV2.hentStartDatoer(personId).stream()
                 .filter(Objects::nonNull).collect(toList());
         List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
@@ -163,10 +163,10 @@ public class BrukerDataService {
                 .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeFra)
                 .filter(Objects::nonNull).collect(toList());
 
-        sluttdatoer.addAll(aktiviteter);
-        sluttdatoer.addAll(gruppeAktiviteter);
-        sluttdatoer.sort(Comparator.naturalOrder());
-        return sluttdatoer;
+        startDatoer.addAll(aktiviteter);
+        startDatoer.addAll(gruppeAktiviteter);
+        startDatoer.sort(Comparator.naturalOrder());
+        return startDatoer;
     }
 
 
