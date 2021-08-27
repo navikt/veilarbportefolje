@@ -106,7 +106,7 @@ public class GruppeAktivitetRepository {
     @SneakyThrows
     private GruppeAktivitetSchedueldDTO mapTilDto(Map<String, Object> rs) {
         boolean aktiv = "J".equals(rs.get(AKTIV));
-        long hendelse = (rs.get(HENDELSE_ID) instanceof BigDecimal) ? ((BigDecimal) rs.get(HENDELSE_ID)).longValue() :(Integer) rs.get(HENDELSE_ID);
+        long hendelse = Optional.ofNullable((BigDecimal) rs.get(HENDELSE_ID)).map(BigDecimal::longValue).orElse(0L);
         return new GruppeAktivitetSchedueldDTO()
                 .setVeiledningdeltakerId((String) rs.get(VEILEDNINGDELTAKER_ID))
                 .setMoteplanId((String) rs.get(MOTEPLAN_ID))
