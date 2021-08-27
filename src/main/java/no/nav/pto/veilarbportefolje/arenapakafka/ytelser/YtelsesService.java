@@ -67,7 +67,7 @@ public class YtelsesService {
         elasticIndexer.indekser(aktorId);
     }
 
-    private Optional<YtelseDAO> finnLopendeYtelse(AktorId aktorId) {
+    public Optional<YtelseDAO> finnLopendeYtelse(AktorId aktorId) {
         List<YtelseDAO> ytelser = ytelsesRepository.getYtelser(aktorId);
         if (ytelser.isEmpty()) {
             return Optional.empty();
@@ -75,8 +75,7 @@ public class YtelsesService {
 
         LocalDate iDag = LocalDate.now();
         YtelseDAO tidligsteYtelse = ytelser.stream()
-                .min(Comparator.comparing(YtelseDAO::getStartDato))
-                .get();
+                .min(Comparator.comparing(YtelseDAO::getStartDato)).get();
 
         if (tidligsteYtelse.getStartDato().toLocalDateTime().toLocalDate().isAfter(iDag)) {
             return Optional.empty();
@@ -86,7 +85,7 @@ public class YtelsesService {
 
     private Optional<YtelseDAO> finnUtlopsDatoPaSak(List<YtelseDAO> ytelser, String saksId) {
         return ytelser.stream()
-                .filter(ytelseDOA -> ytelseDOA.getSaksId().equals(saksId))
+                .filter(ytelseDOA -> ytelseDOA.getSaksId() != null && ytelseDOA.getSaksId().equals(saksId))
                 .max(Comparator.comparing(YtelseDAO::getUtlopsDato));
     }
 

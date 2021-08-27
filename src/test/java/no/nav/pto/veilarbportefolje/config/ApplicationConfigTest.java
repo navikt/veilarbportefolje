@@ -16,6 +16,8 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseReposi
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
@@ -120,7 +122,9 @@ import static org.mockito.Mockito.when;
         GruppeAktivitetRepository.class,
         TiltakRepositoryV2.class,
         BrukerDataService.class,
-        BrukerDataRepository.class
+        BrukerDataRepository.class,
+        YtelsesService.class,
+        YtelsesRepository.class
 })
 public class ApplicationConfigTest {
 

@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.arenapakafka.ytelser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.arenapakafka.ArenaDato;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.sbl.sql.SqlUtils;
@@ -14,7 +15,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.Table.YTELSER.*;
@@ -26,12 +26,8 @@ public class YtelsesRepository {
     private final JdbcTemplate db;
 
     public void upsertYtelse(AktorId aktorId, TypeKafkaYtelse type, YtelsesInnhold innhold) {
-        Timestamp utlopsdato = Optional.ofNullable(innhold.getTilOgMedDato())
-                .map(arenaDato -> Timestamp.valueOf(arenaDato.getLocalDate()))
-                .orElse(null);
-        Timestamp startDato = Optional.ofNullable(innhold.getFraOgMedDato())
-                .map(arenaDato -> Timestamp.valueOf(arenaDato.getLocalDate()))
-                .orElse(null);
+        Timestamp startDato = getTimestampOrNull(innhold.getFraOgMedDato(), false);
+        Timestamp utlopsdato = getTimestampOrNull(innhold.getTilOgMedDato(), true);
 
         SqlUtils.upsert(db, TABLE_NAME)
                 .set(VEDTAKID, innhold.getVedtakId())
@@ -86,5 +82,15 @@ public class YtelsesRepository {
         SqlUtils.delete(db, TABLE_NAME)
                 .where(WhereClause.equals(VEDTAKID, vedtakId))
                 .execute();
+    }
+
+    private Timestamp getTimestampOrNull(ArenaDato date, boolean tilOgMedDato){
+        if(date == null){
+            return null;
+        }
+        if(tilOgMedDato){
+            return Timestamp.valueOf(date.getLocalDate().plusHours(23).plusMinutes(59));
+        }
+        return Timestamp.valueOf(date.getLocalDate());
     }
 }

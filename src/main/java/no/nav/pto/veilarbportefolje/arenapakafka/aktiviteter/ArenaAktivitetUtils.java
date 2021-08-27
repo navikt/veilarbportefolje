@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GoldenGateDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.GoldenGateOperations;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -69,17 +70,6 @@ public interface ArenaAktivitetUtils {
         }
         return date.getDato();
     }
-
-    static LocalDateTime getLocalDateOrNull(ArenaDato date, boolean tilOgMedDato){
-        if(date == null){
-            return null;
-        }
-        if(tilOgMedDato){
-            return date.getLocalDate().plusHours(23).plusMinutes(59);
-        }
-        return date.getLocalDate();
-    }
-
 
     static boolean erUtgatt(ArenaDato tilDato, boolean tilOgMedDato) {
          if(tilDato == null){

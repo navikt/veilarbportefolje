@@ -395,22 +395,6 @@ public class BrukerRepository {
         brukerdata.toUpsertQuery(db).execute();
     }
 
-    public void slettYtelsesdata() {
-        update(db, "bruker_data")
-                .set("ytelse", (Object) null)
-                .set("utlopsdato", (Object) null)
-                .set("utlopsdatoFasett", (Object) null)
-                .set("dagputlopuke", (Object) null)
-                .set("dagputlopukefasett", (Object) null)
-                .set("permutlopuke", (Object) null)
-                .set("permutlopukefasett", (Object) null)
-                .set("aapmaxtiduke", (Object) null)
-                .set("aapmaxtidukefasett", (Object) null)
-                .set("aapunntakdagerigjen", (Object) null)
-                .set("aapunntakukerigjenfasett", (Object) null)
-                .execute();
-    }
-
     String retrieveSistIndeksertSQL() {
         return "SELECT SIST_INDEKSERT FROM METADATA";
     }
