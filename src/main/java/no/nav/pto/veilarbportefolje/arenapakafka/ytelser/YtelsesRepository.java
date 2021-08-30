@@ -70,9 +70,9 @@ public class YtelsesRepository {
                 .setRettighetstypeKode((String) row.get(RETTIGHETSTYPEKODE))
                 .setUtlopsDato((Timestamp) row.get(UTLOPSDATO))
                 .setStartDato((Timestamp) row.get(STARTDATO))
-                .setAntallUkerIgjen(((BigDecimal) row.get(ANTALLUKERIGJEN)).intValue())
-                .setAntallUkerIgjenPermittert(((BigDecimal) row.get(ANTALLPERMITTERINGUKER)).intValue())
-                .setAntallDagerIgjenUnntak(((BigDecimal) row.get(ANTALLUKERIGJENUNNTAK)).intValue());
+                .setAntallUkerIgjen(bigDecimalToInteger((BigDecimal) row.get(ANTALLUKERIGJEN)))
+                .setAntallUkerIgjenPermittert(bigDecimalToInteger((BigDecimal) row.get(ANTALLPERMITTERINGUKER)))
+                .setAntallDagerIgjenUnntak(bigDecimalToInteger((BigDecimal) row.get(ANTALLUKERIGJENUNNTAK)));
     }
 
     public void slettYtelse(String vedtakId) {
@@ -93,5 +93,12 @@ public class YtelsesRepository {
             return Timestamp.valueOf(date.getLocalDate().plusHours(23).plusMinutes(59));
         }
         return Timestamp.valueOf(date.getLocalDate());
+    }
+
+    private Integer bigDecimalToInteger(BigDecimal input) {
+        if (input == null) {
+            return null;
+        }
+        return Integer.valueOf(input.intValue());
     }
 }
