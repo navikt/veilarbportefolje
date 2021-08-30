@@ -11,6 +11,7 @@ import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,9 +70,9 @@ public class YtelsesRepository {
                 .setRettighetstypeKode((String) row.get(RETTIGHETSTYPEKODE))
                 .setUtlopsDato((Timestamp) row.get(UTLOPSDATO))
                 .setStartDato((Timestamp) row.get(STARTDATO))
-                .setAntallUkerIgjen((Integer) row.get(ANTALLUKERIGJEN))
-                .setAntallUkerIgjenPermittert((Integer) row.get(ANTALLPERMITTERINGUKER))
-                .setAntallDagerIgjenUnntak((Integer) row.get(ANTALLUKERIGJENUNNTAK));
+                .setAntallUkerIgjen(((BigDecimal) row.get(ANTALLUKERIGJEN)).intValue())
+                .setAntallUkerIgjenPermittert(((BigDecimal) row.get(ANTALLPERMITTERINGUKER)).intValue())
+                .setAntallDagerIgjenUnntak(((BigDecimal) row.get(ANTALLUKERIGJENUNNTAK)).intValue());
     }
 
     public void slettYtelse(String vedtakId) {
