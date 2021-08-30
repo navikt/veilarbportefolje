@@ -11,10 +11,12 @@ import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.Table.YTELSER.*;
@@ -60,6 +62,10 @@ public class YtelsesRepository {
     }
 
     private YtelseDAO mapTilYtelseDOA(Map<String, Object> row) {
+        Integer antallUkerIgjen = Optional.ofNullable((BigDecimal) row.get(ANTALLUKERIGJEN)).map(BigDecimal::intValue).orElse(null);
+        Integer antallUkerIgjenPermittert = Optional.ofNullable((BigDecimal) row.get(ANTALLPERMITTERINGUKER)).map(BigDecimal::intValue).orElse(null);
+        Integer antallDagerIgjenUnntak = Optional.ofNullable((BigDecimal) row.get(ANTALLUKERIGJENUNNTAK)).map(BigDecimal::intValue).orElse(null);
+
         return new YtelseDAO()
                 .setAktorId(AktorId.of((String) row.get(AKTOERID)))
                 .setPersonId(PersonId.of((String) row.get(PERSONID)))
@@ -69,13 +75,13 @@ public class YtelsesRepository {
                 .setRettighetstypeKode((String) row.get(RETTIGHETSTYPEKODE))
                 .setUtlopsDato((Timestamp) row.get(UTLOPSDATO))
                 .setStartDato((Timestamp) row.get(STARTDATO))
-                .setAntallUkerIgjen((Integer) row.get(ANTALLUKERIGJEN))
-                .setAntallUkerIgjenPermittert((Integer) row.get(ANTALLPERMITTERINGUKER))
-                .setAntallDagerIgjenUnntak((Integer) row.get(ANTALLUKERIGJENUNNTAK));
+                .setAntallUkerIgjen(antallUkerIgjen)
+                .setAntallUkerIgjenPermittert(antallUkerIgjenPermittert)
+                .setAntallDagerIgjenUnntak(antallDagerIgjenUnntak);
     }
 
     public void slettYtelse(String vedtakId) {
-        if(vedtakId == null){
+        if (vedtakId == null) {
             return;
         }
         log.info("Sletter ytelse: {}", vedtakId);
@@ -84,11 +90,11 @@ public class YtelsesRepository {
                 .execute();
     }
 
-    private Timestamp getTimestampOrNull(ArenaDato date, boolean tilOgMedDato){
-        if(date == null){
+    private Timestamp getTimestampOrNull(ArenaDato date, boolean tilOgMedDato) {
+        if (date == null) {
             return null;
         }
-        if(tilOgMedDato){
+        if (tilOgMedDato) {
             return Timestamp.valueOf(date.getLocalDate().plusHours(23).plusMinutes(59));
         }
         return Timestamp.valueOf(date.getLocalDate());
