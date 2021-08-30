@@ -32,6 +32,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.common.json.JsonUtils.fromJson;
+import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -140,6 +142,17 @@ public class YtelserTest {
         Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.finnLopendeYtelse(aktorId);
 
         assertThat(lopendeYtelse.isEmpty()).isTrue();
+    }
+
+    @Test
+    public void skal_bygge_korrekt_Dagpenge_json() {
+        String goldenGateDtoString = readFileAsJsonString("/goldenGateDagpenger.json", getClass());
+
+        YtelsesDTO goldenGateDTO = fromJson(goldenGateDtoString, YtelsesDTO.class);
+        assertThat(goldenGateDTO.getAfter().getClass()).isEqualTo(YtelsesInnhold.class);
+        assertThat(goldenGateDTO.getAfter()).isNotNull();
+        assertThat(goldenGateDTO.getBefore()).isNull();
+        ytelsesService.behandleKafkaMelding(goldenGateDTO, TypeKafkaYtelse.AAP);
     }
 
     private void insertBruker() {

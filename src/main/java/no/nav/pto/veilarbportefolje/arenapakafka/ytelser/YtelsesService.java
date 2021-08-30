@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.*;
@@ -79,9 +80,10 @@ public class YtelsesService {
 
         LocalDate iDag = LocalDate.now();
         YtelseDAO tidligsteYtelse = ytelser.stream()
-                .min(Comparator.comparing(YtelseDAO::getStartDato)).get();
-
-        if (tidligsteYtelse.getStartDato().toLocalDateTime().toLocalDate().isAfter(iDag)) {
+                .filter(Objects::nonNull)
+                .min(Comparator.comparing(YtelseDAO::getStartDato))
+                .orElse(null);
+        if (tidligsteYtelse == null || tidligsteYtelse.getStartDato().toLocalDateTime().toLocalDate().isAfter(iDag)) {
             return Optional.empty();
         }
         return finnUtlopsDatoPaSak(ytelser, tidligsteYtelse.getSaksId());

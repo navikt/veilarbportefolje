@@ -1,9 +1,6 @@
 package no.nav.pto.veilarbportefolje.arenapakafka;
 
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetDTO;
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetInnhold;
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO;
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetInnhold;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.*;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,6 +30,16 @@ public class DtoParsing {
         GruppeAktivitetDTO goldenGateDTO = fromJson(goldenGateDtoString, GruppeAktivitetDTO.class);
         assertThat(goldenGateDTO.getCurrentTimestamp()).isEqualTo("2021-06-23T09:03:55.677014");
         assertThat(goldenGateDTO.getAfter().getClass()).isEqualTo(GruppeAktivitetInnhold.class);
+        assertThat(goldenGateDTO.getAfter()).isNotNull();
+        assertThat(goldenGateDTO.getBefore()).isNull();
+    }
+
+    @Test
+    public void skal_bygge_korrekt_dagpenge_json() {
+        String goldenGateDtoString = readFileAsJsonString("/goldenGateDagpenger.json", getClass());
+
+        YtelsesDTO goldenGateDTO = fromJson(goldenGateDtoString, YtelsesDTO.class);
+        assertThat(goldenGateDTO.getAfter().getClass()).isEqualTo(YtelsesInnhold.class);
         assertThat(goldenGateDTO.getAfter()).isNotNull();
         assertThat(goldenGateDTO.getBefore()).isNull();
     }
