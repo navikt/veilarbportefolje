@@ -7,6 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.BrukertiltakV2;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -18,11 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.getDateOrNull;
@@ -71,15 +70,18 @@ public class GruppeAktivitetRepository {
     }
 
     public void utledOgLagreGruppeaktiviteter(AktorId aktorId, PersonId personId) {
+        LocalDate yesterday = LocalDate.now().minusDays(1);
         List<GruppeAktivitetSchedueldDTO> gruppeAktiviteter = hentAktiveAktivteter(aktorId);
         Timestamp nesteStart = gruppeAktiviteter.stream()
                 .filter(GruppeAktivitetSchedueldDTO::isAktiv)
                 .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeFra)
+                .filter(startDato -> startDato.toLocalDateTime().toLocalDate().isAfter(yesterday))
                 .min(Comparator.naturalOrder())
                 .orElse(null);
         Timestamp nesteUtlopsdato = gruppeAktiviteter.stream()
                 .filter(GruppeAktivitetSchedueldDTO::isAktiv)
                 .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeTil)
+                .filter(utlopsDato -> utlopsDato.toLocalDateTime().toLocalDate().isAfter(yesterday))
                 .min(Comparator.naturalOrder())
                 .orElse(null);
 
