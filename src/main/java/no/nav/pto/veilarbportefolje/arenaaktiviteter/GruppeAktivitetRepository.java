@@ -85,7 +85,7 @@ public class GruppeAktivitetRepository {
                 .min(Comparator.naturalOrder())
                 .orElse(null);
 
-        boolean aktiv = (nesteStart != null && nesteUtlopsdato != null);
+        boolean aktiv = gruppeAktiviteter.stream().anyMatch(GruppeAktivitetSchedueldDTO::isAktiv);
         AktivitetStatus aktivitetStatus = new AktivitetStatus()
                 .setAktivitetType(AktivitetTyper.gruppeaktivitet.name())
                 .setAktiv(aktiv)
