@@ -18,11 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.getDateOrNull;
@@ -71,19 +69,22 @@ public class GruppeAktivitetRepository {
     }
 
     public void utledOgLagreGruppeaktiviteter(AktorId aktorId, PersonId personId) {
+        LocalDate yesterday = LocalDate.now().minusDays(1);
         List<GruppeAktivitetSchedueldDTO> gruppeAktiviteter = hentAktiveAktivteter(aktorId);
         Timestamp nesteStart = gruppeAktiviteter.stream()
                 .filter(GruppeAktivitetSchedueldDTO::isAktiv)
                 .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeFra)
+                .filter(startDato -> startDato.toLocalDateTime().toLocalDate().isAfter(yesterday))
                 .min(Comparator.naturalOrder())
                 .orElse(null);
         Timestamp nesteUtlopsdato = gruppeAktiviteter.stream()
                 .filter(GruppeAktivitetSchedueldDTO::isAktiv)
                 .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeTil)
+                .filter(utlopsDato -> utlopsDato.toLocalDateTime().toLocalDate().isAfter(yesterday))
                 .min(Comparator.naturalOrder())
                 .orElse(null);
 
-        boolean aktiv = (nesteStart != null && nesteUtlopsdato != null);
+        boolean aktiv = gruppeAktiviteter.stream().anyMatch(GruppeAktivitetSchedueldDTO::isAktiv);
         AktivitetStatus aktivitetStatus = new AktivitetStatus()
                 .setAktivitetType(AktivitetTyper.gruppeaktivitet.name())
                 .setAktiv(aktiv)
