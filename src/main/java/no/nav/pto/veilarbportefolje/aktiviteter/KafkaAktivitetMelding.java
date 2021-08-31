@@ -37,7 +37,8 @@ public class KafkaAktivitetMelding {
         IJOBB,
         BEHANDLING,
         MOTE,
-        SAMTALEREFERAT
+        SAMTALEREFERAT,
+        STILLING_FRA_NAV
     }
 
     public enum EndringsType {
