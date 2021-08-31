@@ -89,8 +89,13 @@ public class OppfolgingRepository {
         return TRUE.equals(aBoolean) ? "J" : "N";
     }
 
+    public boolean erUnderoppfolging(AktorId aktoerId){
+        Optional<BrukerOppdatertInformasjon>  oppdatertInformasjon = hentOppfolgingData(aktoerId);
+        return oppdatertInformasjon.isEmpty() || oppdatertInformasjon.get().getOppfolging();
+    }
+
     public Optional<BrukerOppdatertInformasjon> hentOppfolgingData(AktorId aktoerId) {
-        final BrukerOppdatertInformasjon oppfolging = SqlUtils.select(db, Table.OPPFOLGING_DATA.TABLE_NAME, rs -> mapToBrukerOppdatertInformasjon(rs))
+        final BrukerOppdatertInformasjon oppfolging = SqlUtils.select(db, Table.OPPFOLGING_DATA.TABLE_NAME, this::mapToBrukerOppdatertInformasjon)
                 .column("*")
                 .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString()))
                 .execute();

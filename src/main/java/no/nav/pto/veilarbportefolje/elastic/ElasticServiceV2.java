@@ -11,6 +11,8 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -227,7 +229,15 @@ public class ElasticServiceV2 {
         }
     }
 
-    private void delete(AktorId aktoerId) throws IOException {
+    public void deleteIfPresent(AktorId aktoerId, String meldingVedSletting){
+        if(fetchDocument(aktoerId).isExists()){
+            log.info(meldingVedSletting);
+            delete(aktoerId);
+        }
+    }
+
+    @SneakyThrows
+    private void delete(AktorId aktoerId) {
         DeleteRequest deleteRequest = new DeleteRequest();
         deleteRequest.index(indexName.getValue());
         deleteRequest.type("_doc");
@@ -238,12 +248,20 @@ public class ElasticServiceV2 {
             log.info("Slettet dokument for {} ", aktoerId);
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
-                log.warn("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.toString());
+                log.warn("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.get());
             } else {
-                final String message = format("Det skjedde en feil ved sletting i elastic for bruker %s", aktoerId.toString());
+                final String message = format("Det skjedde en feil ved sletting i elastic for bruker %s", aktoerId.get());
                 log.error(message, e);
             }
         }
+    }
+
+    @SneakyThrows
+    private GetResponse fetchDocument(AktorId aktoerId) {
+        GetRequest getRequest = new GetRequest();
+        getRequest.index(indexName.getValue());
+        getRequest.id(aktoerId.toString());
+        return restHighLevelClient.get(getRequest, DEFAULT);
     }
 
 }

@@ -8,6 +8,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
 public class CVService implements KafkaConsumerService<Melding> {
     private final ElasticServiceV2 elasticServiceV2;
     private final CvRepository cvRepository;
+    private final OppfolgingRepository oppfolgingRepository;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
 
     private boolean cvEksistere(Melding melding) {
@@ -62,6 +64,11 @@ public class CVService implements KafkaConsumerService<Melding> {
         } else {
             cvRepository.upsertHarDeltCv(aktoerId, false);
             elasticServiceV2.updateHarDeltCv(aktoerId, false);
+        }
+
+        if (!oppfolgingRepository.erUnderoppfolging(cvMelding.getAktoerId())) {
+            elasticServiceV2.deleteIfPresent(cvMelding.getAktoerId(),
+                    String.format("(CvService) Sletter aktorIde da brukeren ikke lengre er under oppfolging %s", cvMelding.getAktoerId()));
         }
     }
 
