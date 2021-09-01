@@ -63,7 +63,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
 
         if (!oppfolgingRepository.erUnderoppfolging(AktorId.of(aktivitetData.getAktorId()))) {
             elasticServiceV2.deleteIfPresent(AktorId.of(aktivitetData.getAktorId()),
-                    String.format("(AktivitetService) Sletter aktorIde da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
+                    String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
         }
     }
 

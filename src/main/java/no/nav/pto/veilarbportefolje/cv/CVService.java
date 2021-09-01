@@ -68,7 +68,7 @@ public class CVService implements KafkaConsumerService<Melding> {
 
         if (!oppfolgingRepository.erUnderoppfolging(cvMelding.getAktoerId())) {
             elasticServiceV2.deleteIfPresent(cvMelding.getAktoerId(),
-                    String.format("(CvService) Sletter aktorIde da brukeren ikke lengre er under oppfolging %s", cvMelding.getAktoerId()));
+                    String.format("(CvService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", cvMelding.getAktoerId()));
         }
     }
 
