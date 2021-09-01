@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -96,7 +95,6 @@ import static org.mockito.Mockito.when;
         DialogRepository.class,
         ElasticIndexer.class,
         CvRepository.class,
-        CVRepositoryV2.class,
         CVService.class,
         RegistreringRepository.class,
         PersonRepository.class,
@@ -190,6 +188,7 @@ public class ApplicationConfigTest {
         final UnleashService mock = mock(UnleashService.class);
         when(mock.isEnabled(anyString())).thenReturn(true);
         when(mock.isEnabled(FeatureToggle.NY_KAFKA_COMMON_LIB)).thenReturn(false);
+        when(mock.isEnabled(FeatureToggle.POSTGRES)).thenReturn(false);
         return mock;
     }
 

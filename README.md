@@ -76,7 +76,7 @@ select * from dba_scheduler_jobs;
 Innloggingsinformasjon til databasen:
 
 * Dev: `vault read postgresql/preprod-fss/creds/veilarbportefolje-dev-admin`
-* Prod: `vault read postgresql/preprod-fss/creds/veilarbportefolje-prod-admin`
+* Prod: `vault read postgresql/prod-fss/creds/veilarbportefolje-prod-readonly`
 
 ## Plugin til IntelliJ
 

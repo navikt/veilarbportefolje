@@ -26,8 +26,16 @@ public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeiled
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        final NyForVeilederDTO dto = JsonUtils.fromJson(kafkaMelding, NyForVeilederDTO.class);
+        if (isNyKafkaLibraryEnabled()) {
+            return;
+        }
 
+        final NyForVeilederDTO dto = JsonUtils.fromJson(kafkaMelding, NyForVeilederDTO.class);
+        behandleKafkaMeldingLogikk(dto);
+    }
+
+    @Override
+    protected void behandleKafkaMeldingLogikk(NyForVeilederDTO dto) {
         final boolean brukerErNyForVeileder = dto.isNyForVeileder();
         oppfolgingRepository.settNyForVeileder(dto.getAktorId(), brukerErNyForVeileder);
         if (erPostgresPa(unleashService)) {
@@ -46,4 +54,5 @@ public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeiled
     public void setRewind(boolean rewind) {
         this.rewind.set(rewind);
     }
+
 }
