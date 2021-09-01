@@ -21,7 +21,6 @@ public class KafkaStats implements MeterBinder {
 
     private List<Integer> getRetriesStats() {
         return jdbcTemplate.queryForList("SELECT " + Table.KAFKA_CONSUMER_RECORD.RETRIES + " FROM " +
-                Table.FEILET_KAFKA_MELDING.TABLE_NAME + ", " + Table.KAFKA_CONSUMER_RECORD.TABLE_NAME +
-                " WHERE " + Table.FEILET_KAFKA_MELDING.ID + " = " + Table.KAFKA_CONSUMER_RECORD.ID, Integer.class);
+                Table.KAFKA_CONSUMER_RECORD.TABLE_NAME, Integer.class);
     }
 }
