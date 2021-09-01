@@ -59,7 +59,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> implements Ka
 
     public void behandleCVHjemmelMelding(CVMelding cvMelding) {
         AktorId aktoerId = cvMelding.getAktoerId();
-        boolean harDeltCv = (cvMelding.getSlettetDato() == null);
+        boolean harDeltCv = cvMelding.getSlettetDato() == null;
 
         if (cvMelding.getRessurs() != CV_HJEMMEL) {
             log.info("Ignorer melding for ressurs {} for bruker {}", cvMelding.getRessurs(), aktoerId);
