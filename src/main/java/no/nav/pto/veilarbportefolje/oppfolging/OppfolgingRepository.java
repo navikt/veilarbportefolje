@@ -90,8 +90,8 @@ public class OppfolgingRepository {
     }
 
     public boolean erUnderoppfolging(AktorId aktoerId){
-        Optional<BrukerOppdatertInformasjon>  oppdatertInformasjon = hentOppfolgingData(aktoerId);
-        return oppdatertInformasjon.isEmpty() || oppdatertInformasjon.get().getOppfolging();
+        Optional<BrukerOppdatertInformasjon> oppdatertInformasjon = hentOppfolgingData(aktoerId);
+        return oppdatertInformasjon.map(BrukerOppdatertInformasjon::getOppfolging).orElse(false);
     }
 
     public Optional<BrukerOppdatertInformasjon> hentOppfolgingData(AktorId aktoerId) {
