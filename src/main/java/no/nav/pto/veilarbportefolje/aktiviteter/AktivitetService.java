@@ -11,6 +11,8 @@ import no.nav.pto.veilarbportefolje.util.BatchConsumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -86,7 +88,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
         AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO, erGR202PaKafka(unleashService));
         Optional.ofNullable(aktivitetBrukerOppdateringer)
                 .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(oppdatering, aktoerId));
-      }
+    }
 
     public void slettOgIndekserAktivitet(String aktivitetid, AktorId aktorId) {
         aktivitetDAO.deleteById(aktivitetid);
@@ -112,4 +114,16 @@ public class AktivitetService implements KafkaConsumerService<String> {
         return !aktivitetData.isAvtalt();
     }
 
+    public void deaktiverUtgatteUtdanningsAktivteter(AktorId aktorId) {
+        AktoerAktiviteter utdanningsAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId);
+        utdanningsAktiviteter.getAktiviteter()
+                .stream()
+                .filter(aktivitetDTO -> AktivitetTyperFraKafka.utdanningaktivitet.name().equals(aktivitetDTO.getAktivitetType()))
+                .filter(aktivitetDTO -> aktivitetDTO.getTilDato().toLocalDateTime().isBefore(LocalDateTime.now()))
+                .forEach(aktivitetDTO -> {
+                            log.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}, på aktorId: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato(), aktorId);
+                            aktivitetDAO.setAvtalt(aktivitetDTO.getAktivitetID(), false);
+                        }
+                );
+    }
 }
