@@ -72,7 +72,7 @@ public class AktivitetServiceTest {
         when(aktivitetDAO.getDistinctAktorIdsFromAktivitet()).thenReturn(aktoerids);
         when(unleashService.isEnabled(any())).thenReturn(true);
 
-        when(aktivitetDAO.getAktiviteterForAktoerid(any(AktorId.class))).thenAnswer(invocationOnMock -> {
+        when(aktivitetDAO.getAvtalteAktiviteterForAktoerid(any(AktorId.class))).thenAnswer(invocationOnMock -> {
                     AktorId aktoer = (AktorId) invocationOnMock.getArguments()[0];
                     return new AktoerAktiviteter(aktoer.toString()).setAktiviteter(singletonList(new AktivitetDTO()
                             .setTilDato(Timestamp.from(Instant.now()))
@@ -112,7 +112,7 @@ public class AktivitetServiceTest {
         ArgumentCaptor<List<AktivitetBrukerOppdatering>> captor = ArgumentCaptor.forClass((Class) List.class);
 
         when(aktivitetDAO.getDistinctAktorIdsFromAktivitet()).thenReturn(singletonList(AKTOERID_TEST));
-        when(aktivitetDAO.getAktiviteterForAktoerid(any())).thenReturn(aktiviteter);
+        when(aktivitetDAO.getAvtalteAktiviteterForAktoerid(any())).thenReturn(aktiviteter);
         when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of(PERSONID_TEST)));
         when(unleashService.isEnabled(any())).thenReturn(true);
 

@@ -61,7 +61,7 @@ public class AktivitetDAO {
                 .execute();
     }
 
-    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid) {
+    public AktoerAktiviteter getAvtalteAktiviteterForAktoerid(AktorId aktoerid) {
 
         List<AktivitetDTO> queryResult = SqlUtils.select(db, Table.AKTIVITETER.TABLE_NAME, AktivitetDAO::mapToAktivitetDTO)
                 .column(AKTOERID)
@@ -70,7 +70,8 @@ public class AktivitetDAO {
                 .column(STATUS)
                 .column(FRADATO)
                 .column(TILDATO)
-                .where(WhereClause.equals(AKTOERID, aktoerid.get()))
+                .where(WhereClause.equals(AKTOERID, aktoerid.get())
+                        .and(WhereClause.equals(AVTALT, 1)))
                 .executeToList();
 
         return new AktoerAktiviteter(aktoerid.get()).setAktiviteter(queryResult);
