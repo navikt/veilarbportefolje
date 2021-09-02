@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.Before;
@@ -41,7 +40,6 @@ public class VedtakServiceTest {
     public void setup() {
         UnleashService mock = mock(UnleashService.class);
         when(mock.isEnabled(anyString())).thenReturn(true);
-        when(mock.isEnabled(FeatureToggle.NY_KAFKA_COMMON_LIB)).thenReturn(false);
 
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
