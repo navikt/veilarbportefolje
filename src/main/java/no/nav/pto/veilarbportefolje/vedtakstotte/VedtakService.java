@@ -28,9 +28,6 @@ public class VedtakService extends KafkaCommonConsumerService<KafkaVedtakStatusE
     private final AtomicBoolean rewind = new AtomicBoolean();
 
     public void behandleKafkaMelding(String melding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
         KafkaVedtakStatusEndring vedtakStatusEndring = fromJson(melding, KafkaVedtakStatusEndring.class);
         behandleKafkaMeldingLogikk(vedtakStatusEndring);
     }

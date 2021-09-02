@@ -31,9 +31,6 @@ public class MalService extends KafkaCommonConsumerService<MalEndringKafkaDTO> i
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
         MalEndringKafkaDTO melding = fromJson(kafkaMelding, MalEndringKafkaDTO.class);
         behandleKafkaMeldingLogikk(melding);
     }

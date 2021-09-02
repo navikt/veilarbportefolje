@@ -25,9 +25,6 @@ public class ProfileringService extends KafkaCommonConsumerService<ArbeidssokerP
     private final AtomicBoolean rewind = new AtomicBoolean();
 
     public void behandleKafkaMelding(ArbeidssokerProfilertEvent kafkaMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
         behandleKafkaMeldingLogikk(kafkaMelding);
     }
 

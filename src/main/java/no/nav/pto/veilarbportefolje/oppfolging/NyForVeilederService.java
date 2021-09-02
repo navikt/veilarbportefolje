@@ -26,9 +26,6 @@ public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeiled
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
 
         final NyForVeilederDTO dto = JsonUtils.fromJson(kafkaMelding, NyForVeilederDTO.class);
         behandleKafkaMeldingLogikk(dto);

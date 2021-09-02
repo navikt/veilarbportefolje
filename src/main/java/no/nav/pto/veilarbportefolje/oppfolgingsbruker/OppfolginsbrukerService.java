@@ -24,9 +24,6 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<Oppfolgi
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
         OppfolgingsbrukerKafkaDTO oppfolginsbruker = fromJson(kafkaMelding, OppfolgingsbrukerKafkaDTO.class);
         behandleKafkaMeldingLogikk(oppfolginsbruker);
     }

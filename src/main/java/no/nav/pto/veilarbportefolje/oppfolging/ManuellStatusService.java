@@ -24,9 +24,6 @@ public class ManuellStatusService extends KafkaCommonConsumerService<ManuellStat
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
         final ManuellStatusDTO dto = JsonUtils.fromJson(kafkaMelding, ManuellStatusDTO.class);
         behandleKafkaMeldingLogikk(dto);
     }

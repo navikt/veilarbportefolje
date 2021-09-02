@@ -12,6 +12,6 @@ public class KafkaAivenUnleash implements Supplier<Boolean> {
 
     @Override
     public Boolean get() {
-        return unleashService.isEnabled(FeatureToggle.KAFKA_AIVEN_CONSUMERS_STOP);
+        return !unleashService.isEnabled(FeatureToggle.NY_KAFKA_COMMON_LIB) || unleashService.isEnabled(FeatureToggle.KAFKA_AIVEN_CONSUMERS_STOP);
     }
 }

@@ -45,9 +45,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
         KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
         behandleKafkaMeldingLogikk(aktivitetData);
     }

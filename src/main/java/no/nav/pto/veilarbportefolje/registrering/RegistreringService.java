@@ -24,10 +24,6 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
     private final UnleashService unleashService;
 
     public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
-
         behandleKafkaMeldingLogikk(kafkaRegistreringMelding);
     }
 

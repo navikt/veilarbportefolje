@@ -29,9 +29,6 @@ public class SistLestService extends KafkaCommonConsumerService<SistLestKafkaMel
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
         SistLestKafkaMelding melding = fromJson(kafkaMelding, SistLestKafkaMelding.class);
         behandleKafkaMeldingLogikk(melding);
     }

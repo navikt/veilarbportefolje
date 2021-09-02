@@ -40,9 +40,6 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
         final VeilederTilordnetDTO dto = JsonUtils.fromJson(kafkaMelding, VeilederTilordnetDTO.class);
         behandleKafkaMeldingLogikk(dto);
     }

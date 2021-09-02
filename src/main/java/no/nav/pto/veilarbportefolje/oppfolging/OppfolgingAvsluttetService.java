@@ -42,9 +42,6 @@ public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<Oppfo
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
         final OppfolgingAvsluttetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingAvsluttetDTO.class);
         behandleKafkaMeldingLogikk(dto);
     }
@@ -54,7 +51,6 @@ public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<Oppfo
         final AktorId aktoerId = dto.getAktorId();
 
 
-        // TODO: bruk toggle for oppfolgingRepositoryV2
         final ZonedDateTime startDato = oppfolgingRepository.hentStartdato(aktoerId).orElse(ofInstant(EPOCH, of("Europe/Oslo")));
 
         final ZonedDateTime sluttDato = dto.getSluttdato();

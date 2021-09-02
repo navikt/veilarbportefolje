@@ -28,11 +28,10 @@ public class DialogService extends KafkaCommonConsumerService<Dialogdata> implem
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
         Dialogdata melding = fromJson(kafkaMelding, Dialogdata.class);
+
         behandleKafkaMeldingLogikk(melding);
+
     }
 
     @Override

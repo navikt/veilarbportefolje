@@ -23,9 +23,6 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
         final OppfolgingStartetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingStartetDTO.class);
         behandleKafkaMeldingLogikk(dto);
     }

@@ -44,6 +44,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
@@ -264,7 +266,7 @@ public class KafkaConfigCommon {
                                         cvService::behandleKafkaRecord
                                 )
                 );
-        
+
 
         consumerClientAiven = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
@@ -282,9 +284,8 @@ public class KafkaConfigCommon {
                 .builder()
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
-                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigsAiven))
+                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(Stream.concat(topicConfigsAiven.stream(), topicConfigsOnPrem.stream()).collect(Collectors.toList())))
                 .build();
-
     }
 
 

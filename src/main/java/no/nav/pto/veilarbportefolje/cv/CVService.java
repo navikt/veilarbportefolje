@@ -31,9 +31,6 @@ public class CVService extends KafkaCommonConsumerService<Melding> implements Ka
 
     @Override
     public void behandleKafkaMelding(Melding kafkaMelding) {
-        if (isNyKafkaLibraryEnabled()) {
-            return;
-        }
         behandleKafkaMeldingLogikk(kafkaMelding);
     }
 
