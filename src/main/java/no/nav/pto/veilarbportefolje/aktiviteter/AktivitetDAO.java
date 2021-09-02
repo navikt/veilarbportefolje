@@ -71,7 +71,9 @@ public class AktivitetDAO {
                 .column(FRADATO)
                 .column(TILDATO)
                 .where(WhereClause.equals(AKTOERID, aktoerid.get())
-                        .and(WhereClause.equals(AVTALT, 1)))
+                        .and(WhereClause.equals(AVTALT, 1)
+                                .or(WhereClause.equals(AVTALT, true)
+                                )))
                 .executeToList();
 
         return new AktoerAktiviteter(aktoerid.get()).setAktiviteter(queryResult);
