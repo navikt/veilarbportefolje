@@ -1,14 +1,17 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonUtils;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +26,7 @@ import static java.time.ZonedDateTime.ofInstant;
 
 @Service
 @RequiredArgsConstructor
-public class OppfolgingAvsluttetService implements KafkaConsumerService<String> {
+public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<OppfolgingAvsluttetDTO> implements KafkaConsumerService<String> {
     private static final Logger log = LoggerFactory.getLogger(OppfolgingAvsluttetService.class);
 
     private final ArbeidslisteService arbeidslisteService;
@@ -34,14 +37,20 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
     private final CvRepository cvRepository;
     private final ElasticServiceV2 elasticServiceV2;
     private final SisteEndringService sisteEndringService;
+    @Getter
+    private final UnleashService unleashService;
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
         final OppfolgingAvsluttetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingAvsluttetDTO.class);
+        behandleKafkaMeldingLogikk(dto);
+    }
+
+    @Override
+    public void behandleKafkaMeldingLogikk(OppfolgingAvsluttetDTO dto) {
         final AktorId aktoerId = dto.getAktorId();
 
 
-        // TODO: bruk toggle for oppfolgingRepositoryV2
         final ZonedDateTime startDato = oppfolgingRepository.hentStartdato(aktoerId).orElse(ofInstant(EPOCH, of("Europe/Oslo")));
 
         final ZonedDateTime sluttDato = dto.getSluttdato();
@@ -60,8 +69,7 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
         arbeidslisteService.slettArbeidsliste(aktoerId);
         arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);// TODO: slett denne linjen når vi kun bruker postgres
         sisteEndringService.slettSisteEndringer(aktoerId);
-        cvRepository.slettCVData(aktoerId);
-
+        cvRepository.resetHarDeltCV(aktoerId);
         elasticServiceV2.slettDokumenter(List.of(aktoerId));
     }
 

@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
@@ -44,13 +45,15 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final String testEnhet = "0000";
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService) {
+    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService, UnleashService unleashService) {
         brukerService = Mockito.mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
 
-        this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering,  brukerService, sisteEndringService);
-        this.sistLestService = new SistLestService(brukerService, sisteEndringService);
+        unleashService = Mockito.mock(UnleashService.class);
+
+        this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService, sisteEndringService, unleashService);
+        this.sistLestService = new SistLestService(brukerService, sisteEndringService, unleashService);
         this.elasticService = elasticService;
         this.malService = malService;
     }
@@ -62,12 +65,12 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         String endretTid = "2020-05-28T07:47:42.480Z";
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse(endretTid);
 
-        send_mal_melding(aktoerId,endretTidZonedDateTime);
+        send_mal_melding(aktoerId, endretTidZonedDateTime);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
 
-        String endring_mal= getValueFromNestedObject(getResponse, MAL);
+        String endring_mal = getValueFromNestedObject(getResponse, MAL);
 
         assertThat(endring_mal).isNotNull();
         assertThat(endring_mal).isEqualTo(endretTidZonedDateTime.toString());
@@ -323,14 +326,14 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             return brukereMedAntall.getAntall() == 3;
         });
 
-        send_aktvitet_melding(aktoerId_1,endret_Tid_IJOBB_bruker_1_i_2024, KafkaAktivitetMelding.EndringsType.FLYTTET,
+        send_aktvitet_melding(aktoerId_1, endret_Tid_IJOBB_bruker_1_i_2024, KafkaAktivitetMelding.EndringsType.FLYTTET,
                 KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
                 KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
         send_aktvitet_melding(aktoerId_2, endret_Tid_IJOBB_bruker_2_i_2025, KafkaAktivitetMelding.EndringsType.FLYTTET,
                 KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
                 KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
 
-        send_aktvitet_melding(aktoerId_1,endret_Tid_EGEN_bruker_1_i_2021, KafkaAktivitetMelding.EndringsType.FLYTTET,
+        send_aktvitet_melding(aktoerId_1, endret_Tid_EGEN_bruker_1_i_2021, KafkaAktivitetMelding.EndringsType.FLYTTET,
                 KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
                 KafkaAktivitetMelding.AktivitetTypeData.EGEN);
         send_aktvitet_melding(aktoerId_2, endret_Tid_EGEN_bruker_2_i_2020, KafkaAktivitetMelding.EndringsType.FLYTTET,
@@ -425,7 +428,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 empty(),
                 "descending",
                 "siste_endring_tidspunkt",
-                getFiltervalg(NY_IJOBB,NY_EGEN),
+                getFiltervalg(NY_IJOBB, NY_EGEN),
                 null,
                 null);
         assertThat(responseSortertTomRes2.getAntall()).isEqualTo(0);
@@ -433,16 +436,16 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     private void send_aktvitet_melding(AktorId aktoerId, String endretDato, KafkaAktivitetMelding.EndringsType endringsType,
                                        KafkaAktivitetMelding.AktivitetStatus status, KafkaAktivitetMelding.AktivitetTypeData typeData) {
-        String endret = endretDato == null ? "" : "\"endretDato\":\""+endretDato+"\",";
+        String endret = endretDato == null ? "" : "\"endretDato\":\"" + endretDato + "\",";
         String aktivitetKafkaMelding = "{" +
                 "\"aktivitetId\":\"144136\"," +
-                "\"aktorId\":\""+aktoerId.get()+"\"," +
+                "\"aktorId\":\"" + aktoerId.get() + "\"," +
                 "\"fraDato\":\"2020-07-09T12:00:00+02:00\"," +
                 "\"tilDato\":null," +
-                    endret +
-                "\"aktivitetType\":\""+typeData+"\"," +
-                "\"aktivitetStatus\":\""+status+"\"," +
-                "\"endringsType\":\""+endringsType+"\"," +
+                endret +
+                "\"aktivitetType\":\"" + typeData + "\"," +
+                "\"aktivitetStatus\":\"" + status + "\"," +
+                "\"endringsType\":\"" + endringsType + "\"," +
                 "\"lagtInnAv\":\"BRUKER\"," +
                 "\"avtalt\":true," +
                 "\"historisk\":false" +
@@ -453,17 +456,17 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     private void send_sett_aktivitetsplan(AktorId aktoerId, String settDato) {
         String sistLestKafkaMelding = "{" +
-                "\"aktorId\":\""+aktoerId.get()+"\"," +
-                "\"harLestTidspunkt\":\""+settDato+"\"," +
-                "\"veilederId\":\""+veilederId.getValue()+"\"" +
+                "\"aktorId\":\"" + aktoerId.get() + "\"," +
+                "\"harLestTidspunkt\":\"" + settDato + "\"," +
+                "\"veilederId\":\"" + veilederId.getValue() + "\"" +
                 "}";
         sistLestService.behandleKafkaMelding(sistLestKafkaMelding);
     }
 
     private void send_mal_melding(AktorId aktoerId, ZonedDateTime endretDato) {
-        String endret = endretDato == null ? "" : "\"endretTidspunk\":\""+endretDato+"\"";
+        String endret = endretDato == null ? "" : "\"endretTidspunk\":\"" + endretDato + "\"";
         String kafkamelding = "{" +
-                "\"aktorId\":\""+aktoerId.get()+"\"," +
+                "\"aktorId\":\"" + aktoerId.get() + "\"," +
                 "\"lagtInnAv\":\"BRUKER\"," +
                 "\"veilederIdent\":\"Z12345\"," +
                 endret +
@@ -485,7 +488,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
         filtervalg.setSisteEndringKategori(List.of(kategori.name()));
-        if(uleste){
+        if (uleste) {
             filtervalg.setUlesteEndringer("ULESTE_ENDRINGER");
         }
         return filtervalg;
@@ -498,24 +501,24 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         return filtervalg;
     }
 
-    private String getValueFromNestedObject(GetResponse respons, SisteEndringsKategori field){
+    private String getValueFromNestedObject(GetResponse respons, SisteEndringsKategori field) {
         assertThat(respons).isNotNull();
         Object nestedObject = respons.getSourceAsMap().get("siste_endringer");
-        if(nestedObject instanceof Map) {
-            return  ((Map<String, Map<String, String>>) nestedObject).get(field.name()).get("tidspunkt");
+        if (nestedObject instanceof Map) {
+            return ((Map<String, Map<String, String>>) nestedObject).get(field.name()).get("tidspunkt");
         }
         return null;
     }
 
     private void populateElastic(String... aktoerIder) {
-        List<OppfolgingsBruker> brukere =  new ArrayList<>();
-        for (String aktoerId: aktoerIder) {
-            brukere.add( new OppfolgingsBruker()
+        List<OppfolgingsBruker> brukere = new ArrayList<>();
+        for (String aktoerId : aktoerIder) {
+            brukere.add(new OppfolgingsBruker()
                     .setAktoer_id(aktoerId)
                     .setOppfolging(true)
                     .setEnhet_id(testEnhet)
                     .setVeileder_id(veilederId.getValue())
-                    );
+            );
         }
 
         brukere.forEach(bruker -> elasticTestClient.createUserInElastic(bruker));

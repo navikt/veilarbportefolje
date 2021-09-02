@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.cv;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -39,25 +40,18 @@ public class CvRepository {
                 .execute();
     }
 
-    public String harDeltCv(AktorId aktoerId) {
+    public Boolean harDeltCv(AktorId aktoerId) {
         return SqlUtils
-                .select(jdbcTemplate, TABLE_NAME, rs -> rs.getString(HAR_DELT_CV))
+                .select(jdbcTemplate, TABLE_NAME, rs -> DbUtils.parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
                 .column(HAR_DELT_CV)
                 .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
                 .execute();
     }
 
-    public String cvEksistere(AktorId aktoerId) {
-        return SqlUtils
-                .select(jdbcTemplate, TABLE_NAME, rs -> rs.getString(CV_EKSISTERE))
-                .column(CV_EKSISTERE)
-                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
-                .execute();
-    }
-
-    public void slettCVData(AktorId aktoerId) {
-        SqlUtils.delete(jdbcTemplate, TABLE_NAME)
-                .where(WhereClause.equals(AKTOERID, aktoerId.get()))
+    public void resetHarDeltCV(AktorId aktoerId) {
+        SqlUtils.update(jdbcTemplate, TABLE_NAME)
+                .set(HAR_DELT_CV, boolToJaNei(false))
+                .whereEquals(AKTOERID, aktoerId.get())
                 .execute();
     }
 

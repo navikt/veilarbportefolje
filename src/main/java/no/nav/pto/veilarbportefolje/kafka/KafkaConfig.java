@@ -19,12 +19,11 @@ import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties.KafkaAutoOffset;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 
 
-@Configuration
+//@Configuration
 public class KafkaConfig {
 
     public enum Topic {
