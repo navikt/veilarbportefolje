@@ -38,7 +38,8 @@ public class KafkaAktivitetMelding {
         BEHANDLING,
         MOTE,
         SAMTALEREFERAT,
-        UTDANNINGAKTIVITET
+        UTDANNINGAKTIVITET,
+        STILLING_FRA_NAV
     }
 
     public enum EndringsType {

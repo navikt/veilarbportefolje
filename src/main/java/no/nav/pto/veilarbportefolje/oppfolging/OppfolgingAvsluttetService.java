@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
@@ -8,6 +9,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -26,7 +28,7 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
 @RequiredArgsConstructor
-public class OppfolgingAvsluttetService implements KafkaConsumerService<String> {
+public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<OppfolgingAvsluttetDTO> implements KafkaConsumerService<String> {
     private static final Logger log = LoggerFactory.getLogger(OppfolgingAvsluttetService.class);
 
     private final ArbeidslisteService arbeidslisteService;
@@ -38,15 +40,20 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
     private final CVRepositoryV2 cvRepositoryV2;
     private final ElasticServiceV2 elasticServiceV2;
     private final SisteEndringService sisteEndringService;
+    @Getter
     private final UnleashService unleashService;
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
         final OppfolgingAvsluttetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingAvsluttetDTO.class);
+        behandleKafkaMeldingLogikk(dto);
+    }
+
+    @Override
+    public void behandleKafkaMeldingLogikk(OppfolgingAvsluttetDTO dto) {
         final AktorId aktoerId = dto.getAktorId();
 
 
-        // TODO: bruk toggle for oppfolgingRepositoryV2
         final ZonedDateTime startDato = oppfolgingRepository.hentStartdato(aktoerId).orElse(ofInstant(EPOCH, of("Europe/Oslo")));
 
         final ZonedDateTime sluttDato = dto.getSluttdato();

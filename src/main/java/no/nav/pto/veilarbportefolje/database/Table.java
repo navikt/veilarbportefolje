@@ -169,4 +169,11 @@ public class Table {
         public static final String ID = "ID";
         public static final String SISTE_HOVEDINDEKSERING_TIDSPUNKT = "SISTE_HOVEDINDEKSERING_TIDSPUNKT";
     }
+
+    public static final class KAFKA_CONSUMER_RECORD {
+        public static final String TABLE_NAME = "KAFKA_CONSUMER_RECORD";
+        public static final String ID = "ID";
+        public static final String RETRIES = "RETRIES";
+        public static final String CREATED_AT = "CREATED_AT";
+    }
 }
