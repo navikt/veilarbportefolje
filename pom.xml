@@ -211,11 +211,6 @@
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
-            <artifactId>jdbc</artifactId>
-            <version>${common1.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
             <artifactId>sts</artifactId>
             <version>${common.version}</version>
         </dependency>
@@ -228,6 +223,11 @@
             <groupId>no.nav.common</groupId>
             <artifactId>kafka</artifactId>
             <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>jdbc</artifactId>
+            <version>${common1.version}</version>
         </dependency>
 
         <!--Logging-->
