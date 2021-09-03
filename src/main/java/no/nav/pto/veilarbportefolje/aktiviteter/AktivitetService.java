@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -32,14 +34,18 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final SisteEndringService sisteEndringService;
     @Getter
     private final UnleashService unleashService;
+    private final OppfolgingRepository oppfolgingRepository;
+    private final ElasticServiceV2 elasticServiceV2;
 
     @Autowired
-    public AktivitetService(AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, BrukerService brukerService, SisteEndringService sisteEndringService, UnleashService unleashService) {
+    public AktivitetService(AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, BrukerService brukerService, SisteEndringService sisteEndringService, OppfolgingRepository oppfolgingRepository, ElasticServiceV2 elasticServiceV2, UnleashService unleashService) {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerService = brukerService;
         this.persistentOppdatering = persistentOppdatering;
         this.sisteEndringService = sisteEndringService;
         this.unleashService = unleashService;
+        this.oppfolgingRepository = oppfolgingRepository;
+        this.elasticServiceV2 = elasticServiceV2;
         this.rewind = new AtomicBoolean();
     }
 
@@ -64,6 +70,11 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         aktivitetDAO.tryLagreAktivitetData(aktivitetData);
         utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(aktivitetData.getAktorId()));
+
+        if (!oppfolgingRepository.erUnderoppfolging(AktorId.of(aktivitetData.getAktorId()))) {
+            elasticServiceV2.deleteIfPresent(AktorId.of(aktivitetData.getAktorId()),
+                    String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
+        }
     }
 
     public void utledOgLagreAlleAktivitetstatuser() {
