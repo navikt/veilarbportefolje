@@ -120,15 +120,82 @@ public class KafkaConfigCommon {
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsAiven =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
-                        .withLogging()
-                        .withMetrics(prometheusMeterRegistry)
-                        .withStoreOnFailure(consumerRepository)
-                        .withConsumerConfig(
-                                Topic.CV_TOPIC.topicName,
-                                Deserializers.stringDeserializer(),
-                                Deserializers.jsonDeserializer(CVMelding.class),
-                                cvService::behandleKafkaMeldingCVHjemmel
-                        )
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.CV_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(CVMelding.class),
+                                        cvService::behandleKafkaMeldingCVHjemmel
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, UtdanningsAktivitetDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.UTDANNINGS_AKTIVITET_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(UtdanningsAktivitetDTO.class),
+                                        utdanningsAktivitetService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, GruppeAktivitetDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.GRUPPE_AKTIVITET_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(GruppeAktivitetDTO.class),
+                                        gruppeAktivitetService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, TiltakDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.TILTAK_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(TiltakDTO.class),
+                                        tiltakServiceV2::behandleKafkaRecord
+                                ),
+
+                        new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.AAP_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(YtelsesDTO.class),
+                                        (melding -> {
+                                            ytelsesService.behandleKafkaRecord(melding, TypeKafkaYtelse.AAP);
+                                        })
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.DAGPENGE_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(YtelsesDTO.class),
+                                        (melding -> {
+                                            ytelsesService.behandleKafkaRecord(melding, TypeKafkaYtelse.DAGPENGER);
+                                        })
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.TILTAKSPENGER_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(YtelsesDTO.class),
+                                        (melding -> {
+                                            ytelsesService.behandleKafkaRecord(melding, TypeKafkaYtelse.TILTAKSPENGER);
+                                        })
+                                )
                 );
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
@@ -277,72 +344,6 @@ public class KafkaConfigCommon {
                                                 Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true,
                                                         KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL)),
                                         cvService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, UtdanningsAktivitetDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.UTDANNINGS_AKTIVITET_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(UtdanningsAktivitetDTO.class),
-                                        utdanningsAktivitetService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, GruppeAktivitetDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.GRUPPE_AKTIVITET_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(GruppeAktivitetDTO.class),
-                                        gruppeAktivitetService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, TiltakDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.TILTAK_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(TiltakDTO.class),
-                                        tiltakServiceV2::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.AAP_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(YtelsesDTO.class),
-                                        (melding -> {
-                                            ytelsesService.behandleKafkaRecord(melding, TypeKafkaYtelse.AAP);
-                                        })
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.DAGPENGE_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(YtelsesDTO.class),
-                                        (melding -> {
-                                            ytelsesService.behandleKafkaRecord(melding, TypeKafkaYtelse.DAGPENGER);
-                                        })
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.TILTAKSPENGER_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(YtelsesDTO.class),
-                                        (melding -> {
-                                            ytelsesService.behandleKafkaRecord(melding, TypeKafkaYtelse.TILTAKSPENGER);
-                                        })
                                 )
                 );
 
