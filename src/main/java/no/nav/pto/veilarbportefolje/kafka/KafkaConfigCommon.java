@@ -83,9 +83,9 @@ public class KafkaConfigCommon {
         CV_ENDRET("arbeid-pam-cv-endret-v6"),
         CV_TOPIC("teampam.samtykke-status-1"),
 
-        TILTAK_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-q1"),
-        UTDANNINGS_AKTIVITET_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-q1"),
-        GRUPPE_AKTIVITET_TOPIC("teamarenanais.aapen-arena-gruppeaktivitetendret-v1-q1");
+        TILTAK_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
+        UTDANNINGS_AKTIVITET_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix()),
+        GRUPPE_AKTIVITET_TOPIC("teamarenanais.aapen-arena-gruppeaktivitetendret-v1-" + requireKafkaTopicPostfix());
 
         @Getter
         final String topicName;
