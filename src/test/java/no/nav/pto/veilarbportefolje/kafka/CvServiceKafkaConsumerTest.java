@@ -25,7 +25,6 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
 
     @Test
     void testCVHjemmel() throws ExecutionException, InterruptedException {
-
         AktorId aktoerId1 = AktorId.of("11111111111");
         AktorId aktoerId2 = AktorId.of("22222222222");
         AktorId aktoerId3 = AktorId.of("33333333333");

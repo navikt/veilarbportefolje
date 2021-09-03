@@ -74,6 +74,7 @@ public class BrukerAktiviteterService {
     public void syncAktiviteterOgBrukerData(PersonId personId, AktorId aktorId) {
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId, personId);
         gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(aktorId, personId);
+        aktivitetService.deaktiverUtgatteUtdanningsAktivteter(aktorId);
         aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
 
         brukerDataService.oppdaterAktivitetBrukerData(aktorId);

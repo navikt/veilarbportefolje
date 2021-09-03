@@ -33,10 +33,10 @@ public class CvRepositoryTest {
         AktorId aktoerId = AktorId.of("0");
 
         cvRepository.upsertHarDeltCv(aktoerId, true);
-        assertThat(cvRepository.harDeltCv(aktoerId)).isEqualTo("J");
+        assertThat(cvRepository.harDeltCv(aktoerId)).isTrue();
 
         cvRepository.upsertHarDeltCv(aktoerId, false);
-        assertThat(cvRepository.harDeltCv(aktoerId)).isEqualTo("N");
+        assertThat(cvRepository.harDeltCv(aktoerId)).isFalse();
     }
 
 }

@@ -1,8 +1,10 @@
 package no.nav.pto.veilarbportefolje.dialog;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
@@ -15,17 +17,25 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DialogService implements KafkaConsumerService<String> {
+public class DialogService extends KafkaCommonConsumerService<Dialogdata> implements KafkaConsumerService<String> {
 
     private final DialogRepository dialogRepository;
     private final ElasticServiceV2 elasticServiceV2;
     private final DialogRepositoryV2 dialogRepositoryV2;
+    @Getter
     private final UnleashService unleashService;
     private final AtomicBoolean rewind = new AtomicBoolean();
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
         Dialogdata melding = fromJson(kafkaMelding, Dialogdata.class);
+
+        behandleKafkaMeldingLogikk(melding);
+
+    }
+
+    @Override
+    protected void behandleKafkaMeldingLogikk(Dialogdata melding) {
         dialogRepository.oppdaterDialogInfoForBruker(melding);
         if (erPostgresPa(unleashService)) {
             int rader = dialogRepositoryV2.oppdaterDialogInfoForBruker(melding);
@@ -44,5 +54,4 @@ public class DialogService implements KafkaConsumerService<String> {
     public void setRewind(boolean rewind) {
         this.rewind.set(rewind);
     }
-
 }

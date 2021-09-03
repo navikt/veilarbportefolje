@@ -135,20 +135,6 @@ public class AdminController {
         return "Rewind av tilordnet veileder har startet";
     }
 
-    @PostMapping("/stopp/aiven-konsumering")
-    public String stoppConsume() {
-        authorizeAdmin();
-        kafkaConfigCommon.stoppConsumer();
-        return "Stopper konsumering for aiven kafka topics";
-    }
-
-    @PostMapping("/start/aiven-konsumering")
-    public String startConsume() {
-        authorizeAdmin();
-        kafkaConfigCommon.startConsumer();
-        return "Starter konsumering for aiven kafka topics";
-    }
-
     @PutMapping("/indeks/bruker")
     public String indeks(@RequestBody String fnr) {
 

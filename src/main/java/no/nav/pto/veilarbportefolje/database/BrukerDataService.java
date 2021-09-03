@@ -155,7 +155,7 @@ public class BrukerDataService {
     private List<Timestamp> hentAlleStartdatoer(AktorId aktorId, PersonId personId) {
         List<Timestamp> startDatoer = tiltakRepositoryV2.hentStartDatoer(personId).stream()
                 .filter(Objects::nonNull).collect(toList());
-        List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
+        List<Timestamp> aktiviteter = aktivitetDAO.getAvtalteAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .map(AktivitetDTO::getFraDato)
                 .filter(Objects::nonNull).collect(toList());
@@ -173,7 +173,7 @@ public class BrukerDataService {
     private List<Timestamp> hentAlleSluttdatoer(AktorId aktorId, PersonId personId) {
         List<Timestamp> sluttdatoer = tiltakRepositoryV2.hentSluttdatoer(personId).stream()
                 .filter(Objects::nonNull).collect(toList());
-        List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
+        List<Timestamp> aktiviteter = aktivitetDAO.getAvtalteAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .map(AktivitetDTO::getTilDato)
                 .filter(Objects::nonNull).collect(toList());

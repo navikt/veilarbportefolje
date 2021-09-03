@@ -176,7 +176,7 @@ public class Table {
         public static final String VEDTAKID = "VEDTAKID";
         public static final String AKTOERID = "AKTOERID";
         public static final String PERSONID = "PERSONID";
-        public static final String YTELSESTYPE ="YTELSESTYPE";
+        public static final String YTELSESTYPE = "YTELSESTYPE";
         public static final String SAKSID = "SAKSID";
 
         public static final String SAKSTYPEKODE = "SAKSTYPEKODE";
@@ -187,5 +187,12 @@ public class Table {
         public static final String ANTALLUKERIGJEN = "ANTALLUKERIGJEN";
         public static final String ANTALLPERMITTERINGUKER = "ANTALLPERMITTERINGUKER";
         public static final String ANTALLUKERIGJENUNNTAK = "ANTALLUKERIGJENUNNTAK";
+    }
+
+    public static final class KAFKA_CONSUMER_RECORD {
+        public static final String TABLE_NAME = "KAFKA_CONSUMER_RECORD";
+        public static final String ID = "ID";
+        public static final String RETRIES = "RETRIES";
+        public static final String CREATED_AT = "CREATED_AT";
     }
 }

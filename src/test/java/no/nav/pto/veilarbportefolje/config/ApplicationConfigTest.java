@@ -209,6 +209,7 @@ public class ApplicationConfigTest {
     public UnleashService unleashService() {
         final UnleashService mock = mock(UnleashService.class);
         when(mock.isEnabled(anyString())).thenReturn(true);
+        when(mock.isEnabled(FeatureToggle.POSTGRES)).thenReturn(false);
         return mock;
     }
 
@@ -308,5 +309,6 @@ public class ApplicationConfigTest {
     public AuthContextHolder authContextHolder() {
         return AuthContextHolderThreadLocal.instance();
     }
+
 
 }

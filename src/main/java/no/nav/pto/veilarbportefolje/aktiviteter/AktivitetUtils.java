@@ -74,7 +74,7 @@ public class AktivitetUtils {
 
 
     public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktorId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO, boolean erGR202PaKafka) {
-        AktoerAktiviteter aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktoerId);
+        AktoerAktiviteter aktiviteter = aktivitetDAO.getAvtalteAktiviteterForAktoerid(aktoerId);
         return konverterTilBrukerOppdatering(aktiviteter, brukerService, erGR202PaKafka);
     }
 
