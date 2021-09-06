@@ -90,7 +90,7 @@ public class KafkaConfigCommon {
     }
 
     private final KafkaConsumerClient consumerClientAiven;
-    private final KafkaConsumerClient consumerClientOnPrem;
+    private final List<KafkaConsumerClient> consumerClientsOnPrem;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
@@ -274,11 +274,20 @@ public class KafkaConfigCommon {
                 .withToggle(new KafkaAivenUnleash(unleashService))
                 .build();
 
-        consumerClientOnPrem = KafkaConsumerClientBuilder.builder()
-                .withProperties(onPremDefaultConsumerProperties(CLIENT_ID_CONFIG, KAFKA_BROKERS, serviceUserCredentials))
-                .withTopicConfigs(topicConfigsOnPrem)
-                .withToggle(new KafkaOnpremUnleash(unleashService))
-                .build();
+        KafkaOnpremUnleash kafkaOnpremUnleash = new KafkaOnpremUnleash(unleashService);
+
+        consumerClientsOnPrem = topicConfigsOnPrem.stream()
+                .map(config ->
+                        KafkaConsumerClientBuilder.builder()
+                                .withProperties(onPremDefaultConsumerProperties(
+                                        CLIENT_ID_CONFIG,
+                                        KAFKA_BROKERS,
+                                        serviceUserCredentials)
+                                )
+                                .withTopicConfig(config)
+                                .withToggle(kafkaOnpremUnleash)
+                                .build())
+                .collect(Collectors.toList());
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
@@ -293,7 +302,7 @@ public class KafkaConfigCommon {
     public void start() {
         consumerRecordProcessor.start();
         consumerClientAiven.start();
-        consumerClientOnPrem.start();
+        consumerClientsOnPrem.forEach(KafkaConsumerClient::start);
     }
 
 
