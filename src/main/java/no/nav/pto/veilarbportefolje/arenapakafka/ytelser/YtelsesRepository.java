@@ -86,7 +86,7 @@ public class YtelsesRepository {
     }
 
     private Timestamp getTimestampOrNull(ArenaDato date, boolean tilOgMedDato) {
-        if (date == null) {
+        if (date == null || date.getLocalDate() == null) {
             return null;
         }
         if (tilOgMedDato) {
@@ -99,6 +99,6 @@ public class YtelsesRepository {
         if (input == null) {
             return null;
         }
-        return Integer.valueOf(input.intValue());
+        return input.intValue();
     }
 }

@@ -91,7 +91,7 @@ public class YtelsesService {
 
     private Optional<YtelseDAO> finnUtlopsDatoPaSak(List<YtelseDAO> ytelser, String saksId) {
         return ytelser.stream()
-                .filter(ytelseDOA -> ytelseDOA.getSaksId() != null && ytelseDOA.getSaksId().equals(saksId))
+                .filter(ytelseDOA -> ytelseDOA.getSaksId() != null && ytelseDOA.getSaksId().equals(saksId) && ytelseDOA.getUtlopsDato() != null)
                 .max(Comparator.comparing(YtelseDAO::getUtlopsDato));
     }
 
