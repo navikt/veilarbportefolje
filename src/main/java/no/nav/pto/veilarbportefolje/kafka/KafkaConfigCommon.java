@@ -152,19 +152,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(TiltakDTO.class),
                                         tiltakServiceV2::behandleKafkaRecord
-                                )
-                );
-
-        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
-                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.SIST_LEST.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(SistLestKafkaMelding.class),
-                                        sistLestService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerRegistrertEvent>()
                                 .withLogging()
@@ -189,6 +176,19 @@ public class KafkaConfigCommon {
                                                 Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true,
                                                         KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL)),
                                         profileringService::behandleKafkaRecord
+                                )
+                );
+
+        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
+                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.SIST_LEST.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(SistLestKafkaMelding.class),
+                                        sistLestService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
                                 .withLogging()
