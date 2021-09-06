@@ -67,8 +67,6 @@ public class KafkaConfigCommon {
     private static final String KAFKA_SCHEMAS_URL = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMAS_URL");
 
     public enum Topic {
-        AIVEN_REGISTRERING_TOPIC("paw.arbeidssoker-registrert-v1"),
-        AIVEN_PROFILERING_TOPIC("paw.arbeidssoker-profilert-v1"),
         VEDTAK_STATUS_ENDRING_TOPIC("aapen-oppfolging-vedtakStatusEndring-v1-" + requireKafkaTopicPostfix()),
         DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireKafkaTopicPostfix()),
         KAFKA_REGISTRERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-registrert-" + requireKafkaTopicPostfix()),
@@ -160,7 +158,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.AIVEN_REGISTRERING_TOPIC.topicName,
+                                        Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL,
                                                 Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true,
@@ -172,7 +170,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.AIVEN_PROFILERING_TOPIC.topicName,
+                                        Topic.KAFKA_PROFILERING_CONSUMER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL,
                                                 Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true,
