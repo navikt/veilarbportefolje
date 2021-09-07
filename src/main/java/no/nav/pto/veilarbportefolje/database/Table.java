@@ -176,4 +176,12 @@ public class Table {
         public static final String RETRIES = "RETRIES";
         public static final String CREATED_AT = "CREATED_AT";
     }
+
+    public static final class SISTE_14A_VEDTAK {
+        public static final String TABLE_NAME = "SISTE_14A_VEDTAK";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String HOVEDMAL = "HOVEDMAL";
+        public static final String INNSATSGRUPPE = "INNSATSGRUPPE";
+        public static final String FATTET_DATO = "FATTET_DATO";
+    }
 }
