@@ -13,16 +13,17 @@ import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
+import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
+import no.nav.common.utils.Credentials;
+import no.nav.common.utils.EnvironmentUtils;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
+import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltakServiceV2;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
-import no.nav.common.utils.Credentials;
-import no.nav.common.utils.EnvironmentUtils;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
@@ -45,11 +46,11 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,6 +59,7 @@ import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsume
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.NaisUtils.getCredentials;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
 public class KafkaConfigCommon {
@@ -95,7 +97,7 @@ public class KafkaConfigCommon {
         }
     }
 
-    private final KafkaConsumerClient consumerClientAiven;
+    private final List<KafkaConsumerClient> consumerClientAiven;
     private final List<KafkaConsumerClient> consumerClientsOnPrem;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
@@ -305,13 +307,18 @@ public class KafkaConfigCommon {
                 );
 
 
-        consumerClientAiven = KafkaConsumerClientBuilder.builder()
-                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
-                .withTopicConfigs(topicConfigsAiven)
-                .withToggle(new KafkaAivenUnleash(unleashService))
-                .build();
-
+        KafkaAivenUnleash kafkaAivenUnleash = new KafkaAivenUnleash(unleashService);
         KafkaOnpremUnleash kafkaOnpremUnleash = new KafkaOnpremUnleash(unleashService);
+
+        Properties aivenConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_CONFIG);
+        aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
+
+        consumerClientAiven = topicConfigsAiven.stream().map(config ->
+                KafkaConsumerClientBuilder.builder()
+                        .withProperties(aivenConsumerProperties)
+                        .withTopicConfig(config)
+                        .withToggle(kafkaAivenUnleash)
+                        .build()).collect(Collectors.toList());
 
         consumerClientsOnPrem = topicConfigsOnPrem.stream()
                 .map(config ->
@@ -338,7 +345,7 @@ public class KafkaConfigCommon {
     @PostConstruct
     public void start() {
         consumerRecordProcessor.start();
-        consumerClientAiven.start();
+        consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientsOnPrem.forEach(KafkaConsumerClient::start);
     }
 
