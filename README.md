@@ -88,4 +88,4 @@ Plugin kan lastes ned her: https://plugins.jetbrains.com/plugin/6317-lombok
 
 Opprett en issue i GitHub for eventuelle spørsmål.
 
-Er du ansatt i NAV kan du stille spørsmål på Slack i kanalen #pto.
+Er du ansatt i NAV kan du stille spørsmål på Slack i kanalen #produktområdet_arbeidsoppfølging.

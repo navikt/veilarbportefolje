@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
 
 
@@ -26,6 +27,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> implements Ka
     private final ElasticServiceV2 elasticServiceV2;
     private final CvRepository cvRepository;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
+    private final CVRepositoryV2 cvRepositoryV2;
     @Getter
     private final UnleashService unleashService;
 
@@ -39,6 +41,9 @@ public class CVService extends KafkaCommonConsumerService<Melding> implements Ka
         AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
 
         boolean cvEksisterer = cvEksistere(kafkaMelding);
+        if (erPostgresPa(unleashService)) {
+            cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
+        }
         cvRepository.upsertCvEksistere(aktoerId, cvEksisterer);
         elasticServiceV2.updateCvEksistere(aktoerId, cvEksisterer);
     }
@@ -56,13 +61,16 @@ public class CVService extends KafkaCommonConsumerService<Melding> implements Ka
 
     public void behandleCVHjemmelMelding(CVMelding cvMelding) {
         AktorId aktoerId = cvMelding.getAktoerId();
-        boolean harDeltCv = cvMelding.getSlettetDato() == null;
+        boolean harDeltCv = (cvMelding.getSlettetDato() == null);
 
         if (cvMelding.getRessurs() != CV_HJEMMEL) {
             log.info("Ignorer melding for ressurs {} for bruker {}", cvMelding.getRessurs(), aktoerId);
             return;
         }
 
+        if (erPostgresPa(unleashService)) {
+            cvRepositoryV2.upsertHarDeltCv(aktoerId, harDeltCv);
+        }
         cvRepository.upsertHarDeltCv(aktoerId, harDeltCv);
         elasticServiceV2.updateHarDeltCv(aktoerId, harDeltCv);
     }

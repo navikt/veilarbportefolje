@@ -1,11 +1,12 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -16,20 +17,16 @@ import java.util.Optional;
 
 import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.*;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
-
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
-
+    @NonNull
+    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
-
-    @Autowired
-    public ArbeidslisteRepositoryV2(@Qualifier("PostgresJdbc") JdbcTemplate db) {
-        this.db = db;
-    }
 
     public Optional<String> hentNavKontorForArbeidsliste(AktorId aktorId) {
         String sql = String.format("SELECT %s FROM %s WHERE %s=? ", NAV_KONTOR_FOR_ARBEIDSLISTE, TABLE_NAME, AKTOERID);

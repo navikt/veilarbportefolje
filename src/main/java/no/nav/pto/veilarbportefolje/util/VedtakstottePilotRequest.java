@@ -12,13 +12,11 @@ import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.HttpHeaders;
-
 import java.util.concurrent.TimeUnit;
 
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.rest.client.RestUtils.throwIfNotSuccessful;
-import static no.nav.common.utils.EnvironmentUtils.isProduction;
 
 public class VedtakstottePilotRequest {
     private final String baseURL;

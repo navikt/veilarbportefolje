@@ -2,23 +2,25 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.util.BatchConsumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.common.json.JsonUtils.fromJson;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
@@ -80,8 +82,8 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
     private void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
         aktoerider.forEach(aktoerId -> {
-            AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(AktorId.of(aktoerId));
-            AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, brukerService);
+            AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAvtalteAktiviteterForAktoerid(AktorId.of(aktoerId));
+            AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, brukerService, erGR202PaKafka(unleashService));
             Optional.ofNullable(aktivitetBrukerOppdateringer)
                     .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(Collections.singletonList(oppdatering)));
         });
@@ -89,11 +91,20 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     }
 
     public void utledOgIndekserAktivitetstatuserForAktoerid(AktorId aktoerId) {
-        AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO);
+        AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO, erGR202PaKafka(unleashService));
         Optional.ofNullable(aktivitetBrukerOppdateringer)
-                .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(Collections.singletonList(oppdatering)));
+                .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(oppdatering, aktoerId));
     }
 
+    public void slettOgIndekserAktivitet(String aktivitetid, AktorId aktorId) {
+        aktivitetDAO.deleteById(aktivitetid);
+        utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
+    }
+
+    public void upsertOgIndekserAktiviteter(KafkaAktivitetMelding melding) {
+        aktivitetDAO.upsertAktivitet(melding);
+        utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(melding.getAktorId()));
+    }
 
     @Override
     public boolean shouldRewind() {
@@ -109,4 +120,16 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         return !aktivitetData.isAvtalt();
     }
 
+    public void deaktiverUtgatteUtdanningsAktivteter(AktorId aktorId) {
+        AktoerAktiviteter utdanningsAktiviteter = aktivitetDAO.getAvtalteAktiviteterForAktoerid(aktorId);
+        utdanningsAktiviteter.getAktiviteter()
+                .stream()
+                .filter(aktivitetDTO -> AktivitetTyperFraKafka.utdanningaktivitet.name().equals(aktivitetDTO.getAktivitetType()))
+                .filter(aktivitetDTO -> aktivitetDTO.getTilDato().toLocalDateTime().isBefore(LocalDateTime.now()))
+                .forEach(aktivitetDTO -> {
+                            log.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}, på aktorId: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato(), aktorId);
+                            aktivitetDAO.setAvtalt(aktivitetDTO.getAktivitetID(), false);
+                        }
+                );
+    }
 }

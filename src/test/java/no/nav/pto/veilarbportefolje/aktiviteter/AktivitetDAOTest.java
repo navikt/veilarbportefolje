@@ -207,7 +207,7 @@ public class AktivitetDAOTest {
 
         aktivitetDAO.upsertAktivitet(asList(aktivitet1, aktivitet2));
 
-        AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(AktorId.of("aktoerid"));
+        AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAvtalteAktiviteterForAktoerid(AktorId.of("aktoerid"));
 
         assertThat(aktoerAktiviteter.getAktiviteter().size()).isEqualTo(2);
         assertThat(aktoerAktiviteter.getAktoerid()).isEqualTo("aktoerid");
