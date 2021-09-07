@@ -85,6 +85,9 @@ public class KafkaConfigCommon {
         CV_ENDRET("arbeid-pam-cv-endret-v6"),
         CV_TOPIC("teampam.samtykke-status-1"),
 
+        AIVEN_REGISTRERING_TOPIC("paw.arbeidssoker-registrert-v1"),
+        AIVEN_PROFILERING_TOPIC("paw.arbeidssoker-profilert-v1"),
+
         TILTAK_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
         UTDANNINGS_AKTIVITET_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix()),
         GRUPPE_AKTIVITET_TOPIC("teamarenanais.aapen-arena-gruppeaktivitetendret-v1-" + requireKafkaTopicPostfix());
@@ -116,15 +119,15 @@ public class KafkaConfigCommon {
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsAiven =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.CV_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(CVMelding.class),
-                                        cvService::behandleKafkaMeldingCVHjemmel
-                                ),
+                        .withLogging()
+                        .withMetrics(prometheusMeterRegistry)
+                        .withStoreOnFailure(consumerRepository)
+                        .withConsumerConfig(
+                                Topic.CV_TOPIC.topicName,
+                                Deserializers.stringDeserializer(),
+                                Deserializers.jsonDeserializer(CVMelding.class),
+                                cvService::behandleKafkaMeldingCVHjemmel
+                        ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, UtdanningsAktivitetDTO>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
@@ -154,6 +157,26 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(TiltakDTO.class),
                                         tiltakServiceV2::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerRegistrertEvent>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.AIVEN_REGISTRERING_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(ArbeidssokerRegistrertEvent.class),
+                                        registreringService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerProfilertEvent>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.AIVEN_PROFILERING_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(ArbeidssokerProfilertEvent.class),
+                                        profileringService::behandleKafkaRecord
                                 )
                 );
 
