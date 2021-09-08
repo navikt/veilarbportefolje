@@ -335,6 +335,7 @@ public class KafkaConfigCommon {
 
         Properties aivenConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_CONFIG);
         aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
+        aivenConsumerProperties.setProperty(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, "true");
 
         consumerClientAiven = topicConfigsAiven.stream().map(config ->
                 KafkaConsumerClientBuilder.builder()
