@@ -6,13 +6,16 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.cv.dto.Ressurs;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.elasticsearch.action.get.GetResponse;
 import org.json.JSONObject;
 import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.ZonedDateTime;
 import java.util.concurrent.ExecutionException;
 
 import static java.util.Arrays.stream;
@@ -23,12 +26,22 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
     @Autowired
     private CVService cvService;
 
+    @Autowired
+    private OppfolgingRepository oppfolgingRepository;
+
+    private final AktorId aktoerId1 = AktorId.of("11111111111");
+    private final AktorId aktoerId2 = AktorId.of("22222222222");
+    private final AktorId aktoerId3 = AktorId.of("33333333333");
+
+    @BeforeEach
+    void set_under_oppfolging(){
+        oppfolgingRepository.settUnderOppfolging(aktoerId1, ZonedDateTime.now());
+        oppfolgingRepository.settUnderOppfolging(aktoerId2, ZonedDateTime.now());
+        oppfolgingRepository.settUnderOppfolging(aktoerId3, ZonedDateTime.now());
+    }
+
     @Test
     void testCVHjemmel() throws ExecutionException, InterruptedException {
-        AktorId aktoerId1 = AktorId.of("11111111111");
-        AktorId aktoerId2 = AktorId.of("22222222222");
-        AktorId aktoerId3 = AktorId.of("33333333333");
-
         createCvDocumentsInElastic(aktoerId1, aktoerId2, aktoerId3);
         assertHarDeltCVAreFalseInElastic(aktoerId1, aktoerId2, aktoerId3);
 
@@ -39,11 +52,6 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
 
     @Test
     void testCVEksistere() throws ExecutionException, InterruptedException {
-
-        AktorId aktoerId1 = AktorId.of("11111111111");
-        AktorId aktoerId2 = AktorId.of("22222222222");
-        AktorId aktoerId3 = AktorId.of("33333333333");
-
         createCvDocumentsInElastic(aktoerId1, aktoerId2, aktoerId3);
         assertCvEksistereAreFalseInElastic(aktoerId1, aktoerId2, aktoerId3);
 

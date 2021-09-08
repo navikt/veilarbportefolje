@@ -6,19 +6,21 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.mal.MalService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import org.elasticsearch.action.get.GetResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,19 +45,25 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final BrukerService brukerService;
     private final ElasticService elasticService;
     private final SistLestService sistLestService;
+    private final OppfolgingRepository oppfolgingRepositoryMock;
     private final VeilederId veilederId = VeilederId.of("Z123456");
     private final EnhetId testEnhet = EnhetId.of("0000");
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService , UnleashService unleashService) {
+    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService, ElasticServiceV2 elasticServiceV2) {
         brukerService = mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
-
-        this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering,  brukerService, sisteEndringService, unleashService);
+        unleashService = Mockito.mock(UnleashService.class);
+        this.oppfolgingRepositoryMock = mock(OppfolgingRepository.class);
+        this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService, sisteEndringService, oppfolgingRepositoryMock, elasticServiceV2, unleashService);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.elasticService = elasticService;
         this.malService = malService;
+    }
+    @BeforeEach
+    public void resetMock(){
+        Mockito.when(oppfolgingRepositoryMock.erUnderoppfolging(any())).thenReturn(true);
     }
 
     @Test
@@ -432,6 +440,33 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 null,
                 null);
         assertThat(responseSortertTomRes2.getAntall()).isEqualTo(0);
+    }
+
+    @Test
+    public void endring_pa_bruker_uten_oppfolging_slettes_fra_elastic() {
+        Mockito.when(oppfolgingRepositoryMock.erUnderoppfolging(any())).thenReturn(false);
+        final AktorId aktoerId = randomAktorId();
+
+        populateElastic(testEnhet, veilederId, aktoerId.get());
+        pollElasticUntil(() -> {
+            final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
+                    testEnhet.get(),
+                    empty(),
+                    "asc",
+                    "ikke_satt",
+                    new Filtervalg(),
+                    null,
+                    null);
+
+            return brukereMedAntall.getAntall() == 1;
+        });
+
+        send_aktvitet_melding(aktoerId, "2020-05-28T09:47:42.48+02:00", KafkaAktivitetMelding.EndringsType.OPPRETTET,
+                KafkaAktivitetMelding.AktivitetStatus.PLANLAGT,
+                KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
+        GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
+
+        assertThat(getResponse.isExists()).isFalse();
     }
 
     private void send_aktvitet_melding(AktorId aktoerId, String endretDato, KafkaAktivitetMelding.EndringsType endringsType,
