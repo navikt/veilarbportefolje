@@ -119,15 +119,15 @@ public class KafkaConfigCommon {
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsAiven =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
-                        .withLogging()
-                        .withMetrics(prometheusMeterRegistry)
-                        .withStoreOnFailure(consumerRepository)
-                        .withConsumerConfig(
-                                Topic.CV_TOPIC.topicName,
-                                Deserializers.stringDeserializer(),
-                                Deserializers.jsonDeserializer(CVMelding.class),
-                                cvService::behandleKafkaMeldingCVHjemmel
-                        ),
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.CV_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(CVMelding.class),
+                                        cvService::behandleKafkaMeldingCVHjemmel
+                                ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, UtdanningsAktivitetDTO>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
@@ -165,7 +165,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.AIVEN_REGISTRERING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(ArbeidssokerRegistrertEvent.class),
+                                        Deserializers.aivenAvroDeserializer(),
                                         registreringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerProfilertEvent>()
@@ -175,7 +175,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.AIVEN_PROFILERING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(ArbeidssokerProfilertEvent.class),
+                                        Deserializers.aivenAvroDeserializer(),
                                         profileringService::behandleKafkaRecord
                                 )
                 );
