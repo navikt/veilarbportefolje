@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.*;
 
@@ -73,26 +74,52 @@ public class YtelsesService {
     }
 
     public Optional<YtelseDAO> finnLopendeYtelse(AktorId aktorId) {
-        List<YtelseDAO> ytelser = ytelsesRepository.getYtelser(aktorId);
-        if (ytelser.isEmpty()) {
+        LocalDate iDag = LocalDate.now();
+        List<YtelseDAO> aktiveYtelser = ytelsesRepository.getYtelser(aktorId).stream()
+                .filter(Objects::nonNull)
+                .filter(ytelse -> harUtlopsDatoIFremtiden(ytelse, iDag))
+                .collect(Collectors.toList());
+
+        if (aktiveYtelser.isEmpty()) {
             return Optional.empty();
         }
 
-        LocalDate iDag = LocalDate.now();
-        YtelseDAO tidligsteYtelse = ytelser.stream()
-                .filter(Objects::nonNull)
+        YtelseDAO tidligsteYtelse = aktiveYtelser.stream()
                 .min(Comparator.comparing(YtelseDAO::getStartDato))
                 .orElse(null);
-        if (tidligsteYtelse == null || tidligsteYtelse.getStartDato().toLocalDateTime().toLocalDate().isAfter(iDag)) {
+
+        if (erTomEllerHarStartDatoIFremtiden(tidligsteYtelse, iDag)) {
             return Optional.empty();
         }
-        return finnUtlopsDatoPaSak(ytelser, tidligsteYtelse.getSaksId());
+        if (TypeKafkaYtelse.DAGPENGER.equals(tidligsteYtelse.getType())) {
+            // Dagpenger skal aldri ha en utløpsdato
+            // Hvis det finnes en utløpsdato er det mest sannynlig et annet dagpenge vedtak som skal ta over for det løpende vedatekt, eller en bug
+            return Optional.of(tidligsteYtelse.setUtlopsDato(null));
+        }
+
+        if(tidligsteYtelse.getUtlopsDato() == null){
+            return Optional.of(tidligsteYtelse);
+        }
+        return finnVedtakMedSisteUtlopsDatoPaSak(aktiveYtelser, tidligsteYtelse);
     }
 
-    private Optional<YtelseDAO> finnUtlopsDatoPaSak(List<YtelseDAO> ytelser, String saksId) {
+    private Optional<YtelseDAO> finnVedtakMedSisteUtlopsDatoPaSak(List<YtelseDAO> ytelser, YtelseDAO tidligsteYtelse) {
         return ytelser.stream()
-                .filter(ytelseDOA -> ytelseDOA.getSaksId() != null && ytelseDOA.getSaksId().equals(saksId) && ytelseDOA.getUtlopsDato() != null)
+                .filter(ytelseDOA -> ytelseDOA.getSaksId() != null && ytelseDOA.getSaksId().equals(tidligsteYtelse.getSaksId()))
+                .filter(ytelseDOA -> ytelseDOA.getUtlopsDato() != null)
                 .max(Comparator.comparing(YtelseDAO::getUtlopsDato));
+    }
+
+    private boolean erTomEllerHarStartDatoIFremtiden(YtelseDAO ytelse, LocalDate iDag) {
+        // startDato er en til og med dato.
+        return ytelse == null || ytelse.getStartDato().toLocalDateTime().toLocalDate().isAfter(iDag);
+    }
+
+    private boolean harUtlopsDatoIFremtiden(YtelseDAO ytelse, LocalDate iDag) {
+        // Utløpsdato == null betyr en "uendlig" ytelse.
+        // Utløpsdato er en til og med dato.
+        return ytelse.getUtlopsDato() == null
+                || ytelse.getUtlopsDato().toLocalDateTime().toLocalDate().isAfter(iDag.minusDays(1));
     }
 
     private boolean erGammelMelding(YtelsesDTO kafkaMelding, YtelsesInnhold innhold) {

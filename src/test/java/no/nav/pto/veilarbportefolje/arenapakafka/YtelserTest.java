@@ -145,7 +145,39 @@ public class YtelserTest {
     }
 
     @Test
-    public void skal_bygge_korrekt_Dagpenge_json() {
+    public void skalPaDagpengerMedUlopsdatoLikNull() {
+        String sak1 = "Sak1";
+        Timestamp yesterday = Timestamp.valueOf(ZonedDateTime.now().minusDays(1).toLocalDateTime());
+
+        YtelsesRepository mockRepository = mock(YtelsesRepository.class);
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class));
+        List<YtelseDAO> ytelser = List.of(
+                new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setType(TypeKafkaYtelse.DAGPENGER)
+        );
+        Mockito.when(mockRepository.getYtelser(aktorId)).thenReturn(ytelser);
+        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.finnLopendeYtelse(aktorId);
+
+        assertThat(lopendeYtelse.isPresent()).isTrue();
+    }
+
+    @Test
+    public void skalPaAAPMedUlopsdatoLikNull() {
+        String sak1 = "Sak1";
+        Timestamp yesterday = Timestamp.valueOf(ZonedDateTime.now().minusDays(1).toLocalDateTime());
+
+        YtelsesRepository mockRepository = mock(YtelsesRepository.class);
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class));
+        List<YtelseDAO> ytelser = List.of(
+                new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setType(TypeKafkaYtelse.AAP)
+        );
+        Mockito.when(mockRepository.getYtelser(aktorId)).thenReturn(ytelser);
+        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.finnLopendeYtelse(aktorId);
+
+        assertThat(lopendeYtelse.isPresent()).isTrue();
+    }
+
+    @Test
+    public void skalByggeKorrektDagpengejson() {
         String goldenGateDtoString = readFileAsJsonString("/goldenGateDagpenger.json", getClass());
 
         YtelsesDTO goldenGateDTO = fromJson(goldenGateDtoString, YtelsesDTO.class);
