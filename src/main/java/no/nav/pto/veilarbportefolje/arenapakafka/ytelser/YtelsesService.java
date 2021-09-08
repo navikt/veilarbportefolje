@@ -111,13 +111,13 @@ public class YtelsesService {
     }
 
     private boolean erTomEllerHarStartDatoIFremtiden(YtelseDAO ytelse, LocalDate iDag) {
-        // startDato er en til og med dato.
+        // startDato er en 'fra og med' dato.
         return ytelse == null || ytelse.getStartDato().toLocalDateTime().toLocalDate().isAfter(iDag);
     }
 
     private boolean harUtlopsDatoIFremtiden(YtelseDAO ytelse, LocalDate iDag) {
         // Utløpsdato == null betyr en "uendlig" ytelse.
-        // Utløpsdato er en til og med dato.
+        // Utløpsdato er en 'til og med' dato.
         return ytelse.getUtlopsDato() == null
                 || ytelse.getUtlopsDato().toLocalDateTime().toLocalDate().isAfter(iDag.minusDays(1));
     }
