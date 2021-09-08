@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import lombok.SneakyThrows;
-import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.database.Table.*;
+import static no.nav.pto.veilarbportefolje.database.Table.VEDTAK;
 
 @Repository
 public class VedtakStatusRepository {

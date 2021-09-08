@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +22,6 @@ public class SistLestService extends KafkaCommonConsumerService<SistLestKafkaMel
     private final BrukerService brukerService;
     private final SisteEndringService sisteEndringService;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
-    @Getter
-    protected final UnleashService unleashService;
-
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
@@ -53,6 +49,5 @@ public class SistLestService extends KafkaCommonConsumerService<SistLestKafkaMel
     public void setRewind(boolean rewind) {
         this.rewind.set(rewind);
     }
-
 
 }

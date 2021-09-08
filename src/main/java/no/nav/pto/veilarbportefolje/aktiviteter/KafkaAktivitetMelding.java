@@ -38,6 +38,7 @@ public class KafkaAktivitetMelding {
         BEHANDLING,
         MOTE,
         SAMTALEREFERAT,
+        UTDANNINGAKTIVITET,
         STILLING_FRA_NAV
     }
 

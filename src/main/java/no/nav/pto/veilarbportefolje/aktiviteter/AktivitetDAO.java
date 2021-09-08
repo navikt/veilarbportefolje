@@ -3,10 +3,10 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
-import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
@@ -32,8 +32,6 @@ import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
 @Slf4j
 @Repository
 public class AktivitetDAO {
-
-
     private final JdbcTemplate db;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
@@ -63,19 +61,19 @@ public class AktivitetDAO {
                 .execute();
     }
 
-    public void slettAlleAktivitetstatus(String aktivitettype) {
-        db.execute("DELETE FROM BRUKERSTATUS_AKTIVITETER WHERE AKTIVITETTYPE = '" + aktivitettype + "'");
-    }
-
-    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid) {
+    public AktoerAktiviteter getAvtalteAktiviteterForAktoerid(AktorId aktoerid) {
 
         List<AktivitetDTO> queryResult = SqlUtils.select(db, Table.AKTIVITETER.TABLE_NAME, AktivitetDAO::mapToAktivitetDTO)
                 .column(AKTOERID)
+                .column(AKTIVITETID)
                 .column(AKTIVITETTYPE)
                 .column(STATUS)
                 .column(FRADATO)
                 .column(TILDATO)
-                .where(WhereClause.equals(AKTOERID, aktoerid.get()))
+                .where(WhereClause.equals(AKTOERID, aktoerid.get())
+                        .and(WhereClause.equals(AVTALT, 1)
+                                .or(WhereClause.equals(AVTALT, true)
+                                )))
                 .executeToList();
 
         return new AktoerAktiviteter(aktoerid.get()).setAktiviteter(queryResult);
@@ -83,6 +81,7 @@ public class AktivitetDAO {
 
     private static AktivitetDTO mapToAktivitetDTO(ResultSet res) throws SQLException {
         return new AktivitetDTO()
+                .setAktivitetID(res.getString(AKTIVITETID))
                 .setAktivitetType(res.getString(AKTIVITETTYPE))
                 .setStatus(res.getString(STATUS))
                 .setFraDato(res.getTimestamp(FRADATO))
@@ -113,6 +112,24 @@ public class AktivitetDAO {
 
     void upsertAktivitet(Collection<KafkaAktivitetMelding> aktiviteter) {
         aktiviteter.forEach(this::upsertAktivitet);
+    }
+
+    public void upsertAktivitetStatus(AktivitetStatus status) {
+        if (status.getPersonid() == null || status.getAktoerid() == null || status.getAktivitetType() == null) {
+            log.warn("Kunne ikke lagre aktivitet pga. null verdier");
+            return;
+        }
+        String aktivChar = status.isAktiv() ? "1" : "0";
+        SqlUtils.upsert(db, "BRUKERSTATUS_AKTIVITETER")
+                .set("PERSONID", status.getPersonid().getValue())
+                .set("AKTOERID", status.getAktoerid().get())
+                .set("AKTIVITETTYPE", status.getAktivitetType())
+                .set("STATUS", aktivChar)
+                .set("NESTE_UTLOPSDATO", status.getNesteUtlop())
+                .set("NESTE_STARTDATO", status.getNesteStart())
+                .where(WhereClause.equals("PERSONID", status.getPersonid().getValue())
+                        .and(WhereClause.equals("AKTIVITETTYPE", status.getAktivitetType())))
+                .execute();
     }
 
     public void insertAktivitetstatuser(List<AktivitetStatus> statuser) {
@@ -230,6 +247,13 @@ public class AktivitetDAO {
             return true;
         }
         return kommendeVersjon.compareTo(databaseVersjon) > 0;
+    }
+
+    public void setAvtalt(String aktivitetid, boolean avtalt) {
+        int avtaltInt = avtalt ? 1 : 0;
+        SqlUtils.update(db, Table.AKTIVITETER.TABLE_NAME).set(AVTALT, avtaltInt)
+                .whereEquals(AKTIVITETID, aktivitetid)
+                .execute();
     }
 
     @Transactional

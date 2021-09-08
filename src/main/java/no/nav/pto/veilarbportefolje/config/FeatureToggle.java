@@ -13,6 +13,8 @@ public class FeatureToggle {
 
     public static final String POSTGRES = "veilarbportefolje.last_inn_data_pa_postgres";
 
+    public static final String GR202_PA_KAFKA = "veilarbportefolje.GR202_pa_kafka";
+
     public static final String CV_EKSISTERE_PRODSETTE = "veilarbportefolje.cv_eksistere";
 
     public static final String KAFKA_AIVEN_CONSUMERS_STOP = "veilarbportefolje.kafka_aiven_consumers_stop";
@@ -20,6 +22,9 @@ public class FeatureToggle {
 
     public static boolean erPostgresPa(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.POSTGRES);
+    }
+    public static boolean erGR202PaKafka(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.GR202_PA_KAFKA);
     }
 
     public static boolean erCvEksistereIProd(UnleashService unleashService) {

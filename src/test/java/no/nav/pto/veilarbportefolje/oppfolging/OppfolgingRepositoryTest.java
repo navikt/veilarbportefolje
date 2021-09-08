@@ -25,7 +25,7 @@ public class OppfolgingRepositoryTest {
     public void setup() {
         DataSource ds = setupInMemoryDatabase();
         db = new JdbcTemplate(ds);
-        oppfolgingRepository = new OppfolgingRepository(db, mock(UnleashService.class));
+        oppfolgingRepository = new OppfolgingRepository(db);
     }
 
     @Test

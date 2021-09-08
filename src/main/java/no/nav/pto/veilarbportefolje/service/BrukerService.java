@@ -82,6 +82,10 @@ public class BrukerService {
         return nyPersonId;
     }
 
+    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
+        return brukerRepository.hentAlleBrukereUnderOppfolging();
+    }
+
     @Transactional
     void updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(AktorId aktoerId, PersonId personId, AktorId aktoerIdFraTPS) {
         if (personId == null) {

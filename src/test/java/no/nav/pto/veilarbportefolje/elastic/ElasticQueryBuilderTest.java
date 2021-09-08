@@ -18,6 +18,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
+import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.search.sort.SortOrder.ASC;
@@ -57,7 +58,7 @@ public class ElasticQueryBuilderTest {
 
         val sorteringer = sorterValgteAktiviteter(filtervalg, new SearchSourceBuilder(), ASC);
 
-        val expectedJson = readFileAsJsonString("/sorter_aktivitet_behandling.json");
+        val expectedJson = readFileAsJsonString("/sorter_aktivitet_behandling.json", getClass());
         val actualJson = sorteringer.sorts().get(0).toString();
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
@@ -68,7 +69,7 @@ public class ElasticQueryBuilderTest {
         val filtervalg = new Filtervalg().setAktiviteter(Map.of("tiltak", NEI));
         val builders = byggAktivitetFilterQuery(filtervalg, boolQuery());
 
-        val expectedJson = readFileAsJsonString("/nei_paa_tiltak.json");
+        val expectedJson = readFileAsJsonString("/nei_paa_tiltak.json", getClass());
         val actualJson = builders.get(0).toString();
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
@@ -79,7 +80,7 @@ public class ElasticQueryBuilderTest {
         val filtervalg = new Filtervalg().setAktiviteter(Map.of("behandling", JA));
         val builders = byggAktivitetFilterQuery(filtervalg, boolQuery());
 
-        val expectedJson = readFileAsJsonString("/ja_paa_behandling.json");
+        val expectedJson = readFileAsJsonString("/ja_paa_behandling.json", getClass());
         val actualJson = builders.get(0).toString();
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
@@ -90,7 +91,7 @@ public class ElasticQueryBuilderTest {
         val filtervalg = new Filtervalg().setAktiviteter(Map.of("tiltak", AktivitetFiltervalg.JA));
         val builders = byggAktivitetFilterQuery(filtervalg, boolQuery());
 
-        val expectedJson = readFileAsJsonString("/ja_paa_tiltak.json");
+        val expectedJson = readFileAsJsonString("/ja_paa_tiltak.json", getClass());
         val actualJson = builders.get(0).toString();
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
@@ -102,7 +103,7 @@ public class ElasticQueryBuilderTest {
         byggAlderQuery("19-og-under", builder);
 
         val actualJson = builder.toString();
-        val expectedJson = readFileAsJsonString("/19_aar_og_under.json");
+        val expectedJson = readFileAsJsonString("/19_aar_og_under.json", getClass());
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
@@ -113,7 +114,7 @@ public class ElasticQueryBuilderTest {
         byggAlderQuery("20-24", builder);
 
         val actualJson = builder.toString();
-        val expectedJson = readFileAsJsonString("/mellom_20_24_aar.json");
+        val expectedJson = readFileAsJsonString("/mellom_20_24_aar.json", getClass());
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
@@ -123,16 +124,9 @@ public class ElasticQueryBuilderTest {
         val request = byggPortefoljestorrelserQuery("0000");
 
         val actualJson = request.aggregations().toString();
-        val expectedJson = readFileAsJsonString("/portefoljestorrelser.json");
+        val expectedJson = readFileAsJsonString("/portefoljestorrelser.json", getClass());
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
-    }
-
-    @SneakyThrows
-    private String readFileAsJsonString(String pathname) {
-        val URI = getClass().getResource(pathname).toURI();
-        val encodedBytes = Files.readAllBytes(Paths.get(URI));
-        return new String(encodedBytes, UTF_8).trim();
     }
 
 }

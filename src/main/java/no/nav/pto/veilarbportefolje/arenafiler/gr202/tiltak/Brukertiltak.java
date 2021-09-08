@@ -2,17 +2,9 @@ package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import lombok.Value;
 import lombok.experimental.Wither;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import no.nav.common.types.identer.Fnr;
-import no.nav.sbl.sql.InsertBatchQuery;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakUtils.utledTildato;
 
 @Value(staticConstructor = "of")
 @Wither
@@ -40,25 +32,5 @@ public class Brukertiltak {
         result = 31 * result + tiltak.hashCode();
         return result;
     }
-
-    public static Brukertiltak of(Tiltaksaktivitet tiltaksaktivitet, String fnr) {
-        return new Brukertiltak(Fnr.ofValidFnr(fnr), tiltaksaktivitet.getTiltakstype(),utledTildato(tiltaksaktivitet.getDeltakelsePeriode()).orElse(null));
-    }
-
-    public static List<Brukertiltak> of(Bruker bruker) {
-        String fnr = bruker.getPersonident();
-        return bruker.getTiltaksaktivitetListe().stream().map(tiltak -> of(tiltak, fnr)).collect(toList());
-    }
-
-    public static int[] batchInsert(JdbcTemplate db, List<Brukertiltak> data) {
-        InsertBatchQuery<Brukertiltak> insertQuery = new InsertBatchQuery<>(db, "BRUKERTILTAK");
-
-        return insertQuery
-                .add("FODSELSNR", bruker -> bruker.getFnr().toString(), String.class)
-                .add("TILTAKSKODE", Brukertiltak::getTiltak, String.class)
-                .add("TILDATO", Brukertiltak::getTildato, Timestamp.class)
-                .execute(data);
-    }
-
 
 }
