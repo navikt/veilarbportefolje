@@ -165,7 +165,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.AIVEN_REGISTRERING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        KafkaAivenAvroDeserializer.deserializer(),
+                                        Deserializers.aivenAvroDeserializer(),
                                         registreringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerProfilertEvent>()
@@ -175,7 +175,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.AIVEN_PROFILERING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        KafkaAivenAvroDeserializer.deserializer(),
+                                        Deserializers.aivenAvroDeserializer(),
                                         profileringService::behandleKafkaRecord
                                 )
                 );
