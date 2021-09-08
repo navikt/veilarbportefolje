@@ -11,7 +11,7 @@ public class KafkaAivenAvroDeserializer<T> extends KafkaAvroDeserializer {
 
     public KafkaAivenAvroDeserializer() {
         super();
-        Deserializer<T> objectDeserializer = Deserializers.aivenAvroDeserializer();
-        objectDeserializer.configure(Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true), false);
+        Deserializer<T> avroDeserializer = Deserializers.aivenAvroDeserializer();
+        avroDeserializer.configure(Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true), false);
     }
 }
