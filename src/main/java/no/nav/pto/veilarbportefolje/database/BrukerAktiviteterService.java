@@ -56,7 +56,7 @@ public class BrukerAktiviteterService {
                                 }
                                 log.info("Avslutter tråd: oppdater BrukerAktiviteter og BrukerData");
                             }
-                    )).get(50, TimeUnit.MINUTES);
+                    )).get(5, TimeUnit.HOURS);
         } catch (Exception e) {
             log.error("Error i sync jobben.", e);
         }
