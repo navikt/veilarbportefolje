@@ -26,7 +26,7 @@ public class ScheduledJobs {
     private final LeaderElectionClient leaderElectionClient;
     private final UnleashService unleashService;
 
-    @Scheduled(cron = "0 0 30 * * ?")
+    @Scheduled(cron = "0 30 0 * * ?")
     public void oppdaterBrukerAktiviteter() {
         if (leaderElectionClient.isLeader() && erGR202PaKafka(unleashService)) {
             brukerAktiviteterService.syncAktivitetOgBrukerData();
