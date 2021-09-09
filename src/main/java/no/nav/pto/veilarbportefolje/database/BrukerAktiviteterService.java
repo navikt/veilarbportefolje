@@ -31,23 +31,21 @@ public class BrukerAktiviteterService {
     private final OppfolgingRepository oppfolgingRepository;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerService brukerService;
-    private final BrukerDataService brukerDataService;
 
     public void syncAktivitetOgBrukerData() {
         log.info("Starter jobb: oppdater BrukerAktiviteter og BrukerData");
         List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
         log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
-        BatchConsumer<AktorId> consumer = batchConsumer(10_000, this::syncAktivitetOgBrukerData);
-        brukereSomMaOppdateres.forEach(consumer);
-
-        consumer.flush();
+        syncAktivitetOgBrukerData(brukereSomMaOppdateres);
+        log.info("Avslutter jobb: oppdater BrukerAktiviteter og BrukerData");
     }
 
     public void syncAktivitetOgBrukerData(List<AktorId> brukere) {
-        ForkJoinPool pool = new ForkJoinPool(8);
+        ForkJoinPool pool = new ForkJoinPool(4); // Prøv et annet tall hvis dette ikke fungerer, mellom 2 og 10
         try {
             pool.submit(() ->
                     brukere.parallelStream().forEach(aktorId -> {
+                        log.info("Start tråd: oppdater BrukerAktiviteter og BrukerData");
                                 if (aktorId != null) {
                                     try {
                                         PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
@@ -56,8 +54,9 @@ public class BrukerAktiviteterService {
                                         log.warn("Fikk error under sync jobb, men fortsetter aktoer: {}, exception: {}", aktorId, e);
                                     }
                                 }
+                                log.info("Avslutter tråd: oppdater BrukerAktiviteter og BrukerData");
                             }
-                    )).get(30, TimeUnit.MINUTES);
+                    )).get(50, TimeUnit.MINUTES);
         } catch (Exception e) {
             log.error("Error i sync jobben.", e);
         }
@@ -72,11 +71,14 @@ public class BrukerAktiviteterService {
     }
 
     public void syncAktiviteterOgBrukerData(PersonId personId, AktorId aktorId) {
+        if(personId == null){
+            // TODO: check om utdatert
+            log.warn("AktoerId ble ikke oppdatert da personId er null: {}. Inaktiv aktorId?", aktorId.get());
+            return;
+        }
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId, personId);
         gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(aktorId, personId);
         aktivitetService.deaktiverUtgatteUtdanningsAktivteter(aktorId);
         aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
-
-        brukerDataService.oppdaterAktivitetBrukerData(aktorId);
     }
 }
