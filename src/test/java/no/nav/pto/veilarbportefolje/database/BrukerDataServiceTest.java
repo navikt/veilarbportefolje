@@ -47,7 +47,7 @@ public class BrukerDataServiceTest {
     public BrukerDataServiceTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, TiltakRepositoryV2 tiltakRepositoryV2, GruppeAktivitetRepository gruppeAktivitetRepository, BrukerDataRepository brukerDataRepository, BrukerService brukerService, BrukerRepository brukerRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.brukerRepository = brukerRepository;
-        brukerDataService = new BrukerDataService(aktivitetDAO, tiltakRepositoryV2, gruppeAktivitetRepository, brukerDataRepository, brukerService, mock(ElasticIndexer.class));
+        brukerDataService = new BrukerDataService(aktivitetDAO, tiltakRepositoryV2, gruppeAktivitetRepository, brukerDataRepository);
     }
 
     @BeforeEach
@@ -76,7 +76,6 @@ public class BrukerDataServiceTest {
 
         brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
         Brukerdata brukerdata = brukerRepository.retrieveBrukerdata(List.of(personId.getValue())).get(0);
-        System.out.println(brukerdata);
 
         assertThat(brukerdata.getNyesteUtlopteAktivitet()).isEqualTo(enUkeSiden);
 
@@ -111,24 +110,6 @@ public class BrukerDataServiceTest {
                 .set(Table.AKTIVITETER.VERSION, 1)
                 .set(Table.AKTIVITETER.AKTIVITETID, id)
                 .where(WhereClause.equals(Table.AKTIVITETER.AKTIVITETID,id))
-                .execute();
-    }
-
-    private void insertBruker() {
-        SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
-                .value(Table.OPPFOLGINGSBRUKER.FODSELSNR, fnr.toString())
-                .value(Table.OPPFOLGINGSBRUKER.NAV_KONTOR, testEnhet.toString())
-                .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId.toString())
-                .execute();
-        SqlUtils.insert(jdbcTemplate, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .value(Table.OPPFOLGING_DATA.AKTOERID, aktorId.toString())
-                .value(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
-                .value(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.toString())
-                .execute();
-        SqlUtils.insert(jdbcTemplate, Table.AKTOERID_TO_PERSONID.TABLE_NAME)
-                .value(Table.AKTOERID_TO_PERSONID.AKTOERID, aktorId.toString())
-                .value(Table.AKTOERID_TO_PERSONID.PERSONID, personId.toString())
-                .value(Table.AKTOERID_TO_PERSONID.GJELDENE, 1)
                 .execute();
     }
 }
