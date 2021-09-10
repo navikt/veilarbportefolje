@@ -12,7 +12,8 @@ public class OnpremAvroDeserializer<T> {
 
     public AvroDeserializer<T> getDeserializer() {
         AvroDeserializer<T> avroDeserializer = (AvroDeserializer<T>) Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL);
-        avroDeserializer.configure(Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true), false);
+        avroDeserializer.configure(Map.of(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL,
+                KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true), false);
         return avroDeserializer;
     }
 }
