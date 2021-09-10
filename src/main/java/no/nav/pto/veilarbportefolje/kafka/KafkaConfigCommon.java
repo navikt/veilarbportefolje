@@ -28,7 +28,7 @@ import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
-import no.nav.pto.veilarbportefolje.kafka.deserializers.KafkaAivenAvroDeserializer;
+import no.nav.pto.veilarbportefolje.kafka.deserializers.AivenAvroDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.OnpremAvroDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
@@ -165,7 +165,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.AIVEN_REGISTRERING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new KafkaAivenAvroDeserializer().getDeserializer(),
+                                        new AivenAvroDeserializer().getDeserializer(),
                                         registreringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerProfilertEvent>()
@@ -175,7 +175,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.AIVEN_PROFILERING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new KafkaAivenAvroDeserializer().getDeserializer(),
+                                        new AivenAvroDeserializer().getDeserializer(),
                                         profileringService::behandleKafkaRecord
                                 )
                 );
