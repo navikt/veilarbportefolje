@@ -11,7 +11,7 @@ public class KafkaAivenAvroDeserializer<T> {
     private static final String KAFKA_SCHEMAS_URL = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMAS_URL");
 
     public AvroDeserializer<T> getDeserializer() {
-        AvroDeserializer<T> avroDeserializer = (AvroDeserializer<T>) Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL);
+        AvroDeserializer<T> avroDeserializer = (AvroDeserializer<T>) Deserializers.aivenAvroDeserializer();
         avroDeserializer.configure(Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true), false);
         return avroDeserializer;
     }
