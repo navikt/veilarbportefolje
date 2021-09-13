@@ -100,6 +100,6 @@ public class ApplicationConfig {
 
     @Bean
     public MeterBinder kafkaStats(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
-        return (registry) -> new KafkaStats(jdbcTemplate).bindTo(registry);
+        return (registry) -> new KafkaStats(jdbcTemplate).bindTo(MetricsReporter.getMeterRegistry());
     }
 }
