@@ -7,11 +7,9 @@ import io.micrometer.core.lang.NonNull;
 import lombok.RequiredArgsConstructor;
 import no.nav.pto.veilarbportefolje.database.Table;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
 @RequiredArgsConstructor
 public class KafkaStats implements MeterBinder {
     private final JdbcTemplate jdbcTemplate;
