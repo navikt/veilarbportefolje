@@ -24,6 +24,7 @@
         <confluent.version>5.5.1</confluent.version>
         <avro.version>1.10.0</avro.version>
         <veilarbregistrering.skjema.version>1.202108021530-9a956c3</veilarbregistrering.skjema.version>
+        <prometheus.version>0.4.0</prometheus.version>
         <jaxb.version>2.3.1</jaxb.version>
         <testcontainers.version>1.15.3</testcontainers.version>
 
@@ -337,7 +338,7 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.7.0</version>
+            <version>1.5.1</version>
         </dependency>
 
         <!--TEST-->
