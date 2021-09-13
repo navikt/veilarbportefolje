@@ -4,17 +4,17 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import io.micrometer.core.lang.NonNull;
+import lombok.RequiredArgsConstructor;
 import no.nav.pto.veilarbportefolje.database.Table;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class KafkaStats implements MeterBinder {
-    @Qualifier("PostgresJdbc")
-    JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public void bindTo(@NonNull MeterRegistry registry) {
@@ -27,7 +27,7 @@ public class KafkaStats implements MeterBinder {
     }
 
     private List<Integer> getRetriesStats() {
-        return jdbcTemplate.queryForList("SELECT " + Table.KAFKA_CONSUMER_RECORD.RETRIES + " FROM " +
+        return this.jdbcTemplate.queryForList("SELECT " + Table.KAFKA_CONSUMER_RECORD.RETRIES + " FROM " +
                 Table.KAFKA_CONSUMER_RECORD.TABLE_NAME, Integer.class);
     }
 }
