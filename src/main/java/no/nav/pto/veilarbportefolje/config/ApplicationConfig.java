@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import io.micrometer.core.instrument.binder.MeterBinder;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.abac.VeilarbPepFactory;
@@ -16,7 +17,9 @@ import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.auth.ModiaPep;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
+import no.nav.pto.veilarbportefolje.kafka.KafkaStats;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -93,5 +96,10 @@ public class ApplicationConfig {
         );
 
         return new ModiaPep(pep);
+    }
+
+    @Bean
+    public MeterBinder kafkaStats(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
+        return (registry) -> new KafkaStats(jdbcTemplate).bindTo(MetricsReporter.getMeterRegistry());
     }
 }

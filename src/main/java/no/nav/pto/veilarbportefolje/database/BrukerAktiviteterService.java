@@ -41,11 +41,11 @@ public class BrukerAktiviteterService {
     }
 
     public void syncAktivitetOgBrukerData(List<AktorId> brukere) {
-        ForkJoinPool pool = new ForkJoinPool(4); // Prøv et annet tall hvis dette ikke fungerer, mellom 2 og 10
+        ForkJoinPool pool = new ForkJoinPool(5);
         try {
             pool.submit(() ->
                     brukere.parallelStream().forEach(aktorId -> {
-                        log.info("Start tråd: oppdater BrukerAktiviteter og BrukerData");
+                        log.info("Oppdater BrukerAktiviteter og BrukerData for aktorId: {}", aktorId);
                                 if (aktorId != null) {
                                     try {
                                         PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
@@ -54,9 +54,8 @@ public class BrukerAktiviteterService {
                                         log.warn("Fikk error under sync jobb, men fortsetter aktoer: {}, exception: {}", aktorId, e);
                                     }
                                 }
-                                log.info("Avslutter tråd: oppdater BrukerAktiviteter og BrukerData");
                             }
-                    )).get(5, TimeUnit.HOURS);
+                    )).get(8, TimeUnit.HOURS);
         } catch (Exception e) {
             log.error("Error i sync jobben.", e);
         }

@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.arenaaktiviteter;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.concurrent.TimeUnit;
 
+import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.*;
 
 @Slf4j
@@ -35,6 +39,11 @@ public class TiltakServiceV2 {
     private final ArenaHendelseRepository arenaHendelseRepository;
     private final BrukerDataService brukerDataService;
     private final ElasticIndexer elasticIndexer;
+
+    private final Cache<EnhetId, EnhetTiltak> enhetTiltakCache = Caffeine.newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .maximumSize(1000)
+            .build();
 
     public void behandleKafkaRecord(ConsumerRecord<String, TiltakDTO> kafkaMelding) {
         TiltakDTO melding = kafkaMelding.value();
@@ -71,7 +80,8 @@ public class TiltakServiceV2 {
     }
 
     public EnhetTiltak hentEnhettiltak(EnhetId enhet) {
-        return tiltakRepositoryV2.hentTiltakPaEnhet(enhet);
+        return tryCacheFirst(enhetTiltakCache, enhet,
+                () -> tiltakRepositoryV2.hentTiltakPaEnhet(enhet));
     }
 
     private boolean erGammelMelding(TiltakDTO kafkaMelding, TiltakInnhold innhold) {
