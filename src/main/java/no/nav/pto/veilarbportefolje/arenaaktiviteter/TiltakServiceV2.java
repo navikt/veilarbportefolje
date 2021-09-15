@@ -41,7 +41,7 @@ public class TiltakServiceV2 {
     private final ElasticIndexer elasticIndexer;
 
     private final Cache<EnhetId, EnhetTiltak> enhetTiltakCache = Caffeine.newBuilder()
-            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
             .maximumSize(1000)
             .build();
 
