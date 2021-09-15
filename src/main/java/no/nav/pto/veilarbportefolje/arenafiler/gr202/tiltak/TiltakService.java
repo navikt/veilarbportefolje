@@ -22,7 +22,7 @@ public class TiltakService {
     public TiltakService(EnhetTiltakRepository enhetTiltakRepository) {
         this.enhetTiltakRepository = enhetTiltakRepository;
         enhetTiltakCache = Caffeine.newBuilder()
-                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .expireAfterWrite(10, TimeUnit.MINUTES)
                 .maximumSize(1000)
                 .build();
     }
