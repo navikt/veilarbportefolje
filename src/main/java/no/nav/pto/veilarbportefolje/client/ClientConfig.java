@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.client;
 
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.VeilarbPepFactory;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
@@ -15,10 +16,13 @@ import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.kafka.KafkaStats;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.net.http.HttpClient;
 
@@ -85,6 +89,11 @@ public class ClientConfig {
     @Bean
     public HttpClient httpClient() {
         return HttpClient.newBuilder().build();
+    }
+
+    @Bean
+    KafkaStats kafkaStats(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, PrometheusMeterRegistry registry) {
+        return new KafkaStats(jdbcTemplate, registry);
     }
 
 }
