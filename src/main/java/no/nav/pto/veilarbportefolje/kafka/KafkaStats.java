@@ -9,11 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.Table;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
 @Slf4j
 public class KafkaStats implements MeterBinder {
     private final JdbcTemplate jdbcTemplate;
