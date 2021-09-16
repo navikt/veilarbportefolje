@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -23,6 +24,7 @@ import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 @RequiredArgsConstructor
 public class ScheduledJobs {
     private final BrukerAktiviteterService brukerAktiviteterService;
+    private final YtelsesService ytelsesService;
     private final LeaderElectionClient leaderElectionClient;
     private final UnleashService unleashService;
 
@@ -30,6 +32,15 @@ public class ScheduledJobs {
     public void oppdaterBrukerAktiviteter() {
         if (leaderElectionClient.isLeader() && erGR202PaKafka(unleashService)) {
             brukerAktiviteterService.syncAktivitetOgBrukerData();
+        } else {
+            log.info("Starter ikke jobb: oppdaterBrukerData");
+        }
+    }
+
+    @Scheduled(cron = "0 0 1 * * ?")
+    public void oppdaterNyeYtelser() {
+        if (leaderElectionClient.isLeader()) {
+            ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag();
         } else {
             log.info("Starter ikke jobb: oppdaterBrukerData");
         }

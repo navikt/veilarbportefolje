@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class YtelsesService {
     @NonNull
     @Qualifier("systemClient")
     private final AktorClient aktorClient;
+    private final BrukerService brukerService;
     private final BrukerDataService brukerDataService;
     private final YtelsesRepository ytelsesRepository;
     private final ArenaHendelseRepository arenaHendelseRepository;
@@ -65,10 +67,15 @@ public class YtelsesService {
             log.info("Lagrer ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
             ytelsesRepository.upsertYtelse(aktorId, ytsele, innhold);
         }
+
+        oppdaterYtelsesInformasjon(aktorId, PersonId.of(innhold.getPersonId()));
+        arenaHendelseRepository.upsertYtelsesHendelse(innhold.getVedtakId(), innhold.getHendelseId());
+    }
+
+    public void oppdaterYtelsesInformasjon(AktorId aktorId, PersonId personId) {
         Optional<YtelseDAO> lopendeYtelse = finnLopendeYtelse(aktorId);
         log.info("AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, lopendeYtelse.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
-        brukerDataService.oppdaterYtelser(aktorId, PersonId.of(innhold.getPersonId()), lopendeYtelse);
-        arenaHendelseRepository.upsertYtelsesHendelse(innhold.getVedtakId(), innhold.getHendelseId());
+        brukerDataService.oppdaterYtelser(aktorId, personId, lopendeYtelse);
 
         elasticIndexer.indekser(aktorId);
     }
@@ -97,10 +104,27 @@ public class YtelsesService {
             return Optional.of(tidligsteYtelse.setUtlopsDato(null));
         }
 
-        if(tidligsteYtelse.getUtlopsDato() == null){
+        if (tidligsteYtelse.getUtlopsDato() == null) {
             return Optional.of(tidligsteYtelse);
         }
         return finnVedtakMedSisteUtlopsDatoPaSak(aktiveYtelser, tidligsteYtelse);
+    }
+
+    public void oppdaterBrukereMedYtelserSomStarterIDag() {
+        List<AktorId> brukere = ytelsesRepository.hentBrukereMedYtelserSomStarterIDag();
+        log.info("Oppdaterer ytelser for: " + brukere.size() + " antall brukere");
+
+        brukere.forEach(aktorId -> {
+            log.info("Oppdaterer ytelse for aktorId: " + aktorId);
+            PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
+            if(personId == null){
+                log.warn("Avbryter ytelse oppdatering pga. manglende personId for aktorId: " + aktorId);
+                return;
+            }
+            oppdaterYtelsesInformasjon(aktorId, personId);
+        });
+
+        log.info("Oppdatering av ytelser fullført");
     }
 
     private Optional<YtelseDAO> finnVedtakMedSisteUtlopsDatoPaSak(List<YtelseDAO> ytelser, YtelseDAO tidligsteYtelse) {

@@ -101,4 +101,12 @@ public class YtelsesRepository {
         }
         return input.intValue();
     }
+
+    public List<AktorId> hentBrukereMedYtelserSomStarterIDag() {
+        final String brukereSomStarterIDag = "SELECT distinct " + AKTOERID + " FROM " + TABLE_NAME
+                + " WHERE trunc(" + STARTDATO + ") = trunc(current_timestamp)";
+
+        return db.queryForList(brukereSomStarterIDag, AktorId.class);
+
+    }
 }

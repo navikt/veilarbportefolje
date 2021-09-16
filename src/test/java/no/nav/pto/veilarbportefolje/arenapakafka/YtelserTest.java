@@ -19,6 +19,7 @@ import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,7 +65,7 @@ public class YtelserTest {
         this.aktorClient = Mockito.mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
-        this.ytelsesService = new YtelsesService(aktorClient, brukerDataService, ytelsesRepository, arenaHendelseRepository, mock(ElasticIndexer.class));
+        this.ytelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, ytelsesRepository,arenaHendelseRepository,mock(ElasticIndexer.class));
     }
 
     @BeforeEach
@@ -110,7 +111,7 @@ public class YtelserTest {
         Timestamp nextMonth = Timestamp.valueOf(ZonedDateTime.now().plusMonths(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setUtlopsDato(tomorrow),
                 new YtelseDAO().setSaksId(sak1).setStartDato(tomorrow).setUtlopsDato(nextWeek),
@@ -132,7 +133,7 @@ public class YtelserTest {
         Timestamp nextMonth = Timestamp.valueOf(ZonedDateTime.now().plusMonths(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(tomorrow).setUtlopsDato(nextWeek),
                 new YtelseDAO().setSaksId(sak1).setStartDato(nextWeek).setUtlopsDato(nextMonth)
@@ -150,7 +151,7 @@ public class YtelserTest {
         Timestamp yesterday = Timestamp.valueOf(ZonedDateTime.now().minusDays(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setType(TypeKafkaYtelse.DAGPENGER)
         );
@@ -166,7 +167,7 @@ public class YtelserTest {
         Timestamp yesterday = Timestamp.valueOf(ZonedDateTime.now().minusDays(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setType(TypeKafkaYtelse.AAP)
         );
