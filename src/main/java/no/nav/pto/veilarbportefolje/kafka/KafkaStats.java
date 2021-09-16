@@ -5,25 +5,26 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import io.micrometer.core.lang.NonNull;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.Table;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class KafkaStats implements MeterBinder {
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     private PrometheusMeterRegistry registry;
+
+    public KafkaStats(JdbcTemplate jdbcTemplate, PrometheusMeterRegistry registry) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.registry = registry;
+    }
 
     @Override
     public void bindTo(@NonNull MeterRegistry registry) {
