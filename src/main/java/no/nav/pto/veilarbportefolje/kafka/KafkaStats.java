@@ -1,19 +1,17 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.MeterBinder;
-import io.micrometer.core.lang.NonNull;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.Table;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.List;
 
 @Slf4j
-public class KafkaStats implements MeterBinder {
+public class KafkaStats {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -24,8 +22,8 @@ public class KafkaStats implements MeterBinder {
         this.registry = registry;
     }
 
-    @Override
-    public void bindTo(@NonNull MeterRegistry registry) {
+    @Scheduled(cron = "0 0 2 * * ?")
+    public void reportStats() {
         log.info("Reporting Kafka stats");
 
         List<Integer> retriesStats = getRetriesStats();
