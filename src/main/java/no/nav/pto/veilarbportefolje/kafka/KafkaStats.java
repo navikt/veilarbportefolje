@@ -3,6 +3,8 @@ package no.nav.pto.veilarbportefolje.kafka;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import io.micrometer.core.lang.NonNull;
+import io.micrometer.core.lang.NonNullApi;
+import io.micrometer.core.lang.NonNullFields;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.Table;
@@ -12,6 +14,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.List;
 
 @Slf4j
+@NonNullApi
+@NonNullFields
 public class KafkaStats implements MeterBinder {
     private final JdbcTemplate jdbcTemplate;
 
