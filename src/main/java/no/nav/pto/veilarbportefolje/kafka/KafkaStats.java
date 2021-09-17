@@ -28,7 +28,7 @@ public class KafkaStats implements MeterBinder {
         log.info("Reporting Kafka stats");
 
         List<Integer> retriesStats = getRetriesStats();
-        registry.gauge("veilarbportefolje.kafka.retries.messages_count", retriesStats.size());
+        this.registry.gauge("veilarbportefolje.kafka.retries.messages_count", retriesStats.size());
         //Gauge.builder("veilarbportefolje.kafka.retries.messages_count", retriesStats, (rs) -> retriesStats.size()).description("Number of failed messages").register(this.registry);
         //Gauge.builder("veilarbportefolje.kafka.retries.min", retriesStats, (rs) -> retriesStats.stream().mapToInt(v -> v).min().orElse(0)).description("Minimal number of retries for failed messages").register(this.registry);
         //Gauge.builder("veilarbportefolje.kafka.retries.max", retriesStats, (rs) -> retriesStats.stream().mapToInt(v -> v).max().orElse(0)).description("Maximal number of retries for failed messages").register(this.registry);
