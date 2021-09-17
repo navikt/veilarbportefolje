@@ -66,10 +66,14 @@ public class YtelseRepositoryTest {
     }
 
     private YtelsesInnhold lagInnhold(String id, LocalDate startDato) {
+        return lagInnhold(id, startDato,"Sak1", fnr, personId);
+    }
+
+    public static YtelsesInnhold lagInnhold(String vedtakId, LocalDate startDato, String sakId, Fnr fnr, PersonId personId) {
         YtelsesInnhold innhold = new YtelsesInnhold();
         innhold.setFnr(fnr.get());
-        innhold.setVedtakId(id);
-        innhold.setSaksId("S1");
+        innhold.setVedtakId(vedtakId);
+        innhold.setSaksId(sakId);
         innhold.setSakstypeKode("AA");
         innhold.setRettighetstypeKode("AAP");
         innhold.setPersonId(personId.getValue());

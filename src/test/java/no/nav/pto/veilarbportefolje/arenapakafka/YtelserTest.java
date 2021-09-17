@@ -29,11 +29,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static no.nav.common.json.JsonUtils.fromJson;
+import static no.nav.pto.veilarbportefolje.arenapakafka.YtelseRepositoryTest.lagInnhold;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -175,6 +177,58 @@ public class YtelserTest {
         Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.finnLopendeYtelse(aktorId);
 
         assertThat(lopendeYtelse.isPresent()).isTrue();
+    }
+
+    @Test
+    public void sletterLøpendeYtelseOgAktivererNesteVedtakPåSammeSak(){
+        String sak1 = "Sak1";
+        String sak2 = "Sak2";
+        Timestamp nextWeek = Timestamp.valueOf(ZonedDateTime.now().plusWeeks(1).toLocalDateTime());
+        Timestamp nextMonth = Timestamp.valueOf(ZonedDateTime.now().plusMonths(1).toLocalDateTime());
+
+        YtelsesRepository mockRepository = mock(YtelsesRepository.class);
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class));
+        List<YtelseDAO> ytelser = List.of(
+                new YtelseDAO().setSaksId(sak1).setStartDato(nextWeek).setUtlopsDato(nextMonth)
+                        .setType(TypeKafkaYtelse.DAGPENGER)
+                        .setRettighetstypeKode("LONN")
+                        .setSakstypeKode("DAGP"),
+                new YtelseDAO().setSaksId(sak2).setStartDato(nextWeek).setUtlopsDato(nextWeek)
+                        .setType(TypeKafkaYtelse.DAGPENGER)
+                        .setRettighetstypeKode("LONN")
+                        .setSakstypeKode("DAGP")
+        );
+        Mockito.when(mockRepository.getYtelser(aktorId)).thenReturn(ytelser);
+
+        YtelsesInnhold sletteInnhold = lagInnhold("1", LocalDate.now(), sak1, fnr, personId);
+        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(aktorId, sletteInnhold);
+
+        assertThat(lopendeYtelse.isPresent()).isTrue();
+        assertThat(lopendeYtelse.get().getSaksId()).isEqualTo(sak1);
+        assertThat(lopendeYtelse.get().getUtlopsDato()).isEqualTo(nextMonth);
+
+    }
+    
+    @Test
+    public void sletterLøpendeYtelse(){
+        String sak1 = "Sak1";
+        String sak2 = "Sak2";
+        Timestamp nextWeek = Timestamp.valueOf(ZonedDateTime.now().plusWeeks(1).toLocalDateTime());
+
+        YtelsesRepository mockRepository = mock(YtelsesRepository.class);
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class));
+        List<YtelseDAO> ytelser = List.of(
+                new YtelseDAO().setSaksId(sak2).setStartDato(nextWeek).setUtlopsDato(nextWeek)
+                        .setType(TypeKafkaYtelse.DAGPENGER)
+                        .setRettighetstypeKode("LONN")
+                        .setSakstypeKode("DAGP")
+        );
+        Mockito.when(mockRepository.getYtelser(aktorId)).thenReturn(ytelser);
+
+        YtelsesInnhold sletteInnhold = lagInnhold("1", LocalDate.now(), sak1, fnr, personId);
+        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(aktorId, sletteInnhold);
+
+        assertThat(lopendeYtelse.isEmpty()).isTrue();
     }
 
     @Test

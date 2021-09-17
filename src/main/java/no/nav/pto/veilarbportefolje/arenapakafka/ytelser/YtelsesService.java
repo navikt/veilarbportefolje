@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -31,7 +32,8 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivit
 @Transactional
 @RequiredArgsConstructor
 public class YtelsesService {
-    @NonNull @Qualifier("systemClient")
+    @NonNull
+    @Qualifier("systemClient")
     private final AktorClient aktorClient;
     private final BrukerService brukerService;
     private final BrukerDataService brukerDataService;
@@ -73,44 +75,46 @@ public class YtelsesService {
         elasticIndexer.indekser(aktorId);
     }
 
-    public void oppdaterYtelsesInformasjon(AktorId aktorId, PersonId personId) {
+    public Optional<YtelseDAO> oppdaterYtelsesInformasjon(AktorId aktorId, PersonId personId) {
         Optional<YtelseDAO> lopendeYtelse = finnLopendeYtelse(aktorId);
         log.info("AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, lopendeYtelse.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
         brukerDataService.oppdaterYtelser(aktorId, personId, lopendeYtelse);
+
+        return lopendeYtelse;
     }
 
+    // TODO: diskuter denne metoden. Kanskje den skal endre startdatoen på evt. vedtak som blir løpende?
     /**
      * NB: I tilfeller der arena sletter et løpende vedtak.
      * Det må da sjekkes om det finnes andre vedtak i samme sak, hvis dette er tilfellet så skal ytelsen på brukeren fortsette.
      * Dette gjelder uavhengig av start datoen på vedtaket som tar over som løpende.
      * Det neste løpende vedtaket kan med andre ord ha en start dato satt i fremtiden.
      */
-    private void oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(AktorId aktorId, YtelsesInnhold innhold) {
+    public Optional<YtelseDAO> oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(AktorId aktorId, YtelsesInnhold innhold) {
         LocalDate iDag = LocalDate.now();
-        LocalDate iMorgen = iDag.plusDays(1);
 
-        boolean vedtakHarStartet = innhold.getFraOgMedDato().getLocalDate().toLocalDate().isBefore(iDag);
-        boolean vedtakErIkkeAvsluttet = Optional.ofNullable(innhold.getTilOgMedDato())
-                .map(tilDato -> tilDato.getLocalDate().toLocalDate().isBefore(iMorgen))
-                .orElse(true);
+        Timestamp startDato = Timestamp.valueOf(innhold.getFraOgMedDato().getLocalDate());
+        Timestamp utlopsDato = innhold.getTilOgMedDato() == null ? null : Timestamp.valueOf(innhold.getTilOgMedDato().getLocalDate());
 
-        boolean erLopendeVedtak = vedtakHarStartet && vedtakErIkkeAvsluttet;
+        boolean erLopendeVedtak = harLøpendeStartDato(startDato, iDag) && harLøpendeUtløpsDato(utlopsDato, iDag);
 
         if (erLopendeVedtak) {
             Optional<YtelseDAO> sisteYtelsePaSakId = finnSisteYtelsePaSakIdSomIkkeErUtlopt(aktorId, innhold.getSaksId());
-            if(sisteYtelsePaSakId.isPresent()){
+            if (sisteYtelsePaSakId.isPresent()) {
+                log.info("AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, sisteYtelsePaSakId.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
                 brukerDataService.oppdaterYtelser(aktorId, PersonId.of(innhold.getPersonId()), sisteYtelsePaSakId);
-                return;
+
+                return sisteYtelsePaSakId;
             }
         }
-        oppdaterYtelsesInformasjon(aktorId, PersonId.of(innhold.getPersonId()));
+        return oppdaterYtelsesInformasjon(aktorId, PersonId.of(innhold.getPersonId()));
     }
 
     public Optional<YtelseDAO> finnLopendeYtelse(AktorId aktorId) {
         LocalDate iDag = LocalDate.now();
         List<YtelseDAO> aktiveYtelser = ytelsesRepository.getYtelser(aktorId).stream()
                 .filter(Objects::nonNull)
-                .filter(ytelse -> harUtlopsDatoIFremtiden(ytelse, iDag))
+                .filter(ytelse -> harLøpendeUtløpsDato(ytelse.getUtlopsDato(), iDag))
                 .collect(Collectors.toList());
 
         if (aktiveYtelser.isEmpty()) {
@@ -118,10 +122,9 @@ public class YtelsesService {
         }
 
         YtelseDAO tidligsteYtelse = aktiveYtelser.stream()
-                .min(Comparator.comparing(YtelseDAO::getStartDato))
-                .orElse(null);
+                .min(Comparator.comparing(YtelseDAO::getStartDato)).get();
 
-        if (erTomEllerHarStartDatoIFremtiden(tidligsteYtelse, iDag)) {
+        if (!harLøpendeStartDato(tidligsteYtelse.getStartDato(), iDag)) {
             return Optional.empty();
         }
         if (TypeKafkaYtelse.DAGPENGER.equals(tidligsteYtelse.getType())) {
@@ -141,7 +144,7 @@ public class YtelsesService {
         List<YtelseDAO> aktiveYtelserPaSakID = ytelsesRepository.getYtelser(aktorId).stream()
                 .filter(Objects::nonNull)
                 .filter(ytelse -> sakID.equals(ytelse.getSaksId()))
-                .filter(ytelse -> harUtlopsDatoIFremtiden(ytelse, iDag))
+                .filter(ytelse -> harLøpendeUtløpsDato(ytelse.getUtlopsDato(), iDag))
                 .collect(Collectors.toList());
 
         if (aktiveYtelserPaSakID.isEmpty()) {
@@ -175,21 +178,20 @@ public class YtelsesService {
 
     private Optional<YtelseDAO> finnVedtakMedSisteUtlopsDatoPaSak(List<YtelseDAO> ytelser, YtelseDAO tidligsteYtelse) {
         return ytelser.stream()
-                .filter(ytelseDOA -> ytelseDOA.getSaksId() != null && ytelseDOA.getSaksId().equals(tidligsteYtelse.getSaksId()))
+                .filter(ytelseDOA -> tidligsteYtelse.getSaksId().equals(ytelseDOA.getSaksId()))
                 .filter(ytelseDOA -> ytelseDOA.getUtlopsDato() != null)
                 .max(Comparator.comparing(YtelseDAO::getUtlopsDato));
     }
 
-    private boolean erTomEllerHarStartDatoIFremtiden(YtelseDAO ytelse, LocalDate iDag) {
+    private boolean harLøpendeStartDato(Timestamp startDato, LocalDate iDag) {
         // startDato er en 'fra og med' dato.
-        return ytelse == null || ytelse.getStartDato().toLocalDateTime().toLocalDate().isAfter(iDag);
+        return startDato.toLocalDateTime().toLocalDate().isBefore(iDag.plusDays(1));
     }
 
-    private boolean harUtlopsDatoIFremtiden(YtelseDAO ytelse, LocalDate iDag) {
+    private boolean harLøpendeUtløpsDato(Timestamp utlopsDato, LocalDate iDag) {
         // Utløpsdato == null betyr en "uendlig" ytelse.
         // Utløpsdato er en 'til og med' dato.
-        return ytelse.getUtlopsDato() == null
-                || ytelse.getUtlopsDato().toLocalDateTime().toLocalDate().isAfter(iDag.minusDays(1));
+        return utlopsDato == null || utlopsDato.toLocalDateTime().toLocalDate().isAfter(iDag.minusDays(1));
     }
 
     private boolean erGammelMelding(YtelsesDTO kafkaMelding, YtelsesInnhold innhold) {
