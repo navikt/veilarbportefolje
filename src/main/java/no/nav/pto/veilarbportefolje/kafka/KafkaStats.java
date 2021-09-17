@@ -7,11 +7,13 @@ import no.nav.pto.veilarbportefolje.database.Table;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Component
 @Slf4j
 public class KafkaStats {
     private final JdbcTemplate jdbcTemplate;
@@ -27,10 +29,10 @@ public class KafkaStats {
     @Scheduled(cron = "*/5 * * * * ?")
     public void reportStats() {
         List<Integer> retriesStats = getRetriesStats();
-        Gauge.builder("veilarbportefolje.kafka.retries.messages_count", retriesStats, (rs) -> retriesStats.size()).description("Number of failed messages").register(this.registry);
-        Gauge.builder("veilarbportefolje.kafka.retries.min", retriesStats, (rs) -> retriesStats.stream().mapToInt(v -> v).min().orElse(0)).description("Minimal number of retries for failed messages").register(this.registry);
-        Gauge.builder("veilarbportefolje.kafka.retries.max", retriesStats, (rs) -> retriesStats.stream().mapToInt(v -> v).max().orElse(0)).description("Maximal number of retries for failed messages").register(this.registry);
-        Gauge.builder("veilarbportefolje.kafka.retries.avg", retriesStats, (rs) -> retriesStats.stream().mapToInt(v -> v).average().orElse(0)).description("Average number of retries for failed messages").register(this.registry);
+        Gauge.builder("veilarbportefolje_kafka_retries_messages_count", retriesStats, (rs) -> retriesStats.size()).description("Number of failed messages").register(this.registry);
+        Gauge.builder("veilarbportefolje_kafka_retries_min", retriesStats, (rs) -> retriesStats.stream().mapToInt(v -> v).min().orElse(0)).description("Minimal number of retries for failed messages").register(this.registry);
+        Gauge.builder("veilarbportefolje_kafka_retries_max", retriesStats, (rs) -> retriesStats.stream().mapToInt(v -> v).max().orElse(0)).description("Maximal number of retries for failed messages").register(this.registry);
+        Gauge.builder("veilarbportefolje_kafka_retries_avg", retriesStats, (rs) -> retriesStats.stream().mapToInt(v -> v).average().orElse(0)).description("Average number of retries for failed messages").register(this.registry);
     }
 
     private List<Integer> getRetriesStats() {
