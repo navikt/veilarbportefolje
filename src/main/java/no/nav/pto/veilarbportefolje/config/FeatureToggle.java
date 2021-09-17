@@ -13,6 +13,8 @@ public class FeatureToggle {
 
     public static final String POSTGRES = "veilarbportefolje.last_inn_data_pa_postgres";
 
+    public static final String IGNORER_SISTLEST = "veilarbportefolje.ignorer_sist_lest";
+
     public static final String GR202_PA_KAFKA = "veilarbportefolje.GR202_pa_kafka";
 
     public static final String CV_EKSISTERE_PRODSETTE = "veilarbportefolje.cv_eksistere";
@@ -23,6 +25,11 @@ public class FeatureToggle {
     public static boolean erPostgresPa(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.POSTGRES);
     }
+
+    public static boolean ignorerSistLest(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.IGNORER_SISTLEST);
+    }
+
     public static boolean erGR202PaKafka(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.GR202_PA_KAFKA);
     }
