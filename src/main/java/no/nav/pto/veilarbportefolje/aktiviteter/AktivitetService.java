@@ -72,11 +72,10 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         aktivitetDAO.tryLagreAktivitetData(aktivitetData);
         utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(aktivitetData.getAktorId()));
-        /*
         if (!oppfolgingRepository.erUnderoppfolging(AktorId.of(aktivitetData.getAktorId()))) {
             elasticServiceV2.deleteIfPresent(AktorId.of(aktivitetData.getAktorId()),
                     String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
-        }*/
+        }
     }
 
     public void utledOgLagreAlleAktivitetstatuser() {

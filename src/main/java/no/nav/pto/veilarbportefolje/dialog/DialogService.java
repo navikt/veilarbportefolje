@@ -42,7 +42,7 @@ public class DialogService extends KafkaCommonConsumerService<Dialogdata> implem
             log.info("Oppdatert dialog for bruker: {}, i postgres rader pavirket: {}", melding.getAktorId(), rader);
         }
 
-        //elasticServiceV2.updateDialog(melding);
+        elasticServiceV2.updateDialog(melding);
     }
 
     @Override
