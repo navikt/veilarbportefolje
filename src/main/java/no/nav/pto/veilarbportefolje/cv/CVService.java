@@ -47,7 +47,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> implements Ka
             cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
         }
         cvRepository.upsertCvEksistere(aktoerId, cvEksisterer);
-        elasticServiceV2.updateCvEksistere(aktoerId, cvEksisterer);
+        //elasticServiceV2.updateCvEksistere(aktoerId, cvEksisterer);
     }
 
     public void behandleKafkaMeldingCVHjemmel(ConsumerRecord<String, CVMelding> kafkaMelding) {
