@@ -175,5 +175,6 @@ public class Table {
         public static final String ID = "ID";
         public static final String RETRIES = "RETRIES";
         public static final String CREATED_AT = "CREATED_AT";
+        public static final String LAST_RETRY = "LAST_RETRY";
     }
 }
