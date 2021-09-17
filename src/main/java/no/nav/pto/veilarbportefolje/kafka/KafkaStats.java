@@ -30,7 +30,6 @@ public class KafkaStats {
     public void reportStats() {
         List<Integer> retriesStats = getRetriesStats();
         Gauge.builder("veilarbportefolje_kafka_retries_messages_count", retriesStats, (rs) -> retriesStats.size()).description("Number of failed messages").register(this.registry);
-        Gauge.builder("veilarbportefolje_kafka_retries_min", retriesStats, (rs) -> retriesStats.stream().mapToInt(v -> v).min().orElse(0)).description("Minimal number of retries for failed messages").register(this.registry);
         Gauge.builder("veilarbportefolje_kafka_retries_max", retriesStats, (rs) -> retriesStats.stream().mapToInt(v -> v).max().orElse(0)).description("Maximal number of retries for failed messages").register(this.registry);
         Gauge.builder("veilarbportefolje_kafka_retries_avg", retriesStats, (rs) -> retriesStats.stream().mapToInt(v -> v).average().orElse(0)).description("Average number of retries for failed messages").register(this.registry);
     }
@@ -38,8 +37,8 @@ public class KafkaStats {
     private List<Integer> getRetriesStats() {
         return this.jdbcTemplate.queryForList("SELECT " + Table.KAFKA_CONSUMER_RECORD.RETRIES + " FROM " +
                         Table.KAFKA_CONSUMER_RECORD.TABLE_NAME + " WHERE " + Table.KAFKA_CONSUMER_RECORD.RETRIES + " > 0 " +
-                        " AND " + Table.KAFKA_CONSUMER_RECORD.LAST_RETRY + " > " +
-                        Timestamp.valueOf(LocalDateTime.now().minusHours(1))
+                        " AND " + Table.KAFKA_CONSUMER_RECORD.LAST_RETRY + " > '" +
+                        Timestamp.valueOf(LocalDateTime.now().minusHours(1)) + "'"
                 , Integer.class);
     }
 }
