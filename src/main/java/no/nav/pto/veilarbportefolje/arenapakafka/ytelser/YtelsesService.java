@@ -31,8 +31,7 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivit
 @Transactional
 @RequiredArgsConstructor
 public class YtelsesService {
-    @NonNull
-    @Qualifier("systemClient")
+    @NonNull @Qualifier("systemClient")
     private final AktorClient aktorClient;
     private final BrukerService brukerService;
     private final BrukerDataService brukerDataService;
@@ -63,21 +62,48 @@ public class YtelsesService {
         if (skalSlettesGoldenGate(kafkaMelding)) {
             log.info("Sletter ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
             ytelsesRepository.slettYtelse(innhold.getVedtakId());
+            oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(aktorId, innhold);
         } else {
             log.info("Lagrer ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
             ytelsesRepository.upsertYtelse(aktorId, ytsele, innhold);
+            oppdaterYtelsesInformasjon(aktorId, PersonId.of(innhold.getPersonId()));
         }
 
-        oppdaterYtelsesInformasjon(aktorId, PersonId.of(innhold.getPersonId()));
         arenaHendelseRepository.upsertYtelsesHendelse(innhold.getVedtakId(), innhold.getHendelseId());
+        elasticIndexer.indekser(aktorId);
     }
 
     public void oppdaterYtelsesInformasjon(AktorId aktorId, PersonId personId) {
         Optional<YtelseDAO> lopendeYtelse = finnLopendeYtelse(aktorId);
         log.info("AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, lopendeYtelse.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
         brukerDataService.oppdaterYtelser(aktorId, personId, lopendeYtelse);
+    }
 
-        elasticIndexer.indekser(aktorId);
+    /**
+     * NB: I tilfeller der arena sletter et løpende vedtak.
+     * Det må da sjekkes om det finnes andre vedtak i samme sak, hvis dette er tilfellet så skal ytelsen på brukeren fortsette.
+     * Dette gjelder uavhengig av start datoen på vedtaket som tar over som løpende.
+     * Det neste løpende vedtaket kan med andre ord ha en start dato satt i fremtiden.
+     */
+    private void oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(AktorId aktorId, YtelsesInnhold innhold) {
+        LocalDate iDag = LocalDate.now();
+        LocalDate iMorgen = iDag.plusDays(1);
+
+        boolean vedtakHarStartet = innhold.getFraOgMedDato().getLocalDate().toLocalDate().isBefore(iDag);
+        boolean vedtakErIkkeAvsluttet = Optional.ofNullable(innhold.getTilOgMedDato())
+                .map(tilDato -> tilDato.getLocalDate().toLocalDate().isBefore(iMorgen))
+                .orElse(true);
+
+        boolean erLopendeVedtak = vedtakHarStartet && vedtakErIkkeAvsluttet;
+
+        if (erLopendeVedtak) {
+            Optional<YtelseDAO> sisteYtelsePaSakId = finnSisteYtelsePaSakIdSomIkkeErUtlopt(aktorId, innhold.getSaksId());
+            if(sisteYtelsePaSakId.isPresent()){
+                brukerDataService.oppdaterYtelser(aktorId, PersonId.of(innhold.getPersonId()), sisteYtelsePaSakId);
+                return;
+            }
+        }
+        oppdaterYtelsesInformasjon(aktorId, PersonId.of(innhold.getPersonId()));
     }
 
     public Optional<YtelseDAO> finnLopendeYtelse(AktorId aktorId) {
@@ -110,6 +136,25 @@ public class YtelsesService {
         return finnVedtakMedSisteUtlopsDatoPaSak(aktiveYtelser, tidligsteYtelse);
     }
 
+    public Optional<YtelseDAO> finnSisteYtelsePaSakIdSomIkkeErUtlopt(AktorId aktorId, String sakID) {
+        LocalDate iDag = LocalDate.now();
+        List<YtelseDAO> aktiveYtelserPaSakID = ytelsesRepository.getYtelser(aktorId).stream()
+                .filter(Objects::nonNull)
+                .filter(ytelse -> sakID.equals(ytelse.getSaksId()))
+                .filter(ytelse -> harUtlopsDatoIFremtiden(ytelse, iDag))
+                .collect(Collectors.toList());
+
+        if (aktiveYtelserPaSakID.isEmpty()) {
+            return Optional.empty();
+        }
+        Optional<YtelseDAO> ytelseMedSluttDatoEllerNull = aktiveYtelserPaSakID.stream()
+                .filter(ytelseDOA -> ytelseDOA.getUtlopsDato() != null)
+                .max(Comparator.comparing(YtelseDAO::getUtlopsDato));
+
+        return Optional.of(ytelseMedSluttDatoEllerNull
+                .orElse(aktiveYtelserPaSakID.get(0)));
+    }
+
     public void oppdaterBrukereMedYtelserSomStarterIDag() {
         List<AktorId> brukere = ytelsesRepository.hentBrukereMedYtelserSomStarterIDag();
         log.info("Oppdaterer ytelser for: " + brukere.size() + " antall brukere");
@@ -117,11 +162,12 @@ public class YtelsesService {
         brukere.forEach(aktorId -> {
             log.info("Oppdaterer ytelse for aktorId: " + aktorId);
             PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
-            if(personId == null){
+            if (personId == null) {
                 log.warn("Avbryter ytelse oppdatering pga. manglende personId for aktorId: " + aktorId);
                 return;
             }
             oppdaterYtelsesInformasjon(aktorId, personId);
+            elasticIndexer.indekser(aktorId);
         });
 
         log.info("Oppdatering av ytelser fullført");
