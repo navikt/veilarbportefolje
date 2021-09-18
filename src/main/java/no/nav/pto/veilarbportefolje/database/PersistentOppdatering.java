@@ -43,7 +43,7 @@ public class PersistentOppdatering {
         if(unleashService.isEnabled(GR202_PA_KAFKA)){
             brukerDataService.oppdaterAktivitetBrukerData(aktoerId, personId);
         }
-        //elasticIndexer.indekser(aktoerId);
+        elasticIndexer.indekser(aktoerId);
     }
 
     public void lagreBrukeroppdateringerIDB(List<? extends BrukerOppdatering> brukerOppdatering) {

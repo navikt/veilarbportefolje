@@ -57,7 +57,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         unleashService = Mockito.mock(UnleashService.class);
         this.oppfolgingRepositoryMock = mock(OppfolgingRepository.class);
         this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService, sisteEndringService, oppfolgingRepositoryMock, elasticServiceV2, unleashService);
-        this.sistLestService = new SistLestService(brukerService, sisteEndringService, unleashService);
+        this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.elasticService = elasticService;
         this.malService = malService;
     }
