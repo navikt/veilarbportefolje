@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
 
 
@@ -43,9 +42,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> implements Ka
         AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
 
         boolean cvEksisterer = cvEksistere(kafkaMelding);
-        if (erPostgresPa(unleashService)) {
-            cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
-        }
+        cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
         cvRepository.upsertCvEksistere(aktoerId, cvEksisterer);
         elasticServiceV2.updateCvEksistere(aktoerId, cvEksisterer);
     }
@@ -70,10 +67,10 @@ public class CVService extends KafkaCommonConsumerService<Melding> implements Ka
             return;
         }
 
-        if (erPostgresPa(unleashService)) {
-            cvRepositoryV2.upsertHarDeltCv(aktoerId, harDeltCv);
-        }
+        log.info("Oppdaterte bruker: {}. Har delt cv: {}", aktoerId, harDeltCv);
+        cvRepositoryV2.upsertHarDeltCv(aktoerId, harDeltCv);
         cvRepository.upsertHarDeltCv(aktoerId, harDeltCv);
+
         elasticServiceV2.updateHarDeltCv(aktoerId, harDeltCv);
 
         if (!oppfolgingRepository.erUnderoppfolging(cvMelding.getAktoerId())) {

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
 @RequiredArgsConstructor
@@ -35,9 +34,7 @@ public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeiled
     protected void behandleKafkaMeldingLogikk(NyForVeilederDTO dto) {
         final boolean brukerErNyForVeileder = dto.isNyForVeileder();
         oppfolgingRepository.settNyForVeileder(dto.getAktorId(), brukerErNyForVeileder);
-        if (erPostgresPa(unleashService)) {
-            oppfolgingRepositoryV2.settNyForVeileder(dto.getAktorId(), brukerErNyForVeileder);
-        }
+        oppfolgingRepositoryV2.settNyForVeileder(dto.getAktorId(), brukerErNyForVeileder);
 
         elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), brukerErNyForVeileder);
     }

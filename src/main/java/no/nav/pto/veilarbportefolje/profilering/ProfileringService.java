@@ -11,9 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
-
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -29,9 +26,7 @@ public class ProfileringService extends KafkaCommonConsumerService<ArbeidssokerP
     }
 
     public void behandleKafkaMeldingLogikk(ArbeidssokerProfilertEvent kafkaMelding) {
-        if (erPostgresPa(unleashService)) {
-            profileringRepositoryV2.upsertBrukerProfilering(kafkaMelding);
-        }
+        profileringRepositoryV2.upsertBrukerProfilering(kafkaMelding);
         profileringRepository.upsertBrukerProfilering(kafkaMelding);
     }
 

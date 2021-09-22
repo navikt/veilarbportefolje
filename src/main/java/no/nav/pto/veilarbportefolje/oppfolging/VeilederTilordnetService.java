@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
 public class VeilederTilordnetService extends KafkaCommonConsumerService<VeilederTilordnetDTO> implements KafkaConsumerService<String> {
@@ -49,9 +48,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         final AktorId aktoerId = dto.getAktorId();
 
         oppfolgingRepository.settVeileder(aktoerId, dto.getVeilederId());
-        if (erPostgresPa(unleashService)) {
-            oppfolgingRepositoryV2.settVeileder(aktoerId, dto.getVeilederId());
-        }
+        oppfolgingRepositoryV2.settVeileder(aktoerId, dto.getVeilederId());
 
         elasticServiceV2.oppdaterVeileder(aktoerId, dto.getVeilederId());
 

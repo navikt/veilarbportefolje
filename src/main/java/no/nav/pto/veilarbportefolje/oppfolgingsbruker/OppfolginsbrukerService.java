@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.common.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
 @Slf4j
@@ -31,10 +30,8 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<Oppfolgi
     @Override
     protected void behandleKafkaMeldingLogikk(OppfolgingsbrukerKafkaDTO oppfolginsbruker) {
         log.info("Fikk endring pa oppfolginsbruker: {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v1", oppfolginsbruker.getAktoerid());
-        if (erPostgresPa(unleashService)) {
-            int rader = OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolginsbruker);
-            log.info("Oppdatert oppfolginsbruker info for bruker: {}, i postgres rader pavirket: {}", oppfolginsbruker.getAktoerid(), rader);
-        }
+        int rader = OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolginsbruker);
+        log.info("Oppdatert oppfolginsbruker info for bruker: {}, i postgres rader pavirket: {}", oppfolginsbruker.getAktoerid(), rader);
     }
 
     @Override

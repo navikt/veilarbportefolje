@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.common.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Slf4j
 @Service
@@ -76,39 +75,28 @@ public class VedtakService extends KafkaCommonConsumerService<KafkaVedtakStatusE
 
     private void slettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
-
-        if (erPostgresPa(unleashService))
-            vedtakStatusRepositoryV2.slettGamleVedtakOgUtkast(melding.getAktorId());
+        vedtakStatusRepositoryV2.slettGamleVedtakOgUtkast(melding.getAktorId());
     }
 
     private void opprettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.opprettUtkast(melding);
-
-        if (erPostgresPa(unleashService))
-            vedtakStatusRepositoryV2.upsertVedtak(melding);
+        vedtakStatusRepositoryV2.upsertVedtak(melding);
     }
 
     private void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.oppdaterAnsvarligVeileder(melding);
-
-        if (erPostgresPa(unleashService))
-            vedtakStatusRepositoryV2.oppdaterAnsvarligVeileder(melding);
+        vedtakStatusRepositoryV2.oppdaterAnsvarligVeileder(melding);
     }
 
 
     private void oppdaterUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.upsertVedtak(melding);
-
-        if (erPostgresPa(unleashService))
-            vedtakStatusRepositoryV2.updateVedtak(melding);
+        vedtakStatusRepositoryV2.updateVedtak(melding);
     }
 
     private void setVedtakSendt(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettGamleVedtakOgUtkast(melding.getAktorId());
         vedtakStatusRepository.upsertVedtak(melding);
-
-        if (erPostgresPa(unleashService)) {
-            vedtakStatusRepositoryV2.slettGamleVedtakOgUtkast(melding.getAktorId());
-        }
+        vedtakStatusRepositoryV2.slettGamleVedtakOgUtkast(melding.getAktorId());
     }
 }

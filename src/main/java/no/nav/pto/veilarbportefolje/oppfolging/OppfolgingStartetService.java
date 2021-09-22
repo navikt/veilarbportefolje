@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +29,7 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
     @Override
     public void behandleKafkaMeldingLogikk(OppfolgingStartetDTO dto) {
         oppfolgingRepository.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
-        if (erPostgresPa(unleashService)) {
-            oppfolgingRepositoryV2.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
-        }
+        oppfolgingRepositoryV2.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
         elasticIndexer.indekser(dto.getAktorId());
     }
 

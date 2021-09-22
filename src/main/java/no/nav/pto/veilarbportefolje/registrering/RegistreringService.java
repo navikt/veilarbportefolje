@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
-
 @RequiredArgsConstructor
 @Service
 @Slf4j
@@ -22,7 +20,6 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
     private final RegistreringRepositoryV2 registreringRepositoryV2;
     private final ElasticServiceV2 elastic;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
-    private final UnleashService unleashService;
 
     public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
         log.info("Oppdaterer registrering på aktør: {}", kafkaRegistreringMelding.getAktorid());
@@ -30,9 +27,7 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
     }
 
     public void behandleKafkaMeldingLogikk(ArbeidssokerRegistrertEvent kafkaMelding) {
-        if (erPostgresPa(unleashService)) {
-            registreringRepositoryV2.upsertBrukerRegistrering(kafkaMelding);
-        }
+        registreringRepositoryV2.upsertBrukerRegistrering(kafkaMelding);
         registreringRepository.upsertBrukerRegistrering(kafkaMelding);
 
         final AktorId aktoerId = AktorId.of(kafkaMelding.getAktorid());
@@ -40,9 +35,7 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
     }
 
     public void slettRegistering(AktorId aktoerId) {
-        if (erPostgresPa(unleashService)) {
-            registreringRepositoryV2.slettBrukerRegistrering(aktoerId);
-        }
+        registreringRepositoryV2.slettBrukerRegistrering(aktoerId);
         registreringRepository.slettBrukerRegistrering(aktoerId);
     }
 

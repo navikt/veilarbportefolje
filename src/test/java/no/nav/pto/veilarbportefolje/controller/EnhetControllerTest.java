@@ -24,6 +24,7 @@ import no.nav.pto.veilarbportefolje.auth.ModiaPep;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.postgres.PostgresService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +56,7 @@ public class EnhetControllerTest {
         authContextHolder = AuthContextHolderThreadLocal.instance();
 
         AuthService authService = new AuthService(pep, modiaPep);
-        enhetController = new EnhetController(elasticService, authService, mock(TiltakService.class), mock(TiltakServiceV2.class), mock(MetricsClient.class), mock(UnleashService.class));
+        enhetController = new EnhetController(elasticService, mock(PostgresService.class), authService, mock(TiltakService.class), mock(TiltakServiceV2.class), mock(MetricsClient.class), mock(UnleashService.class));
 
     }
 

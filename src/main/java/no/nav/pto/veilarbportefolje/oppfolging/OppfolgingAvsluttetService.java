@@ -24,7 +24,7 @@ import java.util.List;
 import static java.time.Instant.EPOCH;
 import static java.time.ZoneId.of;
 import static java.time.ZonedDateTime.ofInstant;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
+
 
 @Service
 @RequiredArgsConstructor
@@ -73,9 +73,7 @@ public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<Oppfo
         arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);// TODO: slett denne linjen når vi kun bruker postgres
         sisteEndringService.slettSisteEndringer(aktoerId);
         cvRepository.resetHarDeltCV(aktoerId);
-        if (erPostgresPa(unleashService)) {
-            cvRepositoryV2.resetHarDeltCV(aktoerId);
-        }
+        cvRepositoryV2.resetHarDeltCV(aktoerId);
         elasticServiceV2.slettDokumenter(List.of(aktoerId));
     }
 

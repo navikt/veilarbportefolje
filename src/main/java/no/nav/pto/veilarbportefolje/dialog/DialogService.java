@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.common.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Slf4j
 @Service
@@ -37,10 +36,8 @@ public class DialogService extends KafkaCommonConsumerService<Dialogdata> implem
     @Override
     protected void behandleKafkaMeldingLogikk(Dialogdata melding) {
         dialogRepository.oppdaterDialogInfoForBruker(melding);
-        if (erPostgresPa(unleashService)) {
-            int rader = dialogRepositoryV2.oppdaterDialogInfoForBruker(melding);
-            log.info("Oppdatert dialog for bruker: {}, i postgres rader pavirket: {}", melding.getAktorId(), rader);
-        }
+        int rader = dialogRepositoryV2.oppdaterDialogInfoForBruker(melding);
+        log.info("Oppdatert dialog for bruker: {}, i postgres rader pavirket: {}", melding.getAktorId(), rader);
 
         elasticServiceV2.updateDialog(melding);
     }
