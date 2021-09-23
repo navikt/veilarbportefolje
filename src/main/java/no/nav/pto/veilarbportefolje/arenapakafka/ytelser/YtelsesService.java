@@ -10,6 +10,8 @@ import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -24,6 +26,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.*;
@@ -43,6 +47,7 @@ public class YtelsesService {
     private final ArenaHendelseRepository arenaHendelseRepository;
     private final ElasticIndexer elasticIndexer;
     private final UnleashService unleashService;
+    private final OppfolgingRepository oppfolgingRepository;
 
     public void behandleKafkaRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding, TypeKafkaYtelse ytsele) {
         YtelsesDTO melding = kafkaMelding.value();
@@ -179,6 +184,33 @@ public class YtelsesService {
         });
 
         log.info("Oppdatering av ytelser fullført");
+    }
+
+
+    public void syncYtelserForAlleBrukere() {
+        log.info("Starter jobb: oppdater Ytelser");
+        List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
+        log.info("Oppdaterer ytelser for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
+
+        ForkJoinPool pool = new ForkJoinPool(5);
+        try {
+            pool.submit(() ->
+                    brukereSomMaOppdateres.parallelStream().forEach(aktorId -> {
+                                log.info("Oppdater ytelser for aktorId: {}", aktorId);
+                                if (aktorId != null) {
+                                    try {
+                                        PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
+                                        oppdaterYtelsesInformasjon(aktorId, personId);
+                                        elasticIndexer.indekser(aktorId);
+                                    } catch (Exception e) {
+                                        log.warn("Fikk error under sync jobb, men fortsetter. Aktoer: {}, exception: {}", aktorId, e);
+                                    }
+                                }
+                            }
+                    )).get(10, TimeUnit.HOURS);
+        } catch (Exception e) {
+            log.error("Error i sync jobben.", e);
+        }
     }
 
     private Optional<YtelseDAO> finnVedtakMedSisteUtlopsDatoPaSak(List<YtelseDAO> ytelser, YtelseDAO tidligsteYtelse) {

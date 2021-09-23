@@ -51,7 +51,7 @@ public class BrukerAktiviteterService {
                                         PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
                                         syncAktiviteterOgBrukerData(personId, aktorId);
                                     } catch (Exception e) {
-                                        log.warn("Fikk error under sync jobb, men fortsetter aktoer: {}, exception: {}", aktorId, e);
+                                        log.warn("Fikk error under sync jobb, men fortsetter. Aktoer: {}, exception: {}", aktorId, e);
                                     }
                                 }
                             }
