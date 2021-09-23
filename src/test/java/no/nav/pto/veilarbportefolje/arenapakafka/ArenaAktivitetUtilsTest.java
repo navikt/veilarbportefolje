@@ -29,7 +29,7 @@ public class ArenaAktivitetUtilsTest {
     @Test
     public void skalLagreNyMeldinger(){
         Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(hendelsesId);
-        boolean erGammelHendelse = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, 1L, GoldenGateOperations.INSERT);
+        boolean erGammelHendelse = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, 1L,false);
 
         assertThat(hendelseIDB).isNull();
         assertThat(erGammelHendelse).isFalse();
@@ -40,7 +40,7 @@ public class ArenaAktivitetUtilsTest {
         long lagretHendelse = 3L;
         arenaHendelseRepository.upsertAktivitetHendelse(hendelsesId, lagretHendelse);
         Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(hendelsesId);
-        boolean erGammelHendelse = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, 1L, GoldenGateOperations.INSERT);
+        boolean erGammelHendelse = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, 1L, false);
 
         assertThat(erGammelHendelse).isTrue();
         assertThat(hendelseIDB).isEqualTo(lagretHendelse);
@@ -51,8 +51,8 @@ public class ArenaAktivitetUtilsTest {
         long lagretHendelse = 4L;
         arenaHendelseRepository.upsertAktivitetHendelse(hendelsesId, lagretHendelse);
         Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(hendelsesId);
-        boolean deleteHendelseErGammel = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, lagretHendelse, GoldenGateOperations.DELETE);
-        boolean insertHendelseErGammel = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, lagretHendelse, GoldenGateOperations.INSERT);
+        boolean deleteHendelseErGammel = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, lagretHendelse, true);
+        boolean insertHendelseErGammel = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, lagretHendelse, false);
 
         assertThat(deleteHendelseErGammel).isFalse();
         assertThat(insertHendelseErGammel).isTrue();

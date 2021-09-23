@@ -5,41 +5,32 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arenapakafka.ArenaDato;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.ArenaInnholdKafka;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GoldenGateDTO;
-import no.nav.pto.veilarbportefolje.arenapakafka.GoldenGateOperations;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 
 public interface ArenaAktivitetUtils {
-     static <T extends ArenaInnholdKafka> T getInnhold(GoldenGateDTO<T> goldenGateDTO) {
-        switch (goldenGateDTO.getOperationType()) {
-            case GoldenGateOperations.DELETE:
-                return goldenGateDTO.getBefore();
-            case GoldenGateOperations.INSERT:
-            case GoldenGateOperations.UPDATE:
-                return goldenGateDTO.getAfter();
-            default:
-                throw new IllegalArgumentException("Ukjent GoldenGate opperasjon");
+    static <T extends ArenaInnholdKafka> T getInnhold(GoldenGateDTO<T> goldenGateDTO) {
+        if(skalSlettesGoldenGate(goldenGateDTO)){
+            return goldenGateDTO.getBefore();
         }
+        return goldenGateDTO.getAfter();
     }
 
     static boolean skalSlettesGoldenGate(GoldenGateDTO<?> kafkaMelding) {
-        return GoldenGateOperations.DELETE.equals(kafkaMelding.getOperationType());
+        return kafkaMelding.getAfter() == null;
     }
 
-    static boolean erGammelHendelseBasertPaOperasjon(Long hendelseFraDB, Long hendelseFraKafka, String operation) {
-        if(hendelseFraDB == null){
+    static boolean erGammelHendelseBasertPaOperasjon(Long hendelseFraDB, Long hendelseFraKafka, boolean skalSlettes) {
+        if (hendelseFraDB == null) {
             return false;
         }
-        if(hendelseFraKafka == null){
+        if (hendelseFraKafka == null) {
             return true;
         }
-        if(GoldenGateOperations.DELETE.equals(operation)){
+        if (skalSlettes) {
             return hendelseFraKafka.compareTo(hendelseFraDB) < 0;
         }
         return hendelseFraKafka.compareTo(hendelseFraDB) < 1;
@@ -57,26 +48,26 @@ public interface ArenaAktivitetUtils {
     }
 
 
-    static ZonedDateTime getDateOrNull(ArenaDato date){
+    static ZonedDateTime getDateOrNull(ArenaDato date) {
         return getDateOrNull(date, false);
     }
 
-    static ZonedDateTime getDateOrNull(ArenaDato date, boolean tilOgMedDato){
-        if(date == null){
+    static ZonedDateTime getDateOrNull(ArenaDato date, boolean tilOgMedDato) {
+        if (date == null) {
             return null;
         }
-        if(tilOgMedDato){
+        if (tilOgMedDato) {
             return date.getDato().plusHours(23).plusMinutes(59);
         }
         return date.getDato();
     }
 
     static boolean erUtgatt(ArenaDato tilDato, boolean tilOgMedDato) {
-         if(tilDato == null){
-             return false;
-         }
-         ZonedDateTime tilZonedDato = getDateOrNull(tilDato, tilOgMedDato);
-         ZonedDateTime now = ZonedDateTime.now();
-         return tilZonedDato.isBefore(now);
+        if (tilDato == null) {
+            return false;
+        }
+        ZonedDateTime tilZonedDato = getDateOrNull(tilDato, tilOgMedDato);
+        ZonedDateTime now = ZonedDateTime.now();
+        return tilZonedDato.isBefore(now);
     }
 }

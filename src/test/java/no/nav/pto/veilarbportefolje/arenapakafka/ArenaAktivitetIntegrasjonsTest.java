@@ -130,7 +130,7 @@ public class ArenaAktivitetIntegrasjonsTest {
     }
 
     private UtdanningsAktivitetDTO getUtdanningsInsertDTO() {
-        UtdanningsAktivitetDTO utdanningsAktivitet = new UtdanningsAktivitetDTO()
+        return new UtdanningsAktivitetDTO()
                 .setAfter(new UtdanningsAktivitetInnhold()
                         .setFnr(fnr.get())
                         .setHendelseId(1)
@@ -139,12 +139,10 @@ public class ArenaAktivitetIntegrasjonsTest {
                         .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("UA-123456789")
                 );
-        utdanningsAktivitet.setOperationType(GoldenGateOperations.INSERT);
-        return utdanningsAktivitet;
     }
 
     private UtdanningsAktivitetDTO getUtdanningsDeleteDTO() {
-        UtdanningsAktivitetDTO utdanningsAktivitet = new UtdanningsAktivitetDTO()
+        return new UtdanningsAktivitetDTO()
                 .setBefore(new UtdanningsAktivitetInnhold()
                         .setFnr(fnr.get())
                         .setHendelseId(1)
@@ -153,8 +151,6 @@ public class ArenaAktivitetIntegrasjonsTest {
                         .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("UA-123456789")
                 );
-        utdanningsAktivitet.setOperationType(GoldenGateOperations.DELETE);
-        return utdanningsAktivitet;
     }
 
     private Optional<AktivitetStatus> hentAktivitetStatus(AktivitetTyperFraKafka type) {

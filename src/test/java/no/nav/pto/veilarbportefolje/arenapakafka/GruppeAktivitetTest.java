@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -86,7 +85,7 @@ public class GruppeAktivitetTest {
     }
 
     private GruppeAktivitetDTO getInsertDTO() {
-        GruppeAktivitetDTO utdanningsAktivitet = new GruppeAktivitetDTO()
+        return new GruppeAktivitetDTO()
                 .setAfter(new GruppeAktivitetInnhold()
                         .setVeiledningdeltakerId("1")
                         .setMoteplanId("1")
@@ -98,12 +97,10 @@ public class GruppeAktivitetTest {
                         .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("UA-123456789")
                 );
-        utdanningsAktivitet.setOperationType(GoldenGateOperations.INSERT);
-        return utdanningsAktivitet;
     }
 
     private GruppeAktivitetDTO getDeleteDTO() {
-        GruppeAktivitetDTO gruppeAktivitet = new GruppeAktivitetDTO()
+        return new GruppeAktivitetDTO()
                 .setBefore(new GruppeAktivitetInnhold()
                         .setVeiledningdeltakerId("1")
                         .setMoteplanId("1")
@@ -115,8 +112,6 @@ public class GruppeAktivitetTest {
                         .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("UA-123456789")
                 );
-        gruppeAktivitet.setOperationType(GoldenGateOperations.DELETE);
-        return gruppeAktivitet;
     }
 
     private Optional<AktivitetStatus> hentAktivitetStatus() {

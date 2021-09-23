@@ -89,7 +89,6 @@ public class TiltakTest {
                         .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("TA-123456789")
                 );
-        tiltakDTO.setOperationType(GoldenGateOperations.INSERT);
         tiltakServiceV2.behandleKafkaMelding(tiltakDTO);
 
         Optional<AktivitetStatus> tiltak = hentAktivitetStatus();
@@ -113,7 +112,6 @@ public class TiltakTest {
                         .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("TA-123456789")
                 );
-        tiltakDTO.setOperationType(GoldenGateOperations.INSERT);
         tiltakServiceV2.behandleKafkaMelding(tiltakDTO);
         EnhetTiltak enhetTiltak = tiltakServiceV2.hentEnhettiltak(testEnhet);
         EnhetTiltak annenEnhetTiltak = tiltakServiceV2.hentEnhettiltak(annenEnhet);
