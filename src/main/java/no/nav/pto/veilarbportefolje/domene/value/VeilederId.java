@@ -1,16 +1,14 @@
 package no.nav.pto.veilarbportefolje.domene.value;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class VeilederId {
     private final String veilederId;
 
-    public VeilederId(@JsonProperty("veilederId") String veilederId) {
+    public VeilederId(String veilederId) {
         this.veilederId = veilederId;
     }
 
-    @JsonCreator
     public static VeilederId of(String veilederId) {
         return new VeilederId(veilederId);
     }
