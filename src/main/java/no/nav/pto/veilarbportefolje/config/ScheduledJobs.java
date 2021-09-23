@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.List;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR199PaKafka;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
@@ -39,7 +40,7 @@ public class ScheduledJobs {
 
     @Scheduled(cron = "0 0 1 * * ?")
     public void oppdaterNyeYtelser() {
-        if (leaderElectionClient.isLeader()) {
+        if (leaderElectionClient.isLeader() && erGR199PaKafka(unleashService)) {
             ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag();
         } else {
             log.info("Starter ikke jobb: oppdaterBrukerData");

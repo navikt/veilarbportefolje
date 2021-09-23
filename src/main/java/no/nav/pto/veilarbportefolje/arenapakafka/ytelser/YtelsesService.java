@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.*;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR199PaKafka;
 
 @Slf4j
 @Service
@@ -40,6 +42,7 @@ public class YtelsesService {
     private final YtelsesRepository ytelsesRepository;
     private final ArenaHendelseRepository arenaHendelseRepository;
     private final ElasticIndexer elasticIndexer;
+    private final UnleashService unleashService;
 
     public void behandleKafkaRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding, TypeKafkaYtelse ytsele) {
         YtelsesDTO melding = kafkaMelding.value();
@@ -64,11 +67,15 @@ public class YtelsesService {
         if (skalSlettesGoldenGate(kafkaMelding)) {
             log.info("Sletter ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
             ytelsesRepository.slettYtelse(innhold.getVedtakId());
-            oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(aktorId, innhold);
+            if(erGR199PaKafka(unleashService)){
+                oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(aktorId, innhold);
+            }
         } else {
             log.info("Lagrer ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
             ytelsesRepository.upsertYtelse(aktorId, ytsele, innhold);
-            oppdaterYtelsesInformasjon(aktorId, PersonId.of(innhold.getPersonId()));
+            if(erGR199PaKafka(unleashService)){
+                oppdaterYtelsesInformasjon(aktorId, PersonId.of(innhold.getPersonId()));
+            }
         }
 
         arenaHendelseRepository.upsertYtelsesHendelse(innhold.getVedtakId(), innhold.getHendelseId());
@@ -83,7 +90,6 @@ public class YtelsesService {
         return lopendeYtelse;
     }
 
-    // TODO: diskuter denne metoden. Kanskje den skal endre startdatoen på evt. vedtak som blir løpende?
     /**
      * NB: I tilfeller der arena sletter et løpende vedtak.
      * Det må da sjekkes om det finnes andre vedtak i samme sak, hvis dette er tilfellet så skal ytelsen på brukeren fortsette.
@@ -96,7 +102,7 @@ public class YtelsesService {
         Timestamp startDato = Timestamp.valueOf(innhold.getFraOgMedDato().getLocalDate());
         Timestamp utlopsDato = innhold.getTilOgMedDato() == null ? null : Timestamp.valueOf(innhold.getTilOgMedDato().getLocalDate());
 
-        boolean erLopendeVedtak = harLøpendeStartDato(startDato, iDag) && harLøpendeUtløpsDato(utlopsDato, iDag);
+        boolean erLopendeVedtak = harLopendeStartDato(startDato, iDag) && harLopendeUtlopsDato(utlopsDato, iDag);
 
         if (erLopendeVedtak) {
             Optional<YtelseDAO> sisteYtelsePaSakId = finnSisteYtelsePaSakIdSomIkkeErUtlopt(aktorId, innhold.getSaksId());
@@ -114,7 +120,7 @@ public class YtelsesService {
         LocalDate iDag = LocalDate.now();
         List<YtelseDAO> aktiveYtelser = ytelsesRepository.getYtelser(aktorId).stream()
                 .filter(Objects::nonNull)
-                .filter(ytelse -> harLøpendeUtløpsDato(ytelse.getUtlopsDato(), iDag))
+                .filter(ytelse -> harLopendeUtlopsDato(ytelse.getUtlopsDato(), iDag))
                 .collect(Collectors.toList());
 
         if (aktiveYtelser.isEmpty()) {
@@ -124,7 +130,7 @@ public class YtelsesService {
         YtelseDAO tidligsteYtelse = aktiveYtelser.stream()
                 .min(Comparator.comparing(YtelseDAO::getStartDato)).get();
 
-        if (!harLøpendeStartDato(tidligsteYtelse.getStartDato(), iDag)) {
+        if (!harLopendeStartDato(tidligsteYtelse.getStartDato(), iDag)) {
             return Optional.empty();
         }
         if (TypeKafkaYtelse.DAGPENGER.equals(tidligsteYtelse.getType())) {
@@ -144,7 +150,7 @@ public class YtelsesService {
         List<YtelseDAO> aktiveYtelserPaSakID = ytelsesRepository.getYtelser(aktorId).stream()
                 .filter(Objects::nonNull)
                 .filter(ytelse -> sakID.equals(ytelse.getSaksId()))
-                .filter(ytelse -> harLøpendeUtløpsDato(ytelse.getUtlopsDato(), iDag))
+                .filter(ytelse -> harLopendeUtlopsDato(ytelse.getUtlopsDato(), iDag))
                 .collect(Collectors.toList());
 
         if (aktiveYtelserPaSakID.isEmpty()) {
@@ -154,8 +160,7 @@ public class YtelsesService {
                 .filter(ytelseDOA -> ytelseDOA.getUtlopsDato() != null)
                 .max(Comparator.comparing(YtelseDAO::getUtlopsDato));
 
-        return Optional.of(ytelseMedSluttDatoEllerNull
-                .orElse(aktiveYtelserPaSakID.get(0)));
+        return Optional.of(ytelseMedSluttDatoEllerNull.orElse(aktiveYtelserPaSakID.get(0)));
     }
 
     public void oppdaterBrukereMedYtelserSomStarterIDag() {
@@ -183,13 +188,12 @@ public class YtelsesService {
                 .max(Comparator.comparing(YtelseDAO::getUtlopsDato));
     }
 
-    private boolean harLøpendeStartDato(Timestamp startDato, LocalDate iDag) {
+    private boolean harLopendeStartDato(Timestamp startDato, LocalDate iDag) {
         // startDato er en 'fra og med' dato.
         return startDato.toLocalDateTime().toLocalDate().isBefore(iDag.plusDays(1));
     }
 
-    private boolean harLøpendeUtløpsDato(Timestamp utlopsDato, LocalDate iDag) {
-        // Utløpsdato == null betyr en "uendlig" ytelse.
+    private boolean harLopendeUtlopsDato(Timestamp utlopsDato, LocalDate iDag) {
         // Utløpsdato er en 'til og med' dato.
         return utlopsDato == null || utlopsDato.toLocalDateTime().toLocalDate().isAfter(iDag.minusDays(1));
     }

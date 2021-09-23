@@ -107,6 +107,5 @@ public class YtelsesRepository {
                 + " WHERE trunc(" + STARTDATO + ") = trunc(current_timestamp)";
 
         return db.queryForList(brukereSomStarterIDag, AktorId.class);
-
     }
 }
