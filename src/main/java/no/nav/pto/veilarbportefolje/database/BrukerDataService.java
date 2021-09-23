@@ -13,8 +13,6 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -33,22 +31,6 @@ public class BrukerDataService {
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerDataRepository brukerDataRepository;
-
-    private final BrukerService brukerService;
-    private final ElasticIndexer elasticIndexer;
-
-    public void oppdaterAktivitetBrukerData(AktorId aktorId) {
-        if (aktorId == null) {
-            return;
-        }
-        PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
-        if (personId == null) {
-            log.info("Fant ingen personId pa aktor: {}", aktorId);
-        }
-
-        oppdaterAktivitetBrukerData(aktorId, personId);
-        elasticIndexer.indekser(aktorId);
-    }
 
     public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId) {
         if (personId == null || aktorId == null) {
