@@ -91,13 +91,13 @@ public class OppfolgingRepository {
         return TRUE.equals(aBoolean) ? "J" : "N";
     }
 
-    public Optional<BrukerOppdatertInformasjon> hentOppfolgingData(AktorId aktoerId) {
-        final BrukerOppdatertInformasjon oppfolging = SqlUtils.select(db, Table.OPPFOLGING_DATA.TABLE_NAME, rs -> mapToBrukerOppdatertInformasjon(rs))
-                .column("*")
-                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString()))
-                .execute();
+    public boolean erUnderoppfolging(AktorId aktoerId){
+        Optional<BrukerOppdatertInformasjon> oppdatertInformasjon = hentOppfolgingData(aktoerId);
+        return oppdatertInformasjon.map(BrukerOppdatertInformasjon::getOppfolging).orElse(false);
+    }
 
-        return Optional.ofNullable(oppfolging);
+    public Optional<BrukerOppdatertInformasjon> hentOppfolgingData(AktorId aktoerId) {
+        return retrieveOppfolgingData(aktoerId).toJavaOptional();
     }
 
     @Deprecated
@@ -108,10 +108,6 @@ public class OppfolgingRepository {
                 new Object[]{id},
                 this::mapToBrukerOppdatertInformasjon)
         ).onFailure(e -> log.info("Fant ikke oppfølgingsdata for bruker med aktoerId {}", id));
-    }
-
-    private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet resultSet) {
-        return mapToBrukerOppdatertInformasjon(resultSet, 0);
     }
 
     @SneakyThrows

@@ -23,6 +23,7 @@ public class FeatureToggle {
     public static boolean erPostgresPa(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.POSTGRES);
     }
+
     public static boolean erGR202PaKafka(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.GR202_PA_KAFKA);
     }

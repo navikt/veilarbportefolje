@@ -33,6 +33,7 @@ public class BrukerDataService {
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerDataRepository brukerDataRepository;
+
     private final BrukerService brukerService;
     private final ElasticIndexer elasticIndexer;
 

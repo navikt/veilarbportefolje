@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
@@ -32,6 +31,8 @@ import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
+import no.nav.pto.veilarbportefolje.kafka.deserializers.AivenAvroDeserializer;
+import no.nav.pto.veilarbportefolje.kafka.deserializers.OnpremAvroDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
@@ -52,7 +53,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -74,9 +74,7 @@ public class KafkaConfigCommon {
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("aapen-oppfolging-vedtakStatusEndring-v1-" + requireKafkaTopicPostfix()),
         DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireKafkaTopicPostfix()),
-        KAFKA_REGISTRERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-registrert-" + requireKafkaTopicPostfix()),
         KAFKA_AKTIVITER_CONSUMER_TOPIC("aapen-fo-endringPaaAktivitet-v4-" + requireKafkaTopicPostfix()),
-        KAFKA_PROFILERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-profilert-" + requireKafkaTopicPostfix()),
         ENDRING_PAA_MANUELL_STATUS("aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-" + requireKafkaTopicPostfix()),
         VEILEDER_TILORDNET("aapen-arbeidsrettetOppfolging-veilederTilordnet-v1-" + requireKafkaTopicPostfix()),
         ENDRING_PAA_NY_FOR_VEILEDER("aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-" + requireKafkaTopicPostfix()),
@@ -87,6 +85,9 @@ public class KafkaConfigCommon {
         ENDRING_PAA_OPPFOLGINGSBRUKER("aapen-fo-endringPaaOppfoelgingsBruker-v1-" + requireKafkaTopicPostfix()),
         CV_ENDRET("arbeid-pam-cv-endret-v6"),
         CV_TOPIC("teampam.samtykke-status-1"),
+
+        AIVEN_REGISTRERING_TOPIC("paw.arbeidssoker-registrert-v1"),
+        AIVEN_PROFILERING_TOPIC("paw.arbeidssoker-profilert-v1"),
 
         TILTAK_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
         UTDANNINGS_AKTIVITET_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix()),
@@ -161,7 +162,26 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(TiltakDTO.class),
                                         tiltakServiceV2::behandleKafkaRecord
                                 ),
-
+                        new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerRegistrertEvent>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.AIVEN_REGISTRERING_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new AivenAvroDeserializer().getDeserializer(),
+                                        registreringService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerProfilertEvent>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.AIVEN_PROFILERING_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new AivenAvroDeserializer().getDeserializer(),
+                                        profileringService::behandleKafkaRecord
+                                ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
@@ -210,30 +230,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(SistLestKafkaMelding.class),
                                         sistLestService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerRegistrertEvent>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL,
-                                                Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true,
-                                                        KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL)),
-                                        registreringService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerProfilertEvent>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.KAFKA_PROFILERING_CONSUMER_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL,
-                                                Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true,
-                                                        KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL)),
-                                        profileringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
                                 .withLogging()
@@ -342,9 +338,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.CV_ENDRET.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.onPremAvroDeserializer(KAFKA_SCHEMAS_URL,
-                                                Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true,
-                                                        KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL)),
+                                        new OnpremAvroDeserializer().getDeserializer(),
                                         cvService::behandleKafkaRecord
                                 )
                 );
@@ -354,7 +348,8 @@ public class KafkaConfigCommon {
         KafkaOnpremUnleash kafkaOnpremUnleash = new KafkaOnpremUnleash(unleashService);
 
         Properties aivenConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_CONFIG);
-        aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
+        //aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
+        aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         consumerClientAiven = topicConfigsAiven.stream().map(config ->
                 KafkaConsumerClientBuilder.builder()
