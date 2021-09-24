@@ -17,8 +17,7 @@ public class GruppeAktivitetInnhold implements ArenaInnholdKafka {
 
     @JsonAlias("AKTIVITETSTYPE") String aktivitetstype;
     @JsonAlias("AKTIVITETSNAVN") String aktivitetsnavn;
-    @JsonAlias("MOTEPLAN_STARTDATO")
-    ArenaDato aktivitetperiodeFra;
+    @JsonAlias("MOTEPLAN_STARTDATO") ArenaDato aktivitetperiodeFra;
     @JsonAlias("MOTEPLAN_SLUTTDATO") ArenaDato aktivitetperiodeTil;
     @JsonAlias("PERSON_ID") int personId;
     @JsonAlias("PERSONIDENT") String fnr; // eller dnr

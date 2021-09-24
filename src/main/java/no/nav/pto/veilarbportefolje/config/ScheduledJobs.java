@@ -43,7 +43,7 @@ public class ScheduledJobs {
         if (leaderElectionClient.isLeader() && erGR199PaKafka(unleashService)) {
             ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag();
         } else {
-            log.info("Starter ikke jobb: oppdaterBrukerData");
+            log.info("Starter ikke jobb: oppdaterYtelser");
         }
     }
 }
