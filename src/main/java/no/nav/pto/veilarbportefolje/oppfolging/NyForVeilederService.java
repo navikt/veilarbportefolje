@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeilederDTO> implements KafkaConsumerService<String> {
@@ -37,6 +39,7 @@ public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeiled
         oppfolgingRepositoryV2.settNyForVeileder(dto.getAktorId(), brukerErNyForVeileder);
 
         elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), brukerErNyForVeileder);
+        log.info("Oppdatert bruker: {}, er ny for veileder: {}", dto.getAktorId(), brukerErNyForVeileder);
     }
 
     @Override

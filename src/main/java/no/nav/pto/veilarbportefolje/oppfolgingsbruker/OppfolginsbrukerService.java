@@ -28,10 +28,10 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<Oppfolgi
     }
 
     @Override
-    protected void behandleKafkaMeldingLogikk(OppfolgingsbrukerKafkaDTO oppfolginsbruker) {
-        log.info("Fikk endring pa oppfolginsbruker: {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v1", oppfolginsbruker.getAktoerid());
-        int rader = OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolginsbruker);
-        log.info("Oppdatert oppfolginsbruker info for bruker: {}, i postgres rader pavirket: {}", oppfolginsbruker.getAktoerid(), rader);
+    protected void behandleKafkaMeldingLogikk(OppfolgingsbrukerKafkaDTO oppfolgingsbruker) {
+        log.info("Fikk endring pa oppfolgingsbruker: {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v1", oppfolgingsbruker.getAktoerid());
+        int rader = OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+        log.info("Oppdatert oppfolgingsbrukerinfo for bruker: {} i postgres, rader pavirket: {}", oppfolgingsbruker.getAktoerid(), rader);
     }
 
     @Override

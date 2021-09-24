@@ -29,7 +29,7 @@ public class VedtakStatusRepositoryV2 {
         if (aktorId == null) {
             return;
         }
-        log.info("Sletter vedtak og utkast pa bruker: {}", aktorId);
+        log.info("Slettet vedtak og utkast pa bruker: {}", aktorId);
         db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktorId);
     }
 
@@ -67,7 +67,7 @@ public class VedtakStatusRepositoryV2 {
 
     public int updateVedtak(KafkaVedtakStatusEndring vedtakStatusEndring) {
         if (erIkkeUtkast(vedtakStatusEndring.getAktorId(), vedtakStatusEndring.getVedtakId())) {
-            log.info("Oppdaterte ikke vedtak pa bruker {}, gjelder vedtak: {}", vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId());
+            log.info("Oppdaterte IKKE vedtak: {} for bruker: {}", vedtakStatusEndring.getVedtakId(), vedtakStatusEndring.getAktorId());
             return 0;
         }
         return db.update("UPDATE " + TABLE_NAME + " SET (" + VEDTAKSTATUS +
@@ -109,7 +109,7 @@ public class VedtakStatusRepositoryV2 {
 
     public void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring vedtakStatusEndring) {
         if (erIkkeUtkast(vedtakStatusEndring.getAktorId(), vedtakStatusEndring.getVedtakId())) {
-            log.info("Oppdaterte ikke vedtak pa bruker {}, gjelder vedtak: {}", vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId());
+            log.info("Oppdaterte IKKE vedtak: {} med ny ansvarlig veileder: {}, for bruker: {}", vedtakStatusEndring.getVedtakId(), vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId());
             return;
         }
         String sql = String.format(
@@ -117,7 +117,7 @@ public class VedtakStatusRepositoryV2 {
                 TABLE_NAME, ANSVARLIG_VEILDERIDENT, ANSVARLIG_VEILDERNAVN, AKTOERID
         );
         int rows = db.update(sql, vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getVeilederNavn(), vedtakStatusEndring.getAktorId());
-        log.info("Oppdaterte veilder til: {} for bruker {}, rader: {}", vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId(), rows);
+        log.info("Oppdaterte vedtak: {} med ny ansvarlig veileder: {}, for bruker: {}. Rader: {}", vedtakStatusEndring.getVedtakId(), vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId(), rows);
     }
 
     private boolean erIkkeUtkast(String aktorId, long vedtakId) {

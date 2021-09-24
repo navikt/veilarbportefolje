@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.common.json.JsonUtils.fromJson;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 @Slf4j
 @Service
@@ -36,9 +37,9 @@ public class DialogService extends KafkaCommonConsumerService<Dialogdata> implem
     @Override
     protected void behandleKafkaMeldingLogikk(Dialogdata melding) {
         dialogRepository.oppdaterDialogInfoForBruker(melding);
-        int rader = dialogRepositoryV2.oppdaterDialogInfoForBruker(melding);
-        log.info("Oppdatert dialog for bruker: {}, i postgres rader pavirket: {}", melding.getAktorId(), rader);
+        dialogRepositoryV2.oppdaterDialogInfoForBruker(melding);
 
+        log.info("Oppdatert dialog for bruker: {} med 'venter på svar fra NAV': {}, 'venter på svar fra bruker': {}, sist endret: {}", melding.getAktorId(), toIsoUTC(melding.getTidspunktEldsteUbehandlede()), toIsoUTC(melding.getTidspunktEldsteVentende()), melding.getSisteEndring());
         elasticServiceV2.updateDialog(melding);
     }
 

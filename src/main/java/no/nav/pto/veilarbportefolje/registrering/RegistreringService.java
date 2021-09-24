@@ -32,11 +32,14 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
 
         final AktorId aktoerId = AktorId.of(kafkaMelding.getAktorid());
         elastic.updateRegistering(aktoerId, kafkaMelding);
+        log.info("Oppdatert utdanningsregistrering for bruker: {}", aktoerId);
     }
 
     public void slettRegistering(AktorId aktoerId) {
         registreringRepositoryV2.slettBrukerRegistrering(aktoerId);
         registreringRepository.slettBrukerRegistrering(aktoerId);
+
+        log.info("Slettet brukerregistrering for bruker: {}", aktoerId);
     }
 
     @Override

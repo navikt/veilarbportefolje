@@ -75,7 +75,6 @@ public class RegistreringRepositoryV2 {
     }
 
     public int slettBrukerRegistrering(AktorId aktoerId) {
-        log.info("Slett BrukerRegistrering for bruker: {}", aktoerId.get());
         return db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
     }
 

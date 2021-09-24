@@ -81,6 +81,7 @@ public class VedtakService extends KafkaCommonConsumerService<KafkaVedtakStatusE
     private void opprettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.opprettUtkast(melding);
         vedtakStatusRepositoryV2.upsertVedtak(melding);
+        log.info("Opprettet/oppdatert vedtaksutkast med ID: {} for bruker: {}", melding.getVedtakId(), melding.aktorId);
     }
 
     private void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring melding) {

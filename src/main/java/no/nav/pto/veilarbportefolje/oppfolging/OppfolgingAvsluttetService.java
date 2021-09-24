@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
@@ -26,6 +27,7 @@ import static java.time.ZoneId.of;
 import static java.time.ZonedDateTime.ofInstant;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<OppfolgingAvsluttetDTO> implements KafkaConsumerService<String> {
@@ -74,7 +76,9 @@ public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<Oppfo
         sisteEndringService.slettSisteEndringer(aktoerId);
         cvRepository.resetHarDeltCV(aktoerId);
         cvRepositoryV2.resetHarDeltCV(aktoerId);
+
         elasticServiceV2.slettDokumenter(List.of(aktoerId));
+        log.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);
     }
 
     @Override
