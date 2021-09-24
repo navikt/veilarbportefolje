@@ -4,7 +4,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -27,14 +26,10 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
     void skal_oppdatere_tilordnet_veileder() {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
-        final String payload = new JSONObject()
-                .put("aktorId", aktoerId.get())
-                .put("veilederId", nyVeileder.getValue())
-                .toString();
 
         testDataClient.setupBruker(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
 
-        veilederTilordnetService.behandleKafkaMelding(payload);
+        veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder));
 
         final OppfolgingsBruker bruker = elasticTestClient.hentBrukerFraElastic(aktoerId);
         final VeilederId tilordnetVeileder = VeilederId.of(bruker.getVeileder_id());
@@ -46,20 +41,34 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
     }
 
     @Test
+    void skal_oppdatere_tilordnet_veileder_med_null() {
+        final AktorId aktoerId = randomAktorId();
+        final VeilederId nyVeileder = VeilederId.of(null);
+
+        testDataClient.setupBruker(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
+
+        veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder));
+
+        final OppfolgingsBruker bruker = elasticTestClient.hentBrukerFraElastic(aktoerId);
+        final VeilederId tilordnetVeileder = VeilederId.of(bruker.getVeileder_id());
+
+
+        assertThat(tilordnetVeileder.getValue()).isNull();
+        assertThat(bruker.isNy_for_enhet()).isFalse();
+        assertThat(bruker.isNy_for_veileder()).isTrue();
+    }
+
+    @Test
     void skal_slette_arbeidsliste_om_bruker_har_byttet_nav_kontor() {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
-        final String payload = new JSONObject()
-                .put("aktorId", aktoerId.get())
-                .put("veilederId", nyVeileder.getValue())
-                .toString();
 
         testDataClient.setupBrukerMedArbeidsliste(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
         testDataClient.endreNavKontorForBruker(aktoerId, randomNavKontor());
         final boolean arbeidslisteAktiv = arbeidslisteAktiv(aktoerId);
         assertThat(arbeidslisteAktiv).isTrue();
 
-        veilederTilordnetService.behandleKafkaMelding(payload);
+        veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder));
         pollElasticUntil(() -> !arbeidslisteAktiv(aktoerId));
     }
 

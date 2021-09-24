@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.domene;
 
 
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
 
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -30,8 +30,7 @@ public enum YtelseMapping {
     AAP_MAXTID(
             (vedtak) -> "AA".equals(vedtak.getSakstypeKode())
                     && "AAP".equals(vedtak.getRettighetstypeKode())
-                    && vedtak.getAaptellere() != null
-                    && vedtak.getAaptellere().getAntallDagerIgjenUnntak() == null
+                    && vedtak.getAntallDagerIgjenUnntak() == null
     ),
     // I perioden fra  unntak er innvilget og til meldekort er beregnet og teller har startet nedtelling vil ikke brukere
     // dukke opp i filtrering under "AAP Unntak". Dette kan være en periode på opptil 14 dager.
@@ -39,16 +38,15 @@ public enum YtelseMapping {
             (vedtak) ->
                     "AA".equals(vedtak.getSakstypeKode())
                     && "AAP".equals(vedtak.getRettighetstypeKode())
-                    && vedtak.getAaptellere() != null
-                    && (vedtak.getAaptellere().getAntallDagerIgjenUnntak() != null)
+                    && (vedtak.getAntallDagerIgjenUnntak() != null)
     ),
     TILTAKSPENGER(
             (vedtak) -> "INDIV".equals(vedtak.getSakstypeKode()) && "BASI".equals(vedtak.getRettighetstypeKode())
     );
 
-    public final Predicate<LoependeVedtak> sjekk;
+    public final Predicate<YtelseDAO> sjekk;
 
-    YtelseMapping(Predicate<LoependeVedtak> sjekk) {
+    YtelseMapping(Predicate<YtelseDAO> sjekk) {
         this.sjekk = sjekk;
     }
 
@@ -59,7 +57,7 @@ public enum YtelseMapping {
         return valueOf(s);
     }
 
-    public static Optional<YtelseMapping> of(LoependeVedtak vedtak) {
+    public static Optional<YtelseMapping> of(YtelseDAO vedtak) {
         return Stream.of(values())
                 .filter((YtelseMapping mapping) -> mapping.sjekk.test(vedtak))
                 .findAny();
