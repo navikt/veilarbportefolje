@@ -8,6 +8,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
@@ -50,6 +51,7 @@ public class AdminController {
     private final KafkaConfigCommon kafkaConfigCommon;
     private final ElasticIndexer elasticIndexer;
     private final BrukerAktiviteterService brukerAktiviteterService;
+    private final YtelsesService ytelsesService;
     private final BrukerRepository brukerRepository;
 
     @PostMapping("/aktoerId")
@@ -159,6 +161,13 @@ public class AdminController {
     public String syncBrukerAktiviteterForAlle() {
         authorizeAdmin();
         brukerAktiviteterService.syncAktivitetOgBrukerData();
+        return "Aktiviteter er nå i sync";
+    }
+
+    @PutMapping("/ytelser/allUsers")
+    public String syncYtelserForAlle() {
+        authorizeAdmin();
+        ytelsesService.syncYtelserForAlleBrukere();
         return "Aktiviteter er nå i sync";
     }
 

@@ -86,5 +86,4 @@ public class ClientConfig {
     public HttpClient httpClient() {
         return HttpClient.newBuilder().build();
     }
-
 }

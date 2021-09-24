@@ -141,7 +141,7 @@ public class PostgresTable {
 
     public static final class LEST_ARENA_HENDELSE_YTELSER {
         public static final String TABLE_NAME = "LEST_ARENA_HENDELSE_YTELSE";
-        public static final String AKTIVITETID = "AKTIVITETID";
+        public static final String VEDTAKID = "VEDTAKID";
         public static final String HENDELSE_ID = "HENDELSE_ID";
     }
 
