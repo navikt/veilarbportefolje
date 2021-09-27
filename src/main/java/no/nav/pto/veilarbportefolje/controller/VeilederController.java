@@ -55,7 +55,7 @@ public class VeilederController {
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
         BrukereMedAntall brukereMedAntall;
-        if (erPostgresPa(unleashService)) {
+        if (erPostgresPa(unleashService, ident)) {
             brukereMedAntall = postgresService.hentBrukere(enhet, veilederIdent, sortDirection, sortField, filtervalg, fra, antall);
         } else {
             brukereMedAntall = elasticService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
