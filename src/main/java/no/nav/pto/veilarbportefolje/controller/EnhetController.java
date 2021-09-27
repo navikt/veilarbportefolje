@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.postgres.PostgresService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
@@ -20,12 +21,14 @@ import java.util.List;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/enhet")
 public class EnhetController {
     private final ElasticService elasticService;
+    private final PostgresService postgresService;
     private final AuthService authService;
     private final TiltakService tiltakService;
     private final TiltakServiceV2 tiltakServiceV2;
@@ -50,7 +53,12 @@ public class EnhetController {
         String ident = AuthUtils.getInnloggetVeilederIdent().toString();
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-        BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+        BrukereMedAntall brukereMedAntall;
+        if (erPostgresPa(unleashService)) {
+            brukereMedAntall = postgresService.hentBrukere(enhet, null, sortDirection, sortField, filtervalg, fra, antall);
+        }else{
+            brukereMedAntall = elasticService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+        }
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),

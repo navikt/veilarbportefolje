@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
@@ -24,8 +25,9 @@ import java.util.List;
 import static java.time.Instant.EPOCH;
 import static java.time.ZoneId.of;
 import static java.time.ZonedDateTime.ofInstant;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<OppfolgingAvsluttetDTO> implements KafkaConsumerService<String> {
@@ -73,10 +75,10 @@ public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<Oppfo
         arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);// TODO: slett denne linjen når vi kun bruker postgres
         sisteEndringService.slettSisteEndringer(aktoerId);
         cvRepository.resetHarDeltCV(aktoerId);
-        if (erPostgresPa(unleashService)) {
-            cvRepositoryV2.resetHarDeltCV(aktoerId);
-        }
+        cvRepositoryV2.resetHarDeltCV(aktoerId);
+
         elasticServiceV2.slettDokumenter(List.of(aktoerId));
+        log.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);
     }
 
     @Override
