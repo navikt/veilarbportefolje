@@ -54,9 +54,9 @@ public class EnhetController {
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
         BrukereMedAntall brukereMedAntall;
-        if (erPostgresPa(unleashService)) {
+        if (erPostgresPa(unleashService, ident)) {
             brukereMedAntall = postgresService.hentBrukere(enhet, null, sortDirection, sortField, filtervalg, fra, antall);
-        }else{
+        } else {
             brukereMedAntall = elasticService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
         }
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
