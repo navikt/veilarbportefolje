@@ -92,7 +92,7 @@ public class PostgresQueryBuilder {
 
     public void ikkeServiceBehov() {
         brukKunEssensiellInfo = false;
-        whereStatement.add(FORMIDLINGSGRUPPEKODE + " = ISERV");
+        whereStatement.add(FORMIDLINGSGRUPPEKODE + " = 'ISERV'");
     }
 
     public void venterPaSvarFraBruker() {

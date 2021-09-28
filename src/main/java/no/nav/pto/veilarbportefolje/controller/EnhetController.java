@@ -73,7 +73,7 @@ public class EnhetController {
         return portefolje;
     }
 
-
+    //TODO: postgres
     @GetMapping("/{enhet}/portefoljestorrelser")
     public FacetResults hentPortefoljestorrelser(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
@@ -87,6 +87,10 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
+        String ident = AuthUtils.getInnloggetVeilederIdent().toString();
+        if (erPostgresPa(unleashService, ident)) {
+            return postgresService.hentStatusTallForEnhet(enhet);
+        }
         return elasticService.hentStatusTallForEnhet(enhet);
 
     }

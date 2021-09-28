@@ -82,9 +82,14 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
         authService.tilgangTilEnhet(enhet);
 
+        String ident = AuthUtils.getInnloggetVeilederIdent().toString();
+        if (erPostgresPa(unleashService, ident)) {
+            return postgresService.hentStatusTallForVeileder(veilederIdent, enhet);
+        }
         return elasticService.hentStatusTallForVeileder(veilederIdent, enhet);
     }
 
+    // TODO: sjekk om dette kallet fortsatt er i bruk
     @GetMapping("/{veilederident}/arbeidsliste")
     public List<Bruker> hentArbeidsliste(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
         Event event = new Event("minoversiktportefolje.arbeidsliste.lastet");
@@ -93,6 +98,10 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
         authService.tilgangTilEnhet(enhet);
 
+        String ident = AuthUtils.getInnloggetVeilederIdent().toString();
+        if (erPostgresPa(unleashService, ident)) {
+            return postgresService.hentBrukereMedArbeidsliste(veilederIdent, enhet);
+        }
         return elasticService.hentBrukereMedArbeidsliste(veilederIdent, enhet);
     }
 
