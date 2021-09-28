@@ -68,7 +68,6 @@ public class PostgresService {
         query.leggTilListeFilter(filtervalg.utdanningGodkjent, PostgresTable.BRUKER_VIEW.UTDANNING_GODKJENT);
 
         /*
-        byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker");
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
         byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter");
         */
@@ -80,6 +79,9 @@ public class PostgresService {
         }
         if (filtervalg.harKjonnfilter()) {
             query.kjonnfilter(filtervalg.kjonn);
+        }
+        if (filtervalg.harManuellBrukerStatus()) {
+            query.erManuell();
         }
 
         if (filtervalg.harCvFilter()) {

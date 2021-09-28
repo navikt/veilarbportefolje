@@ -90,6 +90,11 @@ public class PostgresQueryBuilder {
         whereStatement.add(NY_FOR_VEILEDER + " = TRUE");
     }
 
+    public void erManuell() {
+        brukKunEssensiellInfo = false;
+        whereStatement.add(MANUELL + " = TRUE");
+    }
+
     public void ikkeServiceBehov() {
         brukKunEssensiellInfo = false;
         whereStatement.add(FORMIDLINGSGRUPPEKODE + " = 'ISERV'");
