@@ -14,6 +14,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.lang.Integer.parseInt;
 import static java.util.stream.Collectors.toList;
@@ -145,7 +147,10 @@ public class PostgresQueryBuilder {
             whereStatement.add(FODSELSNR + " LIKE '" + soketekst + "%'");
         } else {
             String soketekstUpper = soketekst.toUpperCase();
-            whereStatement.add("(UPPER(" + FORNAVN + ") LIKE '%" + soketekstUpper + "%' OR UPPER(" + ETTERNAVN + ") LIKE '%" + soketekstUpper + "%')");
+            List<String> nameSplittedBySpaces = splitStringBySpaces(soketekstUpper);
+            for (String namePart : nameSplittedBySpaces) {
+                whereStatement.add("(UPPER(" + FORNAVN + ") LIKE '%" + namePart + "%' OR UPPER(" + ETTERNAVN + ") LIKE '%" + namePart + "%')");
+            }
         }
     }
 
@@ -207,6 +212,12 @@ public class PostgresQueryBuilder {
 
     private String eq(String kolonne, int verdi) {
         return kolonne + " = " + verdi;
+    }
+
+    private List<String> splitStringBySpaces(String name) {
+        final Pattern whiteSpacePattern = Pattern.compile("\\s+");
+        return whiteSpacePattern.splitAsStream(name)
+                .collect(Collectors.toList());
     }
 
 }
