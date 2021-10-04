@@ -19,9 +19,9 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitet
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
+import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
-import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.database.BrukerDataRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -45,6 +45,7 @@ import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.*;
@@ -112,6 +113,7 @@ import static org.mockito.Mockito.when;
         OppfolgingStartetService.class,
         SisteEndringService.class,
         SisteEndringRepository.class,
+        SisteEndringRepositoryV2.class,
         SistLestService.class,
         MalService.class,
         OppfolgingService.class,
@@ -279,7 +281,7 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public LeaderElectionClient leaderElectionClient(){
+    public LeaderElectionClient leaderElectionClient() {
         return mock(LeaderElectionClient.class);
     }
 
