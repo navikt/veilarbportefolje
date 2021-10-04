@@ -149,7 +149,7 @@ public class PostgresQueryBuilder {
             String soketekstUpper = soketekst.toUpperCase();
             List<String> nameSplittedBySpaces = splitStringBySpaces(soketekstUpper);
             for (String namePart : nameSplittedBySpaces) {
-                whereStatement.add("(UPPER(" + FORNAVN + ") LIKE '%" + namePart + "%' OR UPPER(" + ETTERNAVN + ") LIKE '%" + namePart + "%')");
+                whereStatement.add("(" + FORNAVN + " ILIKE '%" + namePart + "%' OR " + ETTERNAVN + " ILIKE '%" + namePart + "%')");
             }
         }
     }
