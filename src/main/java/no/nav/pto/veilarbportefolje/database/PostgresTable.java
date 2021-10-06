@@ -172,4 +172,25 @@ public class PostgresTable {
         public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
         public static final String CV_EKSISTERER = "CV_EKSISTERER";
     }
+
+    public static final class AKTIVITETER {
+        public static final String TABLE_NAME = "AKTIVITETER";
+        public static final String AKTIVITETID = "AKTIVITETID";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String AKTIVITETTYPE = "AKTIVITETTYPE";
+        public static final String AVTALT = "AVTALT";
+        public static final String FRADATO = "FRADATO";
+        public static final String TILDATO = "TILDATO";
+        public static final String STATUS = "STATUS";
+        public static final String VERSION = "VERSION";
+    }
+
+    public static final class PROSSESERT_AKTIVIT_DATA {
+        public static final String TABLE_NAME = "PROSSESERT_AKTIVIT_DATA";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String AKTIVITETTYPE = "AKTIVITETTYPE";
+        public static final String NESTE_UTLOPSDATO = "NESTE_UTLOPSDATO";
+        public static final String NESTE_STARTDATO = "NESTE_STARTDATO";
+        public static final String AKTIV = "AKTIV";
+    }
 }
