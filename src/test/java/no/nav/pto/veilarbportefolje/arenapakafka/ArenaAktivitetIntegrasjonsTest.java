@@ -66,7 +66,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
-        this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService, sisteEndringService, mock(OppfolgingRepository.class),mock(ElasticServiceV2.class), unleashService);
+        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, prossesertAktivitetRepositoryV2, persistentOppdatering, brukerService, sisteEndringService, mock(OppfolgingRepository.class),mock(ElasticServiceV2.class), unleashService);
         this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient, arenaHendelseRepository);
     }
 

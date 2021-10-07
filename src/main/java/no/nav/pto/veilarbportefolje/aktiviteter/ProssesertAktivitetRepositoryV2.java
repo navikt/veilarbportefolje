@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.PROSSESERT_AKTIVIT_DATA.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITET_TYPE_DATA.*;
 
 @Slf4j
 @Repository

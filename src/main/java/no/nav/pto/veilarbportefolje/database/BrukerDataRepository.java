@@ -46,12 +46,4 @@ public class BrukerDataRepository {
                 .where(WhereClause.equals(PERSONID, brukerdata.getPersonid()))
                 .execute();
     }
-
-    public List<AktorId> hentBrukereMedUtlopteAktivitetStartDato() {
-        String sql = "SELECT " + AKTOERID + " FROM " + TABLE_NAME
-                + " WHERE " + AKTIVITET_START + " < CURRENT_TIMESTAMP AND " + AKTOERID + " IS NOT NULL";
-        return db.queryForList(sql, String.class).stream()
-                .map(AktorId::new)
-                .collect(toList());
-    }
 }

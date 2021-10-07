@@ -11,9 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.*;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -53,29 +53,6 @@ public class AktiviteterRepositoryV2 {
         );
     }
 
-    public AktoerAktiviteter getAvtalteAktiviteterForAktoerid(AktorId aktoerid) {
-        String sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s", TABLE_NAME, AKTOERID, AVTALT);
-
-        List<AktivitetDTO> aktiviteter = Optional.ofNullable(
-                queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid))
-        ).orElse(new ArrayList<>());
-
-        return new AktoerAktiviteter(aktoerid.get()).setAktiviteter(aktiviteter);
-    }
-
-    private List<AktivitetDTO> mapToAktivitetDTOList(ResultSet rs) throws SQLException {
-        List<AktivitetDTO> aktiviteter = new ArrayList<>();
-        while (rs.next()) {
-            aktiviteter.add(new AktivitetDTO()
-                    .setAktivitetID(rs.getString(AKTIVITETID))
-                    .setAktivitetType(rs.getString(AKTIVITETTYPE))
-                    .setStatus(rs.getString(STATUS))
-                    .setFraDato(rs.getTimestamp(FRADATO))
-                    .setTilDato(rs.getTimestamp(TILDATO)));
-        }
-        return aktiviteter;
-    }
-
     private boolean erNyVersjonAvAktivitet(KafkaAktivitetMelding aktivitet) {
         Long kommendeVersjon = aktivitet.getVersion();
         if (kommendeVersjon == null) {
@@ -95,9 +72,32 @@ public class AktiviteterRepositoryV2 {
         ).orElse(-1L);
     }
 
+    public AktoerAktiviteter getAvtalteAktiviteterForAktoerid(AktorId aktoerid) {
+        String sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s", TABLE_NAME, AKTOERID, AVTALT);
+
+        List<AktivitetDTO> aktiviteter = Optional.ofNullable(
+                queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid))
+        ).orElse(new ArrayList<>());
+
+        return new AktoerAktiviteter(aktoerid.get()).setAktiviteter(aktiviteter);
+    }
+
     public void deleteById(String aktivitetid) {
         log.info("Sletter alle aktiviteter med id {}", aktivitetid);
         db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktivitetid);
+    }
+
+    private List<AktivitetDTO> mapToAktivitetDTOList(ResultSet rs) throws SQLException {
+        List<AktivitetDTO> aktiviteter = new ArrayList<>();
+        while (rs.next()) {
+            aktiviteter.add(new AktivitetDTO()
+                    .setAktivitetID(rs.getString(AKTIVITETID))
+                    .setAktivitetType(rs.getString(AKTIVITETTYPE))
+                    .setStatus(rs.getString(STATUS))
+                    .setFraDato(rs.getTimestamp(FRADATO))
+                    .setTilDato(rs.getTimestamp(TILDATO)));
+        }
+        return aktiviteter;
     }
 
     public void setAvtalt(String aktivitetid, boolean avtalt) {
@@ -105,4 +105,31 @@ public class AktiviteterRepositoryV2 {
         db.update(String.format("UPDATE %s SET %s = ? WHERE %s = ?", TABLE_NAME, AVTALT, AKTIVITETID), avtalt, aktivitetid);
     }
 
+    public AktivitetStatus getAktivitetStatus(AktorId aktoerid, KafkaAktivitetMelding.AktivitetTypeData aktivitetType) {
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        String sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s =? AND %s", TABLE_NAME, AKTOERID, AKTIVITETTYPE, AVTALT);
+
+        List<AktivitetDTO> aktiviteter = Optional.ofNullable(
+                queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid, aktivitetType.name()))
+        ).orElse(new ArrayList<>());
+
+        Timestamp nesteStart = aktiviteter.stream()
+                .map(AktivitetDTO::getFraDato)
+                .filter(Objects::nonNull)
+                .filter(startDato -> startDato.toLocalDateTime().toLocalDate().isAfter(yesterday))
+                .min(Comparator.naturalOrder())
+                .orElse(null);
+        Timestamp nesteUtlopsdato = aktiviteter.stream()
+                .map(AktivitetDTO::getTilDato)
+                .filter(Objects::nonNull)
+                .filter(utlopsDato -> utlopsDato.toLocalDateTime().toLocalDate().isAfter(yesterday))
+                .min(Comparator.naturalOrder())
+                .orElse(null);
+
+        return new AktivitetStatus()
+                .setAktoerid(aktoerid)
+                .setAktiv(!aktiviteter.isEmpty())
+                .setNesteStart(nesteStart)
+                .setNesteUtlop(nesteUtlopsdato);
+    }
 }

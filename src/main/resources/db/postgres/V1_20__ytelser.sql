@@ -1,0 +1,10 @@
+CREATE TABLE YTELSE_DATA
+(
+    AKTOERID            VARCHAR(20) NOT NULL,
+    UTLOPSDATO          TIMESTAMP,
+    DAGPUTLOPUKE        integer,
+    PERMUTLOPUKE        integer,
+    AAPMAXTIDUKE        integer,
+    AAPUNNTAKDAGERIGJEN integer,
+    PRIMARY KEY (AKTOERID)
+);

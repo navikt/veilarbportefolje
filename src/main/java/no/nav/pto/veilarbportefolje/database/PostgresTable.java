@@ -173,6 +173,18 @@ public class PostgresTable {
         public static final String CV_EKSISTERER = "CV_EKSISTERER";
     }
 
+    public static final class GRUPPE_AKTIVITER {
+        public static final String TABLE_NAME = "GRUPPE_AKTIVITER";
+        public static final String MOTEPLAN_ID = "MOTEPLAN_ID";
+        public static final String VEILEDNINGDELTAKER_ID = "VEILEDNINGDELTAKER_ID";
+
+        public static final String AKTOERID = "AKTOERID";
+        public static final String MOTEPLAN_STARTDATO = "MOTEPLAN_STARTDATO";
+        public static final String MOTEPLAN_SLUTTDATO = "MOTEPLAN_SLUTTDATO";
+        public static final String HENDELSE_ID = "HENDELSE_ID";
+        public static final String AKTIV = "AKTIV";
+    }
+
     public static final class AKTIVITETER {
         public static final String TABLE_NAME = "AKTIVITETER";
         public static final String AKTIVITETID = "AKTIVITETID";
@@ -185,12 +197,21 @@ public class PostgresTable {
         public static final String VERSION = "VERSION";
     }
 
-    public static final class PROSSESERT_AKTIVIT_DATA {
-        public static final String TABLE_NAME = "PROSSESERT_AKTIVIT_DATA";
+    public static final class AKTIVITET_TYPE_DATA {
+        public static final String TABLE_NAME = "AKTIVITET_TYPE_DATA";
         public static final String AKTOERID = "AKTOERID";
         public static final String AKTIVITETTYPE = "AKTIVITETTYPE";
         public static final String NESTE_UTLOPSDATO = "NESTE_UTLOPSDATO";
         public static final String NESTE_STARTDATO = "NESTE_STARTDATO";
         public static final String AKTIV = "AKTIV";
+    }
+
+    public static final class AKTIVITET_DATA {
+        public static final String TABLE_NAME = "AKTIVITET_DATA";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String NYESTEUTLOPTEAKTIVITET ="NYESTEUTLOPTEAKTIVITET";
+        public static final String FORRIGE_AKTIVITET_START ="FORRIGE_AKTIVITET_START";
+        public static final String AKTIVITET_START_START ="AKTIVITET_START_START";
+        public static final String NESTE_AKTIVITET_START ="NESTE_AKTIVITET_START";
     }
 }
