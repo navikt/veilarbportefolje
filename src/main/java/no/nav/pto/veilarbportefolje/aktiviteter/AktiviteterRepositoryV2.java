@@ -77,7 +77,7 @@ public class AktiviteterRepositoryV2 {
         String sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s", TABLE_NAME, AKTOERID, AVTALT);
 
         List<AktivitetDTO> aktiviteter = Optional.ofNullable(
-                queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid))
+                queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid.get()))
         ).orElse(new ArrayList<>());
 
         return new AktoerAktiviteter(aktoerid.get()).setAktiviteter(aktiviteter);
@@ -85,7 +85,7 @@ public class AktiviteterRepositoryV2 {
 
     public void deleteById(String aktivitetid) {
         log.info("Sletter alle aktiviteter med id {}", aktivitetid);
-        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktivitetid);
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTIVITETID), aktivitetid);
     }
 
     private List<AktivitetDTO> mapToAktivitetDTOList(ResultSet rs) throws SQLException {
@@ -111,7 +111,7 @@ public class AktiviteterRepositoryV2 {
         String sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s = ? AND %s", TABLE_NAME, AKTOERID, AKTIVITETTYPE, AVTALT);
 
         List<AktivitetDTO> aktiveAktiviteter = Optional.ofNullable(
-                        queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid, aktivitetType.name()))
+                        queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid.get(), aktivitetType.name()))
                 ).orElse(new ArrayList<>()).stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .collect(Collectors.toList());
