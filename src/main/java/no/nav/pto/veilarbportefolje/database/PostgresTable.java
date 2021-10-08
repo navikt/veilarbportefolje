@@ -197,8 +197,8 @@ public class PostgresTable {
         public static final String VERSION = "VERSION";
     }
 
-    public static final class AKTIVITET_TYPE_DATA {
-        public static final String TABLE_NAME = "AKTIVITET_TYPE_DATA";
+    public static final class AKTIVITETTYPE_STATUS {
+        public static final String TABLE_NAME = "AKTIVITETTYPE_STATUS_FOR_BRUKER";
         public static final String AKTOERID = "AKTOERID";
         public static final String AKTIVITETTYPE = "AKTIVITETTYPE";
         public static final String NESTE_UTLOPSDATO = "NESTE_UTLOPSDATO";
@@ -206,12 +206,12 @@ public class PostgresTable {
         public static final String AKTIV = "AKTIV";
     }
 
-    public static final class AKTIVITET_DATA {
-        public static final String TABLE_NAME = "AKTIVITET_DATA";
+    public static final class AKTIVITET_STATUS {
+        public static final String TABLE_NAME = "AKTIVITET_STATUS_FOR_BRUKER";
         public static final String AKTOERID = "AKTOERID";
         public static final String NYESTEUTLOPTEAKTIVITET ="NYESTEUTLOPTEAKTIVITET";
         public static final String FORRIGE_AKTIVITET_START ="FORRIGE_AKTIVITET_START";
-        public static final String AKTIVITET_START_START ="AKTIVITET_START_START";
+        public static final String AKTIVITET_START ="AKTIVITET_START";
         public static final String NESTE_AKTIVITET_START ="NESTE_AKTIVITET_START";
     }
 }

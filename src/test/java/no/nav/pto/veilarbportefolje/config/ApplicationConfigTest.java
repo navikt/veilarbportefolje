@@ -9,6 +9,8 @@ import no.nav.common.utils.Credentials;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
@@ -96,6 +98,8 @@ import static org.mockito.Mockito.when;
         ElasticService.class,
         ElasticServiceV2.class,
         AktivitetDAO.class,
+        AktiviteterRepositoryV2.class,
+        AktivitetStatusRepositoryV2.class,
         BrukerRepository.class,
         OppfolgingRepository.class,
         ManuellStatusService.class,

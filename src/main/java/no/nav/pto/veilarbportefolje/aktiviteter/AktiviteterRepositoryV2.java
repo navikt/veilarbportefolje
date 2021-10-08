@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -107,19 +108,21 @@ public class AktiviteterRepositoryV2 {
 
     public AktivitetStatus getAktivitetStatus(AktorId aktoerid, KafkaAktivitetMelding.AktivitetTypeData aktivitetType) {
         LocalDate yesterday = LocalDate.now().minusDays(1);
-        String sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s =? AND %s", TABLE_NAME, AKTOERID, AKTIVITETTYPE, AVTALT);
+        String sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s = ? AND %s", TABLE_NAME, AKTOERID, AKTIVITETTYPE, AVTALT);
 
-        List<AktivitetDTO> aktiviteter = Optional.ofNullable(
-                queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid, aktivitetType.name()))
-        ).orElse(new ArrayList<>());
+        List<AktivitetDTO> aktiveAktiviteter = Optional.ofNullable(
+                        queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid, aktivitetType.name()))
+                ).orElse(new ArrayList<>()).stream()
+                .filter(AktivitetUtils::harIkkeStatusFullfort)
+                .collect(Collectors.toList());
 
-        Timestamp nesteStart = aktiviteter.stream()
+        Timestamp nesteStart = aktiveAktiviteter.stream()
                 .map(AktivitetDTO::getFraDato)
                 .filter(Objects::nonNull)
                 .filter(startDato -> startDato.toLocalDateTime().toLocalDate().isAfter(yesterday))
                 .min(Comparator.naturalOrder())
                 .orElse(null);
-        Timestamp nesteUtlopsdato = aktiviteter.stream()
+        Timestamp nesteUtlopsdato = aktiveAktiviteter.stream()
                 .map(AktivitetDTO::getTilDato)
                 .filter(Objects::nonNull)
                 .filter(utlopsDato -> utlopsDato.toLocalDateTime().toLocalDate().isAfter(yesterday))
@@ -128,7 +131,7 @@ public class AktiviteterRepositoryV2 {
 
         return new AktivitetStatus()
                 .setAktoerid(aktoerid)
-                .setAktiv(!aktiviteter.isEmpty())
+                .setAktiv(!aktiveAktiviteter.isEmpty())
                 .setNesteStart(nesteStart)
                 .setNesteUtlop(nesteUtlopsdato);
     }

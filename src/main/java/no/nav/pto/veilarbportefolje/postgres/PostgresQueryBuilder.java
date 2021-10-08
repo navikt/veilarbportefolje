@@ -77,6 +77,7 @@ public class PostgresQueryBuilder {
         whereStatement.add(eq(VEILEDERID, veilederId));
     }
 
+    // TODO: bruk ANY og: ?::varchar[] og String: "{" + values.stream().map(Object::toString).collect(Collectors.joining(",")) + "}
     public void ufordeltBruker(List<String> veiledereMedTilgangTilEnhet) {
         StringJoiner veiledere = new StringJoiner(", ", "(" + VEILEDERID + " IS NULL OR " + VEILEDERID + " NOT IN (", "))");
         for (String s : veiledereMedTilgangTilEnhet) {
