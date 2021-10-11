@@ -205,7 +205,7 @@ public class BrukerDataService {
                 .filter(Objects::nonNull)
                 .collect(toList());
         // TODO: legg til gruppeaktiviteter og tiltak
-        // sluttdatoer.addAll(aktiviteter);
+        // sluttdatoer.addAll(tiltak);
         // sluttdatoer.addAll(gruppeAktiviteter);
         sluttdatoer.sort(Comparator.naturalOrder());
         return sluttdatoer;

@@ -30,7 +30,7 @@ public class AktivitetStatusRepositoryV2 {
                         "VALUES (?, ?, ?, ?, ?) " +
                         "ON CONFLICT (" + AKTIVITETTYPE_STATUS.AKTOERID + ") " +
                         "DO UPDATE SET (" + AKTIVITETTYPE_STATUS.AKTIVITETTYPE + ", " + AKTIVITETTYPE_STATUS.AKTIV + ", " +AKTIVITETTYPE_STATUS.NESTE_UTLOPSDATO + ", " + AKTIVITETTYPE_STATUS.NESTE_STARTDATO + ") = (?, ?, ?, ?)",
-                status.getAktoerid(),
+                status.getAktoerid().get(),
                 status.getAktivitetType().toLowerCase(), status.aktiv, status.getNesteUtlop(), status.getNesteStart(),
                 status.getAktivitetType().toLowerCase(), status.aktiv, status.getNesteUtlop(), status.getNesteStart()
         );

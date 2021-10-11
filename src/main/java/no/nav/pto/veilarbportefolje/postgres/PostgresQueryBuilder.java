@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import static java.lang.Integer.parseInt;
 import static java.util.stream.Collectors.toList;
@@ -77,23 +78,18 @@ public class PostgresQueryBuilder {
         whereStatement.add(eq(VEILEDERID, veilederId));
     }
 
-    // TODO: bruk ANY og: ?::varchar[] og String: "{" + values.stream().map(Object::toString).collect(Collectors.joining(",")) + "}
     public void ufordeltBruker(List<String> veiledereMedTilgangTilEnhet) {
-        StringJoiner veiledere = new StringJoiner(", ", "(" + VEILEDERID + " IS NULL OR " + VEILEDERID + " NOT IN (", "))");
-        for (String s : veiledereMedTilgangTilEnhet) {
-            veiledere.add("'" + s + "'");
-        }
-
-        whereStatement.add(veiledere.toString());
+        String veiledere = veiledereMedTilgangTilEnhet.stream().map(Object::toString).collect(Collectors.joining(",", "{", "}"));
+        whereStatement.add("(" + VEILEDERID + " IS NULL OR " + VEILEDERID + " <> ANY ('" + veiledere + "'::varchar[]))");
     }
 
     public void nyForVeileder() {
-        whereStatement.add(NY_FOR_VEILEDER + " = TRUE");
+        whereStatement.add(NY_FOR_VEILEDER);
     }
 
     public void erManuell() {
         brukKunEssensiellInfo = false;
-        whereStatement.add(MANUELL + " = TRUE");
+        whereStatement.add(MANUELL);
     }
 
     public void ikkeServiceBehov() {
@@ -175,13 +171,13 @@ public class PostgresQueryBuilder {
 
     public void harDeltCvFilter() {
         brukKunEssensiellInfo = false;
-        whereStatement.add(HAR_DELT_CV + " = TRUE");
-        whereStatement.add(CV_EKSISTERER + " = TRUE");
+        whereStatement.add(HAR_DELT_CV);
+        whereStatement.add(CV_EKSISTERER);
     }
 
     public void harIkkeDeltCvFilter() {
         brukKunEssensiellInfo = false;
-        whereStatement.add("NOT (" + HAR_DELT_CV + " = TRUE AND " + CV_EKSISTERER + " = TRUE)");
+        whereStatement.add("NOT (" + HAR_DELT_CV + " AND " + CV_EKSISTERER + ")");
     }
 
     @SneakyThrows
@@ -196,9 +192,9 @@ public class PostgresQueryBuilder {
 
     private String eq(String kolonne, boolean verdi) {
         if (verdi) {
-            return kolonne + " = TRUE";
+            return kolonne;
         } else {
-            return kolonne + " = FALSE";
+            return "NOT "+ kolonne;
         }
     }
 
