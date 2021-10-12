@@ -3,14 +3,12 @@ package no.nav.pto.veilarbportefolje.arenapakafka;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyperFraKafka;
+import no.nav.pto.veilarbportefolje.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.*;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -55,7 +53,7 @@ public class ArenaAktivitetIntegrasjonsTest {
     private final PersonId personId = PersonId.of("123");
 
     @Autowired
-    public ArenaAktivitetIntegrasjonsTest(SisteEndringService sisteEndringService, BrukerService brukerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, JdbcTemplate jdbcTemplate, UnleashService unleashService) {
+    public ArenaAktivitetIntegrasjonsTest(SisteEndringService sisteEndringService, BrukerService brukerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, JdbcTemplate jdbcTemplate, UnleashService unleashService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, BrukerDataService brukerDataService) {
         this.jdbcTemplate = jdbcTemplate;
         this.unleashService = unleashService;
         this.aktivitetDAO = aktivitetDAO;
@@ -66,7 +64,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
-        this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService, sisteEndringService, mock(OppfolgingRepository.class),mock(ElasticServiceV2.class), unleashService);
+        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, mock(OppfolgingRepository.class),mock(ElasticServiceV2.class), unleashService);
         this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient, arenaHendelseRepository);
     }
 

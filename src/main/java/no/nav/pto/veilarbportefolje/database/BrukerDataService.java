@@ -3,9 +3,7 @@ package no.nav.pto.veilarbportefolje.database;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDTO;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
+import no.nav.pto.veilarbportefolje.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
@@ -32,8 +30,20 @@ public class BrukerDataService {
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerDataRepository brukerDataRepository;
 
+    //POSTGRES
+    private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
+    private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
+
+    public void oppdaterAktivitetBrukerData(AktorId aktorId) {
+        oppdaterAktivitetBrukerData(aktorId, null, true);
+    }
+
     public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId) {
-        if (personId == null || aktorId == null) {
+        oppdaterAktivitetBrukerData(aktorId, personId, false);
+    }
+
+    public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId, boolean postgres) {
+        if (aktorId == null || (personId == null && !postgres)) {
             log.error("PersonId null pa bruker: {}", aktorId);
             return;
         }
@@ -41,8 +51,8 @@ public class BrukerDataService {
         Brukerdata brukerAktivitetTilstand = new Brukerdata();
         LocalDate idag = LocalDate.now();
 
-        List<Timestamp> sluttdatoer = hentAlleSluttdatoer(aktorId, personId);
-        List<Timestamp> startDatoer = hentAlleStartdatoer(aktorId, personId);
+        List<Timestamp> sluttdatoer = postgres ? hentAlleSluttdatoerPostgres(aktorId) : hentAlleSluttdatoer(aktorId, personId);
+        List<Timestamp> startDatoer = postgres ? hentAlleStartdatoerPostgres(aktorId) : hentAlleStartdatoer(aktorId, personId);
 
         Timestamp nyesteUtlopteDato = finnNyesteUtlopteAktivAktivitet(sluttdatoer, idag);
         Timestamp forigeAktivitetStart = finnForrigeAktivitetStartDatoer(startDatoer, idag);
@@ -53,20 +63,23 @@ public class BrukerDataService {
 
         brukerAktivitetTilstand
                 .setAktoerid(aktorId.get())
-                .setPersonid(personId.getValue())
+                .setPersonid(personId == null ? null : personId.getValue())
                 .setNyesteUtlopteAktivitet(nyesteUtlopteDato)
                 .setForrigeAktivitetStart(forigeAktivitetStart)
                 .setAktivitetStart(aktivitetStart)
                 .setNesteAktivitetStart(nesteAktivitetStart);
-
-        brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
+        if (postgres) {
+            aktivitetStatusRepositoryV2.upsertAktivitetData(brukerAktivitetTilstand);
+        } else {
+            brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
+        }
     }
 
     public void oppdaterYtelser(AktorId aktorId, PersonId personId, Optional<YtelseDAO> innhold) {
         Brukerdata ytelsesTilstand = new Brukerdata()
                 .setAktoerid(aktorId.get())
                 .setPersonid(personId.getValue());
-        if(innhold.isEmpty()){
+        if (innhold.isEmpty()) {
             brukerDataRepository.upsertYtelser(ytelsesTilstand);
             return;
         }
@@ -88,7 +101,7 @@ public class BrukerDataService {
         brukerDataRepository.upsertYtelser(ytelsesTilstand);
     }
 
-    private void leggTilYtelsesData(Brukerdata ytelsesTilstand, YtelseDAO innhold){
+    private void leggTilYtelsesData(Brukerdata ytelsesTilstand, YtelseDAO innhold) {
         YtelseMapping ytelseMapping = YtelseMapping.of(innhold)
                 .orElseThrow(() -> new RuntimeException(innhold.toString()));
         LocalDateTime utlopsDato = Optional.ofNullable(innhold.getUtlopsDato())
@@ -166,6 +179,34 @@ public class BrukerDataService {
 
         sluttdatoer.addAll(aktiviteter);
         sluttdatoer.addAll(gruppeAktiviteter);
+        sluttdatoer.sort(Comparator.naturalOrder());
+        return sluttdatoer;
+    }
+
+
+    private List<Timestamp> hentAlleStartdatoerPostgres(AktorId aktorId) {
+        List<Timestamp> startDatoer = aktiviteterRepositoryV2.getAvtalteAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
+                .filter(AktivitetUtils::harIkkeStatusFullfort)
+                .map(AktivitetDTO::getFraDato)
+                .filter(Objects::nonNull)
+                .collect(toList());
+        // TODO: legg til gruppeaktiviteter og tiltak
+        //startDatoer.addAll(tiltak);
+        //startDatoer.addAll(gruppeAktiviteter);
+        startDatoer.sort(Comparator.naturalOrder());
+        return startDatoer;
+
+    }
+
+    private List<Timestamp> hentAlleSluttdatoerPostgres(AktorId aktorId) {
+        List<Timestamp> sluttdatoer = aktiviteterRepositoryV2.getAvtalteAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
+                .filter(AktivitetUtils::harIkkeStatusFullfort)
+                .map(AktivitetDTO::getTilDato)
+                .filter(Objects::nonNull)
+                .collect(toList());
+        // TODO: legg til gruppeaktiviteter og tiltak
+        // sluttdatoer.addAll(tiltak);
+        // sluttdatoer.addAll(gruppeAktiviteter);
         sluttdatoer.sort(Comparator.naturalOrder());
         return sluttdatoer;
     }

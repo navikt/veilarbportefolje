@@ -3,9 +3,8 @@ package no.nav.pto.veilarbportefolje.sisteendring;
 import io.vavr.control.Try;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.aktiviteter.*;
+import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
@@ -50,13 +49,13 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final EnhetId testEnhet = EnhetId.of("0000");
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService, ElasticServiceV2 elasticServiceV2) {
+    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService, ElasticServiceV2 elasticServiceV2, AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV2, BrukerDataService brukerDataService) {
         brukerService = mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
         unleashService = Mockito.mock(UnleashService.class);
         this.oppfolgingRepositoryMock = mock(OppfolgingRepository.class);
-        this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService, sisteEndringService, oppfolgingRepositoryMock, elasticServiceV2, unleashService);
+        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, oppfolgingRepositoryMock, elasticServiceV2, unleashService);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.elasticService = elasticService;
         this.malService = malService;

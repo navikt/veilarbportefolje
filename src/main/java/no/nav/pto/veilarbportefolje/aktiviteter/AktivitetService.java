@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.common.types.identer.AktorId;
@@ -31,6 +32,9 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
     private final BrukerService brukerService;
     private final AktivitetDAO aktivitetDAO;
+    private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
+    private final BrukerDataService brukerDataService;
+    private final AktivitetStatusRepositoryV2 prossesertAktivitetRepositoryV2;
     private final PersistentOppdatering persistentOppdatering;
     private final AtomicBoolean rewind;
     private final SisteEndringService sisteEndringService;
@@ -40,10 +44,13 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final ElasticServiceV2 elasticServiceV2;
 
     @Autowired
-    public AktivitetService(AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, BrukerService brukerService, SisteEndringService sisteEndringService, OppfolgingRepository oppfolgingRepository, ElasticServiceV2 elasticServiceV2, UnleashService unleashService) {
+    public AktivitetService(AktivitetDAO aktivitetDAO, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetStatusRepositoryV2 prossesertAktivitetRepositoryV2, PersistentOppdatering persistentOppdatering, BrukerService brukerService, BrukerDataService brukerDataService, SisteEndringService sisteEndringService, OppfolgingRepository oppfolgingRepository, ElasticServiceV2 elasticServiceV2, UnleashService unleashService) {
         this.aktivitetDAO = aktivitetDAO;
+        this.aktiviteterRepositoryV2 = aktiviteterRepositoryV2;
+        this.prossesertAktivitetRepositoryV2 = prossesertAktivitetRepositoryV2;
         this.brukerService = brukerService;
         this.persistentOppdatering = persistentOppdatering;
+        this.brukerDataService = brukerDataService;
         this.sisteEndringService = sisteEndringService;
         this.unleashService = unleashService;
         this.oppfolgingRepository = oppfolgingRepository;
@@ -72,10 +79,21 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         aktivitetDAO.tryLagreAktivitetData(aktivitetData);
         utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(aktivitetData.getAktorId()));
+
+        //POSTGRES
+        lagreOgProsseseserAktiviteter(aktivitetData);
         if (!oppfolgingRepository.erUnderoppfolging(AktorId.of(aktivitetData.getAktorId()))) {
             elasticServiceV2.deleteIfPresent(AktorId.of(aktivitetData.getAktorId()),
                     String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
         }
+    }
+
+    private void lagreOgProsseseserAktiviteter(KafkaAktivitetMelding aktivitetData) {
+        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
+
+        AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType());
+        prossesertAktivitetRepositoryV2.upsertAktivitetStatus(status);
+        brukerDataService.oppdaterAktivitetBrukerData(AktorId.of(aktivitetData.getAktorId()));
     }
 
     public void utledOgLagreAlleAktivitetstatuser() {
