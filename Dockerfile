@@ -1,2 +1,2 @@
-FROM docker.pkg.github.com/navikt/pus-nais-java-app/pus-nais-java-app:java11
+FROM navikt/java:17-appdynamics
 COPY /target/veilarbportefolje.jar app.jar
