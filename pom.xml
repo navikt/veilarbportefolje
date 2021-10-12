@@ -276,13 +276,6 @@
             <version>${elastic.version}</version>
         </dependency>
 
-        <!--Jaxb-->
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>${jaxb.version}</version>
-        </dependency>
-
         <!--Diverse-->
         <dependency>
             <groupId>org.flywaydb</groupId>
