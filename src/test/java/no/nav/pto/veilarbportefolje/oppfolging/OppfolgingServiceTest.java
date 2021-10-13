@@ -1,14 +1,11 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import lombok.SneakyThrows;
-import lombok.val;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,14 +14,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;

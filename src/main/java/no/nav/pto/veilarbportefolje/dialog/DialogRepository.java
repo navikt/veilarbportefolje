@@ -39,8 +39,8 @@ public class DialogRepository {
     public Try<Dialogdata> retrieveDialogData(String aktoerId) {
         return Try.of(() -> db.queryForObject(
                 "SELECT * FROM DIALOG WHERE AKTOERID = ?",
-                new Object[] {aktoerId},
-                this::mapToDialogData)
+                this::mapToDialogData, aktoerId)
+
         ).onFailure(e -> {});
     }
 

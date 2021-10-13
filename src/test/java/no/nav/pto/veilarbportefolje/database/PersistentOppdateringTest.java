@@ -26,8 +26,6 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class PersistentOppdateringTest {
 
-    @Mock
-    private BrukerRepository brukerRepository;
 
     @Mock
     private AktivitetDAO aktivitetDAO;

@@ -52,9 +52,6 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.*;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -66,20 +63,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.Properties;
 
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.elastic.Constant.ELASTICSEARCH_VERSION;
 import static org.apache.http.HttpHost.create;
-import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
-import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
 import static org.elasticsearch.client.RestClient.builder;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -135,7 +125,6 @@ import static org.mockito.Mockito.when;
 public class ApplicationConfigTest {
 
     private static final ElasticsearchContainer ELASTICSEARCH_CONTAINER;
-    private static final KafkaContainer KAFKA_CONTAINER;
 
     static {
         ELASTICSEARCH_CONTAINER = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:" + ELASTICSEARCH_VERSION);
@@ -143,36 +132,8 @@ public class ApplicationConfigTest {
 
         System.setProperty("elastic.indexname", IdUtils.generateId());
         System.setProperty("elastic.httphostaddress", ELASTICSEARCH_CONTAINER.getHttpHostAddress());
-
-        KAFKA_CONTAINER = new KafkaContainer();
-        KAFKA_CONTAINER.start();
-
-        System.setProperty("NAIS_NAMESPACE", "localhost");
-        System.setProperty("KAFKA_BROKERS_URL", KAFKA_CONTAINER.getBootstrapServers());
     }
 
-    public static Properties kafkaConsumerProperties() {
-        Properties properties = new Properties();
-        properties.setProperty(BOOTSTRAP_SERVERS_CONFIG, System.getProperty("KAFKA_BROKERS_URL"));
-        properties.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
-        properties.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer");
-        properties.put(MAX_POLL_RECORDS_CONFIG, 5);
-        properties.put(SESSION_TIMEOUT_MS_CONFIG, 20000);
-        properties.put(ENABLE_AUTO_COMMIT_CONFIG, true);
-        properties.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        properties.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        return properties;
-    }
-
-
-    @Bean
-    public KafkaProducer<String, String> kafkaProducer() {
-        HashMap<String, Object> props = new HashMap<>();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, System.getProperty("KAFKA_BROKERS_URL"));
-        props.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        return new KafkaProducer<>(props);
-    }
 
     @Bean
     public TestDataClient dbTestClient(JdbcTemplate jdbcTemplate, ElasticTestClient elasticTestClient) {

@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import lombok.val;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import org.junit.Test;
 
@@ -18,25 +17,25 @@ public class UnderOppfolgingReglerTest {
 
     @Test
     public void skal_vaere_under_oppfolging() {
-        val bruker = new OppfolgingsBruker()
+        var bruker = new OppfolgingsBruker()
                 .setFnr("00000000000")
                 .setFormidlingsgruppekode("foo")
                 .setKvalifiseringsgruppekode("bar")
                 .setOppfolging(true);
 
-        val result = erUnderOppfolging(bruker);
+        var result = erUnderOppfolging(bruker);
         assertThat(result).isTrue();
     }
 
     @Test
     public void skal_ikke_vaere_under_oppfolging() {
-        val bruker = new OppfolgingsBruker()
+        var bruker = new OppfolgingsBruker()
                 .setFnr("00000000000")
                 .setFormidlingsgruppekode("foo")
                 .setKvalifiseringsgruppekode("bar")
                 .setOppfolging(false);
 
-        val result = erUnderOppfolging(bruker);
+        var result = erUnderOppfolging(bruker);
         assertThat(result).isFalse();
     }
 

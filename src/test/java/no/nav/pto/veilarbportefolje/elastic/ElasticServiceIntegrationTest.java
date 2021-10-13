@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
-import lombok.val;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -102,10 +101,10 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         skrivBrukereTilTestindeks(brukere);
 
-        val filtervalg = new Filtervalg().setFerdigfilterListe(List.of(I_AVTALT_AKTIVITET));
+        var filtervalg = new Filtervalg().setFerdigfilterListe(List.of(I_AVTALT_AKTIVITET));
         pollElasticUntil(() -> elasticTestClient.countDocuments() == brukere.size());
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "asc",
@@ -154,14 +153,14 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         skrivBrukereTilTestindeks(brukere);
 
-        val filtervalg = new Filtervalg()
+        var filtervalg = new Filtervalg()
                 .setFerdigfilterListe(List.of(UTLOPTE_AKTIVITETER))
                 .setVeiledere(List.of(TEST_VEILEDER_0, TEST_VEILEDER_1));
 
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == brukere.size());
 
-        val response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
+        var response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
 
         assertThat(response.getAntall()).isEqualTo(2);
     }
@@ -196,17 +195,17 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == brukere.size());
 
-        val filtervalg = new Filtervalg().setFerdigfilterListe(List.of(UFORDELTE_BRUKERE));
-        val response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
+        var filtervalg = new Filtervalg().setFerdigfilterListe(List.of(UFORDELTE_BRUKERE));
+        var response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
         assertThat(response.getAntall()).isEqualTo(2);
     }
 
     @Test
     void skal_hente_riktige_antall_brukere_per_veileder() {
 
-        val veilederId1 = "Z000000";
-        val veilederId2 = "Z000001";
-        val veilederId3 = "Z000003";
+        var veilederId1 = "Z000000";
+        var veilederId2 = "Z000001";
+        var veilederId3 = "Z000003";
 
         List<OppfolgingsBruker> brukere = Stream.of(
                 veilederId1,
@@ -243,7 +242,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
     @Test
     void skal_hente_ut_riktig_antall_brukere_med_arbeidsliste() {
 
-        val brukerMedArbeidsliste =
+        var brukerMedArbeidsliste =
                 new OppfolgingsBruker()
                         .setFnr(randomFnr().toString())
                         .setOppfolging(true)
@@ -252,14 +251,14 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                         .setArbeidsliste_aktiv(true);
 
 
-        val brukerUtenArbeidsliste =
+        var brukerUtenArbeidsliste =
                 new OppfolgingsBruker()
                         .setFnr(randomFnr().toString())
                         .setOppfolging(true)
                         .setVeileder_id(TEST_VEILEDER_0)
                         .setEnhet_id(TEST_ENHET)
                         .setArbeidsliste_aktiv(false);
-        val liste = List.of(brukerMedArbeidsliste, brukerUtenArbeidsliste);
+        var liste = List.of(brukerMedArbeidsliste, brukerUtenArbeidsliste);
 
         skrivBrukereTilTestindeks(liste);
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
@@ -271,13 +270,13 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
     @Test
     void skal_hente_riktige_statustall_for_veileder() {
 
-        val testBruker1 = new OppfolgingsBruker()
+        var testBruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);
 
-        val testBruker2 = new OppfolgingsBruker()
+        var testBruker2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -292,19 +291,19 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setVenterpasvarfranav("2018-05-09T22:00:00Z")
                 .setNyesteutlopteaktivitet("2018-05-09T22:00:00Z");
 
-        val inaktivBruker = new OppfolgingsBruker()
+        var inaktivBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setFormidlingsgruppekode("ISERV");
 
-        val liste = List.of(testBruker1, testBruker2, inaktivBruker);
+        var liste = List.of(testBruker1, testBruker2, inaktivBruker);
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
-        val statustall = elasticService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET);
+        var statustall = elasticService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET);
         assertThat(statustall.erSykmeldtMedArbeidsgiver).isEqualTo(0);
         assertThat(statustall.iavtaltAktivitet).isEqualTo(1);
         assertThat(statustall.ikkeIavtaltAktivitet).isEqualTo(2);
@@ -320,18 +319,18 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
     @Test
     void skal_hente_riktige_statustall_for_enhet() {
 
-        val brukerUtenVeileder = new OppfolgingsBruker()
+        var brukerUtenVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET);
 
-        val brukerMedVeileder = new OppfolgingsBruker()
+        var brukerMedVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);
 
-        val liste = List.of(brukerMedVeileder, brukerUtenVeileder);
+        var liste = List.of(brukerMedVeileder, brukerUtenVeileder);
 
 
         skrivBrukereTilTestindeks(liste);
@@ -340,28 +339,28 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
-        val statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET);
+        var statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET);
         assertThat(statustall.getUfordelteBrukere()).isEqualTo(1);
     }
 
     @Test
     void skal_sortere_brukere_pa_arbeidslisteikon() {
 
-        val blaBruker = new OppfolgingsBruker()
+        var blaBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setArbeidsliste_aktiv(true)
                 .setArbeidsliste_kategori(Arbeidsliste.Kategori.BLA.name());
 
-        val lillaBruker = new OppfolgingsBruker()
+        var lillaBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setArbeidsliste_aktiv(true)
                 .setArbeidsliste_kategori(Arbeidsliste.Kategori.LILLA.name());
 
-        val liste = List.of(blaBruker, lillaBruker);
+        var liste = List.of(blaBruker, lillaBruker);
 
         skrivBrukereTilTestindeks(blaBruker, lillaBruker);
 
@@ -391,7 +390,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         String tidspunkt2 = toIsoUTC(ZonedDateTime.now().plusDays(2));
         String tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3));
 
-        val tidligstfristBruker = new OppfolgingsBruker()
+        var tidligstfristBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -399,19 +398,19 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setAktivitet_mote_utlopsdato(tidspunkt1)
                 .setAktiviteter(Set.of("EGEN", "MOTE"));
 
-        val senestFristBruker = new OppfolgingsBruker()
+        var senestFristBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setAktivitet_egen_utlopsdato(tidspunkt2)
                 .setAktiviteter(Set.of("EGEN", "MOTE"));
 
-        val nullBruker = new OppfolgingsBruker()
+        var nullBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET);
 
-        val liste = List.of(tidligstfristBruker, senestFristBruker, nullBruker);
+        var liste = List.of(tidligstfristBruker, senestFristBruker, nullBruker);
 
         skrivBrukereTilTestindeks(tidligstfristBruker, senestFristBruker, nullBruker);
 
@@ -461,7 +460,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
     @Test
     void skal_hente_brukere_som_trenger_vurdering_og_er_ny_for_enhet() {
 
-        val nyForEnhet = new OppfolgingsBruker()
+        var nyForEnhet = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -469,7 +468,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setNy_for_enhet(true)
                 .setTrenger_vurdering(true);
 
-        val ikkeNyForEnhet = new OppfolgingsBruker()
+        var ikkeNyForEnhet = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -478,7 +477,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setTrenger_vurdering(false);
 
 
-        val liste = List.of(nyForEnhet, ikkeNyForEnhet);
+        var liste = List.of(nyForEnhet, ikkeNyForEnhet);
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
@@ -488,7 +487,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 TRENGER_VURDERING
         );
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
@@ -505,25 +504,25 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_ikke_kunne_hente_brukere_veileder_ikke_har_tilgang_til() {
-        val brukerVeilederHarTilgangTil = new OppfolgingsBruker()
+        var brukerVeilederHarTilgangTil = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);
 
-        val brukerVeilederIkkeHarTilgangTil = new OppfolgingsBruker()
+        var brukerVeilederIkkeHarTilgangTil = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id("NEGA_$testEnhet")
                 .setVeileder_id("NEGA_$testVeileder");
 
-        val liste = List.of(brukerVeilederHarTilgangTil, brukerVeilederIkkeHarTilgangTil);
+        var liste = List.of(brukerVeilederHarTilgangTil, brukerVeilederIkkeHarTilgangTil);
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
@@ -542,27 +541,27 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
     void skal_anse_bruker_som_ufordelt_om_bruker_har_veileder_som_ikke_har_tilgang_til_enhet() {
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
-        val brukerMedUfordeltStatus = new OppfolgingsBruker()
+        var brukerMedUfordeltStatus = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(LITE_PRIVILEGERT_VEILEDER)
                 .setNy_for_enhet(false);
 
-        val brukerMedFordeltStatus = new OppfolgingsBruker()
+        var brukerMedFordeltStatus = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_enhet(false);
 
-        val liste = List.of(brukerMedUfordeltStatus, brukerMedFordeltStatus);
+        var liste = List.of(brukerMedUfordeltStatus, brukerMedFordeltStatus);
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(LITE_PRIVILEGERT_VEILEDER),
                 "asc",
@@ -581,14 +580,14 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_returnere_brukere_basert_på_fødselsdag_i_måneden() {
-        val testBruker1 = new OppfolgingsBruker()
+        var testBruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setFodselsdag_i_mnd(7)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);
 
-        val testBruker2 = new OppfolgingsBruker()
+        var testBruker2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setFodselsdag_i_mnd(8)
@@ -596,16 +595,16 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0);
 
 
-        val filterValg = new Filtervalg()
+        var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setFodselsdagIMnd(List.of("7"));
 
-        val liste = List.of(testBruker1, testBruker2);
+        var liste = List.of(testBruker1, testBruker2);
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
@@ -622,30 +621,30 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_hente_ut_brukere_basert_på_kjønn() {
-        val mann = new OppfolgingsBruker()
+        var mann = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setKjonn("M");
 
-        val kvinne = new OppfolgingsBruker()
+        var kvinne = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setKjonn("K");
 
-        val liste = List.of(kvinne, mann);
+        var liste = List.of(kvinne, mann);
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
-        val filterValg = new Filtervalg()
+        var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setKjonn(Kjonn.K);
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
@@ -661,14 +660,14 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_hente_ut_brukere_som_går_på_arbeidsavklaringspenger() {
-        val brukerMedAAP = new OppfolgingsBruker()
+        var brukerMedAAP = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setRettighetsgruppekode(Rettighetsgruppe.AAP.name());
 
-        val brukerUtenAAP = new OppfolgingsBruker()
+        var brukerUtenAAP = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -676,16 +675,16 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setRettighetsgruppekode(Rettighetsgruppe.DAGP.name());
 
 
-        val liste = List.of(brukerMedAAP, brukerUtenAAP);
+        var liste = List.of(brukerMedAAP, brukerUtenAAP);
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
-        val filterValg = new Filtervalg()
+        var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setRettighetsgruppe(List.of(Rettighetsgruppe.AAP));
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
@@ -704,7 +703,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
     @Test
     void skal_hente_ut_brukere_filtrert_på_dagpenger_som_ytelse() {
 
-        val brukerMedDagpengerMedPermittering = new OppfolgingsBruker()
+        var brukerMedDagpengerMedPermittering = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -713,7 +712,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING.name());
 
 
-        val brukerMedPermitteringFiskeindustri = new OppfolgingsBruker()
+        var brukerMedPermitteringFiskeindustri = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -721,7 +720,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setRettighetsgruppekode(Rettighetsgruppe.AAP.name())
                 .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name());
 
-        val brukerMedAAP = new OppfolgingsBruker()
+        var brukerMedAAP = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -729,7 +728,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setRettighetsgruppekode(Rettighetsgruppe.DAGP.name())
                 .setYtelse(YtelseMapping.AAP_MAXTID.name());
 
-        val brukerMedAnnenVeileder = new OppfolgingsBruker()
+        var brukerMedAnnenVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -737,16 +736,16 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setRettighetsgruppekode(Rettighetsgruppe.AAP.name())
                 .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name());
 
-        val liste = List.of(brukerMedDagpengerMedPermittering, brukerMedPermitteringFiskeindustri, brukerMedAAP, brukerMedAnnenVeileder);
+        var liste = List.of(brukerMedDagpengerMedPermittering, brukerMedPermitteringFiskeindustri, brukerMedAAP, brukerMedAnnenVeileder);
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
-        val filterValg = new Filtervalg()
+        var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setYtelse(YtelseFilter.DAGPENGER);
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
@@ -764,37 +763,37 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_hente_ut_brukere_som_har_avtale_om_å_søke_jobber() {
-        val brukerMedSokeAvtale = new OppfolgingsBruker()
+        var brukerMedSokeAvtale = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(Set.of("sokeavtale"));
 
-        val brukerMedBehandling = new OppfolgingsBruker()
+        var brukerMedBehandling = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(Set.of("behandling"));
 
-        val brukerMedUtenAktiviteter = new OppfolgingsBruker()
+        var brukerMedUtenAktiviteter = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
 
-        val liste = List.of(brukerMedSokeAvtale, brukerMedUtenAktiviteter, brukerMedBehandling);
+        var liste = List.of(brukerMedSokeAvtale, brukerMedUtenAktiviteter, brukerMedBehandling);
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
-        val filterValg = new Filtervalg()
+        var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setAktiviteter(Map.of("SOKEAVTALE", JA));
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "asc",
@@ -811,7 +810,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
     @Test
     void skal_hente_ut_alle_brukere_unntatt_de_som_har_avtale_om_å_søke_jobber() {
 
-        val brukerMedSokeAvtale = new OppfolgingsBruker()
+        var brukerMedSokeAvtale = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -819,7 +818,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(Set.of("sokeavtale"));
 
-        val brukerMedBehandling = new OppfolgingsBruker()
+        var brukerMedBehandling = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -827,23 +826,23 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(Set.of("behandling"));
 
-        val brukerMedUtenAktiviteter = new OppfolgingsBruker()
+        var brukerMedUtenAktiviteter = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().toString())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
-        val liste = List.of(brukerMedSokeAvtale, brukerMedUtenAktiviteter, brukerMedBehandling);
+        var liste = List.of(brukerMedSokeAvtale, brukerMedUtenAktiviteter, brukerMedBehandling);
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
-        val filterValg = new Filtervalg()
+        var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setAktiviteter(Map.of("SOKEAVTALE", AktivitetFiltervalg.NEI));
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "asc",
@@ -862,36 +861,36 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
     @Test
     void skal_hente_ut_alle_brukere_med_tiltak() {
 
-        val brukerMedTiltak = new OppfolgingsBruker()
+        var brukerMedTiltak = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(Set.of("tiltak"));
 
-        val brukerMedBehandling = new OppfolgingsBruker()
+        var brukerMedBehandling = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(Set.of("behandling"));
 
-        val brukerUtenAktiviteter = new OppfolgingsBruker()
+        var brukerUtenAktiviteter = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
-        val liste = List.of(brukerMedTiltak, brukerMedBehandling, brukerUtenAktiviteter);
+        var liste = List.of(brukerMedTiltak, brukerMedBehandling, brukerUtenAktiviteter);
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
-        val filterValg = new Filtervalg()
+        var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setAktiviteter(Map.of("TILTAK", JA));
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "asc",
@@ -909,7 +908,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_hente_ut_alle_brukere_som_ikke_har_tiltak() {
-        val brukerMedTiltak = new OppfolgingsBruker()
+        var brukerMedTiltak = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
@@ -917,30 +916,30 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setAktiviteter(Set.of("tiltak"))
                 .setTiltak(Set.of("VASV"));
 
-        val brukerMedBehandling = new OppfolgingsBruker()
+        var brukerMedBehandling = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(Set.of("behandling"));
 
-        val brukerUtenAktiviteter = new OppfolgingsBruker()
+        var brukerUtenAktiviteter = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
-        val liste = List.of(brukerMedTiltak, brukerMedBehandling, brukerUtenAktiviteter);
+        var liste = List.of(brukerMedTiltak, brukerMedBehandling, brukerUtenAktiviteter);
 
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
-        val filterValg = new Filtervalg()
+        var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setAktiviteter(Map.of("TILTAK", AktivitetFiltervalg.NEI));
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "asc",
@@ -958,7 +957,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void skal_hente_alle_brukere_som_har_vedtak() {
-        val brukerMedVedtak = new OppfolgingsBruker()
+        var brukerMedVedtak = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -968,7 +967,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setVedtak_status("Utkast")
                 .setAnsvarlig_veileder_for_vedtak("BVeileder");
 
-        val brukerMedVedtak1 = new OppfolgingsBruker()
+        var brukerMedVedtak1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -978,7 +977,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setVedtak_status("Venter på tilbakemelding")
                 .setAnsvarlig_veileder_for_vedtak("CVeileder");
 
-        val brukerMedVedtak2 = new OppfolgingsBruker()
+        var brukerMedVedtak2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -988,7 +987,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setVedtak_status("Venter på tilbakemelding")
                 .setAnsvarlig_veileder_for_vedtak("AVeileder");
 
-        val brukerMedVedtakUtenAnsvarligVeileder = new OppfolgingsBruker()
+        var brukerMedVedtakUtenAnsvarligVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -997,7 +996,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setVedtak_status("Utkast");
 
-        val brukerUtenVedtak = new OppfolgingsBruker()
+        var brukerUtenVedtak = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -1006,16 +1005,16 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(Set.of("egen"));
 
-        val liste = List.of(brukerMedVedtak, brukerMedVedtak1, brukerMedVedtak2, brukerMedVedtakUtenAnsvarligVeileder, brukerUtenVedtak);
+        var liste = List.of(brukerMedVedtak, brukerMedVedtak1, brukerMedVedtak2, brukerMedVedtakUtenAnsvarligVeileder, brukerUtenVedtak);
 
         skrivBrukereTilTestindeks(liste);
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
-        val filterValg = new Filtervalg()
+        var filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of(UNDER_VURDERING));
 
-        val response = elasticService.hentBrukere(
+        var response = elasticService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "ascending",

@@ -132,15 +132,13 @@ public class BrukerServiceTest {
     private Try<String> getGjeldeneAktorId(String personId) {
         return Try.of(() -> db.queryForObject(
                 "SELECT AKTOERID FROM AKTOERID_TO_PERSONID WHERE PERSONID = ? AND GJELDENE = 1",
-                new Object[]{personId},
-                (rs, rowNum) -> rs.getString("AKTOERID")));
+                (rs, rowNum) -> rs.getString("AKTOERID"), personId));
     }
 
     private Try<String> getGamleAktorId(String personId) {
         return Try.of(() -> db.queryForObject(
                 "SELECT AKTOERID FROM AKTOERID_TO_PERSONID WHERE PERSONID = ? AND GJELDENE = 0",
-                new Object[]{personId},
-                (rs, rowNum) -> rs.getString("AKTOERID")));
+                (rs, rowNum) -> rs.getString("AKTOERID"), personId));
     }
 
 

@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil;
-import org.apache.commons.lang3.text.WordUtils;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
@@ -64,8 +63,8 @@ public class DbUtils {
         String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
         String brukersSituasjon = rs.getString("BRUKERS_SITUASJON");
 
-        String fornavn = kapitaliser(rs.getString("fornavn"));
-        String etternavn = kapitaliser(rs.getString("etternavn"));
+        String fornavn = rs.getString("fornavn");
+        String etternavn = rs.getString("etternavn");
         String vedtakstatus = rs.getString("VEDTAKSTATUS");
         String ansvarligVeilederForVedtak = rs.getString("ANSVARLIG_VEILEDER_NAVN");
 
@@ -146,10 +145,6 @@ public class DbUtils {
     public static Integer konverterDagerTilUker(String antallDagerFraDB) {
         Integer antallDager = parseInt(antallDagerFraDB);
         return antallDager == null ? 0 : (antallDager / 5);
-    }
-
-    static String kapitaliser(String s) {
-        return WordUtils.capitalizeFully(s, ' ', '\'', '-');
     }
 
     public static String identifiserManuellEllerKRRBruker(String krrJaNei, String manuellJaNei) {
