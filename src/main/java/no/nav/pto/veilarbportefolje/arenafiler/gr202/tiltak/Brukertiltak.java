@@ -1,13 +1,11 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import lombok.Value;
-import lombok.experimental.Wither;
 import no.nav.common.types.identer.Fnr;
 
 import java.sql.Timestamp;
 
 @Value(staticConstructor = "of")
-@Wither
 public class Brukertiltak {
     private Fnr fnr;
     private String tiltak;

@@ -15,31 +15,20 @@
     <version>1</version>
 
     <properties>
-        <java.version>15</java.version>
+        <java.version>11</java.version>
         <common.version>2.2021.09.17_07.09-67428a6422cc</common.version>
         <common1.version>1.2020.05.06_16.29-028d26fc1c42</common1.version>
-        <no.nav.tjenestespesifikasjoner.version>1.2018.11.20-18.20-f058c54de62c</no.nav.tjenestespesifikasjoner.version>
-        <jsch.version>0.1.54</jsch.version>
         <elastic.version>6.5.2</elastic.version>
         <confluent.version>5.5.1</confluent.version>
         <avro.version>1.10.0</avro.version>
         <veilarbregistrering.skjema.version>1.202108021530-9a956c3</veilarbregistrering.skjema.version>
         <jaxb.version>2.3.1</jaxb.version>
         <testcontainers.version>1.15.3</testcontainers.version>
-
-        <sonar.projectKey>navikt_veilarbportefolje</sonar.projectKey>
-        <sonar.organization>navit</sonar.organization>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <build>
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>org.sonarsource.scanner.maven</groupId>
-                    <artifactId>sonar-maven-plugin</artifactId>
-                    <version>3.7.0.1746</version>
-                </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
@@ -89,13 +78,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
-        </dependency>
-
-        <!-- Virksomhetstjenester -->
-        <dependency>
-            <groupId>no.nav.tjenestespesifikasjoner</groupId>
-            <artifactId>nav-virksomhet-tiltakOgAktiviteterForBrukere-v1-meldingsdefinisjon</artifactId>
-            <version>${no.nav.tjenestespesifikasjoner.version}</version>
         </dependency>
 
         <!-- database -->
@@ -314,15 +296,7 @@
             </exclusions>
         </dependency>
 
-        <!--  Overskriv gammel avhengighet fra nimbus -->
-        <dependency>
-            <groupId>net.minidev</groupId>
-            <artifactId>json-smart</artifactId>
-            <version>2.3</version>
-        </dependency>
-
         <!-- Prometheus -->
-
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
@@ -410,5 +384,4 @@
             </repositories>
         </profile>
     </profiles>
-
 </project>

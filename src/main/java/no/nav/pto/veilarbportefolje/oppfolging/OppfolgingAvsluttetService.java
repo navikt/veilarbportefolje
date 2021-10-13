@@ -31,8 +31,6 @@ import static java.time.ZonedDateTime.ofInstant;
 @Service
 @RequiredArgsConstructor
 public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<OppfolgingAvsluttetDTO> implements KafkaConsumerService<String> {
-    private static final Logger log = LoggerFactory.getLogger(OppfolgingAvsluttetService.class);
-
     private final ArbeidslisteService arbeidslisteService;
     private final ArbeidslisteRepositoryV1 arbeidslisteRepositoryV2;
     private final OppfolgingRepository oppfolgingRepository;
