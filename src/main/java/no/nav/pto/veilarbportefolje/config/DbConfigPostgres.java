@@ -13,6 +13,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 import static no.nav.pto.veilarbportefolje.util.DbUtils.createDataSource;
@@ -49,6 +50,7 @@ public class DbConfigPostgres implements DatabaseConfig{
         return new DataSourceTransactionManager(dataSource);
     }
 
+    @PostConstruct
     @SneakyThrows
     public void migrateDb() {
         log.info("Starting database migration...");
