@@ -17,12 +17,8 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +30,7 @@ public class AktivitetDAOTest {
 
     private void insertoppfolgingsbrukerTestData() {
         try {
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-tiltak.sql"), UTF_8)));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(Objects.requireNonNull(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-tiltak.sql")))));
         } catch (IOException e) {
             e.printStackTrace();
         }

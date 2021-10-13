@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.database;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.sbl.sql.SqlUtils;
@@ -9,9 +8,6 @@ import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_DATA.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
