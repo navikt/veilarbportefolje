@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -32,7 +33,7 @@ public class ProfileringRepositoryV2Test {
         ArbeidssokerProfilertEvent arbeidssokerProfilertEvent = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID)
                 .setProfilertTil(ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING)
-                .setProfileringGjennomfort(ZonedDateTime.now(ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
+                .setProfileringGjennomfort(ZonedDateTime.now().format(ISO_ZONED_DATE_TIME))
                 .build();
 
         profileringRepositoryV2.upsertBrukerProfilering(arbeidssokerProfilertEvent);
@@ -44,7 +45,7 @@ public class ProfileringRepositoryV2Test {
         ArbeidssokerProfilertEvent event1 = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID1)
                 .setProfilertTil(ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING)
-                .setProfileringGjennomfort(ZonedDateTime.of(LocalDateTime.now().minusDays(30), ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
+                .setProfileringGjennomfort(ZonedDateTime.of(LocalDateTime.now().minusDays(30), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
         profileringRepositoryV2.upsertBrukerProfilering(event1);
@@ -52,7 +53,7 @@ public class ProfileringRepositoryV2Test {
         ArbeidssokerProfilertEvent event2 = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID1)
                 .setProfilertTil(ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING)
-                .setProfileringGjennomfort(ZonedDateTime.of(LocalDateTime.now(), ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
+                .setProfileringGjennomfort(ZonedDateTime.now().format(ISO_ZONED_DATE_TIME))
                 .build();
 
         profileringRepositoryV2.upsertBrukerProfilering(event2);

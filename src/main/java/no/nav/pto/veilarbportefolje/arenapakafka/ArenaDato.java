@@ -23,12 +23,12 @@ public class ArenaDato {
      */
     public ZonedDateTime getDato() {
         if (dato.length() == localDateLength) {
-            return ZonedDateTime.of(LocalDate.parse(dato).atStartOfDay(), ZoneId.of("Europe/Oslo"));
+            return ZonedDateTime.of(LocalDate.parse(dato).atStartOfDay(), ZoneId.systemDefault());
         }
-        return ZonedDateTime.of(LocalDateTime.parse(dato, format).toLocalDate().atStartOfDay(), ZoneId.of("Europe/Oslo"));
+        return ZonedDateTime.of(LocalDateTime.parse(dato, format).toLocalDate().atStartOfDay(), ZoneId.systemDefault());
     }
 
-    public LocalDateTime getLocalDate(){
+    public LocalDateTime getLocalDate() {
         if (dato.length() == localDateLength) {
             return LocalDate.parse(dato).atStartOfDay();
         }

@@ -4,13 +4,15 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.Import;
 
+import java.util.TimeZone;
+
 @EnableAutoConfiguration
 @ServletComponentScan
 @Import(ApplicationConfigTest.class)
 public class VeilarbportefoljeTestApp {
 
     public static void main(String[] args) {
-
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Oslo"));
         SpringApplication application = new SpringApplication(VeilarbportefoljeTestApp.class);
         application.setAdditionalProfiles("local");
         application.run(args);

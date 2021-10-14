@@ -14,7 +14,6 @@ import org.elasticsearch.action.get.GetResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +47,7 @@ class RegistreringServiceTest extends EndToEndTest {
                 .setUtdanning(UtdanningSvar.GRUNNSKOLE)
                 .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
-                .setRegistreringOpprettet(ZonedDateTime.now(ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
+                .setRegistreringOpprettet(ZonedDateTime.now().format(ISO_ZONED_DATE_TIME))
                 .build();
 
         registreringService.behandleKafkaMelding(kafkaMessage);
@@ -134,28 +133,28 @@ class RegistreringServiceTest extends EndToEndTest {
         assertThat(responseBrukere5.getAntall()).isEqualTo(1);
     }
 
-    private static Filtervalg getFiltervalgBestatt(){
+    private static Filtervalg getFiltervalgBestatt() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>()); // TODO: Denne må være der, er det en bug?
         filtervalg.utdanningBestatt.add("JA");
         return filtervalg;
     }
 
-    private static Filtervalg getFiltervalgGodkjent(){
+    private static Filtervalg getFiltervalgGodkjent() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
         filtervalg.utdanningGodkjent.add("JA");
         return filtervalg;
     }
 
-    private static Filtervalg getFiltervalgUtdanning(){
+    private static Filtervalg getFiltervalgUtdanning() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
         filtervalg.utdanning.add("GRUNNSKOLE");
         return filtervalg;
     }
 
-    private static Filtervalg getFiltervalgMix(){
+    private static Filtervalg getFiltervalgMix() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
         filtervalg.utdanning.add("GRUNNSKOLE");

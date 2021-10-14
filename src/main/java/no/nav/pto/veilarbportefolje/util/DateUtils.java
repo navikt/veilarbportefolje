@@ -19,23 +19,23 @@ public class DateUtils {
     }
 
     public static Timestamp timestampFromISO8601(String date) {
-        Instant instant =  ZonedDateTime.parse(date).toInstant();
+        Instant instant = ZonedDateTime.parse(date).toInstant();
         return Timestamp.from(instant);
     }
 
 
     static String iso8601FromTimestamp(Timestamp timestamp, ZoneId zoneId) {
-        if(timestamp == null) {
+        if (timestamp == null) {
             return null;
         }
         return ZonedDateTime.ofInstant(timestamp.toInstant(), zoneId).toString();
     }
 
     public static String toIsoUTC(Timestamp timestamp) {
-        if(timestamp == null) {
+        if (timestamp == null) {
             return null;
         }
-        DateTimeFormatter formatter =  DateTimeFormatter.ISO_INSTANT;
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("UTC"));
         return zonedDateTime.format(formatter);
     }
@@ -48,14 +48,14 @@ public class DateUtils {
         if (date == null) {
             return null;
         }
-        return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("Europe/Oslo"));
+        return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
     public static ZonedDateTime toZonedDateTime(Timestamp timestamp) {
         if (timestamp == null) {
             return null;
         }
-        return ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("Europe/Oslo"));
+        return ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.systemDefault());
     }
 
     public static ZonedDateTime toZonedDateTime(LocalDate localDate) {
@@ -66,32 +66,32 @@ public class DateUtils {
     }
 
     public static Timestamp toTimestamp(ZonedDateTime zonedDateTime) {
-        if(zonedDateTime == null){
+        if (zonedDateTime == null) {
             return null;
         }
         return Timestamp.from(zonedDateTime.toInstant());
     }
 
     public static Timestamp toTimestamp(LocalDateTime localDateTime) {
-        if(localDateTime == null){
+        if (localDateTime == null) {
             return null;
         }
         return Timestamp.valueOf(localDateTime);
     }
 
     public static String toIsoUTC(ZonedDateTime zonedDateTime) {
-        if(Objects.isNull(zonedDateTime)) {
+        if (Objects.isNull(zonedDateTime)) {
             return null;
         }
-        DateTimeFormatter formatter =  DateTimeFormatter.ISO_INSTANT;
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
         return zonedDateTime.format(formatter);
     }
 
     public static String toIsoUTC(LocalDateTime dateTime) {
-        if(dateTime == null) {
+        if (dateTime == null) {
             return null;
         }
-        DateTimeFormatter formatter =  DateTimeFormatter.ISO_INSTANT;
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
         ZonedDateTime zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.of("UTC"));
         return zonedDateTime.format(formatter);
     }
@@ -142,7 +142,7 @@ public class DateUtils {
         if (date == null) {
             return null;
         }
-        return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.of("Europe/Oslo"));
+        return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.systemDefault());
     }
 
     public static LocalDateTime toLocalDateTimeOrNull(Timestamp date) {
@@ -153,14 +153,14 @@ public class DateUtils {
     }
 
     public static LocalDateTime toLocalDateTimeOrNull(java.sql.Date date) {
-        if(date == null){
+        if (date == null) {
             return null;
         }
         return date.toLocalDate().atStartOfDay();
     }
 
     public static java.sql.Date toSqlDateOrNull(String date) {
-        if(date == null){
+        if (date == null) {
             return null;
         }
         return java.sql.Date.valueOf(ZonedDateTime.parse(date).toLocalDate());
