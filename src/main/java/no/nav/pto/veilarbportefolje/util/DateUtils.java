@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -9,6 +11,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 public class DateUtils {
 
     private static final String FAR_IN_THE_FUTURE_DATE = "3017-10-07T00:00:00Z";
@@ -142,6 +145,7 @@ public class DateUtils {
         if (date == null) {
             return null;
         }
+        log.info("Local Zone: " + ZoneId.systemDefault() + " date: " + date);
         return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.systemDefault());
     }
 
