@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public abstract class EndToEndTest {
@@ -36,6 +37,7 @@ public abstract class EndToEndTest {
     @BeforeEach
     void setUp() {
         try {
+            TimeZone.setDefault(TimeZone.getTimeZone("Europe/Oslo"));
             elasticIndexer.opprettNyIndeks(indexName.getValue());
         } catch (Exception e) {
             elasticTestClient.deleteIndex(indexName);
