@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
@@ -28,13 +29,14 @@ public class BrukerDataService {
     private final AktivitetDAO aktivitetDAO;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
+    private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
     private final BrukerDataRepository brukerDataRepository;
 
     //POSTGRES
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
 
-    public void oppdaterAktivitetBrukerData(AktorId aktorId) {
+    public void oppdaterAktivitetBrukerDataPostgres(AktorId aktorId) {
         oppdaterAktivitetBrukerData(aktorId, null, true);
     }
 
@@ -69,7 +71,7 @@ public class BrukerDataService {
                 .setAktivitetStart(aktivitetStart)
                 .setNesteAktivitetStart(nesteAktivitetStart);
         if (postgres) {
-            aktivitetStatusRepositoryV2.upsertAktivitetData(brukerAktivitetTilstand);
+            aktivitetStatusRepositoryV2.upsertAktivitetStatus(brukerAktivitetTilstand);
         } else {
             brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
         }
@@ -190,9 +192,12 @@ public class BrukerDataService {
                 .map(AktivitetDTO::getFraDato)
                 .filter(Objects::nonNull)
                 .collect(toList());
-        // TODO: legg til gruppeaktiviteter og tiltak
+        List<Timestamp> gruppeAktiviteter = gruppeAktivitetRepositoryV2.hentAktiveAktivteter(aktorId).stream()
+                .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeFra)
+                .filter(Objects::nonNull).collect(toList());
+        // TODO: legg til tiltak
         //startDatoer.addAll(tiltak);
-        //startDatoer.addAll(gruppeAktiviteter);
+        startDatoer.addAll(gruppeAktiviteter);
         startDatoer.sort(Comparator.naturalOrder());
         return startDatoer;
 
@@ -204,9 +209,13 @@ public class BrukerDataService {
                 .map(AktivitetDTO::getTilDato)
                 .filter(Objects::nonNull)
                 .collect(toList());
-        // TODO: legg til gruppeaktiviteter og tiltak
+        List<Timestamp> gruppeAktiviteter = gruppeAktivitetRepositoryV2.hentAktiveAktivteter(aktorId).stream()
+                .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeTil)
+                .filter(Objects::nonNull).collect(toList());
+
+        // TODO: legg til tiltak
         // sluttdatoer.addAll(tiltak);
-        // sluttdatoer.addAll(gruppeAktiviteter);
+        sluttdatoer.addAll(gruppeAktiviteter);
         sluttdatoer.sort(Comparator.naturalOrder());
         return sluttdatoer;
     }

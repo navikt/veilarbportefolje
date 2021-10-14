@@ -88,12 +88,13 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         }
     }
 
-    private void lagreOgProsseseserAktiviteter(KafkaAktivitetMelding aktivitetData) {
+    public void lagreOgProsseseserAktiviteter(KafkaAktivitetMelding aktivitetData) {
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
 
         AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType());
-        prossesertAktivitetRepositoryV2.upsertAktivitetStatus(status);
-        brukerDataService.oppdaterAktivitetBrukerData(AktorId.of(aktivitetData.getAktorId()));
+
+        prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, aktivitetData.getAktivitetType().name());
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(AktorId.of(aktivitetData.getAktorId()));
     }
 
     public void utledOgLagreAlleAktivitetstatuser() {

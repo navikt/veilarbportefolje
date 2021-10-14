@@ -108,12 +108,9 @@ public class AktiviteterRepositoryV2 {
 
     public AktivitetStatus getAktivitetStatus(AktorId aktoerid, KafkaAktivitetMelding.AktivitetTypeData aktivitetType) {
         LocalDate yesterday = LocalDate.now().minusDays(1);
-        String sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s = ? AND %s", TABLE_NAME, AKTOERID, AKTIVITETTYPE, AVTALT);
-
-        List<AktivitetDTO> aktiveAktiviteter = Optional.ofNullable(
-                        queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid.get(), aktivitetType.name()))
-                ).orElse(new ArrayList<>()).stream()
+        List<AktivitetDTO> aktiveAktiviteter = getAvtalteAktiviteterForAktoerid(aktoerid).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
+                .filter(aktivitetDTO -> aktivitetType.name().toLowerCase().equals(aktivitetDTO.getAktivitetType()))
                 .collect(Collectors.toList());
 
         Timestamp nesteStart = aktiveAktiviteter.stream()
