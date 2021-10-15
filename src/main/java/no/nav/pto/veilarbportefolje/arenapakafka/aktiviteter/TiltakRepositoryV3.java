@@ -6,7 +6,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
@@ -15,11 +14,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import no.nav.pto.veilarbportefolje.util.DbUtils;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -85,7 +80,7 @@ public class TiltakRepositoryV3 {
 
     public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
         final String hentTiltakPaEnhetSql = "SELECT * FROM " + PostgresTable.TILTAKKODEVERK.TABLE_NAME + " WHERE " +
-                PostgresTable.TILTAKKODEVERK.KODE + " IN (SELECT DISTINCT " + TILTAKSKODE + " FROM " + PostgresTable.BRUKERTILTAK.TABLE_NAME +
+                PostgresTable.TILTAKKODEVERK.KODE + " IN (SELECT DISTINCT " + TILTAKSKODE + " FROM " + TABLE_NAME +
                 " BT INNER JOIN " + PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME + " OP ON BT." + AKTOERID + " = OP." + PostgresTable.OPPFOLGINGSBRUKER_ARENA.AKTOERID +
                 " WHERE OP." + PostgresTable.OPPFOLGINGSBRUKER_ARENA.NAV_KONTOR + "=?)";
 
