@@ -99,6 +99,11 @@ public class EnhetController {
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
+
+        String ident = AuthUtils.getInnloggetVeilederIdent().toString();
+        if (erPostgresPa(unleashService, ident)) {
+            return tiltakServiceV2.hentEnhettiltakPostgres(EnhetId.of(enhet));
+        }
         if (erGR202PaKafka(unleashService)) {
             return tiltakServiceV2.hentEnhettiltak(EnhetId.of(enhet));
         }

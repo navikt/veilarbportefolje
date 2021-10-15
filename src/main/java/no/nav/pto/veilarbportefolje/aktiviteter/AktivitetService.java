@@ -97,28 +97,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         brukerDataService.oppdaterAktivitetBrukerDataPostgres(AktorId.of(aktivitetData.getAktorId()));
     }
 
-    public void utledOgLagreAlleAktivitetstatuser() {
-        List<String> aktoerider = aktivitetDAO.getDistinctAktorIdsFromAktivitet();
-
-        BatchConsumer<String> consumer = batchConsumer(1000, this::utledOgLagreAktivitetstatuser);
-
-        aktoerider.forEach(consumer);
-
-        consumer.flush();
-
-        log.info("Aktivitetstatuser for {} brukere utledet og lagret i databasen", aktoerider.size());
-    }
-
-    private void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
-        aktoerider.forEach(aktoerId -> {
-            AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAvtalteAktiviteterForAktoerid(AktorId.of(aktoerId));
-            AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, brukerService, erGR202PaKafka(unleashService));
-            Optional.ofNullable(aktivitetBrukerOppdateringer)
-                    .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(Collections.singletonList(oppdatering)));
-        });
-
-    }
-
     public void utledOgIndekserAktivitetstatuserForAktoerid(AktorId aktoerId) {
         AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO, erGR202PaKafka(unleashService));
         Optional.ofNullable(aktivitetBrukerOppdateringer)
