@@ -4,6 +4,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.Import;
 
+import java.util.Optional;
 import java.util.TimeZone;
 
 @EnableAutoConfiguration
@@ -12,7 +13,7 @@ import java.util.TimeZone;
 public class VeilarbportefoljeTestApp {
 
     public static void main(String[] args) {
-        TimeZone.setDefault(TimeZone.getTimeZone(System.getenv("TZ")));
+        TimeZone.setDefault(TimeZone.getTimeZone(Optional.ofNullable(System.getenv("TZ")).orElse("Europe/Oslo")));
         SpringApplication application = new SpringApplication(VeilarbportefoljeTestApp.class);
         application.setAdditionalProfiles("local");
         application.run(args);

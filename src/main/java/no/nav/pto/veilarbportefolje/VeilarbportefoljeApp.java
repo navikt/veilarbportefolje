@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 
 import javax.annotation.PostConstruct;
+import java.util.Optional;
 import java.util.TimeZone;
 
 
@@ -13,7 +14,7 @@ import java.util.TimeZone;
 public class VeilarbportefoljeApp {
     @PostConstruct
     public void init() {
-        TimeZone.setDefault(TimeZone.getTimeZone(System.getenv("TZ")));
+        TimeZone.setDefault(TimeZone.getTimeZone(Optional.ofNullable(System.getenv("TZ")).orElse("Europe/Oslo")));
     }
 
     public static void main(String... args) {
