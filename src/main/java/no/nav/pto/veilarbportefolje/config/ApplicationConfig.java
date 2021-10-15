@@ -34,7 +34,6 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 public class ApplicationConfig {
 
     public static final String APPLICATION_NAME = "veilarbportefolje";
-    public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
     public static final String ELASTICSEARCH_USERNAME_PROPERTY = "VEILARBELASTIC_USERNAME";
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
 

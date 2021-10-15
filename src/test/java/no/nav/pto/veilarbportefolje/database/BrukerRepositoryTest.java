@@ -27,9 +27,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -63,7 +63,7 @@ public class BrukerRepositoryTest {
     @Before
     public void setUp() {
         try {
-            List<String> lines = IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"), UTF_8);
+            List<String> lines = IOUtils.readLines(Objects.requireNonNull(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql")));
             ANTALL_LINJER_I_TESTDATA = lines.size();
             this.jdbcTemplate.execute(Joiner.on("\n").join(lines));
         } catch (IOException e) {
