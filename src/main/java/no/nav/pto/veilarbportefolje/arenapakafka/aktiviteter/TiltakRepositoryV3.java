@@ -72,7 +72,7 @@ public class TiltakRepositoryV3 {
                         " (" + PostgresTable.TILTAKKODEVERK.KODE + ", " + PostgresTable.TILTAKKODEVERK.VERDI + ") " +
                         "VALUES (?, ?) " +
                         "ON CONFLICT (" + PostgresTable.TILTAKKODEVERK.KODE + ") " +
-                        "DO UPDATE SET (" + PostgresTable.TILTAKKODEVERK.VERDI + ") = (?)",
+                        "DO UPDATE SET " + PostgresTable.TILTAKKODEVERK.VERDI + " = ?",
                 innhold.getTiltakstype(), innhold.getTiltaksnavn(),
                 innhold.getTiltaksnavn()
         );
@@ -159,7 +159,7 @@ public class TiltakRepositoryV3 {
         return verdiITiltakskodeVerk.map(lagretVerdi -> !lagretVerdi.equals(verdiFraKafka)).orElse(true);
     }
 
-    private Optional<String> hentVerdiITiltakskodeVerk(String kode) {
+    public Optional<String> hentVerdiITiltakskodeVerk(String kode) {
         String sql = "SELECT " + PostgresTable.TILTAKKODEVERK.VERDI + " FROM " + PostgresTable.TILTAKKODEVERK.TABLE_NAME
                 + " WHERE " + PostgresTable.TILTAKKODEVERK.KODE + " = ?";
         return Optional.ofNullable(
