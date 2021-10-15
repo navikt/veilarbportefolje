@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -174,9 +173,9 @@ public class BrukerRepositoryTest {
                 "aktoerid",
                 personId,
                 "veielderid2",
-                Timestamp.from(Instant.now()),
+                toTimestamp(DateUtils.now()),
                 YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(),
+                DateUtils.now().toLocalDateTime(),
                 ManedFasettMapping.MND1,
                 0,
                 UKE_UNDER2,

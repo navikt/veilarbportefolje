@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.dialog;
 
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -52,13 +53,13 @@ public class DialogRepositoryTest {
 
     @Test
     public void oppdaterDialogInfoForBruker_skal_oppdatere_tabell_og_vare_tilgjengelig_i_dialogview() {
-        ZonedDateTime venteDato = now().minusSeconds(1);
+        ZonedDateTime venteDato = DateUtils.now().minusSeconds(1);
 
         dialogRepository.oppdaterDialogInfoForBruker(lagDialogData(venteDato, venteDato));
         Dialogdata dialogFraDatabase = dialogRepository.retrieveDialogData(AKTOER_ID.toString()).get();
         verifiserData(venteDato, dialogFraDatabase, venteDato);
 
-        ZonedDateTime nyEndringsDato = ZonedDateTime.now();
+        ZonedDateTime nyEndringsDato = DateUtils.now();
         dialogRepository.oppdaterDialogInfoForBruker(lagDialogData(venteDato, nyEndringsDato));
         dialogFraDatabase = dialogRepository.retrieveDialogData(AKTOER_ID.toString()).get();
         verifiserData(venteDato, dialogFraDatabase, nyEndringsDato);
