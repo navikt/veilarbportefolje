@@ -23,6 +23,7 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivit
 @RequiredArgsConstructor
 public class GruppeAktivitetService {
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
+    private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
     @NonNull @Qualifier("systemClient") private final AktorClient aktorClient;
     private final BrukerDataService brukerDataService;
     private final ElasticIndexer elasticIndexer;
@@ -36,10 +37,11 @@ public class GruppeAktivitetService {
                 kafkaMelding.partition(),
                 kafkaMelding.topic()
         );
-        behandleKafkaMelding(melding);
+        behandleKafkaMeldingOracle(melding);
+        behandleKafkaMeldingPostgres(melding);
     }
 
-    public void behandleKafkaMelding(GruppeAktivitetDTO kafkaMelding) {
+    public void behandleKafkaMeldingOracle(GruppeAktivitetDTO kafkaMelding) {
         GruppeAktivitetInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
@@ -55,6 +57,22 @@ public class GruppeAktivitetService {
         elasticIndexer.indekser(aktorId);
     }
 
+
+    public void behandleKafkaMeldingPostgres(GruppeAktivitetDTO kafkaMelding) {
+        GruppeAktivitetInnhold innhold = getInnhold(kafkaMelding);
+        if (innhold == null || erGammelMeldingV2(kafkaMelding, innhold)) {
+            return;
+        }
+
+        AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
+        boolean aktiv = !(skalSlettesGoldenGate(kafkaMelding) || skalSletteGruppeAktivitet(innhold));
+        gruppeAktivitetRepositoryV2.upsertGruppeAktivitet(innhold, aktorId, aktiv);
+        gruppeAktivitetRepositoryV2.utledOgLagreGruppeaktiviteter(aktorId);
+
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
+    }
+
+
     private boolean skalSletteGruppeAktivitet(GruppeAktivitetInnhold gruppeInnhold) {
         return gruppeInnhold.getAktivitetperiodeTil() == null || erUtgatt(gruppeInnhold.getAktivitetperiodeTil(), true);
     }
@@ -62,7 +80,16 @@ public class GruppeAktivitetService {
     private boolean erGammelMelding(GruppeAktivitetDTO kafkaMelding, GruppeAktivitetInnhold innhold){
         Long hendelseIDB = gruppeAktivitetRepository.retrieveHendelse(innhold).orElse(-1L);
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), skalSlettesGoldenGate(kafkaMelding))) {
-            log.info("Fikk tilsendt gammel gruppe-aktivtet-melding");
+            log.info("Fikk tilsendt gammel gruppe-aktivtet-melding pa Oracle");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean erGammelMeldingV2(GruppeAktivitetDTO kafkaMelding, GruppeAktivitetInnhold innhold){
+        Long hendelseIDB = gruppeAktivitetRepositoryV2.retrieveHendelse(innhold).orElse(-1L);
+        if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), skalSlettesGoldenGate(kafkaMelding))) {
+            log.info("Fikk tilsendt gammel gruppe-aktivtet-melding pa Posrgres");
             return true;
         }
         return false;

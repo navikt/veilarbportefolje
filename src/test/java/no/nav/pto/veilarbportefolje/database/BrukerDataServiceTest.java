@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
@@ -40,7 +41,7 @@ public class BrukerDataServiceTest {
     public BrukerDataServiceTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, TiltakRepositoryV2 tiltakRepositoryV2, GruppeAktivitetRepository gruppeAktivitetRepository, BrukerDataRepository brukerDataRepository, BrukerRepository brukerRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.brukerRepository = brukerRepository;
-        brukerDataService = new BrukerDataService(aktivitetDAO, tiltakRepositoryV2, gruppeAktivitetRepository, brukerDataRepository, mock(AktiviteterRepositoryV2.class), mock(AktivitetStatusRepositoryV2.class));
+        brukerDataService = new BrukerDataService(aktivitetDAO, tiltakRepositoryV2, gruppeAktivitetRepository, mock(GruppeAktivitetRepositoryV2.class), brukerDataRepository, mock(AktiviteterRepositoryV2.class), mock(AktivitetStatusRepositoryV2.class));
     }
 
     @BeforeEach
@@ -55,7 +56,7 @@ public class BrukerDataServiceTest {
     }
 
     @Test
-    public void skalOppdatereBrukerData(){
+    public void skalOppdatereBrukerData() {
         Timestamp enUkeSiden = Timestamp.valueOf(LocalDateTime.now().minusDays(7));
         Timestamp toUkerSiden = Timestamp.valueOf(LocalDateTime.now().minusDays(14));
 
@@ -86,7 +87,7 @@ public class BrukerDataServiceTest {
                 .set(Table.BRUKERTILTAK_V2.TILTAKSKODE, "GRUPPEAMO")
                 .set(Table.BRUKERTILTAK_V2.FRADATO, startDato)
                 .set(Table.BRUKERTILTAK_V2.TILDATO, tilDato)
-                .where(WhereClause.equals(Table.BRUKERTILTAK_V2.AKTIVITETID,  id))
+                .where(WhereClause.equals(Table.BRUKERTILTAK_V2.AKTIVITETID, id))
                 .execute();
     }
 
@@ -102,7 +103,7 @@ public class BrukerDataServiceTest {
                 .set(Table.AKTIVITETER.STATUS, "GJENNOMFORES".toLowerCase())
                 .set(Table.AKTIVITETER.VERSION, 1)
                 .set(Table.AKTIVITETER.AKTIVITETID, id)
-                .where(WhereClause.equals(Table.AKTIVITETER.AKTIVITETID,id))
+                .where(WhereClause.equals(Table.AKTIVITETER.AKTIVITETID, id))
                 .execute();
     }
 }

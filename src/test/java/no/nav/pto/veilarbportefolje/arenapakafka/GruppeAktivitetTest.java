@@ -5,6 +5,7 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.*;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.mock;
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class GruppeAktivitetTest {
     private final GruppeAktivitetService gruppeAktivitetService;
+    private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
     private final JdbcTemplate jdbcTemplate;
     private final AktivitetDAO aktivitetDAO;
 
@@ -42,15 +44,16 @@ public class GruppeAktivitetTest {
     private final PersonId personId = PersonId.of("123");
 
     @Autowired
-    public GruppeAktivitetTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, GruppeAktivitetRepository gruppeAktivitetRepository) {
+    public GruppeAktivitetTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, GruppeAktivitetRepository gruppeAktivitetRepository, GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2, AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2) {
         this.jdbcTemplate = jdbcTemplate;
         this.aktivitetDAO = aktivitetDAO;
+        this.aktivitetStatusRepositoryV2 = aktivitetStatusRepositoryV2;
 
         AktorClient aktorClient = mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
-        this.gruppeAktivitetService = new GruppeAktivitetService(gruppeAktivitetRepository, aktorClient, mock(BrukerDataService.class), mock(ElasticIndexer.class));
-  }
+        this.gruppeAktivitetService = new GruppeAktivitetService(gruppeAktivitetRepository, gruppeAktivitetRepositoryV2, aktorClient, mock(BrukerDataService.class), mock(ElasticIndexer.class));
+    }
 
     @BeforeEach
     public void reset() {
@@ -65,19 +68,27 @@ public class GruppeAktivitetTest {
     public void skal_komme_i_gruppe_aktivitet() {
         insertBruker();
         GruppeAktivitetDTO gruppeAktivitet = getInsertDTO();
-        gruppeAktivitetService.behandleKafkaMelding(gruppeAktivitet);
+        gruppeAktivitetService.behandleKafkaMeldingOracle(gruppeAktivitet);
 
         Optional<AktivitetStatus> gruppe = hentAktivitetStatus();
         assertThat(gruppe).isPresent();
     }
 
     @Test
+    public void skal_komme_i_gruppe_aktivitet_V2() {
+        GruppeAktivitetDTO gruppeAktivitet = getInsertDTO();
+        gruppeAktivitetService.behandleKafkaMeldingPostgres(gruppeAktivitet);
+        Optional<AktivitetStatus> aktivitetStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), AktivitetTyper.gruppeaktivitet.name());
+        assertThat(aktivitetStatus).isPresent();
+    }
+
+    @Test
     public void skal_ut_av_aktivitet() {
         insertBruker();
-        gruppeAktivitetService.behandleKafkaMelding(getInsertDTO());
+        gruppeAktivitetService.behandleKafkaMeldingOracle(getInsertDTO());
 
         Optional<AktivitetStatus> utdanningPre = hentAktivitetStatus();
-        gruppeAktivitetService.behandleKafkaMelding(getDeleteDTO());
+        gruppeAktivitetService.behandleKafkaMeldingOracle(getDeleteDTO());
         Optional<AktivitetStatus> utdanningPost = hentAktivitetStatus();
 
         assertThat(utdanningPre).isPresent();
@@ -116,7 +127,7 @@ public class GruppeAktivitetTest {
 
     private Optional<AktivitetStatus> hentAktivitetStatus() {
         Set<AktivitetStatus> aktivitetstatusForBrukere = aktivitetDAO.getAktivitetstatusForBrukere(List.of(personId)).get(personId);
-        if(aktivitetstatusForBrukere == null){
+        if (aktivitetstatusForBrukere == null) {
             return Optional.empty();
         }
         return aktivitetstatusForBrukere.stream()
