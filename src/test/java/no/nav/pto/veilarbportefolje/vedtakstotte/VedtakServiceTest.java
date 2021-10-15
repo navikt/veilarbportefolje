@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -9,7 +10,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static java.time.LocalDateTime.now;
 import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
@@ -29,7 +29,7 @@ public class VedtakServiceTest {
 
     private static final KafkaVedtakStatusEndring vedtakStatusEndring = new KafkaVedtakStatusEndring()
             .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.UTKAST_OPPRETTET)
-            .setTimestamp(now())
+            .setTimestamp(DateUtils.now().toLocalDateTime())
             .setAktorId(AKTORID)
             .setVedtakId(VEDTAKID)
             .setHovedmal(null)
@@ -61,7 +61,7 @@ public class VedtakServiceTest {
     @Test
     public void skallOppdatereUtkast() {
         vedtakService.behandleKafkaMelding(toJson(vedtakStatusEndring));
-        LocalDateTime time = now();
+        LocalDateTime time = DateUtils.now().toLocalDateTime();
         KafkaVedtakStatusEndring kafkaVedtakSendtTilBeslutter = new KafkaVedtakStatusEndring()
                 .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.VEDTAK_SENDT)
                 .setTimestamp(time)
@@ -81,7 +81,7 @@ public class VedtakServiceTest {
     public void skallSletteGamleVedtak() {
         vedtakStatusRepository.upsertVedtak(new KafkaVedtakStatusEndring()
                 .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.VEDTAK_SENDT)
-                .setTimestamp(now())
+                .setTimestamp(DateUtils.now().toLocalDateTime())
                 .setAktorId(AKTORID)
                 .setVedtakId(2)
                 .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID)
@@ -89,7 +89,7 @@ public class VedtakServiceTest {
 
         KafkaVedtakStatusEndring kafkaVedtakSendtTilBruker = new KafkaVedtakStatusEndring()
                 .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.VEDTAK_SENDT)
-                .setTimestamp(now())
+                .setTimestamp(DateUtils.now().toLocalDateTime())
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID)
                 .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID)
