@@ -12,6 +12,7 @@ import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.AVBRUTT_EGEN;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_IJOBB;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -30,7 +31,7 @@ public class SisteEndringRepositoryTest {
 
     @Test
     public void mapDbTilOppfolgingsbruker() {
-        ZonedDateTime zonedDateTime_1 = ZonedDateTime.now();
+        ZonedDateTime zonedDateTime_1 = now();
         String tidspunkt_1 = zonedDateTime_1.toOffsetDateTime().toString();
         SisteEndringDTO dto_1 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_1))
@@ -38,7 +39,7 @@ public class SisteEndringRepositoryTest {
                 .setAktoerId(AKTORID)
                 .setAktivtetId("1");
 
-        ZonedDateTime zonedDateTime_2 = ZonedDateTime.now().minusDays(3);
+        ZonedDateTime zonedDateTime_2 = now().minusDays(3);
         String tidspunkt_2 = zonedDateTime_2.toOffsetDateTime().toString();
         SisteEndringDTO dto_2 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_2))
