@@ -1,15 +1,16 @@
 package no.nav.pto.veilarbportefolje.database;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,8 +24,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.util.concurrent.ThreadLocalRandom.current;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.mock;
 
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -57,12 +59,12 @@ public class BrukerDataServiceTest {
 
     @Test
     public void skalOppdatereBrukerData() {
-        Timestamp enUkeSiden = Timestamp.valueOf(LocalDateTime.now().minusDays(7));
-        Timestamp toUkerSiden = Timestamp.valueOf(LocalDateTime.now().minusDays(14));
+        Timestamp enUkeSiden = toTimestamp(now().minusDays(7));
+        Timestamp toUkerSiden = toTimestamp(now().minusDays(14));
 
-        Timestamp enUkeTil = Timestamp.valueOf(LocalDateTime.now().plusDays(7));
-        Timestamp toUkerTil = Timestamp.valueOf(LocalDateTime.now().plusDays(14));
-        Timestamp treUkerTil = Timestamp.valueOf(LocalDateTime.now().plusDays(21));
+        Timestamp enUkeTil = toTimestamp(now().plusDays(7));
+        Timestamp toUkerTil = toTimestamp(now().plusDays(14));
+        Timestamp treUkerTil = toTimestamp(now().plusDays(21));
 
         insertAktivitet(toUkerSiden, enUkeSiden);
         insertAktivitet(enUkeTil, toUkerTil);

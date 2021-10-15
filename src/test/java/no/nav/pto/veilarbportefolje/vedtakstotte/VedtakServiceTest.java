@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static java.time.LocalDateTime.now;
 import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
@@ -28,7 +29,7 @@ public class VedtakServiceTest {
 
     private static final KafkaVedtakStatusEndring vedtakStatusEndring = new KafkaVedtakStatusEndring()
             .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.UTKAST_OPPRETTET)
-            .setTimestamp(LocalDateTime.now())
+            .setTimestamp(now())
             .setAktorId(AKTORID)
             .setVedtakId(VEDTAKID)
             .setHovedmal(null)
@@ -60,7 +61,7 @@ public class VedtakServiceTest {
     @Test
     public void skallOppdatereUtkast() {
         vedtakService.behandleKafkaMelding(toJson(vedtakStatusEndring));
-        LocalDateTime time = LocalDateTime.now();
+        LocalDateTime time = now();
         KafkaVedtakStatusEndring kafkaVedtakSendtTilBeslutter = new KafkaVedtakStatusEndring()
                 .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.VEDTAK_SENDT)
                 .setTimestamp(time)
@@ -80,7 +81,7 @@ public class VedtakServiceTest {
     public void skallSletteGamleVedtak() {
         vedtakStatusRepository.upsertVedtak(new KafkaVedtakStatusEndring()
                 .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.VEDTAK_SENDT)
-                .setTimestamp(LocalDateTime.now())
+                .setTimestamp(now())
                 .setAktorId(AKTORID)
                 .setVedtakId(2)
                 .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID)
@@ -88,7 +89,7 @@ public class VedtakServiceTest {
 
         KafkaVedtakStatusEndring kafkaVedtakSendtTilBruker = new KafkaVedtakStatusEndring()
                 .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.VEDTAK_SENDT)
-                .setTimestamp(LocalDateTime.now())
+                .setTimestamp(now())
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID)
                 .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID)

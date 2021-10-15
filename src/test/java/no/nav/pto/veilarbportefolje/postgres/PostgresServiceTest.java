@@ -30,6 +30,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -170,13 +171,13 @@ public class PostgresServiceTest {
     @Test
     public void sok_pa_dialog() {
         AktorId aktorId = AktorId.of("123456789");
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, now());
         oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(new OppfolgingsbrukerKafkaDTO().setAktoerid(aktorId.get()).setNav_kontor(enhetId).setEndret_dato(ZonedDateTime.now()).setSperret_ansatt(true));
-        ZonedDateTime venter_tidspunkt = ZonedDateTime.now();
+        ZonedDateTime venter_tidspunkt = now();
         dialogRepositoryV2.oppdaterDialogInfoForBruker(
                 new Dialogdata()
                         .setAktorId(aktorId.get())
-                        .setSisteEndring(ZonedDateTime.now())
+                        .setSisteEndring(now())
                         .setTidspunktEldsteVentende(venter_tidspunkt));
 
         when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(List.of("Z12345", "Z12346"));

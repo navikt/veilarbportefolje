@@ -2,12 +2,13 @@ package no.nav.pto.veilarbportefolje.database;
 
 import com.google.common.base.Joiner;
 import io.vavr.control.Try;
-import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -33,12 +34,12 @@ import java.util.Optional;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
+import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
-import static no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
-import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -153,9 +154,9 @@ public class BrukerRepositoryTest {
                 "aktoerid",
                 personId,
                 "veielderid",
-                Timestamp.from(Instant.now()),
+                toTimestamp(DateUtils.now()),
                 YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(),
+                DateUtils.now().toLocalDateTime(),
                 ManedFasettMapping.MND1,
                 0,
                 UKE_UNDER2,
@@ -208,9 +209,9 @@ public class BrukerRepositoryTest {
                 "aktoerid",
                 "personid",
                 "veielderid",
-                Timestamp.from(Instant.now()),
+                toTimestamp(DateUtils.now()),
                 YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(),
+                DateUtils.now().toLocalDateTime(),
                 ManedFasettMapping.MND1,
                 3,
                 DagpengerUkeFasettMapping.UKE2_5,
@@ -287,12 +288,12 @@ public class BrukerRepositoryTest {
     public void retrieveBrukerdataSkalInneholdeAlleFelter() {
 
         Brukerdata brukerdata = new Brukerdata()
-                .setNyesteUtlopteAktivitet(Timestamp.from(Instant.now()))
+                .setNyesteUtlopteAktivitet(toTimestamp(DateUtils.now()))
                 .setPersonid("personid")
                 .setAapmaxtidUke(1)
                 .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.UKE_UNDER12)
                 .setAktoerid("aktoerid")
-                .setUtlopsdato(LocalDateTime.now())
+                .setUtlopsdato(now().toLocalDateTime())
                 .setUtlopsFasett(ManedFasettMapping.MND1)
                 .setYtelse(YtelseMapping.AAP_MAXTID)
                 .setAktivitetStart(new Timestamp(1))
