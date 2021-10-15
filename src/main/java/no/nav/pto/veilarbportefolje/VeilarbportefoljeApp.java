@@ -13,7 +13,7 @@ import java.util.TimeZone;
 public class VeilarbportefoljeApp {
     @PostConstruct
     public void init() {
-        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Oslo"));
+        TimeZone.setDefault(TimeZone.getTimeZone(System.getenv("TZ")));
     }
 
     public static void main(String... args) {

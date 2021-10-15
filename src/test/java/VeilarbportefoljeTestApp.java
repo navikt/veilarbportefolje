@@ -12,7 +12,7 @@ import java.util.TimeZone;
 public class VeilarbportefoljeTestApp {
 
     public static void main(String[] args) {
-        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Oslo"));
+        TimeZone.setDefault(TimeZone.getTimeZone(System.getenv("TZ")));
         SpringApplication application = new SpringApplication(VeilarbportefoljeTestApp.class);
         application.setAdditionalProfiles("local");
         application.run(args);

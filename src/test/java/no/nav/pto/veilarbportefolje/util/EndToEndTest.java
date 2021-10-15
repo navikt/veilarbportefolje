@@ -37,7 +37,7 @@ public abstract class EndToEndTest {
     @BeforeEach
     void setUp() {
         try {
-            TimeZone.setDefault(TimeZone.getTimeZone("Europe/Oslo"));
+            TimeZone.setDefault(TimeZone.getTimeZone(System.getenv("TZ")));
             elasticIndexer.opprettNyIndeks(indexName.getValue());
         } catch (Exception e) {
             elasticTestClient.deleteIndex(indexName);
