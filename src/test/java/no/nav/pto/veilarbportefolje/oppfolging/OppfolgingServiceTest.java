@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
@@ -39,7 +40,7 @@ public class OppfolgingServiceTest {
     private String AKTORID = "1234567";
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
+    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
     @Before
     public void setup() {
