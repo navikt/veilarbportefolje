@@ -15,6 +15,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.nowToStr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -38,7 +39,7 @@ public class RegistreringRepositoryTest {
                 .setUtdanning(UtdanningSvar.GRUNNSKOLE)
                 .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
-                .setRegistreringOpprettet(ZonedDateTime.now().format(ISO_ZONED_DATE_TIME))
+                .setRegistreringOpprettet(nowToStr())
                 .build();
 
         registreringRepository.upsertBrukerRegistrering(event);
@@ -68,7 +69,7 @@ public class RegistreringRepositoryTest {
                 .setUtdanning(UtdanningSvar.HOYERE_UTDANNING_1_TIL_4)
                 .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.NEI)
-                .setRegistreringOpprettet(ZonedDateTime.now().format(ISO_ZONED_DATE_TIME))
+                .setRegistreringOpprettet(nowToStr())
                 .build();
 
         registreringRepository.upsertBrukerRegistrering(event2);
@@ -97,7 +98,7 @@ public class RegistreringRepositoryTest {
                 .setUtdanning(UtdanningSvar.HOYERE_UTDANNING_5_ELLER_MER)
                 .setUtdanningBestatt(UtdanningBestattSvar.NEI)
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.INGEN_SVAR)
-                .setRegistreringOpprettet(ZonedDateTime.now().format(ISO_ZONED_DATE_TIME))
+                .setRegistreringOpprettet(nowToStr())
                 .build();
         registreringRepository.upsertBrukerRegistrering(event2);
 

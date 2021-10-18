@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -7,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static java.time.LocalDateTime.now;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,7 +37,7 @@ public class VedtaksStatusRepositoryTest {
 
     @Test
     public void skallOppdatereVedtakMedAnsvarligVeileder() {
-        LocalDateTime time = LocalDateTime.now();
+        LocalDateTime time = DateUtils.now().toLocalDateTime();
         KafkaVedtakStatusEndring vedtakStatusEndring = new KafkaVedtakStatusEndring()
                 .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.KLAR_TIL_BESLUTTER)
                 .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID)
@@ -58,7 +60,7 @@ public class VedtaksStatusRepositoryTest {
 
 
     private void insertVedtakIDB() {
-        LocalDateTime time = LocalDateTime.now();
+        LocalDateTime time = now();
         KafkaVedtakStatusEndring vedtakStatusEndring = new KafkaVedtakStatusEndring()
                 .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.UTKAST_OPPRETTET)
                 .setTimestamp(time)

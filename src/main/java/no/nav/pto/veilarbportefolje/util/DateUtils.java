@@ -5,9 +5,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
+
+import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
 public class DateUtils {
 
@@ -164,5 +167,13 @@ public class DateUtils {
             return null;
         }
         return java.sql.Date.valueOf(ZonedDateTime.parse(date).toLocalDate());
+    }
+
+    public static String nowToStr() {
+        return ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS).format(ISO_ZONED_DATE_TIME);
+    }
+
+    public static ZonedDateTime now() {
+        return ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS);
     }
 }

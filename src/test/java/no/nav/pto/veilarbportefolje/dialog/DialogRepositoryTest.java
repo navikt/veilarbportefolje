@@ -2,13 +2,14 @@ package no.nav.pto.veilarbportefolje.dialog;
 
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.Instant;
 import java.time.ZonedDateTime;
 
+import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,9 +28,8 @@ public class DialogRepositoryTest {
 
     @Test
     public void oppdaterDialogInfoForBruker_skal_sette_inn_i_tabell_og_vare_tilgjengelig_i_dialogview() {
-        long now = Instant.now().toEpochMilli();
-        ZonedDateTime endringsDato = ZonedDateTime.now();
-        ZonedDateTime venteDato = ZonedDateTime.now().minusMinutes(1000);
+        ZonedDateTime endringsDato = now();
+        ZonedDateTime venteDato = now().minusMinutes(1000);
 
         dialogRepository.oppdaterDialogInfoForBruker(lagDialogData(venteDato, endringsDato));
         Dialogdata dialogFraDatabase = dialogRepository.retrieveDialogData(AKTOER_ID.toString()).get();
@@ -53,13 +53,13 @@ public class DialogRepositoryTest {
 
     @Test
     public void oppdaterDialogInfoForBruker_skal_oppdatere_tabell_og_vare_tilgjengelig_i_dialogview() {
-        ZonedDateTime venteDato = ZonedDateTime.now().minusSeconds(1);
+        ZonedDateTime venteDato = DateUtils.now().minusSeconds(1);
 
         dialogRepository.oppdaterDialogInfoForBruker(lagDialogData(venteDato, venteDato));
         Dialogdata dialogFraDatabase = dialogRepository.retrieveDialogData(AKTOER_ID.toString()).get();
         verifiserData(venteDato, dialogFraDatabase, venteDato);
 
-        ZonedDateTime nyEndringsDato = ZonedDateTime.now();
+        ZonedDateTime nyEndringsDato = DateUtils.now();
         dialogRepository.oppdaterDialogInfoForBruker(lagDialogData(venteDato, nyEndringsDato));
         dialogFraDatabase = dialogRepository.retrieveDialogData(AKTOER_ID.toString()).get();
         verifiserData(venteDato, dialogFraDatabase, nyEndringsDato);

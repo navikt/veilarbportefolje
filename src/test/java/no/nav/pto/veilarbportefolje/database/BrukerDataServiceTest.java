@@ -23,6 +23,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.util.concurrent.ThreadLocalRandom.current;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -57,12 +59,12 @@ public class BrukerDataServiceTest {
 
     @Test
     public void skalOppdatereBrukerData() {
-        Timestamp enUkeSiden = Timestamp.valueOf(LocalDateTime.now().minusDays(7));
-        Timestamp toUkerSiden = Timestamp.valueOf(LocalDateTime.now().minusDays(14));
+        Timestamp enUkeSiden = toTimestamp(now().minusDays(7));
+        Timestamp toUkerSiden = toTimestamp(now().minusDays(14));
 
-        Timestamp enUkeTil = Timestamp.valueOf(LocalDateTime.now().plusDays(7));
-        Timestamp toUkerTil = Timestamp.valueOf(LocalDateTime.now().plusDays(14));
-        Timestamp treUkerTil = Timestamp.valueOf(LocalDateTime.now().plusDays(21));
+        Timestamp enUkeTil = toTimestamp(now().plusDays(7));
+        Timestamp toUkerTil = toTimestamp(now().plusDays(14));
+        Timestamp treUkerTil = toTimestamp(now().plusDays(21));
 
         insertAktivitet(toUkerSiden, enUkeSiden);
         insertAktivitet(enUkeTil, toUkerTil);

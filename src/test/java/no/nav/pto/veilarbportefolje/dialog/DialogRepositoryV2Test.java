@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
 
+import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DialogRepositoryV2Test {
@@ -31,8 +32,8 @@ public class DialogRepositoryV2Test {
 
     @Test
     public void oppdaterDialogInfoForBruker_skal_sette_inn_i_tabell() {
-        ZonedDateTime ubehandled = ZonedDateTime.now().minusMinutes(1000);
-        ZonedDateTime ventend = ZonedDateTime.now();
+        ZonedDateTime ubehandled = now().minusMinutes(1000);
+        ZonedDateTime ventend = now();
 
         dialogRepositoryV2.oppdaterDialogInfoForBruker(lagDialogData(ubehandled, ventend));
         Dialogdata dialogFraDatabase = dialogRepositoryV2.retrieveDialogData(aktoerId).get();
