@@ -103,14 +103,25 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
                 .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(oppdatering, aktoerId));
     }
 
-    public void slettOgIndekserAktivitet(String aktivitetid, AktorId aktorId) {
+    public void slettOgIndekserUtdanningsAktivitet(String aktivitetid, AktorId aktorId) {
+        //ORACLE
         aktivitetDAO.deleteById(aktivitetid);
         utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
+
+        //POSTGRES
+        aktiviteterRepositoryV2.deleteById(aktivitetid);
+        AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.UTDANNINGAKTIVITET);
+        prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, AktivitetTyper.utdanningaktivitet.name());
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
     }
 
     public void upsertOgIndekserAktiviteter(KafkaAktivitetMelding melding) {
+        //ORACLE
         aktivitetDAO.upsertAktivitet(melding);
         utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(melding.getAktorId()));
+
+        //POSTGRES
+        lagreOgProsseseserAktiviteter(melding);
     }
 
     @Override

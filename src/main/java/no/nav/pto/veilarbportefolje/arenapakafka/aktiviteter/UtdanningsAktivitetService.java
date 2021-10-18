@@ -46,7 +46,7 @@ public class UtdanningsAktivitetService {
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding) || skalSletteUtdanningsAktivitet(innhold)) {
             log.info("Sletter aktivitet: {}", innhold.getAktivitetid());
-            aktivitetService.slettOgIndekserAktivitet(innhold.getAktivitetid(), aktorId);
+            aktivitetService.slettOgIndekserUtdanningsAktivitet(innhold.getAktivitetid(), aktorId);
         } else {
             log.info("Lagrer aktivitet: {}", innhold.getAktivitetid());
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
