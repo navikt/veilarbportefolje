@@ -1,9 +1,9 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
+import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
@@ -42,7 +42,7 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
         final PersonId personId = PersonId.of("1234");
         final Fnr fnr = Fnr.ofValidFnr("00000000000");
 
-        final String tilDato = (LocalDate.now().plusMonths(1)).atStartOfDay().atZone(ZoneId.of("Europe/Oslo")).toInstant().toString();
+        final String tilDato = (LocalDate.now().plusMonths(1)).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toString();
 
         SqlUtils.insert(db, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
                 .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId.toString())

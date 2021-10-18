@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,8 +31,8 @@ public class DialogRepositoryV2Test {
 
     @Test
     public void oppdaterDialogInfoForBruker_skal_sette_inn_i_tabell() {
-        ZonedDateTime ubehandled = ZonedDateTime.now(ZoneId.of("Europe/Oslo")).minusMinutes(1000);
-        ZonedDateTime ventend = ZonedDateTime.now(ZoneId.of("Europe/Oslo"));
+        ZonedDateTime ubehandled = ZonedDateTime.now().minusMinutes(1000);
+        ZonedDateTime ventend = ZonedDateTime.now();
 
         dialogRepositoryV2.oppdaterDialogInfoForBruker(lagDialogData(ubehandled, ventend));
         Dialogdata dialogFraDatabase = dialogRepositoryV2.retrieveDialogData(aktoerId).get();
