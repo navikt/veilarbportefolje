@@ -41,7 +41,7 @@ public class BrukerAktiviteterService {
     }
 
     public void syncAktivitetOgBrukerData(List<AktorId> brukere) {
-        ForkJoinPool pool = new ForkJoinPool(5);
+        ForkJoinPool pool = new ForkJoinPool(6);
         try {
             pool.submit(() ->
                     brukere.parallelStream().forEach(aktorId -> {
