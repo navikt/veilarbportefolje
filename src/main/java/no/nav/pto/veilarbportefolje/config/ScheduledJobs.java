@@ -23,7 +23,8 @@ public class ScheduledJobs {
     private final LeaderElectionClient leaderElectionClient;
     private final UnleashService unleashService;
 
-    @Scheduled(cron = "0 30 0 * * ?")
+    // Denne jobben må kjøre etter midnatt
+    @Scheduled(cron = "0 1 0 * * ?")
     public void oppdaterBrukerAktiviteter() {
         if (leaderElectionClient.isLeader() && erGR202PaKafka(unleashService)) {
             brukerAktiviteterService.syncAktivitetOgBrukerData();
@@ -32,6 +33,7 @@ public class ScheduledJobs {
         }
     }
 
+    // Denne jobben må kjøre etter midnatt
     @Scheduled(cron = "0 0 1 * * ?")
     public void oppdaterNyeYtelser() {
         if (leaderElectionClient.isLeader() && erGR199PaKafka(unleashService)) {
