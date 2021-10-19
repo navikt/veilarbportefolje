@@ -43,6 +43,7 @@ Les i jobbtabellen til oracle for å undersøke statusen på den automatisk oppd
 select * from dba_scheduler_jobs;
 ```
 
+
 ## PostgreSQL
 
 Innloggingsinformasjon til databasen:
