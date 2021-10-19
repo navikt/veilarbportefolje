@@ -6,9 +6,9 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.BrukertiltakV2;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -29,7 +29,6 @@ import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 
-import java.nio.charset.Charset;
 import java.util.*;
 
 import static java.lang.String.format;
@@ -184,7 +183,7 @@ public class ElasticIndexer {
     @SneakyThrows
     public String opprettNyIndeks(String navn) {
 
-        String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
+        String json = IOUtils.toString(Objects.requireNonNull(getClass().getResource("/elastic_settings.json")));
         CreateIndexRequest request = new CreateIndexRequest(navn)
                 .source(json, XContentType.JSON);
 

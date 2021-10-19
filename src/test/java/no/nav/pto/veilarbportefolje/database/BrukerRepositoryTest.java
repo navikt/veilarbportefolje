@@ -2,9 +2,9 @@ package no.nav.pto.veilarbportefolje.database;
 
 import com.google.common.base.Joiner;
 import io.vavr.control.Try;
-import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -27,18 +27,18 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
-import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
+import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -63,7 +63,7 @@ public class BrukerRepositoryTest {
     @Before
     public void setUp() {
         try {
-            List<String> lines = IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"), UTF_8);
+            List<String> lines = IOUtils.readLines(Objects.requireNonNull(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql")));
             ANTALL_LINJER_I_TESTDATA = lines.size();
             this.jdbcTemplate.execute(Joiner.on("\n").join(lines));
         } catch (IOException e) {

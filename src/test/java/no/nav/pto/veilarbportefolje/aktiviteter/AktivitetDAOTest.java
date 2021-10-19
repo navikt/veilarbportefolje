@@ -1,11 +1,10 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import com.google.common.base.Joiner;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
-import no.nav.pto.veilarbportefolje.database.BrukerRepositoryTest;
-
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.database.BrukerRepositoryTest;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -17,12 +16,8 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +29,7 @@ public class AktivitetDAOTest {
 
     private void insertoppfolgingsbrukerTestData() {
         try {
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-tiltak.sql"), UTF_8)));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(Objects.requireNonNull(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-tiltak.sql")))));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -54,7 +49,6 @@ public class AktivitetDAOTest {
         jdbcTemplate.execute("truncate table tiltakkodeverk");
         insertoppfolgingsbrukerTestData();
     }
-
 
 
     @Test(expected = IllegalStateException.class)
@@ -203,7 +197,8 @@ public class AktivitetDAOTest {
                 .setAktorId("aktoerid")
                 .setAvtalt(true)
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);;
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);
+        ;
 
         aktivitetDAO.upsertAktivitet(asList(aktivitet1, aktivitet2));
 
@@ -219,19 +214,19 @@ public class AktivitetDAOTest {
 
         statuser.add(new AktivitetStatus()
                 .setPersonid(PersonId.of("pid1"))
-                .setAktoerid( AktorId.of("aid1"))
+                .setAktoerid(AktorId.of("aid1"))
                 .setAktivitetType("a1")
                 .setAktiv(true)
                 .setNesteStart(new Timestamp(0))
-                .setNesteUtlop( new Timestamp(0)));
+                .setNesteUtlop(new Timestamp(0)));
 
         statuser.add(new AktivitetStatus()
                 .setPersonid(PersonId.of("pid2"))
-                .setAktoerid( AktorId.of("aid2"))
+                .setAktoerid(AktorId.of("aid2"))
                 .setAktivitetType("a2")
                 .setAktiv(true)
                 .setNesteStart(new Timestamp(0))
-                .setNesteUtlop( new Timestamp(0)));
+                .setNesteUtlop(new Timestamp(0)));
 
         aktivitetDAO.insertAktivitetstatuser(statuser);
         assertThat(jdbcTemplate.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER").size()).isEqualTo(2);
@@ -255,7 +250,7 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void skalHaRiktigVersionLogikk(){
+    public void skalHaRiktigVersionLogikk() {
         KafkaAktivitetMelding aktivitet_i_database = new KafkaAktivitetMelding()
                 .setVersion(2L)
                 .setAktivitetId("aktivitetid")
