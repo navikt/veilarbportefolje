@@ -40,21 +40,21 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class PostgresServiceTest {
-    private PostgresService postgresService;
-    private VeilarbVeilederClient veilarbVeilederClient;
-    private DialogRepositoryV2 dialogRepositoryV2;
-    private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-    private OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2;
-    private ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
+    private final PostgresService postgresService;
+    private final VeilarbVeilederClient veilarbVeilederClient;
+    private final DialogRepositoryV2 dialogRepositoryV2;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+    private final OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2;
+    private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
 
     private final String enhetId = "1234";
 
     @Autowired
-    public PostgresServiceTest(@Qualifier("PostgresJdbc") JdbcTemplate db, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2) {
+    public PostgresServiceTest(@Qualifier("PostgresJdbc") JdbcTemplate db, DialogRepositoryV2 dialogRepositoryV2, OppfolgingRepositoryV2 oppfolgingRepositoryV2, OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2) {
+        this.dialogRepositoryV2 = dialogRepositoryV2;
+        this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
+        this.oppfolginsbrukerRepositoryV2 = oppfolginsbrukerRepositoryV2;
         this.arbeidslisteRepositoryV2 = arbeidslisteRepositoryV2;
-        this.dialogRepositoryV2 = new DialogRepositoryV2(db);
-        this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
-        this.oppfolginsbrukerRepositoryV2 = new OppfolginsbrukerRepositoryV2(db);
         VedtakstottePilotRequest vedtakstottePilotRequest = mock(VedtakstottePilotRequest.class);
         veilarbVeilederClient = mock(VeilarbVeilederClient.class);
 

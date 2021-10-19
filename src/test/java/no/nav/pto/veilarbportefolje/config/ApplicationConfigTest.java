@@ -88,6 +88,8 @@ import static org.mockito.Mockito.when;
         AktivitetStatusRepositoryV2.class,
         BrukerRepository.class,
         OppfolgingRepository.class,
+        OppfolgingRepositoryV2.class,
+        OppfolginsbrukerRepositoryV2.class,
         ManuellStatusService.class,
         DialogService.class,
         DialogRepository.class,
@@ -216,21 +218,6 @@ public class ApplicationConfigTest {
     @Bean
     public VeilarbVeilederClient veilarbVeilederClient() {
         return mock(VeilarbVeilederClient.class);
-    }
-
-    @Bean
-    public OppfolgingRepositoryV2 oppfolgingRepositoryV2() {
-        return mock(OppfolgingRepositoryV2.class);
-    }
-
-    @Bean
-    public OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2() {
-        return mock(OppfolginsbrukerRepositoryV2.class);
-    }
-
-    @Bean
-    public DialogRepositoryV2 dialogRepositoryV2() {
-        return mock(DialogRepositoryV2.class);
     }
 
     @Bean
