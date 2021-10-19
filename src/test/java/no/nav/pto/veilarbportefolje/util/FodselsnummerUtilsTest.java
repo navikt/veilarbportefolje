@@ -54,6 +54,14 @@ public class FodselsnummerUtilsTest {
     }
 
     @Test
+    public void skalLageFodselsdatoStringFraBoostNr() {
+        String fodselsnummer1 = "10308000399"; //TESTFAMILIE BOOST
+        String fodselsnummer2 = "10218000399"; //TESTFAMILIE BOOST
+        assertThat(FodselsnummerUtils.lagFodselsdato(fodselsnummer1)).isEqualTo("1980-10-10T00:00:00Z");
+        assertThat(FodselsnummerUtils.lagFodselsdato(fodselsnummer2)).isEqualTo("1980-01-10T00:00:00Z");
+    }
+
+    @Test
     public void skalLageAarstallFraFodselsnummer() {
         String fodselsnummer1900a = "00001849900";
         String fodselsnummer1900b = "00000249900";
