@@ -78,7 +78,6 @@ import static org.mockito.Mockito.when;
 @Import({
         BrukerService.class,
         RegistreringService.class,
-        RegistreringRepository.class,
         AktivitetService.class,
         PersistentOppdatering.class,
         OppfolgingAvsluttetService.class,
@@ -92,6 +91,7 @@ import static org.mockito.Mockito.when;
         ManuellStatusService.class,
         DialogService.class,
         DialogRepository.class,
+        DialogRepositoryV2.class,
         ElasticIndexer.class,
         CvRepository.class,
         CVRepositoryV2.class,

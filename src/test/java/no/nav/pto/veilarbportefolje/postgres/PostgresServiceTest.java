@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.postgres;
 
+import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
+import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -17,10 +19,11 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerKafkaDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
-import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
+import no.nav.pto.veilarbportefolje.registrering.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -46,24 +49,21 @@ public class PostgresServiceTest {
 
     private final String enhetId = "1234";
 
-    @Before
-    public void setup() {
-        JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
-        dialogRepositoryV2 = new DialogRepositoryV2(db);
-        oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
-        oppfolginsbrukerRepositoryV2 = new OppfolginsbrukerRepositoryV2(db);
-        arbeidslisteRepositoryV2 = new ArbeidslisteRepositoryV2(db);
-
+    @Autowired
+    public PostgresServiceTest(@Qualifier("PostgresJdbc") JdbcTemplate db, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2) {
+        this.arbeidslisteRepositoryV2 = arbeidslisteRepositoryV2;
+        this.dialogRepositoryV2 = new DialogRepositoryV2(db);
+        this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
+        this.oppfolginsbrukerRepositoryV2 = new OppfolginsbrukerRepositoryV2(db);
         VedtakstottePilotRequest vedtakstottePilotRequest = mock(VedtakstottePilotRequest.class);
         veilarbVeilederClient = mock(VeilarbVeilederClient.class);
 
+        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(List.of("Z12345", "Z12346"));
         postgresService = new PostgresService(vedtakstottePilotRequest, db, veilarbVeilederClient);
     }
 
     @Test
     public void sok_resulterer_i_ingen_brukere() {
-        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(List.of("Z12345", "Z12346"));
-
         Filtervalg filtervalg = new Filtervalg().setFerdigfilterListe(List.of(UFORDELTE_BRUKERE));
         postgresService.hentBrukere("1234", null, null, null, filtervalg, 0, 10);
     }
@@ -71,17 +71,22 @@ public class PostgresServiceTest {
 
     @Test
     public void sok_pa_utdanning() {
-        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(List.of("Z12345", "Z12346"));
+        Filtervalg filtervalg = new Filtervalg().setUtdanning(List.of(UtdanningSvar.GRUNNSKOLE))
+                .setUtdanningGodkjent(List.of(UtdanningGodkjentSvar.JA))
+                .setUtdanningBestatt(List.of(UtdanningBestattSvar.JA));
+        postgresService.hentBrukere("1234", null, null, null, filtervalg, 0, 10);
+    }
 
-        Filtervalg filtervalg = new Filtervalg().setUtdanning(List.of(UtdanningSvar.GRUNNSKOLE.name()));
+
+    @Test
+    public void sok_pa_situasjon() {
+        Filtervalg filtervalg = new Filtervalg().setRegistreringstype(List.of(DinSituasjonSvar.MISTET_JOBBEN));
         postgresService.hentBrukere("1234", null, null, null, filtervalg, 0, 10);
     }
 
 
     @Test
     public void sok_pa_tekst() {
-        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(List.of("Z12345", "Z12346"));
-
         Filtervalg teskt = new Filtervalg().setNavnEllerFnrQuery("test");
         Filtervalg fnr = new Filtervalg().setNavnEllerFnrQuery("123");
         postgresService.hentBrukere("1234", null, null, null, teskt, 0, 10);
@@ -91,7 +96,6 @@ public class PostgresServiceTest {
 
     @Test
     public void sok_pa_arbeidslista() {
-        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(List.of("Z12345", "Z12346"));
         AktorId aktorId = AktorId.of("123456789");
         Fnr fnr = Fnr.ofValidFnr("01010101010");
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
@@ -116,7 +120,6 @@ public class PostgresServiceTest {
 
     @Test
     public void skal_filtrere_pa_kjonn() {
-        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(List.of("Z12345", "Z12346"));
         lastOppBruker(Fnr.of("12031240241"), AktorId.of("123")); // Kvinne
         lastOppBruker(Fnr.of("12031240141"), AktorId.of("321")); // Mann
 
@@ -135,7 +138,6 @@ public class PostgresServiceTest {
 
     @Test
     public void skal_filtrere_pa_alder() {
-        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(List.of("Z12345", "Z12346"));
         lastOppBruker(Fnr.of("01091964488"), AktorId.of("123")); // under_21
         lastOppBruker(Fnr.of("09118714501"), AktorId.of("321")); // Mann: 33
 
@@ -152,7 +154,6 @@ public class PostgresServiceTest {
 
     @Test
     public void skal_filtrere_pa_fodselsdag() {
-        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(List.of("Z12345", "Z12346"));
         lastOppBruker(Fnr.of("01091964488"), AktorId.of("123")); // 1 i maneden
         lastOppBruker(Fnr.of("07091964488"), AktorId.of("321")); // 7 i maneden
 
@@ -179,7 +180,6 @@ public class PostgresServiceTest {
                         .setSisteEndring(ZonedDateTime.now())
                         .setTidspunktEldsteVentende(venter_tidspunkt));
 
-        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(List.of("Z12345", "Z12346"));
         Filtervalg filtervalg = new Filtervalg().setFerdigfilterListe(List.of(VENTER_PA_SVAR_FRA_BRUKER));
 
         BrukereMedAntall brukereMedAntall = postgresService.hentBrukere(enhetId, null, null, null, filtervalg, 0, 10);
