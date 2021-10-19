@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -67,7 +68,6 @@ public class PostgresService {
         query.leggTilListeFilter(filtervalg.utdanningGodkjent, PostgresTable.BRUKER_VIEW.UTDANNING_GODKJENT);
 
         /*
-        byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker");
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
         byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter");
         */
@@ -79,6 +79,9 @@ public class PostgresService {
         }
         if (filtervalg.harKjonnfilter()) {
             query.kjonnfilter(filtervalg.kjonn);
+        }
+        if (filtervalg.harManuellBrukerStatus()) {
+            query.erManuell();
         }
 
         if (filtervalg.harCvFilter()) {
@@ -172,16 +175,16 @@ public class PostgresService {
     }
 
     public List<Bruker> hentBrukereMedArbeidsliste(String veilederId, String enhetId) {
-        return null;
+        return new ArrayList<>();
     }
 
     public StatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
         boolean vedtakstottePilotErPa = erVedtakstottePilotPa(EnhetId.of(enhetId));
-        return null;
+        return new StatusTall();
     }
 
     public StatusTall hentStatusTallForEnhet(String enhetId) {
-        return null;
+        return new StatusTall();
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {

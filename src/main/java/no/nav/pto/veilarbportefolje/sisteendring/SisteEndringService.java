@@ -25,16 +25,18 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 public class SisteEndringService {
     private final ElasticServiceV2 elasticServiceV2;
     private final SisteEndringRepository sisteEndringRepository;
+    private final SisteEndringRepositoryV2 sisteEndringRepositoryV2;
 
-    public void veilederHarSett(AktorId aktorId, ZonedDateTime time){
+    public void veilederHarSett(AktorId aktorId, ZonedDateTime time) {
         LocalDateTime veilederharsett = time.toLocalDateTime();
         Map<String, Endring> sisteEndringer = sisteEndringRepository.getSisteEndringer(aktorId);
         sisteEndringer.forEach((kategori, endring) -> {
-            if(endring.getEr_sett().equals("J")){
+            if (endring.getEr_sett().equals("J")) {
                 return;
             }
-            if(veilederharsett.isAfter(DateUtils.toLocalDateTimeOrNull(endring.getTidspunkt()))){
-                sisteEndringRepository.oppdaterHarSett(aktorId, SisteEndringsKategori.valueOf(kategori),true);
+            if (veilederharsett.isAfter(DateUtils.toLocalDateTimeOrNull(endring.getTidspunkt()))) {
+                sisteEndringRepository.oppdaterHarSett(aktorId, SisteEndringsKategori.valueOf(kategori), true);
+                sisteEndringRepositoryV2.oppdaterHarSett(aktorId, SisteEndringsKategori.valueOf(kategori), true);
                 elasticServiceV2.updateSisteEndring(aktorId, SisteEndringsKategori.valueOf(kategori));
             }
         });
@@ -45,9 +47,10 @@ public class SisteEndringService {
             return;
         }
         SisteEndringDTO sisteEndringDTO = new SisteEndringDTO(melding);
-        if(hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
+        if (hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
             try {
                 sisteEndringRepository.upsert(sisteEndringDTO);
+                sisteEndringRepositoryV2.upsert(sisteEndringDTO);
                 elasticServiceV2.updateSisteEndring(sisteEndringDTO);
             } catch (Exception e) {
                 String message = String.format("Kunne ikke lagre eller indexere siste endring for aktoer id: %s", melding.getAktorId());
@@ -66,6 +69,7 @@ public class SisteEndringService {
         if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
             try {
                 sisteEndringRepository.upsert(sisteEndringDTO);
+                sisteEndringRepositoryV2.upsert(sisteEndringDTO);
                 elasticServiceV2.updateSisteEndring(sisteEndringDTO);
             } catch (Exception e) {
                 String message = String.format("Kunne ikke lagre eller indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId());
@@ -76,6 +80,7 @@ public class SisteEndringService {
 
     public void slettSisteEndringer(AktorId aktoerId) {
         sisteEndringRepository.slettSisteEndringer(aktoerId);
+        sisteEndringRepositoryV2.slettSisteEndringer(aktoerId);
     }
 
     private boolean hendelseErNyereEnnIDatabase(SisteEndringDTO sisteEndringDTO) {
@@ -84,6 +89,7 @@ public class SisteEndringService {
             return false;
         }
         Timestamp databaseVerdi = sisteEndringRepository.getSisteEndringTidspunkt(sisteEndringDTO.getAktoerId(), sisteEndringDTO.getKategori());
+        //databaseVerdi = sisteEndringRepositoryV2.getSisteEndringTidspunkt(sisteEndringDTO.getAktoerId(), sisteEndringDTO.getKategori());
         if (databaseVerdi == null) {
             return true;
         }

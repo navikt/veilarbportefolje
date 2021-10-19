@@ -9,19 +9,18 @@ import no.nav.common.utils.Credentials;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
+import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
-import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.database.BrukerDataRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -45,13 +44,11 @@ import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.*;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -63,20 +60,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.Properties;
 
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.elastic.Constant.ELASTICSEARCH_VERSION;
 import static org.apache.http.HttpHost.create;
-import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
-import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
 import static org.elasticsearch.client.RestClient.builder;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -95,6 +85,8 @@ import static org.mockito.Mockito.when;
         ElasticService.class,
         ElasticServiceV2.class,
         AktivitetDAO.class,
+        AktiviteterRepositoryV2.class,
+        AktivitetStatusRepositoryV2.class,
         BrukerRepository.class,
         OppfolgingRepository.class,
         ManuellStatusService.class,
@@ -112,6 +104,7 @@ import static org.mockito.Mockito.when;
         OppfolgingStartetService.class,
         SisteEndringService.class,
         SisteEndringRepository.class,
+        SisteEndringRepositoryV2.class,
         SistLestService.class,
         MalService.class,
         OppfolgingService.class,
@@ -120,6 +113,7 @@ import static org.mockito.Mockito.when;
         UtdanningsAktivitetService.class,
         ArenaHendelseRepository.class,
         GruppeAktivitetRepository.class,
+        GruppeAktivitetRepositoryV2.class,
         TiltakRepositoryV2.class,
         BrukerDataService.class,
         BrukerDataRepository.class,
@@ -129,7 +123,6 @@ import static org.mockito.Mockito.when;
 public class ApplicationConfigTest {
 
     private static final ElasticsearchContainer ELASTICSEARCH_CONTAINER;
-    private static final KafkaContainer KAFKA_CONTAINER;
 
     static {
         ELASTICSEARCH_CONTAINER = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:" + ELASTICSEARCH_VERSION);
@@ -137,36 +130,8 @@ public class ApplicationConfigTest {
 
         System.setProperty("elastic.indexname", IdUtils.generateId());
         System.setProperty("elastic.httphostaddress", ELASTICSEARCH_CONTAINER.getHttpHostAddress());
-
-        KAFKA_CONTAINER = new KafkaContainer();
-        KAFKA_CONTAINER.start();
-
-        System.setProperty("NAIS_NAMESPACE", "localhost");
-        System.setProperty("KAFKA_BROKERS_URL", KAFKA_CONTAINER.getBootstrapServers());
     }
 
-    public static Properties kafkaConsumerProperties() {
-        Properties properties = new Properties();
-        properties.setProperty(BOOTSTRAP_SERVERS_CONFIG, System.getProperty("KAFKA_BROKERS_URL"));
-        properties.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
-        properties.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer");
-        properties.put(MAX_POLL_RECORDS_CONFIG, 5);
-        properties.put(SESSION_TIMEOUT_MS_CONFIG, 20000);
-        properties.put(ENABLE_AUTO_COMMIT_CONFIG, true);
-        properties.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        properties.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        return properties;
-    }
-
-
-    @Bean
-    public KafkaProducer<String, String> kafkaProducer() {
-        HashMap<String, Object> props = new HashMap<>();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, System.getProperty("KAFKA_BROKERS_URL"));
-        props.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        return new KafkaProducer<>(props);
-    }
 
     @Bean
     public TestDataClient dbTestClient(JdbcTemplate jdbcTemplate, ElasticTestClient elasticTestClient) {
@@ -279,7 +244,7 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public LeaderElectionClient leaderElectionClient(){
+    public LeaderElectionClient leaderElectionClient() {
         return mock(LeaderElectionClient.class);
     }
 

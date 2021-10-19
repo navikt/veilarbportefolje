@@ -169,7 +169,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.AIVEN_REGISTRERING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new AivenAvroDeserializer().getDeserializer(),
+                                        new AivenAvroDeserializer<ArbeidssokerRegistrertEvent>().getDeserializer(),
                                         registreringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerProfilertEvent>()
@@ -179,7 +179,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.AIVEN_PROFILERING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new AivenAvroDeserializer().getDeserializer(),
+                                        new AivenAvroDeserializer<ArbeidssokerProfilertEvent>().getDeserializer(),
                                         profileringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
@@ -338,7 +338,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.CV_ENDRET.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new OnpremAvroDeserializer().getDeserializer(),
+                                        new OnpremAvroDeserializer<Melding>().getDeserializer(),
                                         cvService::behandleKafkaRecord
                                 )
                 );

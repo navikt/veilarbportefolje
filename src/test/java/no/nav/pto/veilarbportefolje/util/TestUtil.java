@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.util;
 
 import lombok.SneakyThrows;
-import lombok.val;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -60,8 +59,8 @@ public class TestUtil {
 
     @SneakyThrows
     public static String readFileAsJsonString(String pathname, Class currentLocation) {
-        val URI = currentLocation.getResource(pathname).toURI();
-        val encodedBytes = Files.readAllBytes(Paths.get(URI));
+        var URI = currentLocation.getResource(pathname).toURI();
+        var encodedBytes = Files.readAllBytes(Paths.get(URI));
         return new String(encodedBytes, UTF_8).trim();
     }
 }

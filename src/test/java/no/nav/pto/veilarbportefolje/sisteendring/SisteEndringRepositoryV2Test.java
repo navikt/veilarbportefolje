@@ -1,8 +1,11 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.elastic.domene.Endring;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
+import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,22 +13,23 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.AVBRUTT_EGEN;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_IJOBB;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class SisteEndringRepositoryTest {
+public class SisteEndringRepositoryV2Test {
 
-    private SisteEndringRepository sisteEndringRepository;
+    private SisteEndringRepositoryV2 sisteEndringRepository;
     private static AktorId AKTORID = AktorId.of("123456789");
+
 
     @Before
     public void setup() {
-        JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
-        this.sisteEndringRepository = new SisteEndringRepository(db);
+        JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
+        this.sisteEndringRepository = new SisteEndringRepositoryV2(db);
         sisteEndringRepository.slettSisteEndringer(AKTORID);
     }
 
@@ -94,6 +98,17 @@ public class SisteEndringRepositoryTest {
 
         assertThat(toIsoUTC(fraRepo_etter_sletting_1)).isNull();
         assertThat(toIsoUTC(fraRepo_etter_sletting_2)).isNull();
+    }
+
+    @Test
+    public void testFetchingEmptySisteEndring() {
+        try {
+            Map<String, Endring> sisteEndringer = sisteEndringRepository.getSisteEndringer(AktorId.of("123"));
+            Assert.assertNotNull(sisteEndringer);
+            Assert.assertTrue(sisteEndringer.isEmpty());
+        } catch (Exception e) {
+            Assert.fail();
+        }
     }
 
 }

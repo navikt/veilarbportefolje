@@ -1,11 +1,8 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import io.vavr.control.Try;
-import lombok.val;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -40,40 +37,40 @@ public class AktivitetUtilsTest {
     @Test
     public void konverterTilBrukerOppdatering_skal_hente_rett_brukerOppdateringer() throws Exception {
 
-        val TODAY = Timestamp.valueOf(LocalDate.now().atStartOfDay());
-        val TOMORROW = Timestamp.valueOf(LocalDate.now().plusDays(1).atStartOfDay());
-        val DAY_AFTER_TOMORROW = Timestamp.valueOf(LocalDate.now().plusDays(2).atStartOfDay());
+        var TODAY = Timestamp.valueOf(LocalDate.now().atStartOfDay());
+        var TOMORROW = Timestamp.valueOf(LocalDate.now().plusDays(1).atStartOfDay());
+        var DAY_AFTER_TOMORROW = Timestamp.valueOf(LocalDate.now().plusDays(2).atStartOfDay());
 
-        val YESTERDAY = Timestamp.valueOf(LocalDate.now().minusDays(1).atStartOfDay());
-        val DAY_BEFORE_YESTERDAY = Timestamp.valueOf(LocalDate.now().minusDays(2).atStartOfDay());
+        var YESTERDAY = Timestamp.valueOf(LocalDate.now().minusDays(1).atStartOfDay());
+        var DAY_BEFORE_YESTERDAY = Timestamp.valueOf(LocalDate.now().minusDays(2).atStartOfDay());
 
 
-        val aktivitetDTO1 = new AktivitetDTO()
+        var aktivitetDTO1 = new AktivitetDTO()
                 .setTilDato(TOMORROW)
                 .setFraDato(TODAY);
 
-        val aktivitetDTO2 = new AktivitetDTO()
+        var aktivitetDTO2 = new AktivitetDTO()
                 .setTilDato(YESTERDAY)
                 .setFraDato(DAY_BEFORE_YESTERDAY);
 
-        val aktivitetDTO3 = new AktivitetDTO()
+        var aktivitetDTO3 = new AktivitetDTO()
                 .setTilDato(TOMORROW)
                 .setFraDato(YESTERDAY);
 
-        val aktivitetDTO4 = new AktivitetDTO()
+        var aktivitetDTO4 = new AktivitetDTO()
                 .setTilDato(DAY_AFTER_TOMORROW)
                 .setFraDato(DAY_AFTER_TOMORROW);
 
-        val aktivitetDTO5 = new AktivitetDTO()
+        var aktivitetDTO5 = new AktivitetDTO()
                 .setTilDato(DAY_AFTER_TOMORROW)
                 .setFraDato(Timestamp.valueOf(LocalDate.now().atStartOfDay().plusHours(1)));
 
 
-        val aktiviteter = Arrays.asList(aktivitetDTO1, aktivitetDTO2, aktivitetDTO3, aktivitetDTO4, aktivitetDTO5);
-        val aktorAktiviteter = new AktoerAktiviteter("123").setAktiviteter(aktiviteter);
+        var aktiviteter = Arrays.asList(aktivitetDTO1, aktivitetDTO2, aktivitetDTO3, aktivitetDTO4, aktivitetDTO5);
+        var aktorAktiviteter = new AktoerAktiviteter("123").setAktiviteter(aktiviteter);
 
         when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(() -> PersonId.of("123")));
-        val brukerOppdateringer = konverterTilBrukerOppdatering(aktorAktiviteter, brukerService, true);
+        var brukerOppdateringer = konverterTilBrukerOppdatering(aktorAktiviteter, brukerService, true);
 
         assertThat(brukerOppdateringer.getNyesteUtlopteAktivitet()).isEqualTo(YESTERDAY);
         assertThat(brukerOppdateringer.getAktivitetStart()).isEqualTo(TODAY);
@@ -189,22 +186,5 @@ public class AktivitetUtilsTest {
 
         Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1, a2), LocalDate.ofEpochDay(0), AktorId.of("aktoerid"), PersonId.of("personid"), true);
         assertThat(statuser.stream().filter((a) -> a.getAktivitetType().equals(aktivitetstype)).findFirst().get().getNesteUtlop()).isEqualTo(t1);
-    }
-
-
-
-
-
-    private List<Brukertiltak> tiltakData(String dato1, String dato2) {
-        List<Brukertiltak> tiltak = new ArrayList<>();
-
-        tiltak.add(Brukertiltak.of(Fnr.ofValidFnr("12345678910"), "T1", parseDato(dato1)));
-        tiltak.add(Brukertiltak.of(Fnr.ofValidFnr("12345678910"), "T2", parseDato(dato2)));
-
-        return tiltak;
-    }
-
-    private List<Brukertiltak> tiltakData() {
-        return tiltakData("2017-01-16", "2017-01-18");
     }
 }

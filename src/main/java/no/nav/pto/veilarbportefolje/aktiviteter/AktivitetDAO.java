@@ -165,7 +165,6 @@ public class AktivitetDAO {
         Map<String, Object> params = new HashMap<>();
         params.put("personids", personIds.stream().map(PersonId::toString).collect(toList()));
 
-        // TODO: fiks bug: aktør id på noen tiltakk er null og vil derfor ikke påvirke elastic.
         return namedParameterJdbcTemplate
                 .queryForList(getAktivitetStatuserForListOfPersonIds(), params)
                 .stream()

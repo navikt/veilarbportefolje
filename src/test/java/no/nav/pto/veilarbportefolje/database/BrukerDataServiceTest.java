@@ -1,16 +1,15 @@
 package no.nav.pto.veilarbportefolje.database;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EnhetId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +23,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.util.concurrent.ThreadLocalRandom.current;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.mock;
 
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -34,17 +36,14 @@ public class BrukerDataServiceTest {
     private final BrukerRepository brukerRepository;
 
     private final AktorId aktorId = AktorId.of("1000123");
-    private final Fnr fnr = Fnr.of("12345678912");
-    private final VeilederId veilederId = VeilederId.of("Z123456");
-    private final EnhetId testEnhet = EnhetId.of("0000");
     private final PersonId personId = PersonId.of("123");
 
 
     @Autowired
-    public BrukerDataServiceTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, TiltakRepositoryV2 tiltakRepositoryV2, GruppeAktivitetRepository gruppeAktivitetRepository, BrukerDataRepository brukerDataRepository, BrukerService brukerService, BrukerRepository brukerRepository) {
+    public BrukerDataServiceTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, TiltakRepositoryV2 tiltakRepositoryV2, GruppeAktivitetRepository gruppeAktivitetRepository, BrukerDataRepository brukerDataRepository, BrukerRepository brukerRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.brukerRepository = brukerRepository;
-        brukerDataService = new BrukerDataService(aktivitetDAO, tiltakRepositoryV2, gruppeAktivitetRepository, brukerDataRepository);
+        brukerDataService = new BrukerDataService(aktivitetDAO, tiltakRepositoryV2, gruppeAktivitetRepository, mock(GruppeAktivitetRepositoryV2.class), brukerDataRepository, mock(AktiviteterRepositoryV2.class), mock(AktivitetStatusRepositoryV2.class));
     }
 
     @BeforeEach
@@ -59,13 +58,13 @@ public class BrukerDataServiceTest {
     }
 
     @Test
-    public void skalOppdatereBrukerData(){
-        Timestamp enUkeSiden = Timestamp.valueOf(LocalDateTime.now().minusDays(7));
-        Timestamp toUkerSiden = Timestamp.valueOf(LocalDateTime.now().minusDays(14));
+    public void skalOppdatereBrukerData() {
+        Timestamp enUkeSiden = toTimestamp(now().minusDays(7));
+        Timestamp toUkerSiden = toTimestamp(now().minusDays(14));
 
-        Timestamp enUkeTil = Timestamp.valueOf(LocalDateTime.now().plusDays(7));
-        Timestamp toUkerTil = Timestamp.valueOf(LocalDateTime.now().plusDays(14));
-        Timestamp treUkerTil = Timestamp.valueOf(LocalDateTime.now().plusDays(21));
+        Timestamp enUkeTil = toTimestamp(now().plusDays(7));
+        Timestamp toUkerTil = toTimestamp(now().plusDays(14));
+        Timestamp treUkerTil = toTimestamp(now().plusDays(21));
 
         insertAktivitet(toUkerSiden, enUkeSiden);
         insertAktivitet(enUkeTil, toUkerTil);
@@ -90,7 +89,7 @@ public class BrukerDataServiceTest {
                 .set(Table.BRUKERTILTAK_V2.TILTAKSKODE, "GRUPPEAMO")
                 .set(Table.BRUKERTILTAK_V2.FRADATO, startDato)
                 .set(Table.BRUKERTILTAK_V2.TILDATO, tilDato)
-                .where(WhereClause.equals(Table.BRUKERTILTAK_V2.AKTIVITETID,  id))
+                .where(WhereClause.equals(Table.BRUKERTILTAK_V2.AKTIVITETID, id))
                 .execute();
     }
 
@@ -106,7 +105,7 @@ public class BrukerDataServiceTest {
                 .set(Table.AKTIVITETER.STATUS, "GJENNOMFORES".toLowerCase())
                 .set(Table.AKTIVITETER.VERSION, 1)
                 .set(Table.AKTIVITETER.AKTIVITETID, id)
-                .where(WhereClause.equals(Table.AKTIVITETER.AKTIVITETID,id))
+                .where(WhereClause.equals(Table.AKTIVITETER.AKTIVITETID, id))
                 .execute();
     }
 }

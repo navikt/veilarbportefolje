@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
@@ -9,8 +10,8 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OppfolgingStartetService extends KafkaCommonConsumerService<OppfolgingStartetDTO> implements KafkaConsumerService<String> {
@@ -30,10 +31,9 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
     @Override
     public void behandleKafkaMeldingLogikk(OppfolgingStartetDTO dto) {
         oppfolgingRepository.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
-        if (erPostgresPa(unleashService)) {
-            oppfolgingRepositoryV2.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
-        }
+        oppfolgingRepositoryV2.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
         elasticIndexer.indekser(dto.getAktorId());
+        log.info("Bruker {} har startet oppfølging: {}", dto.getAktorId(), dto.getOppfolgingStartet());
     }
 
     @Override

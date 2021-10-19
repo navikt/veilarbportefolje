@@ -222,7 +222,8 @@ public class Bruker {
                 .setFornavn((String) row.get(FORNAVN))
                 .setEtternavn((String) row.get(ETTERNAVN))
                 .setDiskresjonskode(("7".equals(diskresjonskode) || "6".equals(diskresjonskode)) ? diskresjonskode : null)
-                .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)));
+                .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
+                .setArbeidsliste(new Arbeidsliste(null, null, null, null, null, null));
 
     }
 

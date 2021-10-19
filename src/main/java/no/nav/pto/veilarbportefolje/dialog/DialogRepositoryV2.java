@@ -26,7 +26,6 @@ public class DialogRepositoryV2 {
     private final JdbcTemplate db;
 
     public int oppdaterDialogInfoForBruker(Dialogdata dialog) {
-        log.info("Oppdaterer dialog i postgres for: {}, med sist endret: {}", dialog.getAktorId(), dialog.getSisteEndring());
         return db.update("INSERT INTO " + TABLE_NAME +
                         " (" + AKTOERID + ", " + VENTER_PA_BRUKER + ", " + VENTER_PA_NAV + ") " +
                         "VALUES (?, ?, ?) " +

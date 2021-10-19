@@ -29,7 +29,6 @@ import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 
-import java.nio.charset.Charset;
 import java.util.*;
 
 import static java.lang.String.format;
@@ -184,7 +183,7 @@ public class ElasticIndexer {
     @SneakyThrows
     public String opprettNyIndeks(String navn) {
 
-        String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
+        String json = IOUtils.toString(Objects.requireNonNull(getClass().getResource("/elastic_settings.json")));
         CreateIndexRequest request = new CreateIndexRequest(navn)
                 .source(json, XContentType.JSON);
 

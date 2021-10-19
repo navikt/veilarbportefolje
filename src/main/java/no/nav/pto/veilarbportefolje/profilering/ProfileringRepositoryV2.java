@@ -29,9 +29,8 @@ public class ProfileringRepositoryV2 {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
-    public int upsertBrukerProfilering(ArbeidssokerProfilertEvent kafkaMelding) {
-        log.info("Oppdaterer brukerprofilering i postgres for: {}, {}, {}", kafkaMelding.getAktorid(), kafkaMelding.getProfilertTil().name(), DateUtils.zonedDateStringToTimestamp(kafkaMelding.getProfileringGjennomfort()));
-        return db.update("INSERT INTO " + TABLE_NAME +
+    public void upsertBrukerProfilering(ArbeidssokerProfilertEvent kafkaMelding) {
+        db.update("INSERT INTO " + TABLE_NAME +
                         " (" + AKTOERID + ", " + PROFILERING_RESULTAT + ", " + PROFILERING_TIDSPUNKT + ") " +
                         "VALUES (?, ?, ?) " +
                         "ON CONFLICT (" + AKTOERID + ") " +

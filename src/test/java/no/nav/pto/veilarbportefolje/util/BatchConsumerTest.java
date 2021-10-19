@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class BatchConsumerTest {
 

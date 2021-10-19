@@ -1,9 +1,11 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
@@ -14,8 +16,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
+@Slf4j
 @Service
 public class VeilederTilordnetService extends KafkaCommonConsumerService<VeilederTilordnetDTO> implements KafkaConsumerService<String> {
 
@@ -47,13 +49,13 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
     @Override
     protected void behandleKafkaMeldingLogikk(VeilederTilordnetDTO dto) {
         final AktorId aktoerId = dto.getAktorId();
+        final VeilederId veilederId = dto.getVeilederId();
 
-        oppfolgingRepository.settVeileder(aktoerId, dto.getVeilederId());
-        if (erPostgresPa(unleashService)) {
-            oppfolgingRepositoryV2.settVeileder(aktoerId, dto.getVeilederId());
-        }
+        oppfolgingRepository.settVeileder(aktoerId, veilederId);
+        oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
 
-        elasticServiceV2.oppdaterVeileder(aktoerId, dto.getVeilederId());
+        elasticServiceV2.oppdaterVeileder(aktoerId, veilederId);
+        log.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
         // TODO: Slett oracle basert kode naar vi er over paa postgres.
         final boolean harByttetNavKontorPostgres = arbeidslisteServicePostgres.brukerHarByttetNavKontor(aktoerId);

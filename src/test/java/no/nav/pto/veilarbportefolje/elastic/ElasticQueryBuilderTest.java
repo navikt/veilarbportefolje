@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import lombok.SneakyThrows;
-import lombok.val;
 import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -9,12 +7,9 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
@@ -33,8 +28,8 @@ public class ElasticQueryBuilderTest {
 
     @Test
     public void skal_sortere_etternavn_paa_etternavn_feltet() {
-        val searchSourceBuilder = sorterQueryParametere("asc", "etternavn", new SearchSourceBuilder(), new Filtervalg());
-        val fieldName = searchSourceBuilder.sorts().get(0).toString();
+        var searchSourceBuilder = sorterQueryParametere("asc", "etternavn", new SearchSourceBuilder(), new Filtervalg());
+        var fieldName = searchSourceBuilder.sorts().get(0).toString();
         assertThat(fieldName).contains("etternavn");
     }
 
@@ -48,83 +43,83 @@ public class ElasticQueryBuilderTest {
 
     @Test
     public void skal_sortere_paa_aktiviteter_som_er_satt_til_ja() {
-        val navnPaAktivitet = "behandling";
-        val filtervalg = new Filtervalg().setAktiviteter(
+        var navnPaAktivitet = "behandling";
+        var filtervalg = new Filtervalg().setAktiviteter(
                 Map.of(
                         navnPaAktivitet, JA,
                         "egen", NEI
                 )
         );
 
-        val sorteringer = sorterValgteAktiviteter(filtervalg, new SearchSourceBuilder(), ASC);
+        var sorteringer = sorterValgteAktiviteter(filtervalg, new SearchSourceBuilder(), ASC);
 
-        val expectedJson = readFileAsJsonString("/sorter_aktivitet_behandling.json", getClass());
-        val actualJson = sorteringer.sorts().get(0).toString();
+        var expectedJson = readFileAsJsonString("/sorter_aktivitet_behandling.json", getClass());
+        var actualJson = sorteringer.sorts().get(0).toString();
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
 
     @Test
     public void skal_bygge_korrekt_json_om_man_velger_nei_på_tiltak() {
-        val filtervalg = new Filtervalg().setAktiviteter(Map.of("tiltak", NEI));
-        val builders = byggAktivitetFilterQuery(filtervalg, boolQuery());
+        var filtervalg = new Filtervalg().setAktiviteter(Map.of("tiltak", NEI));
+        var builders = byggAktivitetFilterQuery(filtervalg, boolQuery());
 
-        val expectedJson = readFileAsJsonString("/nei_paa_tiltak.json", getClass());
-        val actualJson = builders.get(0).toString();
+        var expectedJson = readFileAsJsonString("/nei_paa_tiltak.json", getClass());
+        var actualJson = builders.get(0).toString();
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
 
     @Test
     public void skal_bygge_korrekt_json_om_man_velger_ja_paa_behandling() {
-        val filtervalg = new Filtervalg().setAktiviteter(Map.of("behandling", JA));
-        val builders = byggAktivitetFilterQuery(filtervalg, boolQuery());
+        var filtervalg = new Filtervalg().setAktiviteter(Map.of("behandling", JA));
+        var builders = byggAktivitetFilterQuery(filtervalg, boolQuery());
 
-        val expectedJson = readFileAsJsonString("/ja_paa_behandling.json", getClass());
-        val actualJson = builders.get(0).toString();
+        var expectedJson = readFileAsJsonString("/ja_paa_behandling.json", getClass());
+        var actualJson = builders.get(0).toString();
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
 
     @Test
     public void skal_bygge_korrekt_json_om_man_velger_ja_paa_tiltak() {
-        val filtervalg = new Filtervalg().setAktiviteter(Map.of("tiltak", AktivitetFiltervalg.JA));
-        val builders = byggAktivitetFilterQuery(filtervalg, boolQuery());
+        var filtervalg = new Filtervalg().setAktiviteter(Map.of("tiltak", AktivitetFiltervalg.JA));
+        var builders = byggAktivitetFilterQuery(filtervalg, boolQuery());
 
-        val expectedJson = readFileAsJsonString("/ja_paa_tiltak.json", getClass());
-        val actualJson = builders.get(0).toString();
+        var expectedJson = readFileAsJsonString("/ja_paa_tiltak.json", getClass());
+        var actualJson = builders.get(0).toString();
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
 
     @Test
     public void skal_bygge_korrekt_json_for_aa_hente_ut_brukere_som_er_19_aar_og_under() {
-        val builder = new BoolQueryBuilder();
+        var builder = new BoolQueryBuilder();
         byggAlderQuery("19-og-under", builder);
 
-        val actualJson = builder.toString();
-        val expectedJson = readFileAsJsonString("/19_aar_og_under.json", getClass());
+        var actualJson = builder.toString();
+        var expectedJson = readFileAsJsonString("/19_aar_og_under.json", getClass());
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
 
     @Test
     public void skal_bygge_korrekt_json_for_aa_hente_ut_brukere_mellom_20_24_aar() {
-        val builder = new BoolQueryBuilder();
+        var builder = new BoolQueryBuilder();
         byggAlderQuery("20-24", builder);
 
-        val actualJson = builder.toString();
-        val expectedJson = readFileAsJsonString("/mellom_20_24_aar.json", getClass());
+        var actualJson = builder.toString();
+        var expectedJson = readFileAsJsonString("/mellom_20_24_aar.json", getClass());
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
 
     @Test
     public void skal_bygge_korrekt_json_for_aa_hente_ut_portefoljestorrelser() {
-        val request = byggPortefoljestorrelserQuery("0000");
+        var request = byggPortefoljestorrelserQuery("0000");
 
-        val actualJson = request.aggregations().toString();
-        val expectedJson = readFileAsJsonString("/portefoljestorrelser.json", getClass());
+        var actualJson = request.aggregations().toString();
+        var expectedJson = readFileAsJsonString("/portefoljestorrelser.json", getClass());
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
