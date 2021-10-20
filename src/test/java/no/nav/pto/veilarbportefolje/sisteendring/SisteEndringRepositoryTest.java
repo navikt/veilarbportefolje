@@ -2,18 +2,19 @@ package no.nav.pto.veilarbportefolje.sisteendring;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
-import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.AVBRUTT_EGEN;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_IJOBB;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class SisteEndringRepositoryTest {
@@ -30,7 +31,7 @@ public class SisteEndringRepositoryTest {
 
     @Test
     public void mapDbTilOppfolgingsbruker() {
-        ZonedDateTime zonedDateTime_1 = ZonedDateTime.now(ZoneId.of("Europe/Oslo"));
+        ZonedDateTime zonedDateTime_1 = DateUtils.now();
         String tidspunkt_1 = zonedDateTime_1.toOffsetDateTime().toString();
         SisteEndringDTO dto_1 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_1))
@@ -38,7 +39,7 @@ public class SisteEndringRepositoryTest {
                 .setAktoerId(AKTORID)
                 .setAktivtetId("1");
 
-        ZonedDateTime zonedDateTime_2 = ZonedDateTime.now(ZoneId.of("Europe/Oslo")).minusDays(3);
+        ZonedDateTime zonedDateTime_2 = DateUtils.now().minusDays(3);
         String tidspunkt_2 = zonedDateTime_2.toOffsetDateTime().toString();
         SisteEndringDTO dto_2 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_2))
@@ -48,7 +49,7 @@ public class SisteEndringRepositoryTest {
 
         sisteEndringRepository.upsert(dto_1);
         sisteEndringRepository.upsert(dto_2);
-        sisteEndringRepository.oppdaterHarSett(dto_1.getAktoerId(), SisteEndringsKategori.NY_IJOBB,true);
+        sisteEndringRepository.oppdaterHarSett(dto_1.getAktoerId(), SisteEndringsKategori.NY_IJOBB, true);
 
         OppfolgingsBruker bruker = new OppfolgingsBruker().setAktoer_id(AKTORID.get());
         sisteEndringRepository.setAlleSisteEndringTidspunkter(List.of(bruker));
@@ -64,14 +65,14 @@ public class SisteEndringRepositoryTest {
 
     @Test
     public void slettSisteEndringer() {
-        ZonedDateTime zonedDateTime_1 = ZonedDateTime.now(ZoneId.of("Europe/Oslo"));
+        ZonedDateTime zonedDateTime_1 = DateUtils.now();
         String tidspunkt_1 = zonedDateTime_1.toOffsetDateTime().toString();
         SisteEndringDTO dto_1 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_1))
                 .setKategori(SisteEndringsKategori.FULLFORT_STILLING)
                 .setAktoerId(AKTORID);
 
-        ZonedDateTime zonedDateTime_2 = ZonedDateTime.now(ZoneId.of("Europe/Oslo")).minusDays(3);
+        ZonedDateTime zonedDateTime_2 = DateUtils.now().minusDays(3);
         String tidspunkt_2 = zonedDateTime_2.toOffsetDateTime().toString();
         SisteEndringDTO dto_2 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_2))

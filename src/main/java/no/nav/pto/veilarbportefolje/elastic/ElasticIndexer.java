@@ -37,7 +37,6 @@ import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
@@ -245,11 +244,7 @@ public class ElasticIndexer {
 
 
     private void leggTilTiltak(OppfolgingsBruker bruker) {
-        if (erGR202PaKafka(unleashService)) {
-            leggTilTiltakV2(Collections.singletonList(bruker));
-        } else {
-            leggTilTiltak(Collections.singletonList(bruker));
-        }
+        leggTilTiltakV2(Collections.singletonList(bruker));
     }
 
     private void leggTilAktiviteter(List<OppfolgingsBruker> brukere) {
