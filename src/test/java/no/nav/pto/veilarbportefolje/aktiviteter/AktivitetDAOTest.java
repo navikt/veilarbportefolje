@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import com.google.common.base.Joiner;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepositoryTest;
 
 import no.nav.common.types.identer.AktorId;
