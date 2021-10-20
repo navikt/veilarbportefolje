@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.*;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR199PaKafka;
 
 @Slf4j
 @Service
@@ -46,7 +45,6 @@ public class YtelsesService {
     private final YtelsesRepository ytelsesRepository;
     private final ArenaHendelseRepository arenaHendelseRepository;
     private final ElasticIndexer elasticIndexer;
-    private final UnleashService unleashService;
     private final OppfolgingRepository oppfolgingRepository;
 
     public void behandleKafkaRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding, TypeKafkaYtelse ytsele) {
@@ -72,15 +70,11 @@ public class YtelsesService {
         if (skalSlettesGoldenGate(kafkaMelding)) {
             log.info("Sletter ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
             ytelsesRepository.slettYtelse(innhold.getVedtakId());
-            if(erGR199PaKafka(unleashService)){
-                oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(aktorId, innhold);
-            }
+            oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(aktorId, innhold);
         } else {
             log.info("Lagrer ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
             ytelsesRepository.upsertYtelse(aktorId, ytsele, innhold);
-            if(erGR199PaKafka(unleashService)){
-                oppdaterYtelsesInformasjon(aktorId, PersonId.of(innhold.getPersonId()));
-            }
+            oppdaterYtelsesInformasjon(aktorId, PersonId.of(innhold.getPersonId()));
         }
 
         arenaHendelseRepository.upsertYtelsesHendelse(innhold.getVedtakId(), innhold.getHendelseId());

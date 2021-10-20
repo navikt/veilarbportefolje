@@ -20,7 +20,6 @@ import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.sbl.sql.SqlUtils;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -32,11 +31,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.GR202_PA_KAFKA;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class ArenaAktivitetIntegrasjonsTest {
@@ -75,35 +72,6 @@ public class ArenaAktivitetIntegrasjonsTest {
         jdbcTemplate.execute("truncate table " + Table.AKTOERID_TO_PERSONID.TABLE_NAME);
         jdbcTemplate.execute("truncate table " + Table.AKTIVITETER.TABLE_NAME);
         jdbcTemplate.execute("truncate table BRUKERSTATUS_AKTIVITETER");
-    }
-
-    @Test
-    public void skal_kunne_toggle_pa_GR202() {
-        insertBruker();
-        String melding = new JSONObject()
-                .put("aktivitetId", 1)
-                .put("aktorId", aktorId.get())
-                .put("fraDato", "2020-08-31T10:03:20+02:00")
-                .put("tilDato", "2040-08-31T10:03:20+02:00")
-                .put("endretDato", "2020-07-29T15:43:41.049+02:00")
-                .put("aktivitetType", "IJOBB")
-                .put("aktivitetStatus", "GJENNOMFORES")
-                .put("avtalt", true)
-                .put("historisk", false)
-                .put("version", 1)
-                .toString();
-
-        when(unleashService.isEnabled(GR202_PA_KAFKA)).thenReturn(false);
-        aktivitetService.behandleKafkaMelding(melding);
-        when(unleashService.isEnabled(GR202_PA_KAFKA)).thenReturn(true);
-
-        utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
-
-        Optional<AktivitetStatus> utdanningsAktivitet = hentAktivitetStatus(AktivitetTyperFraKafka.utdanningaktivitet);
-        Optional<AktivitetStatus> ijobbAktivitet = hentAktivitetStatus(AktivitetTyperFraKafka.ijobb);
-
-        assertThat(utdanningsAktivitet).isPresent();
-        assertThat(ijobbAktivitet).isPresent();
     }
 
     @Test
