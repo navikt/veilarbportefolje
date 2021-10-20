@@ -12,18 +12,14 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
-import no.nav.pto.veilarbportefolje.util.BatchConsumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.common.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
 @Service
@@ -94,28 +90,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, aktivitetData.getAktivitetType().name());
         brukerDataService.oppdaterAktivitetBrukerDataPostgres(AktorId.of(aktivitetData.getAktorId()));
-    }
-
-    public void utledOgLagreAlleAktivitetstatuser() {
-        List<String> aktoerider = aktivitetDAO.getDistinctAktorIdsFromAktivitet();
-
-        BatchConsumer<String> consumer = batchConsumer(1000, this::utledOgLagreAktivitetstatuser);
-
-        aktoerider.forEach(consumer);
-
-        consumer.flush();
-
-        log.info("Aktivitetstatuser for {} brukere utledet og lagret i databasen", aktoerider.size());
-    }
-
-    private void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
-        aktoerider.forEach(aktoerId -> {
-            AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAvtalteAktiviteterForAktoerid(AktorId.of(aktoerId));
-            AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, brukerService);
-            Optional.ofNullable(aktivitetBrukerOppdateringer)
-                    .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(Collections.singletonList(oppdatering)));
-        });
-
     }
 
     public void utledOgIndekserAktivitetstatuserForAktoerid(AktorId aktoerId) {
