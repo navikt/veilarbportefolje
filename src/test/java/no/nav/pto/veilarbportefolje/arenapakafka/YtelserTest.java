@@ -48,7 +48,6 @@ import static org.mockito.Mockito.mock;
 public class YtelserTest {
     private final YtelsesService ytelsesService;
     private final JdbcTemplate jdbcTemplate;
-    private final UnleashService unleashService;
 
     private final AktorId aktorId = AktorId.of("1000123");
     private final Fnr fnr = Fnr.of("12345678912");
@@ -60,10 +59,9 @@ public class YtelserTest {
     private final BrukerDataService brukerDataService;
 
     @Autowired
-    public YtelserTest(JdbcTemplate jdbcTemplate, BrukerDataService brukerDataService, YtelsesRepository ytelsesRepository, BrukerRepository brukerRepository, UnleashService unleashService) {
+    public YtelserTest(JdbcTemplate jdbcTemplate, BrukerDataService brukerDataService, YtelsesRepository ytelsesRepository, BrukerRepository brukerRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.brukerRepository = brukerRepository;
-        this.unleashService = unleashService;
         ArenaHendelseRepository arenaHendelseRepository = mock(ArenaHendelseRepository.class);
         Mockito.when(arenaHendelseRepository.upsertYtelsesHendelse(anyString(), anyLong())).thenReturn(1);
 
@@ -71,7 +69,7 @@ public class YtelserTest {
         this.aktorClient = Mockito.mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
-        this.ytelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, ytelsesRepository,arenaHendelseRepository,mock(ElasticIndexer.class), unleashService, mock(OppfolgingRepository.class));
+        this.ytelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, ytelsesRepository,arenaHendelseRepository,mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
     }
 
     @BeforeEach
@@ -117,7 +115,7 @@ public class YtelserTest {
         Timestamp nextMonth = Timestamp.valueOf(ZonedDateTime.now().plusMonths(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), unleashService, mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setUtlopsDato(tomorrow),
                 new YtelseDAO().setSaksId(sak1).setStartDato(tomorrow).setUtlopsDato(nextWeek),
@@ -139,7 +137,7 @@ public class YtelserTest {
         Timestamp nextMonth = Timestamp.valueOf(ZonedDateTime.now().plusMonths(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), unleashService, mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(tomorrow).setUtlopsDato(nextWeek),
                 new YtelseDAO().setSaksId(sak1).setStartDato(nextWeek).setUtlopsDato(nextMonth)
@@ -157,7 +155,7 @@ public class YtelserTest {
         Timestamp yesterday = Timestamp.valueOf(ZonedDateTime.now().minusDays(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), unleashService, mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setType(TypeKafkaYtelse.DAGPENGER)
         );
@@ -173,7 +171,7 @@ public class YtelserTest {
         Timestamp yesterday = Timestamp.valueOf(ZonedDateTime.now().minusDays(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), unleashService, mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setType(TypeKafkaYtelse.AAP)
         );
@@ -191,7 +189,7 @@ public class YtelserTest {
         Timestamp nextMonth = Timestamp.valueOf(ZonedDateTime.now().plusMonths(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), unleashService, mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(nextWeek).setUtlopsDato(nextMonth)
                         .setType(TypeKafkaYtelse.DAGPENGER)
@@ -220,7 +218,7 @@ public class YtelserTest {
         Timestamp nextWeek = Timestamp.valueOf(ZonedDateTime.now().plusWeeks(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), unleashService, mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak2).setStartDato(nextWeek).setUtlopsDato(nextWeek)
                         .setType(TypeKafkaYtelse.DAGPENGER)

@@ -82,18 +82,14 @@ public class ElasticQueryBuilder {
         }
 
         if (filtervalg.harCvFilter()) {
-            if (FeatureToggle.erCvEksistereIProd(unleashService)) {
-                if (filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)) {
-                    queryBuilder.must(matchQuery("har_delt_cv", true));
-                    queryBuilder.must(matchQuery("cv_eksistere", true));
-                } else {
-                    BoolQueryBuilder orQuery = QueryBuilders.boolQuery();
-                    orQuery.should(matchQuery("har_delt_cv", false));
-                    orQuery.should(matchQuery("cv_eksistere", false));
-                    queryBuilder.must(orQuery);
-                }
+            if (filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)) {
+                queryBuilder.must(matchQuery("har_delt_cv", true));
+                queryBuilder.must(matchQuery("cv_eksistere", true));
             } else {
-                queryBuilder.filter(matchQuery("har_delt_cv", filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)));
+                BoolQueryBuilder orQuery = QueryBuilders.boolQuery();
+                orQuery.should(matchQuery("har_delt_cv", false));
+                orQuery.should(matchQuery("cv_eksistere", false));
+                queryBuilder.must(orQuery);
             }
         }
 
@@ -636,7 +632,7 @@ public class ElasticQueryBuilder {
         return format("%s.contains(doc.veileder_id.value)", medKlammer);
     }
 
-    private static void addSecondarySort(SearchSourceBuilder searchSourceBuilder){
+    private static void addSecondarySort(SearchSourceBuilder searchSourceBuilder) {
         searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
     }
 }

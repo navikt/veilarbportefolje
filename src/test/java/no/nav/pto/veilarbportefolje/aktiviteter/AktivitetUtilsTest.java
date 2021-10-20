@@ -18,6 +18,7 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraAktivitetsplanList;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraKafka;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.*;
 import static no.nav.pto.veilarbportefolje.util.AktivitetData.aktivitetTyperList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,7 +71,7 @@ public class AktivitetUtilsTest {
         var aktorAktiviteter = new AktoerAktiviteter("123").setAktiviteter(aktiviteter);
 
         when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(() -> PersonId.of("123")));
-        var brukerOppdateringer = konverterTilBrukerOppdatering(aktorAktiviteter, brukerService, true);
+        var brukerOppdateringer = konverterTilBrukerOppdatering(aktorAktiviteter, brukerService);
 
         assertThat(brukerOppdateringer.getNyesteUtlopteAktivitet()).isEqualTo(YESTERDAY);
         assertThat(brukerOppdateringer.getAktivitetStart()).isEqualTo(TODAY);
@@ -154,8 +155,8 @@ public class AktivitetUtilsTest {
 
     @Test
     public void skalReturnereSetMedAlleAktivitetstyper() {
-        Set<AktivitetStatus> statuser = lagAktivitetSet(Collections.emptyList(), LocalDate.now(), AktorId.of("aktoerid"), PersonId.of("personid"), false);
-        assertThat(statuser.size()).isEqualTo(aktivitetTyperFraAktivitetsplanList.size());
+        Set<AktivitetStatus> statuser = lagAktivitetSet(Collections.emptyList(), LocalDate.now(), AktorId.of("aktoerid"), PersonId.of("personid"));
+        assertThat(statuser.size()).isEqualTo(aktivitetTyperFraKafka.size());
         statuser.forEach((status) -> {
             assertThat(status.isAktiv()).isFalse();
             assertThat(status.getNesteUtlop()).isNull();
@@ -171,7 +172,7 @@ public class AktivitetUtilsTest {
         AktivitetDTO a1 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS).setTilDato(t1);
         AktivitetDTO a2 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS).setTilDato(t2);
 
-        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1, a2), LocalDate.ofEpochDay(0), AktorId.of("aktoerid"), PersonId.of("personid"), true);
+        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1, a2), LocalDate.ofEpochDay(0), AktorId.of("aktoerid"), PersonId.of("personid"));
         assertThat(statuser.stream().filter((a) -> a.getAktivitetType().equals(aktivitetstype)).findFirst().get().getNesteUtlop()).isEqualTo(t1);
 
     }
@@ -184,7 +185,7 @@ public class AktivitetUtilsTest {
         AktivitetDTO a1 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS);
         AktivitetDTO a2 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS).setTilDato(t1);
 
-        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1, a2), LocalDate.ofEpochDay(0), AktorId.of("aktoerid"), PersonId.of("personid"), true);
+        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1, a2), LocalDate.ofEpochDay(0), AktorId.of("aktoerid"), PersonId.of("personid"));
         assertThat(statuser.stream().filter((a) -> a.getAktivitetType().equals(aktivitetstype)).findFirst().get().getNesteUtlop()).isEqualTo(t1);
     }
 }

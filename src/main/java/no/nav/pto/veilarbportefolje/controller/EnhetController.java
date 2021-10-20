@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @RestController
@@ -99,10 +98,6 @@ public class EnhetController {
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
-        if (erGR202PaKafka(unleashService)) {
-            return tiltakServiceV2.hentEnhettiltak(EnhetId.of(enhet));
-        }
-        return tiltakService.hentEnhettiltak(enhet)
-                .getOrElse(new EnhetTiltak());
+        return tiltakServiceV2.hentEnhettiltak(EnhetId.of(enhet));
     }
 }
