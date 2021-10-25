@@ -5,7 +5,6 @@ import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakServiceV2;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -29,7 +28,6 @@ public class EnhetController {
     private final ElasticService elasticService;
     private final PostgresService postgresService;
     private final AuthService authService;
-    private final TiltakService tiltakService;
     private final TiltakServiceV2 tiltakServiceV2;
     private final MetricsClient metricsClient;
     private final UnleashService unleashService;
@@ -98,6 +96,10 @@ public class EnhetController {
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
+        String ident = AuthUtils.getInnloggetVeilederIdent().toString();
+        if (erPostgresPa(unleashService, ident)) {
+            return tiltakServiceV2.hentEnhettiltakPostgres(EnhetId.of(enhet));
+        }
         return tiltakServiceV2.hentEnhettiltak(EnhetId.of(enhet));
     }
 }

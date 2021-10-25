@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
@@ -28,6 +29,7 @@ import static java.util.stream.Collectors.toList;
 public class BrukerDataService {
     private final AktivitetDAO aktivitetDAO;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
+    private final TiltakRepositoryV3 tiltakRepositoryV3;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
     private final BrukerDataRepository brukerDataRepository;
@@ -195,8 +197,9 @@ public class BrukerDataService {
         List<Timestamp> gruppeAktiviteter = gruppeAktivitetRepositoryV2.hentAktiveAktivteter(aktorId).stream()
                 .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeFra)
                 .filter(Objects::nonNull).collect(toList());
-        // TODO: legg til tiltak
-        //startDatoer.addAll(tiltak);
+        List<Timestamp> tiltak = tiltakRepositoryV3.hentStartDatoer(aktorId).stream()
+                .filter(Objects::nonNull).collect(toList());
+        startDatoer.addAll(tiltak);
         startDatoer.addAll(gruppeAktiviteter);
         startDatoer.sort(Comparator.naturalOrder());
         return startDatoer;
@@ -212,9 +215,9 @@ public class BrukerDataService {
         List<Timestamp> gruppeAktiviteter = gruppeAktivitetRepositoryV2.hentAktiveAktivteter(aktorId).stream()
                 .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeTil)
                 .filter(Objects::nonNull).collect(toList());
-
-        // TODO: legg til tiltak
-        // sluttdatoer.addAll(tiltak);
+        List<Timestamp> tiltak = tiltakRepositoryV3.hentSluttdatoer(aktorId).stream()
+                .filter(Objects::nonNull).collect(toList());
+        sluttdatoer.addAll(tiltak);
         sluttdatoer.addAll(gruppeAktiviteter);
         sluttdatoer.sort(Comparator.naturalOrder());
         return sluttdatoer;

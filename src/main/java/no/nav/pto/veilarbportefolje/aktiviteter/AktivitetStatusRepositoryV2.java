@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -65,11 +66,11 @@ public class AktivitetStatusRepositoryV2 {
     public Optional<AktivitetStatus> hentAktivitetTypeStatus(String aktorId, String type) {
         String sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s = ?", AKTIVITETTYPE_STATUS.TABLE_NAME, AKTIVITETTYPE_STATUS.AKTOERID, AKTIVITETTYPE_STATUS.AKTIVITETTYPE);
         return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapAktivitetStatus, aktorId, type))
+                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapAktivitetTypeStatus, aktorId, type))
         );
     }
 
-    private AktivitetStatus mapAktivitetStatus(ResultSet rs, int row) throws SQLException {
+    private AktivitetStatus mapAktivitetTypeStatus(ResultSet rs, int row) throws SQLException {
         String aktorId = rs.getString(AKTIVITETTYPE_STATUS.AKTOERID);
         return new AktivitetStatus()
                 .setAktoerid(aktorId == null ? null : AktorId.of(aktorId))
@@ -77,5 +78,12 @@ public class AktivitetStatusRepositoryV2 {
                 .setAktiv(rs.getBoolean(AKTIVITETTYPE_STATUS.AKTIV))
                 .setNesteStart(rs.getTimestamp(AKTIVITETTYPE_STATUS.NESTE_STARTDATO))
                 .setNesteUtlop(rs.getTimestamp(AKTIVITETTYPE_STATUS.NESTE_UTLOPSDATO));
+    }
+
+    public Optional<Timestamp> hentAktivitetStatusUtlopt(String aktorId) {
+        String sql = String.format("SELECT %s FROM %s WHERE %s = ?", AKTIVITET_STATUS.NYESTEUTLOPTEAKTIVITET, AKTIVITET_STATUS.TABLE_NAME, AKTIVITET_STATUS.AKTOERID);
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject(sql, Timestamp.class, aktorId))
+        );
     }
 }

@@ -115,6 +115,7 @@ import static org.mockito.Mockito.when;
         GruppeAktivitetRepository.class,
         GruppeAktivitetRepositoryV2.class,
         TiltakRepositoryV2.class,
+        TiltakRepositoryV3.class,
         BrukerDataService.class,
         BrukerDataRepository.class,
         YtelsesService.class,
