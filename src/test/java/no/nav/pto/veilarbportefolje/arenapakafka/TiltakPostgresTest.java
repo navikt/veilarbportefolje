@@ -17,6 +17,7 @@ import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerKafkaDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,8 +56,8 @@ public class TiltakPostgresTest {
         GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2 = mock(GruppeAktivitetRepositoryV2.class);
         AktiviteterRepositoryV2 aktiviteterRepositoryV2 = mock(AktiviteterRepositoryV2.class);
         Mockito.when(gruppeAktivitetRepositoryV2.hentAktiveAktivteter(any())).thenReturn(new ArrayList<>());
-        Mockito.when(aktiviteterRepositoryV2.getAvtalteAktiviteterForAktoerid(any())).thenReturn(new AktoerAktiviteter("1").setAktiviteter(new ArrayList<>()));
-        brukerDataService = new BrukerDataService(mock(AktivitetDAO.class), mock(TiltakRepositoryV2.class), tiltakRepositoryV3, mock(GruppeAktivitetRepository.class), gruppeAktivitetRepositoryV2, mock(BrukerDataRepository.class), aktiviteterRepositoryV2, aktivitetStatusRepositoryV2);
+        Mockito.when(aktiviteterRepositoryV2.getAktiviteterForAktoerid(any(), anyBoolean())).thenReturn(new AktoerAktiviteter("1").setAktiviteter(new ArrayList<>()));
+        brukerDataService = new BrukerDataService(mock(AktivitetDAO.class), mock(TiltakRepositoryV2.class), tiltakRepositoryV3, mock(GruppeAktivitetRepository.class), gruppeAktivitetRepositoryV2, mock(BrukerDataRepository.class), aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, mock(UnleashService.class));
     }
 
     @BeforeEach

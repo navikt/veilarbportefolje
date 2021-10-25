@@ -7,6 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraKafka;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteAktiviteter;
 
 @Slf4j
 public class AktivitetUtils {
@@ -69,8 +71,9 @@ public class AktivitetUtils {
     }
 
 
-    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktorId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO) {
-        AktoerAktiviteter aktiviteter = aktivitetDAO.getAvtalteAktiviteterForAktoerid(aktoerId);
+    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktorId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO, UnleashService unleashService) {
+        AktoerAktiviteter aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktoerId, brukIkkeAvtalteAktiviteter(unleashService));
+
         return konverterTilBrukerOppdatering(aktiviteter, brukerService);
     }
 
