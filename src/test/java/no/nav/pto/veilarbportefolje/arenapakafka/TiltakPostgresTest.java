@@ -113,7 +113,7 @@ public class TiltakPostgresTest {
         String tiltaksNavn = "test";
         ZonedDateTime idagTid = ZonedDateTime.now();
         ZonedDateTime igarTid = ZonedDateTime.now().minusDays(1);
-        System.out.println(idagTid.toString().substring(0,10));
+
         TiltakInnhold idag = new TiltakInnhold()
                 .setFnr(fnr.get())
                 .setPersonId(personId.toInteger())
@@ -201,8 +201,7 @@ public class TiltakPostgresTest {
 
         tiltakRepositoryV3.upsert(tiltak1, aktorId);
         tiltakRepositoryV3.upsert(tiltak2, aktorId);
-        Optional<OppfolgingsbrukerKafkaDTO> bruker = oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktorId);
-        System.out.println(bruker);
+
         EnhetTiltak enhetTiltak = tiltakRepositoryV3.hentTiltakPaEnhet(EnhetId.of(navKontor));
         assertThat(enhetTiltak.getTiltak().size()).isEqualTo(2);
         assertThat(enhetTiltak.getTiltak().get(tiltaksType1)).isEqualTo(tiltaksNavn1);
