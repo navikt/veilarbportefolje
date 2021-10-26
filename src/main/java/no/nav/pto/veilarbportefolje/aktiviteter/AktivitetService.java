@@ -1,8 +1,10 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.common.types.identer.AktorId;
@@ -12,7 +14,6 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,35 +24,20 @@ import static no.nav.common.json.JsonUtils.fromJson;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> implements KafkaConsumerService<String> {
 
-    private final BrukerService brukerService;
     private final AktivitetDAO aktivitetDAO;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
-    private final BrukerDataService brukerDataService;
     private final AktivitetStatusRepositoryV2 prossesertAktivitetRepositoryV2;
     private final PersistentOppdatering persistentOppdatering;
-    private final AtomicBoolean rewind;
+    private final BrukerService brukerService;
+    private final BrukerDataService brukerDataService;
     private final SisteEndringService sisteEndringService;
-    @Getter
-    private final UnleashService unleashService;
     private final OppfolgingRepository oppfolgingRepository;
     private final ElasticServiceV2 elasticServiceV2;
-
-    @Autowired
-    public AktivitetService(AktivitetDAO aktivitetDAO, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetStatusRepositoryV2 prossesertAktivitetRepositoryV2, PersistentOppdatering persistentOppdatering, BrukerService brukerService, BrukerDataService brukerDataService, SisteEndringService sisteEndringService, OppfolgingRepository oppfolgingRepository, ElasticServiceV2 elasticServiceV2, UnleashService unleashService) {
-        this.aktivitetDAO = aktivitetDAO;
-        this.aktiviteterRepositoryV2 = aktiviteterRepositoryV2;
-        this.prossesertAktivitetRepositoryV2 = prossesertAktivitetRepositoryV2;
-        this.brukerService = brukerService;
-        this.persistentOppdatering = persistentOppdatering;
-        this.brukerDataService = brukerDataService;
-        this.sisteEndringService = sisteEndringService;
-        this.unleashService = unleashService;
-        this.oppfolgingRepository = oppfolgingRepository;
-        this.elasticServiceV2 = elasticServiceV2;
-        this.rewind = new AtomicBoolean();
-    }
+    private final ElasticIndexer elasticIndexer;
+    private final AtomicBoolean rewind = new AtomicBoolean();
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
@@ -66,6 +52,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
                 aktivitetData.getAktivitetId(),
                 aktivitetData.getVersion()
         );
+        AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
 
         sisteEndringService.behandleAktivitet(aktivitetData);
         if (skallIkkeOppdatereAktivitet(aktivitetData)) {
@@ -73,14 +60,16 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         }
 
         aktivitetDAO.tryLagreAktivitetData(aktivitetData);
-        utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(aktivitetData.getAktorId()));
+        utledAktivitetstatuserForAktoerid(aktorId);
+        elasticIndexer.indekser(aktorId);
+
+        if (!oppfolgingRepository.erUnderoppfolging(aktorId)) {
+            elasticServiceV2.deleteIfPresent(aktorId,
+                    String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
+        }
 
         //POSTGRES
         lagreOgProsseseserAktiviteter(aktivitetData);
-        if (!oppfolgingRepository.erUnderoppfolging(AktorId.of(aktivitetData.getAktorId()))) {
-            elasticServiceV2.deleteIfPresent(AktorId.of(aktivitetData.getAktorId()),
-                    String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
-        }
     }
 
     public void lagreOgProsseseserAktiviteter(KafkaAktivitetMelding aktivitetData) {
@@ -92,20 +81,22 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         brukerDataService.oppdaterAktivitetBrukerDataPostgres(AktorId.of(aktivitetData.getAktorId()));
     }
 
-    public void utledOgIndekserAktivitetstatuserForAktoerid(AktorId aktoerId) {
+    public void utledAktivitetstatuserForAktoerid(AktorId aktoerId) {
         AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO);
         Optional.ofNullable(aktivitetBrukerOppdateringer)
-                .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(oppdatering, aktoerId));
+                .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(oppdatering, aktoerId));
     }
 
     public void slettOgIndekserAktivitet(String aktivitetid, AktorId aktorId) {
         aktivitetDAO.deleteById(aktivitetid);
-        utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
+        utledAktivitetstatuserForAktoerid(aktorId);
+        elasticIndexer.indekser(aktorId);
     }
 
     public void upsertOgIndekserAktiviteter(KafkaAktivitetMelding melding) {
         aktivitetDAO.upsertAktivitet(melding);
-        utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(melding.getAktorId()));
+        utledAktivitetstatuserForAktoerid(AktorId.of(melding.getAktorId()));
+        elasticIndexer.indekser(AktorId.of(melding.getAktorId()));
     }
 
     @Override

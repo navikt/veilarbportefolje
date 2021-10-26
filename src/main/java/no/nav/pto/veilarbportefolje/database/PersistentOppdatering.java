@@ -10,9 +10,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatering;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -24,17 +22,14 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 @RequiredArgsConstructor
 public class PersistentOppdatering {
-    private final ElasticIndexer elasticIndexer;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerService brukerService;
     private final BrukerDataService brukerDataService;
 
-    public void lagreBrukeroppdateringerIDBogIndekser(AktivitetBrukerOppdatering brukerOppdateringer, AktorId aktoerId) {
+    public void lagreBrukeroppdateringerIDB(AktivitetBrukerOppdatering brukerOppdateringer, AktorId aktoerId) {
         lagreBrukeroppdateringerIDB(Collections.singletonList(brukerOppdateringer));
         PersonId personId = Optional.ofNullable(brukerOppdateringer.getPersonid()).map(PersonId::of).orElse(null);
         brukerDataService.oppdaterAktivitetBrukerData(aktoerId, personId);
-
-        elasticIndexer.indekser(aktoerId);
     }
 
     public void lagreBrukeroppdateringerIDB(List<? extends BrukerOppdatering> brukerOppdatering) {

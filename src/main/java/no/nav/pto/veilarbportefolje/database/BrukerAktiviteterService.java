@@ -1,26 +1,20 @@
 package no.nav.pto.veilarbportefolje.database;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.util.BatchConsumer;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
 @Service
@@ -31,6 +25,7 @@ public class BrukerAktiviteterService {
     private final OppfolgingRepository oppfolgingRepository;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerService brukerService;
+    private final ElasticIndexer elasticIndexer;
 
     public void syncAktivitetOgBrukerData() {
         log.info("Starter jobb: oppdater BrukerAktiviteter og BrukerData");
@@ -38,6 +33,8 @@ public class BrukerAktiviteterService {
         log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
         syncAktivitetOgBrukerData(brukereSomMaOppdateres);
         log.info("Avslutter jobb: oppdater BrukerAktiviteter og BrukerData");
+        elasticIndexer.nyHovedIndeksering(brukereSomMaOppdateres);
+        log.info("Avslutter jobb: hovedindeksering");
     }
 
     public void syncAktivitetOgBrukerData(List<AktorId> brukere) {
@@ -67,6 +64,7 @@ public class BrukerAktiviteterService {
             log.info("Fant ingen personId pa aktor: {}", aktorId);
         }
         syncAktiviteterOgBrukerData(personId, aktorId);
+        elasticIndexer.indekser(aktorId);
     }
 
     public void syncAktiviteterOgBrukerData(PersonId personId, AktorId aktorId) {
@@ -78,6 +76,6 @@ public class BrukerAktiviteterService {
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId, personId);
         gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(aktorId, personId);
         aktivitetService.deaktiverUtgatteUtdanningsAktivteter(aktorId);
-        aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
+        aktivitetService.utledAktivitetstatuserForAktoerid(aktorId);
     }
 }
