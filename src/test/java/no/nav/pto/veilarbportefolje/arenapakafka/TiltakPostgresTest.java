@@ -108,7 +108,7 @@ public class TiltakPostgresTest {
     }
 
     @Test
-    public void skal_utledde_korrekt_status_informasjon() {
+    public void skal_utlede_status_informasjon_basert_paa_neste_kommende_eller_gjeldende_aktivitet() {
         String tiltaksType = "T123";
         String tiltaksNavn = "test";
         ZonedDateTime idagTid = ZonedDateTime.now();
