@@ -151,13 +151,13 @@ public class BrukerRepository {
         return Optional.ofNullable(bruker);
     }
 
-    public List<OppfolgingsBruker> hentBrukereFraView(List<PersonId> personIds) {
+    public List<OppfolgingsBruker> hentBrukereFraView(List<AktorId> aktorIds) {
         db.setFetchSize(1000);
-        List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
+        List<String> ids = aktorIds.stream().map(AktorId::get).collect(toList());
         return SqlUtils
                 .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
-                .where(in("PERSON_ID", ids))
+                .where(in("AKTOERID", ids))
                 .executeToList()
                 .stream()
                 .filter(Objects::nonNull)
