@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
+package no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter;
 
 import lombok.Value;
 import no.nav.common.types.identer.Fnr;

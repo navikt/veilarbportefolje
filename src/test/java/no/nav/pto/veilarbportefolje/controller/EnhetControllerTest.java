@@ -18,7 +18,6 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakServiceV2;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.ModiaPep;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
@@ -56,7 +55,7 @@ public class EnhetControllerTest {
         authContextHolder = AuthContextHolderThreadLocal.instance();
 
         AuthService authService = new AuthService(pep, modiaPep);
-        enhetController = new EnhetController(elasticService, mock(PostgresService.class), authService, mock(TiltakService.class), mock(TiltakServiceV2.class), mock(MetricsClient.class), mock(UnleashService.class));
+        enhetController = new EnhetController(elasticService, mock(PostgresService.class), authService, mock(TiltakServiceV2.class), mock(MetricsClient.class), mock(UnleashService.class));
 
     }
 

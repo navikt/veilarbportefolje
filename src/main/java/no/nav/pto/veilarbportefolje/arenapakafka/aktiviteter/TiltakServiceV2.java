@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 public class TiltakServiceV2 {
     private static final LocalDate LANSERING_AV_OVERSIKTEN = LocalDate.of(2017, 12, 4);
     private final TiltakRepositoryV2 tiltakRepositoryV2;
+    private final TiltakRepositoryV3 tiltakRepositoryV3;
     @NonNull
     @Qualifier("systemClient")
     private final AktorClient aktorClient;
@@ -41,6 +43,11 @@ public class TiltakServiceV2 {
     private final ElasticIndexer elasticIndexer;
 
     private final Cache<EnhetId, EnhetTiltak> enhetTiltakCache = Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .maximumSize(1000)
+            .build();
+
+    private final Cache<EnhetId, EnhetTiltak> enhetTiltakCachePostgres = Caffeine.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
             .maximumSize(1000)
             .build();
@@ -57,11 +64,19 @@ public class TiltakServiceV2 {
         behandleKafkaMelding(melding);
     }
 
-    public void behandleKafkaMelding(TiltakDTO kafkaMelding) {
+    public void behandleKafkaMelding(TiltakDTO kafkaMelding){
         TiltakInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
         }
+        behandleKafkaMeldingOracle(kafkaMelding);
+        behandleKafkaMeldingPostgres(kafkaMelding);
+
+        arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
+    }
+
+    public void behandleKafkaMeldingOracle(TiltakDTO kafkaMelding) {
+        TiltakInnhold innhold = getInnhold(kafkaMelding);
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         PersonId personId = PersonId.of(String.valueOf(innhold.getPersonId()));
@@ -74,14 +89,33 @@ public class TiltakServiceV2 {
         }
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId, personId);
         brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
-        arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
 
         elasticIndexer.indekser(aktorId);
+    }
+
+    public void behandleKafkaMeldingPostgres(TiltakDTO kafkaMelding) {
+        TiltakInnhold innhold = getInnhold(kafkaMelding);
+
+        AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
+        if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
+            log.info("Sletter tiltak postgres: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
+            tiltakRepositoryV3.delete(innhold.getAktivitetid());
+        } else {
+            log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
+            tiltakRepositoryV3.upsert(innhold, aktorId);
+        }
+        tiltakRepositoryV3.utledOgLagreTiltakInformasjon(aktorId);
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
     }
 
     public EnhetTiltak hentEnhettiltak(EnhetId enhet) {
         return tryCacheFirst(enhetTiltakCache, enhet,
                 () -> tiltakRepositoryV2.hentTiltakPaEnhet(enhet));
+    }
+
+    public EnhetTiltak hentEnhettiltakPostgres(EnhetId enhet) {
+        return tryCacheFirst(enhetTiltakCachePostgres, enhet,
+                () -> tiltakRepositoryV3.hentTiltakPaEnhet(enhet));
     }
 
     private boolean erGammelMelding(TiltakDTO kafkaMelding, TiltakInnhold innhold) {
