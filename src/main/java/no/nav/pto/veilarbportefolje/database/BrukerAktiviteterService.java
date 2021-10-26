@@ -34,28 +34,21 @@ public class BrukerAktiviteterService {
         syncAktivitetOgBrukerData(brukereSomMaOppdateres);
         log.info("Avslutter jobb: oppdater BrukerAktiviteter og BrukerData");
         elasticIndexer.nyHovedIndeksering(brukereSomMaOppdateres);
-        log.info("Avslutter jobb: hovedindeksering");
     }
 
     public void syncAktivitetOgBrukerData(List<AktorId> brukere) {
-        ForkJoinPool pool = new ForkJoinPool(6);
-        try {
-            pool.submit(() ->
-                    brukere.parallelStream().forEach(aktorId -> {
-                        log.info("Oppdater BrukerAktiviteter og BrukerData for aktorId: {}", aktorId);
-                                if (aktorId != null) {
-                                    try {
-                                        PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
-                                        syncAktiviteterOgBrukerData(personId, aktorId);
-                                    } catch (Exception e) {
-                                        log.warn("Fikk error under sync jobb, men fortsetter. Aktoer: {}, exception: {}", aktorId, e);
-                                    }
-                                }
-                            }
-                    )).get(8, TimeUnit.HOURS);
-        } catch (Exception e) {
-            log.error("Error i sync jobben.", e);
-        }
+        brukere.forEach(aktorId -> {
+            log.info("Oppdater BrukerAktiviteter og BrukerData for aktorId: {}", aktorId);
+                    if (aktorId != null) {
+                        try {
+                            PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
+                            syncAktiviteterOgBrukerData(personId, aktorId);
+                        } catch (Exception e) {
+                            log.warn("Fikk error under sync jobb, men fortsetter. Aktoer: {}, exception: {}", aktorId, e);
+                        }
+                    }
+                }
+        );
     }
 
     public void syncAktivitetOgBrukerData(AktorId aktorId) {
