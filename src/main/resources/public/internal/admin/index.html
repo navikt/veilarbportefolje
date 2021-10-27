@@ -70,22 +70,6 @@
     <div id="aktoerIdResponse"></div>
 </div>
 <div>
-    <h2>Slett oppfolgingsbruker fra oversikten</h2>
-    <form id="oppfolgingsbruker">
-        <input type="text" id="oppfolgingsbrukerInput" placeholder="aktørID">
-        <input type="submit" value="Slett oppfølgingsbruker"/>
-    </form>
-    <div id="oppfolgingsbrukerResponse"></div>
-</div>
-<div>
-    <h2>Slett aktør fra elastic</h2>
-    <form id="slettElasticForm">
-        <input type="text" id="aktoerIdInputSlett" placeholder="aktørID">
-        <input type="submit" value="Slett fra elastic index"/>
-    </form>
-    <div id="slettingResponse"></div>
-</div>
-<div>
     <h2>Start/Stop kafka pa Aiven topics</h2>
     <form id="startAiven">
         <input type="submit" value="Start"/>
@@ -105,7 +89,14 @@
         <input type="submit" value="Oppdater bruker"/>
     </form>
     <div id="oppdaterbrukerResponse"></div>
-    </div>
+</div>
+<br/>
+<div>
+    <form id="oppdaterbrukere">
+        <input type="submit" value="Oppdater alle brukere i Elastic"/>
+    </form>
+    <div id="oppdaterbrukereResponse"></div>
+</div>
 </body>
 
 <h2>Sync aktiviteter/Ytelser med kafka eller fil</h2>
@@ -137,6 +128,15 @@
         <input type="submit" value="Start innlastning av oppfolgings data"/>
     </form>
     <div id="oppfolgingRefreshForUserResponse"></div>
+</div>
+
+<div>
+    <h2>Slett oppfolgingsbruker fra oversikten</h2>
+    <form id="oppfolgingsbruker">
+        <input type="text" id="oppfolgingsbrukerInput" placeholder="aktørID">
+        <input type="submit" value="Slett oppfølgingsbruker"/>
+    </form>
+    <div id="oppfolgingsbrukerResponse"></div>
 </div>
 </body>
 <script src="index.js" type="application/javascript"></script>
