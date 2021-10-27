@@ -26,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,6 +109,44 @@ public class TiltakPostgresTest {
     }
 
     @Test
+    public void skal_utlede_status_informasjon_basert_paa_neste_kommende_eller_gjeldende_aktivitet() {
+        String tiltaksType = "T123";
+        String tiltaksNavn = "test";
+        ZonedDateTime idagTid = ZonedDateTime.now();
+        ZonedDateTime igarTid = ZonedDateTime.now().minusDays(1);
+
+        TiltakInnhold idag = new TiltakInnhold()
+                .setFnr(fnr.get())
+                .setPersonId(personId.toInteger())
+                .setTiltaksnavn(tiltaksNavn)
+                .setTiltakstype(tiltaksType)
+                .setAktivitetperiodeTil(new ArenaDato(idagTid.toString().substring(0,10)))
+                .setAktivitetid("TA-123");
+        TiltakInnhold igar = new TiltakInnhold()
+                .setFnr(fnr.get())
+                .setPersonId(personId.toInteger())
+                .setTiltaksnavn(tiltaksNavn)
+                .setTiltakstype(tiltaksType)
+                .setAktivitetperiodeTil(new ArenaDato(igarTid.toString().substring(0,10)))
+                .setAktivitetid("TA-321");
+
+        tiltakRepositoryV3.upsert(idag, aktorId);
+        tiltakRepositoryV3.upsert(igar, aktorId);
+
+        tiltakRepositoryV3.utledOgLagreTiltakInformasjon(aktorId);
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
+
+        Optional<AktivitetStatus> aktivitetStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), AktivitetTyper.tiltak.name());
+        Optional<Timestamp> utloptAktivitet = aktivitetStatusRepositoryV2.hentAktivitetStatusUtlopt(aktorId.get());
+
+        assertThat(aktivitetStatus.isPresent()).isTrue();
+        assertThat(utloptAktivitet.isPresent()).isTrue();
+
+        assertThat(aktivitetStatus.get().getNesteUtlop().toLocalDateTime().toLocalDate()).isEqualTo(LocalDate.now());
+        assertThat(utloptAktivitet.get().toLocalDateTime().toLocalDate()).isEqualTo(LocalDate.now().minusDays(1));
+    }
+
+    @Test
     public void skal_lage_slette_tiltak_på_bruker_men_ikke_kodeverk() {
         String tiltaksType = "T123";
         String tiltaksNavn = "test";
@@ -163,8 +202,7 @@ public class TiltakPostgresTest {
 
         tiltakRepositoryV3.upsert(tiltak1, aktorId);
         tiltakRepositoryV3.upsert(tiltak2, aktorId);
-        Optional<OppfolgingsbrukerKafkaDTO> bruker = oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktorId);
-        System.out.println(bruker);
+
         EnhetTiltak enhetTiltak = tiltakRepositoryV3.hentTiltakPaEnhet(EnhetId.of(navKontor));
         assertThat(enhetTiltak.getTiltak().size()).isEqualTo(2);
         assertThat(enhetTiltak.getTiltak().get(tiltaksType1)).isEqualTo(tiltaksNavn1);

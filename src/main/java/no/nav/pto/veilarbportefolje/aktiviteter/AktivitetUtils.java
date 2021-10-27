@@ -1,26 +1,32 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import io.vavr.control.Try;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.Brukertiltak;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraKafka;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.Brukertiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraKafka;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteAktiviteter;
 
 @Slf4j
 public class AktivitetUtils {
@@ -71,8 +77,8 @@ public class AktivitetUtils {
     }
 
 
-    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktorId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO, UnleashService unleashService) {
-        AktoerAktiviteter aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktoerId, brukIkkeAvtalteAktiviteter(unleashService));
+    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktorId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO, boolean brukIkkeAvtalteAktiviteter) {
+        AktoerAktiviteter aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktoerId, brukIkkeAvtalteAktiviteter);
 
         return konverterTilBrukerOppdatering(aktiviteter, brukerService);
     }
