@@ -27,27 +27,6 @@ function handleOppfolgingRefreshForUserForm(e) {
     }
 }
 
-const slettElasticForm = document.getElementById('slettElasticForm')
-slettElasticForm.addEventListener('submit', handleslettElastic);
-const aktoerIdInputSlett = document.getElementById('aktoerIdInputSlett')
-
-function handleslettElastic(e) {
-    e.preventDefault()
-    const aktoerId = aktoerIdInputSlett.value;
-    if (!window.confirm('Dette vil fjerne brukeren fra elastic, er du sikker på at du vil fortsette?')) {
-        return;
-    }
-
-    if (aktoerId && aktoerId.length > 0) {
-        fetchData(
-            '/veilarbportefolje/api/admin/fjernBrukerElastic',
-            {method: 'DELETE', credentials: 'same-origin', body: aktoerId},
-            'slettingResponse'
-        )
-    }
-}
-
-
 const oppfolgingsbrukerForm = document.getElementById('oppfolgingsbruker')
 oppfolgingsbrukerForm.addEventListener('submit', handleFjernOppfolgingsbruker);
 
@@ -237,6 +216,20 @@ function handleOppdaterBruker(e) {
             `/veilarbportefolje/api/admin/indeks/bruker`,
             {method: 'PUT', credentials: 'same-origin', body: fnr},
             'oppdaterbrukerResponse'
+        );
+    }
+}
+
+const oppdaterBrukereForm = document.getElementById('oppdaterbrukere');
+oppdaterBrukereForm.addEventListener('submit', handleOppdaterBrukere)
+
+function handleOppdaterBrukere(e) {
+    e.preventDefault();
+    if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/indeks/AlleBrukere`,
+            {method: 'POST', credentials: 'same-origin'},
+            'oppdaterbrukereResponse'
         );
     }
 }
