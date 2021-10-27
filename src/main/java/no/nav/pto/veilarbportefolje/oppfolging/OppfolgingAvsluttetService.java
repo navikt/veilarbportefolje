@@ -17,11 +17,11 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
 import static java.time.Instant.EPOCH;
-import static java.time.ZoneId.of;
 import static java.time.ZonedDateTime.ofInstant;
 
 
@@ -52,7 +52,7 @@ public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<Oppfo
         final AktorId aktoerId = dto.getAktorId();
 
 
-        final ZonedDateTime startDato = oppfolgingRepository.hentStartdato(aktoerId).orElse(ofInstant(EPOCH, of("Europe/Oslo")));
+        final ZonedDateTime startDato = oppfolgingRepository.hentStartdato(aktoerId).orElse(ofInstant(EPOCH, ZoneId.systemDefault()));
 
         final ZonedDateTime sluttDato = dto.getSluttdato();
         if (startDato.isAfter(sluttDato)) {

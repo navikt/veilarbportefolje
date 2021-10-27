@@ -14,13 +14,12 @@ import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.sbl.sql.SqlUtils;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -32,17 +31,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.GR202_PA_KAFKA;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class ArenaAktivitetIntegrasjonsTest {
     private final UtdanningsAktivitetService utdanningsAktivitetService;
     private final JdbcTemplate jdbcTemplate;
-    private final UnleashService unleashService;
     private final AktivitetService aktivitetService;
     private final AktivitetDAO aktivitetDAO;
 
@@ -53,9 +49,8 @@ public class ArenaAktivitetIntegrasjonsTest {
     private final PersonId personId = PersonId.of("123");
 
     @Autowired
-    public ArenaAktivitetIntegrasjonsTest(SisteEndringService sisteEndringService, BrukerService brukerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, JdbcTemplate jdbcTemplate, UnleashService unleashService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, BrukerDataService brukerDataService) {
+    public ArenaAktivitetIntegrasjonsTest(SisteEndringService sisteEndringService, BrukerService brukerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, JdbcTemplate jdbcTemplate, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, BrukerDataService brukerDataService) {
         this.jdbcTemplate = jdbcTemplate;
-        this.unleashService = unleashService;
         this.aktivitetDAO = aktivitetDAO;
 
         ArenaHendelseRepository arenaHendelseRepository = mock(ArenaHendelseRepository.class);
@@ -64,7 +59,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
-        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, mock(OppfolgingRepository.class),mock(ElasticServiceV2.class), unleashService);
+        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, mock(OppfolgingRepository.class), mock(ElasticServiceV2.class), mock(ElasticIndexer.class));
         this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient, arenaHendelseRepository);
     }
 
@@ -75,35 +70,6 @@ public class ArenaAktivitetIntegrasjonsTest {
         jdbcTemplate.execute("truncate table " + Table.AKTOERID_TO_PERSONID.TABLE_NAME);
         jdbcTemplate.execute("truncate table " + Table.AKTIVITETER.TABLE_NAME);
         jdbcTemplate.execute("truncate table BRUKERSTATUS_AKTIVITETER");
-    }
-
-    @Test
-    public void skal_kunne_toggle_pa_GR202() {
-        insertBruker();
-        String melding = new JSONObject()
-                .put("aktivitetId", 1)
-                .put("aktorId", aktorId.get())
-                .put("fraDato", "2020-08-31T10:03:20+02:00")
-                .put("tilDato", "2040-08-31T10:03:20+02:00")
-                .put("endretDato", "2020-07-29T15:43:41.049+02:00")
-                .put("aktivitetType", "IJOBB")
-                .put("aktivitetStatus", "GJENNOMFORES")
-                .put("avtalt", true)
-                .put("historisk", false)
-                .put("version", 1)
-                .toString();
-
-        when(unleashService.isEnabled(GR202_PA_KAFKA)).thenReturn(false);
-        aktivitetService.behandleKafkaMelding(melding);
-        when(unleashService.isEnabled(GR202_PA_KAFKA)).thenReturn(true);
-
-        utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
-
-        Optional<AktivitetStatus> utdanningsAktivitet = hentAktivitetStatus(AktivitetTyperFraKafka.utdanningaktivitet);
-        Optional<AktivitetStatus> ijobbAktivitet = hentAktivitetStatus(AktivitetTyperFraKafka.ijobb);
-
-        assertThat(utdanningsAktivitet).isPresent();
-        assertThat(ijobbAktivitet).isPresent();
     }
 
     @Test

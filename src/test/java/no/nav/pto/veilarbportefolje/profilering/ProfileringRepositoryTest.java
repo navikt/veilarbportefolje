@@ -7,17 +7,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.nowToStr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProfileringRepositoryTest {
 
-    private ProfileringRepository profileringRepository ;
+    private ProfileringRepository profileringRepository;
     private static String AKTORID = "123456789";
     private static String AKTORID1 = "1234567892";
 
@@ -34,7 +32,7 @@ public class ProfileringRepositoryTest {
         ArbeidssokerProfilertEvent event1 = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID)
                 .setProfilertTil(ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING)
-                .setProfileringGjennomfort(ZonedDateTime.now(ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
+                .setProfileringGjennomfort(nowToStr())
                 .build();
 
         profileringRepository.upsertBrukerProfilering(event1);
@@ -47,7 +45,7 @@ public class ProfileringRepositoryTest {
         ArbeidssokerProfilertEvent event1 = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID1)
                 .setProfilertTil(ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING)
-                .setProfileringGjennomfort(ZonedDateTime.of(LocalDateTime.now().minusDays(30), ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
+                .setProfileringGjennomfort(now().minusDays(30).format(ISO_ZONED_DATE_TIME))
                 .build();
 
         profileringRepository.upsertBrukerProfilering(event1);
@@ -55,7 +53,7 @@ public class ProfileringRepositoryTest {
         ArbeidssokerProfilertEvent event2 = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID1)
                 .setProfilertTil(ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING)
-                .setProfileringGjennomfort(ZonedDateTime.of(LocalDateTime.now(), ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
+                .setProfileringGjennomfort(nowToStr())
                 .build();
 
         profileringRepository.upsertBrukerProfilering(event2);

@@ -19,6 +19,7 @@ import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @Slf4j
 @Repository
@@ -34,7 +35,7 @@ public class SisteEndringRepository {
         SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
                 .set(AKTOERID, sisteEndringDTO.getAktoerId().get())
                 .set(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().name())
-                .set(SISTE_ENDRING_TIDSPUNKT, Timestamp.from(sisteEndringDTO.getTidspunkt().toInstant()))
+                .set(SISTE_ENDRING_TIDSPUNKT, toTimestamp(sisteEndringDTO.getTidspunkt()))
                 .set(AKTIVITETID, sisteEndringDTO.getAktivtetId())
                 .set(ER_SETT, "N")
                 .where(WhereClause.equals(AKTOERID, sisteEndringDTO.getAktoerId().get()).and(
@@ -87,10 +88,10 @@ public class SisteEndringRepository {
     }
 
     @SneakyThrows
-    private Map<String, Endring> mapResultatTilKategoriOgEndring(ResultSet rs){
+    private Map<String, Endring> mapResultatTilKategoriOgEndring(ResultSet rs) {
         Map<String, Endring> sisteEndring = new HashMap<>();
-        while(rs.next()){
-            sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI),new Endring()
+        while (rs.next()) {
+            sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI), new Endring()
                     .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
                     .setEr_sett(rs.getString(ER_SETT))
                     .setAktivtetId(rs.getString(AKTIVITETID)));

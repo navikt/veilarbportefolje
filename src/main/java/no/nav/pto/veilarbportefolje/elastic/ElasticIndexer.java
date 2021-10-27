@@ -1,14 +1,17 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
+import com.google.common.collect.Lists;
+import io.micrometer.core.annotation.Timed;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.BrukertiltakV2;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -16,7 +19,6 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -24,12 +26,18 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
-import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.slf4j.MDC;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -37,7 +45,6 @@ import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
@@ -119,13 +126,6 @@ public class ElasticIndexer {
         brukerRepository.hentBrukerFraView(aktoerId).ifPresent(this::indekserBruker);
     }
 
-    public void indekser(List<PersonId> personIds) {
-        partition(personIds, BATCH_SIZE).forEach(partition -> {
-            final List<OppfolgingsBruker> oppfolgingsBrukers = brukerRepository.hentBrukereFraView(partition);
-            oppfolgingsBrukers.forEach(this::indekserBruker);
-        });
-    }
-
     private void indekserBruker(OppfolgingsBruker bruker) {
         if (erUnderOppfolging(bruker)) {
             leggTilAktiviteter(bruker);
@@ -135,13 +135,6 @@ public class ElasticIndexer {
         } else {
             markerBrukerSomSlettet(bruker);
         }
-    }
-
-    @SneakyThrows
-    public Optional<String> hentGammeltIndeksNavn() {
-        GetAliasesRequest getAliasRequest = new GetAliasesRequest(alias.getValue());
-        GetAliasesResponse response = restHighLevelClient.indices().getAlias(getAliasRequest, DEFAULT);
-        return response.getAliases().keySet().stream().findFirst();
     }
 
     public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
@@ -162,7 +155,7 @@ public class ElasticIndexer {
                     log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
                 }
 
-                List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
+                List<String> aktoerIds = oppfolgingsBrukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(toList());
                 log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
 
             }
@@ -177,7 +170,7 @@ public class ElasticIndexer {
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {
-        skrivTilIndeks(indeksNavn, Collections.singletonList(oppfolgingsBruker));
+        this.skrivTilIndeks(indeksNavn, Collections.singletonList(oppfolgingsBruker));
     }
 
     @SneakyThrows
@@ -245,11 +238,7 @@ public class ElasticIndexer {
 
 
     private void leggTilTiltak(OppfolgingsBruker bruker) {
-        if (erGR202PaKafka(unleashService)) {
-            leggTilTiltakV2(Collections.singletonList(bruker));
-        } else {
-            leggTilTiltak(Collections.singletonList(bruker));
-        }
+        leggTilTiltakV2(Collections.singletonList(bruker));
     }
 
     private void leggTilAktiviteter(List<OppfolgingsBruker> brukere) {
@@ -299,6 +288,54 @@ public class ElasticIndexer {
 
     private void leggTilSisteEndring(OppfolgingsBruker bruker) {
         leggTilSisteEndring(Collections.singletonList(bruker));
+    }
+
+    @SneakyThrows
+    public void nyHovedIndeksering(List<AktorId> aktorIds) {
+        long tidsStempel0 = System.currentTimeMillis();
+
+        log.info("Hovedindeksering: Starter 'ny' hovedindeksering i Elasticsearch");
+        log.info("Hovedindeksering: Indekserer {} brukere", aktorIds.size());
+        List<List<AktorId>> brukerePartition = Lists.partition(aktorIds, aktorIds.size() / 5);
+
+        int antallTraader = brukerePartition.size();
+        log.info("Hovedindeksering: Bruker {} tråder ", antallTraader);
+
+        ExecutorService executor = Executors.newFixedThreadPool(antallTraader);
+        CountDownLatch ferdigSignal = new CountDownLatch(antallTraader);
+
+        brukerePartition.forEach(brukerePart -> executor.execute(() -> startAsyncPartition(brukerePart, ferdigSignal)));
+        executor.shutdown();
+
+        boolean hovedindekseringFullfort = ferdigSignal.await(8, TimeUnit.HOURS);
+        long tidsStempel1 = System.currentTimeMillis();
+        long tid = tidsStempel1 - tidsStempel0;
+        if (hovedindekseringFullfort) {
+            log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere, brukte {} tråder", tid, aktorIds.size(), antallTraader);
+        } else {
+            log.info("Hovedindeksering: Ble ikke ferdig, den timet ut på {} ms", tid);
+            executor.shutdownNow();
+        }
+    }
+
+    private void startAsyncPartition(List<AktorId> brukere, CountDownLatch ferdigSignal) {
+        String hashID = IdUtils.generateId();
+        log.info("Hovedindeksering: Startet for hash {} med {} brukere", hashID, brukere.size());
+        MDC.put("jobId", hashID);
+
+        partition(brukere, BATCH_SIZE).forEach(this::indekserBolk);
+        log.info("Hovedindeksering: Avsluttet trådnummer {}", hashID);
+        ferdigSignal.countDown();
+    }
+
+    public void indekserBolk(List<AktorId> aktorIds) {
+        partition(aktorIds, BATCH_SIZE).forEach(partition -> {
+            List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(partition).stream().filter(bruker -> bruker.getAktoer_id() != null).collect(toList());
+            leggTilAktiviteter(brukere);
+            leggTilTiltak(brukere);
+            leggTilSisteEndring(brukere);
+            this.skrivTilIndeks(alias.getValue(), brukere);
+        });
     }
 
 }

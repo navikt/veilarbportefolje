@@ -55,6 +55,6 @@ spec:
       memory: 4Gi
   env:
     - name: JAVA_OPTS
-      value: "-Xms4096m -Xmx10144m"
+      value: "-Xms4096m -Xmx10144m --illegal-access=permit --add-opens=java.base/java.lang=ALL-UNNAMED"
     - name: ABAC_MODIA_URL
       value: https://abac-modia.intern.nav.no/application/asm-pdp/authorize
