@@ -128,7 +128,6 @@ public class ApplicationConfigTest {
     static {
         ELASTICSEARCH_CONTAINER = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:" + ELASTICSEARCH_VERSION);
         ELASTICSEARCH_CONTAINER.start();
-
         System.setProperty("elastic.indexname", IdUtils.generateId());
         System.setProperty("elastic.httphostaddress", ELASTICSEARCH_CONTAINER.getHttpHostAddress());
     }
