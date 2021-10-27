@@ -16,6 +16,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
@@ -119,7 +120,8 @@ import static org.mockito.Mockito.when;
         BrukerDataService.class,
         BrukerDataRepository.class,
         YtelsesService.class,
-        YtelsesRepository.class
+        YtelsesRepository.class,
+        YtelsesRepositoryV2.class
 })
 public class ApplicationConfigTest {
 
