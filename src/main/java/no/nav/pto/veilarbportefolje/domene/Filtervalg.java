@@ -8,10 +8,7 @@ import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.pto.veilarbportefolje.registrering.DinSituasjonSvar;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BinaryOperator;
 
 @Data()
@@ -129,22 +126,10 @@ public class Filtervalg {
                 .reduce(true, and());
         Boolean utdanningOK = utdanning
                 .stream()
-                .map((x) -> validUtdanning(x.toString()))
+                .map(Objects::nonNull)
                 .reduce(true, and());
 
         return alderOk && fodselsdatoOk && veiledereOk && utdanningOK;
-    }
-
-    public Boolean validUtdanning(String input){
-        if(input == null){
-            return false;
-        }
-        try {
-            UtdanningSvar.valueOf(input);
-        }catch (IllegalArgumentException e){
-            return false;
-        }
-        return true;
     }
 
     private BinaryOperator<Boolean> and() {
