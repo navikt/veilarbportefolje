@@ -1,17 +1,14 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import com.google.common.collect.Lists;
-import io.micrometer.core.annotation.Timed;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.BrukertiltakV2;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -31,8 +28,6 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.MDC;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -44,7 +39,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
@@ -196,27 +190,6 @@ public class ElasticIndexer {
     }
 
     private void leggTilTiltak(List<OppfolgingsBruker> brukere) {
-
-        validateBatchSize(brukere);
-
-        List<Fnr> fodselsnummere = brukere.stream()
-                .map(OppfolgingsBruker::getFnr)
-                .map(Fnr::of)
-                .collect(toList());
-
-        Map<Fnr, Set<Brukertiltak>> alleTiltakForBrukere = filtrerBrukertiltak(aktivitetDAO.hentBrukertiltak(fodselsnummere));
-
-        alleTiltakForBrukere.forEach((fnr, brukerMedTiltak) -> {
-            Set<String> tiltak = brukerMedTiltak.stream()
-                    .map(Brukertiltak::getTiltak)
-                    .collect(toSet());
-
-            OppfolgingsBruker bruker = finnBruker(brukere, fnr);
-            bruker.setTiltak(tiltak);
-        });
-    }
-
-    private void leggTilTiltakV2(List<OppfolgingsBruker> brukere) {
         validateBatchSize(brukere);
 
         List<AktorId> aktorIder = brukere.stream()
@@ -238,7 +211,7 @@ public class ElasticIndexer {
 
 
     private void leggTilTiltak(OppfolgingsBruker bruker) {
-        leggTilTiltakV2(Collections.singletonList(bruker));
+        leggTilTiltak(Collections.singletonList(bruker));
     }
 
     private void leggTilAktiviteter(List<OppfolgingsBruker> brukere) {
