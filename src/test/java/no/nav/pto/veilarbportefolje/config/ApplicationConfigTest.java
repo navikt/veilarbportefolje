@@ -78,7 +78,6 @@ import static org.mockito.Mockito.when;
 @Import({
         BrukerService.class,
         RegistreringService.class,
-        RegistreringRepository.class,
         AktivitetService.class,
         PersistentOppdatering.class,
         OppfolgingAvsluttetService.class,
@@ -89,9 +88,12 @@ import static org.mockito.Mockito.when;
         AktivitetStatusRepositoryV2.class,
         BrukerRepository.class,
         OppfolgingRepository.class,
+        OppfolgingRepositoryV2.class,
+        OppfolginsbrukerRepositoryV2.class,
         ManuellStatusService.class,
         DialogService.class,
         DialogRepository.class,
+        DialogRepositoryV2.class,
         ElasticIndexer.class,
         CvRepository.class,
         CVRepositoryV2.class,
@@ -128,7 +130,6 @@ public class ApplicationConfigTest {
     static {
         ELASTICSEARCH_CONTAINER = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:" + ELASTICSEARCH_VERSION);
         ELASTICSEARCH_CONTAINER.start();
-
         System.setProperty("elastic.indexname", IdUtils.generateId());
         System.setProperty("elastic.httphostaddress", ELASTICSEARCH_CONTAINER.getHttpHostAddress());
     }
@@ -217,21 +218,6 @@ public class ApplicationConfigTest {
     @Bean
     public VeilarbVeilederClient veilarbVeilederClient() {
         return mock(VeilarbVeilederClient.class);
-    }
-
-    @Bean
-    public OppfolgingRepositoryV2 oppfolgingRepositoryV2() {
-        return mock(OppfolgingRepositoryV2.class);
-    }
-
-    @Bean
-    public OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2() {
-        return mock(OppfolginsbrukerRepositoryV2.class);
-    }
-
-    @Bean
-    public DialogRepositoryV2 dialogRepositoryV2() {
-        return mock(DialogRepositoryV2.class);
     }
 
     @Bean

@@ -18,10 +18,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.http.HttpStatus;
@@ -53,6 +50,8 @@ public class AdminController {
     private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
     private final BrukerRepository brukerRepository;
+    private final OppfolgingRepository oppfolgingRepository;
+
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -143,6 +142,14 @@ public class AdminController {
         authorizeAdmin();
         String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
         elasticIndexer.indekser(AktorId.of(aktorId));
+        return "Indeksering fullfort";
+    }
+
+    @PostMapping("/indeks/AlleBrukere")
+    public String indekserAlleBrukere() {
+        authorizeAdmin();
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
+        elasticIndexer.nyHovedIndeksering(brukereUnderOppfolging);
         return "Indeksering fullfort";
     }
 
