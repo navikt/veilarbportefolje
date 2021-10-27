@@ -87,9 +87,6 @@ public class YtelsesRepositoryV2 {
         }
         log.info("Sletter ytelse: {}", vedtaksId);
         db.update("DELETE FROM YTELSER WHERE VEDTAKSID = ?", vedtaksId);
-//        SqlUtils.delete(db, TABLE_NAME)
-//                .where(WhereClause.equals(VEDTAKID, vedtakId))
-//                .execute();
     }
 
     private Timestamp getTimestampOrNull(ArenaDato date, boolean tilOgMedDato) {
@@ -103,7 +100,7 @@ public class YtelsesRepositoryV2 {
     }
 
     public List<AktorId> hentBrukereMedYtelserSomStarterIDag() {
-        final String brukereSomStarterIDag = "SELECT distinct AKTORID FROM YTELSER WHERE trunc(STARTDATO) = trunc(current_timestamp)";
+        final String brukereSomStarterIDag = "SELECT distinct AKTORID FROM YTELSER WHERE date_trunc('day', STARTDATO) = date_trunc('day',current_timestamp)";
 
         return db.queryForList(brukereSomStarterIDag, AktorId.class);
     }
