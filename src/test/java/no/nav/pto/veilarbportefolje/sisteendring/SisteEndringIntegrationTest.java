@@ -450,33 +450,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertTomRes2.getAntall()).isEqualTo(0);
     }
 
-    @Test
-    public void endring_pa_bruker_uten_oppfolging_slettes_fra_elastic() {
-        Mockito.when(oppfolgingRepositoryMock.erUnderoppfolging(any())).thenReturn(false);
-        final AktorId aktoerId = randomAktorId();
-
-        populateElastic(testEnhet, veilederId, aktoerId.get());
-        pollElasticUntil(() -> {
-            final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
-                    testEnhet.get(),
-                    empty(),
-                    "asc",
-                    "ikke_satt",
-                    new Filtervalg(),
-                    null,
-                    null);
-
-            return brukereMedAntall.getAntall() == 1;
-        });
-
-        send_aktvitet_melding(aktoerId, "2020-05-28T09:47:42.48+02:00", KafkaAktivitetMelding.EndringsType.OPPRETTET,
-                KafkaAktivitetMelding.AktivitetStatus.PLANLAGT,
-                KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
-        GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
-
-        assertThat(getResponse.isExists()).isFalse();
-    }
-
     private void send_aktvitet_melding(AktorId aktoerId, String endretDato, KafkaAktivitetMelding.EndringsType endringsType,
                                        KafkaAktivitetMelding.AktivitetStatus status, KafkaAktivitetMelding.AktivitetTypeData typeData) {
         String endret = endretDato == null ? "" : "\"endretDato\":\"" + endretDato + "\",";
