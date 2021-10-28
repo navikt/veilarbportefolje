@@ -10,11 +10,16 @@ import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
+import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
+import static no.nav.common.utils.NaisUtils.getCredentials;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
@@ -37,7 +42,16 @@ import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
-import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerKafkaDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
@@ -47,6 +61,7 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -56,13 +71,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
-import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
-import static no.nav.common.utils.NaisUtils.getCredentials;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
 public class KafkaConfigCommon {
@@ -88,6 +96,8 @@ public class KafkaConfigCommon {
 
         AIVEN_REGISTRERING_TOPIC("paw.arbeidssoker-registrert-v1"),
         AIVEN_PROFILERING_TOPIC("paw.arbeidssoker-profilert-v1"),
+
+        AIVEN_AKTIVITER_TOPIC("pto.aktivitet-portefolje-v1"),
 
         TILTAK_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
         UTDANNINGS_AKTIVITET_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix()),
@@ -217,6 +227,16 @@ public class KafkaConfigCommon {
                                         (melding -> {
                                             ytelsesService.behandleKafkaRecord(melding, TypeKafkaYtelse.TILTAKSPENGER);
                                         })
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.AIVEN_AKTIVITER_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(KafkaAktivitetMelding.class),
+                                        aktivitetService::behandleKafkaRecord
                                 )
                 );
 

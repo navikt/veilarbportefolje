@@ -266,16 +266,19 @@ public class AktivitetDAO {
     }
 
     @Transactional
-    public void tryLagreAktivitetData(KafkaAktivitetMelding aktivitet) {
+    public boolean tryLagreAktivitetData(KafkaAktivitetMelding aktivitet) {
         try {
             if (aktivitet.isHistorisk()) {
                 deleteById(aktivitet.getAktivitetId());
+                return true;
             } else if (erNyVersjonAvAktivitet(aktivitet)) {
                 upsertAktivitet(aktivitet);
+                return true;
             }
         } catch (Exception e) {
             String message = String.format("Kunne ikke lagre aktivitetdata fra topic for aktivitetid %s", aktivitet.getAktivitetId());
             log.error(message, e);
         }
+        return false;
     }
 }

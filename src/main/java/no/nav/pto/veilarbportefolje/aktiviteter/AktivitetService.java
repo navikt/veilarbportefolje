@@ -57,18 +57,22 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         //ORACLE
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
-        aktivitetDAO.tryLagreAktivitetData(aktivitetData);
-        utledAktivitetstatuserForAktoerid(aktorId);
-        elasticIndexer.indekser(aktorId);
+        boolean bleProsessert = aktivitetDAO.tryLagreAktivitetData(aktivitetData);
 
-        if (!oppfolgingRepository.erUnderoppfolging(aktorId)) {
-            elasticServiceV2.deleteIfPresent(aktorId,
-                    String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
+        if (bleProsessert) {
+            utledAktivitetstatuserForAktoerid(aktorId);
+            elasticIndexer.indekser(aktorId);
+            if (!oppfolgingRepository.erUnderoppfolging(aktorId)) {
+                elasticServiceV2.deleteIfPresent(aktorId,
+                        String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
+            }
         }
 
         //POSTGRES
-        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-        utleddAktivitetStatuser(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType());
+        boolean bleProsessertPostgres = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
+        if (bleProsessertPostgres) {
+            utleddAktivitetStatuser(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType());
+        }
     }
 
     public void utleddAktivitetStatuser(AktorId aktorId, KafkaAktivitetMelding.AktivitetTypeData aktivitetType) {
