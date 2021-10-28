@@ -1,5 +1,0 @@
-UPDATE AKTIVITETER
-SET AVTALT = 1,
-    STATUS = 'fullfort'
-WHERE AKTIVITETTYPE = 'utdanningaktivitet'
-  AND AVTALT = 0;
