@@ -73,8 +73,13 @@ public class AktiviteterRepositoryV2 {
         ).orElse(-1L);
     }
 
-    public AktoerAktiviteter getAvtalteAktiviteterForAktoerid(AktorId aktoerid) {
-        String sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s", TABLE_NAME, AKTOERID, AVTALT);
+    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid, boolean brukIkkeAvtalteAktiviteter) {
+        String sql;
+        if (brukIkkeAvtalteAktiviteter) {
+            sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID);
+        } else {
+            sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s", TABLE_NAME, AKTOERID, AVTALT);
+        }
 
         List<AktivitetDTO> aktiviteter = Optional.ofNullable(
                 queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid.get()))
@@ -101,14 +106,14 @@ public class AktiviteterRepositoryV2 {
         return aktiviteter;
     }
 
-    public void setAvtalt(String aktivitetid, boolean avtalt) {
-        log.info("Setter avtalt flagget til aktivitet: {}, til verdien: {}", aktivitetid, avtalt);
-        db.update(String.format("UPDATE %s SET %s = ? WHERE %s = ?", TABLE_NAME, AVTALT, AKTIVITETID), avtalt, aktivitetid);
+    public void setTilFullfort(String aktivitetid) {
+        log.info("Setter status flagget til aktivitet: {}, til verdien fullfort", aktivitetid);
+        db.update(String.format("UPDATE %s SET %s = 'fullfort' WHERE %s = ?", TABLE_NAME, AVTALT, AKTIVITETID), aktivitetid);
     }
 
-    public AktivitetStatus getAktivitetStatus(AktorId aktoerid, KafkaAktivitetMelding.AktivitetTypeData aktivitetType) {
+    public AktivitetStatus getAktivitetStatus(AktorId aktoerid, KafkaAktivitetMelding.AktivitetTypeData aktivitetType, boolean brukIkkeAvtalteAktiviteter) {
         LocalDate yesterday = LocalDate.now().minusDays(1);
-        List<AktivitetDTO> aktiveAktiviteter = getAvtalteAktiviteterForAktoerid(aktoerid).getAktiviteter().stream()
+        List<AktivitetDTO> aktiveAktiviteter = getAktiviteterForAktoerid(aktoerid, brukIkkeAvtalteAktiviteter).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .filter(aktivitetDTO -> aktivitetType.name().toLowerCase().equals(aktivitetDTO.getAktivitetType()))
                 .collect(Collectors.toList());

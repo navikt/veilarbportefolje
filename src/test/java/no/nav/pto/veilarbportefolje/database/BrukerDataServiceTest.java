@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +45,7 @@ public class BrukerDataServiceTest {
     public BrukerDataServiceTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, TiltakRepositoryV2 tiltakRepositoryV2, GruppeAktivitetRepository gruppeAktivitetRepository, BrukerDataRepository brukerDataRepository, BrukerRepository brukerRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.brukerRepository = brukerRepository;
-        brukerDataService = new BrukerDataService(aktivitetDAO, tiltakRepositoryV2, mock(TiltakRepositoryV3.class), gruppeAktivitetRepository, mock(GruppeAktivitetRepositoryV2.class), brukerDataRepository, mock(AktiviteterRepositoryV2.class), mock(AktivitetStatusRepositoryV2.class));
+        brukerDataService = new BrukerDataService(aktivitetDAO, tiltakRepositoryV2, mock(TiltakRepositoryV3.class), gruppeAktivitetRepository, mock(GruppeAktivitetRepositoryV2.class), brukerDataRepository, mock(AktiviteterRepositoryV2.class), mock(AktivitetStatusRepositoryV2.class), mock(UnleashService.class));
     }
 
     @BeforeEach
