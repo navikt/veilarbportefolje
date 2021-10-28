@@ -84,20 +84,15 @@ public class ArenaAktivitetIntegrasjonsTest {
     }
 
     @Test
-    public void skal_komme_i_utdannnings_aktivitet_i_oracle() {
+    public void skal_komme_i_utdannnings_aktivitet() {
         insertBruker();
         utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
 
-        Optional<AktivitetStatus> utdanning = hentAktivitetStatus(AktivitetTyperFraKafka.utdanningaktivitet);
-        assertThat(utdanning).isPresent();
-    }
-
-    @Test
-    public void skal_komme_i_utdannnings_aktivitet_i_postgres() {
-        utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
         AktoerAktiviteter aktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false);
         AktivitetStatus aktivitetStatus = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.UTDANNINGAKTIVITET, false);
-        assertThat(aktiviteterForAktoerid.getAktiviteter().size()).isEqualTo(1);
+        Optional<AktivitetStatus> utdanning = hentAktivitetStatus(AktivitetTyperFraKafka.utdanningaktivitet);
+        assertThat(utdanning).isPresent();
+        assertThat(aktiviteterForAktoerid.getAktiviteter().stream().anyMatch(x->x.getAktivitetID().equals("UA-123456789"))).isTrue();
         assertThat(aktivitetStatus.isAktiv()).isTrue();
     }
 
