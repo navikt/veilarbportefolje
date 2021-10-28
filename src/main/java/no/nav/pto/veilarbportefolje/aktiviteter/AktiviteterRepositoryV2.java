@@ -4,17 +4,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETTYPE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AVTALT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.FRADATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.STATUS;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TABLE_NAME;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TILDATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.VERSION;
-import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -30,6 +19,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETTYPE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AVTALT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.FRADATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.STATUS;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TILDATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.VERSION;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @Slf4j
 @Repository
@@ -87,8 +88,13 @@ public class AktiviteterRepositoryV2 {
         ).orElse(-1L);
     }
 
-    public AktoerAktiviteter getAvtalteAktiviteterForAktoerid(AktorId aktoerid) {
-        String sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s", TABLE_NAME, AKTOERID, AVTALT);
+    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid, boolean brukIkkeAvtalteAktiviteter) {
+        String sql;
+        if (brukIkkeAvtalteAktiviteter) {
+            sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID);
+        } else {
+            sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s", TABLE_NAME, AKTOERID, AVTALT);
+        }
 
         List<AktivitetDTO> aktiviteter = Optional.ofNullable(
                 queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid.get()))
@@ -115,14 +121,14 @@ public class AktiviteterRepositoryV2 {
         return aktiviteter;
     }
 
-    public void setAvtalt(String aktivitetid, boolean avtalt) {
-        log.info("Setter avtalt flagget til aktivitet: {}, til verdien: {}", aktivitetid, avtalt);
-        db.update(String.format("UPDATE %s SET %s = ? WHERE %s = ?", TABLE_NAME, AVTALT, AKTIVITETID), avtalt, aktivitetid);
+    public void setTilFullfort(String aktivitetid) {
+        log.info("Setter status flagget til aktivitet: {}, til verdien fullfort", aktivitetid);
+        db.update(String.format("UPDATE %s SET %s = 'fullfort' WHERE %s = ?", TABLE_NAME, AVTALT, AKTIVITETID), aktivitetid);
     }
 
-    public AktivitetStatus getAktivitetStatus(AktorId aktoerid, KafkaAktivitetMelding.AktivitetTypeData aktivitetType) {
+    public AktivitetStatus getAktivitetStatus(AktorId aktoerid, KafkaAktivitetMelding.AktivitetTypeData aktivitetType, boolean brukIkkeAvtalteAktiviteter) {
         LocalDate yesterday = LocalDate.now().minusDays(1);
-        List<AktivitetDTO> aktiveAktiviteter = getAvtalteAktiviteterForAktoerid(aktoerid).getAktiviteter().stream()
+        List<AktivitetDTO> aktiveAktiviteter = getAktiviteterForAktoerid(aktoerid, brukIkkeAvtalteAktiviteter).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .filter(aktivitetDTO -> aktivitetType.name().toLowerCase().equals(aktivitetDTO.getAktivitetType()))
                 .collect(Collectors.toList());
