@@ -36,8 +36,8 @@ public class AktiviteterV2 {
                 .setAvtalt(true)
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
-
-        aktivitetService.lagreOgProsseseserAktiviteter(aktivitet);
+        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
+        aktivitetService.utleddAktivitetStatuser(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
         AktoerAktiviteter avtalteAktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false);
         Optional<AktivitetStatus> aktivitettypeStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "egen");
 
@@ -66,8 +66,11 @@ public class AktiviteterV2 {
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
 
-        aktivitetService.lagreOgProsseseserAktiviteter(aktivitet1);
-        aktivitetService.lagreOgProsseseserAktiviteter(aktivitet2);
+        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet1);
+        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet2);
+        aktivitetService.utleddAktivitetStatuser(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
+        aktivitetService.utleddAktivitetStatuser(aktorId, KafkaAktivitetMelding.AktivitetTypeData.MOTE);
+
         AktoerAktiviteter avtalteAktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, true);
         Optional<AktivitetStatus> aktivitettypeStatus1 = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "egen");
         Optional<AktivitetStatus> aktivitettypeStatus2 = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "mote");
