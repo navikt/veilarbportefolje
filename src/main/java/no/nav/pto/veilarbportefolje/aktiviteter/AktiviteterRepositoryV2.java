@@ -57,7 +57,7 @@ public class AktiviteterRepositoryV2 {
         return false;
     }
 
-    private void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
+    public void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
         db.update("INSERT INTO " + TABLE_NAME +
                         " (" + AKTIVITETID + ", " + AKTOERID + ", " + AKTIVITETTYPE + ", " + AVTALT + ", " + FRADATO + ", " + TILDATO + ", " + STATUS + ", " + VERSION + ") " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +

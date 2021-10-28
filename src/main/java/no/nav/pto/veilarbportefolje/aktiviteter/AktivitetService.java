@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
+import javax.ws.rs.HEAD;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -69,17 +70,16 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         }
 
         //POSTGRES
-        lagreOgProsseseserAktiviteter(aktivitetData);
+        boolean bleProsessertPostgres = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
+        if (bleProsessertPostgres) {
+            utleddAktivitetStatuser(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType());
+        }
     }
 
-    public void lagreOgProsseseserAktiviteter(KafkaAktivitetMelding aktivitetData) {
-        boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-
-        if (bleProsessert) {
-            AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType(), brukIkkeAvtalteAktiviteter(unleashService));
-            prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, aktivitetData.getAktivitetType().name());
-            brukerDataService.oppdaterAktivitetBrukerDataPostgres(AktorId.of(aktivitetData.getAktorId()));
-        }
+    public void utleddAktivitetStatuser(AktorId aktorId, KafkaAktivitetMelding.AktivitetTypeData aktivitetType) {
+        AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, aktivitetType, brukIkkeAvtalteAktiviteter(unleashService));
+        prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, aktivitetType.name());
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
     }
 
     public void utledAktivitetstatuserForAktoerid(AktorId aktoerId) {
@@ -108,7 +108,8 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         elasticIndexer.indekser(AktorId.of(melding.getAktorId()));
 
         //POSTGRES
-        lagreOgProsseseserAktiviteter(melding);
+        aktiviteterRepositoryV2.upsertAktivitet(melding);
+        utleddAktivitetStatuser(AktorId.of(melding.getAktorId()), melding.getAktivitetType());
     }
 
     @Override
