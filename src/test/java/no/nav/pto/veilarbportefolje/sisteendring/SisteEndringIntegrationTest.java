@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
 import io.vavr.control.Try;
-import static java.util.Optional.empty;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
@@ -21,23 +20,13 @@ import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_EGEN;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_IJOBB;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.MAL;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_EGEN;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_IJOBB;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
-import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import org.elasticsearch.action.get.GetResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mockito;
-import static org.mockito.Mockito.mock;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.ZonedDateTime;
@@ -45,6 +34,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static java.util.Optional.empty;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_EGEN;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_IJOBB;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.MAL;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_EGEN;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_IJOBB;
+import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 
 public class SisteEndringIntegrationTest extends EndToEndTest {
     private final MalService malService;
@@ -490,7 +491,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "\"endringsType\":\"" + endringsType + "\"," +
                 "\"lagtInnAv\":\"BRUKER\"," +
                 "\"avtalt\":true," +
-                "\"historisk\":false" +
+                "\"historisk\":false," +
+                "\"version\":1" +
                 "}";
         aktivitetService.behandleKafkaMelding(aktivitetKafkaMelding);
     }
