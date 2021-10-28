@@ -67,16 +67,14 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         }
 
         //POSTGRES
-        lagreOgProsseseserAktiviteter(aktivitetData);
+        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
+        utleddAktivitetStatuser(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType());
     }
 
-    public void lagreOgProsseseserAktiviteter(KafkaAktivitetMelding aktivitetData) {
-        aktiviteterRepositoryV2.upsertAktivitet(aktivitetData);
-
-        AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType(), brukIkkeAvtalteAktiviteter(unleashService));
-
-        prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, aktivitetData.getAktivitetType().name());
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(AktorId.of(aktivitetData.getAktorId()));
+    public void utleddAktivitetStatuser(AktorId aktorId, KafkaAktivitetMelding.AktivitetTypeData aktivitetType) {
+        AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, aktivitetType, brukIkkeAvtalteAktiviteter(unleashService));
+        prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, aktivitetType.name());
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
     }
 
     public void utledAktivitetstatuserForAktoerid(AktorId aktoerId) {
@@ -105,7 +103,8 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         elasticIndexer.indekser(AktorId.of(melding.getAktorId()));
 
         //POSTGRES
-        lagreOgProsseseserAktiviteter(melding);
+        aktiviteterRepositoryV2.upsertAktivitet(melding);
+        utleddAktivitetStatuser(AktorId.of(melding.getAktorId()), melding.getAktivitetType());
     }
 
     @Override
