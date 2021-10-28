@@ -1,15 +1,14 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
+import static no.nav.common.json.JsonUtils.fromJson;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.database.BrukerDataService;
+import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -19,8 +18,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static no.nav.common.json.JsonUtils.fromJson;
 
 @Slf4j
 @Service
@@ -59,13 +56,14 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
             return;
         }
 
-        aktivitetDAO.tryLagreAktivitetData(aktivitetData);
-        utledAktivitetstatuserForAktoerid(aktorId);
-        elasticIndexer.indekser(aktorId);
-
-        if (!oppfolgingRepository.erUnderoppfolging(aktorId)) {
-            elasticServiceV2.deleteIfPresent(aktorId,
-                    String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
+        boolean bleProsessert = aktivitetDAO.tryLagreAktivitetData(aktivitetData);
+        if(bleProsessert){
+            utledAktivitetstatuserForAktoerid(aktorId);
+            elasticIndexer.indekser(aktorId);
+            if (!oppfolgingRepository.erUnderoppfolging(aktorId)) {
+                elasticServiceV2.deleteIfPresent(aktorId,
+                        String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
+            }
         }
 
         //POSTGRES
@@ -73,12 +71,14 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     }
 
     public void lagreOgProsseseserAktiviteter(KafkaAktivitetMelding aktivitetData) {
-        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
+        boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
 
-        AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType());
+        if(bleProsessert){
+            AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType());
 
-        prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, aktivitetData.getAktivitetType().name());
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(AktorId.of(aktivitetData.getAktorId()));
+            prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, aktivitetData.getAktivitetType().name());
+            brukerDataService.oppdaterAktivitetBrukerDataPostgres(AktorId.of(aktivitetData.getAktorId()));
+        }
     }
 
     public void utledAktivitetstatuserForAktoerid(AktorId aktoerId) {
