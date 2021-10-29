@@ -10,16 +10,11 @@ import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
-import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
-import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
-import static no.nav.common.utils.NaisUtils.getCredentials;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
@@ -61,7 +56,6 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -71,6 +65,13 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
+import static no.nav.common.utils.NaisUtils.getCredentials;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
 public class KafkaConfigCommon {
@@ -227,19 +228,8 @@ public class KafkaConfigCommon {
                                         (melding -> {
                                             ytelsesService.behandleKafkaRecord(melding, TypeKafkaYtelse.TILTAKSPENGER);
                                         })
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.AIVEN_AKTIVITER_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(KafkaAktivitetMelding.class),
-                                        aktivitetService::behandleKafkaRecord
                                 )
                 );
-
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
                                 .withLogging()
