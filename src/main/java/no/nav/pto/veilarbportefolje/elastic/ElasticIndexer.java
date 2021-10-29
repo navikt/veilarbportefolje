@@ -114,7 +114,7 @@ public class ElasticIndexer {
                         log.error(format("Feil ved markering av bruker %s som slettet", bruker.getAktoer_id()), e);
                     }
                 } else {
-                    log.info("Elastic update feilet, ", e);
+                    log.info("Oppdatering i elastic feilet", e);
                 }
             }
         });
