@@ -108,9 +108,13 @@ public class ElasticIndexer {
 
             @Override
             public void onFailure(Exception e) {
-                final int statusCode = ((ResponseException) e).getResponse().getStatusLine().getStatusCode();
-                if (statusCode != 404) {
-                    log.error(format("Feil ved markering av bruker %s som slettet", bruker.getAktoer_id()), e);
+                if (e instanceof ResponseException) {
+                    final int statusCode = ((ResponseException) e).getResponse().getStatusLine().getStatusCode();
+                    if (statusCode != 404) {
+                        log.error(format("Feil ved markering av bruker %s som slettet", bruker.getAktoer_id()), e);
+                    }
+                } else {
+                    log.info("Elastic update feilet, ", e);
                 }
             }
         });
