@@ -51,7 +51,7 @@ public class ElasticConfig {
         long antallDokumenter = ElasticUtils.getCount();
         if (antallDokumenter < FORVENTET_MINIMUM_ANTALL_DOKUMENTER) {
             String feilmelding = String.format("Antall dokumenter i elastic (%s) er mindre enn forventet antall (%s)", antallDokumenter, FORVENTET_MINIMUM_ANTALL_DOKUMENTER);
-            HealthCheckResult.unhealthy("Feil mot elastic search", new RuntimeException(feilmelding));
+            return HealthCheckResult.unhealthy("Feil mot elastic search", new RuntimeException(feilmelding));
         }
         return HealthCheckResult.healthy();
     }
