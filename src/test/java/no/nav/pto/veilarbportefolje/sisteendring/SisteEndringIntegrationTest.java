@@ -15,7 +15,6 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -58,17 +57,18 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final EnhetId testEnhet = EnhetId.of("0000");
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService, ElasticServiceV2 elasticServiceV2, AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV2, BrukerDataService brukerDataService, ElasticIndexer elasticIndexer) {
+    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService, AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV2, BrukerDataService brukerDataService, ElasticIndexer elasticIndexer) {
         brukerService = mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
         unleashService = Mockito.mock(UnleashService.class);
         this.oppfolgingRepositoryMock = mock(OppfolgingRepository.class);
-        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, oppfolgingRepositoryMock, elasticServiceV2, mock(UnleashService.class), elasticIndexer);
+        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, mock(UnleashService.class), elasticIndexer);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.elasticService = elasticService;
         this.malService = malService;
     }
+
     @BeforeEach
     public void resetMock(){
         Mockito.when(oppfolgingRepositoryMock.erUnderoppfolging(any())).thenReturn(true);

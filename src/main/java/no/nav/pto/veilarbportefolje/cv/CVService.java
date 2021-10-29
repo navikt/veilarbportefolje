@@ -72,11 +72,6 @@ public class CVService extends KafkaCommonConsumerService<Melding> implements Ka
         cvRepository.upsertHarDeltCv(aktoerId, harDeltCv);
 
         elasticServiceV2.updateHarDeltCv(aktoerId, harDeltCv);
-
-        if (!oppfolgingRepository.erUnderoppfolging(cvMelding.getAktoerId())) {
-            elasticServiceV2.deleteIfPresent(cvMelding.getAktoerId(),
-                    String.format("(CvService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", cvMelding.getAktoerId()));
-        }
     }
 
     private boolean cvEksistere(Melding melding) {

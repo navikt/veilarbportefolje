@@ -6,10 +6,8 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -34,8 +32,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final BrukerService brukerService;
     private final BrukerDataService brukerDataService;
     private final SisteEndringService sisteEndringService;
-    private final OppfolgingRepository oppfolgingRepository;
-    private final ElasticServiceV2 elasticServiceV2;
     private final UnleashService unleashService;
     private final ElasticIndexer elasticIndexer;
     private final AtomicBoolean rewind = new AtomicBoolean();
@@ -62,10 +58,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         if (bleProsessert) {
             utledAktivitetstatuserForAktoerid(aktorId);
             elasticIndexer.indekser(aktorId);
-            if (!oppfolgingRepository.erUnderoppfolging(aktorId)) {
-                elasticServiceV2.deleteIfPresent(aktorId,
-                        String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
-            }
         }
 
         //POSTGRES

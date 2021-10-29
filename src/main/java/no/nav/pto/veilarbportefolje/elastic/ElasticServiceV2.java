@@ -105,16 +105,6 @@ public class ElasticServiceV2 {
     }
 
     @SneakyThrows
-    public void markerBrukerSomSlettet(AktorId aktoerId) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .field("oppfolging", false)
-                .endObject();
-
-        update(aktoerId, content, "Slettet bruker");
-    }
-
-    @SneakyThrows
     public void settManuellStatus(AktorId aktoerId, String manuellStatus) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
@@ -229,13 +219,6 @@ public class ElasticServiceV2 {
         }
     }
 
-    public void deleteIfPresent(AktorId aktoerId, String meldingVedSletting){
-        if(fetchDocument(aktoerId).isExists()){
-            log.info(meldingVedSletting);
-            delete(aktoerId);
-        }
-    }
-
     @SneakyThrows
     private void delete(AktorId aktoerId) {
         DeleteRequest deleteRequest = new DeleteRequest();
@@ -248,7 +231,7 @@ public class ElasticServiceV2 {
             log.info("Slettet dokument for {} ", aktoerId);
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
-                log.warn("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.get());
+                log.info("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.get());
             } else {
                 final String message = format("Det skjedde en feil ved sletting i elastic for bruker %s", aktoerId.get());
                 log.error(message, e);
