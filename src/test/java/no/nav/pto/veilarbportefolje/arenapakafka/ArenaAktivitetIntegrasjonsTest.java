@@ -23,8 +23,6 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -70,7 +68,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
-        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, mock(OppfolgingRepository.class), mock(ElasticServiceV2.class), mock(UnleashService.class), mock(ElasticIndexer.class));
+        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, mock(UnleashService.class), mock(ElasticIndexer.class));
         this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient, arenaHendelseRepository);
     }
 
