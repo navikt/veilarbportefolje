@@ -139,8 +139,8 @@ public class PostgresTable {
         public static final String HENDELSE_ID = "HENDELSE_ID";
     }
 
-    public static final class YTELSER {
-        public static final String TABLE_NAME = "YTELSER";
+    public static final class YTELSESVEDTAK {
+        public static final String TABLE_NAME = "YTELSESVEDTAK";
 
         public static final String VEDTAKSID = "VEDTAKSID";
         public static final String AKTORID = "AKTORID";

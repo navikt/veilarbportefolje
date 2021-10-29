@@ -7,22 +7,17 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.ArenaDato;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.util.DateUtils;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.*;
 
 @Slf4j
 @Repository
@@ -37,7 +32,7 @@ public class YtelsesRepositoryV2 {
         Timestamp utlopsdato = getTimestampOrNull(innhold.getTilOgMedDato(), true);
 
         db.update("""
-                INSERT INTO YTELSER
+                INSERT INTO YTELSESVEDTAK
                 (VEDTAKSID, AKTORID, PERSONID, YTELSESTYPE, SAKSID, SAKSTYPEKODE, RETTIGHETSTYPEKODE,
                 STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLUKERIGJENUNNTAK)
                 VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -59,7 +54,7 @@ public class YtelsesRepositoryV2 {
             return new ArrayList<>();
         }
 
-        final String hentRadSql = "SELECT * FROM YTELSER WHERE AKTORID = ?";
+        final String hentRadSql = "SELECT * FROM YTELSESVEDTAK WHERE AKTORID = ?";
 
         return db.queryForList(hentRadSql, aktorId.get())
                 .stream().map(this::mapTilYtelseDAO)
@@ -86,7 +81,7 @@ public class YtelsesRepositoryV2 {
             return;
         }
         log.info("Sletter ytelse: {}", vedtaksId);
-        db.update("DELETE FROM YTELSER WHERE VEDTAKSID = ?", vedtaksId);
+        db.update("DELETE FROM YTELSESVEDTAK WHERE VEDTAKSID = ?", vedtaksId);
     }
 
     private Timestamp getTimestampOrNull(ArenaDato date, boolean tilOgMedDato) {
@@ -100,7 +95,7 @@ public class YtelsesRepositoryV2 {
     }
 
     public List<AktorId> hentBrukereMedYtelserSomStarterIDag() {
-        final String brukereSomStarterIDag = "SELECT distinct AKTORID FROM YTELSER WHERE date_trunc('day', STARTDATO) = date_trunc('day',current_timestamp)";
+        final String brukereSomStarterIDag = "SELECT distinct AKTORID FROM YTELSESVEDTAK WHERE date_trunc('day', STARTDATO) = date_trunc('day',current_timestamp)";
 
         return db.queryForList(brukereSomStarterIDag, AktorId.class);
     }
