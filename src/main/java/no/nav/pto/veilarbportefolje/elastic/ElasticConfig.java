@@ -51,7 +51,7 @@ public class ElasticConfig {
         long antallDokumenter = ElasticUtils.getCount();
         if (antallDokumenter < FORVENTET_MINIMUM_ANTALL_DOKUMENTER) {
             String feilmelding = String.format("Antall dokumenter i elastic (%s) er mindre enn forventet antall (%s)", antallDokumenter, FORVENTET_MINIMUM_ANTALL_DOKUMENTER);
-            HealthCheckResult.unhealthy("Feil mot elastic search", new RuntimeException(feilmelding));
+            return HealthCheckResult.unhealthy("Feil mot elastic search", new RuntimeException(feilmelding));
         }
         return HealthCheckResult.healthy();
     }
@@ -63,9 +63,7 @@ public class ElasticConfig {
 
 
     @Bean
-    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, RestHighLevelClient restHighLevelClient, SisteEndringRepository sisteEndringRepository, UnleashService unleashService, TiltakRepositoryV2 tiltakRepositoryV2) {
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, sisteEndringRepository, new IndexName(getAlias()), tiltakRepositoryV2, unleashService);
-
-
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, RestHighLevelClient restHighLevelClient, SisteEndringRepository sisteEndringRepository, TiltakRepositoryV2 tiltakRepositoryV2, ElasticServiceV2 elasticServiceV2) {
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, sisteEndringRepository, new IndexName(getAlias()), tiltakRepositoryV2, elasticServiceV2);
     }
 }

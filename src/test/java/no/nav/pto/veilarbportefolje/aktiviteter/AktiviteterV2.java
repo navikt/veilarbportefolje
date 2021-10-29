@@ -1,11 +1,7 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EnhetId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,9 +36,9 @@ public class AktiviteterV2 {
                 .setAvtalt(true)
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
-
-        aktivitetService.lagreOgProsseseserAktiviteter(aktivitet);
-        AktoerAktiviteter avtalteAktiviteterForAktoerid = aktiviteterRepositoryV2.getAvtalteAktiviteterForAktoerid(aktorId);
+        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
+        aktivitetService.utleddAktivitetStatuser(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
+        AktoerAktiviteter avtalteAktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false);
         Optional<AktivitetStatus> aktivitettypeStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "egen");
 
         assertThat(avtalteAktiviteterForAktoerid.getAktiviteter().size()).isEqualTo(1);
@@ -70,9 +66,12 @@ public class AktiviteterV2 {
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
 
-        aktivitetService.lagreOgProsseseserAktiviteter(aktivitet1);
-        aktivitetService.lagreOgProsseseserAktiviteter(aktivitet2);
-        AktoerAktiviteter avtalteAktiviteterForAktoerid = aktiviteterRepositoryV2.getAvtalteAktiviteterForAktoerid(aktorId);
+        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet1);
+        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet2);
+        aktivitetService.utleddAktivitetStatuser(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
+        aktivitetService.utleddAktivitetStatuser(aktorId, KafkaAktivitetMelding.AktivitetTypeData.MOTE);
+
+        AktoerAktiviteter avtalteAktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, true);
         Optional<AktivitetStatus> aktivitettypeStatus1 = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "egen");
         Optional<AktivitetStatus> aktivitettypeStatus2 = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "mote");
 
