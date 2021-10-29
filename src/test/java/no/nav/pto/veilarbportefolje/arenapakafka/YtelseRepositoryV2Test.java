@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.arenapakafka;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
@@ -16,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -41,7 +41,20 @@ public class YtelseRepositoryV2Test {
 
     @AfterEach
     public void tearDown() {
-        jdbcTemplate.execute("TRUNCATE TABLE YTELSER");
+        jdbcTemplate.execute("TRUNCATE TABLE YTELSESVEDTAK");
+    }
+
+    @Test
+    public void skalOppretteYtelsesvedtak() {
+        LocalDate iDag = ZonedDateTime.now().toLocalDate();
+
+        List<YtelseDAO> ytelser = ytelsesRepositoryV2.getYtelser(bruker1);
+        assertThat(ytelser.size()).isEqualTo(0);
+
+        ytelsesRepositoryV2.upsert(bruker1, TypeKafkaYtelse.AAP, lagInnhold("1", iDag));
+
+        ytelser = ytelsesRepositoryV2.getYtelser(bruker1);
+        assertThat(ytelser.size()).isEqualTo(1);
     }
 
     @Test
@@ -77,35 +90,50 @@ public class YtelseRepositoryV2Test {
     }
 
     @Test
-    public void skalMappeYtelserDAORiktig() {
+    public void skalMappeYtelserDAO() {
         LocalDate iDag = ZonedDateTime.now().toLocalDate();
         ytelsesRepositoryV2.upsert(bruker1, TypeKafkaYtelse.AAP, lagInnhold("1", iDag, "Sak1", fnr, personId, 2, 4, 8));
 
         YtelseDAO ytelse = ytelsesRepositoryV2.getYtelser(bruker1).get(0);
-
-
+        assertThat(ytelse.getAktorId()).isEqualTo(bruker1);
+        assertThat(ytelse.getPersonId()).isEqualTo(personId);
+        assertThat(ytelse.getType()).isEqualTo(TypeKafkaYtelse.AAP);
+        assertThat(ytelse.getSaksId()).isEqualTo("Sak1");
+        assertThat(ytelse.getSakstypeKode()).isEqualTo("AA");
+        assertThat(ytelse.getRettighetstypeKode()).isEqualTo("AAP");
+        assertThat(ytelse.getStartDato()).isEqualTo(Timestamp.valueOf(iDag.toString() + " 00:00:00"));
+        assertThat(ytelse.getUtlopsDato()).isEqualTo(Timestamp.valueOf("2100-07-13 23:59:00")); // settes til 23:59 av YtelsesRepositoryV2.getTimestampOrNull
+        assertThat(ytelse.getAntallUkerIgjen()).isEqualTo(2);
+        assertThat(ytelse.getAntallUkerIgjenPermittert()).isEqualTo(4);
+        assertThat(ytelse.getAntallDagerIgjenUnntak()).isEqualTo(8);
     }
 
-    private YtelsesInnhold lagInnhold(String id, LocalDate startDato) {
-        return lagInnhold(id, startDato, "Sak1", fnr, personId);
+    @Test
+    public void skalOppdatereYtelsesvedtak() {
+        LocalDate iDag = ZonedDateTime.now().toLocalDate();
+        ytelsesRepositoryV2.upsert(bruker1, TypeKafkaYtelse.AAP, lagInnhold("1", iDag));
+        ytelsesRepositoryV2.upsert(bruker1, TypeKafkaYtelse.AAP, lagInnhold("1", iDag, "Sak1", fnr, personId, 2, 4, 8));
+
+        List<YtelseDAO> ytelser = ytelsesRepositoryV2.getYtelser(bruker1);
+        assertThat(ytelser.size()).isEqualTo(1);
+        assertThat(ytelser.get(0).getAntallUkerIgjen()).isEqualTo(2);
+        assertThat(ytelser.get(0).getAntallUkerIgjenPermittert()).isEqualTo(4);
+        assertThat(ytelser.get(0).getAntallDagerIgjenUnntak()).isEqualTo(8);
     }
 
-    public static YtelsesInnhold lagInnhold(String vedtakId, LocalDate startDato, String sakId, Fnr fnr, PersonId personId) {
-        YtelsesInnhold innhold = new YtelsesInnhold();
-        innhold.setFnr(fnr.get());
-        innhold.setVedtakId(vedtakId);
-        innhold.setSaksId(sakId);
-        innhold.setSakstypeKode("AA");
-        innhold.setRettighetstypeKode("AAP");
-        innhold.setPersonId(personId.getValue());
-        innhold.setFraOgMedDato(new ArenaDato(startDato.toString() + " 00:00:00"));
-        innhold.setTilOgMedDato(new ArenaDato("2100-07-13 00:00:00"));
-        innhold.setHendelseId(1L);
-        YtelsesDTO dto = new YtelsesDTO();
-        dto.setOperationType("I");
-        dto.setAfter(innhold);
+    @Test
+    public void skalSletteYtelse() {
+        LocalDate iDag = ZonedDateTime.now().toLocalDate();
+        ytelsesRepositoryV2.upsert(bruker1, TypeKafkaYtelse.AAP, lagInnhold("1", iDag));
 
-        return innhold;
+        ytelsesRepositoryV2.slettYtelse("1");
+        List<YtelseDAO> ytelser = ytelsesRepositoryV2.getYtelser(bruker1);
+        assertThat(ytelser.size()).isEqualTo(0);
+    }
+
+
+    private YtelsesInnhold lagInnhold(String vedtaksId, LocalDate startDato) {
+        return lagInnhold(vedtaksId, startDato, "Sak1", fnr, personId, 0, 0, 0);
     }
 
     public static YtelsesInnhold lagInnhold(String vedtaksId, LocalDate startDato, String saksId, Fnr fnr, PersonId personId, Integer ukerIgjen, Integer ukerIgjenPermittert, Integer dagerIgjenUnntak) {
@@ -122,9 +150,6 @@ public class YtelseRepositoryV2Test {
         innhold.setAntallUkerIgjen(ukerIgjen);
         innhold.setAntallUkerIgjenUnderPermittering(ukerIgjenPermittert);
         innhold.setAntallDagerIgjenUnntak(dagerIgjenUnntak);
-        YtelsesDTO dto = new YtelsesDTO();
-        dto.setOperationType("I");
-        dto.setAfter(innhold);
 
         return innhold;
     }
