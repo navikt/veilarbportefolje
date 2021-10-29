@@ -62,10 +62,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         if (bleProsessert) {
             utledAktivitetstatuserForAktoerid(aktorId);
             elasticIndexer.indekser(aktorId);
-            if (!oppfolgingRepository.erUnderoppfolging(aktorId)) {
-                elasticServiceV2.deleteIfPresent(aktorId,
-                        String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
-            }
         }
 
         //POSTGRES
