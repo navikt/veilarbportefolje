@@ -12,7 +12,6 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.BrukertiltakV2;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
@@ -28,7 +27,11 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.MDC;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -55,7 +58,6 @@ public class ElasticIndexer {
     private final IndexName alias;
     private final SisteEndringRepository sisteEndringRepository;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
-    private final UnleashService unleashService;
 
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
@@ -63,15 +65,13 @@ public class ElasticIndexer {
             RestHighLevelClient restHighLevelClient,
             SisteEndringRepository sisteEndringRepository,
             IndexName alias,
-            TiltakRepositoryV2 tiltakRepositoryV2,
-            UnleashService unleashService) {
+            TiltakRepositoryV2 tiltakRepositoryV2) {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.restHighLevelClient = restHighLevelClient;
         this.sisteEndringRepository = sisteEndringRepository;
         this.tiltakRepositoryV2 = tiltakRepositoryV2;
-        this.unleashService = unleashService;
         this.alias = alias;
     }
 
@@ -114,7 +114,7 @@ public class ElasticIndexer {
                         log.error(format("Feil ved markering av bruker %s som slettet", bruker.getAktoer_id()), e);
                     }
                 } else {
-                    log.info("Oppdatering i elastic feilet", e);
+                    log.error("Oppdatering i elastic feilet", e);
                 }
             }
         });
