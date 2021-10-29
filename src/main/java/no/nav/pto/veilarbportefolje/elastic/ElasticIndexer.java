@@ -20,9 +20,6 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.action.update.UpdateResponse;
-import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.MDC;
@@ -45,7 +42,6 @@ import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 public class ElasticIndexer {
@@ -58,6 +54,7 @@ public class ElasticIndexer {
     private final IndexName alias;
     private final SisteEndringRepository sisteEndringRepository;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
+    private final ElasticServiceV2 elasticServiceV2;
 
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
@@ -65,7 +62,7 @@ public class ElasticIndexer {
             RestHighLevelClient restHighLevelClient,
             SisteEndringRepository sisteEndringRepository,
             IndexName alias,
-            TiltakRepositoryV2 tiltakRepositoryV2) {
+            TiltakRepositoryV2 tiltakRepositoryV2, ElasticServiceV2 elasticServiceV2) {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
@@ -73,6 +70,7 @@ public class ElasticIndexer {
         this.sisteEndringRepository = sisteEndringRepository;
         this.tiltakRepositoryV2 = tiltakRepositoryV2;
         this.alias = alias;
+        this.elasticServiceV2 = elasticServiceV2;
     }
 
     static int utregnTil(int from, int batchSize) {
@@ -87,39 +85,6 @@ public class ElasticIndexer {
         return from + BATCH_SIZE;
     }
 
-    @SneakyThrows
-    public void markerBrukerSomSlettet(OppfolgingsBruker bruker) {
-        log.info("Markerer bruker {} som slettet", bruker.getAktoer_id());
-        UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(alias.getValue());
-        updateRequest.type("_doc");
-        updateRequest.id(bruker.getAktoer_id());
-        updateRequest.doc(jsonBuilder()
-                .startObject()
-                .field("oppfolging", false)
-                .endObject()
-        );
-
-        restHighLevelClient.updateAsync(updateRequest, DEFAULT, new ActionListener<>() {
-            @Override
-            public void onResponse(UpdateResponse updateResponse) {
-                log.info("Satte under oppfolging til false i elasticsearch");
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                if (e instanceof ResponseException) {
-                    final int statusCode = ((ResponseException) e).getResponse().getStatusLine().getStatusCode();
-                    if (statusCode != 404) {
-                        log.error(format("Feil ved markering av bruker %s som slettet", bruker.getAktoer_id()), e);
-                    }
-                } else {
-                    log.error("Oppdatering i elastic feilet", e);
-                }
-            }
-        });
-    }
-
     public void indekser(AktorId aktoerId) {
         brukerRepository.hentBrukerFraView(aktoerId).ifPresent(this::indekserBruker);
     }
@@ -131,7 +96,7 @@ public class ElasticIndexer {
             leggTilSisteEndring(bruker);
             skrivTilIndeks(alias.getValue(), bruker);
         } else {
-            markerBrukerSomSlettet(bruker);
+            elasticServiceV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
         }
     }
 

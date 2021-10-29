@@ -63,7 +63,7 @@ public class ElasticConfig {
 
 
     @Bean
-    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, RestHighLevelClient restHighLevelClient, SisteEndringRepository sisteEndringRepository, TiltakRepositoryV2 tiltakRepositoryV2) {
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, sisteEndringRepository, new IndexName(getAlias()), tiltakRepositoryV2);
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, RestHighLevelClient restHighLevelClient, SisteEndringRepository sisteEndringRepository, TiltakRepositoryV2 tiltakRepositoryV2, ElasticServiceV2 elasticServiceV2) {
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, sisteEndringRepository, new IndexName(getAlias()), tiltakRepositoryV2, elasticServiceV2);
     }
 }
