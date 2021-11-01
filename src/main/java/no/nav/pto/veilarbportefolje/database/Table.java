@@ -54,6 +54,8 @@ public class Table {
         public static final String FODSELSNR = "FODSELSNR";
         public static final String PERSON_ID = "PERSON_ID";
         public static final String NAV_KONTOR = "NAV_KONTOR";
+        public static final String OPPFOLGING = "OPPFOLGING";
+
     }
 
     public static final class BRUKER_DATA {
