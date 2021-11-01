@@ -131,9 +131,9 @@ public class OppfolgingRepository {
         db.setFetchSize(10_000);
 
         List<AktorId> alleIder = SqlUtils
-                .select(db, Table.OPPFOLGING_DATA.TABLE_NAME, rs -> AktorId.of(rs.getString(Table.OPPFOLGING_DATA.AKTOERID)))
-                .column(Table.OPPFOLGING_DATA.AKTOERID)
-                .where(WhereClause.equals(Table.OPPFOLGING_DATA.OPPFOLGING,"J"))
+                .select(db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> AktorId.of(rs.getString(Table.VW_PORTEFOLJE_INFO.AKTOERID)))
+                .column(Table.VW_PORTEFOLJE_INFO.AKTOERID)
+                .where(WhereClause.equals(Table.VW_PORTEFOLJE_INFO.OPPFOLGING,"J"))
                 .executeToList()
                 .stream()
                 .filter(Objects::nonNull)
