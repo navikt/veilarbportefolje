@@ -14,18 +14,21 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
-import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.getDateOrNull;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getTimestampOrNull;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKERTILTAK.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
@@ -39,12 +42,8 @@ public class TiltakRepositoryV3 {
     private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
 
     public void upsert(TiltakInnhold innhold, AktorId aktorId) {
-        Timestamp tilDato = Optional.ofNullable(getDateOrNull(innhold.getAktivitetperiodeTil(), true))
-                .map(DateUtils::toTimestamp)
-                .orElse(null);
-        Timestamp fraDato = Optional.ofNullable(getDateOrNull(innhold.getAktivitetperiodeFra(), false))
-                .map(DateUtils::toTimestamp)
-                .orElse(null);
+        Timestamp tilDato = getTimestampOrNull(innhold.getAktivitetperiodeTil(), true);
+        Timestamp fraDato = getTimestampOrNull(innhold.getAktivitetperiodeFra(), false);
 
         log.info("Lagrer tiltak: {}", innhold.getAktivitetid());
 

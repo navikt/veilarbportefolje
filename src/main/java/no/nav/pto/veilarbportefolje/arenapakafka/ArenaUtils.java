@@ -1,17 +1,17 @@
-package no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter;
+package no.nav.pto.veilarbportefolje.arenapakafka;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.arenapakafka.ArenaDato;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.ArenaInnholdKafka;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GoldenGateDTO;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 
-public interface ArenaAktivitetUtils {
+public interface ArenaUtils {
     static <T extends ArenaInnholdKafka> T getInnhold(GoldenGateDTO<T> goldenGateDTO) {
         if(skalSlettesGoldenGate(goldenGateDTO)){
             return goldenGateDTO.getBefore();
@@ -60,6 +60,16 @@ public interface ArenaAktivitetUtils {
             return date.getDato().plusHours(23).plusMinutes(59);
         }
         return date.getDato();
+    }
+
+    static Timestamp getTimestampOrNull(ArenaDato date, boolean tilOgMedDato) {
+        if (date == null || date.getLocalDate() == null) {
+            return null;
+        }
+        if (tilOgMedDato) {
+            return Timestamp.valueOf(date.getLocalDate().plusHours(23).plusMinutes(59));
+        }
+        return Timestamp.valueOf(date.getLocalDate());
     }
 
     static boolean erUtgatt(ArenaDato tilDato, boolean tilOgMedDato) {

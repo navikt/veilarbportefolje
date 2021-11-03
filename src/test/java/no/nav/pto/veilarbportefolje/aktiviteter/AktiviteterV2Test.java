@@ -1,11 +1,7 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EnhetId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,7 +12,7 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class AktiviteterV2 {
+public class AktiviteterV2Test {
     private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktivitetService aktivitetService;
@@ -24,7 +20,7 @@ public class AktiviteterV2 {
     private final AktorId aktorId = AktorId.of("1000123");
 
     @Autowired
-    public AktiviteterV2(AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetService aktivitetService) {
+    public AktiviteterV2Test(AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetService aktivitetService) {
         this.aktivitetStatusRepositoryV2 = aktivitetStatusRepositoryV2;
         this.aktiviteterRepositoryV2 = aktiviteterRepositoryV2;
         this.aktivitetService = aktivitetService;

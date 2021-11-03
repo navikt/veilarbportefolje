@@ -23,7 +23,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.getDateOrNull;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getDateOrNull;
 import static no.nav.pto.veilarbportefolje.database.Table.GRUPPE_AKTIVITER.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 

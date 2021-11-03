@@ -4,7 +4,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.arenapakafka.ArenaDato;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getTimestampOrNull;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.*;
 
 @Slf4j
@@ -82,16 +82,6 @@ public class YtelsesRepositoryV2 {
         }
         log.info("Sletter ytelse: {}", vedtaksId);
         db.update("DELETE FROM YTELSESVEDTAK WHERE VEDTAKSID = ?", vedtaksId);
-    }
-
-    private Timestamp getTimestampOrNull(ArenaDato date, boolean tilOgMedDato) {
-        if (date == null || date.getLocalDate() == null) {
-            return null;
-        }
-        if (tilOgMedDato) {
-            return Timestamp.valueOf(date.getLocalDate().plusHours(23).plusMinutes(59));
-        }
-        return Timestamp.valueOf(date.getLocalDate());
     }
 
     public List<AktorId> hentBrukereMedYtelserSomStarterIDag() {

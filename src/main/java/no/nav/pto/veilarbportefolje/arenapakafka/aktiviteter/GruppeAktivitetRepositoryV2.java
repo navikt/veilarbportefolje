@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aktiviteter.*;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,15 +17,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.getDateOrNull;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.*;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getTimestampOrNull;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.AKTIV;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.HENDELSE_ID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.MOTEPLAN_ID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.MOTEPLAN_SLUTTDATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.MOTEPLAN_STARTDATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.VEILEDNINGDELTAKER_ID;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 
@@ -39,8 +47,9 @@ public class GruppeAktivitetRepositoryV2 {
 
     public void upsertGruppeAktivitet(GruppeAktivitetInnhold aktivitet, AktorId aktorId, boolean aktiv) {
         // Fra dato kan ha verdien null, det tilsier at aktiviteten varer en hel dag
-        ZonedDateTime tilDato = getDateOrNull(aktivitet.getAktivitetperiodeTil(), true);
-        ZonedDateTime fraDato = aktivitet.getAktivitetperiodeFra() == null ? tilDato.minusDays(1) : getDateOrNull(aktivitet.getAktivitetperiodeFra());
+        Timestamp tilDato = getTimestampOrNull(aktivitet.getAktivitetperiodeTil(), true);
+        Timestamp fraDato = getTimestampOrNull(aktivitet.getAktivitetperiodeFra(), false);
+        if (fraDato == null) fraDato = Timestamp.valueOf(tilDato.toLocalDateTime().minusDays(1));
 
         db.update("INSERT INTO " + TABLE_NAME +
                         " (" + MOTEPLAN_ID + ", " + VEILEDNINGDELTAKER_ID + ", " + AKTOERID + ", " + MOTEPLAN_STARTDATO + ", " + MOTEPLAN_SLUTTDATO + ", " + HENDELSE_ID + ", " + AKTIV + ") " +
@@ -48,8 +57,8 @@ public class GruppeAktivitetRepositoryV2 {
                         "ON CONFLICT (" + MOTEPLAN_ID + ", " + VEILEDNINGDELTAKER_ID + ") " +
                         "DO UPDATE SET (" + AKTOERID + ", " + MOTEPLAN_STARTDATO + ", " + MOTEPLAN_SLUTTDATO + ", " + HENDELSE_ID + ", " + AKTIV + ") = (?, ?, ?, ?, ?)",
                 aktivitet.getMoteplanId(), aktivitet.getVeiledningdeltakerId(),
-                aktorId.get(), Timestamp.from(fraDato.toInstant()), Timestamp.from(tilDato.toInstant()), aktivitet.getHendelseId(), aktiv,
-                aktorId.get(), Timestamp.from(fraDato.toInstant()), Timestamp.from(tilDato.toInstant()), aktivitet.getHendelseId(), aktiv
+                aktorId.get(), fraDato, tilDato, aktivitet.getHendelseId(), aktiv,
+                aktorId.get(), fraDato, tilDato, aktivitet.getHendelseId(), aktiv
         );
     }
 
