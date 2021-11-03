@@ -37,7 +37,16 @@ import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
-import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerKafkaDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
@@ -88,6 +97,8 @@ public class KafkaConfigCommon {
 
         AIVEN_REGISTRERING_TOPIC("paw.arbeidssoker-registrert-v1"),
         AIVEN_PROFILERING_TOPIC("paw.arbeidssoker-profilert-v1"),
+
+        AIVEN_AKTIVITER_TOPIC("pto.aktivitet-portefolje-v1"),
 
         TILTAK_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
         UTDANNINGS_AKTIVITET_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix()),
@@ -219,7 +230,6 @@ public class KafkaConfigCommon {
                                         })
                                 )
                 );
-
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
                                 .withLogging()

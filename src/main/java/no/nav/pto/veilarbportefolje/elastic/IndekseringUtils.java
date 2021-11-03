@@ -18,7 +18,7 @@ public class IndekseringUtils {
 
     static OppfolgingsBruker finnBruker(List<OppfolgingsBruker> brukere, AktorId aktorId) {
         return brukere.stream()
-                .filter(bruker -> bruker.getAktoer_id().equals(aktorId.get()))
+                .filter(bruker -> aktorId.toString().equals(bruker.getAktoer_id()))
                 .findFirst()
                 .orElseThrow(IllegalStateException::new);
     }

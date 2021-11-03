@@ -2,7 +2,9 @@ package no.nav.pto.veilarbportefolje.util;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.SneakyThrows;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 
 import javax.sql.DataSource;
@@ -18,6 +20,10 @@ public class PostgresContainer {
     public PostgresContainer() {
         container = new GenericContainer(DB_IMAGE).withExposedPorts(DB_PORT);
         container.start(); // This will block until the container is started
+    }
+    @SneakyThrows
+    public String execInContainer(String... cmd) {
+        return container.execInContainer(cmd).getStdout();
     }
 
     public void stopContainer() {

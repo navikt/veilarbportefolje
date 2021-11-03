@@ -3,14 +3,18 @@ package no.nav.pto.veilarbportefolje.sisteendring;
 import io.vavr.control.Try;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
-import no.nav.pto.veilarbportefolje.aktiviteter.*;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
+import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -31,7 +35,11 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Optional.empty;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_EGEN;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_IJOBB;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.MAL;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_EGEN;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_IJOBB;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -49,17 +57,18 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final EnhetId testEnhet = EnhetId.of("0000");
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService, ElasticServiceV2 elasticServiceV2, AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV2, BrukerDataService brukerDataService) {
+    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService, AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV2, BrukerDataService brukerDataService, ElasticIndexer elasticIndexer) {
         brukerService = mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
         unleashService = Mockito.mock(UnleashService.class);
         this.oppfolgingRepositoryMock = mock(OppfolgingRepository.class);
-        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, oppfolgingRepositoryMock, elasticServiceV2, unleashService);
+        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, mock(UnleashService.class), elasticIndexer);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.elasticService = elasticService;
         this.malService = malService;
     }
+
     @BeforeEach
     public void resetMock(){
         Mockito.when(oppfolgingRepositoryMock.erUnderoppfolging(any())).thenReturn(true);
@@ -441,33 +450,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertTomRes2.getAntall()).isEqualTo(0);
     }
 
-    @Test
-    public void endring_pa_bruker_uten_oppfolging_slettes_fra_elastic() {
-        Mockito.when(oppfolgingRepositoryMock.erUnderoppfolging(any())).thenReturn(false);
-        final AktorId aktoerId = randomAktorId();
-
-        populateElastic(testEnhet, veilederId, aktoerId.get());
-        pollElasticUntil(() -> {
-            final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
-                    testEnhet.get(),
-                    empty(),
-                    "asc",
-                    "ikke_satt",
-                    new Filtervalg(),
-                    null,
-                    null);
-
-            return brukereMedAntall.getAntall() == 1;
-        });
-
-        send_aktvitet_melding(aktoerId, "2020-05-28T09:47:42.48+02:00", KafkaAktivitetMelding.EndringsType.OPPRETTET,
-                KafkaAktivitetMelding.AktivitetStatus.PLANLAGT,
-                KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
-        GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
-
-        assertThat(getResponse.isExists()).isFalse();
-    }
-
     private void send_aktvitet_melding(AktorId aktoerId, String endretDato, KafkaAktivitetMelding.EndringsType endringsType,
                                        KafkaAktivitetMelding.AktivitetStatus status, KafkaAktivitetMelding.AktivitetTypeData typeData) {
         String endret = endretDato == null ? "" : "\"endretDato\":\"" + endretDato + "\",";
@@ -482,7 +464,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "\"endringsType\":\"" + endringsType + "\"," +
                 "\"lagtInnAv\":\"BRUKER\"," +
                 "\"avtalt\":true," +
-                "\"historisk\":false" +
+                "\"historisk\":false," +
+                "\"version\":1" +
                 "}";
         aktivitetService.behandleKafkaMelding(aktivitetKafkaMelding);
     }

@@ -51,10 +51,10 @@ public class TiltakRepositoryV3 {
             upsertTiltakKodeVerk(innhold);
         }
         db.update("INSERT INTO " + TABLE_NAME +
-                        " (" + AKTIVITETID + ", " + PERSONID+ ", " + AKTOERID+ ", " + TILTAKSKODE+ ", " + FRADATO+ ", " + TILDATO + ") " +
+                        " (" + AKTIVITETID + ", " + PERSONID + ", " + AKTOERID + ", " + TILTAKSKODE + ", " + FRADATO + ", " + TILDATO + ") " +
                         "VALUES (?, ?, ?, ?, ?, ?) " +
                         "ON CONFLICT (" + AKTIVITETID + ") " +
-                        "DO UPDATE SET (" + PERSONID+ ", " + AKTOERID+ ", " + TILTAKSKODE+ ", " + FRADATO+ ", " + TILDATO + ") = (?, ?, ?, ?, ?)",
+                        "DO UPDATE SET (" + PERSONID + ", " + AKTOERID + ", " + TILTAKSKODE + ", " + FRADATO + ", " + TILDATO + ") = (?, ?, ?, ?, ?)",
                 innhold.getAktivitetid(),
                 String.valueOf(innhold.getPersonId()), aktorId.get(), innhold.getTiltakstype(), fraDato, tilDato,
                 String.valueOf(innhold.getPersonId()), aktorId.get(), innhold.getTiltakstype(), fraDato, tilDato
@@ -105,19 +105,16 @@ public class TiltakRepositoryV3 {
         if (aktorId == null) {
             throw new IllegalArgumentException("Trenger aktoerId for å hente ut startdatoer");
         }
-
-        final String hentStartDatoerSql = "SELECT " + FRADATO + " FROM " + TABLE_NAME +
-                " WHERE " + AKTOERID + "=?";
-        return db.queryForList(hentStartDatoerSql, Timestamp.class, aktorId.get());
+        return db.queryForList("SELECT FRADATO FROM BRUKERTILTAK WHERE AKTOERID = ?",
+                Timestamp.class, aktorId.get());
     }
 
     public List<String> hentBrukertiltak(AktorId aktorIder) {
         if (aktorIder == null) {
             throw new IllegalArgumentException("Trenger aktorid for å hente ut tiltak");
         }
-        String sql = "SELECT DISTINCT " + PostgresTable.BRUKERTILTAK.TILTAKSKODE + " FROM " + PostgresTable.BRUKERTILTAK.TABLE_NAME
-                + " WHERE " + PostgresTable.BRUKERTILTAK.AKTOERID + " = ?";
-        return db.queryForList(sql, String.class, aktorIder.get());
+        return db.queryForList("SELECT DISTINCT TILTAKSKODE FROM BRUKERTILTAK WHERE AKTOERID = ?",
+                String.class, aktorIder.get());
     }
 
     public void utledOgLagreTiltakInformasjon(AktorId aktorId) {
