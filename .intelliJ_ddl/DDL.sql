@@ -430,6 +430,26 @@ CREATE TABLE public.ytelse_status_for_bruker (
 
 
 --
+-- Name: ytelsesvedtak; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.ytelsesvedtak (
+    vedtaksid character varying(20) NOT NULL,
+    aktorid character varying(20) NOT NULL,
+    personid character varying(20),
+    ytelsestype character varying(15),
+    saksid character varying(30),
+    sakstypekode character varying(10),
+    rettighetstypekode character varying(10),
+    startdato timestamp without time zone,
+    utlopsdato timestamp without time zone,
+    antallukerigjen integer,
+    antallpermitteringsuker integer,
+    antallukerigjenunntak integer
+);
+
+
+--
 -- Name: aktivitet_status_for_bruker aktivitet_status_for_bruker_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -606,10 +626,25 @@ ALTER TABLE ONLY public.ytelse_status_for_bruker
 
 
 --
+-- Name: ytelsesvedtak ytelsesvedtak_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ytelsesvedtak
+    ADD CONSTRAINT ytelsesvedtak_pkey PRIMARY KEY (vedtaksid);
+
+
+--
 -- Name: aktoerid_gruppe_aktiviter_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX aktoerid_gruppe_aktiviter_idx ON public.gruppe_aktiviter USING btree (aktoerid);
+
+
+--
+-- Name: aktorid_ytelser_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX aktorid_ytelser_idx ON public.ytelsesvedtak USING btree (aktorid);
 
 
 --
