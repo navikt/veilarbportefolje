@@ -6,8 +6,10 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.ArenaInnholdKafka;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GoldenGateDTO;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 
@@ -47,7 +49,6 @@ public interface ArenaUtils {
         }
     }
 
-
     static ZonedDateTime getDateOrNull(ArenaDato date) {
         return getDateOrNull(date, false);
     }
@@ -62,14 +63,14 @@ public interface ArenaUtils {
         return date.getDato();
     }
 
-    static Timestamp getTimestampOrNull(ArenaDato date, boolean tilOgMedDato) {
-        if (date == null || date.getLocalDate() == null) {
+    static LocalDateTime getLocalDateTimeOrNull(ArenaDato date, boolean tilOgMedDato) {
+        if (date == null || date.getLocalDate() == null)
             return null;
-        }
+
         if (tilOgMedDato) {
-            return Timestamp.valueOf(date.getLocalDate().plusHours(23).plusMinutes(59));
+            return LocalDateTime.of(date.getLocalDate(), LocalTime.MAX.truncatedTo(ChronoUnit.SECONDS));
         }
-        return Timestamp.valueOf(date.getLocalDate());
+        return LocalDateTime.of(date.getLocalDate(), LocalTime.MIDNIGHT);
     }
 
     static boolean erUtgatt(ArenaDato tilDato, boolean tilOgMedDato) {

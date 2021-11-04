@@ -17,13 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getTimestampOrNull;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.AKTIV;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.HENDELSE_ID;
@@ -47,9 +49,9 @@ public class GruppeAktivitetRepositoryV2 {
 
     public void upsertGruppeAktivitet(GruppeAktivitetInnhold aktivitet, AktorId aktorId, boolean aktiv) {
         // Fra dato kan ha verdien null, det tilsier at aktiviteten varer en hel dag
-        Timestamp tilDato = getTimestampOrNull(aktivitet.getAktivitetperiodeTil(), true);
-        Timestamp fraDato = getTimestampOrNull(aktivitet.getAktivitetperiodeFra(), false);
-        if (fraDato == null) fraDato = Timestamp.valueOf(tilDato.toLocalDateTime().minusDays(1));
+        LocalDateTime tilDato = getLocalDateTimeOrNull(aktivitet.getAktivitetperiodeTil(), true);
+        LocalDateTime fraDato = Optional.ofNullable(getLocalDateTimeOrNull(aktivitet.getAktivitetperiodeFra(), false))
+                .orElse(LocalDateTime.of(tilDato.toLocalDate(), LocalTime.MIDNIGHT));
 
         db.update("INSERT INTO " + TABLE_NAME +
                         " (" + MOTEPLAN_ID + ", " + VEILEDNINGDELTAKER_ID + ", " + AKTOERID + ", " + MOTEPLAN_STARTDATO + ", " + MOTEPLAN_SLUTTDATO + ", " + HENDELSE_ID + ", " + AKTIV + ") " +

@@ -102,8 +102,7 @@ public class YtelseRepositoryV2Test {
         assertThat(ytelse.getSakstypeKode()).isEqualTo("AA");
         assertThat(ytelse.getRettighetstypeKode()).isEqualTo("AAP");
         assertThat(ytelse.getStartDato()).isEqualTo(Timestamp.valueOf(iDag.toString() + " 00:00:00"));
-        assertThat(ytelse.getUtlopsDato()).isEqualTo(Timestamp.valueOf("2100-07-13 23:59:00")); // settes til 23:59 av YtelsesRepositoryV2.getTimestampOrNull
-        assertThat(ytelse.getAntallUkerIgjen()).isEqualTo(2);
+        assertThat(ytelse.getUtlopsDato()).isEqualTo(Timestamp.valueOf("2100-07-13 23:59:59"));
         assertThat(ytelse.getAntallUkerIgjenPermittert()).isEqualTo(4);
         assertThat(ytelse.getAntallDagerIgjenUnntak()).isEqualTo(8);
     }

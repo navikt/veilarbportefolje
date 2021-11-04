@@ -11,13 +11,24 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getTimestampOrNull;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.*;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.AKTORID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.ANTALLPERMITTERINGSUKER;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.ANTALLUKERIGJEN;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.ANTALLUKERIGJENUNNTAK;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.PERSONID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.RETTIGHETSTYPEKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.SAKSID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.SAKSTYPEKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.STARTDATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.UTLOPSDATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.YTELSESTYPE;
 
 @Slf4j
 @Repository
@@ -28,8 +39,8 @@ public class YtelsesRepositoryV2 {
     private final JdbcTemplate db;
 
     public void upsert(AktorId aktorId, TypeKafkaYtelse type, YtelsesInnhold innhold) {
-        Timestamp startdato = getTimestampOrNull(innhold.getFraOgMedDato(), false);
-        Timestamp utlopsdato = getTimestampOrNull(innhold.getTilOgMedDato(), true);
+        LocalDateTime startdato = getLocalDateTimeOrNull(innhold.getFraOgMedDato(), false);
+        LocalDateTime utlopsdato = getLocalDateTimeOrNull(innhold.getTilOgMedDato(), true);
 
         db.update("""
                 INSERT INTO YTELSESVEDTAK

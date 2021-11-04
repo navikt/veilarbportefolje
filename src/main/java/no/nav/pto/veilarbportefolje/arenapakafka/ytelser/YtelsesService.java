@@ -96,8 +96,8 @@ public class YtelsesService {
     public Optional<YtelseDAO> oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(AktorId aktorId, YtelsesInnhold innhold) {
         LocalDate iDag = LocalDate.now();
 
-        Timestamp startDato = Timestamp.valueOf(innhold.getFraOgMedDato().getLocalDate());
-        Timestamp utlopsDato = innhold.getTilOgMedDato() == null ? null : Timestamp.valueOf(innhold.getTilOgMedDato().getLocalDate());
+        Timestamp startDato = Timestamp.valueOf(innhold.getFraOgMedDato().getLocalDateTime());
+        Timestamp utlopsDato = innhold.getTilOgMedDato() == null ? null : Timestamp.valueOf(innhold.getTilOgMedDato().getLocalDateTime());
 
         boolean erLopendeVedtak = harLopendeStartDato(startDato, iDag) && harLopendeUtlopsDato(utlopsDato, iDag);
 

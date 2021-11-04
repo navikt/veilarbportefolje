@@ -20,6 +20,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +29,14 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getTimestampOrNull;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKERTILTAK.*;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKERTILTAK.AKTIVITETID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKERTILTAK.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKERTILTAK.FRADATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKERTILTAK.PERSONID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKERTILTAK.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKERTILTAK.TILDATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKERTILTAK.TILTAKSKODE;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
@@ -42,8 +49,8 @@ public class TiltakRepositoryV3 {
     private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
 
     public void upsert(TiltakInnhold innhold, AktorId aktorId) {
-        Timestamp tilDato = getTimestampOrNull(innhold.getAktivitetperiodeTil(), true);
-        Timestamp fraDato = getTimestampOrNull(innhold.getAktivitetperiodeFra(), false);
+        LocalDateTime fraDato = getLocalDateTimeOrNull(innhold.getAktivitetperiodeFra(), false);
+        LocalDateTime tilDato = getLocalDateTimeOrNull(innhold.getAktivitetperiodeTil(), true);
 
         log.info("Lagrer tiltak: {}", innhold.getAktivitetid());
 
