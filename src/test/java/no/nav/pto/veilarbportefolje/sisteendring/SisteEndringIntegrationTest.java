@@ -19,6 +19,7 @@ import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Optional.empty;
+import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_EGEN;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_IJOBB;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.MAL;
@@ -477,7 +479,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "\"harLestTidspunkt\":\"" + settDato + "\"," +
                 "\"veilederId\":\"" + veilederId.getValue() + "\"" +
                 "}";
-        sistLestService.behandleKafkaMelding(sistLestKafkaMelding);
+        sistLestService.behandleKafkaMeldingLogikk(fromJson(sistLestKafkaMelding, SistLestKafkaMelding.class));
     }
 
     private void send_mal_melding(AktorId aktoerId, ZonedDateTime endretDato) {

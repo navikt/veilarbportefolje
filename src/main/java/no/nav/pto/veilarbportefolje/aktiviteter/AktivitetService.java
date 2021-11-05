@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -23,7 +22,7 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteA
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> implements KafkaConsumerService<String> {
+public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> {
 
     private final AktivitetDAO aktivitetDAO;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
@@ -36,7 +35,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final ElasticIndexer elasticIndexer;
     private final AtomicBoolean rewind = new AtomicBoolean();
 
-    @Override
     public void behandleKafkaMelding(String kafkaMelding) {
         KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
         behandleKafkaMeldingLogikk(aktivitetData);
@@ -101,16 +99,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         //POSTGRES
         aktiviteterRepositoryV2.upsertAktivitet(melding);
         utleddAktivitetStatuser(AktorId.of(melding.getAktorId()), melding.getAktivitetType());
-    }
-
-    @Override
-    public boolean shouldRewind() {
-        return rewind.get();
-    }
-
-    @Override
-    public void setRewind(boolean rewind) {
-        this.rewind.set(rewind);
     }
 
     public void deaktiverUtgatteUtdanningsAktivteter(AktorId aktorId) {

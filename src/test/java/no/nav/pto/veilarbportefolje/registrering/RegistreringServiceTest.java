@@ -50,7 +50,7 @@ class RegistreringServiceTest extends EndToEndTest {
                 .setRegistreringOpprettet(ZonedDateTime.now().format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        registreringService.behandleKafkaMelding(kafkaMessage);
+        registreringService.behandleKafkaMeldingLogikk(kafkaMessage);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
 

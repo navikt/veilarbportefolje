@@ -1,7 +1,8 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONObject;
@@ -40,7 +41,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
                 .put("erManuell", true)
                 .toString();
 
-        manuellStatusService.behandleKafkaMelding(melding);
+        manuellStatusService.behandleKafkaMeldingLogikk(JsonUtils.fromJson(melding, ManuellStatusDTO.class));
 
         final BrukerOppdatertInformasjon oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
 
@@ -59,7 +60,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
                 .put("erManuell", false)
                 .toString();
 
-        manuellStatusService.behandleKafkaMelding(melding);
+        manuellStatusService.behandleKafkaMeldingLogikk(JsonUtils.fromJson(melding, ManuellStatusDTO.class));
 
         final BrukerOppdatertInformasjon oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
 

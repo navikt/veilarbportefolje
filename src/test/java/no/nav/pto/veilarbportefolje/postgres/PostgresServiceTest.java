@@ -17,7 +17,7 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerKafkaDTO;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.registrering.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
@@ -100,7 +100,7 @@ public class PostgresServiceTest {
         AktorId aktorId = AktorId.of("123456789");
         Fnr fnr = Fnr.ofValidFnr("01010101010");
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
-        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(new OppfolgingsbrukerKafkaDTO().setAktoerid(aktorId.get()).setNav_kontor(enhetId).setEndret_dato(ZonedDateTime.now()).setSperret_ansatt(true));
+        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(new OppfolgingsbrukerEntity().setAktoerid(aktorId.get()).setNav_kontor(enhetId).setEndret_dato(ZonedDateTime.now()).setSperret_ansatt(true));
 
         Filtervalg filtervalg = new Filtervalg().setFerdigfilterListe(List.of(MIN_ARBEIDSLISTE));
         BrukereMedAntall brukereMedAntall_pre = postgresService.hentBrukere(enhetId, null, null, null, filtervalg, 0, 10);
@@ -173,7 +173,7 @@ public class PostgresServiceTest {
     public void sok_pa_dialog() {
         AktorId aktorId = AktorId.of("123456789");
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, now());
-        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(new OppfolgingsbrukerKafkaDTO().setAktoerid(aktorId.get()).setNav_kontor(enhetId).setEndret_dato(ZonedDateTime.now()).setSperret_ansatt(true));
+        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(new OppfolgingsbrukerEntity().setAktoerid(aktorId.get()).setNav_kontor(enhetId).setEndret_dato(ZonedDateTime.now()).setSperret_ansatt(true));
         ZonedDateTime venter_tidspunkt = now();
         dialogRepositoryV2.oppdaterDialogInfoForBruker(
                 new Dialogdata()
@@ -190,7 +190,7 @@ public class PostgresServiceTest {
 
     private void lastOppBruker(Fnr fnr, AktorId aktorId) {
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
-        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(new OppfolgingsbrukerKafkaDTO().setAktoerid(aktorId.get()).setNav_kontor(enhetId).setEndret_dato(ZonedDateTime.now()).setSperret_ansatt(true).setFodselsnr(fnr.get()));
+        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(new OppfolgingsbrukerEntity().setAktoerid(aktorId.get()).setNav_kontor(enhetId).setEndret_dato(ZonedDateTime.now()).setSperret_ansatt(true).setFodselsnr(fnr.get()));
         ZonedDateTime venter_tidspunkt = ZonedDateTime.now();
     }
 }

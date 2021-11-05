@@ -14,9 +14,28 @@ import java.sql.ResultSet;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.DISKRESJONSKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.DOED_FRA_DATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ENDRET_DATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ER_DOED;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ETTERNAVN;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.FODSELSNR;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.FORMIDLINGSGRUPPEKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.FORNAVN;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.HAR_OPPFOLGINGSSAK;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.HOVEDMAALKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ISERV_FRA_DATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.KVALIFISERINGSGRUPPEKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.NAV_KONTOR;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.RETTIGHETSGRUPPEKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.SIKKERHETSTILTAK_TYPE_KODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.SPERRET_ANSATT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toSqlDateOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Repository
@@ -26,21 +45,21 @@ public class OppfolginsbrukerRepositoryV2 {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
-    public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerKafkaDTO oppfolgingsbruker) {
-        if (oppfolgingsbruker == null || oppfolgingsbruker.getAktoerid() == null) {
+    public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerEntity oppfolgingsbruker) {
+        if (oppfolgingsbruker == null || oppfolgingsbruker.aktoerid() == null) {
             return 0;
         }
 
-        Optional<ZonedDateTime> sistEndretDato = getEndretDato(oppfolgingsbruker.getAktoerid());
-        if (oppfolgingsbruker.getEndret_dato() == null || (sistEndretDato.isPresent() && sistEndretDato.get().isAfter(oppfolgingsbruker.getEndret_dato()))) {
-            log.info("Oppdaterer ikke oppfolgingsbruker: {}", oppfolgingsbruker.getAktoerid());
+        Optional<ZonedDateTime> sistEndretDato = getEndretDato(oppfolgingsbruker.aktoerid());
+        if (oppfolgingsbruker.endret_dato() == null || (sistEndretDato.isPresent() && sistEndretDato.get().isAfter(oppfolgingsbruker.endret_dato()))) {
+            log.info("Oppdaterer ikke oppfolgingsbruker: {}", oppfolgingsbruker.aktoerid());
             return 0;
         }
         return upsert(oppfolgingsbruker);
     }
 
 
-    public Optional<OppfolgingsbrukerKafkaDTO> getOppfolgingsBruker(AktorId aktorId) {
+    public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(AktorId aktorId) {
         String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, AKTOERID);
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilOppfolgingsbruker, aktorId.get()))
@@ -61,69 +80,59 @@ public class OppfolginsbrukerRepositoryV2 {
     }
 
     @SneakyThrows
-    private OppfolgingsbrukerKafkaDTO mapTilOppfolgingsbruker(ResultSet rs, int row) {
+    private OppfolgingsbrukerEntity mapTilOppfolgingsbruker(ResultSet rs, int row) {
         if (rs == null || rs.getString(AKTOERID) == null) {
             return null;
         }
-        return new OppfolgingsbrukerKafkaDTO()
-                .setAktoerid(rs.getString(AKTOERID))
-                .setFodselsnr(rs.getString(FODSELSNR))
-                .setFormidlingsgruppekode(rs.getString(FORMIDLINGSGRUPPEKODE))
-                .setIserv_fra_dato(toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)))
-                .setEtternavn(rs.getString(ETTERNAVN))
-                .setFornavn(rs.getString(FORNAVN))
-                .setNav_kontor(rs.getString(NAV_KONTOR))
-                .setKvalifiseringsgruppekode(rs.getString(KVALIFISERINGSGRUPPEKODE))
-                .setRettighetsgruppekode(rs.getString(RETTIGHETSGRUPPEKODE))
-                .setHovedmaalkode(rs.getString(HOVEDMAALKODE))
-                .setSikkerhetstiltak_type_kode(rs.getString(SIKKERHETSTILTAK_TYPE_KODE))
-                .setFr_kode(rs.getString(DISKRESJONSKODE))
-                .setHar_oppfolgingssak(rs.getBoolean(HAR_OPPFOLGINGSSAK))
-                .setSperret_ansatt(rs.getBoolean(SPERRET_ANSATT))
-                .setEr_doed(rs.getBoolean(ER_DOED))
-                .setDoed_fra_dato(toZonedDateTime(rs.getTimestamp(DOED_FRA_DATO)))
-                .setEndret_dato(toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
+        return new OppfolgingsbrukerEntity(rs.getString(AKTOERID), rs.getString(FODSELSNR), rs.getString(FORMIDLINGSGRUPPEKODE),
+                toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)), rs.getString(ETTERNAVN), rs.getString(FORNAVN),
+                rs.getString(NAV_KONTOR), rs.getString(KVALIFISERINGSGRUPPEKODE), rs.getString(RETTIGHETSGRUPPEKODE),
+                rs.getString(HOVEDMAALKODE), rs.getString(SIKKERHETSTILTAK_TYPE_KODE), rs.getString(DISKRESJONSKODE),
+                rs.getBoolean(HAR_OPPFOLGINGSSAK), rs.getBoolean(SPERRET_ANSATT), rs.getBoolean(ER_DOED),
+                toZonedDateTime(rs.getTimestamp(DOED_FRA_DATO)), toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
 
-    private int upsert(OppfolgingsbrukerKafkaDTO oppfolgingsbruker) {
-        java.sql.Date fodselsDato = toSqlDateOrNull(FodselsnummerUtils.lagFodselsdato(oppfolgingsbruker.getFodselsnr()));
-        String kjonn = FodselsnummerUtils.lagKjonn(oppfolgingsbruker.getFodselsnr());
+    private int upsert(OppfolgingsbrukerEntity oppfolgingsbruker) {
+        java.sql.Date fodselsDato = toSqlDateOrNull(FodselsnummerUtils.lagFodselsdato(oppfolgingsbruker.fodselsnr()));
+        String kjonn = FodselsnummerUtils.lagKjonn(oppfolgingsbruker.fodselsnr());
 
-        boolean sperretAnsatt = oppfolgingsbruker.getSperret_ansatt() != null && oppfolgingsbruker.getSperret_ansatt();
-        boolean er_doed = oppfolgingsbruker.getEr_doed() != null && oppfolgingsbruker.getEr_doed();
-        boolean har_oppfolgingssak = oppfolgingsbruker.getHar_oppfolgingssak() != null && oppfolgingsbruker.getHar_oppfolgingssak();
+        boolean sperretAnsatt = oppfolgingsbruker.sperret_ansatt() != null && oppfolgingsbruker.sperret_ansatt();
+        boolean er_doed = oppfolgingsbruker.er_doed() != null && oppfolgingsbruker.er_doed();
+        boolean har_oppfolgingssak = oppfolgingsbruker.har_oppfolgingssak() != null && oppfolgingsbruker.har_oppfolgingssak();
 
-        return db.update("INSERT INTO " + TABLE_NAME +
-                        " (" + AKTOERID + ", " + FODSELSNR + ", " + FORMIDLINGSGRUPPEKODE +
-                        ", " + ISERV_FRA_DATO + ", " + ETTERNAVN + ", " + FORNAVN +
-                        ", " + NAV_KONTOR + ", " + KVALIFISERINGSGRUPPEKODE + ", " + RETTIGHETSGRUPPEKODE +
-                        ", " + HOVEDMAALKODE + ", " + SIKKERHETSTILTAK_TYPE_KODE + ", " + DISKRESJONSKODE +
-                        ", " + HAR_OPPFOLGINGSSAK + ", " + SPERRET_ANSATT + ", " + ER_DOED +
-                        ", " + DOED_FRA_DATO + ", " + ENDRET_DATO + ", " + KJONN +
-                        ", " + FODSELS_DATO + ") " +
-                        "VALUES(?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?) " +
-                        "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET " +
-                        "(" + FODSELSNR + ", " + FORMIDLINGSGRUPPEKODE + ", " + ISERV_FRA_DATO +
-                        ", " + ETTERNAVN + ", " + FORNAVN + ", " + NAV_KONTOR +
-                        ", " + KVALIFISERINGSGRUPPEKODE + ", " + RETTIGHETSGRUPPEKODE + ", " + HOVEDMAALKODE +
-                        ", " + SIKKERHETSTILTAK_TYPE_KODE + ", " + DISKRESJONSKODE + ", " + HAR_OPPFOLGINGSSAK +
-                        ", " + SPERRET_ANSATT + ", " + ER_DOED + ", " + DOED_FRA_DATO +
-                        ", " + ENDRET_DATO + ", " + KJONN + ", " + FODSELS_DATO +
-                        ") = (?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?)",
-                oppfolgingsbruker.getAktoerid(), oppfolgingsbruker.getFodselsnr(), oppfolgingsbruker.getFormidlingsgruppekode(),
-                toTimestamp(oppfolgingsbruker.getIserv_fra_dato()), oppfolgingsbruker.getEtternavn(), oppfolgingsbruker.getFornavn(),
-                oppfolgingsbruker.getNav_kontor(), oppfolgingsbruker.getKvalifiseringsgruppekode(), oppfolgingsbruker.getRettighetsgruppekode(),
-                oppfolgingsbruker.getHovedmaalkode(), oppfolgingsbruker.getSikkerhetstiltak_type_kode(), oppfolgingsbruker.getFr_kode(),
+        return db.update("""
+                        INSERT INTO OPPFOLGINGSBRUKER_ARENA
+                        ( AKTOERID, FODSELSNR, FORMIDLINGSGRUPPEKODE
+                        , ISERV_FRA_DATO, ETTERNAVN, FORNAVN
+                        , NAV_KONTOR, KVALIFISERINGSGRUPPEKODE, RETTIGHETSGRUPPEKODE
+                        , HOVEDMAALKODE, SIKKERHETSTILTAK_TYPE_KODE, DISKRESJONSKODE
+                        , HAR_OPPFOLGINGSSAK, SPERRET_ANSATT, ER_DOED
+                        , DOED_FRA_DATO, ENDRET_DATO , KJONN
+                        , FODSELS_DATO)
+                        VALUES(?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?)
+                        ON CONFLICT (AKTOERID) DO UPDATE SET
+                        (FODSELSNR, FORMIDLINGSGRUPPEKODE, ISERV_FRA_DATO
+                        , ETTERNAVN, FORNAVN, NAV_KONTOR
+                        , KVALIFISERINGSGRUPPEKODE, RETTIGHETSGRUPPEKODE, HOVEDMAALKODE
+                        , SIKKERHETSTILTAK_TYPE_KODE, DISKRESJONSKODE, HAR_OPPFOLGINGSSAK
+                        , SPERRET_ANSATT, ER_DOED, DOED_FRA_DATO
+                        , ENDRET_DATO, KJONN, FODSELS_DATO
+                        ) = (?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?)
+                        """,
+                oppfolgingsbruker.aktoerid(), oppfolgingsbruker.fodselsnr(), oppfolgingsbruker.formidlingsgruppekode(),
+                toTimestamp(oppfolgingsbruker.iserv_fra_dato()), oppfolgingsbruker.etternavn(), oppfolgingsbruker.fornavn(),
+                oppfolgingsbruker.nav_kontor(), oppfolgingsbruker.kvalifiseringsgruppekode(), oppfolgingsbruker.rettighetsgruppekode(),
+                oppfolgingsbruker.hovedmaalkode(), oppfolgingsbruker.sikkerhetstiltak_type_kode(), oppfolgingsbruker.fr_kode(),
                 har_oppfolgingssak, sperretAnsatt, er_doed,
-                toTimestamp(oppfolgingsbruker.getDoed_fra_dato()), toTimestamp(oppfolgingsbruker.getEndret_dato()), kjonn,
+                toTimestamp(oppfolgingsbruker.doed_fra_dato()), toTimestamp(oppfolgingsbruker.endret_dato()), kjonn,
                 fodselsDato,
 
-                oppfolgingsbruker.getFodselsnr(), oppfolgingsbruker.getFormidlingsgruppekode(), toTimestamp(oppfolgingsbruker.getIserv_fra_dato()),
-                oppfolgingsbruker.getEtternavn(), oppfolgingsbruker.getFornavn(), oppfolgingsbruker.getNav_kontor(),
-                oppfolgingsbruker.getKvalifiseringsgruppekode(), oppfolgingsbruker.getRettighetsgruppekode(), oppfolgingsbruker.getHovedmaalkode(),
-                oppfolgingsbruker.getSikkerhetstiltak_type_kode(), oppfolgingsbruker.getFr_kode(), har_oppfolgingssak,
-                sperretAnsatt, er_doed, toTimestamp(oppfolgingsbruker.getDoed_fra_dato()),
-                toTimestamp(oppfolgingsbruker.getEndret_dato()), kjonn, fodselsDato
+                oppfolgingsbruker.fodselsnr(), oppfolgingsbruker.formidlingsgruppekode(), toTimestamp(oppfolgingsbruker.iserv_fra_dato()),
+                oppfolgingsbruker.etternavn(), oppfolgingsbruker.fornavn(), oppfolgingsbruker.nav_kontor(),
+                oppfolgingsbruker.kvalifiseringsgruppekode(), oppfolgingsbruker.rettighetsgruppekode(), oppfolgingsbruker.hovedmaalkode(),
+                oppfolgingsbruker.sikkerhetstiltak_type_kode(), oppfolgingsbruker.fr_kode(), har_oppfolgingssak,
+                sperretAnsatt, er_doed, toTimestamp(oppfolgingsbruker.doed_fra_dato()),
+                toTimestamp(oppfolgingsbruker.endret_dato()), kjonn, fodselsDato
         );
     }
 }

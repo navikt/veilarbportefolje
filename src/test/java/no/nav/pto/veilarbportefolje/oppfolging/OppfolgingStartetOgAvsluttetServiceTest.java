@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
@@ -16,7 +17,9 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
@@ -42,7 +45,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
                 .put("oppfolgingStartet", "2020-12-01T00:00:00+02:00")
                 .toString();
 
-        oppfolgingStartetService.behandleKafkaMelding(payload);
+        oppfolgingStartetService.behandleKafkaMeldingLogikk(JsonUtils.fromJson(payload, OppfolgingStartetDTO.class));
 
         final BrukerOppdatertInformasjon info = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
         assertThat(info.getOppfolging()).isTrue();
@@ -65,7 +68,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
                 .put("sluttdato", "2020-12-01T00:00:01+02:00")
                 .toString();
 
-        oppfolgingAvsluttetService.behandleKafkaMelding(payload);
+        oppfolgingAvsluttetService.behandleKafkaMeldingLogikk(JsonUtils.fromJson(payload, OppfolgingAvsluttetDTO.class));
 
         String arbeidsliste = SqlUtils
                 .select(jdbcTemplate, Table.ARBEIDSLISTE.TABLE_NAME, rs -> rs.getString(Table.ARBEIDSLISTE.AKTOERID))
@@ -111,7 +114,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
                 .put("sluttdato", "2020-01-01T00:00:00+02:00")
                 .toString();
 
-        oppfolgingAvsluttetService.behandleKafkaMelding(oppfolgingAvsluttePayload);
+        oppfolgingAvsluttetService.behandleKafkaMeldingLogikk(JsonUtils.fromJson(oppfolgingAvsluttePayload, OppfolgingAvsluttetDTO.class));
     }
 
     private Optional<BrukerOppdatertInformasjon> startOgAvsluttBruker(String startDato, String sluttDato) {
@@ -122,14 +125,14 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
                 .put("oppfolgingStartet", startDato)
                 .toString();
 
-        oppfolgingStartetService.behandleKafkaMelding(oppfolgingStartetPayload);
+        oppfolgingStartetService.behandleKafkaMeldingLogikk(JsonUtils.fromJson(oppfolgingStartetPayload, OppfolgingStartetDTO.class));
 
         String oppfolgingAvsluttePayload = new JSONObject()
                 .put("aktorId", aktoerId.toString())
                 .put("sluttdato", sluttDato)
                 .toString();
 
-        oppfolgingAvsluttetService.behandleKafkaMelding(oppfolgingAvsluttePayload);
+        oppfolgingAvsluttetService.behandleKafkaMeldingLogikk(JsonUtils.fromJson(oppfolgingAvsluttePayload, OppfolgingAvsluttetDTO.class));
 
         return oppfolgingRepository.hentOppfolgingData(aktoerId);
     }

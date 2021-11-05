@@ -145,6 +145,12 @@
             <version>51</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.navikt</groupId>
+            <artifactId>pto-schema</artifactId>
+            <version>1.2021.07.01_08.22-f7c78425a00a</version>
+        </dependency>
+
         <!-- Funksjonell programmering-->
         <dependency>
             <groupId>org.projectlombok</groupId>

@@ -15,7 +15,7 @@ import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerKafkaDTO;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
@@ -181,7 +181,7 @@ public class TiltakPostgresTest {
     public void skal_lagre_tiltak_pa_enhet() {
         String navKontor = "0007";
         oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerKafkaDTO().setAktoerid(aktorId.get()).setNav_kontor(navKontor).setEndret_dato(ZonedDateTime.now()));
+                new OppfolgingsbrukerEntity().setAktoerid(aktorId.get()).setNav_kontor(navKontor).setEndret_dato(ZonedDateTime.now()));
 
         String tiltaksType1 = "T123";
         String tiltaksType2 = "T321";
