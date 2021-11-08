@@ -20,7 +20,7 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
     private final AktorClient aktorClient;
 
     @Override
-    protected void behandleKafkaMeldingLogikk(EndringPaaOppfoelgingsBrukerV2 kafkaMelding) {
+    public void behandleKafkaMeldingLogikk(EndringPaaOppfoelgingsBrukerV2 kafkaMelding) {
         AktorId aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.getFodselsnummer()));
 
         if (aktorId == null) {

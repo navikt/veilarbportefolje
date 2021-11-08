@@ -30,10 +30,10 @@ public class OppfolginsbrukerRepositoryTestV2 {
 
     @Test
     public void skal_ikke_lagre_oppfolgingsbruker_med_eldre_endret_dato() {
-        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(aktoerId.get(), "12015678912", "TEST", ZonedDateTime.now().minusDays(1), "" +
+        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(aktoerId.get(), "12015678912", "TEST", ZonedDateTime.now().minusDays(1),
                 "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
                 "1234", true, true, true, ZonedDateTime.now(), ZonedDateTime.now());
-        OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(aktoerId.get(), "12015678912", "TEST", ZonedDateTime.now().minusDays(1), "" +
+        OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(aktoerId.get(), "12015678912", "TEST", ZonedDateTime.now().minusDays(1),
                 "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
                 "1234", true, true, false, null, ZonedDateTime.now().minusDays(5));
 
