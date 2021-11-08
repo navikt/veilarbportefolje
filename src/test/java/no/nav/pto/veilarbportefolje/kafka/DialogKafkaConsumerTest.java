@@ -5,11 +5,11 @@ import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static no.nav.common.json.JsonUtils.fromJson;
+import java.time.ZonedDateTime;
+
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 
 class DialogKafkaConsumerTest extends EndToEndTest {
@@ -29,14 +29,11 @@ class DialogKafkaConsumerTest extends EndToEndTest {
 
         elasticTestClient.createUserInElastic(aktoerId);
 
-        final String melding = new JSONObject()
-                .put("aktorId", aktoerId.toString())
-                .put("sisteEndring", "2020-10-10T00:00:00+02:00")
-                .put("tidspunktEldsteVentende", "2020-10-10T00:00:00+02:00")
-                .put("tidspunktEldsteUbehandlede", "2020-10-10T00:00:00+02:00")
-                .toString();
+        final Dialogdata melding = new Dialogdata().setAktorId(aktoerId.toString())
+                .setSisteEndring(ZonedDateTime.parse("2020-10-10T00:00:00+02:00"))
+                .setTidspunktEldsteVentende(ZonedDateTime.parse("2020-10-10T00:00:00+02:00"))
+                .setTidspunktEldsteUbehandlede(ZonedDateTime.parse("2020-10-10T00:00:00+02:00"));
 
-        dialogService.behandleKafkaMeldingLogikk(fromJson(melding, Dialogdata.class));
-
+        dialogService.behandleKafkaMeldingLogikk(melding);
     }
 }

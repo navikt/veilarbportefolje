@@ -14,9 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteAktiviteter;
 
 @Slf4j
@@ -33,14 +31,8 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final SisteEndringService sisteEndringService;
     private final UnleashService unleashService;
     private final ElasticIndexer elasticIndexer;
-    private final AtomicBoolean rewind = new AtomicBoolean();
 
-    public void behandleKafkaMelding(String kafkaMelding) {
-        KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
-        behandleKafkaMeldingLogikk(aktivitetData);
-    }
-
-    protected void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
+    public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         log.info(
                 "Behandler kafka-aktivtet-melding på aktorId: {} med aktivtetId: {}, version: {}",
                 aktivitetData.getAktorId(),

@@ -1,11 +1,9 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,12 +34,8 @@ class ManuellStatusServiceTest extends EndToEndTest {
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         elasticTestClient.createUserInElastic(aktoerId);
 
-        String melding = new JSONObject()
-                .put("aktorId", aktoerId.toString())
-                .put("erManuell", true)
-                .toString();
-
-        manuellStatusService.behandleKafkaMeldingLogikk(JsonUtils.fromJson(melding, ManuellStatusDTO.class));
+        ManuellStatusDTO melding = new ManuellStatusDTO(aktoerId.toString(), true);
+        manuellStatusService.behandleKafkaMeldingLogikk(melding);
 
         final BrukerOppdatertInformasjon oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
 
@@ -55,12 +49,8 @@ class ManuellStatusServiceTest extends EndToEndTest {
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         elasticTestClient.createUserInElastic(aktoerId);
 
-        String melding = new JSONObject()
-                .put("aktorId", aktoerId.toString())
-                .put("erManuell", false)
-                .toString();
-
-        manuellStatusService.behandleKafkaMeldingLogikk(JsonUtils.fromJson(melding, ManuellStatusDTO.class));
+        ManuellStatusDTO melding = new ManuellStatusDTO(aktoerId.toString(), false);
+        manuellStatusService.behandleKafkaMeldingLogikk(melding);
 
         final BrukerOppdatertInformasjon oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
 

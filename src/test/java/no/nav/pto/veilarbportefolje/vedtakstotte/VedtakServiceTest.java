@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,9 +12,7 @@ import java.util.List;
 import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class VedtakServiceTest {
 
