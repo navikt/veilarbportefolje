@@ -33,11 +33,9 @@ public class OppfolginsbrukerRepositoryTestV2 {
         OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(aktoerId.get(), "12015678912", "TEST", ZonedDateTime.now().minusDays(1), "" +
                 "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
                 "1234", true, true, true, ZonedDateTime.now(), ZonedDateTime.now());
-
-        OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(aktoerId.get())
-                .setDoed_fra_dato(ZonedDateTime.now())
-                .setEr_doed(false)
-                .setEndret_dato(ZonedDateTime.now().minusDays(5));
+        OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(aktoerId.get(), "12015678912", "TEST", ZonedDateTime.now().minusDays(1), "" +
+                "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
+                "1234", true, true, false, null, ZonedDateTime.now().minusDays(5));
 
         oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);
@@ -49,20 +47,12 @@ public class OppfolginsbrukerRepositoryTestV2 {
 
     @Test
     public void skal_oppdater_oppfolgingsbruker_fra_nyere_dato() {
-        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity()
-                .setAktoerid(aktoerId.get())
-                .setEr_doed(true)
-                .setSperret_ansatt(false)
-                .setHar_oppfolgingssak(true)
-                .setDoed_fra_dato(ZonedDateTime.now())
-                .setEndret_dato(ZonedDateTime.now().minusDays(1));
-
-        OppfolgingsbrukerEntity new_msg = new OppfolgingsbrukerEntity()
-                .setAktoerid(aktoerId.get())
-                .setSperret_ansatt(true)
-                .setHar_oppfolgingssak(false)
-                .setEr_doed(false)
-                .setEndret_dato(ZonedDateTime.now());
+        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(aktoerId.get(), "12015678912", "TEST", ZonedDateTime.now().minusDays(1), "" +
+                "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
+                "1234", true, true, false, null, ZonedDateTime.now().minusDays(5));
+        OppfolgingsbrukerEntity new_msg = new OppfolgingsbrukerEntity(aktoerId.get(), "12015678912", "TEST", ZonedDateTime.now().minusDays(1), "" +
+                "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
+                "1234", false, true, true, ZonedDateTime.now(), ZonedDateTime.now());
 
         oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);

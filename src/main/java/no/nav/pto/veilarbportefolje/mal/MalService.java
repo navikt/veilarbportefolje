@@ -14,7 +14,7 @@ public class MalService extends KafkaCommonConsumerService<MalEndringKafkaDTO> {
     private final SisteEndringService sisteEndringService;
 
     @Override
-    protected void behandleKafkaMeldingLogikk(MalEndringKafkaDTO melding) {
+    public void behandleKafkaMeldingLogikk(MalEndringKafkaDTO melding) {
         sisteEndringService.behandleMal(melding);
     }
 

@@ -3,7 +3,12 @@ package no.nav.pto.veilarbportefolje.arenapakafka;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.aktiviteter.*;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktoerAktiviteter;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
@@ -33,7 +38,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -120,14 +126,14 @@ public class TiltakPostgresTest {
                 .setPersonId(personId.toInteger())
                 .setTiltaksnavn(tiltaksNavn)
                 .setTiltakstype(tiltaksType)
-                .setAktivitetperiodeTil(new ArenaDato(idagTid.toString().substring(0,10)))
+                .setAktivitetperiodeTil(new ArenaDato(idagTid.toString().substring(0, 10)))
                 .setAktivitetid("TA-123");
         TiltakInnhold igar = new TiltakInnhold()
                 .setFnr(fnr.get())
                 .setPersonId(personId.toInteger())
                 .setTiltaksnavn(tiltaksNavn)
                 .setTiltakstype(tiltaksType)
-                .setAktivitetperiodeTil(new ArenaDato(igarTid.toString().substring(0,10)))
+                .setAktivitetperiodeTil(new ArenaDato(igarTid.toString().substring(0, 10)))
                 .setAktivitetid("TA-321");
 
         tiltakRepositoryV3.upsert(idag, aktorId);
@@ -181,8 +187,9 @@ public class TiltakPostgresTest {
     public void skal_lagre_tiltak_pa_enhet() {
         String navKontor = "0007";
         oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity().setAktoerid(aktorId.get()).setNav_kontor(navKontor).setEndret_dato(ZonedDateTime.now()));
-
+                new OppfolgingsbrukerEntity(aktorId.get(), fnr.get(), null, null, "" +
+                        "Tester", "Testerson", navKontor, null, null, null, null,
+                        "1234", true, true, false, null, ZonedDateTime.now()));
         String tiltaksType1 = "T123";
         String tiltaksType2 = "T321";
         String tiltaksNavn1 = "test1";

@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -29,7 +30,7 @@ class OppfolgingStartetServiceTest extends EndToEndTest {
                 .put("oppfolgingStartet", "2020-12-01T00:00:00+02:00")
                 .toString();
 
-        oppfolgingStartetService.behandleKafkaMelding(payload);
+        oppfolgingStartetService.behandleKafkaMeldingLogikk(JsonUtils.fromJson(payload,OppfolgingStartetDTO.class));
 
         final BrukerOppdatertInformasjon info = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
         assertThat(info.getOppfolging()).isTrue();

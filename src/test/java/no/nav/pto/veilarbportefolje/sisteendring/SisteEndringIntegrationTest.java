@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
 import io.vavr.control.Try;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
@@ -15,6 +16,7 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -490,7 +492,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "\"veilederIdent\":\"Z12345\"," +
                 endret +
                 "}";
-        malService.behandleKafkaMelding(kafkamelding);
+        malService.behandleKafkaMeldingLogikk(JsonUtils.fromJson(kafkamelding, MalEndringKafkaDTO.class));
     }
 
     private static Filtervalg getFiltervalg(SisteEndringsKategori kategori) {
