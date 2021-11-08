@@ -187,7 +187,7 @@ public class TiltakPostgresTest {
     public void skal_lagre_tiltak_pa_enhet() {
         String navKontor = "0007";
         oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(aktorId.get(), fnr.get(), null, null, "" +
+                new OppfolgingsbrukerEntity(aktorId.get(), null, null, null, "" +
                         "Tester", "Testerson", navKontor, null, null, null, null,
                         "1234", true, true, false, null, ZonedDateTime.now()));
         String tiltaksType1 = "T123";
