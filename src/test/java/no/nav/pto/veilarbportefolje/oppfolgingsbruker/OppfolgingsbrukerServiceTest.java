@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
@@ -56,7 +57,7 @@ public class OppfolgingsbrukerServiceTest {
 
         LocalDate iserv_fra_dato = ZonedDateTime.now().minusDays(2).toLocalDate();
         LocalDate doed_fra_dato = ZonedDateTime.now().minusDays(1).toLocalDate();
-        ZonedDateTime endret_dato = ZonedDateTime.now();
+        ZonedDateTime endret_dato = DateUtils.now();
 
         OppfolgingsbrukerEntity forventetResultat = new OppfolgingsbrukerEntity(aktoerId.get(), fnr.get(), "RARBS", ZonedDateTime.of(iserv_fra_dato.atStartOfDay(), ZoneId.systemDefault()),
                 "Testerson", "Test", "007", "BKART", "AAP", "SKAFFEA", "FYUS",
