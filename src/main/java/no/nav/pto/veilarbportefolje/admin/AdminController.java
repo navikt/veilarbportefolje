@@ -7,22 +7,24 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.oppfolging.*;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -34,18 +36,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AdminController {
     private final EnvironmentProperties environmentProperties;
-    private final RegistreringService registreringService;
     private final AktorClient aktorClient;
-    private final NyForVeilederService nyForVeilederService;
-    private final VeilederTilordnetService veilederTilordnetService;
-    private final AktivitetService aktivitetService;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
-    private final VedtakService vedtakService;
     private final ElasticServiceV2 elasticServiceV2;
     private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
-    private final CVService cvService;
-    private final KafkaConfigCommon kafkaConfigCommon;
     private final ElasticIndexer elasticIndexer;
     private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
@@ -57,34 +52,6 @@ public class AdminController {
     public String aktoerId(@RequestBody String fnr) {
         authorizeAdmin();
         return aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
-    }
-
-    @PostMapping("/rewind/registrering")
-    public String rewindReg() {
-        authorizeAdmin();
-        registreringService.setRewind(true);
-        return "Rewind av registrering har startet";
-    }
-
-    @PostMapping("/rewind/nyForVeileder")
-    public String rewindNyVeileder() {
-        authorizeAdmin();
-        nyForVeilederService.setRewind(true);
-        return "Rewind av nyVeileder har startet";
-    }
-
-    @PostMapping("/rewind/aktivtet")
-    public String rewindAktivteter() {
-        authorizeAdmin();
-        aktivitetService.setRewind(true);
-        return "Rewind av aktivteter har startet";
-    }
-
-    @PostMapping("/rewind/vedtak")
-    public String rewindVedtak() {
-        authorizeAdmin();
-        vedtakService.setRewind(true);
-        return "Rewind av vedtak har startet";
     }
 
     @DeleteMapping("/oppfolgingsbruker")
@@ -119,21 +86,6 @@ public class AdminController {
             return "Innlastning av oppfolgingsdata har startet";
         }
         return "Bruker eksistere ikke";
-    }
-
-
-    @PostMapping("/rewind/cv-eksisterer")
-    public String rewindCVEksistere() {
-        authorizeAdmin();
-        cvService.setRewind(true);
-        return "Rewind av cv har startet";
-    }
-
-    @PostMapping("/rewind/tilordnet-veileder")
-    public String rewindTilordnetVeileder() {
-        authorizeAdmin();
-        veilederTilordnetService.setRewind(true);
-        return "Rewind av tilordnet veileder har startet";
     }
 
     @PutMapping("/indeks/bruker")

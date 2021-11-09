@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -15,15 +14,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteAktiviteter;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> implements KafkaConsumerService<String> {
+public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> {
 
     private final AktivitetDAO aktivitetDAO;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
@@ -34,15 +31,8 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final SisteEndringService sisteEndringService;
     private final UnleashService unleashService;
     private final ElasticIndexer elasticIndexer;
-    private final AtomicBoolean rewind = new AtomicBoolean();
 
-    @Override
-    public void behandleKafkaMelding(String kafkaMelding) {
-        KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
-        behandleKafkaMeldingLogikk(aktivitetData);
-    }
-
-    protected void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
+    public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         log.info(
                 "Behandler kafka-aktivtet-melding på aktorId: {} med aktivtetId: {}, version: {}",
                 aktivitetData.getAktorId(),
@@ -101,16 +91,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         //POSTGRES
         aktiviteterRepositoryV2.upsertAktivitet(melding);
         utleddAktivitetStatuser(AktorId.of(melding.getAktorId()), melding.getAktivitetType());
-    }
-
-    @Override
-    public boolean shouldRewind() {
-        return rewind.get();
-    }
-
-    @Override
-    public void setRewind(boolean rewind) {
-        this.rewind.set(rewind);
     }
 
     public void deaktiverUtgatteUtdanningsAktivteter(AktorId aktorId) {

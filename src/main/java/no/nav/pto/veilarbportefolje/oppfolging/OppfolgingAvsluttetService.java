@@ -1,9 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
@@ -11,9 +9,7 @@ import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +24,7 @@ import static java.time.ZonedDateTime.ofInstant;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<OppfolgingAvsluttetDTO> implements KafkaConsumerService<String> {
+public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<OppfolgingAvsluttetDTO> {
     private final ArbeidslisteService arbeidslisteService;
     private final ArbeidslisteRepositoryV1 arbeidslisteRepositoryV2;
     private final OppfolgingRepository oppfolgingRepository;
@@ -38,14 +34,6 @@ public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<Oppfo
     private final CVRepositoryV2 cvRepositoryV2;
     private final ElasticServiceV2 elasticServiceV2;
     private final SisteEndringService sisteEndringService;
-    @Getter
-    private final UnleashService unleashService;
-
-    @Override
-    public void behandleKafkaMelding(String kafkaMelding) {
-        final OppfolgingAvsluttetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingAvsluttetDTO.class);
-        behandleKafkaMeldingLogikk(dto);
-    }
 
     @Override
     public void behandleKafkaMeldingLogikk(OppfolgingAvsluttetDTO dto) {
@@ -75,15 +63,5 @@ public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<Oppfo
 
         elasticServiceV2.slettDokumenter(List.of(aktoerId));
         log.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);
-    }
-
-    @Override
-    public boolean shouldRewind() {
-        return false;
-    }
-
-    @Override
-    public void setRewind(boolean rewind) {
-
     }
 }

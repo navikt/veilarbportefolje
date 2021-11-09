@@ -1,5 +1,4 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
-import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.junit.Test;
 
 import java.time.ZonedDateTime;

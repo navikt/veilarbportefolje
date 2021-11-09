@@ -6,7 +6,6 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import no.nav.sbl.sql.SqlUtils;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -40,12 +39,8 @@ class NyForVeilederServiceTest extends EndToEndTest {
 
         elasticTestClient.createUserInElastic(aktoerId);
 
-        String payload = new JSONObject()
-                .put("aktorId", aktoerId.get())
-                .put("nyForVeileder", false)
-                .toString();
-
-        nyForVeilederService.behandleKafkaMelding(payload);
+        NyForVeilederDTO melding = new NyForVeilederDTO(aktoerId, false);
+        nyForVeilederService.behandleKafkaMeldingLogikk(melding);
 
         final Optional<BrukerOppdatertInformasjon> data = oppfolgingRepository.hentOppfolgingData(aktoerId);
         assertThat(data).isPresent();
@@ -67,12 +62,9 @@ class NyForVeilederServiceTest extends EndToEndTest {
 
         elasticTestClient.createUserInElastic(aktoerId);
 
-        String payload = new JSONObject()
-                .put("aktorId", aktoerId.get())
-                .put("nyForVeileder", true)
-                .toString();
+        NyForVeilederDTO melding = new NyForVeilederDTO(aktoerId, true);
 
-        nyForVeilederService.behandleKafkaMelding(payload);
+        nyForVeilederService.behandleKafkaMeldingLogikk(melding);
 
         final Optional<BrukerOppdatertInformasjon> data = oppfolgingRepository.hentOppfolgingData(aktoerId);
         assertThat(data).isPresent();
