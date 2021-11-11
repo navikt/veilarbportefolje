@@ -1,1 +1,0 @@
-UPDATE AKTIVITETER SET (AVTALT, STATUS) = (1, 'fullfort') WHERE AKTIVITETTYPE='utdanningaktivitet' AND AVTALT=0;

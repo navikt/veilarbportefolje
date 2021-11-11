@@ -37,8 +37,16 @@ import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
-import no.nav.pto.veilarbportefolje.oppfolging.*;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerKafkaDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -47,6 +55,7 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -82,12 +91,14 @@ public class KafkaConfigCommon {
         OPPFOLGING_AVSLUTTET("aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-" + requireKafkaTopicPostfix()),
         ENDRING_PA_MAL("aapen-arbeidsrettetOppfolging-endringPaMal-v1-" + requireKafkaTopicPostfix()),
         SIST_LEST("aapen-fo-veilederHarLestAktivitetsplanen-v1"),
-        ENDRING_PAA_OPPFOLGINGSBRUKER("aapen-fo-endringPaaOppfoelgingsBruker-v1-" + requireKafkaTopicPostfix()),
+        ENDRING_PAA_OPPFOLGINGSBRUKER("pto.endring-paa-oppfolgingsbruker-v2"),
         CV_ENDRET("arbeid-pam-cv-endret-v6"),
         CV_TOPIC("teampam.samtykke-status-1"),
 
         AIVEN_REGISTRERING_TOPIC("paw.arbeidssoker-registrert-v1"),
         AIVEN_PROFILERING_TOPIC("paw.arbeidssoker-profilert-v1"),
+
+        AIVEN_AKTIVITER_TOPIC("pto.aktivitet-portefolje-v1"),
 
         TILTAK_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
         UTDANNINGS_AKTIVITET_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix()),
@@ -217,9 +228,18 @@ public class KafkaConfigCommon {
                                         (melding -> {
                                             ytelsesService.behandleKafkaRecord(melding, TypeKafkaYtelse.TILTAKSPENGER);
                                         })
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.ENDRING_PAA_OPPFOLGINGSBRUKER.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
+                                        oppfolginsbrukerService::behandleKafkaRecord
                                 )
                 );
-
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
                                 .withLogging()
@@ -320,16 +340,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
                                         malService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, OppfolgingsbrukerKafkaDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.ENDRING_PAA_OPPFOLGINGSBRUKER.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(OppfolgingsbrukerKafkaDTO.class),
-                                        oppfolginsbrukerService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
                                 .withLogging()

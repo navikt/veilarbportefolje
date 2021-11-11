@@ -9,6 +9,8 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyperFraKafka;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktoerAktiviteter;
+import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO;
@@ -21,19 +23,13 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.sbl.sql.SqlUtils;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import org.mockito.Mockito;
-import static org.mockito.Mockito.mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -42,13 +38,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class ArenaAktivitetIntegrasjonsTest {
     private final UtdanningsAktivitetService utdanningsAktivitetService;
     private final JdbcTemplate jdbcTemplate;
     private final AktivitetService aktivitetService;
     private final AktivitetDAO aktivitetDAO;
-
+    private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktorId aktorId = AktorId.of("1000123");
     private final Fnr fnr = Fnr.of("12345678912");
     private final VeilederId veilederId = VeilederId.of("Z123456");
@@ -56,9 +57,10 @@ public class ArenaAktivitetIntegrasjonsTest {
     private final PersonId personId = PersonId.of("123");
 
     @Autowired
-    public ArenaAktivitetIntegrasjonsTest(SisteEndringService sisteEndringService, BrukerService brukerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, JdbcTemplate jdbcTemplate, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, BrukerDataService brukerDataService) {
+    public ArenaAktivitetIntegrasjonsTest(SisteEndringService sisteEndringService, BrukerService brukerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, JdbcTemplate jdbcTemplate, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, BrukerDataService brukerDataService, AktiviteterRepositoryV2 aktiviteterRepositoryV21) {
         this.jdbcTemplate = jdbcTemplate;
         this.aktivitetDAO = aktivitetDAO;
+        this.aktiviteterRepositoryV2 = aktiviteterRepositoryV21;
 
         ArenaHendelseRepository arenaHendelseRepository = mock(ArenaHendelseRepository.class);
         Mockito.when(arenaHendelseRepository.upsertAktivitetHendelse(anyString(), anyLong())).thenReturn(1);
@@ -66,7 +68,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
-        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, mock(OppfolgingRepository.class), mock(ElasticServiceV2.class), mock(UnleashService.class), mock(ElasticIndexer.class));
+        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, mock(UnleashService.class), mock(ElasticIndexer.class));
         this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient, arenaHendelseRepository);
     }
 
@@ -84,8 +86,12 @@ public class ArenaAktivitetIntegrasjonsTest {
         insertBruker();
         utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
 
+        AktoerAktiviteter aktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false);
+        AktivitetStatus aktivitetStatus = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.UTDANNINGAKTIVITET, false);
         Optional<AktivitetStatus> utdanning = hentAktivitetStatus(AktivitetTyperFraKafka.utdanningaktivitet);
         assertThat(utdanning).isPresent();
+        assertThat(aktiviteterForAktoerid.getAktiviteter().stream().anyMatch(x->x.getAktivitetID().equals("UA-123456789"))).isTrue();
+        assertThat(aktivitetStatus.isAktiv()).isTrue();
     }
 
 

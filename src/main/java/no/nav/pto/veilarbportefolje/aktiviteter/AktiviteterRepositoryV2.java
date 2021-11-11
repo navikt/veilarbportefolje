@@ -13,10 +13,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETTYPE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AVTALT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.FRADATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.STATUS;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TILDATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.VERSION;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
@@ -29,20 +41,23 @@ public class AktiviteterRepositoryV2 {
     private final JdbcTemplate db;
 
     @Transactional
-    public void tryLagreAktivitetData(KafkaAktivitetMelding aktivitet) {
+    public boolean tryLagreAktivitetData(KafkaAktivitetMelding aktivitet) {
         try {
             if (aktivitet.isHistorisk()) {
                 deleteById(aktivitet.getAktivitetId());
+                return true;
             } else if (erNyVersjonAvAktivitet(aktivitet)) {
                 upsertAktivitet(aktivitet);
+                return true;
             }
         } catch (Exception e) {
             String message = String.format("Kunne ikke lagre aktivitetdata fra topic for aktivitetid %s", aktivitet.getAktivitetId());
             log.error(message, e);
         }
+        return false;
     }
 
-    private void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
+    public void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
         db.update("INSERT INTO " + TABLE_NAME +
                         " (" + AKTIVITETID + ", " + AKTOERID + ", " + AKTIVITETTYPE + ", " + AVTALT + ", " + FRADATO + ", " + TILDATO + ", " + STATUS + ", " + VERSION + ") " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +

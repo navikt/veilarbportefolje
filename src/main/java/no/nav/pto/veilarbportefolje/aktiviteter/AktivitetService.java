@@ -2,16 +2,11 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import static no.nav.common.json.JsonUtils.fromJson;
 import no.nav.common.types.identer.AktorId;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteAktiviteter;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -19,12 +14,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteAktiviteter;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> implements KafkaConsumerService<String> {
+public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> {
 
     private final AktivitetDAO aktivitetDAO;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
@@ -33,19 +29,10 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final BrukerService brukerService;
     private final BrukerDataService brukerDataService;
     private final SisteEndringService sisteEndringService;
-    private final OppfolgingRepository oppfolgingRepository;
-    private final ElasticServiceV2 elasticServiceV2;
     private final UnleashService unleashService;
     private final ElasticIndexer elasticIndexer;
-    private final AtomicBoolean rewind = new AtomicBoolean();
 
-    @Override
-    public void behandleKafkaMelding(String kafkaMelding) {
-        KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
-        behandleKafkaMeldingLogikk(aktivitetData);
-    }
-
-    protected void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
+    public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         log.info(
                 "Behandler kafka-aktivtet-melding på aktorId: {} med aktivtetId: {}, version: {}",
                 aktivitetData.getAktorId(),
@@ -56,26 +43,24 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         //ORACLE
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
-        aktivitetDAO.tryLagreAktivitetData(aktivitetData);
-        utledAktivitetstatuserForAktoerid(aktorId);
-        elasticIndexer.indekser(aktorId);
+        boolean bleProsessert = aktivitetDAO.tryLagreAktivitetData(aktivitetData);
 
-        if (!oppfolgingRepository.erUnderoppfolging(aktorId)) {
-            elasticServiceV2.deleteIfPresent(aktorId,
-                    String.format("(AktivitetService) Sletter aktorId da brukeren ikke lengre er under oppfolging %s", aktivitetData.getAktorId()));
+        if (bleProsessert && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
+            utledAktivitetstatuserForAktoerid(aktorId);
+            elasticIndexer.indekser(aktorId);
         }
 
         //POSTGRES
-        lagreOgProsseseserAktiviteter(aktivitetData);
+        boolean bleProsessertPostgres = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
+        if (bleProsessertPostgres && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
+            utleddAktivitetStatuser(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType());
+        }
     }
 
-    public void lagreOgProsseseserAktiviteter(KafkaAktivitetMelding aktivitetData) {
-        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-
-        AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType(), brukIkkeAvtalteAktiviteter(unleashService));
-
-        prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, aktivitetData.getAktivitetType().name());
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(AktorId.of(aktivitetData.getAktorId()));
+    public void utleddAktivitetStatuser(AktorId aktorId, KafkaAktivitetMelding.AktivitetTypeData aktivitetType) {
+        AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, aktivitetType, brukIkkeAvtalteAktiviteter(unleashService));
+        prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, aktivitetType.name());
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
     }
 
     public void utledAktivitetstatuserForAktoerid(AktorId aktoerId) {
@@ -104,17 +89,8 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         elasticIndexer.indekser(AktorId.of(melding.getAktorId()));
 
         //POSTGRES
-        lagreOgProsseseserAktiviteter(melding);
-    }
-
-    @Override
-    public boolean shouldRewind() {
-        return rewind.get();
-    }
-
-    @Override
-    public void setRewind(boolean rewind) {
-        this.rewind.set(rewind);
+        aktiviteterRepositoryV2.upsertAktivitet(melding);
+        utleddAktivitetStatuser(AktorId.of(melding.getAktorId()), melding.getAktivitetType());
     }
 
     public void deaktiverUtgatteUtdanningsAktivteter(AktorId aktorId) {

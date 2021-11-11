@@ -50,7 +50,7 @@ class RegistreringServiceTest extends EndToEndTest {
                 .setRegistreringOpprettet(ZonedDateTime.now().format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        registreringService.behandleKafkaMelding(kafkaMessage);
+        registreringService.behandleKafkaMeldingLogikk(kafkaMessage);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
 
@@ -136,30 +136,30 @@ class RegistreringServiceTest extends EndToEndTest {
     private static Filtervalg getFiltervalgBestatt() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>()); // TODO: Denne må være der, er det en bug?
-        filtervalg.utdanningBestatt.add("JA");
+        filtervalg.utdanningBestatt.add(UtdanningBestattSvar.JA);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgGodkjent() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanningGodkjent.add("JA");
+        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvar.JA);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgUtdanning() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanning.add("GRUNNSKOLE");
+        filtervalg.utdanning.add(UtdanningSvar.GRUNNSKOLE);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgMix() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanning.add("GRUNNSKOLE");
-        filtervalg.utdanningGodkjent.add("JA");
-        filtervalg.utdanningBestatt.add("NEI");
+        filtervalg.utdanning.add(UtdanningSvar.GRUNNSKOLE);
+        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvar.JA);
+        filtervalg.utdanningBestatt.add(UtdanningBestattSvar.NEI);
         return filtervalg;
     }
 
