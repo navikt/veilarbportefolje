@@ -1,17 +1,19 @@
-package no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter;
+package no.nav.pto.veilarbportefolje.arenapakafka;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.arenapakafka.ArenaDato;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.ArenaInnholdKafka;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GoldenGateDTO;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 
-public interface ArenaAktivitetUtils {
+public interface ArenaUtils {
     static <T extends ArenaInnholdKafka> T getInnhold(GoldenGateDTO<T> goldenGateDTO) {
         if(skalSlettesGoldenGate(goldenGateDTO)){
             return goldenGateDTO.getBefore();
@@ -47,7 +49,6 @@ public interface ArenaAktivitetUtils {
         }
     }
 
-
     static ZonedDateTime getDateOrNull(ArenaDato date) {
         return getDateOrNull(date, false);
     }
@@ -60,6 +61,16 @@ public interface ArenaAktivitetUtils {
             return date.getDato().plusHours(23).plusMinutes(59);
         }
         return date.getDato();
+    }
+
+    static LocalDateTime getLocalDateTimeOrNull(ArenaDato date, boolean tilOgMedDato) {
+        if (date == null || date.getLocalDate() == null)
+            return null;
+
+        if (tilOgMedDato) {
+            return LocalDateTime.of(date.getLocalDate(), LocalTime.MAX.truncatedTo(ChronoUnit.SECONDS));
+        }
+        return LocalDateTime.of(date.getLocalDate(), LocalTime.MIDNIGHT);
     }
 
     static boolean erUtgatt(ArenaDato tilDato, boolean tilOgMedDato) {

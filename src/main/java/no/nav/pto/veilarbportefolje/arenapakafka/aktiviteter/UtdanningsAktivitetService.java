@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.*;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
 
 @Slf4j
 @Service
@@ -82,7 +82,6 @@ public class UtdanningsAktivitetService {
         kafkaAktivitetMelding.setFraDato(getDateOrNull(melding.getAktivitetperiodeFra()));
         kafkaAktivitetMelding.setTilDato(getDateOrNull(melding.getAktivitetperiodeTil(), true));
         kafkaAktivitetMelding.setEndretDato(getDateOrNull(melding.getEndretDato()));
-
         kafkaAktivitetMelding.setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
         kafkaAktivitetMelding.setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.UTDANNINGAKTIVITET);
         kafkaAktivitetMelding.setAvtalt(true);

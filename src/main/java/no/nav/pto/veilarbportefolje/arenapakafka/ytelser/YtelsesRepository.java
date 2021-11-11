@@ -90,9 +90,9 @@ public class YtelsesRepository {
             return null;
         }
         if (tilOgMedDato) {
-            return Timestamp.valueOf(date.getLocalDate().plusHours(23).plusMinutes(59));
+            return Timestamp.valueOf(date.getLocalDateTime().plusHours(23).plusMinutes(59));
         }
-        return Timestamp.valueOf(date.getLocalDate());
+        return Timestamp.valueOf(date.getLocalDateTime());
     }
 
     private Integer bigDecimalToInteger(BigDecimal input) {
