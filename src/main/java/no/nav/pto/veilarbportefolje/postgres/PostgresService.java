@@ -1,9 +1,16 @@
 package no.nav.pto.veilarbportefolje.postgres;
 
+import static java.util.stream.Collectors.toList;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
-import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.domene.Bruker;
+import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
+import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
+import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
+import no.nav.pto.veilarbportefolje.domene.FacetResults;
+import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.StatusTall;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -15,15 +22,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
-
 @Service
 public class PostgresService {
     private final VedtakstottePilotRequest vedtakstottePilotRequest;
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final JdbcTemplate jdbcTemplate;
 
-    public PostgresService(VedtakstottePilotRequest vedtakstottePilotRequest, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, VeilarbVeilederClient veilarbVeilederClient) {
+    public PostgresService(VedtakstottePilotRequest vedtakstottePilotRequest, @Qualifier("PostgresJdbcReadOnly") JdbcTemplate jdbcTemplate, VeilarbVeilederClient veilarbVeilederClient) {
         this.vedtakstottePilotRequest = vedtakstottePilotRequest;
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.jdbcTemplate = jdbcTemplate;

@@ -3,6 +3,8 @@ package no.nav.pto.veilarbportefolje.config;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import static no.nav.pto.veilarbportefolje.util.DbUtils.createDataSource;
+import static no.nav.pto.veilarbportefolje.util.DbUtils.getSqlAdminRole;
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -16,9 +18,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
-import static no.nav.pto.veilarbportefolje.util.DbUtils.createDataSource;
-import static no.nav.pto.veilarbportefolje.util.DbUtils.getSqlRole;
-
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -29,12 +28,22 @@ public class DbConfigPostgres implements DatabaseConfig{
     @Bean("Postgres")
     @Override
     public DataSource dataSource() {
-        return createDataSource(environmentProperties.getDbUrl());
+        return createDataSource(environmentProperties.getDbUrl(), true);
+    }
+
+    @Bean("PostgresReadOnly")
+    public DataSource dataSourceRead() {
+        return createDataSource(environmentProperties.getDbUrl(), false);
     }
 
     @Bean(name="PostgresJdbc")
     @Override
     public JdbcTemplate db(@Qualifier("Postgres") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+
+    @Bean(name="PostgresJdbcReadOnly")
+    public JdbcTemplate dbRead(@Qualifier("PostgresReadOnly") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
@@ -54,12 +63,12 @@ public class DbConfigPostgres implements DatabaseConfig{
     @SneakyThrows
     public void migrateDb() {
         log.info("Starting database migration...");
-        DataSource dataSource = createDataSource(environmentProperties.getDbUrl());
+        DataSource dataSource = createDataSource(environmentProperties.getDbUrl(), true);
 
         Flyway.configure()
                 .dataSource(dataSource)
                 .locations("db/postgres")
-                .initSql("SET ROLE '" + getSqlRole()+"';")
+                .initSql("SET ROLE '" + getSqlAdminRole()+"';")
                 .baselineOnMigrate(true)
                 .load()
                 .migrate();

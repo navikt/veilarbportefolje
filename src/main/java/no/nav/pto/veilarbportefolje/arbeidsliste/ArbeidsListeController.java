@@ -2,9 +2,11 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
+import static java.lang.String.format;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import static no.nav.common.utils.StringUtils.nullOrEmpty;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -12,10 +14,18 @@ import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
+import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidsliste;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
@@ -24,10 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.lang.String.format;
-import static no.nav.common.utils.StringUtils.nullOrEmpty;
-import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidsliste;
 
 @Slf4j
 @RestController
@@ -88,7 +94,7 @@ public class ArbeidsListeController {
                 .orElse(false);
 
         Arbeidsliste arbeidsliste = aktoerId
-                .flatMap(arbeidslisteService::getArbeidsliste)
+                .flatMap((id) -> arbeidslisteService.getArbeidsliste(id, innloggetVeileder))
                 .toJavaOptional()
                 .orElse(emptyArbeidsliste())
                 .setIsOppfolgendeVeileder(aktoerId.map(id ->
@@ -104,15 +110,15 @@ public class ArbeidsListeController {
         validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
+        String veileder  = AuthUtils.getInnloggetVeilederIdent().toString();
+
         arbeidslisteService.createArbeidsliste(data(body, Fnr.ofValidFnr(fnr)))
                 .onFailure(e -> log.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.ofValidFnr(fnr)).get()
+        return arbeidslisteService.getArbeidsliste(Fnr.ofValidFnr(fnr), veileder).get()
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(true);
-
-        return arbeidsliste;
     }
 
     @PutMapping("{fnr}")
@@ -122,12 +128,13 @@ public class ArbeidsListeController {
         sjekkTilgangTilEnhet(fnr);
         validerArbeidsliste(body, true);
 
+        String veileder  = AuthUtils.getInnloggetVeilederIdent().toString();
         arbeidslisteService
                 .updateArbeidsliste(data(body, fnr))
                 .onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        return arbeidslisteService.getArbeidsliste(fnr).get()
+        return arbeidslisteService.getArbeidsliste(fnr, veileder).get()
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(arbeidslisteService.erVeilederForBruker(
                         fnr,
