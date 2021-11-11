@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.postgres;
 
-import static java.util.stream.Collectors.toList;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
@@ -21,6 +20,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class PostgresService {
