@@ -6,11 +6,16 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto_schema.enums.arena.Hovedmaal;
+import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
+import no.nav.pto_schema.enums.arena.Rettighetsgruppe;
+import no.nav.pto_schema.enums.arena.SikkerhetstiltakType;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -22,6 +27,12 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
     @Override
     public void behandleKafkaMeldingLogikk(EndringPaaOppfoelgingsBrukerV2 kafkaMelding) {
         AktorId aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.getFodselsnummer()));
+        ZonedDateTime iservDato = Optional.ofNullable(kafkaMelding.getIservFraDato())
+                .map(dato -> ZonedDateTime.of(dato.atStartOfDay(), ZoneId.systemDefault()))
+                .orElse(null);
+        ZonedDateTime dodFraDato = Optional.ofNullable(kafkaMelding.getDoedFraDato())
+                .map(dato -> ZonedDateTime.of(dato.atStartOfDay(), ZoneId.systemDefault()))
+                .orElse(null);
 
         if (aktorId == null) {
             throw new IllegalStateException("Fnr -> AktoerId var null på topic endringPaaOppfoelgingsBruker");
@@ -29,11 +40,14 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
         log.info("Fikk endring pa oppfolgingsbruker: {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v2", aktorId);
         int rader = OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktorId.get(), kafkaMelding.getFodselsnummer(), kafkaMelding.getFormidlingsgruppe().name(),
-                        ZonedDateTime.of(kafkaMelding.getIservFraDato().atStartOfDay(), ZoneId.systemDefault()), kafkaMelding.getEtternavn(), kafkaMelding.getFornavn(),
-                        kafkaMelding.getOppfolgingsenhet(), kafkaMelding.getKvalifiseringsgruppe().name(), kafkaMelding.getRettighetsgruppe().name(),
-                        kafkaMelding.getHovedmaal().name(), kafkaMelding.getSikkerhetstiltakType().name(), kafkaMelding.getDiskresjonskode(),
-                        kafkaMelding.getHarOppfolgingssak(), kafkaMelding.getSperretAnsatt(), kafkaMelding.getErDoed(),
-                        ZonedDateTime.of(kafkaMelding.getDoedFraDato().atStartOfDay(), ZoneId.systemDefault()), kafkaMelding.getSistEndretDato()));
+                        iservDato, kafkaMelding.getEtternavn(), kafkaMelding.getFornavn(),
+                        kafkaMelding.getOppfolgingsenhet(),
+                        Optional.ofNullable(kafkaMelding.getKvalifiseringsgruppe()).map(Kvalifiseringsgruppe::name).orElse(null),
+                        Optional.ofNullable(kafkaMelding.getRettighetsgruppe()).map(Rettighetsgruppe::name).orElse(null),
+                        Optional.ofNullable(kafkaMelding.getHovedmaal()).map(Hovedmaal::name).orElse(null),
+                        Optional.ofNullable(kafkaMelding.getSikkerhetstiltakType()).map(SikkerhetstiltakType::name).orElse(null),
+                        kafkaMelding.getDiskresjonskode(), kafkaMelding.getHarOppfolgingssak(), kafkaMelding.getSperretAnsatt(), kafkaMelding.getErDoed(),
+                        dodFraDato, kafkaMelding.getSistEndretDato()));
         log.info("Oppdatert oppfolgingsbrukerinfo for bruker: {} i postgres, rader pavirket: {}", aktorId, rader);
     }
 }

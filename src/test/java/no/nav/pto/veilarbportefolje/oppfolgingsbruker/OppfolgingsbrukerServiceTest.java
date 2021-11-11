@@ -51,6 +51,7 @@ public class OppfolgingsbrukerServiceTest {
         db.update("DELETE FROM OPPFOLGINGSBRUKER_ARENA");
     }
 
+
     @Test
     public void skalKonsumereOgLagreData() {
         Mockito.when(aktorClientMock.hentAktorId(fnr)).thenReturn(aktoerId);
@@ -71,6 +72,20 @@ public class OppfolgingsbrukerServiceTest {
         Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId);
         assertTrue(oppfolgingsBruker.isPresent());
         assertThat(oppfolgingsBruker.get()).isEqualTo(forventetResultat);
+    }
+
+    @Test
+    public void skalKonsumereData() {
+        Mockito.when(aktorClientMock.hentAktorId(fnr)).thenReturn(aktoerId);
+        ZonedDateTime endret_dato = DateUtils.now();
+
+        EndringPaaOppfoelgingsBrukerV2 kafkaMelding = EndringPaaOppfoelgingsBrukerV2.builder().fodselsnummer(fnr.get()).formidlingsgruppe(Formidlingsgruppe.ARBS).iservFraDato(null)
+                .etternavn("Testerson").fornavn("Test").oppfolgingsenhet("0220").kvalifiseringsgruppe(Kvalifiseringsgruppe.IVURD).rettighetsgruppe(Rettighetsgruppe.IYT).hovedmaal(Hovedmaal.SKAFFEA).sikkerhetstiltakType(null)
+                .diskresjonskode(null).harOppfolgingssak(true).sperretAnsatt(false).erDoed(false).doedFraDato(null).sistEndretDato(endret_dato)
+                .build();
+        oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId);
+        assertTrue(oppfolgingsBruker.isPresent());
     }
 
 }
