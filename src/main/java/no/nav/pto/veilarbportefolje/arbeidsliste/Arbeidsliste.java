@@ -75,7 +75,7 @@ public class Arbeidsliste {
         String kommentar = (String) row.get(ARB_KOMMENTAR);
 
         return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist, arbeidslisteKategori)
-                .setArbeidslisteAktiv(endringstidspunkt == null);
+                .setArbeidslisteAktiv(endringstidspunkt != null);
     }
 
     private static Date dateIfNotFarInTheFutureDate(Instant instant) {

@@ -28,10 +28,16 @@ public class ArenaDato {
         return ZonedDateTime.of(LocalDateTime.parse(dato, format).toLocalDate().atStartOfDay(), ZoneId.systemDefault());
     }
 
-    public LocalDateTime getLocalDate() {
+    public LocalDateTime getLocalDateTime() {
         if (dato.length() == localDateLength) {
             return LocalDate.parse(dato).atStartOfDay();
         }
         return LocalDateTime.parse(dato, format).toLocalDate().atStartOfDay();
+    }
+    public LocalDate getLocalDate() {
+        if (dato.length() == localDateLength) {
+            return LocalDate.parse(dato);
+        }
+        return LocalDate.parse(dato, format);
     }
 }

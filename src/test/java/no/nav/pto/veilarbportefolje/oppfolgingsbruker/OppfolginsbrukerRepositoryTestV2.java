@@ -30,31 +30,12 @@ public class OppfolginsbrukerRepositoryTestV2 {
 
     @Test
     public void skal_ikke_lagre_oppfolgingsbruker_med_eldre_endret_dato() {
-        OppfolgingsbrukerKafkaDTO msg = new OppfolgingsbrukerKafkaDTO()
-                .setAktoerid(aktoerId.get())
-                .setFodselsnr("12015678912")
-                .setFormidlingsgruppekode("TEST")
-                .setIserv_fra_dato(ZonedDateTime.now().minusDays(1))
-                .setFornavn("Tester")
-                .setEtternavn("Testerson")
-                .setNav_kontor("1001")
-                .setKvalifiseringsgruppekode("ORG")
-                .setRettighetsgruppekode("OP")
-                .setHovedmaalkode("TES")
-                .setSikkerhetstiltak_type_kode("IKKE")
-                .setFr_kode("1234")
-                .setHar_oppfolgingssak(true)
-                .setSperret_ansatt(true)
-                .setEr_doed(true)
-                .setDoed_fra_dato(ZonedDateTime.now())
-                .setEndret_dato(ZonedDateTime.now());
-
-
-        OppfolgingsbrukerKafkaDTO old_msg = new OppfolgingsbrukerKafkaDTO()
-                .setAktoerid(aktoerId.get())
-                .setDoed_fra_dato(ZonedDateTime.now())
-                .setEr_doed(false)
-                .setEndret_dato(ZonedDateTime.now().minusDays(5));
+        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(aktoerId.get(), "12015678912", "TEST", ZonedDateTime.now().minusDays(1),
+                "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
+                "1234", true, true, true, ZonedDateTime.now(), ZonedDateTime.now());
+        OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(aktoerId.get(), "12015678912", "TEST", ZonedDateTime.now().minusDays(1),
+                "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
+                "1234", true, true, false, null, ZonedDateTime.now().minusDays(5));
 
         oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);
@@ -66,20 +47,12 @@ public class OppfolginsbrukerRepositoryTestV2 {
 
     @Test
     public void skal_oppdater_oppfolgingsbruker_fra_nyere_dato() {
-        OppfolgingsbrukerKafkaDTO msg = new OppfolgingsbrukerKafkaDTO()
-                .setAktoerid(aktoerId.get())
-                .setEr_doed(true)
-                .setSperret_ansatt(false)
-                .setHar_oppfolgingssak(true)
-                .setDoed_fra_dato(ZonedDateTime.now())
-                .setEndret_dato(ZonedDateTime.now().minusDays(1));
-
-        OppfolgingsbrukerKafkaDTO new_msg = new OppfolgingsbrukerKafkaDTO()
-                .setAktoerid(aktoerId.get())
-                .setSperret_ansatt(true)
-                .setHar_oppfolgingssak(false)
-                .setEr_doed(false)
-                .setEndret_dato(ZonedDateTime.now());
+        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(aktoerId.get(), "12015678912", "TEST", ZonedDateTime.now().minusDays(1), "" +
+                "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
+                "1234", true, true, false, null, ZonedDateTime.now().minusDays(5));
+        OppfolgingsbrukerEntity new_msg = new OppfolgingsbrukerEntity(aktoerId.get(), "12015678912", "TEST", ZonedDateTime.now().minusDays(1), "" +
+                "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
+                "1234", false, true, true, ZonedDateTime.now(), ZonedDateTime.now());
 
         oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);

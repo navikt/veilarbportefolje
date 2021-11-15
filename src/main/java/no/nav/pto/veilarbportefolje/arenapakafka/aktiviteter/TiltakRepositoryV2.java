@@ -29,7 +29,7 @@ import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils.getDateOrNull;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getDateOrNull;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2.*;
 import static no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER.PERSON_ID;

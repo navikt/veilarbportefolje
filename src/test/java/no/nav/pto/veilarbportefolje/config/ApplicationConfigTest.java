@@ -7,6 +7,7 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.IdUtils;
+import static no.nav.common.utils.IdUtils.generateId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
@@ -14,8 +15,14 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
@@ -29,13 +36,21 @@ import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import static no.nav.pto.veilarbportefolje.elastic.Constant.ELASTICSEARCH_VERSION;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
-import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
@@ -47,10 +62,19 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
-import no.nav.pto.veilarbportefolje.util.*;
+import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
+import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
+import no.nav.pto.veilarbportefolje.util.TestDataClient;
+import no.nav.pto.veilarbportefolje.util.TestUtil;
+import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
+import static org.apache.http.HttpHost.create;
+import static org.elasticsearch.client.RestClient.builder;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.springframework.beans.factory.annotation.Autowired;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,18 +88,10 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import javax.sql.DataSource;
 
-import static no.nav.common.utils.IdUtils.generateId;
-import static no.nav.pto.veilarbportefolje.elastic.Constant.ELASTICSEARCH_VERSION;
-import static org.apache.http.HttpHost.create;
-import static org.elasticsearch.client.RestClient.builder;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
 @Import({
+        ArbeidslisteService.class,
         BrukerService.class,
         RegistreringService.class,
         AktivitetService.class,
@@ -121,7 +137,8 @@ import static org.mockito.Mockito.when;
         BrukerDataService.class,
         BrukerDataRepository.class,
         YtelsesService.class,
-        YtelsesRepository.class
+        YtelsesRepository.class,
+        YtelsesRepositoryV2.class
 })
 public class ApplicationConfigTest {
 
@@ -233,23 +250,6 @@ public class ApplicationConfigTest {
     @Bean
     public LeaderElectionClient leaderElectionClient() {
         return mock(LeaderElectionClient.class);
-    }
-
-    @Bean
-    @Primary
-    @Autowired
-    ArbeidslisteService arbeidslisteServiceOracle(AktorClient aktorClient, ArbeidslisteRepositoryV1 arbeidslisteRepository,
-                                                  BrukerService brukerService, ElasticServiceV2 elasticServiceV2,
-                                                  MetricsClient metricsClient) {
-        return new ArbeidslisteService(aktorClient, arbeidslisteRepository, brukerService, elasticServiceV2, metricsClient);
-    }
-
-    @Bean("PostgresArbeidslisteService")
-    @Autowired
-    ArbeidslisteService arbeidslisteService(AktorClient aktorClient, ArbeidslisteRepositoryV2 arbeidslisteRepository,
-                                            BrukerService brukerService,
-                                            ElasticServiceV2 elasticServiceV2, MetricsClient metricsClient) {
-        return new ArbeidslisteService(aktorClient, arbeidslisteRepository, brukerService, elasticServiceV2, metricsClient);
     }
 
     @Bean(name = "PostgresJdbc")

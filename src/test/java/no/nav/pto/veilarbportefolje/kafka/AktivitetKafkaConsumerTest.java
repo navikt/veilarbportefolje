@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.kafka;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
+import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -17,9 +18,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -62,20 +66,19 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
 
         createAktivitetDocument(aktoerId);
 
-        String melding = new JSONObject()
-                .put("aktivitetId", 1)
-                .put("aktorId", aktoerId.toString())
-                .put("fraDato", "2020-08-31T10:03:20+02:00")
-                .put("tilDato", tilDato)
-                .put("endretDato", "2020-07-29T15:43:41.049+02:00")
-                .put("aktivitetType", "IJOBB")
-                .put("aktivitetStatus", "GJENNOMFORES")
-                .put("avtalt", true)
-                .put("historisk", false)
-                .put("version", 1)
-                .toString();
+        KafkaAktivitetMelding melding = new KafkaAktivitetMelding()
+                .setAktivitetId("1")
+                .setAktorId(aktoerId.toString())
+                .setFraDato(ZonedDateTime.parse("2020-08-31T10:03:20+02:00"))
+                .setTilDato(ZonedDateTime.parse(tilDato))
+                .setEndretDato(ZonedDateTime.parse("2020-07-29T15:43:41.049+02:00"))
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.IJOBB)
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setAvtalt(true)
+                .setHistorisk(false)
+                .setVersion(1L);
 
-        aktivitetService.behandleKafkaMelding(melding);
+        aktivitetService.behandleKafkaMeldingLogikk(melding);
 
         pollElasticUntil(() -> aktivitetIJobbUtlopsdatoErOppdatert(aktoerId));
 

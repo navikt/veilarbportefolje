@@ -145,6 +145,12 @@
             <version>51</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.navikt</groupId>
+            <artifactId>pto-schema</artifactId>
+            <version>1.2021.10.20_12.32-2c14462ba05f</version>
+        </dependency>
+
         <!-- Funksjonell programmering-->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -361,6 +367,10 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <repositories>
+                    <repository>
+                        <id>jitpack</id>
+                        <url>https://jitpack.io</url>
+                    </repository>
                 <repository>
                     <id>central</id>
                     <url>https://repo1.maven.org/maven2</url>

@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,12 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static no.nav.common.json.JsonUtils.fromJson;
-import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class VedtakServiceTest {
 
@@ -39,20 +35,17 @@ public class VedtakServiceTest {
 
     @Before
     public void setup() {
-        UnleashService mock = mock(UnleashService.class);
-        when(mock.isEnabled(anyString())).thenReturn(true);
-
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
         ElasticIndexer elasticIndexer = mock(ElasticIndexer.class);
         VedtakStatusRepositoryV2 vedtakStatusRepositoryV2 = mock(VedtakStatusRepositoryV2.class);
-        this.vedtakService = new VedtakService(vedtakStatusRepository, vedtakStatusRepositoryV2, elasticIndexer, mock);
+        this.vedtakService = new VedtakService(vedtakStatusRepository, vedtakStatusRepositoryV2, elasticIndexer);
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
     }
 
     @Test
     public void skallSetteInUtkast() {
-        vedtakService.behandleKafkaMelding(toJson(vedtakStatusEndring));
+        vedtakService.behandleKafkaMeldingLogikk(vedtakStatusEndring);
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.get(0)).isEqualTo(vedtakStatusEndring);
         assertThat(endringer.size()).isEqualTo(1);
@@ -60,7 +53,7 @@ public class VedtakServiceTest {
 
     @Test
     public void skallOppdatereUtkast() {
-        vedtakService.behandleKafkaMelding(toJson(vedtakStatusEndring));
+        vedtakService.behandleKafkaMeldingLogikk(vedtakStatusEndring);
         LocalDateTime time = DateUtils.now().toLocalDateTime();
         KafkaVedtakStatusEndring kafkaVedtakSendtTilBeslutter = new KafkaVedtakStatusEndring()
                 .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.VEDTAK_SENDT)
@@ -70,7 +63,7 @@ public class VedtakServiceTest {
                 .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.BEHOLDE_ARBEID)
                 .setInnsatsgruppe(KafkaVedtakStatusEndring.Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS);
 
-        vedtakService.behandleKafkaMelding(toJson(kafkaVedtakSendtTilBeslutter));
+        vedtakService.behandleKafkaMeldingLogikk(kafkaVedtakSendtTilBeslutter);
 
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.get(0)).isEqualTo(kafkaVedtakSendtTilBeslutter);
@@ -95,7 +88,7 @@ public class VedtakServiceTest {
                 .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID)
                 .setInnsatsgruppe(KafkaVedtakStatusEndring.Innsatsgruppe.VARIG_TILPASSET_INNSATS);
 
-        vedtakService.behandleKafkaMelding(toJson(kafkaVedtakSendtTilBruker));
+        vedtakService.behandleKafkaMeldingLogikk(kafkaVedtakSendtTilBruker);
 
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.get(0)).isEqualTo(kafkaVedtakSendtTilBruker);

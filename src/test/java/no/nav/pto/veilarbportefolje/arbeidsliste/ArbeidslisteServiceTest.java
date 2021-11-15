@@ -1,41 +1,44 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
+import static java.time.Instant.now;
 import lombok.Value;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.domene.value.*;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
 
-import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 @SpringBootTest(classes = ApplicationConfigTest.class)
 class ArbeidslisteServiceTest {
 
     private final ArbeidslisteService arbeidslisteService;
+    private final ArbeidslisteRepositoryV1 arbeidslisteRepositoryV1;
     private final JdbcTemplate jdbcTemplate;
     private final AktorClient aktorClient;
     private AktorId aktoerId;
 
     @Autowired
-    public ArbeidslisteServiceTest(ArbeidslisteService arbeidslisteService, JdbcTemplate jdbcTemplate, AktorClient aktorClient) {
+    public ArbeidslisteServiceTest(ArbeidslisteService arbeidslisteService, ArbeidslisteRepositoryV1 arbeidslisteRepositoryV1, JdbcTemplate jdbcTemplate, AktorClient aktorClient) {
         this.arbeidslisteService = arbeidslisteService;
+        this.arbeidslisteRepositoryV1 = arbeidslisteRepositoryV1;
         this.jdbcTemplate = jdbcTemplate;
         this.aktorClient = aktorClient;
     }
@@ -62,7 +65,7 @@ class ArbeidslisteServiceTest {
 
         assertThat(actualFnr).isEqualTo(fnrOgNavKontor.getFnr());
 
-        NavKontor actualNavKontor = NavKontor.of(arbeidslisteService.hentNavKontorForArbeidsliste(aktoerId).orElseThrow());
+        NavKontor actualNavKontor = NavKontor.of(arbeidslisteRepositoryV1.hentNavKontorForArbeidsliste(aktoerId).orElseThrow());
 
         assertThat(actualNavKontor).isEqualTo(excpectedNavKontor);
     }

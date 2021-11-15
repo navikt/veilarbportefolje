@@ -15,10 +15,12 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
@@ -96,17 +98,14 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     public void siste_endring_aktivteter() {
         final AktorId aktoerId = randomAktorId();
         elasticTestClient.createUserInElastic(aktoerId);
-        String endretTid = "2020-05-28T07:47:42.480Z";
-        String endretTid_nyijobb = "2028-05-28T07:47:42.480Z";
-        String endretTidSisteEndring = "2020-11-26T10:40:40.000Z";
-        ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse(endretTid);
-        ZonedDateTime endretTidZonedDateTime_NY_IJOBB = ZonedDateTime.parse(endretTid_nyijobb);
-        ZonedDateTime endretTidNyZonedDateTime = ZonedDateTime.parse(endretTidSisteEndring);
+        ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse("2020-05-28T07:47:42.480Z");
+        ZonedDateTime endretTidZonedDateTime_NY_IJOBB = ZonedDateTime.parse("2028-05-28T07:47:42.480Z");
+        ZonedDateTime endretTidNyZonedDateTime = ZonedDateTime.parse("2020-11-26T10:40:40.000Z");
 
-        send_aktvitet_melding(aktoerId, endretTid_nyijobb, KafkaAktivitetMelding.EndringsType.OPPRETTET,
+        send_aktvitet_melding(aktoerId, endretTidZonedDateTime_NY_IJOBB, KafkaAktivitetMelding.EndringsType.OPPRETTET,
                 KafkaAktivitetMelding.AktivitetStatus.PLANLAGT,
                 KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
-        send_aktvitet_melding(aktoerId, endretTid, KafkaAktivitetMelding.EndringsType.FLYTTET,
+        send_aktvitet_melding(aktoerId, endretTidZonedDateTime, KafkaAktivitetMelding.EndringsType.FLYTTET,
                 KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
                 KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
 
@@ -121,7 +120,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(endring_ny_ijobb).isNotNull();
         assertThat(endring_ny_ijobb).isEqualTo(endretTidZonedDateTime_NY_IJOBB.toString());
 
-        send_aktvitet_melding(aktoerId, endretTidSisteEndring, KafkaAktivitetMelding.EndringsType.FLYTTET,
+        send_aktvitet_melding(aktoerId, endretTidNyZonedDateTime, KafkaAktivitetMelding.EndringsType.FLYTTET,
                 KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
                 KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
         GetResponse getResponse_2 = elasticTestClient.fetchDocument(aktoerId);
@@ -134,10 +133,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void siste_endring_filter_test() {
         final AktorId aktoerId = randomAktorId();
-        String endretTid = "2019-05-28T09:47:42.48+02:00";
-        String endretTid_ny = "2020-05-28T09:47:42.48+02:00";
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(endretTid);
-        ZonedDateTime zonedDateTime_NY_IJOBB = ZonedDateTime.parse(endretTid_ny);
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse("2019-05-28T09:47:42.48+02:00");
+        ZonedDateTime zonedDateTime_NY_IJOBB = ZonedDateTime.parse( "2020-05-28T09:47:42.48+02:00");
 
         populateElastic(testEnhet, veilederId, aktoerId.toString());
 
@@ -154,10 +151,10 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             return brukereMedAntall.getAntall() == 1;
         });
 
-        send_aktvitet_melding(aktoerId, endretTid_ny, KafkaAktivitetMelding.EndringsType.OPPRETTET,
+        send_aktvitet_melding(aktoerId, zonedDateTime_NY_IJOBB, KafkaAktivitetMelding.EndringsType.OPPRETTET,
                 KafkaAktivitetMelding.AktivitetStatus.PLANLAGT,
                 KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
-        send_aktvitet_melding(aktoerId, endretTid, KafkaAktivitetMelding.EndringsType.FLYTTET,
+        send_aktvitet_melding(aktoerId, zonedDateTime, KafkaAktivitetMelding.EndringsType.FLYTTET,
                 KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
                 KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
 
@@ -238,10 +235,10 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void siste_endring_ulest_filter_test() {
         final AktorId aktoerId = randomAktorId();
-        String endretTid_FULLFORT_IJOBB = "2019-05-28T09:47:42.48+02:00";
-        String endretTid_NY_IJOBB = "2020-05-28T09:47:42.48+02:00";
+        ZonedDateTime endretTid_FULLFORT_IJOBB = ZonedDateTime.parse("2019-05-28T09:47:42.48+02:00");
+        ZonedDateTime endretTid_NY_IJOBB = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00");
 
-        String lestAvVeilederTid = "2019-07-28T09:47:42.48+02:00";
+        ZonedDateTime lestAvVeilederTid = ZonedDateTime.parse("2019-07-28T09:47:42.48+02:00");
 
         populateElastic(testEnhet, veilederId, aktoerId.toString());
         pollElasticUntil(() -> {
@@ -321,12 +318,12 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         final AktorId aktoerId_2 = randomAktorId();
         final AktorId aktoerId_3 = randomAktorId();
 
-        String endret_Tid_IJOBB_bruker_1_i_2024 = "2024-05-28T09:47:42.480Z";
-        String endret_Tid_IJOBB_bruker_2_i_2025 = "2025-05-28T09:47:42.480Z";
+        ZonedDateTime endret_Tid_IJOBB_bruker_1_i_2024 = ZonedDateTime.parse("2024-05-28T09:47:42.480Z");
+        ZonedDateTime endret_Tid_IJOBB_bruker_2_i_2025 = ZonedDateTime.parse("2025-05-28T09:47:42.480Z");
 
-        String endret_Tid_EGEN_bruker_1_i_2021 = "2021-05-28T07:47:42.480Z";
-        String endret_Tid_EGEN_bruker_2_i_2020 = "2020-05-28T06:47:42.480Z";
-        String endret_Tid_EGEN_bruker_3_i_2019 = "2019-05-28T00:47:42.480Z";
+        ZonedDateTime endret_Tid_EGEN_bruker_1_i_2021 = ZonedDateTime.parse("2021-05-28T07:47:42.480Z");
+        ZonedDateTime endret_Tid_EGEN_bruker_2_i_2020 = ZonedDateTime.parse("2020-05-28T06:47:42.480Z");
+        ZonedDateTime endret_Tid_EGEN_bruker_3_i_2019 = ZonedDateTime.parse("2019-05-28T00:47:42.480Z");
 
         populateElastic(testEnhet, veilederId, aktoerId_1.get(), aktoerId_2.get(), aktoerId_3.get());
         pollElasticUntil(() -> {
@@ -398,8 +395,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 null);
 
         assertThat(responseSortertFULLFORT_IJOBB.getAntall()).isEqualTo(2);
-        assertThat(responseSortertFULLFORT_IJOBB.getBrukere().get(0).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_IJOBB_bruker_2_i_2025).getYear());
-        assertThat(responseSortertFULLFORT_IJOBB.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_IJOBB_bruker_1_i_2024).getYear());
+        assertThat(responseSortertFULLFORT_IJOBB.getBrukere().get(0).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_IJOBB_bruker_2_i_2025.getYear());
+        assertThat(responseSortertFULLFORT_IJOBB.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_IJOBB_bruker_1_i_2024.getYear());
 
         var responseSortertFULLFORT_EGEN = elasticService.hentBrukere(
                 testEnhet.get(),
@@ -411,9 +408,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 null);
 
         assertThat(responseSortertFULLFORT_EGEN.getAntall()).isEqualTo(3);
-        assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(0).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_EGEN_bruker_3_i_2019).getYear());
-        assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_EGEN_bruker_2_i_2020).getYear());
-        assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(2).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_EGEN_bruker_1_i_2021).getYear());
+        assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(0).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_3_i_2019.getYear());
+        assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_2_i_2020.getYear());
+        assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(2).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_1_i_2021.getYear());
 
         var responseSortertFULLFORT_MIX = elasticService.hentBrukere(
                 testEnhet.get(),
@@ -425,9 +422,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 null);
 
         assertThat(responseSortertFULLFORT_MIX.getAntall()).isEqualTo(3);
-        assertThat(responseSortertFULLFORT_MIX.getBrukere().get(0).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_IJOBB_bruker_2_i_2025).getYear());
-        assertThat(responseSortertFULLFORT_MIX.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_IJOBB_bruker_1_i_2024).getYear());
-        assertThat(responseSortertFULLFORT_MIX.getBrukere().get(2).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_EGEN_bruker_3_i_2019).getYear());
+        assertThat(responseSortertFULLFORT_MIX.getBrukere().get(0).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_IJOBB_bruker_2_i_2025.getYear());
+        assertThat(responseSortertFULLFORT_MIX.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_IJOBB_bruker_1_i_2024.getYear());
+        assertThat(responseSortertFULLFORT_MIX.getBrukere().get(2).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_3_i_2019.getYear());
 
         var responseSortertTomRes1 = elasticService.hentBrukere(
                 testEnhet.get(),
@@ -450,45 +447,28 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertTomRes2.getAntall()).isEqualTo(0);
     }
 
-    private void send_aktvitet_melding(AktorId aktoerId, String endretDato, KafkaAktivitetMelding.EndringsType endringsType,
+    private void send_aktvitet_melding(AktorId aktoerId, ZonedDateTime endretDato, KafkaAktivitetMelding.EndringsType endringsType,
                                        KafkaAktivitetMelding.AktivitetStatus status, KafkaAktivitetMelding.AktivitetTypeData typeData) {
-        String endret = endretDato == null ? "" : "\"endretDato\":\"" + endretDato + "\",";
-        String aktivitetKafkaMelding = "{" +
-                "\"aktivitetId\":\"144136\"," +
-                "\"aktorId\":\"" + aktoerId.get() + "\"," +
-                "\"fraDato\":\"2020-07-09T12:00:00+02:00\"," +
-                "\"tilDato\":null," +
-                endret +
-                "\"aktivitetType\":\"" + typeData + "\"," +
-                "\"aktivitetStatus\":\"" + status + "\"," +
-                "\"endringsType\":\"" + endringsType + "\"," +
-                "\"lagtInnAv\":\"BRUKER\"," +
-                "\"avtalt\":true," +
-                "\"historisk\":false," +
-                "\"version\":1" +
-                "}";
-        aktivitetService.behandleKafkaMelding(aktivitetKafkaMelding);
+        KafkaAktivitetMelding melding = new KafkaAktivitetMelding().setAktivitetId("144136")
+                .setAktorId(aktoerId.get()).setFraDato(ZonedDateTime.now().minusDays(5)).setEndretDato(endretDato)
+                .setAktivitetType(typeData).setAktivitetStatus(status).setEndringsType(endringsType).setLagtInnAv(KafkaAktivitetMelding.InnsenderData.BRUKER)
+                .setAvtalt(true).setHistorisk(false).setVersion(1L);
+        aktivitetService.behandleKafkaMeldingLogikk(melding);
     }
 
 
-    private void send_sett_aktivitetsplan(AktorId aktoerId, String settDato) {
-        String sistLestKafkaMelding = "{" +
-                "\"aktorId\":\"" + aktoerId.get() + "\"," +
-                "\"harLestTidspunkt\":\"" + settDato + "\"," +
-                "\"veilederId\":\"" + veilederId.getValue() + "\"" +
-                "}";
-        sistLestService.behandleKafkaMelding(sistLestKafkaMelding);
+    private void send_sett_aktivitetsplan(AktorId aktoerId, ZonedDateTime settDato) {
+        SistLestKafkaMelding melding =  new SistLestKafkaMelding().setAktorId(aktoerId).setHarLestTidspunkt(settDato).setVeilederId(veilederId);
+        sistLestService.behandleKafkaMeldingLogikk(melding);
     }
 
     private void send_mal_melding(AktorId aktoerId, ZonedDateTime endretDato) {
-        String endret = endretDato == null ? "" : "\"endretTidspunk\":\"" + endretDato + "\"";
-        String kafkamelding = "{" +
-                "\"aktorId\":\"" + aktoerId.get() + "\"," +
-                "\"lagtInnAv\":\"BRUKER\"," +
-                "\"veilederIdent\":\"Z12345\"," +
-                endret +
-                "}";
-        malService.behandleKafkaMelding(kafkamelding);
+        MalEndringKafkaDTO kafkamelding = new MalEndringKafkaDTO()
+                .setAktorId(aktoerId.get())
+                .setLagtInnAv(MalEndringKafkaDTO.InnsenderData.BRUKER)
+                .setVeilederIdent("Z12345")
+                .setEndretTidspunk(endretDato);
+        malService.behandleKafkaMeldingLogikk(kafkamelding);
     }
 
     private static Filtervalg getFiltervalg(SisteEndringsKategori kategori) {

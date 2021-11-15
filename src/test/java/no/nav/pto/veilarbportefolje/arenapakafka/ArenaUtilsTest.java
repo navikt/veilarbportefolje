@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arenapakafka;
 
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaAktivitetUtils;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
@@ -13,7 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class ArenaAktivitetUtilsTest {
+public class ArenaUtilsTest {
     private JdbcTemplate db;
     private ArenaHendelseRepository arenaHendelseRepository;
     private final String hendelsesId = "T-123";
@@ -29,7 +28,7 @@ public class ArenaAktivitetUtilsTest {
     @Test
     public void skalLagreNyMeldinger(){
         Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(hendelsesId);
-        boolean erGammelHendelse = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, 1L,false);
+        boolean erGammelHendelse = ArenaUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, 1L,false);
 
         assertThat(hendelseIDB).isNull();
         assertThat(erGammelHendelse).isFalse();
@@ -40,7 +39,7 @@ public class ArenaAktivitetUtilsTest {
         long lagretHendelse = 3L;
         arenaHendelseRepository.upsertAktivitetHendelse(hendelsesId, lagretHendelse);
         Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(hendelsesId);
-        boolean erGammelHendelse = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, 1L, false);
+        boolean erGammelHendelse = ArenaUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, 1L, false);
 
         assertThat(erGammelHendelse).isTrue();
         assertThat(hendelseIDB).isEqualTo(lagretHendelse);
@@ -51,8 +50,8 @@ public class ArenaAktivitetUtilsTest {
         long lagretHendelse = 4L;
         arenaHendelseRepository.upsertAktivitetHendelse(hendelsesId, lagretHendelse);
         Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(hendelsesId);
-        boolean deleteHendelseErGammel = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, lagretHendelse, true);
-        boolean insertHendelseErGammel = ArenaAktivitetUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, lagretHendelse, false);
+        boolean deleteHendelseErGammel = ArenaUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, lagretHendelse, true);
+        boolean insertHendelseErGammel = ArenaUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, lagretHendelse, false);
 
         assertThat(deleteHendelseErGammel).isFalse();
         assertThat(insertHendelseErGammel).isTrue();

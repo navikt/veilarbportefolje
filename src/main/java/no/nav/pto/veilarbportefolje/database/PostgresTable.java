@@ -139,6 +139,23 @@ public class PostgresTable {
         public static final String HENDELSE_ID = "HENDELSE_ID";
     }
 
+    public static final class YTELSESVEDTAK {
+        public static final String TABLE_NAME = "YTELSESVEDTAK";
+
+        public static final String VEDTAKSID = "VEDTAKSID";
+        public static final String AKTORID = "AKTORID";
+        public static final String PERSONID = "PERSONID";
+        public static final String YTELSESTYPE = "YTELSESTYPE";
+        public static final String SAKSID = "SAKSID";
+        public static final String SAKSTYPEKODE = "SAKSTYPEKODE";
+        public static final String RETTIGHETSTYPEKODE = "RETTIGHETSTYPEKODE";
+        public static final String STARTDATO = "STARTDATO";
+        public static final String UTLOPSDATO = "UTLOPSDATO";
+        public static final String ANTALLUKERIGJEN = "ANTALLUKERIGJEN";
+        public static final String ANTALLPERMITTERINGSUKER = "ANTALLPERMITTERINGSUKER";
+        public static final String ANTALLUKERIGJENUNNTAK = "ANTALLUKERIGJENUNNTAK";
+    }
+
     public static final class LEST_ARENA_HENDELSE_YTELSER {
         public static final String TABLE_NAME = "LEST_ARENA_HENDELSE_YTELSE";
         public static final String VEDTAKID = "VEDTAKID";
