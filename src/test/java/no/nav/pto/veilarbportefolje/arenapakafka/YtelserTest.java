@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesServicePostgres;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -21,7 +22,6 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,7 +59,7 @@ public class YtelserTest {
     private final BrukerDataService brukerDataService;
 
     @Autowired
-    public YtelserTest(JdbcTemplate jdbcTemplate, BrukerDataService brukerDataService, YtelsesRepository ytelsesRepository, BrukerRepository brukerRepository) {
+    public YtelserTest(JdbcTemplate jdbcTemplate, BrukerDataService brukerDataService, YtelsesRepository ytelsesRepository, YtelsesServicePostgres ytelsesServicePostgres, BrukerRepository brukerRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.brukerRepository = brukerRepository;
         ArenaHendelseRepository arenaHendelseRepository = mock(ArenaHendelseRepository.class);
@@ -69,7 +69,7 @@ public class YtelserTest {
         this.aktorClient = Mockito.mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
-        this.ytelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, ytelsesRepository,arenaHendelseRepository,mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
+        this.ytelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, ytelsesRepository, ytelsesServicePostgres, arenaHendelseRepository,mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
     }
 
     @BeforeEach
@@ -99,7 +99,7 @@ public class YtelserTest {
         dto.setOperationType("I");
         dto.setAfter(innhold);
 
-        ytelsesService.behandleKafkaMelding(dto, TypeKafkaYtelse.AAP);
+        ytelsesService.behandleKafkaMeldingOracle(dto, TypeKafkaYtelse.AAP);
         OppfolgingsBruker bruker = brukerRepository.hentBrukerFraView(aktorId).get();
 
         assertThat(bruker.getYtelse()).isEqualTo("AAP_MAXTID");
@@ -115,7 +115,7 @@ public class YtelserTest {
         Timestamp nextMonth = Timestamp.valueOf(ZonedDateTime.now().plusMonths(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(YtelsesServicePostgres.class), mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setUtlopsDato(tomorrow),
                 new YtelseDAO().setSaksId(sak1).setStartDato(tomorrow).setUtlopsDato(nextWeek),
@@ -123,7 +123,7 @@ public class YtelserTest {
         );
         Mockito.when(mockRepository.getYtelser(aktorId)).thenReturn(ytelser);
 
-        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.finnLopendeYtelse(aktorId);
+        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.finnLopendeYtelseOracle(aktorId);
 
         assertThat(lopendeYtelse.isPresent()).isTrue();
         assertThat(lopendeYtelse.get().getUtlopsDato()).isEqualTo(nextWeek);
@@ -137,14 +137,14 @@ public class YtelserTest {
         Timestamp nextMonth = Timestamp.valueOf(ZonedDateTime.now().plusMonths(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(YtelsesServicePostgres.class), mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(tomorrow).setUtlopsDato(nextWeek),
                 new YtelseDAO().setSaksId(sak1).setStartDato(nextWeek).setUtlopsDato(nextMonth)
         );
         Mockito.when(mockRepository.getYtelser(aktorId)).thenReturn(ytelser);
 
-        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.finnLopendeYtelse(aktorId);
+        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.finnLopendeYtelseOracle(aktorId);
 
         assertThat(lopendeYtelse.isEmpty()).isTrue();
     }
@@ -155,12 +155,12 @@ public class YtelserTest {
         Timestamp yesterday = Timestamp.valueOf(ZonedDateTime.now().minusDays(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(YtelsesServicePostgres.class), mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setType(TypeKafkaYtelse.DAGPENGER)
         );
         Mockito.when(mockRepository.getYtelser(aktorId)).thenReturn(ytelser);
-        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.finnLopendeYtelse(aktorId);
+        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.finnLopendeYtelseOracle(aktorId);
 
         assertThat(lopendeYtelse.isPresent()).isTrue();
     }
@@ -171,25 +171,25 @@ public class YtelserTest {
         Timestamp yesterday = Timestamp.valueOf(ZonedDateTime.now().minusDays(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(YtelsesServicePostgres.class), mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setType(TypeKafkaYtelse.AAP)
         );
         Mockito.when(mockRepository.getYtelser(aktorId)).thenReturn(ytelser);
-        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.finnLopendeYtelse(aktorId);
+        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.finnLopendeYtelseOracle(aktorId);
 
         assertThat(lopendeYtelse.isPresent()).isTrue();
     }
 
     @Test
-    public void sletterLøpendeYtelseOgAktivererNesteVedtakPåSammeSak(){
+    public void sletterLopendeYtelseOgAktivererNesteVedtakPaSammeSak(){
         String sak1 = "Sak1";
         String sak2 = "Sak2";
         Timestamp nextWeek = Timestamp.valueOf(ZonedDateTime.now().plusWeeks(1).toLocalDateTime());
         Timestamp nextMonth = Timestamp.valueOf(ZonedDateTime.now().plusMonths(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(YtelsesServicePostgres.class), mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(nextWeek).setUtlopsDato(nextMonth)
                         .setType(TypeKafkaYtelse.DAGPENGER)
@@ -203,7 +203,7 @@ public class YtelserTest {
         Mockito.when(mockRepository.getYtelser(aktorId)).thenReturn(ytelser);
 
         YtelsesInnhold sletteInnhold = lagInnhold("1", LocalDate.now(), sak1, fnr, personId);
-        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(aktorId, sletteInnhold);
+        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.oppdaterYtelsesInformasjonMedUnntaksLogikkForSletting(aktorId, sletteInnhold);
 
         assertThat(lopendeYtelse.isPresent()).isTrue();
         assertThat(lopendeYtelse.get().getSaksId()).isEqualTo(sak1);
@@ -212,13 +212,13 @@ public class YtelserTest {
     }
     
     @Test
-    public void sletterLøpendeYtelse(){
+    public void sletterLopendeYtelse(){
         String sak1 = "Sak1";
         String sak2 = "Sak2";
         Timestamp nextWeek = Timestamp.valueOf(ZonedDateTime.now().plusWeeks(1).toLocalDateTime());
 
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
-        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, mock(YtelsesServicePostgres.class), mock(ArenaHendelseRepository.class), mock(ElasticIndexer.class), mock(OppfolgingRepository.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak2).setStartDato(nextWeek).setUtlopsDato(nextWeek)
                         .setType(TypeKafkaYtelse.DAGPENGER)
@@ -228,7 +228,7 @@ public class YtelserTest {
         Mockito.when(mockRepository.getYtelser(aktorId)).thenReturn(ytelser);
 
         YtelsesInnhold sletteInnhold = lagInnhold("1", LocalDate.now(), sak1, fnr, personId);
-        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(aktorId, sletteInnhold);
+        Optional<YtelseDAO> lopendeYtelse = tempYtelsesService.oppdaterYtelsesInformasjonMedUnntaksLogikkForSletting(aktorId, sletteInnhold);
 
         assertThat(lopendeYtelse.isEmpty()).isTrue();
     }
@@ -241,7 +241,7 @@ public class YtelserTest {
         assertThat(goldenGateDTO.getAfter().getClass()).isEqualTo(YtelsesInnhold.class);
         assertThat(goldenGateDTO.getAfter()).isNotNull();
         assertThat(goldenGateDTO.getBefore()).isNull();
-        ytelsesService.behandleKafkaMelding(goldenGateDTO, TypeKafkaYtelse.AAP);
+        ytelsesService.behandleKafkaMeldingOracle(goldenGateDTO, TypeKafkaYtelse.AAP);
     }
 
     private void insertBruker() {
