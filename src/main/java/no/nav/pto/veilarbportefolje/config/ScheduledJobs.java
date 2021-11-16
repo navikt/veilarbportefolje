@@ -37,4 +37,24 @@ public class ScheduledJobs {
             log.info("Starter ikke jobb: oppdaterYtelser");
         }
     }
+
+    // Denne jobben må kjøre etter midnatt
+    @Scheduled(cron = "0 1 0 * * ?")
+    public void oppdaterBrukerAktiviteterPostgres() {
+        if (leaderElectionClient.isLeader()) {
+            brukerAktiviteterService.syncAktivitetOgBrukerDataPostgres();
+        } else {
+            log.info("Starter ikke jobb: oppdaterBrukerData");
+        }
+    }
+
+    // Denne jobben må kjøre etter midnatt
+    @Scheduled(cron = "0 0 1 * * ?")
+    public void oppdaterNyeYtelserPostgres() {
+        if (leaderElectionClient.isLeader()) {
+            // TODO: vent på Müller
+        } else {
+            log.info("Starter ikke jobb: oppdaterYtelser");
+        }
+    }
 }
