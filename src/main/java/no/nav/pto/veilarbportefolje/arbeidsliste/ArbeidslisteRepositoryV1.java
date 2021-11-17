@@ -73,7 +73,7 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
     }
 
     public List<AktorId> hentAlleBrukereMedArbeidsliste() {
-        return db.queryForList("SELECT " + AKTOERID + " FROM " + Table.ARBEIDSLISTE.TABLE_NAME, AktorId.class);
+        return db.queryForList("SELECT DISTINCT " + AKTOERID + " FROM " + Table.ARBEIDSLISTE.TABLE_NAME, AktorId.class);
     }
 
     public Try<ArbeidslisteDTO> insertArbeidsliste(ArbeidslisteDTO dto) {

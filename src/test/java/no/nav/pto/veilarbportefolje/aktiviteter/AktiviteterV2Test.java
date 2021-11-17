@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -17,7 +18,7 @@ public class AktiviteterV2Test {
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktivitetService aktivitetService;
 
-    private final AktorId aktorId = AktorId.of("1000123");
+    private final AktorId aktorId = randomAktorId();
 
     @Autowired
     public AktiviteterV2Test(AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetService aktivitetService) {
