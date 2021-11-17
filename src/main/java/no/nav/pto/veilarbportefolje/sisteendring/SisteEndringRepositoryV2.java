@@ -85,7 +85,6 @@ public class SisteEndringRepositoryV2 {
     }
 
     public Timestamp getSisteEndringTidspunkt(AktorId aktoerId, SisteEndringsKategori kategori) {
-
         return queryForObjectOrNull(() -> db.queryForObject("""
                         SELECT SISTE_ENDRING_TIDSPUNKT FROM SISTE_ENDRING
                         WHERE aktoerid = ? AND siste_endring_kategori = ?""",
