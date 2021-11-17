@@ -300,6 +300,20 @@ function handleOppdaterYtelserForAlle(e) {
     }
 }
 
+const migrerArbeidslistaForm = document.getElementById('migrerArbeidslista');
+migrerArbeidslistaForm.addEventListener('submit', handleMigrerArbeidslista)
+
+function handleMigrerArbeidslista(e) {
+    e.preventDefault();
+    if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/arbeidslista/migrer`,
+            {method: 'PUT', credentials: 'same-origin'},
+            'migrerArbeidslistaResponse'
+        );
+    }
+}
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);

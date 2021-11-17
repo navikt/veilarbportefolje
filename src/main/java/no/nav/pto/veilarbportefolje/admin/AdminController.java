@@ -7,6 +7,7 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
@@ -46,6 +47,7 @@ public class AdminController {
     private final YtelsesService ytelsesService;
     private final BrukerRepository brukerRepository;
     private final OppfolgingRepository oppfolgingRepository;
+    private final ArbeidslisteService arbeidslisteService;
 
 
     @PostMapping("/aktoerId")
@@ -130,6 +132,12 @@ public class AdminController {
         return "Aktiviteter er nå i sync";
     }
 
+    @PutMapping("/arbeidslista/migrer")
+    public String migrerArbeidslista() {
+        authorizeAdmin();
+        arbeidslisteService.migrerArbeidslistaTilPostgres();
+        return "Arbeidslista er nå migrert";
+    }
 
     private void authorizeAdmin() {
         final String ident = authContextHolder.getNavIdent().map(Id::toString).orElseThrow();
