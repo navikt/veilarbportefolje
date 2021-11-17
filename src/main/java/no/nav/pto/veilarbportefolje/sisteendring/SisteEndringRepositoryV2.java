@@ -17,7 +17,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.*;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.AKTIVITETID;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.ER_SETT;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.SISTE_ENDRING_KATEGORI;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.SISTE_ENDRING_TIDSPUNKT;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
 
@@ -79,9 +85,12 @@ public class SisteEndringRepositoryV2 {
     }
 
     public Timestamp getSisteEndringTidspunkt(AktorId aktoerId, SisteEndringsKategori kategori) {
-        String sql = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ?", SISTE_ENDRING_TIDSPUNKT, TABLE_NAME, AKTOERID, SISTE_ENDRING_KATEGORI);
 
-        return db.query(sql, (rs, row) -> rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT), aktoerId.get(), kategori.name()).stream().findFirst().orElse(null);
+        return queryForObjectOrNull(() -> db.queryForObject("""
+                        SELECT SISTE_ENDRING_TIDSPUNKT FROM SISTE_ENDRING
+                        WHERE aktoerid = ? AND siste_endring_kategori = ?""",
+                        Timestamp.class, aktoerId.get(), kategori.name())
+        );
     }
 
     public int slettSisteEndringer(AktorId aktoerId) {
