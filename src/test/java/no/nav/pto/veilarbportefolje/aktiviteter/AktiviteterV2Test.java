@@ -9,6 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static java.lang.String.valueOf;
+import static java.util.concurrent.ThreadLocalRandom.current;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -17,8 +19,6 @@ public class AktiviteterV2Test {
     private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktivitetService aktivitetService;
-
-    private final AktorId aktorId = randomAktorId();
 
     @Autowired
     public AktiviteterV2Test(AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetService aktivitetService) {
@@ -29,8 +29,9 @@ public class AktiviteterV2Test {
 
     @Test
     public void skal_komme_i_aktivitet_V2() {
+        final AktorId aktorId = randomAktorId();
         KafkaAktivitetMelding aktivitet = new KafkaAktivitetMelding()
-                .setAktivitetId("id1")
+                .setAktivitetId(valueOf(current().nextInt()))
                 .setVersion(1L)
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.EGEN)
                 .setAktorId(aktorId.get())
@@ -49,8 +50,9 @@ public class AktiviteterV2Test {
 
     @Test
     public void skal_kunne_ha_flere_typer_aktiviteter_V2() {
+        final AktorId aktorId = randomAktorId();
         KafkaAktivitetMelding aktivitet1 = new KafkaAktivitetMelding()
-                .setAktivitetId("id1")
+                .setAktivitetId(valueOf(current().nextInt()))
                 .setVersion(1L)
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.EGEN)
                 .setAktorId(aktorId.get())
@@ -59,7 +61,7 @@ public class AktiviteterV2Test {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
 
         KafkaAktivitetMelding aktivitet2 = new KafkaAktivitetMelding()
-                .setAktivitetId("id2")
+                .setAktivitetId(valueOf(current().nextInt()))
                 .setVersion(1L)
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
                 .setAktorId(aktorId.get())
