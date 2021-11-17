@@ -238,6 +238,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
                                         oppfolginsbrukerService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.AIVEN_AKTIVITER_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(KafkaAktivitetMelding.class),
+                                        aktivitetService::behandleKafkaRecord
                                 )
                 );
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =

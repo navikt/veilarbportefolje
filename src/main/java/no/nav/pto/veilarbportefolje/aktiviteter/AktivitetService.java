@@ -45,11 +45,12 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
         boolean bleProsessert = aktivitetDAO.tryLagreAktivitetData(aktivitetData);
 
-        if (bleProsessert && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
-            utledAktivitetstatuserForAktoerid(aktorId);
-            elasticIndexer.indekser(aktorId);
+        if (aktivitetData.getVersion() > 49179897) {
+            if (bleProsessert && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
+                utledAktivitetstatuserForAktoerid(aktorId);
+                elasticIndexer.indekser(aktorId);
+            }
         }
-
         //POSTGRES
         boolean bleProsessertPostgres = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
         if (bleProsessertPostgres && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
