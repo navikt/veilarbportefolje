@@ -4,6 +4,7 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.sbl.sql.SqlUtils;
@@ -14,12 +15,24 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 
 import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.*;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.ENDRINGSTIDSPUNKT;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.FNR;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.FRIST;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.KATEGORI;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.KOMMENTAR;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.OVERSKRIFT;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.SIST_ENDRET_AV_VEILEDERIDENT;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
-import static no.nav.sbl.sql.SqlUtils.*;
+import static no.nav.sbl.sql.SqlUtils.select;
+import static no.nav.sbl.sql.SqlUtils.update;
+import static no.nav.sbl.sql.SqlUtils.upsert;
 
 @Slf4j
 @Repository
@@ -48,6 +61,19 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
                         .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
                         .execute()
         );
+    }
+
+    public Try<ArbeidslisteDTO> retrieveArbeidslisteDTO(AktorId aktoerId) {
+        return Try.of(
+                () -> select(db, Table.ARBEIDSLISTE.TABLE_NAME, this::arbeidslisteDtoMapper)
+                        .column("*")
+                        .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
+                        .execute()
+        );
+    }
+
+    public List<AktorId> hentAlleBrukereMedArbeidsliste() {
+        return db.queryForList("SELECT DISTINCT " + AKTOERID + " FROM " + Table.ARBEIDSLISTE.TABLE_NAME, AktorId.class);
     }
 
     public Try<ArbeidslisteDTO> insertArbeidsliste(ArbeidslisteDTO dto) {
@@ -111,6 +137,19 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
                 toZonedDateTime(rs.getTimestamp("FRIST")),
                 Arbeidsliste.Kategori.valueOf(rs.getString("KATEGORI"))
         );
+    }
+
+    @SneakyThrows
+    private ArbeidslisteDTO arbeidslisteDtoMapper(ResultSet rs) {
+        return new ArbeidslisteDTO(Fnr.of(rs.getString(FNR)))
+                .setAktorId(AktorId.of(rs.getString(AKTOERID)))
+                .setFrist(rs.getTimestamp(FRIST))
+                .setVeilederId(VeilederId.of(rs.getString(SIST_ENDRET_AV_VEILEDERIDENT)))
+                .setEndringstidspunkt(rs.getTimestamp(ENDRINGSTIDSPUNKT))
+                .setOverskrift(rs.getString(OVERSKRIFT))
+                .setKommentar(rs.getString(KOMMENTAR))
+                .setKategori(Arbeidsliste.Kategori.valueOf(rs.getString(KATEGORI)))
+                .setNavKontorForArbeidsliste(rs.getString(NAV_KONTOR_FOR_ARBEIDSLISTE));
     }
 
 }
