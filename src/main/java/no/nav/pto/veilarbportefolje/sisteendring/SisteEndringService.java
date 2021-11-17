@@ -66,11 +66,21 @@ public class SisteEndringService {
         }
 
         SisteEndringDTO sisteEndringDTO = new SisteEndringDTO(kafkaAktivitet);
-        if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
+        if (kafkaAktivitet.getVersion() > 49179897) {
+            if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
+                try {
+                    sisteEndringRepository.upsert(sisteEndringDTO);
+                    elasticServiceV2.updateSisteEndring(sisteEndringDTO);
+                } catch (Exception e) {
+                    String message = String.format("Kunne ikke lagre eller indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId());
+                    log.error(message, e);
+                }
+            }
+        }
+
+        if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIPostgres(sisteEndringDTO)) {
             try {
-                sisteEndringRepository.upsert(sisteEndringDTO);
                 sisteEndringRepositoryV2.upsert(sisteEndringDTO);
-                elasticServiceV2.updateSisteEndring(sisteEndringDTO);
             } catch (Exception e) {
                 String message = String.format("Kunne ikke lagre eller indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId());
                 log.error(message, e);
@@ -89,7 +99,18 @@ public class SisteEndringService {
             return false;
         }
         Timestamp databaseVerdi = sisteEndringRepository.getSisteEndringTidspunkt(sisteEndringDTO.getAktoerId(), sisteEndringDTO.getKategori());
-        //databaseVerdi = sisteEndringRepositoryV2.getSisteEndringTidspunkt(sisteEndringDTO.getAktoerId(), sisteEndringDTO.getKategori());
+        if (databaseVerdi == null) {
+            return true;
+        }
+        return toZonedDateTime(databaseVerdi).compareTo(sisteEndringDTO.getTidspunkt()) < 0;
+    }
+
+    private boolean hendelseErNyereEnnIPostgres(SisteEndringDTO sisteEndringDTO) {
+        if (sisteEndringDTO.getTidspunkt() == null) {
+            log.error("Endringstidspunkt var null for aktoerId: " + sisteEndringDTO.getAktoerId());
+            return false;
+        }
+        Timestamp databaseVerdi = sisteEndringRepositoryV2.getSisteEndringTidspunkt(sisteEndringDTO.getAktoerId(), sisteEndringDTO.getKategori());
         if (databaseVerdi == null) {
             return true;
         }

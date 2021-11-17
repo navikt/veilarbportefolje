@@ -452,7 +452,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         KafkaAktivitetMelding melding = new KafkaAktivitetMelding().setAktivitetId("144136")
                 .setAktorId(aktoerId.get()).setFraDato(ZonedDateTime.now().minusDays(5)).setEndretDato(endretDato)
                 .setAktivitetType(typeData).setAktivitetStatus(status).setEndringsType(endringsType).setLagtInnAv(KafkaAktivitetMelding.InnsenderData.BRUKER)
-                .setAvtalt(true).setHistorisk(false).setVersion(1L);
+                .setAvtalt(true).setHistorisk(false).setVersion(49179898L);
         aktivitetService.behandleKafkaMeldingLogikk(melding);
     }
 
