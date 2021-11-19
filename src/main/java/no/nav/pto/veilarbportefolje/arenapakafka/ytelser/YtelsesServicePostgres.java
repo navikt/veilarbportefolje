@@ -63,7 +63,7 @@ public class YtelsesServicePostgres {
         Timestamp startDato = Timestamp.valueOf(innhold.getFraOgMedDato().getLocalDateTime());
         Timestamp utlopsDato = innhold.getTilOgMedDato() == null ? null : Timestamp.valueOf(innhold.getTilOgMedDato().getLocalDateTime());
 
-        boolean erLopendeVedtak = harLopendeStartDato(startDato, iDag) && harLopendeUtlopsDato(utlopsDato, iDag);
+        boolean erLopendeVedtak = harPassertStartdato(startDato, iDag) && harFremtidigUtlopsdato(utlopsDato, iDag);
 
         if (erLopendeVedtak) {
             Optional<YtelseDAO> sisteYtelsePaSakId = finnSisteYtelsePaSakIdSomIkkeErUtloptPostgres(aktorId, innhold.getSaksId());
@@ -84,7 +84,7 @@ public class YtelsesServicePostgres {
         List<YtelseDAO> aktiveYtelserPaSakID = ytelsesRepositoryV2.getYtelser(aktorId).stream()
                 .filter(Objects::nonNull)
                 .filter(ytelse -> sakID.equals(ytelse.getSaksId()))
-                .filter(ytelse -> harLopendeUtlopsDato(ytelse.getUtlopsDato(), iDag))
+                .filter(ytelse -> harFremtidigUtlopsdato(ytelse.getUtlopsDato(), iDag))
                 .collect(Collectors.toList());
 
         if (aktiveYtelserPaSakID.isEmpty()) {
@@ -110,7 +110,7 @@ public class YtelsesServicePostgres {
         LocalDate iDag = LocalDate.now();
         List<YtelseDAO> aktiveOgFremtidigeYtelser = ytelsesRepositoryV2.getYtelser(aktorId).stream()
                 .filter(Objects::nonNull)
-                .filter(ytelse -> harLopendeUtlopsDato(ytelse.getUtlopsDato(), iDag))
+                .filter(ytelse -> harFremtidigUtlopsdato(ytelse.getUtlopsDato(), iDag))
                 .collect(Collectors.toList());
 
         if (aktiveOgFremtidigeYtelser.isEmpty()) {
@@ -120,7 +120,7 @@ public class YtelsesServicePostgres {
         YtelseDAO tidligsteYtelse = aktiveOgFremtidigeYtelser.stream()
                 .min(Comparator.comparing(YtelseDAO::getStartDato)).get();
 
-        if (!harLopendeStartDato(tidligsteYtelse.getStartDato(), iDag)) {
+        if (!harPassertStartdato(tidligsteYtelse.getStartDato(), iDag)) {
             return Optional.empty();
         }
         if (TypeKafkaYtelse.DAGPENGER.equals(tidligsteYtelse.getType())) {
@@ -156,13 +156,13 @@ public class YtelsesServicePostgres {
                 .max(Comparator.comparing(YtelseDAO::getUtlopsDato));
     }
 
-    private boolean harLopendeStartDato(Timestamp startDato, LocalDate iDag) {
-        // startDato er en 'fra og med' dato.
+    private boolean harPassertStartdato(Timestamp startDato, LocalDate iDag) {
+        // startDato er en "fra og med"-dato.
         return startDato.toLocalDateTime().toLocalDate().isBefore(iDag.plusDays(1));
     }
 
-    private boolean harLopendeUtlopsDato(Timestamp utlopsDato, LocalDate iDag) {
-        // Utløpsdato er en 'til og med' dato.
+    private boolean harFremtidigUtlopsdato(Timestamp utlopsDato, LocalDate iDag) {
+        // Utløpsdato er en "til og med"-dato.
         return utlopsDato == null || utlopsDato.toLocalDateTime().toLocalDate().isAfter(iDag.minusDays(1));
     }
 }

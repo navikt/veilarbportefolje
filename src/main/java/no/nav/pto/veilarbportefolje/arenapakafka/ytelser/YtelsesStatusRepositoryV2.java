@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Slf4j
 @Repository
 @RequiredArgsConstructor
@@ -18,7 +20,7 @@ public class YtelsesStatusRepositoryV2 {
     private final JdbcTemplate db;
 
     public void upsertYtelse(Brukerdata brukerdata) {
-        YtelseMapping ytelse = brukerdata.getYtelse();
+        String ytelse = Optional.ofNullable(brukerdata.getYtelse()).map(YtelseMapping::toString).orElse(null);
 
         db.update("""
                 INSERT INTO YTELSE_STATUS_FOR_BRUKER

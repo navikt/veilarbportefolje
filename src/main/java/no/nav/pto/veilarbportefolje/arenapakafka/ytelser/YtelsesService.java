@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -62,9 +61,13 @@ public class YtelsesService {
         }
 
         behandleKafkaMeldingOracle(melding, ytelse);
-        ytelsesServicePostgres.behandleKafkaMeldingPostgres(melding, ytelse);
+        behandleKafkaMeldingPostgres(melding, ytelse);
 
         arenaHendelseRepository.upsertYtelsesHendelse(innhold.getVedtakId(), innhold.getHendelseId());
+    }
+
+    public void behandleKafkaMeldingPostgres(YtelsesDTO melding, TypeKafkaYtelse ytelse) {
+        ytelsesServicePostgres.behandleKafkaMeldingPostgres(melding, ytelse);
     }
 
     public void behandleKafkaMeldingOracle(YtelsesDTO kafkaMelding, TypeKafkaYtelse ytelse) {
