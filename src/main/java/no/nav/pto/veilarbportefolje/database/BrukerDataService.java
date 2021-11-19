@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -39,6 +40,7 @@ public class BrukerDataService {
     //POSTGRES
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
+    private final YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2;
     private final UnleashService unleashService;
 
     public void oppdaterAktivitetBrukerDataPostgres(AktorId aktorId) {
@@ -82,7 +84,7 @@ public class BrukerDataService {
         }
     }
 
-    public void oppdaterYtelser(AktorId aktorId, PersonId personId, Optional<YtelseDAO> innhold) {
+    public void oppdaterYtelserOracle(AktorId aktorId, PersonId personId, Optional<YtelseDAO> innhold) {
         Brukerdata ytelsesTilstand = new Brukerdata()
                 .setAktoerid(aktorId.get())
                 .setPersonid(personId.getValue());
@@ -106,6 +108,29 @@ public class BrukerDataService {
         }
 
         brukerDataRepository.upsertYtelser(ytelsesTilstand);
+    }
+
+    public void oppdaterYtelserPostgres(AktorId aktorId, Optional<YtelseDAO> innhold) {
+        Brukerdata ytelsesTilstand = new Brukerdata()
+                .setAktoerid(aktorId.get());
+        if (innhold.isEmpty()) {
+            ytelsesStatusRepositoryV2.upsertYtelse(ytelsesTilstand);
+            return;
+        }
+
+        switch (innhold.get().getType()) {
+            case DAGPENGER -> {
+                leggTilYtelsesData(ytelsesTilstand, innhold.get());
+                leggTilRelevantDagpengeData(ytelsesTilstand, innhold.get());
+            }
+            case AAP -> {
+                leggTilYtelsesData(ytelsesTilstand, innhold.get());
+                leggTilRelevantAAPData(ytelsesTilstand, innhold.get());
+            }
+            case TILTAKSPENGER -> leggTilYtelsesData(ytelsesTilstand, innhold.get());
+        }
+
+        ytelsesStatusRepositoryV2.upsertYtelse(ytelsesTilstand);
     }
 
     private void leggTilYtelsesData(Brukerdata ytelsesTilstand, YtelseDAO innhold) {

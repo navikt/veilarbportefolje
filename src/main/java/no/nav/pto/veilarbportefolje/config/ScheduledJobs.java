@@ -32,7 +32,7 @@ public class ScheduledJobs {
     @Scheduled(cron = "0 0 1 * * ?")
     public void oppdaterNyeYtelser() {
         if (leaderElectionClient.isLeader()) {
-            ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag();
+            ytelsesService.oppdaterBrukereMedYtelserSomStarterIDagOracle();
         } else {
             log.info("Starter ikke jobb: oppdaterYtelser");
         }
