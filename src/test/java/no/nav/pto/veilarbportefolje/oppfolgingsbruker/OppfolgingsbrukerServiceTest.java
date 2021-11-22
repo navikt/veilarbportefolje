@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
@@ -43,7 +44,7 @@ public class OppfolgingsbrukerServiceTest {
         this.db = db;
         this.oppfolginsbrukerRepositoryV2 = oppfolginsbrukerRepositoryV2;
         aktorClientMock = mock(AktorClient.class);
-        oppfolginsbrukerService = new OppfolginsbrukerService(oppfolginsbrukerRepositoryV2, aktorClientMock);
+        oppfolginsbrukerService = new OppfolginsbrukerService(oppfolginsbrukerRepositoryV2, mock(ElasticIndexer.class), aktorClientMock);
     }
 
     @BeforeEach
