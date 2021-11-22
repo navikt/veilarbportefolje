@@ -9,12 +9,15 @@ import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 @Slf4j
 @Configuration
 @EnableScheduling
 @RequiredArgsConstructor
-public class ScheduledJobs {
+public class SchedulConfig implements SchedulingConfigurer{
     private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
     private final LeaderElectionClient leaderElectionClient;
@@ -49,4 +52,13 @@ public class ScheduledJobs {
             log.info("Starter ikke jobb: migrerArbeidslistaTilPostgres");
         }
     }
+
+    @Override
+    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+        taskScheduler.setPoolSize(20);
+        taskScheduler.initialize();
+        taskRegistrar.setTaskScheduler(taskScheduler);
+    }
+
 }
