@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
@@ -13,15 +13,13 @@ import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class BrukerAktiviteterService {
     private final AktivitetService aktivitetService;
-    private final TiltakRepositoryV2 tiltakRepositoryV2;
+    private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final OppfolgingRepository oppfolgingRepository;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerService brukerService;
@@ -66,7 +64,7 @@ public class BrukerAktiviteterService {
             log.warn("AktoerId ble ikke oppdatert da personId er null: {}. Inaktiv aktorId?", aktorId.get());
             return;
         }
-        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId, personId);
+        tiltakRepositoryV1.utledOgLagreTiltakInformasjon(aktorId, personId);
         gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(aktorId, personId);
         aktivitetService.deaktiverUtgatteUtdanningsAktivteter(aktorId);
         aktivitetService.utledAktivitetstatuserForAktoerid(aktorId);
