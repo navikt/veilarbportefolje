@@ -425,7 +425,8 @@ CREATE TABLE public.ytelse_status_for_bruker (
     dagputlopuke integer,
     permutlopuke integer,
     aapmaxtiduke integer,
-    aapunntakdagerigjen integer
+    aapunntakdagerigjen integer,
+    ytelse character varying(40)
 );
 
 
