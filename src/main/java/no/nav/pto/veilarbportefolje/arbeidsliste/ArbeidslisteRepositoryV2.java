@@ -91,7 +91,7 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
         if (aktoerId == null) {
             return 0;
         }
-        log.info("Sletter vedtak og utkast pa bruker: {}", aktoerId);
+        log.info("Sletter arbeidsliste pa bruker: {}", aktoerId);
         return db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
     }
 
@@ -108,6 +108,7 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
     }
 
     public int upsert(String aktoerId, ArbeidslisteDTO dto) {
+        log.info("Upsert arbeidsliste pa bruker: {}", aktoerId);
         return db.update("""
                         INSERT INTO ARBEIDSLISTE (AKTOERID, SIST_ENDRET_AV_VEILEDERIDENT , ENDRINGSTIDSPUNKT,
                         OVERSKRIFT, KOMMENTAR, FRIST , KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE)
