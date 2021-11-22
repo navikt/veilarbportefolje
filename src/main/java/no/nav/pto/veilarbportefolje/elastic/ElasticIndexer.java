@@ -7,7 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.BrukertiltakV2;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -53,7 +53,7 @@ public class ElasticIndexer {
     private final BrukerRepository brukerRepository;
     private final IndexName alias;
     private final SisteEndringRepository sisteEndringRepository;
-    private final TiltakRepositoryV2 tiltakRepositoryV2;
+    private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final ElasticServiceV2 elasticServiceV2;
 
     public ElasticIndexer(
@@ -62,13 +62,13 @@ public class ElasticIndexer {
             RestHighLevelClient restHighLevelClient,
             SisteEndringRepository sisteEndringRepository,
             IndexName alias,
-            TiltakRepositoryV2 tiltakRepositoryV2, ElasticServiceV2 elasticServiceV2) {
+            TiltakRepositoryV1 tiltakRepositoryV1, ElasticServiceV2 elasticServiceV2) {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.restHighLevelClient = restHighLevelClient;
         this.sisteEndringRepository = sisteEndringRepository;
-        this.tiltakRepositoryV2 = tiltakRepositoryV2;
+        this.tiltakRepositoryV1 = tiltakRepositoryV1;
         this.alias = alias;
         this.elasticServiceV2 = elasticServiceV2;
     }
@@ -166,7 +166,7 @@ public class ElasticIndexer {
                 .map(AktorId::of)
                 .collect(toList());
 
-        Map<AktorId, Set<BrukertiltakV2>> alleTiltakForBrukere = tiltakRepositoryV2.hentBrukertiltak(aktorIder);
+        Map<AktorId, Set<BrukertiltakV2>> alleTiltakForBrukere = tiltakRepositoryV1.hentBrukertiltak(aktorIder);
 
         alleTiltakForBrukere.forEach((aktorId, brukerMedTiltak) -> {
             Set<String> tiltak = brukerMedTiltak.stream()

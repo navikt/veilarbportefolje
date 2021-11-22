@@ -6,8 +6,8 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
@@ -43,10 +43,10 @@ public class BrukerDataServiceTest {
 
 
     @Autowired
-    public BrukerDataServiceTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, TiltakRepositoryV2 tiltakRepositoryV2, GruppeAktivitetRepository gruppeAktivitetRepository, BrukerDataRepository brukerDataRepository, BrukerRepository brukerRepository) {
+    public BrukerDataServiceTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, TiltakRepositoryV1 tiltakRepositoryV1, GruppeAktivitetRepository gruppeAktivitetRepository, BrukerDataRepository brukerDataRepository, BrukerRepository brukerRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.brukerRepository = brukerRepository;
-        brukerDataService = new BrukerDataService(aktivitetDAO, tiltakRepositoryV2, mock(TiltakRepositoryV3.class), gruppeAktivitetRepository, mock(GruppeAktivitetRepositoryV2.class), brukerDataRepository, mock(AktiviteterRepositoryV2.class), mock(AktivitetStatusRepositoryV2.class), mock(YtelsesStatusRepositoryV2.class), mock(UnleashService.class));
+        brukerDataService = new BrukerDataService(aktivitetDAO, tiltakRepositoryV1, mock(TiltakRepositoryV2.class), gruppeAktivitetRepository, mock(GruppeAktivitetRepositoryV2.class), brukerDataRepository, mock(AktiviteterRepositoryV2.class), mock(AktivitetStatusRepositoryV2.class), mock(YtelsesStatusRepositoryV2.class), mock(UnleashService.class));
     }
 
     @BeforeEach

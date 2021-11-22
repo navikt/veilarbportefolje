@@ -32,8 +32,8 @@ import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 @RequiredArgsConstructor
 public class TiltakServiceV2 {
     private static final LocalDate LANSERING_AV_OVERSIKTEN = LocalDate.of(2017, 12, 4);
+    private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
-    private final TiltakRepositoryV3 tiltakRepositoryV3;
     @NonNull
     @Qualifier("systemClient")
     private final AktorClient aktorClient;
@@ -81,12 +81,12 @@ public class TiltakServiceV2 {
         PersonId personId = PersonId.of(String.valueOf(innhold.getPersonId()));
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
             log.info("Sletter tiltak: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
-            tiltakRepositoryV2.delete(innhold.getAktivitetid());
+            tiltakRepositoryV1.delete(innhold.getAktivitetid());
         } else {
             log.info("Lagrer tiltak: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
-            tiltakRepositoryV2.upsert(innhold, aktorId);
+            tiltakRepositoryV1.upsert(innhold, aktorId);
         }
-        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId, personId);
+        tiltakRepositoryV1.utledOgLagreTiltakInformasjon(aktorId, personId);
         brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
 
         elasticIndexer.indekser(aktorId);
@@ -98,23 +98,23 @@ public class TiltakServiceV2 {
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
             log.info("Sletter tiltak postgres: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
-            tiltakRepositoryV3.delete(innhold.getAktivitetid());
+            tiltakRepositoryV2.delete(innhold.getAktivitetid());
         } else {
             log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
-            tiltakRepositoryV3.upsert(innhold, aktorId);
+            tiltakRepositoryV2.upsert(innhold, aktorId);
         }
-        tiltakRepositoryV3.utledOgLagreTiltakInformasjon(aktorId);
+        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
         brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
     }
 
     public EnhetTiltak hentEnhettiltak(EnhetId enhet) {
         return tryCacheFirst(enhetTiltakCache, enhet,
-                () -> tiltakRepositoryV2.hentTiltakPaEnhet(enhet));
+                () -> tiltakRepositoryV1.hentTiltakPaEnhet(enhet));
     }
 
     public EnhetTiltak hentEnhettiltakPostgres(EnhetId enhet) {
         return tryCacheFirst(enhetTiltakCachePostgres, enhet,
-                () -> tiltakRepositoryV3.hentTiltakPaEnhet(enhet));
+                () -> tiltakRepositoryV2.hentTiltakPaEnhet(enhet));
     }
 
     private boolean erGammelMelding(TiltakDTO kafkaMelding, TiltakInnhold innhold) {

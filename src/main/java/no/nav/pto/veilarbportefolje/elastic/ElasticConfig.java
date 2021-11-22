@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import no.nav.common.health.HealthCheckResult;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -63,7 +63,7 @@ public class ElasticConfig {
 
 
     @Bean
-    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, RestHighLevelClient restHighLevelClient, SisteEndringRepository sisteEndringRepository, TiltakRepositoryV2 tiltakRepositoryV2, ElasticServiceV2 elasticServiceV2) {
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, sisteEndringRepository, new IndexName(getAlias()), tiltakRepositoryV2, elasticServiceV2);
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, RestHighLevelClient restHighLevelClient, SisteEndringRepository sisteEndringRepository, TiltakRepositoryV1 tiltakRepositoryV1, ElasticServiceV2 elasticServiceV2) {
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, sisteEndringRepository, new IndexName(getAlias()), tiltakRepositoryV1, elasticServiceV2);
     }
 }
