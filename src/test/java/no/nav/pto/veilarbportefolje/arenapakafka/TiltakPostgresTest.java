@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepo
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.BrukerDataRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
@@ -59,12 +60,13 @@ public class TiltakPostgresTest {
         oppfolginsbrukerRepositoryV2 = new OppfolginsbrukerRepositoryV2(db);
         aktivitetStatusRepositoryV2 = new AktivitetStatusRepositoryV2(db);
         tiltakRepositoryV3 = new TiltakRepositoryV3(db, aktivitetStatusRepositoryV2);
+        YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2 = new YtelsesStatusRepositoryV2(db);
 
         GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2 = mock(GruppeAktivitetRepositoryV2.class);
         AktiviteterRepositoryV2 aktiviteterRepositoryV2 = mock(AktiviteterRepositoryV2.class);
         Mockito.when(gruppeAktivitetRepositoryV2.hentAktiveAktivteter(any())).thenReturn(new ArrayList<>());
         Mockito.when(aktiviteterRepositoryV2.getAktiviteterForAktoerid(any(), anyBoolean())).thenReturn(new AktoerAktiviteter("1").setAktiviteter(new ArrayList<>()));
-        brukerDataService = new BrukerDataService(mock(AktivitetDAO.class), mock(TiltakRepositoryV2.class), tiltakRepositoryV3, mock(GruppeAktivitetRepository.class), gruppeAktivitetRepositoryV2, mock(BrukerDataRepository.class), aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, mock(UnleashService.class));
+        brukerDataService = new BrukerDataService(mock(AktivitetDAO.class), mock(TiltakRepositoryV2.class), tiltakRepositoryV3, mock(GruppeAktivitetRepository.class), gruppeAktivitetRepositoryV2, mock(BrukerDataRepository.class), aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, ytelsesStatusRepositoryV2, mock(UnleashService.class));
     }
 
     @BeforeEach
@@ -153,7 +155,7 @@ public class TiltakPostgresTest {
     }
 
     @Test
-    public void skal_lage_slette_tiltak_på_bruker_men_ikke_kodeverk() {
+    public void skal_lage_slette_tiltak_pa_bruker_men_ikke_kodeverk() {
         String tiltaksType = "T123";
         String tiltaksNavn = "test";
         String id = "TA-123456789";

@@ -17,7 +17,13 @@ import java.sql.ResultSet;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.MANUELL;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.NY_FOR_VEILEDER;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.OPPFOLGING;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.STARTDATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.VEILEDERID;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
@@ -30,12 +36,10 @@ public class OppfolgingRepositoryV2 {
     private final JdbcTemplate db;
 
     public int settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
-        return db.update(
-                "INSERT INTO " + TABLE_NAME + " (" + AKTOERID + ", " + OPPFOLGING + ", " + STARTDATO + ") VALUES (?,?,?) " +
-                        "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET " + OPPFOLGING + "  = ?, " + STARTDATO + " = ?;",
-                aktoerId.get(),
-                true, toTimestamp(startDato),
-                true, toTimestamp(startDato)
+        return db.update("""
+                        INSERT INTO oppfolging_data (AKTOERID, OPPFOLGING, STARTDATO) VALUES (?,?,?)
+                        ON CONFLICT (AKTOERID) DO UPDATE SET OPPFOLGING = EXCLUDED.OPPFOLGING, STARTDATO = EXCLUDED.STARTDATO
+                        """,aktoerId.get(), true, toTimestamp(startDato)
         );
     }
 
@@ -94,7 +98,7 @@ public class OppfolgingRepositoryV2 {
 
     @SneakyThrows
     private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet rs) {
-        if(rs == null || rs.getString(AKTOERID) == null){
+        if (rs == null || rs.getString(AKTOERID) == null) {
             return null;
         }
         return new BrukerOppdatertInformasjon()
