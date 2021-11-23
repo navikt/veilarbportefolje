@@ -46,11 +46,11 @@ public class OppfolgingRepositoryV2 {
     }
 
     public void settNyForVeileder(AktorId aktoerId, boolean nyForVeileder) {
-        db.update("UPDATE oppfolging_data SET ny_for_veileder = ? WHERE aktoerid = ?", nyForVeileder, aktoerId);
+        db.update("UPDATE oppfolging_data SET ny_for_veileder = ? WHERE aktoerid = ?", nyForVeileder, aktoerId.get());
     }
 
     public void settManuellStatus(AktorId aktoerId, boolean manuellStatus) {
-        db.update("UPDATE oppfolging_data SET manuell = ? WHERE aktoerid = ?", manuellStatus, aktoerId);
+        db.update("UPDATE oppfolging_data SET manuell = ? WHERE aktoerid = ?", manuellStatus, aktoerId.get());
     }
 
     public void slettOppfolgingData(AktorId aktoerId) {
