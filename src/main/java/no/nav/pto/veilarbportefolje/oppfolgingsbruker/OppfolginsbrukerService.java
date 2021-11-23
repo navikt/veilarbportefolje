@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
@@ -22,6 +23,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringPaaOppfoelgingsBrukerV2> {
     private final OppfolginsbrukerRepositoryV2 OppfolginsbrukerRepositoryV2;
+    private final ElasticIndexer elasticIndexer;
     private final AktorClient aktorClient;
 
     @Override
@@ -38,7 +40,7 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
             throw new IllegalStateException("Fnr -> AktoerId var null på topic endringPaaOppfoelgingsBruker");
         }
         log.info("Fikk endring pa oppfolgingsbruker: {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v2", aktorId);
-        int rader = OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
+        OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktorId.get(), kafkaMelding.getFodselsnummer(), kafkaMelding.getFormidlingsgruppe().name(),
                         iservDato, kafkaMelding.getEtternavn(), kafkaMelding.getFornavn(),
                         kafkaMelding.getOppfolgingsenhet(),
@@ -48,7 +50,8 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
                         Optional.ofNullable(kafkaMelding.getSikkerhetstiltakType()).map(SikkerhetstiltakType::name).orElse(null),
                         kafkaMelding.getDiskresjonskode(), kafkaMelding.getHarOppfolgingssak(), kafkaMelding.getSperretAnsatt(), kafkaMelding.getErDoed(),
                         dodFraDato, kafkaMelding.getSistEndretDato()));
-        log.info("Oppdatert oppfolgingsbrukerinfo for bruker: {} i postgres, rader pavirket: {}", aktorId, rader);
+
+        elasticIndexer.indekser(aktorId);
     }
 }
 

@@ -33,14 +33,11 @@ public class OppfolgingRepositoryV2 {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
-    public void settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
-        db.update("""
-                        INSERT INTO OPPFOLGING_DATA (AKTOERID, OPPFOLGING, STARTDATO ) VALUES (?,?,?)
-                        ON CONFLICT (AKTOERID) DO UPDATE SET OPPFOLGING = ?, STARTDATO = ?
-                        """,
-                aktoerId.get(),
-                true, toTimestamp(startDato),
-                true, toTimestamp(startDato)
+    public int settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
+        return db.update("""
+                        INSERT INTO oppfolging_data (AKTOERID, OPPFOLGING, STARTDATO) VALUES (?,?,?)
+                        ON CONFLICT (AKTOERID) DO UPDATE SET OPPFOLGING = EXCLUDED.OPPFOLGING, STARTDATO = EXCLUDED.STARTDATO
+                        """,aktoerId.get(), true, toTimestamp(startDato)
         );
     }
 

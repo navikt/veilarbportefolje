@@ -76,7 +76,7 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setAvtalt(true)
                 .setHistorisk(false)
-                .setVersion(1L);
+                .setVersion(49179898L);
 
         aktivitetService.behandleKafkaMeldingLogikk(melding);
 

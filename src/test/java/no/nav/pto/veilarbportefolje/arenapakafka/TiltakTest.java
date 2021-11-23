@@ -7,8 +7,8 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakServiceV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
@@ -52,7 +52,7 @@ public class TiltakTest {
 
 
     @Autowired
-    public TiltakTest(TiltakRepositoryV2 tiltakRepositoryV2, TiltakRepositoryV3 tiltakRepositoryV3, JdbcTemplate jdbcTemplate, AktivitetDAO aktivitetDAO) {
+    public TiltakTest(TiltakRepositoryV1 tiltakRepositoryV1, TiltakRepositoryV2 tiltakRepositoryV2, JdbcTemplate jdbcTemplate, AktivitetDAO aktivitetDAO) {
         this.jdbcTemplate = jdbcTemplate;
         this.aktivitetDAO = aktivitetDAO;
 
@@ -62,7 +62,7 @@ public class TiltakTest {
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
-        this.tiltakServiceV2 = new TiltakServiceV2(tiltakRepositoryV2, tiltakRepositoryV3,aktorClient, arenaHendelseRepository, mock(BrukerDataService.class), mock(ElasticIndexer.class));
+        this.tiltakServiceV2 = new TiltakServiceV2(tiltakRepositoryV1, tiltakRepositoryV2,aktorClient, arenaHendelseRepository, mock(BrukerDataService.class), mock(ElasticIndexer.class));
     }
 
 

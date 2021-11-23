@@ -16,7 +16,15 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.ENDRINGSTIDSPUNKT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.FRIST;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.KATEGORI;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.KOMMENTAR;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.OVERSKRIFT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.SIST_ENDRET_AV_VEILEDERIDENT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
@@ -61,7 +69,7 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
 
 
     public Try<ArbeidslisteDTO> updateArbeidsliste(ArbeidslisteDTO data) {
-         final String updateSql = String.format(
+        final String updateSql = String.format(
                 "UPDATE %s SET %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ? WHERE %s = ?",
                 TABLE_NAME, SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT, OVERSKRIFT,
                 KOMMENTAR, FRIST, KATEGORI, AKTOERID
@@ -71,7 +79,7 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
         return Try.of(
                 () -> {
                     int rows = db.update(updateSql, data.getVeilederId().getValue(), endringsTidspunkt, data.getOverskrift(),
-                                    data.getKommentar(), data.getFrist(), data.getKategori().name(), data.getAktorId().get());
+                            data.getKommentar(), data.getFrist(), data.getKategori().name(), data.getAktorId().get());
 
                     log.info("Oppdaterte arbeidsliste pa bruker {}, rader: {}", data.getAktorId().get(), rows);
                     return data.setEndringstidspunkt(endringsTidspunkt);
@@ -83,7 +91,7 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
         if (aktoerId == null) {
             return 0;
         }
-        log.info("Sletter vedtak og utkast pa bruker: {}", aktoerId);
+        log.info("Sletter arbeidsliste pa bruker: {}", aktoerId);
         return db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
     }
 
@@ -99,26 +107,17 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
         );
     }
 
-    private int upsert(String aktoerId, ArbeidslisteDTO dto){
-        return db.update("INSERT INTO " + TABLE_NAME
-                + " (" + AKTOERID +
-                ", " + SIST_ENDRET_AV_VEILEDERIDENT +
-                ", " + ENDRINGSTIDSPUNKT +
-                ", " + OVERSKRIFT +
-                ", " + KOMMENTAR +
-                ", " + FRIST +
-                ", " + KATEGORI +
-                ", " + NAV_KONTOR_FOR_ARBEIDSLISTE + ") " +
-                "VALUES(?,?,?,?,?,?,?,?) " +
-                "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET (" +
-                    SIST_ENDRET_AV_VEILEDERIDENT +
-                    ", " + ENDRINGSTIDSPUNKT +
-                    ", " + OVERSKRIFT +
-                    ", " + KOMMENTAR +
-                    ", " + FRIST +
-                    ", " + KATEGORI +
-                    ", " + NAV_KONTOR_FOR_ARBEIDSLISTE + ")" +
-                    " = (?,?,?,?,?,?,?)", aktoerId, dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), dto.getKategori().toString(), dto.getNavKontorForArbeidsliste(),
-                    dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), dto.getKategori().toString(), dto.getNavKontorForArbeidsliste());
+    public int upsert(String aktoerId, ArbeidslisteDTO dto) {
+        log.info("Upsert arbeidsliste pa bruker: {}", aktoerId);
+        return db.update("""
+                        INSERT INTO ARBEIDSLISTE (AKTOERID, SIST_ENDRET_AV_VEILEDERIDENT , ENDRINGSTIDSPUNKT,
+                        OVERSKRIFT, KOMMENTAR, FRIST , KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE)
+                        VALUES(?,?,?,?,?,?,?,?) ON CONFLICT (AKTOERID) DO UPDATE SET
+                        (SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT,
+                        OVERSKRIFT, KOMMENTAR , FRIST , KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE) = (?,?,?,?,?,?,?)
+                        """,
+                aktoerId,
+                dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), dto.getKategori().toString(), dto.getNavKontorForArbeidsliste(),
+                dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), dto.getKategori().toString(), dto.getNavKontorForArbeidsliste());
     }
 }

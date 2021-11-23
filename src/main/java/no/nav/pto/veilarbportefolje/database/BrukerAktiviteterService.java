@@ -7,7 +7,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
@@ -22,14 +22,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BrukerAktiviteterService {
     private final AktivitetService aktivitetService;
-    private final TiltakRepositoryV2 tiltakRepositoryV2;
+    private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final OppfolgingRepository oppfolgingRepository;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerService brukerService;
     private final ElasticIndexer elasticIndexer;
 
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-    private final TiltakRepositoryV3 tiltakRepositoryV3;
+    private final TiltakRepositoryV2 tiltakRepositoryV3;
     private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
 
     public void syncAktivitetOgBrukerData() {
@@ -95,7 +95,7 @@ public class BrukerAktiviteterService {
         }
         aktivitetService.deaktiverUtgatteUtdanningsAktivteter(aktorId);
 
-        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId, personId);
+        tiltakRepositoryV1.utledOgLagreTiltakInformasjon(aktorId, personId);
         gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(aktorId, personId);
         aktivitetService.utledAktivitetstatuserForAktoerid(aktorId);
     }

@@ -5,7 +5,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import no.nav.pto.veilarbportefolje.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -89,7 +88,7 @@ public class ArbeidslisteRepositoryTestV2 {
     @Test
     public void skalSletteEksisterendeArbeidsliste() {
         final Integer rowsUpdated = repo.slettArbeidsliste(data.getAktorId());
-        assertThat(rowsUpdated);
+        assertThat(rowsUpdated).isEqualTo(1);
     }
 
     @Test

@@ -2,16 +2,12 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
-import static io.vavr.control.Validation.invalid;
-import static io.vavr.control.Validation.valid;
-import static java.lang.String.format;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
@@ -25,6 +21,11 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static io.vavr.control.Validation.invalid;
+import static io.vavr.control.Validation.valid;
+import static java.lang.String.format;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
 @RequiredArgsConstructor
@@ -181,5 +182,13 @@ public class ArbeidslisteService {
     //TODO: Slett ved full overgang til postgres
     public void slettArbeidslistePostgres(AktorId aktoerId) {
         arbeidslisteRepositoryPostgres.slettArbeidsliste(aktoerId);
+    }
+
+    public void migrerArbeidslistaTilPostgres(){
+        List<AktorId> brukereMedArbeidsliste = arbeidslisteRepositoryOracle.hentAlleBrukereMedArbeidsliste();
+        brukereMedArbeidsliste.forEach(aktorId -> arbeidslisteRepositoryOracle.retrieveArbeidslisteDTO(aktorId)
+                .onSuccess(arbeidsliste -> arbeidslisteRepositoryPostgres.upsert(aktorId.get(), arbeidsliste))
+                .onFailure(e -> log.error("Feil i arbeidsliste migrering, aktoer: {}", aktorId.get(), e)));
+        log.info("Arbeidslisten er migrert");
     }
 }

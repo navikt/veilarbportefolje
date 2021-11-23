@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -41,11 +40,12 @@ public class YtelsesService {
     private final BrukerService brukerService;
     private final BrukerDataService brukerDataService;
     private final YtelsesRepository ytelsesRepository;
+    private final YtelsesServicePostgres ytelsesServicePostgres;
     private final ArenaHendelseRepository arenaHendelseRepository;
     private final ElasticIndexer elasticIndexer;
     private final OppfolgingRepository oppfolgingRepository;
 
-    public void behandleKafkaRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding, TypeKafkaYtelse ytsele) {
+    public void behandleKafkaRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding, TypeKafkaYtelse ytelse) {
         YtelsesDTO melding = kafkaMelding.value();
         log.info(
                 "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
@@ -55,34 +55,43 @@ public class YtelsesService {
                 kafkaMelding.topic()
         );
 
-        behandleKafkaMelding(melding, ytsele);
-    }
-
-    public void behandleKafkaMelding(YtelsesDTO kafkaMelding, TypeKafkaYtelse ytsele) {
-        YtelsesInnhold innhold = getInnhold(kafkaMelding);
-        if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
+        YtelsesInnhold innhold = getInnhold(melding);
+        if (innhold == null || erGammelMelding(melding, innhold)) {
             return;
         }
+
+        behandleKafkaMeldingOracle(melding, ytelse);
+        behandleKafkaMeldingPostgres(melding, ytelse);
+
+        arenaHendelseRepository.upsertYtelsesHendelse(innhold.getVedtakId(), innhold.getHendelseId());
+    }
+
+    public void behandleKafkaMeldingPostgres(YtelsesDTO melding, TypeKafkaYtelse ytelse) {
+        ytelsesServicePostgres.behandleKafkaMeldingPostgres(melding, ytelse);
+    }
+
+    public void behandleKafkaMeldingOracle(YtelsesDTO kafkaMelding, TypeKafkaYtelse ytelse) {
+        YtelsesInnhold innhold = getInnhold(kafkaMelding);
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding)) {
             log.info("Sletter ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
             ytelsesRepository.slettYtelse(innhold.getVedtakId());
-            oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(aktorId, innhold);
+            oppdaterYtelsesInformasjonMedUnntaksLogikkForSletting(aktorId, innhold);
         } else {
             log.info("Lagrer ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
-            ytelsesRepository.upsertYtelse(aktorId, ytsele, innhold);
-            oppdaterYtelsesInformasjon(aktorId, PersonId.of(innhold.getPersonId()));
+            ytelsesRepository.upsertYtelse(aktorId, ytelse, innhold);
+            oppdaterYtelsesInformasjonOracle(aktorId, PersonId.of(innhold.getPersonId()));
         }
 
-        arenaHendelseRepository.upsertYtelsesHendelse(innhold.getVedtakId(), innhold.getHendelseId());
+
         elasticIndexer.indekser(aktorId);
     }
 
-    public Optional<YtelseDAO> oppdaterYtelsesInformasjon(AktorId aktorId, PersonId personId) {
-        Optional<YtelseDAO> lopendeYtelse = finnLopendeYtelse(aktorId);
+    public Optional<YtelseDAO> oppdaterYtelsesInformasjonOracle(AktorId aktorId, PersonId personId) {
+        Optional<YtelseDAO> lopendeYtelse = finnLopendeYtelseOracle(aktorId);
         log.info("AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, lopendeYtelse.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
-        brukerDataService.oppdaterYtelser(aktorId, personId, lopendeYtelse);
+        brukerDataService.oppdaterYtelserOracle(aktorId, personId, lopendeYtelse);
 
         return lopendeYtelse;
     }
@@ -90,10 +99,10 @@ public class YtelsesService {
     /**
      * NB: I tilfeller der arena sletter et løpende vedtak.
      * Det må da sjekkes om det finnes andre vedtak i samme sak, hvis dette er tilfellet så skal ytelsen på brukeren fortsette.
-     * Dette gjelder uavhengig av start datoen på vedtaket som tar over som løpende.
-     * Det neste løpende vedtaket kan med andre ord ha en start dato satt i fremtiden.
+     * Dette gjelder uavhengig av startdatoen på vedtaket som tar over som løpende.
+     * Det neste løpende vedtaket kan med andre ord ha en startdato satt i fremtiden.
      */
-    public Optional<YtelseDAO> oppdaterYtelsesInformasjonMedUntaksLoggikForSletting(AktorId aktorId, YtelsesInnhold innhold) {
+    public Optional<YtelseDAO> oppdaterYtelsesInformasjonMedUnntaksLogikkForSletting(AktorId aktorId, YtelsesInnhold innhold) {
         LocalDate iDag = LocalDate.now();
 
         Timestamp startDato = Timestamp.valueOf(innhold.getFraOgMedDato().getLocalDateTime());
@@ -102,18 +111,19 @@ public class YtelsesService {
         boolean erLopendeVedtak = harLopendeStartDato(startDato, iDag) && harLopendeUtlopsDato(utlopsDato, iDag);
 
         if (erLopendeVedtak) {
-            Optional<YtelseDAO> sisteYtelsePaSakId = finnSisteYtelsePaSakIdSomIkkeErUtlopt(aktorId, innhold.getSaksId());
+            Optional<YtelseDAO> sisteYtelsePaSakId = finnSisteYtelsePaSakIdSomIkkeErUtloptOracle(aktorId, innhold.getSaksId());
             if (sisteYtelsePaSakId.isPresent()) {
                 log.info("AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, sisteYtelsePaSakId.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
-                brukerDataService.oppdaterYtelser(aktorId, PersonId.of(innhold.getPersonId()), sisteYtelsePaSakId);
+                brukerDataService.oppdaterYtelserOracle(aktorId, PersonId.of(innhold.getPersonId()), sisteYtelsePaSakId);
 
                 return sisteYtelsePaSakId;
             }
         }
-        return oppdaterYtelsesInformasjon(aktorId, PersonId.of(innhold.getPersonId()));
+
+        return oppdaterYtelsesInformasjonOracle(aktorId, PersonId.of(innhold.getPersonId()));
     }
 
-    public Optional<YtelseDAO> finnLopendeYtelse(AktorId aktorId) {
+    public Optional<YtelseDAO> finnLopendeYtelseOracle(AktorId aktorId) {
         LocalDate iDag = LocalDate.now();
         List<YtelseDAO> aktiveYtelser = ytelsesRepository.getYtelser(aktorId).stream()
                 .filter(Objects::nonNull)
@@ -142,7 +152,7 @@ public class YtelsesService {
         return finnVedtakMedSisteUtlopsDatoPaSak(aktiveYtelser, tidligsteYtelse);
     }
 
-    public Optional<YtelseDAO> finnSisteYtelsePaSakIdSomIkkeErUtlopt(AktorId aktorId, String sakID) {
+    public Optional<YtelseDAO> finnSisteYtelsePaSakIdSomIkkeErUtloptOracle(AktorId aktorId, String sakID) {
         LocalDate iDag = LocalDate.now();
         List<YtelseDAO> aktiveYtelserPaSakID = ytelsesRepository.getYtelser(aktorId).stream()
                 .filter(Objects::nonNull)
@@ -154,13 +164,13 @@ public class YtelsesService {
             return Optional.empty();
         }
         Optional<YtelseDAO> ytelseMedSluttDatoEllerNull = aktiveYtelserPaSakID.stream()
-                .filter(ytelseDOA -> ytelseDOA.getUtlopsDato() != null)
+                .filter(ytelseDAO -> ytelseDAO.getUtlopsDato() != null)
                 .max(Comparator.comparing(YtelseDAO::getUtlopsDato));
 
         return Optional.of(ytelseMedSluttDatoEllerNull.orElse(aktiveYtelserPaSakID.get(0)));
     }
 
-    public void oppdaterBrukereMedYtelserSomStarterIDag() {
+    public void oppdaterBrukereMedYtelserSomStarterIDagOracle() {
         List<AktorId> brukere = ytelsesRepository.hentBrukereMedYtelserSomStarterIDag();
         log.info("Oppdaterer ytelser for: " + brukere.size() + " antall brukere");
 
@@ -171,13 +181,12 @@ public class YtelsesService {
                 log.warn("Avbryter ytelse oppdatering pga. manglende personId for aktorId: " + aktorId);
                 return;
             }
-            oppdaterYtelsesInformasjon(aktorId, personId);
+            oppdaterYtelsesInformasjonOracle(aktorId, personId);
             elasticIndexer.indekser(aktorId);
         });
 
         log.info("Oppdatering av ytelser fullført");
     }
-
 
     public void syncYtelserForAlleBrukere() {
         log.info("Starter jobb: oppdater Ytelser");
@@ -192,7 +201,7 @@ public class YtelsesService {
                                 if (aktorId != null) {
                                     try {
                                         PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
-                                        oppdaterYtelsesInformasjon(aktorId, personId);
+                                        oppdaterYtelsesInformasjonOracle(aktorId, personId);
                                         elasticIndexer.indekser(aktorId);
                                     } catch (Exception e) {
                                         log.warn("Fikk error under sync jobb, men fortsetter. Aktoer: {}, exception: {}", aktorId, e);
@@ -207,8 +216,8 @@ public class YtelsesService {
 
     private Optional<YtelseDAO> finnVedtakMedSisteUtlopsDatoPaSak(List<YtelseDAO> ytelser, YtelseDAO tidligsteYtelse) {
         return ytelser.stream()
-                .filter(ytelseDOA -> tidligsteYtelse.getSaksId().equals(ytelseDOA.getSaksId()))
-                .filter(ytelseDOA -> ytelseDOA.getUtlopsDato() != null)
+                .filter(ytelsesDAO -> tidligsteYtelse.getSaksId().equals(ytelsesDAO.getSaksId()))
+                .filter(ytelsesDAO -> ytelsesDAO.getUtlopsDato() != null)
                 .max(Comparator.comparing(YtelseDAO::getUtlopsDato));
     }
 
@@ -226,7 +235,7 @@ public class YtelsesService {
         Long hendelseIDB = arenaHendelseRepository.retrieveYtelsesHendelse(innhold.getVedtakId());
 
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), skalSlettesGoldenGate(kafkaMelding))) {
-            log.info("Fikk tilsendt gammel ytelses-melding, vedtak: {}, personId: {}", innhold.getVedtakId(), innhold.getPersonId());
+            log.info("Fikk tilsendt gammel ytelsesmelding, vedtak: {}, personId: {}", innhold.getVedtakId(), innhold.getPersonId());
             return true;
         }
         return false;
