@@ -43,9 +43,9 @@ public class BrukerAktiviteterService {
 
 
     public void syncAktivitetOgBrukerDataPostgres() {
-        log.info("Starter jobb: oppdater BrukerAktiviteter og BrukerData");
+        log.info("(Postgres)Starter jobb: oppdater BrukerAktiviteter og BrukerData");
         List<AktorId> brukereSomMaOppdateres = oppfolgingRepositoryV2.hentAlleBrukereUnderOppfolging();
-        log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
+        log.info("(Postgres) Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
         syncAktivitetOgBrukerDataPostgres(brukereSomMaOppdateres);
     }
 
@@ -66,12 +66,12 @@ public class BrukerAktiviteterService {
 
     public void syncAktivitetOgBrukerDataPostgres(List<AktorId> brukere) {
         brukere.forEach(aktorId -> {
-                    log.info("Oppdater BrukerAktiviteter og BrukerData for aktorId: {}", aktorId);
+                    log.info("(Postgres) Oppdater BrukerAktiviteter og BrukerData for aktorId: {}", aktorId);
                     if (aktorId != null) {
                         try {
                             syncAktiviteterOgBrukerDataPostgres(aktorId);
                         } catch (Exception e) {
-                            log.warn("Fikk error under sync jobb, men fortsetter. Aktoer: {}, exception: {}", aktorId, e);
+                            log.warn("(Postgres) Fikk error under sync jobb, men fortsetter. Aktoer: {}, exception: {}", aktorId, e);
                         }
                     }
                 }

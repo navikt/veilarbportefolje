@@ -49,7 +49,7 @@ public class SchedulConfig implements SchedulingConfigurer{
         if (leaderElectionClient.isLeader()) {
             brukerAktiviteterService.syncAktivitetOgBrukerDataPostgres();
         } else {
-            log.info("Starter ikke jobb: oppdaterBrukerData");
+            log.info("(Postgres) Starter ikke jobb: oppdaterBrukerData");
         }
     }
 
@@ -59,7 +59,7 @@ public class SchedulConfig implements SchedulingConfigurer{
         if (leaderElectionClient.isLeader()) {
             ytelsesServicePostgres.oppdaterBrukereMedYtelserSomStarterIDagPostgres();
         } else {
-            log.info("Starter ikke jobb: oppdaterYtelser");
+            log.info("(Postgres) Starter ikke jobb: oppdaterYtelser");
         }
     }
 
