@@ -29,7 +29,7 @@ public class BrukerAktiviteterService {
     private final ElasticIndexer elasticIndexer;
 
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-    private final TiltakRepositoryV2 tiltakRepositoryV3;
+    private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
 
     public void syncAktivitetOgBrukerData() {
@@ -104,7 +104,7 @@ public class BrukerAktiviteterService {
     public void syncAktiviteterOgBrukerDataPostgres(AktorId aktorId) {
         aktivitetService.deaktiverUtgatteUtdanningsAktivteterPostgres(aktorId);
 
-        tiltakRepositoryV3.utledOgLagreTiltakInformasjon(aktorId);
+        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
         gruppeAktivitetRepositoryV2.utledOgLagreGruppeaktiviteter(aktorId);
         aktivitetService.utledAktivitetstatuserForAktoeridPostgres(aktorId);
     }
