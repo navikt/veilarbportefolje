@@ -138,15 +138,15 @@ public class YtelsesServicePostgres {
 
     public void oppdaterBrukereMedYtelserSomStarterIDagPostgres() {
         List<AktorId> brukere = ytelsesRepositoryV2.hentBrukereMedYtelserSomStarterIDag();
-        log.info("Oppdaterer ytelser for: " + brukere.size() + " antall brukere");
+        log.info("(Postgres) Oppdaterer ytelser for: " + brukere.size() + " antall brukere");
 
         brukere.forEach(aktorId -> {
-            log.info("Oppdaterer ytelse for aktorId: " + aktorId);
+            log.info("(Postgres) Oppdaterer ytelse for aktorId: " + aktorId);
 
             oppdaterYtelsesInformasjonPostgres(aktorId);
         });
 
-        log.info("Oppdatering av ytelser fullført");
+        log.info("(Postgres) Oppdatering av ytelser fullført");
     }
 
     private Optional<YtelseDAO> finnVedtakMedSisteUtlopsDatoPaSak(List<YtelseDAO> ytelser, YtelseDAO tidligsteYtelse) {

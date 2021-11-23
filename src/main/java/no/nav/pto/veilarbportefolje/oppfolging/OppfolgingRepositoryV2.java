@@ -7,14 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.AKTOERID;
@@ -22,10 +21,9 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DAT
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.NY_FOR_VEILEDER;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.OPPFOLGING;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.STARTDATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.VEILEDERID;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Repository
@@ -43,61 +41,30 @@ public class OppfolgingRepositoryV2 {
         );
     }
 
-    public int settVeileder(AktorId aktorId, VeilederId veilederId) {
-        return SqlUtils.update(db, TABLE_NAME)
-                .set(VEILEDERID, veilederId.getValue())
-                .whereEquals(AKTOERID, aktorId.get())
-                .execute();
+    public void settVeileder(AktorId aktorId, VeilederId veilederId) {
+        db.update("UPDATE oppfolging_data SET veilederid = ? WHERE aktoerid = ?", veilederId.getValue(), aktorId.get());
     }
 
-    public int settNyForVeileder(AktorId aktoerId, boolean nyForVeileder) {
-        return SqlUtils.update(db, TABLE_NAME)
-                .set(NY_FOR_VEILEDER, nyForVeileder)
-                .whereEquals(AKTOERID, aktoerId.get())
-                .execute();
+    public void settNyForVeileder(AktorId aktoerId, boolean nyForVeileder) {
+        db.update("UPDATE oppfolging_data SET ny_for_veileder = ? WHERE aktoerid = ?", nyForVeileder, aktoerId.get());
     }
 
-    public int settManuellStatus(AktorId aktoerId, boolean manuellStatus) {
-        return SqlUtils.update(db, TABLE_NAME)
-                .set(MANUELL, manuellStatus)
-                .whereEquals(AKTOERID, aktoerId.get())
-                .execute();
-    }
-
-    public int settOppfolgingTilFalse(AktorId aktoerId) {
-        return SqlUtils.update(db, TABLE_NAME)
-                .set(OPPFOLGING, false)
-                .whereEquals(AKTOERID, aktoerId.get())
-                .execute();
-    }
-
-    public Optional<ZonedDateTime> hentStartdato(AktorId aktoerId) {
-        final ZonedDateTime startDato = SqlUtils
-                .select(db, TABLE_NAME, rs -> toZonedDateTime(rs.getTimestamp(STARTDATO)))
-                .column(STARTDATO)
-                .where(WhereClause.equals(AKTOERID, aktoerId.get()))
-                .execute();
-
-        return Optional.ofNullable(startDato);
+    public void settManuellStatus(AktorId aktoerId, boolean manuellStatus) {
+        db.update("UPDATE oppfolging_data SET manuell = ? WHERE aktoerid = ?", manuellStatus, aktoerId.get());
     }
 
     public void slettOppfolgingData(AktorId aktoerId) {
-        SqlUtils.delete(db, TABLE_NAME)
-                .where(WhereClause.equals(AKTOERID, aktoerId.get()))
-                .execute();
+        db.update("DELETE FROM oppfolging_data WHERE aktoerid = ?", aktoerId.get());
     }
 
     public Optional<BrukerOppdatertInformasjon> hentOppfolgingData(AktorId aktoerId) {
-        final BrukerOppdatertInformasjon oppfolging = SqlUtils.select(db, TABLE_NAME, this::mapToBrukerOppdatertInformasjon)
-                .column("*")
-                .where(WhereClause.equals(AKTOERID, aktoerId.get()))
-                .execute();
-
-        return Optional.ofNullable(oppfolging);
+        return Optional.ofNullable(queryForObjectOrNull(() ->
+                db.queryForObject("SELECT * FROM oppfolging_data WHERE aktoerid = ?", this::mapToBrukerOppdatertInformasjon, aktoerId.get())
+        ));
     }
 
     @SneakyThrows
-    private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet rs) {
+    private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet rs, int i) {
         if (rs == null || rs.getString(AKTOERID) == null) {
             return null;
         }
@@ -110,4 +77,11 @@ public class OppfolgingRepositoryV2 {
                 .setStartDato(rs.getTimestamp(STARTDATO));
     }
 
+    public List<AktorId> hentAlleBrukereUnderOppfolging() {
+        db.setFetchSize(10_000);
+        List<AktorId> alleIder = db.queryForList("SELECT aktoerid FROM oppfolging_data WHERE oppfolging", AktorId.class);
+        db.setFetchSize(-1);
+
+        return alleIder;
+    }
 }

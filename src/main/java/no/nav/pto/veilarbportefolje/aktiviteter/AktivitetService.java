@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteAktiviteter;
@@ -42,35 +43,31 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         sisteEndringService.behandleAktivitet(aktivitetData);
 
         //ORACLE
-        if (aktivitetData.getVersion() > 49179897) {
-            AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
-            boolean bleProsessert = aktivitetDAO.tryLagreAktivitetData(aktivitetData);
+        AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
+        boolean bleProsessert = aktivitetDAO.tryLagreAktivitetData(aktivitetData);
 
-            if (bleProsessert && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
-                utledAktivitetstatuserForAktoerid(aktorId);
-                elasticIndexer.indekser(aktorId);
-            }
+        if (bleProsessert && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
+            utledAktivitetstatuserForAktoerid(aktorId);
+            elasticIndexer.indekser(aktorId);
         }
+
         //POSTGRES
         boolean bleProsessertPostgres = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-
-        if (aktivitetData.getVersion() > 49179897) {
-            if (bleProsessertPostgres && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
-                utleddAktivitetStatuser(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType());
-            }
+        if (bleProsessertPostgres && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
+            oppdaterAktivitetTypeStatus(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType());
+            brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
         }
-    }
-
-    public void utleddAktivitetStatuser(AktorId aktorId, KafkaAktivitetMelding.AktivitetTypeData aktivitetType) {
-        AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, aktivitetType, brukIkkeAvtalteAktiviteter(unleashService));
-        prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, aktivitetType.name());
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
     }
 
     public void utledAktivitetstatuserForAktoerid(AktorId aktoerId) {
         AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO, brukIkkeAvtalteAktiviteter(unleashService));
         Optional.ofNullable(aktivitetBrukerOppdateringer)
                 .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(oppdatering, aktoerId));
+    }
+
+    public void utledAktivitetstatuserForAktoeridPostgres(AktorId aktoerId) {
+        Arrays.stream(KafkaAktivitetMelding.AktivitetTypeData.values()).forEach(type -> oppdaterAktivitetTypeStatus(aktoerId, type));
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktoerId);
     }
 
     public void slettOgIndekserUtdanningsAktivitet(String aktivitetid, AktorId aktorId) {
@@ -81,20 +78,26 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         //POSTGRES
         aktiviteterRepositoryV2.deleteById(aktivitetid);
-        AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.UTDANNINGAKTIVITET, brukIkkeAvtalteAktiviteter(unleashService));
-        prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, AktivitetTyper.utdanningaktivitet.name());
+        oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.UTDANNINGAKTIVITET);
         brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
     }
 
+    public void oppdaterAktivitetTypeStatus(AktorId aktorId, KafkaAktivitetMelding.AktivitetTypeData type) {
+        AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, type, brukIkkeAvtalteAktiviteter(unleashService));
+        prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, type.name().toLowerCase());
+    }
+
     public void upsertOgIndekserAktiviteter(KafkaAktivitetMelding melding) {
+        AktorId aktorId = AktorId.of(melding.getAktorId());
         //ORACLE
         aktivitetDAO.upsertAktivitet(melding);
-        utledAktivitetstatuserForAktoerid(AktorId.of(melding.getAktorId()));
-        elasticIndexer.indekser(AktorId.of(melding.getAktorId()));
+        utledAktivitetstatuserForAktoerid(aktorId);
+        elasticIndexer.indekser(aktorId);
 
         //POSTGRES
         aktiviteterRepositoryV2.upsertAktivitet(melding);
-        utleddAktivitetStatuser(AktorId.of(melding.getAktorId()), melding.getAktivitetType());
+        oppdaterAktivitetTypeStatus(aktorId, melding.getAktivitetType());
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
     }
 
     public void deaktiverUtgatteUtdanningsAktivteter(AktorId aktorId) {
@@ -106,6 +109,19 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
                 .forEach(aktivitetDTO -> {
                             log.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}, på aktorId: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato(), aktorId);
                             aktivitetDAO.setTilFullfort(aktivitetDTO.getAktivitetID());
+                        }
+                );
+    }
+
+    public void deaktiverUtgatteUtdanningsAktivteterPostgres(AktorId aktorId) {
+        AktoerAktiviteter utdanningsAktiviteter = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, brukIkkeAvtalteAktiviteter(unleashService));
+        utdanningsAktiviteter.getAktiviteter()
+                .stream()
+                .filter(aktivitetDTO -> AktivitetTyperFraKafka.utdanningaktivitet.name().equals(aktivitetDTO.getAktivitetType()))
+                .filter(aktivitetDTO -> aktivitetDTO.getTilDato().toLocalDateTime().isBefore(LocalDateTime.now()))
+                .forEach(aktivitetDTO -> {
+                            log.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}, på aktorId: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato(), aktorId);
+                            aktiviteterRepositoryV2.setTilFullfort(aktivitetDTO.getAktivitetID());
                         }
                 );
     }

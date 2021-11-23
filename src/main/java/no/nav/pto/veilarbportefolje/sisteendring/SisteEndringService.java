@@ -66,17 +66,16 @@ public class SisteEndringService {
         }
 
         SisteEndringDTO sisteEndringDTO = new SisteEndringDTO(kafkaAktivitet);
-        if (kafkaAktivitet.getVersion() > 49179897) {
-            if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
-                try {
-                    sisteEndringRepository.upsert(sisteEndringDTO);
-                    elasticServiceV2.updateSisteEndring(sisteEndringDTO);
-                } catch (Exception e) {
-                    String message = String.format("Kunne ikke lagre eller indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId());
-                    log.error(message, e);
-                }
+        if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
+            try {
+                sisteEndringRepository.upsert(sisteEndringDTO);
+                elasticServiceV2.updateSisteEndring(sisteEndringDTO);
+            } catch (Exception e) {
+                String message = String.format("Kunne ikke lagre eller indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId());
+                log.error(message, e);
             }
         }
+
 
         if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIPostgres(sisteEndringDTO)) {
             try {
