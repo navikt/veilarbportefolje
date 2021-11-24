@@ -86,7 +86,12 @@ public class OppfolgingService {
                 Optional<BrukerOppdatertInformasjon> dbInfoPostgres = oppfolgingRepositoryV2.hentOppfolgingData(bruker);
 
                 oppdaterStartDatoHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getStartDato).orElse(null), veialrbinfo.getStartDato(), false);
-                oppdaterStartDatoHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getStartDato).orElse(null), veialrbinfo.getStartDato(), true);
+
+                if (veialrbinfo.isErUnderOppfolging() && (dbInfoPostgres.isEmpty() || !dbInfoPostgres.get().getOppfolging())) {
+                    oppfolgingRepositoryV2.settUnderOppfolging(bruker, veialrbinfo.getStartDato());
+                } else {
+                    oppdaterStartDatoHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getStartDato).orElse(null), veialrbinfo.getStartDato(), true);
+                }
 
                 oppdaterManuellHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getManuell).orElse(false), veialrbinfo.isErManuell(), false);
                 oppdaterManuellHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getManuell).orElse(false), veialrbinfo.isErManuell(), true);
