@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,12 +20,14 @@ public class AktiviteterV2Test {
     private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktivitetService aktivitetService;
+    private final BrukerDataService brukerDataService;
 
     @Autowired
-    public AktiviteterV2Test(AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetService aktivitetService) {
+    public AktiviteterV2Test(AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetService aktivitetService, BrukerDataService brukerDataService) {
         this.aktivitetStatusRepositoryV2 = aktivitetStatusRepositoryV2;
         this.aktiviteterRepositoryV2 = aktiviteterRepositoryV2;
         this.aktivitetService = aktivitetService;
+        this.brukerDataService = brukerDataService;
     }
 
     @Test
@@ -39,7 +42,8 @@ public class AktiviteterV2Test {
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
-        aktivitetService.utleddAktivitetStatuser(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
+        aktivitetService.oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
         AktoerAktiviteter avtalteAktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false);
         Optional<AktivitetStatus> aktivitettypeStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "egen");
 
@@ -71,8 +75,9 @@ public class AktiviteterV2Test {
 
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet1);
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet2);
-        aktivitetService.utleddAktivitetStatuser(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
-        aktivitetService.utleddAktivitetStatuser(aktorId, KafkaAktivitetMelding.AktivitetTypeData.MOTE);
+        aktivitetService.oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
+        aktivitetService.oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.MOTE);
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
 
         AktoerAktiviteter avtalteAktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, true);
         Optional<AktivitetStatus> aktivitettypeStatus1 = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "egen");
