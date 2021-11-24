@@ -9,7 +9,6 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.UrlUtils;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
@@ -34,7 +33,6 @@ import static no.nav.common.utils.UrlUtils.joinPaths;
 public class OppfolgingService {
     private final String veilarboppfolgingUrl;
     private final OkHttpClient client;
-    private final BrukerRepository brukerRepository;
     private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final SystemUserTokenProvider systemUserTokenProvider;
@@ -43,8 +41,7 @@ public class OppfolgingService {
     private static int antallBrukereSlettet;
 
     @Autowired
-    public OppfolgingService(BrukerRepository brukerRepository, OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
-        this.brukerRepository = brukerRepository;
+    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.systemUserTokenProvider = systemUserTokenProvider;
@@ -53,8 +50,7 @@ public class OppfolgingService {
         this.veilarboppfolgingUrl = UrlUtils.createServiceUrl("veilarboppfolging", "pto", true);
     }
 
-    public OppfolgingService(BrukerRepository brukerRepository, OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
-        this.brukerRepository = brukerRepository;
+    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;

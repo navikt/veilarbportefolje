@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 public class OppfolgingServiceTest {
 
     private OppfolgingRepository oppfolgingRepository;
+    private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private OppfolgingService oppfolgingService;
     private SystemUserTokenProvider systemUserTokenProvider;
 
@@ -40,12 +41,12 @@ public class OppfolgingServiceTest {
     @Before
     public void setup() {
         systemUserTokenProvider = mock(SystemUserTokenProvider.class);
-        BrukerRepository brukerRepository = mock(BrukerRepository.class);
         DataSource ds = setupInMemoryDatabase();
         JdbcTemplate db = new JdbcTemplate(ds);
+        oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(SingletonPostgresContainer.init().createJdbcTemplate());
         oppfolgingRepository = new OppfolgingRepository(db);
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        oppfolgingService = new OppfolgingService(brukerRepository, oppfolgingRepository, mock(OppfolgingAvsluttetService.class), systemUserTokenProvider, apiUrl, mock(OppfolgingRepositoryV2.class));
+        oppfolgingService = new OppfolgingService(oppfolgingRepository, mock(OppfolgingAvsluttetService.class), systemUserTokenProvider, apiUrl, oppfolgingRepositoryV2);
 
     }
 
@@ -65,13 +66,19 @@ public class OppfolgingServiceTest {
 
         oppfolgingRepository.settUnderOppfolging(AktorId.of(AKTORID), startDato_portefolje);
 
+        Optional<BrukerOppdatertInformasjon> oppfolgingsDataV2_preSync = oppfolgingRepositoryV2.hentOppfolgingData(AktorId.of(AKTORID));
+
         oppfolgingService.oppdaterBruker(AktorId.of(AKTORID));
 
         Optional<BrukerOppdatertInformasjon> oppfolgingsData = oppfolgingRepository.hentOppfolgingData(AktorId.of(AKTORID));
+        Optional<BrukerOppdatertInformasjon> oppfolgingsDataV2_postSync = oppfolgingRepositoryV2.hentOppfolgingData(AktorId.of(AKTORID));
         assertThat(oppfolgingsData.get().getStartDato()).isEqualTo(toTimestamp(ZonedDateTime.parse("2021-04-27T10:40:02.110297+02:00")));
         assertThat(oppfolgingsData.get().getManuell()).isTrue();
         assertThat(oppfolgingsData.get().getNyForVeileder()).isTrue();
         assertThat(oppfolgingsData.get().getVeileder()).isEqualTo("123");
+
+        assertThat(oppfolgingsDataV2_preSync.isEmpty()).isTrue();
+        assertThat(oppfolgingsDataV2_postSync).isEqualTo(oppfolgingsData);
 
     }
 
