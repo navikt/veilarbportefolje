@@ -89,13 +89,13 @@ public class OppfolgingService {
                 oppdaterStartDatoHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getStartDato).orElse(null), veialrbinfo.getStartDato(), true);
 
                 oppdaterManuellHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getManuell).orElse(false), veialrbinfo.isErManuell(), false);
-                oppdaterManuellHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getManuell).orElse(false), veialrbinfo.isErManuell(), true);
+                oppdaterManuellHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getManuell).orElse(false), veialrbinfo.isErManuell(), true);
 
                 oppdaterNyForVeilederHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getNyForVeileder).orElse(false), veialrbinfo.isNyForVeileder(), false);
-                oppdaterNyForVeilederHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getNyForVeileder).orElse(false), veialrbinfo.isNyForVeileder(), true);
+                oppdaterNyForVeilederHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getNyForVeileder).orElse(false), veialrbinfo.isNyForVeileder(), true);
 
                 oppdaterVeilederHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getVeileder).orElse(null), Optional.ofNullable(veialrbinfo.getVeilederId()).map(NavIdent::get).orElse(null), false);
-                oppdaterVeilederHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getVeileder).orElse(null), Optional.ofNullable(veialrbinfo.getVeilederId()).map(NavIdent::get).orElse(null), true);
+                oppdaterVeilederHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getVeileder).orElse(null), Optional.ofNullable(veialrbinfo.getVeilederId()).map(NavIdent::get).orElse(null), true);
             } else {
                 log.info("OppfolgingsJobb: bruker er ikke under oppfolging, aktoer: " + bruker);
                 oppfolgingAvsluttetService.avsluttOppfolging(bruker);
