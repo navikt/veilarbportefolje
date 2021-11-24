@@ -127,13 +127,29 @@ public class OppfolgingRepository {
                 .execute();
     }
 
-    public List<AktorId> hentAlleBrukereUnderOppfolging() {
+    public List<AktorId> hentAlleGyldigeBrukereUnderOppfolging() {
         db.setFetchSize(10_000);
 
         List<AktorId> alleIder = SqlUtils
                 .select(db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> AktorId.of(rs.getString(Table.VW_PORTEFOLJE_INFO.AKTOERID)))
                 .column(Table.VW_PORTEFOLJE_INFO.AKTOERID)
                 .where(WhereClause.equals(Table.VW_PORTEFOLJE_INFO.OPPFOLGING,"J"))
+                .executeToList()
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(toList());
+        db.setFetchSize(-1);
+
+        return alleIder;
+    }
+
+    public List<AktorId> hentAlleBrukereUnderOppfolging() {
+        db.setFetchSize(10_000);
+
+        List<AktorId> alleIder = SqlUtils
+                .select(db, Table.OPPFOLGING_DATA.TABLE_NAME, rs -> AktorId.of(rs.getString(Table.OPPFOLGING_DATA.AKTOERID)))
+                .column(Table.OPPFOLGING_DATA.AKTOERID)
+                .where(WhereClause.equals(Table.OPPFOLGING_DATA.OPPFOLGING,"J"))
                 .executeToList()
                 .stream()
                 .filter(Objects::nonNull)

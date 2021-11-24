@@ -1,0 +1,8 @@
+{
+  "aktorId": "1234567",
+  "veilederId":"123",
+  "erUnderOppfolging":true,
+  "nyForVeileder":true,
+  "erManuell":true,
+  "startDato":"2021-04-27T10:40:02.110297+02:00"
+}

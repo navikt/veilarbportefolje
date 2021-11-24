@@ -190,7 +190,7 @@ public class YtelsesService {
 
     public void syncYtelserForAlleBrukere() {
         log.info("Starter jobb: oppdater Ytelser");
-        List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
+        List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         log.info("Oppdaterer ytelser for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
 
         ForkJoinPool pool = new ForkJoinPool(5);
