@@ -7,9 +7,11 @@ import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.UrlUtils;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -18,6 +20,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -29,28 +33,28 @@ import static no.nav.common.utils.UrlUtils.joinPaths;
 public class OppfolgingService {
     private final String veilarboppfolgingUrl;
     private final OkHttpClient client;
-    private final BrukerRepository brukerRepository;
     private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final SystemUserTokenProvider systemUserTokenProvider;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     private static int antallBrukereSlettet;
 
     @Autowired
-    public OppfolgingService(BrukerRepository brukerRepository, OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider) {
-        this.brukerRepository = brukerRepository;
+    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.systemUserTokenProvider = systemUserTokenProvider;
+        this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.client = RestClient.baseClient();
         this.veilarboppfolgingUrl = UrlUtils.createServiceUrl("veilarboppfolging", "pto", true);
     }
 
-    public OppfolgingService(BrukerRepository brukerRepository, OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, String url) {
-        this.brukerRepository = brukerRepository;
+    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
+        this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.client = RestClient.baseClient();
         this.veilarboppfolgingUrl = url;
     }
@@ -59,103 +63,131 @@ public class OppfolgingService {
         JobRunner.runAsync("OppfolgingSync",
                 () -> {
                     antallBrukereSlettet = 0;
-                    List<OppfolgingsBruker> oppfolgingsBruker = brukerRepository.hentAlleBrukereUnderOppfolging();
+                    List<AktorId> oppfolgingsBruker = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
                     oppfolgingsBruker.forEach(this::oppdaterBruker);
 
                     log.info("OppfolgingsJobb: oppdaterte informasjon pa: {} brukere der av: {} ble slettet", oppfolgingsBruker.size(), antallBrukereSlettet);
                 });
     }
 
-    public void oppdaterBruker(OppfolgingsBruker bruker) {
-        if (bruker.getAktoer_id() == null) {
-            return;
-        }
-        if (bruker.getFnr() == null) {
-            log.error("Fnr var null pa bruker: " + bruker.getAktoer_id());
+    public void oppdaterBruker(AktorId bruker) {
+        if (bruker == null) {
             return;
         }
 
         try {
-            Optional<OppfolgingPeriodeDTO> oppfolgingPeriode = hentSisteOppfolgingsPeriode(bruker.getFnr());
-            if (oppfolgingPeriode.isPresent()) {
-                oppdaterStartDato(bruker, oppfolgingPeriode.get().startDato);
-                avsluttOppfolgingHvisNodvendig(bruker, oppfolgingPeriode.get());
+            Veilarbportefoljeinfo veialrbinfo = hentVeilarbData(bruker);
+            if (veialrbinfo.isErUnderOppfolging()) {
+                Optional<BrukerOppdatertInformasjon> dbInfoOracle = oppfolgingRepository.hentOppfolgingData(bruker);
+                Optional<BrukerOppdatertInformasjon> dbInfoPostgres = oppfolgingRepositoryV2.hentOppfolgingData(bruker);
+
+                oppdaterStartDatoHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getStartDato).orElse(null), veialrbinfo.getStartDato(), false);
+
+                if (veialrbinfo.isErUnderOppfolging() && (dbInfoPostgres.isEmpty() || !dbInfoPostgres.get().getOppfolging())) {
+                    oppfolgingRepositoryV2.settUnderOppfolging(bruker, veialrbinfo.getStartDato());
+                } else {
+                    oppdaterStartDatoHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getStartDato).orElse(null), veialrbinfo.getStartDato(), true);
+                }
+
+                oppdaterManuellHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getManuell).orElse(false), veialrbinfo.isErManuell(), false);
+                oppdaterManuellHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getManuell).orElse(false), veialrbinfo.isErManuell(), true);
+
+                oppdaterNyForVeilederHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getNyForVeileder).orElse(false), veialrbinfo.isNyForVeileder(), false);
+                oppdaterNyForVeilederHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getNyForVeileder).orElse(false), veialrbinfo.isNyForVeileder(), true);
+
+                oppdaterVeilederHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getVeileder).orElse(null), Optional.ofNullable(veialrbinfo.getVeilederId()).map(NavIdent::get).orElse(null), false);
+                oppdaterVeilederHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getVeileder).orElse(null), Optional.ofNullable(veialrbinfo.getVeilederId()).map(NavIdent::get).orElse(null), true);
             } else {
-                log.info("OppfolgingsJobb: Fant ikke oppfolgingsperiode for: " + bruker.getAktoer_id());
-                oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
+                log.info("OppfolgingsJobb: bruker er ikke under oppfolging, aktoer: " + bruker);
+                oppfolgingAvsluttetService.avsluttOppfolging(bruker);
                 antallBrukereSlettet++;
             }
         } catch (RuntimeException e) {
-            log.error("RuntimeException i OppfolgingsJobb for bruker {}", bruker.getAktoer_id());
+            log.error("RuntimeException i OppfolgingsJobb for bruker {}", bruker);
             log.error("RuntimeException i OppfolgingsJobb", e);
         } catch (Exception e) {
-            log.error("Exception i OppfolgingsJobb for bruker {}", bruker.getAktoer_id());
+            log.error("Exception i OppfolgingsJobb for bruker {}", bruker);
             log.error("Exception i OppfolgingsJobb", e);
         }
     }
 
-    private void oppdaterStartDato(OppfolgingsBruker bruker, ZonedDateTime korrektStartDato) {
+    private void oppdaterStartDatoHvisNodvendig(AktorId bruker, Timestamp startFraDb, ZonedDateTime korrektStartDato, boolean postgres) {
         if (korrektStartDato == null) {
-            log.warn("OppfolgingsJobb: startdato fra veilarboppfolging var null pa bruker: {} ", bruker.getAktoer_id());
+            log.warn("OppfolgingsJobb: startdato fra veilarboppfolging var null pa bruker: {} ", bruker);
             return;
         }
-        if (bruker.getOppfolging_startdato() != null && korrektStartDato.isEqual(ZonedDateTime.parse(bruker.getOppfolging_startdato()))) {
+        ZonedDateTime zonedDbVerdi = Optional.ofNullable(startFraDb).map(timestamp -> ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("UTC"))).orElse(null);
+
+        if (zonedDbVerdi != null && korrektStartDato.isEqual(zonedDbVerdi)) {
             return;
         }
-        log.info("OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker.getAktoer_id(), bruker.getOppfolging_startdato(), korrektStartDato);
-        int rows = oppfolgingRepository.oppdaterStartdato(AktorId.of(bruker.getAktoer_id()), korrektStartDato);
-        if (rows != 1) {
-            log.error("OppfolgingsJobb: feil antall rader påvirket ({}) pa bruker: {} ", rows, bruker.getAktoer_id());
+        if (postgres) {
+            log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker, zonedDbVerdi, korrektStartDato);
+            oppfolgingRepositoryV2.settStartdato(bruker, korrektStartDato);
+        } else {
+            log.info("OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker, zonedDbVerdi, korrektStartDato);
+            oppfolgingRepository.oppdaterStartdato(bruker, korrektStartDato);
         }
     }
 
-    private void avsluttOppfolgingHvisNodvendig(OppfolgingsBruker bruker, OppfolgingPeriodeDTO oppfolgingPeriode) {
-        if (!underOppfolging(oppfolgingPeriode)) {
-            log.info("OppfolgingsJobb: Oppfolging avsluttet for:" + bruker.getAktoer_id());
-            oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(bruker.getAktoer_id()));
-            antallBrukereSlettet++;
+    private void oppdaterManuellHvisNodvendig(AktorId bruker, boolean manuellDb, boolean korrektManuell, boolean postgres) {
+        if (manuellDb == korrektManuell) {
+            return;
+        }
+
+        if (postgres) {
+            log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte manuell fra: {}, til:{} ", bruker, manuellDb, korrektManuell);
+            oppfolgingRepositoryV2.settManuellStatus(bruker, korrektManuell);
+        } else {
+            log.info("OppfolgingsJobb: aktoer: {} skal bytte manuell fra: {}, til:{} ", bruker, manuellDb, korrektManuell);
+            oppfolgingRepository.settManuellStatus(bruker, korrektManuell);
         }
     }
 
-    private List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(String fnr) throws RuntimeException, IOException {
+
+    private void oppdaterNyForVeilederHvisNodvendig(AktorId bruker, boolean nyForVeilederDb, boolean korrektNyForVeileder, boolean postgres) {
+        if (nyForVeilederDb == korrektNyForVeileder) {
+            return;
+        }
+
+        if (postgres) {
+            log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte nyForVeileder fra: {}, til:{} ", bruker, nyForVeilederDb, korrektNyForVeileder);
+            oppfolgingRepositoryV2.settNyForVeileder(bruker, korrektNyForVeileder);
+        } else {
+            log.info("OppfolgingsJobb: aktoer: {} skal bytte nyForVeileder fra: {}, til:{} ", bruker, nyForVeilederDb, korrektNyForVeileder);
+            oppfolgingRepository.settNyForVeileder(bruker, korrektNyForVeileder);
+        }
+    }
+
+    private void oppdaterVeilederHvisNodvendig(AktorId bruker, String veilederDb, String korrektVeileder, boolean postgres) {
+        if (veilederDb == null) {
+            if (korrektVeileder == null) {
+                return;
+            }
+        } else if (veilederDb.equals(korrektVeileder)) {
+            return;
+        }
+
+        if (postgres) {
+            log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
+            oppfolgingRepositoryV2.settVeileder(bruker, VeilederId.of(korrektVeileder));
+        } else {
+            log.info("OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
+            oppfolgingRepository.settVeileder(bruker, VeilederId.of(korrektVeileder));
+        }
+    }
+
+    private Veilarbportefoljeinfo hentVeilarbData(AktorId aktoer) throws RuntimeException, IOException {
         Request request = new Request.Builder()
-                .url(joinPaths(veilarboppfolgingUrl, "/api/oppfolging/oppfolgingsperioder?fnr=" + fnr))
+                .url(joinPaths(veilarboppfolgingUrl, "/api/admin/hentVeilarbinfo/bruker?aktorId=" + aktoer))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             return RestUtils.getBodyStr(response)
-                    .map((bodyStr) -> JsonUtils.fromJsonArray(bodyStr, OppfolgingPeriodeDTO.class))
+                    .map((bodyStr) -> JsonUtils.fromJson(bodyStr, Veilarbportefoljeinfo.class))
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
         }
-    }
-
-    private Optional<OppfolgingPeriodeDTO> hentSisteOppfolgingsPeriode(String fnr) throws RuntimeException, IOException {
-        List<OppfolgingPeriodeDTO> oppfolgingPerioder = hentOppfolgingsperioder(fnr);
-
-        return oppfolgingPerioder.stream().min((o1, o2) -> {
-            if (o1.sluttDato == null) {
-                return -1;
-            }
-
-            if (o2.sluttDato == null) {
-                return 1;
-            }
-
-            if (o1.sluttDato.isAfter(o2.sluttDato)) {
-                return -1;
-            }
-
-            if (o1.sluttDato.isBefore(o2.sluttDato)) {
-                return 1;
-            }
-
-            return 0;
-        });
-    }
-
-    private boolean underOppfolging(OppfolgingPeriodeDTO oppfolgingPeriode) {
-        return oppfolgingPeriode.sluttDato == null;
     }
 }
