@@ -125,8 +125,8 @@ public class OppfolgingService {
             log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker, zonedDbVerdi, korrektStartDato);
             oppfolgingRepositoryV2.settStartdato(bruker, korrektStartDato);
         } else {
-            log.info("OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker, zonedDbVerdi, korrektStartDato);
-            oppfolgingRepository.oppdaterStartdato(bruker, korrektStartDato);
+            log.info("(Oracle) OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker, zonedDbVerdi, korrektStartDato);
+            //oppfolgingRepository.oppdaterStartdato(bruker, korrektStartDato);
         }
     }
 
@@ -139,8 +139,8 @@ public class OppfolgingService {
             log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte manuell fra: {}, til:{} ", bruker, manuellDb, korrektManuell);
             oppfolgingRepositoryV2.settManuellStatus(bruker, korrektManuell);
         } else {
-            log.info("OppfolgingsJobb: aktoer: {} skal bytte manuell fra: {}, til:{} ", bruker, manuellDb, korrektManuell);
-            oppfolgingRepository.settManuellStatus(bruker, korrektManuell);
+            log.info("(Oracle) OppfolgingsJobb: aktoer: {} skal bytte manuell fra: {}, til:{} ", bruker, manuellDb, korrektManuell);
+            //oppfolgingRepository.settManuellStatus(bruker, korrektManuell);
         }
     }
 
@@ -154,8 +154,8 @@ public class OppfolgingService {
             log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte nyForVeileder fra: {}, til:{} ", bruker, nyForVeilederDb, korrektNyForVeileder);
             oppfolgingRepositoryV2.settNyForVeileder(bruker, korrektNyForVeileder);
         } else {
-            log.info("OppfolgingsJobb: aktoer: {} skal bytte nyForVeileder fra: {}, til:{} ", bruker, nyForVeilederDb, korrektNyForVeileder);
-            oppfolgingRepository.settNyForVeileder(bruker, korrektNyForVeileder);
+            log.info("(Oracle) OppfolgingsJobb: aktoer: {} skal bytte nyForVeileder fra: {}, til:{} ", bruker, nyForVeilederDb, korrektNyForVeileder);
+            //oppfolgingRepository.settNyForVeileder(bruker, korrektNyForVeileder);
         }
     }
 
@@ -172,8 +172,8 @@ public class OppfolgingService {
             log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
             oppfolgingRepositoryV2.settVeileder(bruker, VeilederId.of(korrektVeileder));
         } else {
-            log.info("OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
-            oppfolgingRepository.settVeileder(bruker, VeilederId.of(korrektVeileder));
+            log.info("(Oracle) OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
+            //oppfolgingRepository.settVeileder(bruker, VeilederId.of(korrektVeileder));
         }
     }
 
