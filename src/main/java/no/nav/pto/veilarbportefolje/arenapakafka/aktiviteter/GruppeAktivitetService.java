@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -11,7 +10,6 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +22,7 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
 public class GruppeAktivitetService {
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
-    @NonNull @Qualifier("systemClient") private final AktorClient aktorClient;
+    private final AktorClient aktorClient;
     private final BrukerDataService brukerDataService;
     private final ElasticIndexer elasticIndexer;
 
