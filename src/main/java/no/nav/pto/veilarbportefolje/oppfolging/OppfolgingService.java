@@ -99,7 +99,7 @@ public class OppfolgingService {
                 oppdaterVeilederHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getVeileder).orElse(null), Optional.ofNullable(veialrbinfo.getVeilederId()).map(NavIdent::get).orElse(null), true);
             } else {
                 log.info("OppfolgingsJobb: bruker er ikke under oppfolging, aktoer: " + bruker);
-                oppfolgingAvsluttetService.avsluttOppfolging(bruker);
+                //oppfolgingAvsluttetService.avsluttOppfolging(bruker);
                 antallBrukereSlettet++;
             }
         } catch (RuntimeException e) {
