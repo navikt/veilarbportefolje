@@ -72,13 +72,13 @@ public class OppfolgingServiceTest {
 
         Optional<BrukerOppdatertInformasjon> oppfolgingsData = oppfolgingRepository.hentOppfolgingData(AktorId.of(AKTORID));
         Optional<BrukerOppdatertInformasjon> oppfolgingsDataV2_postSync = oppfolgingRepositoryV2.hentOppfolgingData(AktorId.of(AKTORID));
-        assertThat(oppfolgingsData.get().getStartDato()).isEqualTo(toTimestamp(ZonedDateTime.parse("2021-04-27T10:40:02.110297+02:00")));
-        assertThat(oppfolgingsData.get().getManuell()).isTrue();
-        assertThat(oppfolgingsData.get().getNyForVeileder()).isTrue();
-        assertThat(oppfolgingsData.get().getVeileder()).isEqualTo("123");
+        assertThat(oppfolgingsDataV2_postSync.get().getStartDato()).isEqualTo(toTimestamp(ZonedDateTime.parse("2021-04-27T10:40:02.110297+02:00")));
+        assertThat(oppfolgingsDataV2_postSync.get().getManuell()).isTrue();
+        assertThat(oppfolgingsDataV2_postSync.get().getNyForVeileder()).isTrue();
+        assertThat(oppfolgingsDataV2_postSync.get().getVeileder()).isEqualTo("123");
 
         assertThat(oppfolgingsDataV2_preSync.isEmpty()).isTrue();
-        assertThat(oppfolgingsDataV2_postSync).isEqualTo(oppfolgingsData);
+        //assertThat(oppfolgingsData).isEqualTo(oppfolgingsDataV2_postSync);
 
     }
 
