@@ -31,6 +31,7 @@ import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.APPLICATION_
 @Configuration
 public class ClientConfig {
 
+    @Bean
     public AktorClient aktorClient(EnvironmentProperties properties,
                                    SystemUserTokenProvider systemUserTokenProvider,
                                    UnleashService unleashService) {
