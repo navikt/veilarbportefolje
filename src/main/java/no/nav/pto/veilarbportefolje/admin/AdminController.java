@@ -15,7 +15,6 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
@@ -29,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -82,12 +80,9 @@ public class AdminController {
     @PostMapping("/lastInnOppfolgingForBruker")
     public String lastInnOppfolgingsDataForBruker(@RequestBody String fnr) {
         authorizeAdmin();
-        Optional<OppfolgingsBruker> oppfolgingsBruker = brukerRepository.hentBrukerFraView(Fnr.of(fnr));
-        if (oppfolgingsBruker.isPresent()) {
-            oppfolgingService.oppdaterBruker(oppfolgingsBruker.get());
-            return "Innlastning av oppfolgingsdata har startet";
-        }
-        return "Bruker eksistere ikke";
+        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
+        oppfolgingService.oppdaterBruker(AktorId.of(aktorId));
+        return "Innlastning av oppfolgingsdata har startet";
     }
 
     @PutMapping("/indeks/bruker")
@@ -102,7 +97,7 @@ public class AdminController {
     @PostMapping("/indeks/AlleBrukere")
     public String indekserAlleBrukere() {
         authorizeAdmin();
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         elasticIndexer.nyHovedIndeksering(brukereUnderOppfolging);
         return "Indeksering fullfort";
     }

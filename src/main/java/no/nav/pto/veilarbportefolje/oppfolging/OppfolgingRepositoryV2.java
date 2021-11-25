@@ -53,6 +53,10 @@ public class OppfolgingRepositoryV2 {
         db.update("UPDATE oppfolging_data SET manuell = ? WHERE aktoerid = ?", manuellStatus, aktoerId.get());
     }
 
+    public void settStartdato(AktorId aktoerId, ZonedDateTime startDato) {
+        db.update("UPDATE oppfolging_data SET startdato = ? WHERE  aktoerid = ?", toTimestamp(startDato), aktoerId.get());
+    }
+
     public void slettOppfolgingData(AktorId aktoerId) {
         db.update("DELETE FROM oppfolging_data WHERE aktoerid = ?", aktoerId.get());
     }
