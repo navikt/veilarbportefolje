@@ -83,9 +83,9 @@ public class TiltakServiceV2 {
             tiltakRepositoryV1.upsert(innhold, aktorId);
         }
         tiltakRepositoryV1.utledOgLagreTiltakInformasjon(aktorId, personId);
-        //brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
+        brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
 
-        //elasticIndexer.indekser(aktorId);
+        elasticIndexer.indekser(aktorId);
     }
 
     public void behandleKafkaMeldingPostgres(TiltakDTO kafkaMelding) {
@@ -100,7 +100,7 @@ public class TiltakServiceV2 {
             tiltakRepositoryV2.upsert(innhold, aktorId);
         }
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
-        //brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
+        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId); // TODO: Prøv å optimaliser metoden
     }
 
     public EnhetTiltak hentEnhettiltak(EnhetId enhet) {
