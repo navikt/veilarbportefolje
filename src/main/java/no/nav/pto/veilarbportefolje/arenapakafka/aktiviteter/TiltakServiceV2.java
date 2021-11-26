@@ -100,7 +100,7 @@ public class TiltakServiceV2 {
             tiltakRepositoryV2.upsert(innhold, aktorId);
         }
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
+        //brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
     }
 
     public EnhetTiltak hentEnhettiltak(EnhetId enhet) {
