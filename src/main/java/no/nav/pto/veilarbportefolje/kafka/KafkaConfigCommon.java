@@ -360,12 +360,14 @@ public class KafkaConfigCommon {
         //aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
         aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-        consumerClientAiven = topicConfigsAiven.stream().map(config ->
-                KafkaConsumerClientBuilder.builder()
-                        .withProperties(aivenConsumerProperties)
-                        .withTopicConfig(config)
-                        .withToggle(kafkaAivenUnleash)
-                        .build()).collect(Collectors.toList());
+        consumerClientAiven = topicConfigsAiven.stream()
+                .map(config ->
+                        KafkaConsumerClientBuilder.builder()
+                                .withProperties(aivenConsumerProperties)
+                                .withTopicConfig(config)
+                                .withToggle(kafkaAivenUnleash)
+                                .build())
+                .collect(Collectors.toList());
 
         consumerClientsOnPrem = topicConfigsOnPrem.stream()
                 .map(config ->
