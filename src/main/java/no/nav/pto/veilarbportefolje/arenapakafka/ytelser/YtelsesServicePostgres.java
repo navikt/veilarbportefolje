@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arenapakafka.ytelser;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -8,7 +7,6 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,17 +18,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getAktorId;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getInnhold;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGoldenGate;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
 
 @Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class YtelsesServicePostgres {
-    @NonNull
-    @Qualifier("systemClient")
     private final AktorClient aktorClient;
     private final BrukerDataService brukerDataService;
     private final YtelsesRepositoryV2 ytelsesRepositoryV2;
