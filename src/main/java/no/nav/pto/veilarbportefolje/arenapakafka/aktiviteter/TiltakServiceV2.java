@@ -83,7 +83,7 @@ public class TiltakServiceV2 {
             tiltakRepositoryV1.upsert(innhold, aktorId);
         }
         tiltakRepositoryV1.utledOgLagreTiltakInformasjon(aktorId, personId);
-        brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
+        //brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
 
         //elasticIndexer.indekser(aktorId);
     }
