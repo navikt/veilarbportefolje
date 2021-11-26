@@ -43,7 +43,7 @@ public class SchedulConfig implements SchedulingConfigurer{
         }
     }
 
-    // Denne jobben må kjøre etter midnatt
+    /*
     @Scheduled(cron = "0 1 0 * * ?")
     public void oppdaterBrukerAktiviteterPostgres() {
         if (leaderElectionClient.isLeader()) {
@@ -62,7 +62,7 @@ public class SchedulConfig implements SchedulingConfigurer{
             log.info("(Postgres) Starter ikke jobb: oppdaterYtelser");
         }
     }
-
+*/
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();

@@ -50,8 +50,6 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
                         Optional.ofNullable(kafkaMelding.getSikkerhetstiltakType()).map(SikkerhetstiltakType::name).orElse(null),
                         kafkaMelding.getDiskresjonskode(), kafkaMelding.getHarOppfolgingssak(), kafkaMelding.getSperretAnsatt(), kafkaMelding.getErDoed(),
                         dodFraDato, kafkaMelding.getSistEndretDato()));
-
-        elasticIndexer.indekser(aktorId);
     }
 }
 
