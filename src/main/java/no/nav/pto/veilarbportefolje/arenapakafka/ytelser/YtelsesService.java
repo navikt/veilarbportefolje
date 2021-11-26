@@ -1,11 +1,11 @@
 package no.nav.pto.veilarbportefolje.arenapakafka.ytelser;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.*;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -13,7 +13,6 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +33,6 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
 @Transactional
 @RequiredArgsConstructor
 public class YtelsesService {
-    @NonNull
-    @Qualifier("systemClient")
     private final AktorClient aktorClient;
     private final BrukerService brukerService;
     private final BrukerDataService brukerDataService;
@@ -190,7 +187,7 @@ public class YtelsesService {
 
     public void syncYtelserForAlleBrukere() {
         log.info("Starter jobb: oppdater Ytelser");
-        List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
+        List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         log.info("Oppdaterer ytelser for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
 
         ForkJoinPool pool = new ForkJoinPool(5);

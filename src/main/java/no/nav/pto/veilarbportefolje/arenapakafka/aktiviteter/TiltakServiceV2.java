@@ -2,29 +2,27 @@ package no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.arenapakafka.TiltakStatuser;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
-import no.nav.pto.veilarbportefolje.arenapakafka.TiltakStatuser;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
 
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
 
 @Slf4j
 @Service
@@ -34,8 +32,6 @@ public class TiltakServiceV2 {
     private static final LocalDate LANSERING_AV_OVERSIKTEN = LocalDate.of(2017, 12, 4);
     private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
-    @NonNull
-    @Qualifier("systemClient")
     private final AktorClient aktorClient;
     private final ArenaHendelseRepository arenaHendelseRepository;
     private final BrukerDataService brukerDataService;
