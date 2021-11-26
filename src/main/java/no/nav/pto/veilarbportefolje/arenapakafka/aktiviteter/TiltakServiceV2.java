@@ -85,7 +85,7 @@ public class TiltakServiceV2 {
         tiltakRepositoryV1.utledOgLagreTiltakInformasjon(aktorId, personId);
         brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
 
-        elasticIndexer.indekser(aktorId);
+        //elasticIndexer.indekser(aktorId);
     }
 
     public void behandleKafkaMeldingPostgres(TiltakDTO kafkaMelding) {
