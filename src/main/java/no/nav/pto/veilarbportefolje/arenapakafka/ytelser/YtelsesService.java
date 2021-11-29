@@ -63,6 +63,18 @@ public class YtelsesService {
         arenaHendelseRepository.upsertYtelsesHendelse(innhold.getVedtakId(), innhold.getHendelseId());
     }
 
+    public void behandleKafkaRecordV2(ConsumerRecord<String, YtelsesDTO> kafkaMelding, TypeKafkaYtelse ytelse) {
+        YtelsesDTO melding = kafkaMelding.value();
+        log.info(
+                "Behandler Postgres kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
+                kafkaMelding.key(),
+                kafkaMelding.offset(),
+                kafkaMelding.partition(),
+                kafkaMelding.topic()
+        );
+        behandleKafkaMeldingPostgres(melding, ytelse);
+    }
+
     public void behandleKafkaMeldingPostgres(YtelsesDTO melding, TypeKafkaYtelse ytelse) {
         ytelsesServicePostgres.behandleKafkaMeldingPostgres(melding, ytelse);
     }
