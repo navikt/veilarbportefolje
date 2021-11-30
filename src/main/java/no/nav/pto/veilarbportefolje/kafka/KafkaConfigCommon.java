@@ -352,41 +352,6 @@ public class KafkaConfigCommon {
                                 )
                 );
 
-
-
-        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsAivenPostgres =
-                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.DAGPENGE_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(YtelsesDTO.class),
-                                        (melding -> {
-                                            ytelsesService.behandleKafkaRecordV2(melding, TypeKafkaYtelse.DAGPENGER);
-                                        })
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.TILTAKSPENGER_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(YtelsesDTO.class),
-                                        (melding -> {
-                                            ytelsesService.behandleKafkaRecordV2(melding, TypeKafkaYtelse.TILTAKSPENGER);
-                                        })
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.AAP_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(YtelsesDTO.class),
-                                        (melding -> {
-                                            ytelsesService.behandleKafkaRecordV2(melding, TypeKafkaYtelse.AAP);
-                                        })
-                                )
-                );
-
         KafkaAivenUnleash kafkaAivenUnleash = new KafkaAivenUnleash(unleashService);
         KafkaOnpremUnleash kafkaOnpremUnleash = new KafkaOnpremUnleash(unleashService);
 
@@ -402,16 +367,6 @@ public class KafkaConfigCommon {
                                 .withToggle(kafkaAivenUnleash)
                                 .build())
                 .collect(Collectors.toList());
-
-        consumerClientAiven.addAll(topicConfigsAivenPostgres.stream()
-                .map(config ->
-                        KafkaConsumerClientBuilder.builder()
-                                .withProperties(aivenDefaultConsumerProperties("veilarbportefolje-consumer-postgres"))
-                                .withTopicConfig(config)
-                                .withToggle(kafkaAivenUnleash)
-                                .build())
-                .collect(Collectors.toList())
-        );
 
         consumerClientsOnPrem = topicConfigsOnPrem.stream()
                 .map(config ->
