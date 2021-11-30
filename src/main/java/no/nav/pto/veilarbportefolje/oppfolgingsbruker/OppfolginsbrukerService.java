@@ -2,10 +2,10 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
@@ -18,17 +18,19 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringPaaOppfoelgingsBrukerV2> {
     private final OppfolginsbrukerRepositoryV2 OppfolginsbrukerRepositoryV2;
-    private final ElasticIndexer elasticIndexer;
     private final AktorClient aktorClient;
 
     @Override
     public void behandleKafkaMeldingLogikk(EndringPaaOppfoelgingsBrukerV2 kafkaMelding) {
-        AktorId aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.getFodselsnummer()));
+        AktorId aktorId = hentAktorIdMedUnntakIDev(Fnr.of(kafkaMelding.getFodselsnummer()));
+
         ZonedDateTime iservDato = Optional.ofNullable(kafkaMelding.getIservFraDato())
                 .map(dato -> ZonedDateTime.of(dato.atStartOfDay(), ZoneId.systemDefault()))
                 .orElse(null);
@@ -50,6 +52,17 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
                         Optional.ofNullable(kafkaMelding.getSikkerhetstiltakType()).map(SikkerhetstiltakType::name).orElse(null),
                         kafkaMelding.getDiskresjonskode(), kafkaMelding.getHarOppfolgingssak(), kafkaMelding.getSperretAnsatt(), kafkaMelding.getErDoed(),
                         dodFraDato, kafkaMelding.getSistEndretDato()));
+    }
+
+    private AktorId hentAktorIdMedUnntakIDev(Fnr fodselsnummer) {
+        try {
+            return aktorClient.hentAktorId(fodselsnummer);
+        } catch (IngenGjeldendeIdentException exception) {
+            if (isDevelopment().orElse(false)) {
+                return AktorId.of("-1");
+            }
+            throw exception;
+        }
     }
 }
 
