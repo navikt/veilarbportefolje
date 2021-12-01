@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -52,5 +53,9 @@ public class ProfileringRepository {
                 .setProfileringGjennomfort(toZonedDateTime(rs.getTimestamp("PROFILERING_TIDSPUNKT")).format(ISO_ZONED_DATE_TIME))
                 .setProfilertTil(ProfilertTil.valueOf(rs.getString("PROFILERING_RESULTAT")))
                 .build();
+    }
+
+    public List<AktorId> hentAlleBrukereMedProfileringer() {
+        return db.queryForList("SELECT DISTINCT AKTOERID FROM " + BRUKER_PROFILERING_TABELL, AktorId.class);
     }
 }

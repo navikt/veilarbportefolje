@@ -8,6 +8,8 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 @Slf4j
@@ -23,7 +25,7 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
 
         final AktorId aktoerId = AktorId.of(kafkaMelding.getAktorid());
         elastic.updateRegistering(aktoerId, kafkaMelding);
-        log.info("Oppdatert utdanningsregistrering for bruker: {}", aktoerId);
+        log.info("Oppdatert brukerregistrering for bruker: {}", aktoerId);
     }
 
     public void slettRegistering(AktorId aktoerId) {
@@ -32,5 +34,21 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
 
         log.info("Slettet brukerregistrering for bruker: {}", aktoerId);
     }
+
+    public void migrerTilPostgres() {
+        List<AktorId> alleBrukereMedprofilering = registreringRepository.hentAlleBrukereMedRegistrering();
+        log.info("Migrering av brukerregistrering for {} brukere.", alleBrukereMedprofilering.size());
+        alleBrukereMedprofilering.forEach(bruker -> {
+                    try {
+                        registreringRepository.hentBrukerRegistrering(bruker)
+                                .ifPresent(registreringRepositoryV2::upsertBrukerRegistrering);
+                    } catch (Exception e) {
+                        log.error("Migrering feilet på bruker: {}", bruker, e);
+                    }
+                }
+        );
+        log.info("Migrering av brukerregistrering er ferdig.");
+    }
+
 
 }
