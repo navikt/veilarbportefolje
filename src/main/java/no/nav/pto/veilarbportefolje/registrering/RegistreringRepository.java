@@ -83,6 +83,6 @@ public class RegistreringRepository {
     }
 
     public List<AktorId> hentAlleBrukereMedRegistrering() {
-        return db.queryForList("SELECT DISTINCT " + AKTOERID + " FROM BRUKERS_SITUASJON", AktorId.class);
+        return db.queryForList("SELECT DISTINCT " + AKTOERID + " FROM " + Table.BRUKER_REGISTRERING.TABLE_NAME, AktorId.class);
     }
 }
