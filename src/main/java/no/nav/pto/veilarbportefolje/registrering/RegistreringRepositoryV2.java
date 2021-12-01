@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -20,62 +19,56 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.BRUKERS_SITUASJON;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.REGISTRERING_OPPRETTET;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.UTDANNING;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.UTDANNING_BESTATT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.UTDANNING_GODKJENT;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
 @Repository
 @RequiredArgsConstructor
 public class RegistreringRepositoryV2 {
-    @NonNull
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
-    public int upsertBrukerRegistrering(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
+    public void upsertBrukerRegistrering(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
         Timestamp registreringOpprettetTimestamp = ofNullable(kafkaRegistreringMelding.getRegistreringOpprettet())
                 .map(DateUtils::zonedDateStringToTimestamp)
                 .orElse(null);
 
-        return db.update("INSERT INTO " + TABLE_NAME +
-                        " ("
-                        + AKTOERID + ", "
-                        + BRUKERS_SITUASJON + ", "
-                        + REGISTRERING_OPPRETTET + ", "
-                        + UTDANNING + ", "
-                        + UTDANNING_BESTATT + ", "
-                        + UTDANNING_GODKJENT + ") " +
-                        "VALUES (?, ?, ?, ?, ?, ?) " +
-                        "ON CONFLICT (" + AKTOERID + ") " +
-                        "DO UPDATE SET ("
-                        + BRUKERS_SITUASJON + ", "
-                        + REGISTRERING_OPPRETTET + ", "
-                        + UTDANNING + ", "
-                        + UTDANNING_BESTATT + ", "
-                        + UTDANNING_GODKJENT + ") = (?, ?, ?, ?, ?)",
+        db.update("""
+                        INSERT INTO BRUKER_REGISTRERING
+                        (AKTOERID, BRUKERS_SITUASJON, REGISTRERING_OPPRETTET,
+                        UTDANNING, UTDANNING_BESTATT, UTDANNING_GODKJENT)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                        ON CONFLICT (AKTOERID)
+                        DO UPDATE SET
+                        (BRUKERS_SITUASJON, REGISTRERING_OPPRETTET,
+                        UTDANNING, UTDANNING_BESTATT, UTDANNING_GODKJENT ) =
+                        (excluded.brukers_situasjon, excluded.registrering_opprettet, excluded.utdanning, excluded.utdanning_bestatt, excluded.utdanning_godkjent)
+                        """,
                 kafkaRegistreringMelding.getAktorid(),
                 kafkaRegistreringMelding.getBrukersSituasjon(),
                 registreringOpprettetTimestamp,
-                kafkaRegistreringMelding.getUtdanning().toString(),
-                kafkaRegistreringMelding.getUtdanningBestatt().toString(),
-                kafkaRegistreringMelding.getUtdanningGodkjent().toString(),
-                kafkaRegistreringMelding.getBrukersSituasjon(),
-                registreringOpprettetTimestamp,
-                kafkaRegistreringMelding.getUtdanning().toString(),
-                kafkaRegistreringMelding.getUtdanningBestatt().toString(),
-                kafkaRegistreringMelding.getUtdanningGodkjent().toString()
+                Optional.ofNullable(kafkaRegistreringMelding.getUtdanning()).map(UtdanningSvar::toString).orElse(null),
+                Optional.ofNullable(kafkaRegistreringMelding.getUtdanningBestatt()).map(UtdanningBestattSvar::toString).orElse(null),
+                Optional.ofNullable(kafkaRegistreringMelding.getUtdanningGodkjent()).map(UtdanningGodkjentSvar::toString).orElse(null)
         );
     }
 
     public Optional<ArbeidssokerRegistrertEvent> hentBrukerRegistrering(AktorId aktoerId) {
         log.info("Hent BrukerRegistrering for bruker: {}", aktoerId.get());
-        String sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID);
+        String sql = "SELECT * FROM BRUKER_REGISTRERING WHERE AKTOERID = ?";
         return ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilArbeidssokerRegistrertEvent, aktoerId.get()))
         );
     }
 
     public int slettBrukerRegistrering(AktorId aktoerId) {
-        return db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
+        return db.update("DELETE FROM BRUKER_REGISTRERING WHERE AKTOERID = ?", aktoerId.get());
     }
 
     @SneakyThrows
