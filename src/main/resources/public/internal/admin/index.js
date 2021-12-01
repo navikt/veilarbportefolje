@@ -88,113 +88,6 @@ function handleAktorId(e) {
     }
 }
 
-/*
-const registreringForm = document.getElementById('registrering');
-registreringForm.addEventListener('submit', handleRewindRegistrering);
-
-function handleRewindRegistrering(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil lese inn alle kafka meldinger fra registrering fra starten av.')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/rewind/registrering',
-            {method: 'POST', credentials: 'same-origin'},
-            'registreringResponse'
-        );
-    }
-}
-
-const aktiviteterForm = document.getElementById('aktiviteter');
-aktiviteterForm.addEventListener('submit', handleRewindAktiviteter);
-
-function handleRewindAktiviteter(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil lese inn alle kafka meldinger fra aktivteter fra starten av.')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/rewind/aktivtet',
-            {method: 'POST', credentials: 'same-origin'},
-            'aktiviteterResponse'
-        );
-    }
-}
-
-const vedtakForm = document.getElementById('vedtak');
-vedtakForm.addEventListener('submit', handleRewindVedtak);
-
-function handleRewindVedtak(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil lese inn alle kafka meldinger fra vedtak fra starten av.')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/rewind/vedtak',
-            {method: 'POST', credentials: 'same-origin'},
-            'vedtakResponse'
-        );
-    }
-}
-
-
-const nyForVeiledereForm = document.getElementById('nyForVeileder');
-nyForVeiledereForm.addEventListener('submit', handleRewindNyForVeiledere);
-
-function handleRewindNyForVeiledere(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil lese inn alle kafka meldinger fra topiken fra starten av.')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/rewind/nyForVeileder',
-            {method: 'POST', credentials: 'same-origin'},
-            'nyForVeilederResponse'
-        );
-    }
-}
-
-const cvEksistereForm = document.getElementById('cvEksistere');
-cvEksistereForm.addEventListener('submit', handleRewindCVEksistere);
-
-function handleRewindCVEksistere(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil lese inn alle kafka meldinger fra topiken fra starten av.')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/rewind/cv-eksisterer',
-            {method: 'POST', credentials: 'same-origin'},
-            'cvEksistereResponse'
-        );
-    }
-}
-
-const tilordnetVeileder = document.getElementById('tilordnetVeileder');
-tilordnetVeileder.addEventListener('submit', handleRewindTilordnetVeileder);
-
-function handleRewindTilordnetVeileder(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil lese inn alle kafka meldinger fra topiken fra starten av.')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/rewind/tilordnet-veileder',
-            {method: 'POST', credentials: 'same-origin'},
-            'tilordnetVeilederResponse'
-        );
-    }
-}
-
-const aktoerIdSamtykkeForm = document.getElementById('aktoerIdSamtykkeForm');
-aktoerIdSamtykkeForm.addEventListener('submit', handleSamtykkeDeltCV);
-const aktoerIdSamtykkeInput = document.getElementById('aktoerIdSamtykkeInput');
-
-function handleSamtykkeDeltCV(e) {
-    e.preventDefault()
-
-    const aktoerIdSamtykke = aktoerIdSamtykkeInput.value;
-    if (aktoerIdSamtykke && aktoerIdSamtykke > 0) {
-        if (window.confirm(`Dette vil sette HAR_DELT_CV for: ${aktoerIdSamtykke}`)) {
-            fetchData(
-                '/veilarbportefolje/api/admin/settSamtykkeCV',
-                {method: 'POST', credentials: 'same-origin', body: aktoerIdSamtykke},
-                'aktoerIdSamtykkeResponse'
-            )
-        }
-    }
-}
-
- */
-
 const startAiven = document.getElementById('startAiven');
 startAiven.addEventListener('submit', handleStartAiven);
 
@@ -310,6 +203,34 @@ function handleMigrerArbeidslista(e) {
             `/veilarbportefolje/api/admin/arbeidslista/migrer`,
             {method: 'PUT', credentials: 'same-origin'},
             'migrerArbeidslistaResponse'
+        );
+    }
+}
+
+const migrerRegistreringForm = document.getElementById('migrerRegistrering');
+migrerRegistreringForm.addEventListener('submit', handleMigrerRegistrering)
+
+function handleMigrerRegistrering(e) {
+    e.preventDefault();
+    if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/registrering/migrer`,
+            {method: 'PUT', credentials: 'same-origin'},
+            'migrerRegistreringResponse'
+        );
+    }
+}
+
+const migrerProfileringForm = document.getElementById('migrerProfilering');
+migrerProfileringForm.addEventListener('submit', handleMigrerProfilering)
+
+function handleMigrerProfilering(e) {
+    e.preventDefault();
+    if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/profilering/migrer`,
+            {method: 'PUT', credentials: 'same-origin'},
+            'migrerProfileringResponse'
         );
     }
 }

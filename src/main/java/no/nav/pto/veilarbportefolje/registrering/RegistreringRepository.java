@@ -17,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
@@ -79,5 +80,9 @@ public class RegistreringRepository {
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.valueOf(rs.getString("UTDANNING_GODKJENT")))
                 .setRegistreringOpprettet(registreringOpprettet)
                 .build();
+    }
+
+    public List<AktorId> hentAlleBrukereMedRegistrering() {
+        return db.queryForList("SELECT DISTINCT " + AKTOERID + " FROM BRUKERS_SITUASJON", AktorId.class);
     }
 }
