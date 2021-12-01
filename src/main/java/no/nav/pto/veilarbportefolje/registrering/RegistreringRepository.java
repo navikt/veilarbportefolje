@@ -75,9 +75,9 @@ public class RegistreringRepository {
         return ArbeidssokerRegistrertEvent.newBuilder()
                 .setBrukersSituasjon(rs.getString("BRUKERS_SITUASJON"))
                 .setAktorid(rs.getString(AKTOERID))
-                .setUtdanning(UtdanningSvar.valueOf(rs.getString("UTDANNING")))
-                .setUtdanningBestatt(UtdanningBestattSvar.valueOf(rs.getString("UTDANNING_BESTATT")))
-                .setUtdanningGodkjent(UtdanningGodkjentSvar.valueOf(rs.getString("UTDANNING_GODKJENT")))
+                .setUtdanning(Optional.ofNullable(rs.getString("UTDANNING")).map(UtdanningSvar::valueOf).orElse(null))
+                .setUtdanningBestatt(Optional.ofNullable(rs.getString("UTDANNING_BESTATT")).map(UtdanningBestattSvar::valueOf).orElse(null))
+                .setUtdanningGodkjent(Optional.ofNullable(rs.getString("UTDANNING_GODKJENT")).map(UtdanningGodkjentSvar::valueOf).orElse(null))
                 .setRegistreringOpprettet(registreringOpprettet)
                 .build();
     }

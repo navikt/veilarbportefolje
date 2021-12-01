@@ -81,12 +81,12 @@ public class RegistreringRepositoryV2 {
     @SneakyThrows
     private ArbeidssokerRegistrertEvent mapTilArbeidssokerRegistrertEvent(ResultSet rs, int i) {
         return ArbeidssokerRegistrertEvent.newBuilder()
-                .setBrukersSituasjon(rs.getString("BRUKERS_SITUASJON"))
+                .setBrukersSituasjon(rs.getString(BRUKERS_SITUASJON))
                 .setAktorid(rs.getString(AKTOERID))
-                .setUtdanning(Optional.ofNullable(rs.getString("UTDANNING")).map(UtdanningSvar::valueOf).orElse(null))
-                .setUtdanningBestatt(Optional.ofNullable(rs.getString("UTDANNING_BESTATT")).map(UtdanningBestattSvar::valueOf).orElse(null))
-                .setUtdanningGodkjent(Optional.ofNullable(rs.getString("UTDANNING_GODKJENT")).map(UtdanningGodkjentSvar::valueOf).orElse(null))
-                .setRegistreringOpprettet(ofNullable(rs.getTimestamp("REGISTRERING_OPPRETTET"))
+                .setUtdanning(Optional.ofNullable(rs.getString(UTDANNING)).map(UtdanningSvar::valueOf).orElse(null))
+                .setUtdanningBestatt(Optional.ofNullable(rs.getString(UTDANNING_BESTATT)).map(UtdanningBestattSvar::valueOf).orElse(null))
+                .setUtdanningGodkjent(Optional.ofNullable(rs.getString(UTDANNING_GODKJENT)).map(UtdanningGodkjentSvar::valueOf).orElse(null))
+                .setRegistreringOpprettet(ofNullable(rs.getTimestamp(REGISTRERING_OPPRETTET))
                         .map(DateUtils::toZonedDateTime)
                         .map(zonedDateRegistreringDato -> zonedDateRegistreringDato.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
                         .orElse(null))
