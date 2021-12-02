@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
@@ -84,5 +85,9 @@ public class RegistreringRepositoryV2 {
                         .map(zonedDateRegistreringDato -> zonedDateRegistreringDato.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
                         .orElse(null))
                 .build();
+    }
+
+    public List<AktorId> hentAlleBrukereMedRegistrering() {
+        return db.queryForList("SELECT DISTINCT aktoerid FROM bruker_registrering", AktorId.class);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Optional;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
@@ -48,6 +49,10 @@ public class ProfileringRepositoryV2 {
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilArbeidssokerProfilertEvent, aktoerId.get()))
         );
+    }
+
+    public List<AktorId> hentAlleBrukereMedProfileringer() {
+        return db.queryForList("SELECT DISTINCT aktoerid FROM bruker_profilering", AktorId.class);
     }
 
     @SneakyThrows

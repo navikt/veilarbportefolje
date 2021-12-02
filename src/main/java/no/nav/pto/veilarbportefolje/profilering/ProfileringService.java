@@ -39,7 +39,10 @@ public class ProfileringService extends KafkaCommonConsumerService<ArbeidssokerP
                     }
                 }
         );
-        log.info("Migrering av profilering er ferdig.");
+
+        int brukereMedprofileringOracle = profileringRepository.hentAlleBrukereMedProfileringer().size();
+        int brukereMedprofileringPostgres = profileringRepositoryV2.hentAlleBrukereMedProfileringer().size();
+        log.info("Migrering av profilering er ferdig. Brukere i oracle: {}, i Postgres: {}", brukereMedprofileringOracle, brukereMedprofileringPostgres);
     }
 
 }

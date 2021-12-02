@@ -47,7 +47,9 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
                     }
                 }
         );
-        log.info("Migrering av brukerregistrering er ferdig.");
+        int brukereMedRegistreringOracle = registreringRepository.hentAlleBrukereMedRegistrering().size();
+        int brukereMedRegistreringPostgres = registreringRepositoryV2.hentAlleBrukereMedRegistrering().size();
+        log.info("Migrering av brukerregistrering er ferdig. Brukere i oracle: {}, i Postgres: {}", brukereMedRegistreringOracle, brukereMedRegistreringPostgres);
     }
 
 
