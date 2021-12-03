@@ -99,7 +99,7 @@ public class OppfolgingService {
                 oppdaterVeilederHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getVeileder).orElse(null), Optional.ofNullable(veialrbinfo.getVeilederId()).map(NavIdent::get).orElse(null), true);
             } else {
                 log.info("OppfolgingsJobb: bruker er ikke under oppfolging, aktoer: " + bruker);
-                //oppfolgingAvsluttetService.avsluttOppfolging(bruker);
+                oppfolgingAvsluttetService.avsluttOppfolging(bruker);
                 antallBrukereSlettet++;
             }
         } catch (RuntimeException e) {
@@ -126,7 +126,7 @@ public class OppfolgingService {
             oppfolgingRepositoryV2.settStartdato(bruker, korrektStartDato);
         } else {
             log.info("(Oracle) OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker, zonedDbVerdi, korrektStartDato);
-            //oppfolgingRepository.oppdaterStartdato(bruker, korrektStartDato);
+            oppfolgingRepository.oppdaterStartdato(bruker, korrektStartDato);
         }
     }
 
@@ -140,7 +140,7 @@ public class OppfolgingService {
             oppfolgingRepositoryV2.settManuellStatus(bruker, korrektManuell);
         } else {
             log.info("(Oracle) OppfolgingsJobb: aktoer: {} skal bytte manuell fra: {}, til:{} ", bruker, manuellDb, korrektManuell);
-            //oppfolgingRepository.settManuellStatus(bruker, korrektManuell);
+            oppfolgingRepository.settManuellStatus(bruker, korrektManuell);
         }
     }
 
@@ -155,7 +155,7 @@ public class OppfolgingService {
             oppfolgingRepositoryV2.settNyForVeileder(bruker, korrektNyForVeileder);
         } else {
             log.info("(Oracle) OppfolgingsJobb: aktoer: {} skal bytte nyForVeileder fra: {}, til:{} ", bruker, nyForVeilederDb, korrektNyForVeileder);
-            //oppfolgingRepository.settNyForVeileder(bruker, korrektNyForVeileder);
+            oppfolgingRepository.settNyForVeileder(bruker, korrektNyForVeileder);
         }
     }
 
@@ -173,7 +173,7 @@ public class OppfolgingService {
             oppfolgingRepositoryV2.settVeileder(bruker, VeilederId.of(korrektVeileder));
         } else {
             log.info("(Oracle) OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
-            //oppfolgingRepository.settVeileder(bruker, VeilederId.of(korrektVeileder));
+            oppfolgingRepository.settVeileder(bruker, VeilederId.of(korrektVeileder));
         }
     }
 

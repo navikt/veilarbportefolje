@@ -11,13 +11,14 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
+import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,9 +44,10 @@ public class AdminController {
     private final ElasticIndexer elasticIndexer;
     private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
-    private final BrukerRepository brukerRepository;
     private final OppfolgingRepository oppfolgingRepository;
     private final ArbeidslisteService arbeidslisteService;
+    private final RegistreringService registreringService;
+    private final ProfileringService profileringService;
 
 
     @PostMapping("/aktoerId")
@@ -132,6 +134,20 @@ public class AdminController {
         authorizeAdmin();
         arbeidslisteService.migrerArbeidslistaTilPostgres();
         return "Arbeidslista er nå migrert";
+    }
+
+    @PutMapping("/profilering/migrer")
+    public String migrerProfilering() {
+        authorizeAdmin();
+        profileringService.migrerTilPostgres();
+        return "Profilering er nå migrert";
+    }
+
+    @PutMapping("/registrering/migrer")
+    public String migrerRegistrering() {
+        authorizeAdmin();
+        registreringService.migrerTilPostgres();
+        return "Registrering er nå migrert";
     }
 
     private void authorizeAdmin() {
