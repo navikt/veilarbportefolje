@@ -20,11 +20,16 @@ public class ManuellStatusService extends KafkaCommonConsumerService<ManuellStat
     public void behandleKafkaMeldingLogikk(ManuellStatusDTO dto) {
         final AktorId aktorId = AktorId.of(dto.getAktorId());
 
-        oppfolgingRepository.settManuellStatus(aktorId, dto.isErManuell());
+        int antallRaderPavirket = oppfolgingRepository.settManuellStatus(aktorId, dto.isErManuell());
         oppfolgingRepositoryV2.settManuellStatus(aktorId, dto.isErManuell());
 
         String manuellStatus = dto.isErManuell() ? ManuellBrukerStatus.MANUELL.name() : null;
         elasticServiceV2.settManuellStatus(aktorId, manuellStatus);
-        log.info("Oppdatert manuellstatus for bruker {}, ny status: {}", aktorId, manuellStatus);
+
+        if(antallRaderPavirket == 0 && dto.isErManuell()){
+            log.error("Manuell status ble ikke satt til true for bruker: {}",aktorId);
+        }else{
+            log.info("Oppdatert manuellstatus for bruker {}, ny status: {}", aktorId, manuellStatus);
+        }
     }
 }
