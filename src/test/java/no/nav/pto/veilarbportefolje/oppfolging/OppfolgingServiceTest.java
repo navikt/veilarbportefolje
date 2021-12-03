@@ -78,8 +78,6 @@ public class OppfolgingServiceTest {
         assertThat(oppfolgingsDataV2_postSync.get().getVeileder()).isEqualTo("123");
 
         assertThat(oppfolgingsDataV2_preSync.isEmpty()).isTrue();
-        //assertThat(oppfolgingsData).isEqualTo(oppfolgingsDataV2_postSync);
-
+        assertThat(oppfolgingsData).isEqualTo(oppfolgingsDataV2_postSync);
     }
-
 }
