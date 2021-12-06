@@ -5,8 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
-import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,8 +20,6 @@ public class SchedulConfig implements SchedulingConfigurer{
     private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
     private final LeaderElectionClient leaderElectionClient;
-    private final RegistreringService registreringService;
-    private final ProfileringService profileringService;
 
     // Denne jobben må kjøre etter midnatt
     @Scheduled(cron = "0 1 0 * * ?")
@@ -65,16 +61,7 @@ public class SchedulConfig implements SchedulingConfigurer{
         }
     }
 */
-    @Scheduled(cron = "0 0 3 * * SUN")
-    public void migrer() {
-        if (leaderElectionClient.isLeader()) {
-            log.info("Starter jobb: migrer");
-            profileringService.migrerTilPostgres();
-            registreringService.migrerTilPostgres();
-        } else {
-            log.info("Starter ikke jobb: migrer");
-        }
-    }
+
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
