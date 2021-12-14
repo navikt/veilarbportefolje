@@ -11,7 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -28,24 +31,26 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 class ElasticServiceIntegrationTest extends EndToEndTest {
-
     private static final String TEST_ENHET = "0000";
     private static final String TEST_VEILEDER_0 = "Z000000";
     private static final String TEST_VEILEDER_1 = "Z000001";
     private static final String LITE_PRIVILEGERT_VEILEDER = "Z000002";
 
-    @Autowired
     private ElasticService elasticService;
-
-    @Autowired
     private ElasticIndexer elasticIndexer;
+    private VeilarbVeilederClient veilarbVeilederClientMock;
+
 
     @Autowired
-    private VeilarbVeilederClient veilarbVeilederClientMock;
+    public ElasticServiceIntegrationTest(ElasticService elasticService, ElasticIndexer elasticIndexer, VeilarbVeilederClient veilarbVeilederClientMock) {
+        this.elasticService = elasticService;
+        this.elasticIndexer = elasticIndexer;
+        this.veilarbVeilederClientMock = veilarbVeilederClientMock;
+    }
+
 
     @Test
     void skal_kun_hente_ut_brukere_under_oppfolging() {
-
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
                         .setAktoer_id(randomAktorId().toString())
@@ -208,17 +213,17 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var veilederId3 = "Z000003";
 
         List<OppfolgingsBruker> brukere = Stream.of(
-                veilederId1,
-                veilederId1,
-                veilederId1,
-                veilederId1,
-                veilederId2,
-                veilederId2,
-                veilederId2,
-                veilederId3,
-                veilederId3,
-                null
-        )
+                        veilederId1,
+                        veilederId1,
+                        veilederId1,
+                        veilederId1,
+                        veilederId2,
+                        veilederId2,
+                        veilederId2,
+                        veilederId3,
+                        veilederId3,
+                        null
+                )
                 .map(id ->
                         new OppfolgingsBruker()
                                 .setFnr(randomFnr().toString())

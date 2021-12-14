@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,14 +36,17 @@ public abstract class EndToEndTest {
     @Autowired
     protected UnleashService unleashService;
 
+    @Autowired
+    private RestHighLevelClient restHighLevelClient;
+
     @BeforeEach
     void setUp() {
         try {
             TimeZone.setDefault(TimeZone.getTimeZone(Optional.ofNullable(System.getenv("TZ")).orElse("Europe/Oslo")));
-            elasticIndexer.opprettNyIndeks(indexName.getValue());
+            ElasticTestClient.opprettNyIndeks(indexName.getValue(), restHighLevelClient);
         } catch (Exception e) {
             elasticTestClient.deleteIndex(indexName);
-            elasticIndexer.opprettNyIndeks(indexName.getValue());
+            ElasticTestClient.opprettNyIndeks(indexName.getValue(), restHighLevelClient);
         }
     }
 

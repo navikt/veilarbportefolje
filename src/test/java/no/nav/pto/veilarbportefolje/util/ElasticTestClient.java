@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
@@ -16,12 +17,17 @@ import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -31,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
+@Slf4j
 public class ElasticTestClient {
 
     private final RestHighLevelClient restHighLevelClient;
@@ -162,5 +169,32 @@ public class ElasticTestClient {
         updateRequest.doc(content);
 
         restHighLevelClient.update(updateRequest, DEFAULT);
+    }
+
+    @SneakyThrows
+    public static void opprettNyIndeks(String navn, RestHighLevelClient restHighLevelClient) {
+        Path elasticSettingsPath = Paths.get("src", "test", "resources", "elastic_settings.json");
+        String json = Files.readString(elasticSettingsPath).trim();
+
+        CreateIndexRequest request = new CreateIndexRequest(navn)
+                .source(json, XContentType.JSON);
+
+        CreateIndexResponse response = restHighLevelClient.indices().create(request, DEFAULT);
+
+        if (!response.isAcknowledged()) {
+            log.error("Kunne ikke opprette ny indeks {}", navn);
+            throw new RuntimeException();
+        }
+    }
+
+    @SneakyThrows
+    public static void slettGammelIndeks(String navn, RestHighLevelClient restHighLevelClient) {
+        DeleteIndexRequest request = new DeleteIndexRequest(navn);
+        AcknowledgedResponse response = restHighLevelClient.indices().delete(request, DEFAULT);
+
+        if (!response.isAcknowledged()) {
+            log.error("Kunne ikke slette gammel indeks {}", navn);
+            throw new RuntimeException();
+        }
     }
 }

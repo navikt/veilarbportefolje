@@ -13,10 +13,7 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
-import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -29,7 +26,6 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -143,21 +139,6 @@ public class ElasticIndexer {
         this.skrivTilIndeks(indeksNavn, Collections.singletonList(oppfolgingsBruker));
     }
 
-    @SneakyThrows
-    public String opprettNyIndeks(String navn) {
-
-        String json = IOUtils.toString(Objects.requireNonNull(getClass().getResource("/elastic_settings.json")));
-        CreateIndexRequest request = new CreateIndexRequest(navn)
-                .source(json, XContentType.JSON);
-
-        CreateIndexResponse response = restHighLevelClient.indices().create(request, DEFAULT);
-        if (!response.isAcknowledged()) {
-            log.error("Kunne ikke opprette ny indeks {}", navn);
-            throw new RuntimeException();
-        }
-
-        return navn;
-    }
 
     private void validateBatchSize(List<OppfolgingsBruker> brukere) {
         if (brukere.size() > BATCH_SIZE_LIMIT) {
