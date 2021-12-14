@@ -47,8 +47,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         this.elasticIndexer = elasticIndexer;
         this.veilarbVeilederClientMock = veilarbVeilederClientMock;
     }
-
-
+    
     @Test
     void skal_kun_hente_ut_brukere_under_oppfolging() {
         List<OppfolgingsBruker> brukere = List.of(
@@ -326,11 +325,13 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         var brukerUtenVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().get())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET);
 
         var brukerMedVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().get())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);

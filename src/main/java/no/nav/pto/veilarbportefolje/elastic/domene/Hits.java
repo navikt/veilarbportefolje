@@ -6,7 +6,11 @@ import java.util.List;
 
 @Data
 public class Hits {
-    int total;
+    HitsTotal total;
     List<Hit> hits;
 
+    @Data
+    public static class HitsTotal {
+        int value;
+    }
 }
