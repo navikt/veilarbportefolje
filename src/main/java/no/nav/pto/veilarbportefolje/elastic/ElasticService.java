@@ -17,6 +17,8 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +28,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
+@Service
 public class ElasticService {
     private final RestHighLevelClient restHighLevelClient;
     private final VeilarbVeilederClient veilarbVeilederClient;
@@ -33,6 +36,7 @@ public class ElasticService {
     private final IndexName indexName;
     private final UnleashService unleashService;
 
+    @Autowired
     public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName, VedtakstottePilotRequest vedtakstottePilotRequest, UnleashService unleashService) {
         this.restHighLevelClient = restHighLevelClient;
         this.veilarbVeilederClient = veilarbVeilederClient;

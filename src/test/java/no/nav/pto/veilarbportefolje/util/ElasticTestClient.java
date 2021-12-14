@@ -60,7 +60,6 @@ public class ElasticTestClient {
     public IndexResponse createDocument(AktorId aktoerId, String json) {
         IndexRequest indexRequest = new IndexRequest();
         indexRequest.index(indexName.getValue());
-        indexRequest.type("_doc");
         indexRequest.id(aktoerId.toString());
         indexRequest.source(json, XContentType.JSON);
         return restHighLevelClient.index(indexRequest, DEFAULT);
@@ -89,7 +88,6 @@ public class ElasticTestClient {
         //create document
         IndexRequest indexRequest = new IndexRequest();
         indexRequest.index(indexName.getValue());
-        indexRequest.type("_doc");
         indexRequest.id(aktoerId.toString());
         indexRequest.source(document, XContentType.JSON);
 
@@ -109,7 +107,6 @@ public class ElasticTestClient {
         //create document
         IndexRequest indexRequest = new IndexRequest();
         indexRequest.index(indexName.getValue());
-        indexRequest.type("_doc");
         indexRequest.id(bruker.getAktoer_id());
         indexRequest.source(toJson(bruker), XContentType.JSON);
 
@@ -161,7 +158,6 @@ public class ElasticTestClient {
 
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indexName.getValue());
-        updateRequest.type("_doc");
         updateRequest.id(aktoerId.toString());
         updateRequest.doc(content);
 

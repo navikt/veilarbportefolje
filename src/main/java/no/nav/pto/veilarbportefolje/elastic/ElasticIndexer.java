@@ -23,6 +23,8 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
@@ -44,6 +46,7 @@ import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOpp
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 
 @Slf4j
+@Service
 public class ElasticIndexer {
 
     static final int BATCH_SIZE = 1000;
@@ -56,6 +59,7 @@ public class ElasticIndexer {
     private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final ElasticServiceV2 elasticServiceV2;
 
+    @Autowired
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
@@ -104,7 +108,10 @@ public class ElasticIndexer {
 
         BulkRequest bulk = new BulkRequest();
         oppfolgingsBrukere.stream()
-                .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getAktoer_id()).source(toJson(bruker), XContentType.JSON))
+                .map(bruker -> {
+                    IndexRequest indexRequest = new IndexRequest(indeksNavn).id(bruker.getAktoer_id());
+                    return indexRequest.source(toJson(bruker), XContentType.JSON);
+                })
                 .forEach(bulk::add);
 
         restHighLevelClient.bulkAsync(bulk, DEFAULT, new ActionListener<>() {

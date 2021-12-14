@@ -63,7 +63,6 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import javax.sql.DataSource;
 
 import static no.nav.common.utils.IdUtils.generateId;
-import static no.nav.pto.veilarbportefolje.elastic.Constant.ELASTICSEARCH_VERSION;
 import static org.apache.http.HttpHost.create;
 import static org.elasticsearch.client.RestClient.builder;
 import static org.mockito.ArgumentMatchers.any;

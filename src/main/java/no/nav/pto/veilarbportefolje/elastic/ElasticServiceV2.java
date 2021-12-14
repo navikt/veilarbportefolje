@@ -17,6 +17,8 @@ import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.rest.RestStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,11 +31,13 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
+@Service
 public class ElasticServiceV2 {
 
     private final IndexName indexName;
     private final RestHighLevelClient restHighLevelClient;
 
+    @Autowired
     public ElasticServiceV2(RestHighLevelClient restHighLevelClient, IndexName indexName) {
         this.restHighLevelClient = restHighLevelClient;
         this.indexName = indexName;
@@ -201,7 +205,6 @@ public class ElasticServiceV2 {
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indexName.getValue());
-        updateRequest.type("_doc");
         updateRequest.id(aktoerId.get());
         updateRequest.doc(content);
         updateRequest.retryOnConflict(6);
@@ -223,7 +226,6 @@ public class ElasticServiceV2 {
     private void delete(AktorId aktoerId) {
         DeleteRequest deleteRequest = new DeleteRequest();
         deleteRequest.index(indexName.getValue());
-        deleteRequest.type("_doc");
         deleteRequest.id(aktoerId.get());
 
         try {
