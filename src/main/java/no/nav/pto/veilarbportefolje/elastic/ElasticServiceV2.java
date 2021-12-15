@@ -15,8 +15,8 @@ import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.xcontent.XContentBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +28,7 @@ import static java.lang.String.format;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static org.elasticsearch.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 @Service

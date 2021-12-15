@@ -405,7 +405,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 getFiltervalg(NY_IJOBB),
                 null,
                 null);
-        assertThat(responseSortertTomRes1.getAntall()).isEqualTo(0);}
+        assertThat(responseSortertTomRes1.getAntall()).isEqualTo(0);
+    }
 
     @Test
     public void sisteendring_filterPaFlereEndringerSkalKasteError() {

@@ -19,8 +19,8 @@ import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.xcontent.XContentBuilder;
+import org.elasticsearch.xcontent.XContentType;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -35,7 +35,7 @@ import static java.lang.System.currentTimeMillis;
 import static no.nav.common.json.JsonUtils.toJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static org.elasticsearch.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 public class ElasticTestClient {
