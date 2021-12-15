@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.job.JobRunner;
 import no.nav.common.json.JsonUtils;
@@ -203,5 +204,49 @@ public class OppfolgingService {
                     .map((bodyStr) -> JsonUtils.fromJson(bodyStr, Veilarbportefoljeinfo.class))
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
         }
+    }
+
+    @SneakyThrows
+    public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(String fnr) {
+        Request request = new Request.Builder()
+                .url(joinPaths(veilarboppfolgingUrl, "/api/oppfolging/oppfolgingsperioder?fnr=" + fnr))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            return RestUtils.getBodyStr(response)
+                    .map((bodyStr) -> JsonUtils.fromJsonArray(bodyStr, OppfolgingPeriodeDTO.class))
+                    .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
+        } catch (RuntimeException exception) {
+            return null;
+        }
+    }
+
+    public Optional<OppfolgingPeriodeDTO> hentSisteOppfolgingsPeriode(String fnr) {
+        List<OppfolgingPeriodeDTO> oppfolgingPerioder = hentOppfolgingsperioder(fnr);
+        if (oppfolgingPerioder == null) {
+            return Optional.empty();
+        }
+
+        return oppfolgingPerioder.stream().min((o1, o2) -> {
+            if (o1.sluttDato == null) {
+                return -1;
+            }
+
+            if (o2.sluttDato == null) {
+                return 1;
+            }
+
+            if (o1.sluttDato.isAfter(o2.sluttDato)) {
+                return -1;
+            }
+
+            if (o1.sluttDato.isBefore(o2.sluttDato)) {
+                return 1;
+            }
+
+            return 0;
+        });
     }
 }

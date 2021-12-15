@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
@@ -28,15 +29,10 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         final AktorId aktoerId = dto.getAktorId();
         final VeilederId veilederId = dto.getVeilederId();
 
-        int antallRaderPavirket = oppfolgingRepository.settVeileder(aktoerId, veilederId);
+        oppfolgingRepository.settVeileder(aktoerId, veilederId);
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
 
-        if (antallRaderPavirket == 0 && veilederId.getValue() != null) {
-            Optional<Veilarbportefoljeinfo> oppfolgingsdata = oppfolgingService.hentOppfolgingsDataFraVeilarboppfolging(aktoerId);
-            if (oppfolgingsdata.isPresent() && oppfolgingsdata.get().isErUnderOppfolging()) {
-                throw new IllegalStateException("Fikk 'veiledere tilordnet melding' på bruker som enda ikke er under oppfølging i veilarbportefolje");
-            }
-        }
+        kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId);
 
         elasticServiceV2.oppdaterVeileder(aktoerId, veilederId);
         log.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
@@ -51,5 +47,19 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         if (harByttetNavKontor) {
             arbeidslisteService.slettArbeidsliste(aktoerId);
         }
+    }
+
+    private void kastErrorHvisBrukerSkalVaereUnderOppfolging(AktorId aktorId, VeilederId veilederId) {
+        if (hentVeileder(aktorId).equals(veilederId)) {
+            return;
+        }
+        Optional<Veilarbportefoljeinfo> oppfolgingsdata = oppfolgingService.hentOppfolgingsDataFraVeilarboppfolging(aktorId);
+        if (oppfolgingsdata.isPresent() && oppfolgingsdata.get().isErUnderOppfolging()) {
+            throw new IllegalStateException("Fikk 'veileder melding' på bruker som enda ikke er under oppfølging i veilarbportefolje");
+        }
+    }
+
+    private VeilederId hentVeileder(AktorId aktoerId) {
+        return VeilederId.of(oppfolgingRepository.hentOppfolgingData(aktoerId).map(BrukerOppdatertInformasjon::getVeileder).orElse(null));
     }
 }
