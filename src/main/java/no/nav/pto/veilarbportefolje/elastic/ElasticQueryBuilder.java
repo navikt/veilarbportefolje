@@ -1,12 +1,12 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -20,7 +20,6 @@ import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -33,13 +32,18 @@ import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
-import static org.elasticsearch.index.query.QueryBuilders.*;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.index.query.QueryBuilders.existsQuery;
+import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
+import static org.elasticsearch.index.query.QueryBuilders.rangeQuery;
+import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filters;
 import static org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregator.KeyedFilter;
 import static org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType.STRING;
 import static org.elasticsearch.search.sort.SortMode.MIN;
 
+@Slf4j
 public class ElasticQueryBuilder {
 
     static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg, UnleashService unleashService) {
@@ -117,24 +121,21 @@ public class ElasticQueryBuilder {
     }
 
     private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
-        BoolQueryBuilder subQuery = boolQuery();
-        List<String> relvanteKategorier;
-        if (sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
-            relvanteKategorier = (Arrays.stream(SisteEndringsKategori.values()).map(SisteEndringsKategori::name)).collect(toList());
+        if(sisteEndringKategori.size() == 1) {
+            queryBuilder.must(QueryBuilders.matchQuery("siste_endringer." + sisteEndringKategori.get(0) + ".er_sett", "N"));
         } else {
-            relvanteKategorier = sisteEndringKategori;
+            log.error("Det ble filtrert på flere ulike siste endringer: {}", sisteEndringKategori.size());
+            throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
         }
-
-        relvanteKategorier.forEach(kategori -> subQuery.should(
-                QueryBuilders.matchQuery("siste_endringer." + kategori + ".er_sett", "N")
-        ));
-        queryBuilder.must(subQuery);
     }
 
     private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
-        BoolQueryBuilder subQuery = boolQuery();
-        sisteEndringKategori.forEach(kategori -> subQuery.should(QueryBuilders.existsQuery("siste_endringer." + kategori)));
-        queryBuilder.must(subQuery);
+        if(sisteEndringKategori.size() == 1) {
+            queryBuilder.must(QueryBuilders.existsQuery("siste_endringer." + sisteEndringKategori.get(0)));
+        } else {
+            log.error("Det ble filtrert på flere ulike siste endringer: {}", sisteEndringKategori.size());
+            throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
+        }
     }
 
     static List<BoolQueryBuilder> byggAktivitetFilterQuery(Filtervalg filtervalg, BoolQueryBuilder queryBuilder) {
@@ -166,42 +167,22 @@ public class ElasticQueryBuilder {
         }
 
         switch (sortField) {
-            case "valgteaktiviteter":
-                sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
-                break;
-            case "moterMedNAVIdag":
-                searchSourceBuilder.sort("aktivitet_mote_startdato", order);
-                break;
-            case "iavtaltaktivitet":
+            case "valgteaktiviteter" -> sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
+            case "moterMedNAVIdag" -> searchSourceBuilder.sort("aktivitet_mote_startdato", order);
+            case "iavtaltaktivitet" -> {
                 FieldSortBuilder builder = new FieldSortBuilder("aktivitet_utlopsdatoer")
                         .order(order)
                         .sortMode(MIN);
-
                 searchSourceBuilder.sort(builder);
-                break;
-            case "fodselsnummer":
-                searchSourceBuilder.sort("fnr.raw", order);
-                break;
-            case "utlopteaktiviteter":
-                searchSourceBuilder.sort("nyesteutlopteaktivitet", order);
-                break;
-            case "arbeidslistefrist":
-                searchSourceBuilder.sort("arbeidsliste_frist", order);
-                break;
-            case "aaprettighetsperiode":
-                sorterAapRettighetsPeriode(searchSourceBuilder, order);
-                break;
-            case "vedtakstatus":
-                searchSourceBuilder.sort("vedtak_status", order);
-                break;
-            case "arbeidslistekategori":
-                searchSourceBuilder.sort("arbeidsliste_kategori", order);
-                break;
-            case "siste_endring_tidspunkt":
-                sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
-                break;
-            default:
-                defaultSort(sortField, searchSourceBuilder, order);
+            }
+            case "fodselsnummer" -> searchSourceBuilder.sort("fnr.raw", order);
+            case "utlopteaktiviteter" -> searchSourceBuilder.sort("nyesteutlopteaktivitet", order);
+            case "arbeidslistefrist" -> searchSourceBuilder.sort("arbeidsliste_frist", order);
+            case "aaprettighetsperiode" -> sorterAapRettighetsPeriode(searchSourceBuilder, order);
+            case "vedtakstatus" -> searchSourceBuilder.sort("vedtak_status", order);
+            case "arbeidslistekategori" -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
+            case "siste_endring_tidspunkt" -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
+            default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
         return searchSourceBuilder;
@@ -562,7 +543,6 @@ public class ElasticQueryBuilder {
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
                         .must(byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet))
-                        .should(boolQuery().mustNot(existsQuery("veileder_id")))
         );
     }
 

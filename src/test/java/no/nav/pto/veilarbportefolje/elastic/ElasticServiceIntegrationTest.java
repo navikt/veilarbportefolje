@@ -190,7 +190,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                         .setAktoer_id(randomAktorId().toString())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET)
-                        .setVeileder_id(null)
+                        .setVeileder_id(LITE_PRIVILEGERT_VEILEDER)
         );
 
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));

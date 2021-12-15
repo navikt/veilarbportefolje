@@ -40,11 +40,11 @@ import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_EGEN;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_IJOBB;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.MAL;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_EGEN;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_IJOBB;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
@@ -72,12 +72,12 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
     @BeforeEach
-    public void resetMock(){
+    public void resetMock() {
         Mockito.when(oppfolgingRepositoryMock.erUnderoppfolging(any())).thenReturn(true);
     }
 
     @Test
-    public void siste_endring_mal() {
+    public void  sisteendring_populering_mal() {
         final AktorId aktoerId = randomAktorId();
         elasticTestClient.createUserInElastic(aktoerId);
         String endretTid = "2020-05-28T07:47:42.480Z";
@@ -95,7 +95,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void siste_endring_aktivteter() {
+    public void sisteendring_populering_aktiviteter() {
         final AktorId aktoerId = randomAktorId();
         elasticTestClient.createUserInElastic(aktoerId);
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse("2020-05-28T07:47:42.480Z");
@@ -131,10 +131,10 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void siste_endring_filter_test() {
+    public void sisteendring_filtrering() {
         final AktorId aktoerId = randomAktorId();
         ZonedDateTime zonedDateTime = ZonedDateTime.parse("2019-05-28T09:47:42.48+02:00");
-        ZonedDateTime zonedDateTime_NY_IJOBB = ZonedDateTime.parse( "2020-05-28T09:47:42.48+02:00");
+        ZonedDateTime zonedDateTime_NY_IJOBB = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00");
 
         populateElastic(testEnhet, veilederId, aktoerId.toString());
 
@@ -185,26 +185,11 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         assertThat(responseBrukere.getAntall()).isEqualTo(1);
         assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt()).isEqualTo(zonedDateTime.toLocalDateTime());
-
-        var responseBrukere_2 = elasticService.hentBrukere(
-                testEnhet.get(),
-                empty(),
-                "asc",
-                "ikke_satt",
-                getFiltervalg(NY_IJOBB, FULLFORT_IJOBB),
-                null,
-                null);
-        assertThat(responseBrukere_2.getAntall()).isEqualTo(1);
-        var respons_tidspunkt = responseBrukere_2.getBrukere().get(0).getSisteEndringTidspunkt();
-
-        assertThat(respons_tidspunkt).isNotNull();
-        assertThat(respons_tidspunkt).isEqualTo(zonedDateTime_NY_IJOBB.toLocalDateTime());
-
     }
 
 
     @Test
-    public void siste_endring_ulest_skal_ikke_krasje_med_null_verdier() {
+    public void sisteendring_ulestfilter_skalIkkeKrasjeVedNull() {
         final AktorId aktoerId = randomAktorId();
         populateElastic(testEnhet, veilederId, aktoerId.toString());
         pollElasticUntil(() -> {
@@ -233,7 +218,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void siste_endring_ulest_filter_test() {
+    public void sisteendring_ulestfilter() {
         final AktorId aktoerId = randomAktorId();
         ZonedDateTime endretTid_FULLFORT_IJOBB = ZonedDateTime.parse("2019-05-28T09:47:42.48+02:00");
         ZonedDateTime endretTid_NY_IJOBB = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00");
@@ -313,7 +298,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void siste_endring_sortering_test() {
+    public void sisteendring_sortering() {
         final AktorId aktoerId_1 = randomAktorId();
         final AktorId aktoerId_2 = randomAktorId();
         final AktorId aktoerId_3 = randomAktorId();
@@ -412,20 +397,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_2_i_2020.getYear());
         assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(2).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_1_i_2021.getYear());
 
-        var responseSortertFULLFORT_MIX = elasticService.hentBrukere(
-                testEnhet.get(),
-                empty(),
-                "descending",
-                "siste_endring_tidspunkt",
-                getFiltervalg(FULLFORT_IJOBB, FULLFORT_EGEN),
-                null,
-                null);
-
-        assertThat(responseSortertFULLFORT_MIX.getAntall()).isEqualTo(3);
-        assertThat(responseSortertFULLFORT_MIX.getBrukere().get(0).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_IJOBB_bruker_2_i_2025.getYear());
-        assertThat(responseSortertFULLFORT_MIX.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_IJOBB_bruker_1_i_2024.getYear());
-        assertThat(responseSortertFULLFORT_MIX.getBrukere().get(2).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_3_i_2019.getYear());
-
         var responseSortertTomRes1 = elasticService.hentBrukere(
                 testEnhet.get(),
                 empty(),
@@ -435,16 +406,20 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 null,
                 null);
         assertThat(responseSortertTomRes1.getAntall()).isEqualTo(0);
+    }
 
-        var responseSortertTomRes2 = elasticService.hentBrukere(
-                testEnhet.get(),
-                empty(),
-                "descending",
-                "siste_endring_tidspunkt",
-                getFiltervalg(NY_IJOBB, NY_EGEN),
-                null,
-                null);
-        assertThat(responseSortertTomRes2.getAntall()).isEqualTo(0);
+    @Test
+    public void sisteendring_filterPaFlereEndringerSkalKasteError() {
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> elasticService.hentBrukere(
+                        testEnhet.get(),
+                        empty(),
+                        "descending",
+                        "siste_endring_tidspunkt",
+                        getFiltervalg(FULLFORT_IJOBB, FULLFORT_EGEN),
+                        null,
+                        null));
+        assertThat(exception).isNotNull();
     }
 
     private void send_aktvitet_melding(AktorId aktoerId, ZonedDateTime endretDato, KafkaAktivitetMelding.EndringsType endringsType,
@@ -458,7 +433,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
 
     private void send_sett_aktivitetsplan(AktorId aktoerId, ZonedDateTime settDato) {
-        SistLestKafkaMelding melding =  new SistLestKafkaMelding().setAktorId(aktoerId).setHarLestTidspunkt(settDato).setVeilederId(veilederId);
+        SistLestKafkaMelding melding = new SistLestKafkaMelding().setAktorId(aktoerId).setHarLestTidspunkt(settDato).setVeilederId(veilederId);
         sistLestService.behandleKafkaMeldingLogikk(melding);
     }
 

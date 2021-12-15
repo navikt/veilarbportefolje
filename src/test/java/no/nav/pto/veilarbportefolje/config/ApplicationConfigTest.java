@@ -127,7 +127,7 @@ import static org.mockito.Mockito.when;
 public class ApplicationConfigTest {
 
     private static final ElasticsearchContainer ELASTICSEARCH_CONTAINER;
-    private static final String ELASTICSEARCH_VERSION = "7.9.1";
+    private static final String ELASTICSEARCH_VERSION = "7.16.1";
 
     static {
         ELASTICSEARCH_CONTAINER = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:" + ELASTICSEARCH_VERSION);
