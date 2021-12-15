@@ -177,6 +177,20 @@ public class OppfolgingService {
         }
     }
 
+    public Optional<Veilarbportefoljeinfo> hentOppfolgingsDataFraVeilarboppfolging(AktorId aktoer) {
+        try {
+            return Optional.ofNullable(hentVeilarbData(aktoer));
+        } catch (RuntimeException e) {
+            log.error("RuntimeException under henting av oppfølgingdata for bruker {}", aktoer);
+            log.error("RuntimeException under henting av oppfølgingdata ", e);
+        } catch (Exception e) {
+            log.error("Exception under henting av oppfølgingdata for bruker {}", aktoer);
+            log.error("Exception under henting av oppfølgingdata OppfolgingsJobb", e);
+        }
+        return Optional.empty();
+    }
+
+
     private Veilarbportefoljeinfo hentVeilarbData(AktorId aktoer) throws RuntimeException, IOException {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarboppfolgingUrl, "/api/admin/hentVeilarbinfo/bruker?aktorId=" + aktoer))
