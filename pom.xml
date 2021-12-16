@@ -17,7 +17,7 @@
     <properties>
         <java.version>17</java.version>
         <common.version>2.2021.09.17_07.09-67428a6422cc</common.version>
-        <common1.version>2.2021.12.09_11.56-a71c36a61ba3</common1.version>
+        <common1.version>2.2021.12.09_11.47-999457edc68f</common1.version>
         <elastic.version>7.16.1</elastic.version>
         <confluent.version>5.5.1</confluent.version>
         <avro.version>1.10.2</avro.version>
