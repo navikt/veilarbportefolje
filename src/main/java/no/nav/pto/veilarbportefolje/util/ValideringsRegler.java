@@ -36,7 +36,6 @@ public class ValideringsRegler {
             "aapmaxtiduke",
             "aapunntakukerigjen",
             "arbeidslistefrist",
-            "arbeidsliste_overskrift",
             "venterpasvarfranav",
             "venterpasvarfrabruker",
             "utlopteaktiviteter",
