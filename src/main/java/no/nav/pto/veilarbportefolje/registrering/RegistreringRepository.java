@@ -43,9 +43,9 @@ public class RegistreringRepository {
                 .set("BRUKERS_SITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
                 .set("KAFKA_MELDING_MOTTATT", new Timestamp(System.currentTimeMillis()))
                 .set("REGISTRERING_OPPRETTET", timestamp)
-                .set("UTDANNING", kafkaRegistreringMelding.getUtdanning().toString())
-                .set("UTDANNING_BESTATT", kafkaRegistreringMelding.getUtdanningBestatt().toString())
-                .set("UTDANNING_GODKJENT", kafkaRegistreringMelding.getUtdanningGodkjent().toString())
+                .set("UTDANNING", Optional.ofNullable(kafkaRegistreringMelding.getUtdanning()).map(UtdanningSvar::toString).orElse(null))
+                .set("UTDANNING_BESTATT", Optional.ofNullable(kafkaRegistreringMelding.getUtdanningBestatt()).map(UtdanningBestattSvar::toString).orElse(null))
+                .set("UTDANNING_GODKJENT", Optional.ofNullable(kafkaRegistreringMelding.getUtdanningGodkjent()).map(UtdanningGodkjentSvar::toString).orElse(null))
                 .where(WhereClause.equals(AKTOERID, kafkaRegistreringMelding.getAktorid()))
                 .execute();
     }
