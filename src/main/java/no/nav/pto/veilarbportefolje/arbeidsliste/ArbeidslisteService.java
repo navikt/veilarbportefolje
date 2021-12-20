@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -49,6 +50,13 @@ public class ArbeidslisteService {
             return arbeidslisteRepositoryPostgres.retrieveArbeidsliste(aktoerId);
         }
         return arbeidslisteRepositoryOracle.retrieveArbeidsliste(aktoerId);
+    }
+
+    public List<Arbeidsliste> getArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident, String innloggetVeileder) {
+        if (erPostgresPa(unleashService, innloggetVeileder)) {
+            //TODO return
+        }
+        return arbeidslisteRepositoryOracle.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);
     }
 
     public Try<ArbeidslisteDTO> createArbeidsliste(ArbeidslisteDTO dto) {

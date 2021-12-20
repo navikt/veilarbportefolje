@@ -4,6 +4,7 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -16,19 +17,12 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.ENDRINGSTIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.FNR;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.FRIST;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.KATEGORI;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.KOMMENTAR;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.OVERSKRIFT;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.SIST_ENDRET_AV_VEILEDERIDENT;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.sbl.sql.SqlUtils.select;
 import static no.nav.sbl.sql.SqlUtils.update;
@@ -70,6 +64,20 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
                         .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
                         .execute()
         );
+    }
+
+    public List<Arbeidsliste> hentArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
+        return db.queryForList(
+                "SELECT a.* FROM " + Table.ARBEIDSLISTE.TABLE_NAME + " a " +
+                "INNER JOIN " + Table.OPPFOLGING_DATA.TABLE_NAME + " o " +
+                        "ON a.AKTOERID = o.AKTOERID " +
+                        "WHERE " + "a." + NAV_KONTOR_FOR_ARBEIDSLISTE + " = ?" + " AND o." + Table.OPPFOLGING_DATA.VEILEDERIDENT + " = ?",
+                enhet.get(),
+                veilederident.getValue()
+        )
+                .stream()
+                .map(ArbeidslisteRepositoryV1::arbeidslisteMapper)
+                .collect(Collectors.toList());
     }
 
     public List<AktorId> hentAlleBrukereMedArbeidsliste() {
@@ -136,6 +144,18 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
                 rs.getString("KOMMENTAR"),
                 toZonedDateTime(rs.getTimestamp("FRIST")),
                 Arbeidsliste.Kategori.valueOf(rs.getString("KATEGORI"))
+        );
+    }
+
+    @SneakyThrows
+    private static Arbeidsliste arbeidslisteMapper(Map<String, Object> rs) {
+        return new Arbeidsliste(
+                VeilederId.of((String) rs.get("SIST_ENDRET_AV_VEILEDERIDENT")),
+                toZonedDateTime((Timestamp) rs.get("ENDRINGSTIDSPUNKT")),
+                (String) rs.get("OVERSKRIFT"),
+                (String) rs.get("KOMMENTAR"),
+                toZonedDateTime((Timestamp) rs.get("FRIST")),
+                Arbeidsliste.Kategori.valueOf((String) rs.get("KATEGORI"))
         );
     }
 
