@@ -54,10 +54,8 @@ public class ElasticCountService {
 
     private static String createAbsoluteUrl(ElasticClientConfig config, String indexName) {
         return String.format(
-                "%s://%s:%s/%s/",
-                "https",
+                "%s/%s/",
                 config.getHostname(),
-                config.getPort(),
                 indexName
         );
     }
