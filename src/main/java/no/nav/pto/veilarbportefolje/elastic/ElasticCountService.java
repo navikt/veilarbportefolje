@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -14,22 +15,22 @@ import org.springframework.stereotype.Service;
 
 import java.util.Base64;
 
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_PASSWORD;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_USERNAME;
-
 @Slf4j
 @Service
 public class ElasticCountService {
 
     private final ElasticClientConfig elasticsearchElasticClientConfig;
     private final String indexName;
+    private final EnvironmentProperties environmentProperties;
 
     @Autowired
     public ElasticCountService(
             ElasticClientConfig elasticsearchElasticClientConfig,
+            EnvironmentProperties environmentProperties,
             IndexName elasticIndex
     ) {
         this.elasticsearchElasticClientConfig = elasticsearchElasticClientConfig;
+        this.environmentProperties = environmentProperties;
         this.indexName = elasticIndex.getValue();
     }
 
@@ -40,7 +41,7 @@ public class ElasticCountService {
 
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("Authorization", getAuthHeaderValue())
+                .addHeader("Authorization", getAuthHeaderValue(environmentProperties))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -61,8 +62,8 @@ public class ElasticCountService {
         );
     }
 
-    private static String getAuthHeaderValue() {
-        String auth = VEILARBELASTIC_USERNAME + ":" + VEILARBELASTIC_PASSWORD;
+    private static String getAuthHeaderValue(EnvironmentProperties environmentProperties) {
+        String auth = environmentProperties.getElasticUsername() + ":" + environmentProperties.getElasticPassword();
         return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes());
     }
 

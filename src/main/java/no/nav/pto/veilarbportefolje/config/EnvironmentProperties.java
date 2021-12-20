@@ -29,4 +29,7 @@ public class EnvironmentProperties {
     private String unleashUrl;
     private String abacVeilarbUrl;
     private String abacModiaUrl;
+    private String elasticUri;
+    private String elasticUsername;
+    private String elasticPassword;
 }
