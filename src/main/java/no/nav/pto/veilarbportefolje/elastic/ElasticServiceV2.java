@@ -10,23 +10,35 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.xcontent.XContentBuilder;
+import org.elasticsearch.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.xcontent.XContentFactory.jsonBuilder;
 
@@ -249,4 +261,40 @@ public class ElasticServiceV2 {
         return restHighLevelClient.get(getRequest, DEFAULT);
     }
 
+    @SneakyThrows
+    public void opprettNyIndeks(String indeksNavn) {
+        Path elasticSettingsPath = Paths.get("..", "src", "main", "resources", "elastic_settings.json");
+        String json = Files.readString(elasticSettingsPath).trim();
+
+        CreateIndexRequest request = new CreateIndexRequest(indeksNavn)
+                .source(json, XContentType.JSON);
+
+        CreateIndexResponse response = restHighLevelClient.indices().create(request, DEFAULT);
+
+        if (!response.isAcknowledged()) {
+            log.error("Kunne ikke opprette ny indeks {}", indeksNavn);
+            throw new RuntimeException();
+        }
+    }
+
+    private static String createIndexName() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
+        String timestamp = LocalDateTime.now().format(formatter);
+        return String.format("%s_%s", BRUKERINDEKS_ALIAS, timestamp);
+    }
+
+    @SneakyThrows
+    public void opprettAliasForIndeks(String indeks) {
+        IndicesAliasesRequest.AliasActions addAliasAction = new IndicesAliasesRequest.AliasActions(ADD)
+                .index(indeks)
+                .alias(BRUKERINDEKS_ALIAS);
+
+        IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
+        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, DEFAULT);
+
+        if (!response.isAcknowledged()) {
+            log.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
+            throw new RuntimeException();
+        }
+    }
 }

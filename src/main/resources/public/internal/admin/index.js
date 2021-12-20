@@ -235,6 +235,36 @@ function handleMigrerProfilering(e) {
     }
 }
 
+const createIndexForm = document.getElementById('createIndexForm');
+createIndexForm.addEventListener('submit', handleCreateIndexForm)
+const nyIndexName = document.getElementById('ny_indexName');
+
+function handleCreateIndexForm(e) {
+    e.preventDefault();
+    if (window.confirm('Oprett ny elasticsearch indeks, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/elasticsearch/createIndex`,
+            {method: 'POST', credentials: 'same-origin', body: nyIndexName},
+            'createIndexFormResponse'
+        );
+    }
+}
+
+const assignAliasToIndexForm = document.getElementById('assignAliasToIndexForm');
+assignAliasToIndexForm.addEventListener('submit', handleAssignAliasToIndexForm)
+const indexName = document.getElementById('indexName');
+
+function handleAssignAliasToIndexForm(e) {
+    e.preventDefault();
+    if (window.confirm('Opprett alias for indeks, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/elasticsearch/assignAliasToIndex`,
+            {method: 'POST', credentials: 'same-origin', body: indexName},
+            'assignAliasToIndexFormResponse'
+        );
+    }
+}
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);

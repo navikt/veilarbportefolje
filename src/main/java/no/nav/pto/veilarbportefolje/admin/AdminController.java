@@ -20,12 +20,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -148,6 +143,20 @@ public class AdminController {
         authorizeAdmin();
         registreringService.migrerTilPostgres();
         return "Registrering er nå migrert";
+    }
+
+    @PostMapping("/elasticsearch/createIndex")
+    public String createIndex(@RequestBody String indexName) {
+        authorizeAdmin();
+        elasticServiceV2.opprettNyIndeks(indexName);
+        return "Ok";
+    }
+
+    @PostMapping("/elasticsearch/assignAliasToIndex")
+    public String assignAliasToIndex(@RequestBody String indexName) {
+        authorizeAdmin();
+        elasticServiceV2.opprettAliasForIndeks(indexName);
+        return "Ok";
     }
 
     private void authorizeAdmin() {
