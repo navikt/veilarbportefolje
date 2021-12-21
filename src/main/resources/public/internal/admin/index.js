@@ -264,6 +264,21 @@ function handleAssignAliasToIndexForm(e) {
     }
 }
 
+const deleteIndexForm = document.getElementById('deleteIndexForm');
+deleteIndexForm.addEventListener('submit', handleDeleteIndexForm)
+const deleteIndexName = document.getElementById('deleteIndexName');
+
+function handleDeleteIndexForm(e) {
+    e.preventDefault();
+    if (window.confirm('Sletter alias for indeks, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/elasticsearch/deleteIndex`,
+            {method: 'POST', credentials: 'same-origin', body: deleteIndexName},
+            'deleteIndexRespons'
+        );
+    }
+}
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);

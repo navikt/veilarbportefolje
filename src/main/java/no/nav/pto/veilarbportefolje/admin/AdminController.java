@@ -149,8 +149,16 @@ public class AdminController {
     public String createIndex() {
         authorizeAdmin();
         String indexName = elasticServiceV2.opprettNyIndeks();
-        elasticServiceV2.opprettAliasForIndeks(indexName);
+        log.info("Opprettet index: {}", indexName);
         return indexName;
+    }
+
+    @PostMapping("/elasticsearch/deleteIndex")
+    public String deleteIndex(@RequestBody String indexName) {
+        authorizeAdmin();
+        elasticServiceV2.slettIndex(indexName);
+        log.info("Slettet index: {}", indexName);
+        return "OK";
     }
 
     @PostMapping("/elasticsearch/assignAliasToIndex")

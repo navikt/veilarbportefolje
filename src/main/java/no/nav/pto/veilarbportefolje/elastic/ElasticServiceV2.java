@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -283,6 +284,12 @@ public class ElasticServiceV2 {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
         String timestamp = LocalDateTime.now().format(formatter);
         return String.format("%s_%s", BRUKERINDEKS_ALIAS, timestamp);
+    }
+    
+    @SneakyThrows
+    public AcknowledgedResponse slettIndex(String indexName) {
+        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName);
+        return restHighLevelClient.indices().delete(deleteIndexRequest, DEFAULT);
     }
 
     @SneakyThrows
