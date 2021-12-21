@@ -4,6 +4,8 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.metrics.Event;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
@@ -18,19 +20,21 @@ import java.util.Base64;
 @Slf4j
 @Service
 public class ElasticCountService {
-
     private final ElasticClientConfig elasticsearchElasticClientConfig;
     private final String indexName;
+    private final MetricsClient metricsClient;
     private final EnvironmentProperties environmentProperties;
 
     @Autowired
     public ElasticCountService(
             ElasticClientConfig elasticsearchElasticClientConfig,
             EnvironmentProperties environmentProperties,
-            IndexName elasticIndex
+            IndexName elasticIndex,
+            MetricsClient metricsClient
     ) {
         this.elasticsearchElasticClientConfig = elasticsearchElasticClientConfig;
         this.environmentProperties = environmentProperties;
+        this.metricsClient = metricsClient;
         this.indexName = elasticIndex.getValue();
     }
 
@@ -46,12 +50,21 @@ public class ElasticCountService {
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            return RestUtils.parseJsonResponse(response, CountResponse.class)
+            long count = RestUtils.parseJsonResponse(response, CountResponse.class)
                     .map(CountResponse::getCount)
                     .orElse(0L);
+
+            reportDocCountToInfluxdb(count);
+            return count;
         }
     }
 
+    private void reportDocCountToInfluxdb(long count) {
+        Event event = new Event("portefolje.antall.brukere");
+        event.addFieldToReport("antall_brukere", count);
+
+        metricsClient.report(event);
+    }
 
     private static String createAbsoluteUrl(ElasticClientConfig config, String indexName) {
         return String.format(
