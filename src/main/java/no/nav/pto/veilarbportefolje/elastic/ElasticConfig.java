@@ -31,7 +31,7 @@ public class ElasticConfig {
                 .password(environmentProperties.getElasticPassword())
                 .hostname(elasticUrl.getHost())
                 .port(elasticUrl.getPort())
-                .scheme("https")
+                .scheme(elasticUrl.getProtocol())
                 .build();
     }
 
