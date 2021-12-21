@@ -14,7 +14,7 @@ import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createClient;
 @Import({DatabaseConfig.class})
 public class ElasticConfig {
     public static final String BRUKERINDEKS_ALIAS = "brukerindeks";
-    public static final int ELASTICSEARCH_PORT = 9200;
+    public static final int ELASTICSEARCH_PORT = 26482;
 
     @Bean
     public IndexName elasticIndex() {
