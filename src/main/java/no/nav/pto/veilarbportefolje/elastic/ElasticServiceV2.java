@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -261,9 +262,10 @@ public class ElasticServiceV2 {
     }
 
     @SneakyThrows
-    public void opprettNyIndeks(String indeksNavn) {
+    public String opprettNyIndeks() {
+        String indeksNavn = createIndexName();
         InputStream resourceAsStream = getClass().getResourceAsStream("/elastic_settings.json");
-        String json = IOUtils.toString(resourceAsStream, "UTF-8");
+        String json = IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
 
         CreateIndexRequest request = new CreateIndexRequest(indeksNavn)
                 .source(json, XContentType.JSON);
@@ -274,6 +276,7 @@ public class ElasticServiceV2 {
             log.error("Kunne ikke opprette ny indeks {}", indeksNavn);
             throw new RuntimeException();
         }
+        return indeksNavn;
     }
 
     private static String createIndexName() {

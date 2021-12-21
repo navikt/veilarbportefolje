@@ -237,14 +237,13 @@ function handleMigrerProfilering(e) {
 
 const createIndexForm = document.getElementById('createIndexForm');
 createIndexForm.addEventListener('submit', handleCreateIndexForm)
-const nyIndexName = document.getElementById('ny_indexName');
 
 function handleCreateIndexForm(e) {
     e.preventDefault();
     if (window.confirm('Oprett ny elasticsearch indeks, er du sikker?')) {
         fetchData(
             `/veilarbportefolje/api/admin/elasticsearch/createIndex`,
-            {method: 'POST', credentials: 'same-origin', body: nyIndexName},
+            {method: 'POST', credentials: 'same-origin'},
             'createIndexFormResponse'
         );
     }

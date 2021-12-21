@@ -146,10 +146,11 @@ public class AdminController {
     }
 
     @PostMapping("/elasticsearch/createIndex")
-    public String createIndex(@RequestBody String indexName) {
+    public String createIndex() {
         authorizeAdmin();
-        elasticServiceV2.opprettNyIndeks(indexName);
-        return "Ok";
+        String indexName = elasticServiceV2.opprettNyIndeks();
+        elasticServiceV2.opprettAliasForIndeks(indexName);
+        return indexName;
     }
 
     @PostMapping("/elasticsearch/assignAliasToIndex")
