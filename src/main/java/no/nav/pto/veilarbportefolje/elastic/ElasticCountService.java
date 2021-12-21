@@ -52,10 +52,13 @@ public class ElasticCountService {
         }
     }
 
+
     private static String createAbsoluteUrl(ElasticClientConfig config, String indexName) {
         return String.format(
-                "%s/%s/",
+                "%s://%s:%s/%s/",
+                config.getScheme(),
                 config.getHostname(),
+                config.getPort(),
                 indexName
         );
     }
