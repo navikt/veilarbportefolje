@@ -26,7 +26,8 @@ public class ElasticConfig {
         return ElasticClientConfig.builder()
                 .username(environmentProperties.getElasticUsername())
                 .password(environmentProperties.getElasticPassword())
-                .hostname(environmentProperties.getElasticUri())
+                //.hostname(environmentProperties.getElasticUri())
+                .hostname("elastic-pto-veilarbportefolje-es-nav-dev.aivencloud.com")
                 .port(ELASTICSEARCH_PORT)
                 .scheme("https")
                 .build();
