@@ -251,7 +251,7 @@ function handleCreateIndexForm(e) {
 
 const assignAliasToIndexForm = document.getElementById('assignAliasToIndexForm');
 assignAliasToIndexForm.addEventListener('submit', handleAssignAliasToIndexForm)
-const indexName = document.getElementById('indexName');
+const indexName = document.getElementById('indexName').value;
 
 function handleAssignAliasToIndexForm(e) {
     e.preventDefault();
