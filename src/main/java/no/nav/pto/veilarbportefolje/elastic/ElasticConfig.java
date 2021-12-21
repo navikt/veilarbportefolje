@@ -8,13 +8,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createClient;
 
 @Configuration
 @Import({DatabaseConfig.class})
 public class ElasticConfig {
     public static final String BRUKERINDEKS_ALIAS = "brukerindeks";
-    public static final int ELASTICSEARCH_PORT = 26482;
 
     @Bean
     public IndexName elasticIndex() {
@@ -22,13 +24,13 @@ public class ElasticConfig {
     }
 
     @Bean
-    public ElasticClientConfig elasticsearchClientConfig(EnvironmentProperties environmentProperties) {
+    public ElasticClientConfig elasticsearchClientConfig(EnvironmentProperties environmentProperties) throws MalformedURLException {
+        URL elasticUrl = new URL(environmentProperties.getElasticUri());
         return ElasticClientConfig.builder()
                 .username(environmentProperties.getElasticUsername())
                 .password(environmentProperties.getElasticPassword())
-                //.hostname(environmentProperties.getElasticUri())
-                .hostname("elastic-pto-veilarbportefolje-es-nav-dev.aivencloud.com")
-                .port(ELASTICSEARCH_PORT)
+                .hostname(elasticUrl.getHost())
+                .port(elasticUrl.getPort())
                 .scheme("https")
                 .build();
     }
