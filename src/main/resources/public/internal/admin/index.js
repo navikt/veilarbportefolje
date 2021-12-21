@@ -266,7 +266,7 @@ function handleAssignAliasToIndexForm(e) {
 
 const deleteIndexForm = document.getElementById('deleteIndexForm');
 deleteIndexForm.addEventListener('submit', handleDeleteIndexForm)
-const deleteIndexName = document.getElementById('deleteIndexName');
+const deleteIndexName = document.getElementById('deleteIndexName').value;
 
 function handleDeleteIndexForm(e) {
     e.preventDefault();
