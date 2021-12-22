@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +34,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Repository
 @RequiredArgsConstructor
 public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
-    @NonNull
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
