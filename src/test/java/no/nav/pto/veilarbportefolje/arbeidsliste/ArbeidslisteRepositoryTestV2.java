@@ -129,30 +129,6 @@ public class ArbeidslisteRepositoryTestV2 {
     }
 
     @Test
-    public void hentArbeidslisteForVeilederPaEnhet_hentListe() {
-        ArbeidslisteDTO nyArbeidsliste = new ArbeidslisteDTO(randomFnr())
-                .setAktorId(randomAktorId())
-                .setVeilederId(data.getVeilederId())
-                .setFrist(data.getFrist())
-                .setNavKontorForArbeidsliste(data.getNavKontorForArbeidsliste())
-                .setOverskrift(data.getOverskrift())
-                .setKategori(data.getKategori())
-                .setKommentar("Arbeidsliste 1 kopi kommentar");
-
-        insertArbeidslister();
-        insertOppfolgingsInformasjon();
-        insertOppfolgingsInformasjon(nyArbeidsliste.getAktorId(), nyArbeidsliste.getVeilederId());
-        repo.insertArbeidsliste(nyArbeidsliste);
-
-        List<Arbeidsliste> arbeidslisterPaEnhet = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(data.getNavKontorForArbeidsliste()), data.getVeilederId());
-
-        assertThat(arbeidslisterPaEnhet.size()).isEqualTo(2);
-        assertThat(arbeidslisterPaEnhet.stream().anyMatch(x -> x.getKommentar().equals(data.getKommentar()))).isTrue();
-        assertThat(arbeidslisterPaEnhet.stream().anyMatch(x -> x.getKommentar().equals(nyArbeidsliste.getKommentar()))).isTrue();
-    }
-
-
-    @Test
     public void hentArbeidslisteForVeilederPaEnhet_filtrerPaEnhet() {
         ArbeidslisteDTO arbeidslistePaNyEnhet = new ArbeidslisteDTO(randomFnr())
                 .setAktorId(randomAktorId())
