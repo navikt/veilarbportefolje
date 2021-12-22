@@ -19,10 +19,18 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.*;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.ENDRINGSTIDSPUNKT;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.FNR;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.FRIST;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.KATEGORI;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.KOMMENTAR;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.OVERSKRIFT;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.SIST_ENDRET_AV_VEILEDERIDENT;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.sbl.sql.SqlUtils.select;
 import static no.nav.sbl.sql.SqlUtils.update;
@@ -68,16 +76,17 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
 
     public List<Arbeidsliste> hentArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
         return db.queryForList(
-                "SELECT a.* FROM " + Table.ARBEIDSLISTE.TABLE_NAME + " a " +
-                "INNER JOIN " + Table.OPPFOLGING_DATA.TABLE_NAME + " o " +
-                        "ON a.AKTOERID = o.AKTOERID " +
-                        "WHERE " + "a." + NAV_KONTOR_FOR_ARBEIDSLISTE + " = ?" + " AND o." + Table.OPPFOLGING_DATA.VEILEDERIDENT + " = ?",
-                enhet.get(),
-                veilederident.getValue()
-        )
+                        "SELECT a.* FROM " + Table.ARBEIDSLISTE.TABLE_NAME + " a " +
+                            "INNER JOIN " + Table.OPPFOLGING_DATA.TABLE_NAME + " o " +
+                            "ON a.AKTOERID = o.AKTOERID " +
+                            "WHERE " + "a." + NAV_KONTOR_FOR_ARBEIDSLISTE + " = ? " +
+                            "AND o." + Table.OPPFOLGING_DATA.VEILEDERIDENT + " = ?",
+                        enhet.get(),
+                        veilederident.getValue()
+                )
                 .stream()
                 .map(ArbeidslisteRepositoryV1::arbeidslisteMapper)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<AktorId> hentAlleBrukereMedArbeidsliste() {

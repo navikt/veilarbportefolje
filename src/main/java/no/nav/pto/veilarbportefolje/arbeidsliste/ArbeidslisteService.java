@@ -54,7 +54,7 @@ public class ArbeidslisteService {
 
     public List<Arbeidsliste> getArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident, String innloggetVeileder) {
         if (erPostgresPa(unleashService, innloggetVeileder)) {
-            //TODO return
+            return arbeidslisteRepositoryPostgres.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);
         }
         return arbeidslisteRepositoryOracle.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);
     }
