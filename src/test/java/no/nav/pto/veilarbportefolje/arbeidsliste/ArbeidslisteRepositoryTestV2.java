@@ -21,6 +21,7 @@ import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -144,10 +145,7 @@ public class ArbeidslisteRepositoryTestV2 {
         repo.insertArbeidsliste(nyArbeidsliste);
 
         List<Arbeidsliste> arbeidslisterPaEnhet = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(data.getNavKontorForArbeidsliste()), data.getVeilederId());
-        var a = repo.retrieveArbeidsliste(nyArbeidsliste.getAktorId());
-        var b =repo.retrieveArbeidsliste(data.getAktorId());
-        System.out.println(a.get());
-        System.out.println(b.get());
+
         assertThat(arbeidslisterPaEnhet.size()).isEqualTo(2);
         assertThat(arbeidslisterPaEnhet.stream().anyMatch(x -> x.getKommentar().equals(data.getKommentar()))).isTrue();
         assertThat(arbeidslisterPaEnhet.stream().anyMatch(x -> x.getKommentar().equals(nyArbeidsliste.getKommentar()))).isTrue();
@@ -192,6 +190,28 @@ public class ArbeidslisteRepositoryTestV2 {
         assertThat(arbeidslistes2.size()).isEqualTo(1);
         assertThat(arbeidslistes1.get(0).getKommentar()).isEqualTo(data.getKommentar());
         assertThat(arbeidslistes2.get(0).getKommentar()).isEqualTo(data2.getKommentar());
+    }
+
+    @Test
+    public void hentArbeidslisteForVeilederPaEnhet_arbeidslisteKanLagesAvAnnenVeileder() {
+        insertArbeidslister();
+        insertOppfolgingsInformasjon();
+        ArbeidslisteDTO arbeidslisteLagetAvAnnenVeileder = new ArbeidslisteDTO(randomFnr())
+                .setAktorId(randomAktorId())
+                .setVeilederId(randomVeilederId())
+                .setFrist(data.getFrist())
+                .setOverskrift(data.getOverskrift())
+                .setKategori(data.getKategori())
+                .setNavKontorForArbeidsliste(data.getNavKontorForArbeidsliste())
+                .setKommentar("Arbeidsliste 1 kopi kommentar");
+        repo.insertArbeidsliste(arbeidslisteLagetAvAnnenVeileder);
+        insertOppfolgingsInformasjon(arbeidslisteLagetAvAnnenVeileder.getAktorId(), data.getVeilederId());
+
+        List<Arbeidsliste> arbeidslister = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(data.getNavKontorForArbeidsliste()), data.getVeilederId());
+
+        assertThat(arbeidslister.size()).isEqualTo(2);
+        assertThat(arbeidslister.stream().anyMatch(x -> x.getKommentar().equals(data.getKommentar()))).isTrue();
+        assertThat(arbeidslister.stream().anyMatch(x -> x.getKommentar().equals(arbeidslisteLagetAvAnnenVeileder.getKommentar()))).isTrue();
     }
 
     @Test
