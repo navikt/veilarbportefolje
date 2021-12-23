@@ -154,11 +154,10 @@ public class AdminController {
     }
 
     @PostMapping("/elasticsearch/deleteIndex")
-    public String deleteIndex(@RequestBody String indexName) {
+    public boolean deleteIndex(@RequestBody String indexName) {
         authorizeAdmin();
-        elasticServiceV2.slettIndex(indexName);
-        log.info("Slettet index: {}", indexName);
-        return "OK";
+        log.info("Sletter index: {}", indexName);
+        return elasticServiceV2.slettIndex(indexName);
     }
 
     @PostMapping("/elasticsearch/assignAliasToIndex")

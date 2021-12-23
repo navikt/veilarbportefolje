@@ -7,27 +7,20 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import org.apache.http.util.EntityUtils;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.CreateIndexRequest;
-import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.xcontent.XContentType;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -70,12 +63,6 @@ public class ElasticTestClient {
         indexRequest.id(aktoerId.toString());
         indexRequest.source(json, XContentType.JSON);
         return restHighLevelClient.index(indexRequest, DEFAULT);
-    }
-
-    @SneakyThrows
-    public AcknowledgedResponse deleteIndex(IndexName indexName) {
-        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName.getValue());
-        return restHighLevelClient.indices().delete(deleteIndexRequest, DEFAULT);
     }
 
     @SneakyThrows
@@ -169,32 +156,5 @@ public class ElasticTestClient {
         updateRequest.doc(content);
 
         restHighLevelClient.update(updateRequest, DEFAULT);
-    }
-
-    @SneakyThrows
-    public static void opprettNyIndeks(String navn, RestHighLevelClient restHighLevelClient) {
-        Path elasticSettingsPath = Paths.get("src", "test", "resources", "elastic_settings.json");
-        String json = Files.readString(elasticSettingsPath).trim();
-
-        CreateIndexRequest request = new CreateIndexRequest(navn)
-                .source(json, XContentType.JSON);
-
-        CreateIndexResponse response = restHighLevelClient.indices().create(request, DEFAULT);
-
-        if (!response.isAcknowledged()) {
-            log.error("Kunne ikke opprette ny indeks {}", navn);
-            throw new RuntimeException();
-        }
-    }
-
-    @SneakyThrows
-    public static void slettGammelIndeks(String navn, RestHighLevelClient restHighLevelClient) {
-        DeleteIndexRequest request = new DeleteIndexRequest(navn);
-        AcknowledgedResponse response = restHighLevelClient.indices().delete(request, DEFAULT);
-
-        if (!response.isAcknowledged()) {
-            log.error("Kunne ikke slette gammel indeks {}", navn);
-            throw new RuntimeException();
-        }
     }
 }

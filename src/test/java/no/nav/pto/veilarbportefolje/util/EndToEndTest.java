@@ -4,10 +4,10 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,28 +31,28 @@ public abstract class EndToEndTest {
     protected ElasticIndexer elasticIndexer;
 
     @Autowired
+    protected ElasticServiceV2 elasticServiceV2;
+
+    @Autowired
     protected IndexName indexName;
 
     @Autowired
     protected UnleashService unleashService;
 
-    @Autowired
-    private RestHighLevelClient restHighLevelClient;
-
     @BeforeEach
     void setUp() {
         try {
             TimeZone.setDefault(TimeZone.getTimeZone(Optional.ofNullable(System.getenv("TZ")).orElse("Europe/Oslo")));
-            ElasticTestClient.opprettNyIndeks(indexName.getValue(), restHighLevelClient);
+            elasticServiceV2.opprettNyIndeks(indexName.getValue());
         } catch (Exception e) {
-            elasticTestClient.deleteIndex(indexName);
-            ElasticTestClient.opprettNyIndeks(indexName.getValue(), restHighLevelClient);
+            elasticServiceV2.slettIndex(indexName.getValue());
+            elasticServiceV2.opprettNyIndeks(indexName.getValue());
         }
     }
 
     @AfterEach
     void tearDown() {
-        elasticTestClient.deleteIndex(indexName);
+        elasticServiceV2.slettIndex(indexName.getValue());
     }
 
     public void populateElastic(EnhetId enhetId, VeilederId veilederId, String... aktoerIder) {

@@ -14,8 +14,6 @@ import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.get.GetRequest;
-import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -255,18 +253,16 @@ public class ElasticServiceV2 {
     }
 
     @SneakyThrows
-    private GetResponse fetchDocument(AktorId aktoerId) {
-        GetRequest getRequest = new GetRequest();
-        getRequest.index(indexName.getValue());
-        getRequest.id(aktoerId.toString());
-        return restHighLevelClient.get(getRequest, DEFAULT);
+    public String opprettNyIndeks() {
+        return opprettNyIndeks(createIndexName());
     }
 
     @SneakyThrows
-    public String opprettNyIndeks() {
-        String indeksNavn = createIndexName();
-        InputStream resourceAsStream = getClass().getResourceAsStream("/elastic_settings.json");
-        String json = IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
+    public String opprettNyIndeks(String indeksNavn) {
+        String json = Optional.ofNullable(getClass()
+                        .getResourceAsStream("/elastic_settings.json"))
+                        .map(this::readJsonFromFileStream)
+                        .orElseThrow();
 
         CreateIndexRequest request = new CreateIndexRequest(indeksNavn)
                 .source(json, XContentType.JSON);
@@ -285,11 +281,11 @@ public class ElasticServiceV2 {
         String timestamp = LocalDateTime.now().format(formatter);
         return String.format("%s_%s", BRUKERINDEKS_ALIAS, timestamp);
     }
-    
+
     @SneakyThrows
-    public AcknowledgedResponse slettIndex(String indexName) {
+    public boolean slettIndex(String indexName) {
         DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName);
-        return restHighLevelClient.indices().delete(deleteIndexRequest, DEFAULT);
+        return restHighLevelClient.indices().delete(deleteIndexRequest, DEFAULT).isAcknowledged();
     }
 
     @SneakyThrows
@@ -305,5 +301,10 @@ public class ElasticServiceV2 {
             log.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
             throw new RuntimeException();
         }
+    }
+
+    @SneakyThrows
+    private String readJsonFromFileStream(InputStream settings) {
+        return IOUtils.toString(settings, String.valueOf(StandardCharsets.UTF_8));
     }
 }
