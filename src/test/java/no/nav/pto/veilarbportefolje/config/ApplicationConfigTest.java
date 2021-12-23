@@ -14,8 +14,17 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
-import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.*;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesServicePostgres;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
@@ -32,9 +41,17 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
+import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
-import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
@@ -46,7 +63,11 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
-import no.nav.pto.veilarbportefolje.util.*;
+import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
+import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
+import no.nav.pto.veilarbportefolje.util.TestDataClient;
+import no.nav.pto.veilarbportefolje.util.TestUtil;
+import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -63,8 +84,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import javax.sql.DataSource;
 
 import static no.nav.common.utils.IdUtils.generateId;
-import static org.apache.http.HttpHost.create;
-import static org.elasticsearch.client.RestClient.builder;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createClient;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -128,9 +148,12 @@ public class ApplicationConfigTest {
 
     private static final ElasticsearchContainer ELASTICSEARCH_CONTAINER;
     private static final String ELASTICSEARCH_VERSION = "7.16.1";
+    private static final String ELASTICSEARCH_TEST_PASSWORD = "test";
+    private static final String ELASTICSEARCH_TEST_USERNAME = "elastic";
 
     static {
         ELASTICSEARCH_CONTAINER = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:" + ELASTICSEARCH_VERSION);
+        ELASTICSEARCH_CONTAINER.withPassword(ELASTICSEARCH_TEST_PASSWORD);
         ELASTICSEARCH_CONTAINER.start();
         System.setProperty("elastic.indexname", IdUtils.generateId());
         System.setProperty("elastic.httphostaddress", ELASTICSEARCH_CONTAINER.getHttpHostAddress());
@@ -213,8 +236,15 @@ public class ApplicationConfigTest {
 
     @Bean
     public RestHighLevelClient restHighLevelClient() {
-        final String httpHostAddress = System.getProperty("elastic.httphostaddress");
-        return new RestHighLevelClient(builder(create(httpHostAddress)));
+        ElasticClientConfig elasticTestConfig = ElasticClientConfig.builder()
+                .username(ELASTICSEARCH_TEST_USERNAME)
+                .password(ELASTICSEARCH_TEST_PASSWORD)
+                .hostname(ELASTICSEARCH_CONTAINER.getHost())
+                .port(ELASTICSEARCH_CONTAINER.getFirstMappedPort())
+                .scheme("http")
+                .build();
+
+        return createClient(elasticTestConfig);
     }
 
     @Bean
