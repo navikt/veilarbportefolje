@@ -121,21 +121,19 @@ public class ElasticQueryBuilder {
     }
 
     private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
-        if(sisteEndringKategori.size() == 1) {
-            queryBuilder.must(QueryBuilders.matchQuery("siste_endringer." + sisteEndringKategori.get(0) + ".er_sett", "N"));
-        } else {
+        if (sisteEndringKategori.size() != 1) {
             log.error("Det ble filtrert på flere ulike siste endringer: {}", sisteEndringKategori.size());
             throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
         }
+        queryBuilder.must(QueryBuilders.matchQuery("siste_endringer." + sisteEndringKategori.get(0) + ".er_sett", "N"));
     }
 
     private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
-        if(sisteEndringKategori.size() == 1) {
-            queryBuilder.must(QueryBuilders.existsQuery("siste_endringer." + sisteEndringKategori.get(0)));
-        } else {
+        if (sisteEndringKategori.size() != 1) {
             log.error("Det ble filtrert på flere ulike siste endringer: {}", sisteEndringKategori.size());
             throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
         }
+        queryBuilder.must(QueryBuilders.existsQuery("siste_endringer." + sisteEndringKategori.get(0)));
     }
 
     static List<BoolQueryBuilder> byggAktivitetFilterQuery(Filtervalg filtervalg, BoolQueryBuilder queryBuilder) {
@@ -197,22 +195,16 @@ public class ElasticQueryBuilder {
     }
 
     static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
-        String expresion = null;
-        if (filtervalg.sisteEndringKategori.size() == 1) {
-            expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0) + ".tidspunkt']?.value.toInstant().toEpochMilli()";
-        } else if (filtervalg.sisteEndringKategori.size() > 1) {
-            StringJoiner expresionJoiner = new StringJoiner(",", "Math.max(", ")");
-            for (String kategori : filtervalg.sisteEndringKategori) {
-                expresionJoiner.add("doc['siste_endringer." + kategori + ".tidspunkt']?.value.toInstant().toEpochMilli()");
-            }
-            expresion = expresionJoiner.toString();
+        if (filtervalg.sisteEndringKategori.size() != 1) {
+            log.error("Det ble filtrert på flere ulike siste endringer: {}", filtervalg.sisteEndringKategori.size());
+            throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
         }
-        if (expresion != null) {
-            Script script = new Script(expresion);
-            ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
-            scriptBuilder.order(order);
-            builder.sort(scriptBuilder);
-        }
+        String expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0) + ".tidspunkt']?.value.toInstant().toEpochMilli()";
+
+        Script script = new Script(expresion);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
     }
 
     static SearchSourceBuilder sorterPaaNyForEnhet(SearchSourceBuilder builder, List<String> veilederePaaEnhet) {
