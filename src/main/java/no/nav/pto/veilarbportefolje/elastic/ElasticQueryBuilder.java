@@ -199,11 +199,11 @@ public class ElasticQueryBuilder {
     static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         String expresion = null;
         if (filtervalg.sisteEndringKategori.size() == 1) {
-            expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0) + ".tidspunkt']?.value.getMillis()";
+            expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0) + ".tidspunkt']?.value.toInstant().toEpochMilli()";
         } else if (filtervalg.sisteEndringKategori.size() > 1) {
             StringJoiner expresionJoiner = new StringJoiner(",", "Math.max(", ")");
             for (String kategori : filtervalg.sisteEndringKategori) {
-                expresionJoiner.add("doc['siste_endringer." + kategori + ".tidspunkt']?.value.getMillis()");
+                expresionJoiner.add("doc['siste_endringer." + kategori + ".tidspunkt']?.value.toInstant().toEpochMilli()");
             }
             expresion = expresionJoiner.toString();
         }
@@ -245,7 +245,7 @@ public class ElasticQueryBuilder {
             return builder;
         }
         StringJoiner script = new StringJoiner("", "List l = new ArrayList(); ", "return l.stream().sorted().findFirst().get();");
-        sorterings_aktiviter.forEach(aktivitet -> script.add(format("l.add(doc['aktivitet_%s_utlopsdato']?.value.getMillis()); ", aktivitet.toLowerCase())));
+        sorterings_aktiviter.forEach(aktivitet -> script.add(format("l.add(doc['aktivitet_%s_utlopsdato']?.value.toInstant().toEpochMilli()); ", aktivitet.toLowerCase())));
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(new Script(script.toString()), ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
