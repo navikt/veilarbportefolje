@@ -45,8 +45,8 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 @Service
 public class ElasticIndexer {
 
-    static final int BATCH_SIZE = 1000;
-    static final int BATCH_SIZE_LIMIT = 1000;
+    static final int BATCH_SIZE = 250;
+    static final int BATCH_SIZE_LIMIT = 250;
     private final RestHighLevelClient restHighLevelClient;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
