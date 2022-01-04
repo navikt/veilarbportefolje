@@ -1,11 +1,11 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,6 +13,8 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.time.Instant.now;
@@ -32,7 +34,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Repository
 @RequiredArgsConstructor
 public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
-    @NonNull
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
@@ -50,6 +51,19 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
                         () -> db.queryForObject(sql, this::arbeidslisteMapper, aktorId.get())
                 )
         );
+    }
+
+    public List<Arbeidsliste> hentArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
+        return db.queryForList("""
+                                SELECT a.* FROM arbeidsliste a INNER JOIN oppfolging_data o
+                                ON a.aktoerid = o.aktoerid
+                                WHERE a.nav_kontor_for_arbeidsliste = ? AND o.veilederid = ?""",
+                        enhet.get(),
+                        veilederident.getValue()
+                )
+                .stream()
+                .map(ArbeidslisteRepositoryV2::arbeidslisteMapper)
+                .toList();
     }
 
     public Try<ArbeidslisteDTO> insertArbeidsliste(ArbeidslisteDTO dto) {
@@ -95,18 +109,6 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
         return db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
     }
 
-    @SneakyThrows
-    private Arbeidsliste arbeidslisteMapper(ResultSet rs, int row) {
-        return new Arbeidsliste(
-                VeilederId.of(rs.getString(SIST_ENDRET_AV_VEILEDERIDENT)),
-                toZonedDateTime(rs.getTimestamp(ENDRINGSTIDSPUNKT)),
-                rs.getString(OVERSKRIFT),
-                rs.getString(KOMMENTAR),
-                toZonedDateTime(rs.getTimestamp(FRIST)),
-                Arbeidsliste.Kategori.valueOf(rs.getString(KATEGORI))
-        );
-    }
-
     public int upsert(String aktoerId, ArbeidslisteDTO dto) {
         log.info("Upsert arbeidsliste pa bruker: {}", aktoerId);
         return db.update("""
@@ -120,4 +122,29 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
                 dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), dto.getKategori().toString(), dto.getNavKontorForArbeidsliste(),
                 dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), dto.getKategori().toString(), dto.getNavKontorForArbeidsliste());
     }
+
+    @SneakyThrows
+    private Arbeidsliste arbeidslisteMapper(ResultSet rs, int row) {
+        return new Arbeidsliste(
+                VeilederId.of(rs.getString(SIST_ENDRET_AV_VEILEDERIDENT)),
+                toZonedDateTime(rs.getTimestamp(ENDRINGSTIDSPUNKT)),
+                rs.getString(OVERSKRIFT),
+                rs.getString(KOMMENTAR),
+                toZonedDateTime(rs.getTimestamp(FRIST)),
+                Arbeidsliste.Kategori.valueOf(rs.getString(KATEGORI))
+        );
+    }
+
+    @SneakyThrows
+    private static Arbeidsliste arbeidslisteMapper(Map<String, Object> rs) {
+        return new Arbeidsliste(
+                VeilederId.of((String) rs.get(SIST_ENDRET_AV_VEILEDERIDENT)),
+                toZonedDateTime((Timestamp) rs.get(ENDRINGSTIDSPUNKT)),
+                (String) rs.get(OVERSKRIFT),
+                (String) rs.get(KOMMENTAR),
+                toZonedDateTime((Timestamp) rs.get(FRIST)),
+                Arbeidsliste.Kategori.valueOf((String) rs.get(KATEGORI))
+        );
+    }
+
 }
