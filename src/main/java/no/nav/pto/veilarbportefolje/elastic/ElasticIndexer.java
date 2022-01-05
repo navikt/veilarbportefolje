@@ -1,10 +1,8 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
@@ -19,7 +17,6 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.xcontent.XContentType;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,10 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -221,43 +214,16 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    public void nyHovedIndeksering(List<AktorId> aktorIds) {
+    public void nyHovedIndeksering(List<AktorId> brukere) {
         long tidsStempel0 = System.currentTimeMillis();
-
-        log.info("Hovedindeksering: Starter 'ny' hovedindeksering i Elasticsearch");
-        log.info("Hovedindeksering: Indekserer {} brukere", aktorIds.size());
-        List<List<AktorId>> brukerePartition = Lists.partition(aktorIds, aktorIds.size() / 5);
-
-        int antallTraader = brukerePartition.size();
-        log.info("Hovedindeksering: Bruker {} tråder ", antallTraader);
-
-        ExecutorService executor = Executors.newFixedThreadPool(antallTraader);
-        CountDownLatch ferdigSignal = new CountDownLatch(antallTraader);
-
-        brukerePartition.forEach(brukerePart -> executor.execute(() -> startAsyncPartition(brukerePart, ferdigSignal)));
-        executor.shutdown();
-
-        boolean hovedindekseringFullfort = ferdigSignal.await(8, TimeUnit.HOURS);
-        long tidsStempel1 = System.currentTimeMillis();
-        long tid = tidsStempel1 - tidsStempel0;
-        if (hovedindekseringFullfort) {
-            log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere, brukte {} tråder", tid, aktorIds.size(), antallTraader);
-        } else {
-            log.info("Hovedindeksering: Ble ikke ferdig, den timet ut på {} ms", tid);
-            executor.shutdownNow();
-        }
-    }
-
-    private void startAsyncPartition(List<AktorId> brukere, CountDownLatch ferdigSignal) {
-        String hashID = IdUtils.generateId();
-        log.info("Hovedindeksering: Startet for hash {} med {} brukere", hashID, brukere.size());
-        MDC.put("jobId", hashID);
+        log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
         partition(brukere, BATCH_SIZE).forEach(this::indekserBolk);
-        log.info("Hovedindeksering: Avsluttet trådnummer {}", hashID);
-        ferdigSignal.countDown();
-    }
 
+        long tidsStempel1 = System.currentTimeMillis();
+        long tid = tidsStempel1 - tidsStempel0;
+        log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
+    }
     public void indekserBolk(List<AktorId> aktorIds) {
         partition(aktorIds, BATCH_SIZE).forEach(partition -> {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(partition).stream().filter(bruker -> bruker.getAktoer_id() != null).collect(toList());
