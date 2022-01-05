@@ -1,9 +1,5 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import org.apache.http.HttpHost;
@@ -12,9 +8,12 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.opensearch.client.OpenSearchClient;
+import org.opensearch.client.RestClient;
+import org.opensearch.client.RestClientBuilder;
+import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.client.base.RestClientTransport;
+import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 
 @Slf4j
 public class ElasticUtils {
@@ -22,13 +21,13 @@ public class ElasticUtils {
     private static final int SOCKET_TIMEOUT = 120_000;
     private static final int CONNECT_TIMEOUT = 60_000;
 
-    public static ElasticsearchClient createESClient(ElasticClientConfig config) {
+    public static OpenSearchClient createESClient(ElasticClientConfig config) {
         RestClient restClient = RestClient.builder(
                 new HttpHost(config.getHostname(), config.getPort())).build();
 
-        ElasticsearchTransport transport = new RestClientTransport(
+        RestClientTransport transport = new RestClientTransport(
                 restClient, new JacksonJsonpMapper());
-        return new ElasticsearchClient(transport);
+        return new OpenSearchClient(transport);
     }
 
     public static RestHighLevelClient createClient(ElasticClientConfig config) {
