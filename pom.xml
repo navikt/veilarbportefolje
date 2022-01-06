@@ -247,13 +247,12 @@
             <artifactId>jackson-annotations</artifactId>
         </dependency>
 
-        <!--Elasticsearch-->
+        <!--opensearch-->
         <dependency>
             <groupId>org.opensearch</groupId>
             <artifactId>opensearch</artifactId>
             <version>1.2.3</version>
         </dependency>
-
         <dependency>
             <groupId>org.opensearch.client</groupId>
             <artifactId>opensearch-java</artifactId>
