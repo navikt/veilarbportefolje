@@ -8,12 +8,12 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
-import org.opensearch.client.OpenSearchClient;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.RestClientBuilder;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.client.base.RestClientTransport;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
+import org.opensearch.client.opensearch.OpenSearchClient;
 
 @Slf4j
 public class ElasticUtils {

@@ -12,7 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.StatusTall;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.index.query.QueryBuilder;
+import org.opensearch.index.query.QueryBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;

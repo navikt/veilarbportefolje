@@ -11,12 +11,13 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
-import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.xcontent.XContentType;
+import org.opensearch.action.ActionListener;
+import org.opensearch.action.bulk.BulkRequest;
+import org.opensearch.action.bulk.BulkResponse;
+import org.opensearch.action.index.IndexRequest;
+import org.opensearch.client.RequestOptions;
+import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,6 @@ import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
-import static org.elasticsearch.client.RequestOptions.DEFAULT;
 
 @Slf4j
 @Service
@@ -103,7 +103,7 @@ public class ElasticIndexer {
                 })
                 .forEach(bulk::add);
 
-        restHighLevelClient.bulkAsync(bulk, DEFAULT, new ActionListener<>() {
+        restHighLevelClient.bulkAsync(bulk, RequestOptions.DEFAULT, new ActionListener<>() {
             @Override
             public void onResponse(BulkResponse bulkItemResponses) {
                 if (bulkItemResponses.hasFailures()) {

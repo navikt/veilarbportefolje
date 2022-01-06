@@ -24,10 +24,10 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
-import org.elasticsearch.action.get.GetResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.ZonedDateTime;

@@ -69,7 +69,7 @@ import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import no.nav.pto.veilarbportefolje.util.TestUtil;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.opensearch.client.RestHighLevelClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
