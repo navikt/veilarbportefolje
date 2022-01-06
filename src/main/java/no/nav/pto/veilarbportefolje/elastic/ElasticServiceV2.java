@@ -173,11 +173,18 @@ public class ElasticServiceV2 {
     public void updateArbeidsliste(ArbeidslisteDTO arbeidslisteDTO) {
         log.info("Oppdater arbeidsliste for {} med frist {}", arbeidslisteDTO.getAktorId(), arbeidslisteDTO.getFrist());
         final String frist = toIsoUTC(arbeidslisteDTO.getFrist());
+        int arbeidsListeLengde = Optional.ofNullable(arbeidslisteDTO.getOverskrift())
+                .map(String::length).orElse(0);
+        String arbeidsListeSorteringsVerdi = Optional.ofNullable(arbeidslisteDTO.getOverskrift())
+                .filter(s -> !s.isEmpty())
+                .map(s -> s.substring(0, 1))
+                .orElse("");
+
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("arbeidsliste_aktiv", true)
-                .field("arbeidsliste_overskrift", arbeidslisteDTO.getOverskrift())
-                .field("arbeidsliste_kommentar", arbeidslisteDTO.getKommentar())
+                .field("arbeidsliste_tittel_sortering", arbeidsListeSorteringsVerdi)
+                .field("arbeidsliste_tittel_lengde", arbeidsListeLengde)
                 .field("arbeidsliste_frist", Optional.ofNullable(frist).orElse(getFarInTheFutureDate()))
                 .field("arbeidsliste_sist_endret_av_veilederid", arbeidslisteDTO.getVeilederId().getValue())
                 .field("arbeidsliste_endringstidspunkt", toIsoUTC(arbeidslisteDTO.getEndringstidspunkt()))
@@ -192,10 +199,10 @@ public class ElasticServiceV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("arbeidsliste_aktiv", false)
+                .field("arbeidsliste_tittel_sortering", (String) null)
+                .field("arbeidsliste_tittel_lengde", 0)
                 .field("arbeidsliste_sist_endret_av_veilederid", (String) null)
                 .field("arbeidsliste_endringstidspunkt", (String) null)
-                .field("arbeidsliste_kommentar", (String) null)
-                .field("arbeidsliste_overskrift", (String) null)
                 .field("arbeidsliste_frist", (String) null)
                 .field("arbeidsliste_kategori", (String) null)
                 .endObject();

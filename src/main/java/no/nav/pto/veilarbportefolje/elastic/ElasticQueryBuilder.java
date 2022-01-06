@@ -180,6 +180,7 @@ public class ElasticQueryBuilder {
             case "vedtakstatus" -> searchSourceBuilder.sort("vedtak_status", order);
             case "arbeidslistekategori" -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
             case "siste_endring_tidspunkt" -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
+            case "arbeidsliste_overskrift" -> sorterArbeidslisteOverskrift(searchSourceBuilder, order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
@@ -205,6 +206,11 @@ public class ElasticQueryBuilder {
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
+    }
+
+    static void sorterArbeidslisteOverskrift(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        searchSourceBuilder.sort("arbeidsliste_tittel_sortering", order);
+        searchSourceBuilder.sort("arbeidsliste_tittel_lengde", order);
     }
 
     static SearchSourceBuilder sorterPaaNyForEnhet(SearchSourceBuilder builder, List<String> veilederePaaEnhet) {

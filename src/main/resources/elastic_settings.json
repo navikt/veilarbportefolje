@@ -68,6 +68,12 @@
       "ansvarlig_veileder_for_vedtak": {
         "type": "keyword"
       },
+      "arbeidsliste_tittel_sortering": {
+        "type": "keyword"
+      },
+      "arbeidsliste_tittel_lengde": {
+        "type": "byte"
+      },
       "fullt_navn": {
         "type": "text",
         "analyzer": "fullt_navn_sok",
