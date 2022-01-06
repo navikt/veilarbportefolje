@@ -78,8 +78,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import javax.sql.DataSource;
 
@@ -146,21 +144,13 @@ import static org.mockito.Mockito.when;
 })
 public class ApplicationConfigTest {
 
-    private static final GenericContainer<?> OPENSEARCH_CONTAINER;
+    private static final OpenSearchContainer OPENSEARCH_CONTAINER;
     private static final String OPENSEARCH_VERSION = "1.2.3";
     private static final String ELASTICSEARCH_TEST_PASSWORD = "test";
     private static final String ELASTICSEARCH_TEST_USERNAME = "elastic";
 
     static {
-        OPENSEARCH_CONTAINER = new GenericContainer<>(
-                DockerImageName.parse("opensearchproject/opensearch")
-                        .withTag(OPENSEARCH_VERSION)
-        );
-
-        OPENSEARCH_CONTAINER.withExposedPorts(9200);
-        OPENSEARCH_CONTAINER.withEnv("discovery.type", "single-node");
-        OPENSEARCH_CONTAINER.withEnv("DISABLE_INSTALL_DEMO_CONFIG", "true");
-        OPENSEARCH_CONTAINER.withEnv("DISABLE_SECURITY_PLUGIN", "true");
+        OPENSEARCH_CONTAINER = new OpenSearchContainer(OPENSEARCH_VERSION);
         OPENSEARCH_CONTAINER.start();
     }
 
