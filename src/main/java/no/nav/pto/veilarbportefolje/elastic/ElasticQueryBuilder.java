@@ -8,16 +8,16 @@ import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.script.Script;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.BucketOrder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.ScriptSortBuilder;
-import org.elasticsearch.search.sort.SortOrder;
+import org.opensearch.index.query.BoolQueryBuilder;
+import org.opensearch.index.query.QueryBuilder;
+import org.opensearch.script.Script;
+import org.opensearch.search.aggregations.AggregationBuilders;
+import org.opensearch.search.aggregations.BucketOrder;
+import org.opensearch.search.aggregations.bucket.filter.FiltersAggregator;
+import org.opensearch.search.builder.SearchSourceBuilder;
+import org.opensearch.search.sort.FieldSortBuilder;
+import org.opensearch.search.sort.ScriptSortBuilder;
+import org.opensearch.search.sort.SortOrder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,16 +32,15 @@ import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static org.elasticsearch.index.query.QueryBuilders.existsQuery;
-import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
-import static org.elasticsearch.index.query.QueryBuilders.rangeQuery;
-import static org.elasticsearch.index.query.QueryBuilders.termQuery;
-import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
-import static org.elasticsearch.search.aggregations.AggregationBuilders.filters;
-import static org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregator.KeyedFilter;
-import static org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType.STRING;
-import static org.elasticsearch.search.sort.SortMode.MIN;
+import static org.opensearch.index.query.QueryBuilders.boolQuery;
+import static org.opensearch.index.query.QueryBuilders.existsQuery;
+import static org.opensearch.index.query.QueryBuilders.matchQuery;
+import static org.opensearch.index.query.QueryBuilders.rangeQuery;
+import static org.opensearch.index.query.QueryBuilders.termQuery;
+import static org.opensearch.search.aggregations.AggregationBuilders.filter;
+import static org.opensearch.search.aggregations.AggregationBuilders.filters;
+import static org.opensearch.search.sort.ScriptSortBuilder.ScriptSortType.STRING;
+import static org.opensearch.search.sort.SortMode.MIN;
 
 @Slf4j
 public class ElasticQueryBuilder {
@@ -89,7 +88,7 @@ public class ElasticQueryBuilder {
                 queryBuilder.must(matchQuery("har_delt_cv", true));
                 queryBuilder.must(matchQuery("cv_eksistere", true));
             } else {
-                BoolQueryBuilder orQuery = QueryBuilders.boolQuery();
+                BoolQueryBuilder orQuery = boolQuery();
                 orQuery.should(matchQuery("har_delt_cv", false));
                 orQuery.should(matchQuery("cv_eksistere", false));
                 queryBuilder.must(orQuery);
@@ -125,7 +124,7 @@ public class ElasticQueryBuilder {
             log.error("Det ble filtrert på flere ulike siste endringer: {}", sisteEndringKategori.size());
             throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
         }
-        queryBuilder.must(QueryBuilders.matchQuery("siste_endringer." + sisteEndringKategori.get(0) + ".er_sett", "N"));
+        queryBuilder.must(matchQuery("siste_endringer." + sisteEndringKategori.get(0) + ".er_sett", "N"));
     }
 
     private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
@@ -133,7 +132,7 @@ public class ElasticQueryBuilder {
             log.error("Det ble filtrert på flere ulike siste endringer: {}", sisteEndringKategori.size());
             throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
         }
-        queryBuilder.must(QueryBuilders.existsQuery("siste_endringer." + sisteEndringKategori.get(0)));
+        queryBuilder.must(existsQuery("siste_endringer." + sisteEndringKategori.get(0)));
     }
 
     static List<BoolQueryBuilder> byggAktivitetFilterQuery(Filtervalg filtervalg, BoolQueryBuilder queryBuilder) {
@@ -491,7 +490,7 @@ public class ElasticQueryBuilder {
                         ));
     }
 
-    private static KeyedFilter trengerVurderingFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
+    private static FiltersAggregator.KeyedFilter trengerVurderingFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
                 .must(filtrereVeilederOgEnhet)
                 .must(termQuery("trenger_vurdering", true));
@@ -500,10 +499,10 @@ public class ElasticQueryBuilder {
             boolQueryBuilder.mustNot(existsQuery("vedtak_status"));
         }
 
-        return new KeyedFilter("trengerVurdering", boolQueryBuilder);
+        return new FiltersAggregator.KeyedFilter("trengerVurdering", boolQueryBuilder);
     }
 
-    private static KeyedFilter erSykemeldtMedArbeidsgiverFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
+    private static FiltersAggregator.KeyedFilter erSykemeldtMedArbeidsgiverFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
                 .must(filtrereVeilederOgEnhet)
                 .must(termQuery("er_sykmeldt_med_arbeidsgiver", true));
@@ -512,20 +511,20 @@ public class ElasticQueryBuilder {
             boolQueryBuilder.mustNot(existsQuery("vedtak_status"));
         }
 
-        return new KeyedFilter("erSykmeldtMedArbeidsgiver", boolQueryBuilder);
+        return new FiltersAggregator.KeyedFilter("erSykmeldtMedArbeidsgiver", boolQueryBuilder);
     }
 
-    private static KeyedFilter permitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        return new KeyedFilter("permitterteEtterNiendeMars", byggPermittertFilter().must(filtrereVeilederOgEnhet));
+    private static FiltersAggregator.KeyedFilter permitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new FiltersAggregator.KeyedFilter("permitterteEtterNiendeMars", byggPermittertFilter().must(filtrereVeilederOgEnhet));
     }
 
-    private static KeyedFilter ikkePermitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        return new KeyedFilter("ikkePermitterteEtterNiendeMars", byggIkkePermittertFilter().must(filtrereVeilederOgEnhet));
+    private static FiltersAggregator.KeyedFilter ikkePermitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new FiltersAggregator.KeyedFilter("ikkePermitterteEtterNiendeMars", byggIkkePermittertFilter().must(filtrereVeilederOgEnhet));
     }
 
-    private static KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
+    private static FiltersAggregator.KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
         LocalDate localDate = LocalDate.now();
-        return new KeyedFilter(
+        return new FiltersAggregator.KeyedFilter(
                 "moterMedNAVIdag",
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
@@ -535,8 +534,8 @@ public class ElasticQueryBuilder {
         );
     }
 
-    private static KeyedFilter ufordelteBrukere(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
-        return new KeyedFilter(
+    private static FiltersAggregator.KeyedFilter ufordelteBrukere(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
+        return new FiltersAggregator.KeyedFilter(
                 "ufordelteBrukere",
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
@@ -544,16 +543,16 @@ public class ElasticQueryBuilder {
         );
     }
 
-    private static KeyedFilter totalt(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        return new KeyedFilter(
+    private static FiltersAggregator.KeyedFilter totalt(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new FiltersAggregator.KeyedFilter(
                 "totalt",
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
         );
     }
 
-    private static KeyedFilter mustBeTrueFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String minArbeidsliste, String arbeidsliste_aktiv) {
-        return new KeyedFilter(
+    private static FiltersAggregator.KeyedFilter mustBeTrueFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String minArbeidsliste, String arbeidsliste_aktiv) {
+        return new FiltersAggregator.KeyedFilter(
                 minArbeidsliste,
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
@@ -562,8 +561,8 @@ public class ElasticQueryBuilder {
         );
     }
 
-    private static KeyedFilter inaktiveBrukere(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        return new KeyedFilter(
+    private static FiltersAggregator.KeyedFilter inaktiveBrukere(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new FiltersAggregator.KeyedFilter(
                 "inaktiveBrukere",
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
@@ -572,8 +571,8 @@ public class ElasticQueryBuilder {
         );
     }
 
-    private static KeyedFilter mustMatchQuery(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String matchQuery, String value) {
-        return new KeyedFilter(
+    private static FiltersAggregator.KeyedFilter mustMatchQuery(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String matchQuery, String value) {
+        return new FiltersAggregator.KeyedFilter(
                 key,
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
@@ -581,8 +580,8 @@ public class ElasticQueryBuilder {
         );
     }
 
-    private static KeyedFilter ikkeIavtaltAktivitet(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        return new KeyedFilter(
+    private static FiltersAggregator.KeyedFilter ikkeIavtaltAktivitet(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new FiltersAggregator.KeyedFilter(
                 "ikkeIavtaltAktivitet",
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
@@ -591,8 +590,8 @@ public class ElasticQueryBuilder {
         );
     }
 
-    private static KeyedFilter mustExistFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String value) {
-        return new KeyedFilter(
+    private static FiltersAggregator.KeyedFilter mustExistFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String value) {
+        return new FiltersAggregator.KeyedFilter(
                 key,
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)

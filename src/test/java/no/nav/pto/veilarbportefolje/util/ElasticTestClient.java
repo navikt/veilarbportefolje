@@ -7,17 +7,18 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import org.apache.http.util.EntityUtils;
-import org.elasticsearch.action.get.GetRequest;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.xcontent.XContentBuilder;
-import org.elasticsearch.xcontent.XContentType;
 import org.json.JSONObject;
+import org.opensearch.action.get.GetRequest;
+import org.opensearch.action.get.GetResponse;
+import org.opensearch.action.index.IndexRequest;
+import org.opensearch.action.index.IndexResponse;
+import org.opensearch.action.update.UpdateRequest;
+import org.opensearch.client.Request;
+import org.opensearch.client.RequestOptions;
+import org.opensearch.client.Response;
+import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.common.xcontent.XContentBuilder;
+import org.opensearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
@@ -27,8 +28,7 @@ import java.util.function.Supplier;
 import static java.lang.System.currentTimeMillis;
 import static no.nav.common.json.JsonUtils.toJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.client.RequestOptions.DEFAULT;
-import static org.elasticsearch.xcontent.XContentFactory.jsonBuilder;
+import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 public class ElasticTestClient {
@@ -53,7 +53,7 @@ public class ElasticTestClient {
         GetRequest getRequest = new GetRequest();
         getRequest.index(indexName.getValue());
         getRequest.id(aktoerId.toString());
-        return restHighLevelClient.get(getRequest, DEFAULT);
+        return restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
     }
 
     @SneakyThrows
@@ -62,7 +62,7 @@ public class ElasticTestClient {
         indexRequest.index(indexName.getValue());
         indexRequest.id(aktoerId.toString());
         indexRequest.source(json, XContentType.JSON);
-        return restHighLevelClient.index(indexRequest, DEFAULT);
+        return restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
     }
 
     @SneakyThrows
@@ -86,7 +86,7 @@ public class ElasticTestClient {
         indexRequest.source(document, XContentType.JSON);
 
         try {
-            restHighLevelClient.index(indexRequest, DEFAULT);
+            restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -94,7 +94,7 @@ public class ElasticTestClient {
         final Optional<GetResponse> getResponse = getDocument(aktoerId);
 
         assertThat(getResponse).isPresent();
-        assertThat(getResponse.get().isExists()).isTrue();
+        assertThat(getResponse.get()).isNotNull();
     }
 
     public void createUserInElastic(OppfolgingsBruker bruker) {
@@ -105,7 +105,7 @@ public class ElasticTestClient {
         indexRequest.source(toJson(bruker), XContentType.JSON);
 
         try {
-            restHighLevelClient.index(indexRequest, DEFAULT);
+            restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -114,7 +114,7 @@ public class ElasticTestClient {
         final Optional<GetResponse> getResponse = getDocument(aktoerId);
 
         assertThat(getResponse).isPresent();
-        assertThat(getResponse.get().isExists()).isTrue();
+        assertThat(getResponse.get()).isNotNull();
     }
 
     public Optional<GetResponse> getDocument(AktorId aktoerId) {
@@ -122,7 +122,7 @@ public class ElasticTestClient {
         getRequest.index(indexName.getValue());
         getRequest.id(aktoerId.toString());
         try {
-            return Optional.of(restHighLevelClient.get(getRequest, DEFAULT));
+            return Optional.of(restHighLevelClient.get(getRequest, RequestOptions.DEFAULT));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -155,6 +155,6 @@ public class ElasticTestClient {
         updateRequest.id(aktoerId.toString());
         updateRequest.doc(content);
 
-        restHighLevelClient.update(updateRequest, DEFAULT);
+        restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);
     }
 }

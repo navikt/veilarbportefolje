@@ -6,7 +6,6 @@ import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
-import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
@@ -69,7 +68,7 @@ import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import no.nav.pto.veilarbportefolje.util.TestUtil;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.opensearch.client.RestHighLevelClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -79,7 +78,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import javax.sql.DataSource;
 
@@ -146,17 +144,14 @@ import static org.mockito.Mockito.when;
 })
 public class ApplicationConfigTest {
 
-    private static final ElasticsearchContainer ELASTICSEARCH_CONTAINER;
-    private static final String ELASTICSEARCH_VERSION = "7.16.1";
+    private static final OpenSearchContainer OPENSEARCH_CONTAINER;
+    private static final String OPENSEARCH_VERSION = "1.2.3";
     private static final String ELASTICSEARCH_TEST_PASSWORD = "test";
     private static final String ELASTICSEARCH_TEST_USERNAME = "elastic";
 
     static {
-        ELASTICSEARCH_CONTAINER = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:" + ELASTICSEARCH_VERSION);
-        ELASTICSEARCH_CONTAINER.withPassword(ELASTICSEARCH_TEST_PASSWORD);
-        ELASTICSEARCH_CONTAINER.start();
-        System.setProperty("elastic.indexname", IdUtils.generateId());
-        System.setProperty("elastic.httphostaddress", ELASTICSEARCH_CONTAINER.getHttpHostAddress());
+        OPENSEARCH_CONTAINER = new OpenSearchContainer(OPENSEARCH_VERSION);
+        OPENSEARCH_CONTAINER.start();
     }
 
 
@@ -239,8 +234,8 @@ public class ApplicationConfigTest {
         ElasticClientConfig elasticTestConfig = ElasticClientConfig.builder()
                 .username(ELASTICSEARCH_TEST_USERNAME)
                 .password(ELASTICSEARCH_TEST_PASSWORD)
-                .hostname(ELASTICSEARCH_CONTAINER.getHost())
-                .port(ELASTICSEARCH_CONTAINER.getFirstMappedPort())
+                .hostname(OPENSEARCH_CONTAINER.getHost())
+                .port(OPENSEARCH_CONTAINER.getFirstMappedPort())
                 .scheme("http")
                 .build();
 

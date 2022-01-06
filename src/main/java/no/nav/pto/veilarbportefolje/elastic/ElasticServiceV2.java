@@ -10,18 +10,19 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.apache.commons.io.IOUtils;
-import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.CreateIndexRequest;
-import org.elasticsearch.client.indices.CreateIndexResponse;
-import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.xcontent.XContentBuilder;
-import org.elasticsearch.xcontent.XContentType;
+import org.opensearch.OpenSearchException;
+import org.opensearch.action.admin.indices.alias.IndicesAliasesRequest;
+import org.opensearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.opensearch.action.delete.DeleteRequest;
+import org.opensearch.action.support.master.AcknowledgedResponse;
+import org.opensearch.action.update.UpdateRequest;
+import org.opensearch.client.RequestOptions;
+import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.client.indices.CreateIndexRequest;
+import org.opensearch.client.indices.CreateIndexResponse;
+import org.opensearch.common.xcontent.XContentBuilder;
+import org.opensearch.common.xcontent.XContentType;
+import org.opensearch.rest.RestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,9 +38,8 @@ import static java.lang.String.format;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
-import static org.elasticsearch.client.RequestOptions.DEFAULT;
-import static org.elasticsearch.xcontent.XContentFactory.jsonBuilder;
+import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
+import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 @Service
@@ -228,9 +228,9 @@ public class ElasticServiceV2 {
         updateRequest.retryOnConflict(6);
 
         try {
-            restHighLevelClient.update(updateRequest, DEFAULT);
+            restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);
             log.info("Oppdaterte dokument for bruker {} med info {}", aktoerId, logInfo);
-        } catch (ElasticsearchException e) {
+        } catch (OpenSearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId.toString());
             } else {
@@ -247,9 +247,9 @@ public class ElasticServiceV2 {
         deleteRequest.id(aktoerId.get());
 
         try {
-            restHighLevelClient.delete(deleteRequest, DEFAULT);
+            restHighLevelClient.delete(deleteRequest, RequestOptions.DEFAULT);
             log.info("Slettet dokument for {} ", aktoerId);
-        } catch (ElasticsearchException e) {
+        } catch (OpenSearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.info("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.get());
             } else {
@@ -273,8 +273,7 @@ public class ElasticServiceV2 {
 
         CreateIndexRequest request = new CreateIndexRequest(indeksNavn)
                 .source(json, XContentType.JSON);
-
-        CreateIndexResponse response = restHighLevelClient.indices().create(request, DEFAULT);
+        CreateIndexResponse response = restHighLevelClient.indices().create(request, RequestOptions.DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke opprette ny indeks {}", indeksNavn);
@@ -292,7 +291,7 @@ public class ElasticServiceV2 {
     @SneakyThrows
     public boolean slettIndex(String indexName) {
         DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName);
-        return restHighLevelClient.indices().delete(deleteIndexRequest, DEFAULT).isAcknowledged();
+        return restHighLevelClient.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT).isAcknowledged();
     }
 
     @SneakyThrows
@@ -302,7 +301,7 @@ public class ElasticServiceV2 {
                 .alias(BRUKERINDEKS_ALIAS);
 
         IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
-        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, DEFAULT);
+        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);

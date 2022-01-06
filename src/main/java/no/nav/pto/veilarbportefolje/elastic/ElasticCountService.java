@@ -77,7 +77,7 @@ public class ElasticCountService {
     }
 
     private static String getAuthHeaderValue(EnvironmentProperties environmentProperties) {
-        String auth = environmentProperties.getElasticUsername() + ":" + environmentProperties.getElasticPassword();
+        String auth = environmentProperties.getOpensearchUsername() + ":" + environmentProperties.getOpensearchPassword();
         return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes());
     }
 
