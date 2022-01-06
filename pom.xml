@@ -265,12 +265,6 @@
             <version>1.2.3</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.opensearch.client</groupId>
-            <artifactId>opensearch-rest-client</artifactId>
-            <version>1.2.3</version>
-        </dependency>
-
         <!--Diverse-->
         <dependency>
             <groupId>org.flywaydb</groupId>

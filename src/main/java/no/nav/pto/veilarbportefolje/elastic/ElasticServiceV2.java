@@ -12,14 +12,14 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.apache.commons.io.IOUtils;
 import org.opensearch.OpenSearchException;
 import org.opensearch.action.admin.indices.alias.IndicesAliasesRequest;
-import org.opensearch.action.admin.indices.create.CreateIndexRequest;
-import org.opensearch.action.admin.indices.create.CreateIndexResponse;
 import org.opensearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.support.master.AcknowledgedResponse;
 import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.client.indices.CreateIndexRequest;
+import org.opensearch.client.indices.CreateIndexResponse;
 import org.opensearch.common.xcontent.XContentBuilder;
 import org.opensearch.common.xcontent.XContentType;
 import org.opensearch.rest.RestStatus;
@@ -273,7 +273,6 @@ public class ElasticServiceV2 {
 
         CreateIndexRequest request = new CreateIndexRequest(indeksNavn)
                 .source(json, XContentType.JSON);
-
         CreateIndexResponse response = restHighLevelClient.indices().create(request, RequestOptions.DEFAULT);
 
         if (!response.isAcknowledged()) {

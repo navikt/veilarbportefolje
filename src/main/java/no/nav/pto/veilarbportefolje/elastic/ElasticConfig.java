@@ -25,10 +25,10 @@ public class ElasticConfig {
 
     @Bean
     public ElasticClientConfig elasticsearchClientConfig(EnvironmentProperties environmentProperties) throws MalformedURLException {
-        URL elasticUrl = new URL(environmentProperties.getElasticUri());
+        URL elasticUrl = new URL(environmentProperties.getOpensearchUri());
         return ElasticClientConfig.builder()
-                .username(environmentProperties.getElasticUsername())
-                .password(environmentProperties.getElasticPassword())
+                .username(environmentProperties.getOpensearchUsername())
+                .password(environmentProperties.getOpensearchPassword())
                 .hostname(elasticUrl.getHost())
                 .port(elasticUrl.getPort())
                 .scheme(elasticUrl.getProtocol())
