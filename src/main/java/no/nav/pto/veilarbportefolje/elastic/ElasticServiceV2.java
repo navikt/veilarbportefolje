@@ -177,7 +177,7 @@ public class ElasticServiceV2 {
                 .map(String::length).orElse(0);
         String arbeidsListeSorteringsVerdi = Optional.ofNullable(arbeidslisteDTO.getOverskrift())
                 .filter(s -> !s.isEmpty())
-                .map(s -> s.substring(0, 1))
+                .map(s -> s.substring(0, 2))
                 .orElse("");
 
         final XContentBuilder content = jsonBuilder()

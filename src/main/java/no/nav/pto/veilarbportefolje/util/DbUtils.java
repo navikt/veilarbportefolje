@@ -147,7 +147,7 @@ public class DbUtils {
                     .map(String::length).orElse(0);
             String arbeidsListeSorteringsVerdi = Optional.ofNullable(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
                     .filter(s -> !s.isEmpty())
-                    .map(s -> s.substring(0, 1))
+                    .map(s -> s.substring(0, 2))
                     .orElse("");
             bruker
                     .setArbeidsliste_aktiv(true)
