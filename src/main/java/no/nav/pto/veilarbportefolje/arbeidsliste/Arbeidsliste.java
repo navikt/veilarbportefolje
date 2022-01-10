@@ -41,6 +41,7 @@ public class Arbeidsliste {
     Boolean isOppfolgendeVeileder;
     Boolean arbeidslisteAktiv;
     Boolean harVeilederTilgang;
+    String fnr;
 
     public static Arbeidsliste of(OppfolgingsBruker bruker) {
         Boolean arbeidslisteAktiv = bruker.isArbeidsliste_aktiv();
