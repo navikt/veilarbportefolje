@@ -165,7 +165,7 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
                 (String) rs.get(KOMMENTAR),
                 toZonedDateTime((Timestamp) rs.get(FRIST)),
                 Arbeidsliste.Kategori.valueOf((String) rs.get(KATEGORI))
-        ).setFnr((String) rs.get(FNR));
+        ).setAktoerid((String) rs.get(AKTOERID));
     }
 
     @SneakyThrows

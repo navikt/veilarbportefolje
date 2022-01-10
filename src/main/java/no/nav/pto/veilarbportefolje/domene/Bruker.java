@@ -28,6 +28,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 @NoArgsConstructor
 public class Bruker {
     String fnr;
+    String aktoerid;
     String fornavn;
     String etternavn;
     String veilederId;
@@ -88,6 +89,7 @@ public class Bruker {
 
         return new Bruker()
                 .setFnr(bruker.getFnr())
+                .setAktoerid(bruker.getAktoer_id())
                 .setNyForEnhet(bruker.isNy_for_enhet())
                 .setNyForVeileder(bruker.isNy_for_veileder())
                 .setTrengerVurdering(trengerVurdering)
