@@ -5,8 +5,11 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.database.Table;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import no.nav.sbl.sql.SqlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,7 @@ import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,6 +55,8 @@ public class ArbeidslisteRepositoryTest {
     @BeforeEach
     public void setUp() {
         jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
+        jdbcTemplate.execute("TRUNCATE TABLE " + Table.OPPFOLGINGSBRUKER.TABLE_NAME);
+        jdbcTemplate.execute("TRUNCATE TABLE " + Table.AKTOERID_TO_PERSONID.TABLE_NAME);
     }
 
     @Test
@@ -129,18 +135,19 @@ public class ArbeidslisteRepositoryTest {
 
     @Test
     public void hentArbeidslisteForVeilederPaEnhet_filtrerPaEnhet() {
+        EnhetId annetNavKontor = EnhetId.of("1111");
         ArbeidslisteDTO arbeidslistePaNyEnhet = new ArbeidslisteDTO(randomFnr())
                 .setAktorId(randomAktorId())
                 .setVeilederId(data.getVeilederId())
                 .setFrist(data.getFrist())
                 .setOverskrift(data.getOverskrift())
                 .setKategori(data.getKategori())
-                .setNavKontorForArbeidsliste("1111")
+                .setNavKontorForArbeidsliste(annetNavKontor.get())
                 .setKommentar("Arbeidsliste 1 kopi kommentar");
 
         insertArbeidslister();
         insertOppfolgingsInformasjon();
-        insertOppfolgingsInformasjon(arbeidslistePaNyEnhet.getAktorId(), arbeidslistePaNyEnhet.getVeilederId());
+        insertOppfolgingsInformasjon(arbeidslistePaNyEnhet.getAktorId(), arbeidslistePaNyEnhet.getVeilederId(), annetNavKontor);
         repo.insertArbeidsliste(arbeidslistePaNyEnhet);
 
         List<Arbeidsliste> arbeidslistes1 = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(data.getNavKontorForArbeidsliste()), data.getVeilederId());
@@ -169,20 +176,21 @@ public class ArbeidslisteRepositoryTest {
 
     @Test
     public void hentArbeidslisteForVeilederPaEnhet_arbeidslisteKanLagesAvAnnenVeileder() {
+        EnhetId navKontor = EnhetId.of(data.getNavKontorForArbeidsliste());
         ArbeidslisteDTO arbeidslisteLagetAvAnnenVeileder = new ArbeidslisteDTO(randomFnr())
                 .setAktorId(randomAktorId())
                 .setVeilederId(randomVeilederId())
                 .setFrist(data.getFrist())
                 .setOverskrift(data.getOverskrift())
                 .setKategori(data.getKategori())
-                .setNavKontorForArbeidsliste(data.getNavKontorForArbeidsliste())
+                .setNavKontorForArbeidsliste(navKontor.get())
                 .setKommentar("Arbeidsliste 1 kopi kommentar");
         insertArbeidslister();
         insertOppfolgingsInformasjon();
         repo.insertArbeidsliste(arbeidslisteLagetAvAnnenVeileder);
-        insertOppfolgingsInformasjon(arbeidslisteLagetAvAnnenVeileder.getAktorId(), data.getVeilederId());
+        insertOppfolgingsInformasjon(arbeidslisteLagetAvAnnenVeileder.getAktorId(), data.getVeilederId(), navKontor);
 
-        List<Arbeidsliste> arbeidslister = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(data.getNavKontorForArbeidsliste()), data.getVeilederId());
+        List<Arbeidsliste> arbeidslister = repo.hentArbeidslisteForVeilederPaEnhet(navKontor, data.getVeilederId());
 
         assertThat(arbeidslister.size()).isEqualTo(2);
         assertThat(arbeidslister.stream().anyMatch(x -> x.getKommentar().equals(data.getKommentar()))).isTrue();
@@ -202,8 +210,6 @@ public class ArbeidslisteRepositoryTest {
     }
 
     private void insertArbeidslister() {
-        jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
-
         Try<ArbeidslisteDTO> result1 = repo.insertArbeidsliste(data);
         Try<ArbeidslisteDTO> result2 = repo.insertArbeidsliste(data2);
         assertThat(result1.isSuccess()).isTrue();
@@ -211,11 +217,24 @@ public class ArbeidslisteRepositoryTest {
     }
 
     private void insertOppfolgingsInformasjon() {
-        insertOppfolgingsInformasjon(data.getAktorId(), data.getVeilederId());
-        insertOppfolgingsInformasjon(data2.getAktorId(), data2.getVeilederId());
+        insertOppfolgingsInformasjon(data.getAktorId(), data.getVeilederId(), EnhetId.of(data.getNavKontorForArbeidsliste()));
+        insertOppfolgingsInformasjon(data2.getAktorId(), data2.getVeilederId(), EnhetId.of(data.getNavKontorForArbeidsliste()));
     }
 
-    private void insertOppfolgingsInformasjon(AktorId aktorId, VeilederId veilederId) {
+    private void insertOppfolgingsInformasjon(AktorId aktorId, VeilederId veilederId, EnhetId navKontor) {
+        Fnr fnr = randomFnr();
+        PersonId personId = randomPersonId();
+        SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
+                .value(Table.OPPFOLGINGSBRUKER.FODSELSNR, fnr.toString())
+                .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId.toString())
+                .value(Table.OPPFOLGINGSBRUKER.NAV_KONTOR, navKontor.toString())
+                .execute();
+
+        SqlUtils.insert(jdbcTemplate, Table.AKTOERID_TO_PERSONID.TABLE_NAME)
+                .value(Table.AKTOERID_TO_PERSONID.AKTOERID, aktorId.toString())
+                .value(Table.AKTOERID_TO_PERSONID.PERSONID, personId.toString())
+                .value(Table.AKTOERID_TO_PERSONID.GJELDENE, true)
+                .execute();
         oppfolgingRepository.settUnderOppfolging(aktorId, ZonedDateTime.now());
         oppfolgingRepository.settVeileder(aktorId, veilederId);
     }
