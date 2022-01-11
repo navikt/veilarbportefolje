@@ -77,10 +77,9 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
     public List<Arbeidsliste> hentArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
         return db.queryForList(
                         "SELECT a.* FROM " + Table.ARBEIDSLISTE.TABLE_NAME + " a " +
-                            "INNER JOIN " + Table.OPPFOLGING_DATA.TABLE_NAME + " o " +
-                            "ON a.AKTOERID = o.AKTOERID " +
-                            "WHERE " + "a." + NAV_KONTOR_FOR_ARBEIDSLISTE + " = ? " +
-                            "AND o." + Table.OPPFOLGING_DATA.VEILEDERIDENT + " = ?",
+                            "LEFT JOIN " + Table.VW_PORTEFOLJE_INFO.TABLE_NAME + " vw " +
+                            "ON a.AKTOERID = vw.AKTOERID " +
+                            "WHERE vw.NAV_KONTOR = ? AND vw.VEILEDERIDENT = ?",
                         enhet.get(),
                         veilederident.getValue()
                 )

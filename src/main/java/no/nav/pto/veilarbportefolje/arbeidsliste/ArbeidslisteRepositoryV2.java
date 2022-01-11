@@ -55,9 +55,11 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
 
     public List<Arbeidsliste> hentArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
         return db.queryForList("""
-                                SELECT a.* FROM arbeidsliste a INNER JOIN oppfolging_data o
-                                ON a.aktoerid = o.aktoerid
-                                WHERE a.nav_kontor_for_arbeidsliste = ? AND o.veilederid = ?""",
+                                SELECT a.* FROM arbeidsliste a
+                                INNER JOIN oppfolging_data o ON a.aktoerid = o.aktoerid
+                                LEFT JOIN oppfolgingsbruker_arena ob on a.aktoerid = ob.aktoerid
+                                WHERE ob.nav_kontor = ?
+                                AND o.veilederid = ?""",
                         enhet.get(),
                         veilederident.getValue()
                 )
