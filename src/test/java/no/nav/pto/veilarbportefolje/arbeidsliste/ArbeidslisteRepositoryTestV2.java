@@ -53,6 +53,8 @@ public class ArbeidslisteRepositoryTestV2 {
     @BeforeEach
     public void setUp() {
         jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
+        jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data");
+        jdbcTemplate.execute("TRUNCATE TABLE oppfolgingsbruker_arena");
     }
 
     @Test
@@ -66,6 +68,7 @@ public class ArbeidslisteRepositoryTestV2 {
     @Test
     public void skalKunneOppdatereKategori() {
         insertArbeidslister();
+
         Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktorId());
         assertThat(Arbeidsliste.Kategori.BLA).isEqualTo(result.get().getKategori());
 
@@ -130,18 +133,19 @@ public class ArbeidslisteRepositoryTestV2 {
 
     @Test
     public void hentArbeidslisteForVeilederPaEnhet_filtrerPaEnhet() {
+        EnhetId annetNavKontor = EnhetId.of("1111");
         ArbeidslisteDTO arbeidslistePaNyEnhet = new ArbeidslisteDTO(randomFnr())
                 .setAktorId(randomAktorId())
                 .setVeilederId(data.getVeilederId())
                 .setFrist(data.getFrist())
                 .setOverskrift(data.getOverskrift())
                 .setKategori(data.getKategori())
-                .setNavKontorForArbeidsliste("1111")
+                .setNavKontorForArbeidsliste(annetNavKontor.get())
                 .setKommentar("Arbeidsliste 1 kopi kommentar");
 
         insertArbeidslister();
         insertOppfolgingsInformasjon();
-        insertOppfolgingsInformasjon(arbeidslistePaNyEnhet.getAktorId(), arbeidslistePaNyEnhet.getVeilederId());
+        insertOppfolgingsInformasjon(arbeidslistePaNyEnhet.getAktorId(), arbeidslistePaNyEnhet.getVeilederId(), annetNavKontor);
         repo.insertArbeidsliste(arbeidslistePaNyEnhet);
 
         List<Arbeidsliste> arbeidslistes1 = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(data.getNavKontorForArbeidsliste()), data.getVeilederId());
@@ -170,41 +174,28 @@ public class ArbeidslisteRepositoryTestV2 {
 
     @Test
     public void hentArbeidslisteForVeilederPaEnhet_arbeidslisteKanLagesAvAnnenVeileder() {
-        insertArbeidslister();
-        insertOppfolgingsInformasjon();
+        EnhetId navKontor = EnhetId.of(data.getNavKontorForArbeidsliste());
         ArbeidslisteDTO arbeidslisteLagetAvAnnenVeileder = new ArbeidslisteDTO(randomFnr())
                 .setAktorId(randomAktorId())
                 .setVeilederId(randomVeilederId())
                 .setFrist(data.getFrist())
                 .setOverskrift(data.getOverskrift())
                 .setKategori(data.getKategori())
-                .setNavKontorForArbeidsliste(data.getNavKontorForArbeidsliste())
+                .setNavKontorForArbeidsliste(navKontor.get())
                 .setKommentar("Arbeidsliste 1 kopi kommentar");
+        insertArbeidslister();
+        insertOppfolgingsInformasjon();
         repo.insertArbeidsliste(arbeidslisteLagetAvAnnenVeileder);
-        insertOppfolgingsInformasjon(arbeidslisteLagetAvAnnenVeileder.getAktorId(), data.getVeilederId());
+        insertOppfolgingsInformasjon(arbeidslisteLagetAvAnnenVeileder.getAktorId(), data.getVeilederId(), navKontor);
 
-        List<Arbeidsliste> arbeidslister = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(data.getNavKontorForArbeidsliste()), data.getVeilederId());
+        List<Arbeidsliste> arbeidslister = repo.hentArbeidslisteForVeilederPaEnhet(navKontor, data.getVeilederId());
 
         assertThat(arbeidslister.size()).isEqualTo(2);
         assertThat(arbeidslister.stream().anyMatch(x -> x.getKommentar().equals(data.getKommentar()))).isTrue();
         assertThat(arbeidslister.stream().anyMatch(x -> x.getKommentar().equals(arbeidslisteLagetAvAnnenVeileder.getKommentar()))).isTrue();
     }
 
-    @Test
-    public void hentArbeidslisteForVeilederPaEnhet_handterNull() {
-        List<Arbeidsliste> tomtRes_ingenArbeidsliste = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(data.getNavKontorForArbeidsliste()), data.getVeilederId());
-        insertArbeidslister();
-        List<Arbeidsliste> tomtRes_ingenVeileder = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(data.getNavKontorForArbeidsliste()), data.getVeilederId());
-        insertOppfolgingsInformasjon();
-        List<Arbeidsliste> tomtRes_feilenhet = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of("99999"), data.getVeilederId());
-        assertThat(tomtRes_ingenArbeidsliste.isEmpty()).isTrue();
-        assertThat(tomtRes_ingenVeileder.isEmpty()).isTrue();
-        assertThat(tomtRes_feilenhet.isEmpty()).isTrue();
-    }
-
     private void insertArbeidslister() {
-        jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
-
         Try<ArbeidslisteDTO> result1 = repo.insertArbeidsliste(data);
         Try<ArbeidslisteDTO> result2 = repo.insertArbeidsliste(data2);
         assertThat(result1.isSuccess()).isTrue();
@@ -212,11 +203,12 @@ public class ArbeidslisteRepositoryTestV2 {
     }
 
     private void insertOppfolgingsInformasjon() {
-        insertOppfolgingsInformasjon(data.getAktorId(), data.getVeilederId());
-        insertOppfolgingsInformasjon(data2.getAktorId(), data2.getVeilederId());
+        insertOppfolgingsInformasjon(data.getAktorId(), data.getVeilederId(), EnhetId.of(data.getNavKontorForArbeidsliste()));
+        insertOppfolgingsInformasjon(data2.getAktorId(), data2.getVeilederId(), EnhetId.of(data.getNavKontorForArbeidsliste()));
     }
 
-    private void insertOppfolgingsInformasjon(AktorId aktorId, VeilederId veilederId) {
+    private void insertOppfolgingsInformasjon(AktorId aktorId, VeilederId veilederId, EnhetId navKontor) {
+        jdbcTemplate.update("INSERT INTO oppfolgingsbruker_arena (aktoerid, nav_kontor) values (?,?)", aktorId.get(), navKontor.get());
         oppfolgingRepository.settUnderOppfolging(aktorId, ZonedDateTime.now());
         oppfolgingRepository.settVeileder(aktorId, veilederId);
     }
