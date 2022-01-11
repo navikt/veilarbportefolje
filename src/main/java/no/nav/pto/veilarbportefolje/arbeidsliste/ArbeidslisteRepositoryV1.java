@@ -159,13 +159,13 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
     @SneakyThrows
     private static Arbeidsliste arbeidslisteMapper(Map<String, Object> rs) {
         return new Arbeidsliste(
-                VeilederId.of((String) rs.get("SIST_ENDRET_AV_VEILEDERIDENT")),
-                toZonedDateTime((Timestamp) rs.get("ENDRINGSTIDSPUNKT")),
-                (String) rs.get("OVERSKRIFT"),
-                (String) rs.get("KOMMENTAR"),
-                toZonedDateTime((Timestamp) rs.get("FRIST")),
-                Arbeidsliste.Kategori.valueOf((String) rs.get("KATEGORI"))
-        );
+                VeilederId.of((String) rs.get(SIST_ENDRET_AV_VEILEDERIDENT)),
+                toZonedDateTime((Timestamp) rs.get(ENDRINGSTIDSPUNKT)),
+                (String) rs.get(OVERSKRIFT),
+                (String) rs.get(KOMMENTAR),
+                toZonedDateTime((Timestamp) rs.get(FRIST)),
+                Arbeidsliste.Kategori.valueOf((String) rs.get(KATEGORI))
+        ).setAktoerid((String) rs.get(AKTOERID));
     }
 
     @SneakyThrows
@@ -180,5 +180,4 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
                 .setKategori(Arbeidsliste.Kategori.valueOf(rs.getString(KATEGORI)))
                 .setNavKontorForArbeidsliste(rs.getString(NAV_KONTOR_FOR_ARBEIDSLISTE));
     }
-
 }
