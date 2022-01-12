@@ -4,6 +4,7 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.time.Instant.now;
@@ -70,6 +72,20 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
                         .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
                         .execute()
         );
+    }
+
+    public List<Arbeidsliste> hentArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
+        return db.queryForList(
+                        "SELECT a.* FROM " + Table.ARBEIDSLISTE.TABLE_NAME + " a " +
+                            "LEFT JOIN " + Table.VW_PORTEFOLJE_INFO.TABLE_NAME + " vw " +
+                            "ON a.AKTOERID = vw.AKTOERID " +
+                            "WHERE vw.NAV_KONTOR = ? AND vw.VEILEDERIDENT = ?",
+                        enhet.get(),
+                        veilederident.getValue()
+                )
+                .stream()
+                .map(ArbeidslisteRepositoryV1::arbeidslisteMapper)
+                .toList();
     }
 
     public List<AktorId> hentAlleBrukereMedArbeidsliste() {
@@ -140,6 +156,18 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
     }
 
     @SneakyThrows
+    private static Arbeidsliste arbeidslisteMapper(Map<String, Object> rs) {
+        return new Arbeidsliste(
+                VeilederId.of((String) rs.get(SIST_ENDRET_AV_VEILEDERIDENT)),
+                toZonedDateTime((Timestamp) rs.get(ENDRINGSTIDSPUNKT)),
+                (String) rs.get(OVERSKRIFT),
+                (String) rs.get(KOMMENTAR),
+                toZonedDateTime((Timestamp) rs.get(FRIST)),
+                Arbeidsliste.Kategori.valueOf((String) rs.get(KATEGORI))
+        ).setAktoerid((String) rs.get(AKTOERID));
+    }
+
+    @SneakyThrows
     private ArbeidslisteDTO arbeidslisteDtoMapper(ResultSet rs) {
         return new ArbeidslisteDTO(Fnr.of(rs.getString(FNR)))
                 .setAktorId(AktorId.of(rs.getString(AKTOERID)))
@@ -151,5 +179,4 @@ public class ArbeidslisteRepositoryV1 implements ArbeidslisteRepository {
                 .setKategori(Arbeidsliste.Kategori.valueOf(rs.getString(KATEGORI)))
                 .setNavKontorForArbeidsliste(rs.getString(NAV_KONTOR_FOR_ARBEIDSLISTE));
     }
-
 }
