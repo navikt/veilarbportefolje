@@ -3,7 +3,13 @@ package no.nav.pto.veilarbportefolje.util;
 import com.zaxxer.hikari.HikariConfig;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import static no.nav.common.utils.EnvironmentUtils.isProduction;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.CV_EKSISTERE;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.isNyForEnhet;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil;
 
@@ -15,23 +21,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import static no.nav.common.utils.EnvironmentUtils.isProduction;
-import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.CV_EKSISTERE;
-import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.isNyForEnhet;
-
 @Slf4j
 public class DbUtils {
-    private enum DbRole {
+   private enum DbRole {
         ADMIN,
         READONLY,
     }
 
     public static DataSource createDataSource(String dbUrl, boolean admin) {
         HikariConfig config = createDataSourceConfig(dbUrl);
-        if (admin) {
+        if(admin){
             return createVaultRefreshDataSource(config, DbRole.ADMIN);
         }
         return createVaultRefreshDataSource(config, DbRole.READONLY);
@@ -57,9 +56,9 @@ public class DbUtils {
 
     @SneakyThrows
     private static DataSource createVaultRefreshDataSource(HikariConfig config, DbRole role) {
-        if (role.equals(DbRole.READONLY)) {
-            return HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(config, getMountPath(), getSqlReadOnlyRole());
-        }
+       if(role.equals(DbRole.READONLY)){
+           return HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(config, getMountPath(), getSqlReadOnlyRole());
+       }
         return HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(config, getMountPath(), getSqlAdminRole());
     }
 
@@ -143,19 +142,13 @@ public class DbUtils {
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
 
         if (brukerHarArbeidsliste) {
-            int arbeidsListeLengde = Optional.ofNullable(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
-                    .map(String::length).orElse(0);
-            String arbeidsListeSorteringsVerdi = Optional.ofNullable(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
-                    .filter(s -> !s.isEmpty())
-                    .map(s -> s.substring(0, 2))
-                    .orElse("");
             bruker
                     .setArbeidsliste_aktiv(true)
                     .setArbeidsliste_sist_endret_av_veilederid(rs.getString("ARBEIDSLISTE_ENDRET_AV"))
                     .setArbeidsliste_endringstidspunkt(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_ENDRET_TID")))
+                    .setArbeidsliste_kommentar(rs.getString("ARBEIDSLISTE_KOMMENTAR"))
+                    .setArbeidsliste_overskrift(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
                     .setArbeidsliste_kategori(rs.getString("ARBEIDSLISTE_KATEGORI"))
-                    .setArbeidsliste_tittel_lengde(arbeidsListeLengde)
-                    .setArbeidsliste_tittel_sortering(arbeidsListeSorteringsVerdi)
                     .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getFarInTheFutureDate()));
         }
 

@@ -2,26 +2,21 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensearch.index.query.BoolQueryBuilder;
-import org.opensearch.search.builder.SearchSourceBuilder;
 
 import java.util.List;
 import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggAktivitetFilterQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggAlderQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggPortefoljestorrelserQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggVeilederPaaEnhetScript;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.sorterQueryParametere;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.sorterValgteAktiviteter;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.opensearch.index.query.QueryBuilders.boolQuery;
-import static org.opensearch.search.sort.SortOrder.ASC;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.search.sort.SortOrder.ASC;
 
 public class ElasticQueryBuilderTest {
 
@@ -41,7 +36,7 @@ public class ElasticQueryBuilderTest {
     @Test
     public void skal_bygge_riktig_filtrer_paa_veileder_script() {
         String actualScript = byggVeilederPaaEnhetScript(List.of("Z000000", "Z000001", "Z000002"));
-        String expectedScript = "(doc.veileder_id.size() != 0 && [\"Z000000\",\"Z000001\",\"Z000002\"].contains(doc.veileder_id.value)).toString()";
+        String expectedScript = "[\"Z000000\",\"Z000001\",\"Z000002\"].contains(doc.veileder_id.value)";
 
         assertThat(actualScript).isEqualTo(expectedScript);
     }

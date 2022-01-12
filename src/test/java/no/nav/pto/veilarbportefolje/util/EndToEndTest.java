@@ -4,7 +4,6 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -31,9 +30,6 @@ public abstract class EndToEndTest {
     protected ElasticIndexer elasticIndexer;
 
     @Autowired
-    protected ElasticServiceV2 elasticServiceV2;
-
-    @Autowired
     protected IndexName indexName;
 
     @Autowired
@@ -43,16 +39,16 @@ public abstract class EndToEndTest {
     void setUp() {
         try {
             TimeZone.setDefault(TimeZone.getTimeZone(Optional.ofNullable(System.getenv("TZ")).orElse("Europe/Oslo")));
-            elasticServiceV2.opprettNyIndeks(indexName.getValue());
+            elasticIndexer.opprettNyIndeks(indexName.getValue());
         } catch (Exception e) {
-            elasticServiceV2.slettIndex(indexName.getValue());
-            elasticServiceV2.opprettNyIndeks(indexName.getValue());
+            elasticTestClient.deleteIndex(indexName);
+            elasticIndexer.opprettNyIndeks(indexName.getValue());
         }
     }
 
     @AfterEach
     void tearDown() {
-        elasticServiceV2.slettIndex(indexName.getValue());
+        elasticTestClient.deleteIndex(indexName);
     }
 
     public void populateElastic(EnhetId enhetId, VeilederId veilederId, String... aktoerIder) {

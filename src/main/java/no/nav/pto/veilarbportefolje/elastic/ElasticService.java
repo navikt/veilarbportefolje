@@ -4,49 +4,28 @@ import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.domene.Bruker;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
-import no.nav.pto.veilarbportefolje.domene.FacetResults;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.StatusTall;
-import no.nav.pto.veilarbportefolje.elastic.domene.Bucket;
-import no.nav.pto.veilarbportefolje.elastic.domene.ElasticSearchResponse;
-import no.nav.pto.veilarbportefolje.elastic.domene.Hit;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.elastic.domene.PortefoljestorrelserResponse;
-import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse;
+import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.apache.commons.lang3.StringUtils;
-import org.opensearch.action.search.SearchRequest;
-import org.opensearch.action.search.SearchResponse;
-import org.opensearch.client.RequestOptions;
-import org.opensearch.client.RestHighLevelClient;
-import org.opensearch.index.query.BoolQueryBuilder;
-import org.opensearch.search.builder.SearchSourceBuilder;
-import org.opensearch.search.sort.SortOrder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.List;
 import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggArbeidslisteQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggPortefoljestorrelserQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggStatusTallForEnhetQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggStatusTallForVeilederQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.leggTilFerdigFilter;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.leggTilManuelleFilter;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.sorterPaaNyForEnhet;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.sorterQueryParametere;
-import static org.opensearch.index.query.QueryBuilders.boolQuery;
-import static org.opensearch.index.query.QueryBuilders.matchQuery;
-import static org.opensearch.index.query.QueryBuilders.termQuery;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
-@Service
 public class ElasticService {
     private final RestHighLevelClient restHighLevelClient;
     private final VeilarbVeilederClient veilarbVeilederClient;
@@ -54,7 +33,6 @@ public class ElasticService {
     private final IndexName indexName;
     private final UnleashService unleashService;
 
-    @Autowired
     public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName, VedtakstottePilotRequest vedtakstottePilotRequest, UnleashService unleashService) {
         this.restHighLevelClient = restHighLevelClient;
         this.veilarbVeilederClient = veilarbVeilederClient;
@@ -105,7 +83,7 @@ public class ElasticService {
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
         ElasticSearchResponse response = search(searchSourceBuilder, indexName.getValue(), ElasticSearchResponse.class);
-        int totalHits = response.getHits().getTotal().getValue();
+        int totalHits = response.getHits().getTotal();
 
         List<Bruker> brukere = response.getHits().getHits().stream()
                 .map(Hit::get_source)

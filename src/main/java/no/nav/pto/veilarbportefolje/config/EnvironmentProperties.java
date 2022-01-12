@@ -29,7 +29,4 @@ public class EnvironmentProperties {
     private String unleashUrl;
     private String abacVeilarbUrl;
     private String abacModiaUrl;
-    private String opensearchUri;
-    private String opensearchUsername;
-    private String opensearchPassword;
 }

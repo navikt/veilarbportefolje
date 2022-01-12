@@ -71,10 +71,10 @@ public class OppfolgingsBruker {
     boolean arbeidsliste_aktiv;
     String arbeidsliste_sist_endret_av_veilederid;
     String arbeidsliste_endringstidspunkt;
+    String arbeidsliste_kommentar;
+    String arbeidsliste_overskrift;
     String arbeidsliste_frist;
     String arbeidsliste_kategori;
-    String arbeidsliste_tittel_sortering;
-    int arbeidsliste_tittel_lengde;
     String oppfolging_startdato;
     Set<String> aktiviteter = emptySet();
     Set<String> tiltak = emptySet();

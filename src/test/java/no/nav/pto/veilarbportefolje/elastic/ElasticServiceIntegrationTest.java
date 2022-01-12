@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -31,25 +28,24 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 class ElasticServiceIntegrationTest extends EndToEndTest {
+
     private static final String TEST_ENHET = "0000";
     private static final String TEST_VEILEDER_0 = "Z000000";
     private static final String TEST_VEILEDER_1 = "Z000001";
     private static final String LITE_PRIVILEGERT_VEILEDER = "Z000002";
 
+    @Autowired
     private ElasticService elasticService;
-    private ElasticIndexer elasticIndexer;
-    private VeilarbVeilederClient veilarbVeilederClientMock;
-
 
     @Autowired
-    public ElasticServiceIntegrationTest(ElasticService elasticService, ElasticIndexer elasticIndexer, VeilarbVeilederClient veilarbVeilederClientMock) {
-        this.elasticService = elasticService;
-        this.elasticIndexer = elasticIndexer;
-        this.veilarbVeilederClientMock = veilarbVeilederClientMock;
-    }
-    
+    private ElasticIndexer elasticIndexer;
+
+    @Autowired
+    private VeilarbVeilederClient veilarbVeilederClientMock;
+
     @Test
     void skal_kun_hente_ut_brukere_under_oppfolging() {
+
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
                         .setAktoer_id(randomAktorId().toString())
@@ -190,7 +186,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                         .setAktoer_id(randomAktorId().toString())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET)
-                        .setVeileder_id(LITE_PRIVILEGERT_VEILEDER)
+                        .setVeileder_id(null)
         );
 
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
@@ -212,17 +208,17 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var veilederId3 = "Z000003";
 
         List<OppfolgingsBruker> brukere = Stream.of(
-                        veilederId1,
-                        veilederId1,
-                        veilederId1,
-                        veilederId1,
-                        veilederId2,
-                        veilederId2,
-                        veilederId2,
-                        veilederId3,
-                        veilederId3,
-                        null
-                )
+                veilederId1,
+                veilederId1,
+                veilederId1,
+                veilederId1,
+                veilederId2,
+                veilederId2,
+                veilederId2,
+                veilederId3,
+                veilederId3,
+                null
+        )
                 .map(id ->
                         new OppfolgingsBruker()
                                 .setFnr(randomFnr().toString())
@@ -325,13 +321,11 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         var brukerUtenVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().get())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET);
 
         var brukerMedVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().get())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);

@@ -2,9 +2,11 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
+import static java.lang.String.format;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import static no.nav.common.utils.StringUtils.nullOrEmpty;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -12,6 +14,7 @@ import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
+import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidsliste;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,10 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.lang.String.format;
-import static no.nav.common.utils.StringUtils.nullOrEmpty;
-import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidsliste;
 
 @Slf4j
 @RestController
@@ -234,7 +233,7 @@ public class ArbeidsListeController {
                 );
     }
 
-    public static Arbeidsliste emptyArbeidsliste() {
+    private Arbeidsliste emptyArbeidsliste() {
         return new Arbeidsliste(null, null, null, null, null, null);
     }
 
