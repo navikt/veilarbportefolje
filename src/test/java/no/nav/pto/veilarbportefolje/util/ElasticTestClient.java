@@ -1,24 +1,24 @@
 package no.nav.pto.veilarbportefolje.util;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import org.apache.http.util.EntityUtils;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.get.GetRequest;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.json.JSONObject;
+import org.opensearch.action.get.GetRequest;
+import org.opensearch.action.get.GetResponse;
+import org.opensearch.action.index.IndexRequest;
+import org.opensearch.action.index.IndexResponse;
+import org.opensearch.action.update.UpdateRequest;
+import org.opensearch.client.Request;
+import org.opensearch.client.RequestOptions;
+import org.opensearch.client.Response;
+import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.common.xcontent.XContentBuilder;
+import org.opensearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
@@ -28,9 +28,9 @@ import java.util.function.Supplier;
 import static java.lang.System.currentTimeMillis;
 import static no.nav.common.json.JsonUtils.toJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.client.RequestOptions.DEFAULT;
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
+@Slf4j
 public class ElasticTestClient {
 
     private final RestHighLevelClient restHighLevelClient;
@@ -53,23 +53,16 @@ public class ElasticTestClient {
         GetRequest getRequest = new GetRequest();
         getRequest.index(indexName.getValue());
         getRequest.id(aktoerId.toString());
-        return restHighLevelClient.get(getRequest, DEFAULT);
+        return restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
     }
 
     @SneakyThrows
     public IndexResponse createDocument(AktorId aktoerId, String json) {
         IndexRequest indexRequest = new IndexRequest();
         indexRequest.index(indexName.getValue());
-        indexRequest.type("_doc");
         indexRequest.id(aktoerId.toString());
         indexRequest.source(json, XContentType.JSON);
-        return restHighLevelClient.index(indexRequest, DEFAULT);
-    }
-
-    @SneakyThrows
-    public AcknowledgedResponse deleteIndex(IndexName indexName) {
-        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName.getValue());
-        return restHighLevelClient.indices().delete(deleteIndexRequest, DEFAULT);
+        return restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
     }
 
     @SneakyThrows
@@ -89,12 +82,11 @@ public class ElasticTestClient {
         //create document
         IndexRequest indexRequest = new IndexRequest();
         indexRequest.index(indexName.getValue());
-        indexRequest.type("_doc");
         indexRequest.id(aktoerId.toString());
         indexRequest.source(document, XContentType.JSON);
 
         try {
-            restHighLevelClient.index(indexRequest, DEFAULT);
+            restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -102,19 +94,18 @@ public class ElasticTestClient {
         final Optional<GetResponse> getResponse = getDocument(aktoerId);
 
         assertThat(getResponse).isPresent();
-        assertThat(getResponse.get().isExists()).isTrue();
+        assertThat(getResponse.get()).isNotNull();
     }
 
     public void createUserInElastic(OppfolgingsBruker bruker) {
         //create document
         IndexRequest indexRequest = new IndexRequest();
         indexRequest.index(indexName.getValue());
-        indexRequest.type("_doc");
         indexRequest.id(bruker.getAktoer_id());
         indexRequest.source(toJson(bruker), XContentType.JSON);
 
         try {
-            restHighLevelClient.index(indexRequest, DEFAULT);
+            restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -123,7 +114,7 @@ public class ElasticTestClient {
         final Optional<GetResponse> getResponse = getDocument(aktoerId);
 
         assertThat(getResponse).isPresent();
-        assertThat(getResponse.get().isExists()).isTrue();
+        assertThat(getResponse.get()).isNotNull();
     }
 
     public Optional<GetResponse> getDocument(AktorId aktoerId) {
@@ -131,7 +122,7 @@ public class ElasticTestClient {
         getRequest.index(indexName.getValue());
         getRequest.id(aktoerId.toString());
         try {
-            return Optional.of(restHighLevelClient.get(getRequest, DEFAULT));
+            return Optional.of(restHighLevelClient.get(getRequest, RequestOptions.DEFAULT));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -161,10 +152,9 @@ public class ElasticTestClient {
 
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indexName.getValue());
-        updateRequest.type("_doc");
         updateRequest.id(aktoerId.toString());
         updateRequest.doc(content);
 
-        restHighLevelClient.update(updateRequest, DEFAULT);
+        restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);
     }
 }

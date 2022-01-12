@@ -1,10 +1,8 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
@@ -13,26 +11,20 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
-import org.apache.commons.io.IOUtils;
-import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.slf4j.MDC;
+import org.opensearch.action.ActionListener;
+import org.opensearch.action.bulk.BulkRequest;
+import org.opensearch.action.bulk.BulkResponse;
+import org.opensearch.action.index.IndexRequest;
+import org.opensearch.client.RequestOptions;
+import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.common.xcontent.XContentType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -41,9 +33,9 @@ import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
-import static org.elasticsearch.client.RequestOptions.DEFAULT;
 
 @Slf4j
+@Service
 public class ElasticIndexer {
 
     static final int BATCH_SIZE = 1000;
@@ -56,6 +48,7 @@ public class ElasticIndexer {
     private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final ElasticServiceV2 elasticServiceV2;
 
+    @Autowired
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
@@ -104,10 +97,13 @@ public class ElasticIndexer {
 
         BulkRequest bulk = new BulkRequest();
         oppfolgingsBrukere.stream()
-                .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getAktoer_id()).source(toJson(bruker), XContentType.JSON))
+                .map(bruker -> {
+                    IndexRequest indexRequest = new IndexRequest(indeksNavn).id(bruker.getAktoer_id());
+                    return indexRequest.source(toJson(bruker), XContentType.JSON);
+                })
                 .forEach(bulk::add);
 
-        restHighLevelClient.bulkAsync(bulk, DEFAULT, new ActionListener<>() {
+        restHighLevelClient.bulkAsync(bulk, RequestOptions.DEFAULT, new ActionListener<>() {
             @Override
             public void onResponse(BulkResponse bulkItemResponses) {
                 if (bulkItemResponses.hasFailures()) {
@@ -136,21 +132,6 @@ public class ElasticIndexer {
         this.skrivTilIndeks(indeksNavn, Collections.singletonList(oppfolgingsBruker));
     }
 
-    @SneakyThrows
-    public String opprettNyIndeks(String navn) {
-
-        String json = IOUtils.toString(Objects.requireNonNull(getClass().getResource("/elastic_settings.json")));
-        CreateIndexRequest request = new CreateIndexRequest(navn)
-                .source(json, XContentType.JSON);
-
-        CreateIndexResponse response = restHighLevelClient.indices().create(request, DEFAULT);
-        if (!response.isAcknowledged()) {
-            log.error("Kunne ikke opprette ny indeks {}", navn);
-            throw new RuntimeException();
-        }
-
-        return navn;
-    }
 
     private void validateBatchSize(List<OppfolgingsBruker> brukere) {
         if (brukere.size() > BATCH_SIZE_LIMIT) {
@@ -233,43 +214,16 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    public void nyHovedIndeksering(List<AktorId> aktorIds) {
+    public void nyHovedIndeksering(List<AktorId> brukere) {
         long tidsStempel0 = System.currentTimeMillis();
-
-        log.info("Hovedindeksering: Starter 'ny' hovedindeksering i Elasticsearch");
-        log.info("Hovedindeksering: Indekserer {} brukere", aktorIds.size());
-        List<List<AktorId>> brukerePartition = Lists.partition(aktorIds, aktorIds.size() / 5);
-
-        int antallTraader = brukerePartition.size();
-        log.info("Hovedindeksering: Bruker {} tråder ", antallTraader);
-
-        ExecutorService executor = Executors.newFixedThreadPool(antallTraader);
-        CountDownLatch ferdigSignal = new CountDownLatch(antallTraader);
-
-        brukerePartition.forEach(brukerePart -> executor.execute(() -> startAsyncPartition(brukerePart, ferdigSignal)));
-        executor.shutdown();
-
-        boolean hovedindekseringFullfort = ferdigSignal.await(8, TimeUnit.HOURS);
-        long tidsStempel1 = System.currentTimeMillis();
-        long tid = tidsStempel1 - tidsStempel0;
-        if (hovedindekseringFullfort) {
-            log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere, brukte {} tråder", tid, aktorIds.size(), antallTraader);
-        } else {
-            log.info("Hovedindeksering: Ble ikke ferdig, den timet ut på {} ms", tid);
-            executor.shutdownNow();
-        }
-    }
-
-    private void startAsyncPartition(List<AktorId> brukere, CountDownLatch ferdigSignal) {
-        String hashID = IdUtils.generateId();
-        log.info("Hovedindeksering: Startet for hash {} med {} brukere", hashID, brukere.size());
-        MDC.put("jobId", hashID);
+        log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
         partition(brukere, BATCH_SIZE).forEach(this::indekserBolk);
-        log.info("Hovedindeksering: Avsluttet trådnummer {}", hashID);
-        ferdigSignal.countDown();
-    }
 
+        long tidsStempel1 = System.currentTimeMillis();
+        long tid = tidsStempel1 - tidsStempel0;
+        log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
+    }
     public void indekserBolk(List<AktorId> aktorIds) {
         partition(aktorIds, BATCH_SIZE).forEach(partition -> {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(partition).stream().filter(bruker -> bruker.getAktoer_id() != null).collect(toList());

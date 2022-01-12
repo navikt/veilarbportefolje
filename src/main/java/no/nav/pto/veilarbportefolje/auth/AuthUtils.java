@@ -9,11 +9,14 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidsListeController.emptyArbeidsliste;
 
 public class AuthUtils {
 
     static Bruker fjernKonfidensiellInfo(Bruker bruker) {
-        return bruker.setFnr("").setEtternavn("").setFornavn("").setKjonn("").setFodselsdato(null);
+        return bruker.setFnr("").setKjonn("").setFodselsdato(null)
+                .setEtternavn("").setFornavn("")
+                .setArbeidsliste(emptyArbeidsliste());
     }
 
     static void test(String navn, Object data, boolean matches) {

@@ -6,6 +6,7 @@ import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.pto.veilarbportefolje.registrering.DinSituasjonSvar;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -133,7 +134,12 @@ public class Filtervalg {
                 .map(Objects::nonNull)
                 .reduce(true, and());
 
-        return alderOk && fodselsdatoOk && veiledereOk && utdanningOK;
+        Boolean sisteEndringOK = sisteEndringKategori
+                .stream()
+                .map(SisteEndringsKategori::contains)
+                .reduce(true, and());
+
+        return alderOk && fodselsdatoOk && veiledereOk && utdanningOK && sisteEndringOK;
     }
 
     private BinaryOperator<Boolean> and() {
