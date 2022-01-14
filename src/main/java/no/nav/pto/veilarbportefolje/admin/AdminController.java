@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
@@ -43,7 +44,7 @@ public class AdminController {
     private final ArbeidslisteService arbeidslisteService;
     private final RegistreringService registreringService;
     private final ProfileringService profileringService;
-
+    private final OpensearchAdminService opensearchAdminService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -148,7 +149,7 @@ public class AdminController {
     @PostMapping("/opensearch/createIndex")
     public String createIndex() {
         authorizeAdmin();
-        String indexName = opensearchIndexerV2.opprettNyIndeks();
+        String indexName = opensearchAdminService.opprettNyIndeks();
         log.info("Opprettet index: {}", indexName);
         return indexName;
     }
@@ -157,13 +158,13 @@ public class AdminController {
     public boolean deleteIndex(@RequestBody String indexName) {
         authorizeAdmin();
         log.info("Sletter index: {}", indexName);
-        return opensearchIndexerV2.slettIndex(indexName);
+        return opensearchAdminService.slettIndex(indexName);
     }
 
     @PostMapping("/opensearch/assignAliasToIndex")
     public String assignAliasToIndex(@RequestBody String indexName) {
         authorizeAdmin();
-        opensearchIndexerV2.opprettAliasForIndeks(indexName);
+        opensearchAdminService.opprettAliasForIndeks(indexName);
         return "Ok";
     }
 

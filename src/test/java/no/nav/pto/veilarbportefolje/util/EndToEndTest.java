@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.util;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.opensearch.IndexName;
@@ -39,20 +40,23 @@ public abstract class EndToEndTest {
     @Autowired
     protected UnleashService unleashService;
 
+    @Autowired
+    protected OpensearchAdminService opensearchAdminService;
+
     @BeforeEach
     void setUp() {
         try {
             TimeZone.setDefault(TimeZone.getTimeZone(Optional.ofNullable(System.getenv("TZ")).orElse("Europe/Oslo")));
-            opensearchIndexerV2.opprettNyIndeks(indexName.getValue());
+            opensearchAdminService.opprettNyIndeks(indexName.getValue());
         } catch (Exception e) {
-            opensearchIndexerV2.slettIndex(indexName.getValue());
-            opensearchIndexerV2.opprettNyIndeks(indexName.getValue());
+            opensearchAdminService.slettIndex(indexName.getValue());
+            opensearchAdminService.opprettNyIndeks(indexName.getValue());
         }
     }
 
     @AfterEach
     void tearDown() {
-        opensearchIndexerV2.slettIndex(indexName.getValue());
+        opensearchAdminService.slettIndex(indexName.getValue());
     }
 
     public void populateOpensearch(EnhetId enhetId, VeilederId veilederId, String... aktoerIder) {
