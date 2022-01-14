@@ -14,7 +14,7 @@ import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ public class GruppeAktivitetTest {
         AktorClient aktorClient = mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
-        this.gruppeAktivitetService = new GruppeAktivitetService(gruppeAktivitetRepository, gruppeAktivitetRepositoryV2, aktorClient, mock(BrukerDataService.class), mock(ElasticIndexer.class));
+        this.gruppeAktivitetService = new GruppeAktivitetService(gruppeAktivitetRepository, gruppeAktivitetRepositoryV2, aktorClient, mock(BrukerDataService.class), mock(OpensearchIndexer.class));
     }
 
     @BeforeEach

@@ -4,8 +4,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.elastic.IndexName;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.IndexName;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.opensearch.action.get.GetRequest;
@@ -31,18 +31,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
-public class ElasticTestClient {
+public class OpensearchTestClient {
 
     private final RestHighLevelClient restHighLevelClient;
     private final IndexName indexName;
 
     @Autowired
-    public ElasticTestClient(RestHighLevelClient restHighLevelClient, IndexName indexName) {
+    public OpensearchTestClient(RestHighLevelClient restHighLevelClient, IndexName indexName) {
         this.restHighLevelClient = restHighLevelClient;
         this.indexName = indexName;
     }
 
-    public OppfolgingsBruker hentBrukerFraElastic(AktorId aktoerId) {
+    public OppfolgingsBruker hentBrukerFraOpensearch(AktorId aktoerId) {
         return getDocument(aktoerId)
                 .map(resp -> JsonUtils.fromJson(resp.getSourceAsString(), OppfolgingsBruker.class))
                 .orElseThrow();
@@ -73,7 +73,7 @@ public class ElasticTestClient {
         return new JSONObject(entity).getInt("count");
     }
 
-    public void createUserInElastic(AktorId aktoerId) {
+    public void createUserInOpensearch(AktorId aktoerId) {
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("oppfolging", true)
@@ -97,7 +97,7 @@ public class ElasticTestClient {
         assertThat(getResponse.get()).isNotNull();
     }
 
-    public void createUserInElastic(OppfolgingsBruker bruker) {
+    public void createUserInOpensearch(OppfolgingsBruker bruker) {
         //create document
         IndexRequest indexRequest = new IndexRequest();
         indexRequest.index(indexName.getValue());
@@ -129,7 +129,7 @@ public class ElasticTestClient {
         return Optional.empty();
     }
 
-    public static void pollElasticUntil(Supplier<Boolean> func) {
+    public static void pollOpensearchUntil(Supplier<Boolean> func) {
         long t0 = currentTimeMillis();
 
         while (!func.get()) {

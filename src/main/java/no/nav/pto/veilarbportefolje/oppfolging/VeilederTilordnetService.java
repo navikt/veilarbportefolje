@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +17,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
     private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final ArbeidslisteService arbeidslisteService;
-    private final ElasticServiceV2 elasticServiceV2;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
 
     @Override
     public void behandleKafkaMeldingLogikk(VeilederTilordnetDTO dto) {
@@ -27,7 +27,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         oppfolgingRepository.settVeileder(aktoerId, veilederId);
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
 
-        elasticServiceV2.oppdaterVeileder(aktoerId, veilederId);
+        opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId);
         log.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
         // TODO: Slett oracle basert kode naar vi er over paa postgres.

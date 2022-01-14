@@ -22,7 +22,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.ModiaPep;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.PostgresService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.Before;
@@ -41,7 +41,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class EnhetControllerTest {
 
-    private ElasticService elasticService;
+    private OpensearchService opensearchService;
     private EnhetController enhetController;
     private Pep pep;
     private ModiaPep modiaPep;
@@ -49,13 +49,13 @@ public class EnhetControllerTest {
 
     @Before
     public void initController() {
-        elasticService = mock(ElasticService.class);
+        opensearchService = mock(OpensearchService.class);
         pep = mock(Pep.class);
         modiaPep = mock(ModiaPep.class);
         authContextHolder = AuthContextHolderThreadLocal.instance();
 
         AuthService authService = new AuthService(pep, modiaPep);
-        enhetController = new EnhetController(elasticService, mock(PostgresService.class), authService, mock(TiltakServiceV2.class), mock(MetricsClient.class), mock(UnleashService.class));
+        enhetController = new EnhetController(opensearchService, mock(PostgresService.class), authService, mock(TiltakServiceV2.class), mock(MetricsClient.class), mock(UnleashService.class));
 
     }
 
@@ -64,40 +64,40 @@ public class EnhetControllerTest {
     public void skal_hent_portefolje_fra_indeks_dersom_tilgang() {
         when(modiaPep.harVeilederTilgangTilModia(anyString())).thenReturn(true);
         when(pep.harVeilederTilgangTilEnhet(any(NavIdent.class), any(EnhetId.class))).thenReturn(true);
-        when(elasticService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
+        when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
 
         authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, generateMockJWT()),
                 () -> enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg())
         );
-        verify(elasticService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
+        verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
     public void skal_hente_hele_portefolje_fra_indeks_dersom_man_mangle_antall() {
         when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(modiaPep.harVeilederTilgangTilModia(any())).thenReturn(true);
-        when(elasticService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
+        when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
 
         authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, generateMockJWT()),
                 () -> enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", "ikke_satt", new Filtervalg())
         );
-        verify(elasticService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
+        verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
     public void skal_hente_hele_portefolje_fra_indeks_dersom_man_mangle_fra() {
         when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(modiaPep.harVeilederTilgangTilModia(any())).thenReturn(true);
-        when(elasticService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
+        when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
         authContextHolder
                 .withContext(
                         new AuthContext(UserRole.INTERN, generateMockJWT()),
                         () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
                 );
 
-        verify(elasticService, times(1)).hentBrukere(any(), any(), any(), any(), any(), isNull(), any());
+        verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), isNull(), any());
     }
 
     @Test(expected = ResponseStatusException.class)

@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.elastic.domene;
+package no.nav.pto.veilarbportefolje.opensearch.domene;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

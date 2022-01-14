@@ -15,7 +15,7 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Portefolje;
 import no.nav.pto.veilarbportefolje.domene.StatusTall;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.PostgresService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
@@ -40,7 +40,7 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 @RequestMapping("/api/veileder")
 public class VeilederController {
 
-    private final ElasticService elasticService;
+    private final OpensearchService opensearchService;
     private final AuthService authService;
     private final MetricsClient metricsClient;
     private final PostgresService postgresService;
@@ -72,7 +72,7 @@ public class VeilederController {
         if (erPostgresPa(unleashService, ident)) {
             brukereMedAntall = postgresService.hentBrukere(enhet, veilederIdent, sortDirection, sortField, filtervalg, fra, antall);
         } else {
-            brukereMedAntall = elasticService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
+            brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
         }
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
@@ -100,7 +100,7 @@ public class VeilederController {
         if (erPostgresPa(unleashService, ident)) {
             return postgresService.hentStatusTallForVeileder(veilederIdent, enhet);
         }
-        return elasticService.hentStatusTallForVeileder(veilederIdent, enhet);
+        return opensearchService.hentStatusTallForVeileder(veilederIdent, enhet);
     }
 
     // TODO: sjekk om dette kallet fortsatt er i bruk
@@ -116,7 +116,7 @@ public class VeilederController {
         if (erPostgresPa(unleashService, ident)) {
             return postgresService.hentBrukereMedArbeidsliste(veilederIdent, enhet);
         }
-        return elasticService.hentBrukereMedArbeidsliste(veilederIdent, enhet);
+        return opensearchService.hentBrukereMedArbeidsliste(veilederIdent, enhet);
     }
 
     @GetMapping("/{veilederident}/hentArbeidslisteForVeileder")

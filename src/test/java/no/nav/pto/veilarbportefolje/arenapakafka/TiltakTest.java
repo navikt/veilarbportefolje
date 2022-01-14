@@ -19,7 +19,7 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,7 +62,7 @@ public class TiltakTest {
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
-        this.tiltakServiceV2 = new TiltakServiceV2(tiltakRepositoryV1, tiltakRepositoryV2,aktorClient, arenaHendelseRepository, mock(BrukerDataService.class), mock(ElasticIndexer.class));
+        this.tiltakServiceV2 = new TiltakServiceV2(tiltakRepositoryV1, tiltakRepositoryV2,aktorClient, arenaHendelseRepository, mock(BrukerDataService.class), mock(OpensearchIndexer.class));
     }
 
 

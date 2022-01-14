@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.elastic;
+package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.Value;
 

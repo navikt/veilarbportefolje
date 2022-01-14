@@ -5,7 +5,7 @@ import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.elastic.ElasticHealthCheck;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchHealthCheck;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.config.DbConfigOracle.dbPinger;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticHealthCheck.FORVENTET_MINIMUM_ANTALL_DOKUMENTER;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchHealthCheck.FORVENTET_MINIMUM_ANTALL_DOKUMENTER;
 
 @Configuration
 public class HelsesjekkConfig {
@@ -24,9 +24,9 @@ public class HelsesjekkConfig {
                                          Pep veilarbPep,
                                          JdbcTemplate jdbcTemplate,
                                          UnleashService unleashService,
-                                         ElasticHealthCheck elasticHealthCheck) {
+                                         OpensearchHealthCheck opensearchHealthCheck) {
         List<SelfTestCheck> asyncSelftester = List.of(
-                new SelfTestCheck(String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, elasticHealthCheck),
+                new SelfTestCheck(String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, opensearchHealthCheck),
                 new SelfTestCheck("Database for portefolje", true, () -> dbPinger(jdbcTemplate)),
                 new SelfTestCheck("Aktorregister", true, aktorClient),
                 new SelfTestCheck("ABAC", true, veilarbPep.getAbacClient()),

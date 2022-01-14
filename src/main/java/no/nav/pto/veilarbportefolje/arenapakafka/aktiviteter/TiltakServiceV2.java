@@ -13,7 +13,7 @@ import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +35,7 @@ public class TiltakServiceV2 {
     private final AktorClient aktorClient;
     private final ArenaHendelseRepository arenaHendelseRepository;
     private final BrukerDataService brukerDataService;
-    private final ElasticIndexer elasticIndexer;
+    private final OpensearchIndexer opensearchIndexer;
 
     private final Cache<EnhetId, EnhetTiltak> enhetTiltakCache = Caffeine.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
@@ -85,7 +85,7 @@ public class TiltakServiceV2 {
         tiltakRepositoryV1.utledOgLagreTiltakInformasjon(aktorId, personId);
         brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
 
-        elasticIndexer.indekser(aktorId);
+        opensearchIndexer.indekser(aktorId);
     }
 
     public void behandleKafkaMeldingPostgres(TiltakDTO kafkaMelding) {

@@ -12,8 +12,8 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
@@ -33,10 +33,10 @@ public class AdminController {
     private final EnvironmentProperties environmentProperties;
     private final AktorClient aktorClient;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
-    private final ElasticServiceV2 elasticServiceV2;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
-    private final ElasticIndexer elasticIndexer;
+    private final OpensearchIndexer opensearchIndexer;
     private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
     private final OppfolgingRepository oppfolgingRepository;
@@ -58,12 +58,12 @@ public class AdminController {
         return "Slettet oppfølgingsbruker " + aktoerId;
     }
 
-    @DeleteMapping("/fjernBrukerElastic")
+    @DeleteMapping("/fjernBrukerOpensearch")
     @SneakyThrows
-    public String fjernBrukerFraElastic(@RequestBody String aktoerId) {
+    public String fjernBrukerFraOpensearch(@RequestBody String aktoerId) {
         authorizeAdmin();
-        elasticServiceV2.slettDokumenter(List.of(AktorId.of(aktoerId)));
-        return "Slettet bruker fra elastic " + aktoerId;
+        opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(aktoerId)));
+        return "Slettet bruker fra opensearch " + aktoerId;
     }
 
 
@@ -87,7 +87,7 @@ public class AdminController {
 
         authorizeAdmin();
         String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
-        elasticIndexer.indekser(AktorId.of(aktorId));
+        opensearchIndexer.indekser(AktorId.of(aktorId));
         return "Indeksering fullfort";
     }
 
@@ -95,7 +95,7 @@ public class AdminController {
     public String indekserAlleBrukere() {
         authorizeAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
-        elasticIndexer.nyHovedIndeksering(brukereUnderOppfolging);
+        opensearchIndexer.nyHovedIndeksering(brukereUnderOppfolging);
         return "Indeksering fullfort";
     }
 
@@ -106,7 +106,7 @@ public class AdminController {
         String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
         brukerAktiviteterService.syncAktivitetOgBrukerData(AktorId.of(aktorId));
 
-        elasticIndexer.indekser(AktorId.of(aktorId));
+        opensearchIndexer.indekser(AktorId.of(aktorId));
         return "Aktiviteter er naa i sync";
     }
 
@@ -145,25 +145,25 @@ public class AdminController {
         return "Registrering er nå migrert";
     }
 
-    @PostMapping("/elasticsearch/createIndex")
+    @PostMapping("/opensearch/createIndex")
     public String createIndex() {
         authorizeAdmin();
-        String indexName = elasticServiceV2.opprettNyIndeks();
+        String indexName = opensearchIndexerV2.opprettNyIndeks();
         log.info("Opprettet index: {}", indexName);
         return indexName;
     }
 
-    @PostMapping("/elasticsearch/deleteIndex")
+    @PostMapping("/opensearch/deleteIndex")
     public boolean deleteIndex(@RequestBody String indexName) {
         authorizeAdmin();
         log.info("Sletter index: {}", indexName);
-        return elasticServiceV2.slettIndex(indexName);
+        return opensearchIndexerV2.slettIndex(indexName);
     }
 
-    @PostMapping("/elasticsearch/assignAliasToIndex")
+    @PostMapping("/opensearch/assignAliasToIndex")
     public String assignAliasToIndex(@RequestBody String indexName) {
         authorizeAdmin();
-        elasticServiceV2.opprettAliasForIndeks(indexName);
+        opensearchIndexerV2.opprettAliasForIndeks(indexName);
         return "Ok";
     }
 

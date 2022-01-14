@@ -37,7 +37,7 @@ class NyForVeilederServiceTest extends EndToEndTest {
                 .value(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER, "J")
                 .execute();
 
-        elasticTestClient.createUserInElastic(aktoerId);
+        opensearchTestClient.createUserInOpensearch(aktoerId);
 
         NyForVeilederDTO melding = new NyForVeilederDTO(aktoerId, false);
         nyForVeilederService.behandleKafkaMeldingLogikk(melding);
@@ -46,7 +46,7 @@ class NyForVeilederServiceTest extends EndToEndTest {
         assertThat(data).isPresent();
         assertThat(data.get().getNyForVeileder()).isFalse();
 
-        final boolean nyForVeileder = elasticTestClient.hentBrukerFraElastic(aktoerId).isNy_for_veileder();
+        final boolean nyForVeileder = opensearchTestClient.hentBrukerFraOpensearch(aktoerId).isNy_for_veileder();
         assertThat(nyForVeileder).isFalse();
     }
 
@@ -60,7 +60,7 @@ class NyForVeilederServiceTest extends EndToEndTest {
                 .value(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER, "N")
                 .execute();
 
-        elasticTestClient.createUserInElastic(aktoerId);
+        opensearchTestClient.createUserInOpensearch(aktoerId);
 
         NyForVeilederDTO melding = new NyForVeilederDTO(aktoerId, true);
 
@@ -70,7 +70,7 @@ class NyForVeilederServiceTest extends EndToEndTest {
         assertThat(data).isPresent();
         //assertThat(data.get().getNyForVeileder()).isFalse();
 
-        final boolean nyForVeileder = elasticTestClient.hentBrukerFraElastic(aktoerId).isNy_for_veileder();
+        final boolean nyForVeileder = opensearchTestClient.hentBrukerFraOpensearch(aktoerId).isNy_for_veileder();
         //assertThat(nyForVeileder).isFalse();
     }
 }

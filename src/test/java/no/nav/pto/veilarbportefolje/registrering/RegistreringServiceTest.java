@@ -7,8 +7,8 @@ import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.elastic.ElasticService;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.Test;
 import org.opensearch.action.get.GetResponse;
@@ -20,26 +20,26 @@ import java.util.List;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static java.util.Optional.empty;
-import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
+import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class RegistreringServiceTest extends EndToEndTest {
 
     private final RegistreringService registreringService;
-    private final ElasticService elasticService;
+    private final OpensearchService opensearchService;
 
     @Autowired
-    public RegistreringServiceTest(RegistreringService registreringService, ElasticService elasticService) {
+    public RegistreringServiceTest(RegistreringService registreringService, OpensearchService opensearchService) {
         this.registreringService = registreringService;
-        this.elasticService = elasticService;
+        this.opensearchService = opensearchService;
     }
 
     @Test
     void utdanning_full_integration() {
         final AktorId aktoerId = randomAktorId();
 
-        elasticTestClient.createUserInElastic(aktoerId);
+        opensearchTestClient.createUserInOpensearch(aktoerId);
 
         ArbeidssokerRegistrertEvent kafkaMessage = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(aktoerId.toString())
@@ -52,7 +52,7 @@ class RegistreringServiceTest extends EndToEndTest {
 
         registreringService.behandleKafkaMeldingLogikk(kafkaMessage);
 
-        GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
+        GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
 
         assertThat(getResponse.isExists()).isTrue();
 
@@ -71,11 +71,11 @@ class RegistreringServiceTest extends EndToEndTest {
     void utdanning_filter_test() {
         final String testEnhet = "0000";
 
-        populateElastic(testEnhet);
+        populateOpensearch(testEnhet);
 
-        // Må vente til dokumentet blir søkbart i elastic
-        pollElasticUntil(() -> {
-            final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
+        // Må vente til dokumentet blir søkbart i Opensearch
+        pollOpensearchUntil(() -> {
+            final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                     testEnhet,
                     empty(),
                     "asc",
@@ -87,7 +87,7 @@ class RegistreringServiceTest extends EndToEndTest {
             return brukereMedAntall.getAntall() == 3;
         });
 
-        var responseBrukere2 = elasticService.hentBrukere(
+        var responseBrukere2 = opensearchService.hentBrukere(
                 testEnhet,
                 empty(),
                 "asc",
@@ -99,7 +99,7 @@ class RegistreringServiceTest extends EndToEndTest {
         // Trenger ikke vente som ovenfor da dokumentene mest sannsynlig nå er søkbare
         assertThat(responseBrukere2.getAntall()).isEqualTo(1);
 
-        var responseBrukere3 = elasticService.hentBrukere(
+        var responseBrukere3 = opensearchService.hentBrukere(
                 testEnhet,
                 empty(),
                 "asc",
@@ -110,7 +110,7 @@ class RegistreringServiceTest extends EndToEndTest {
 
         assertThat(responseBrukere3.getAntall()).isEqualTo(2);
 
-        var responseBrukere4 = elasticService.hentBrukere(
+        var responseBrukere4 = opensearchService.hentBrukere(
                 testEnhet,
                 empty(),
                 "asc",
@@ -121,7 +121,7 @@ class RegistreringServiceTest extends EndToEndTest {
 
         assertThat(responseBrukere4.getAntall()).isEqualTo(2);
 
-        var responseBrukere5 = elasticService.hentBrukere(
+        var responseBrukere5 = opensearchService.hentBrukere(
                 testEnhet,
                 empty(),
                 "asc",
@@ -163,7 +163,7 @@ class RegistreringServiceTest extends EndToEndTest {
         return filtervalg;
     }
 
-    private void populateElastic(String enhet) {
+    private void populateOpensearch(String enhet) {
         final AktorId aktoerId1 = randomAktorId();
         final AktorId aktoerId2 = randomAktorId();
         final AktorId aktoerId3 = randomAktorId();
@@ -193,6 +193,6 @@ class RegistreringServiceTest extends EndToEndTest {
                         .setUtdanning("GRUNNSKOLE")
         );
 
-        brukere.forEach(bruker -> elasticTestClient.createUserInElastic(bruker));
+        brukere.forEach(bruker -> opensearchTestClient.createUserInOpensearch(bruker));
     }
 }

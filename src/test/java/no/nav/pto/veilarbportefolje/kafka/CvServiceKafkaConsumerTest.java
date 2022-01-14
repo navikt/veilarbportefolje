@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.cv.dto.Ressurs;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONObject;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.action.get.GetResponse;
@@ -19,7 +19,7 @@ import java.time.ZonedDateTime;
 import java.util.concurrent.ExecutionException;
 
 import static java.util.Arrays.stream;
-import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
+import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 
 class CvServiceKafkaConsumerTest extends EndToEndTest {
 
@@ -42,67 +42,67 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
 
     @Test
     void testCVHjemmel() throws ExecutionException, InterruptedException {
-        createCvDocumentsInElastic(aktoerId1, aktoerId2, aktoerId3);
-        assertHarDeltCVAreFalseInElastic(aktoerId1, aktoerId2, aktoerId3);
+        createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+        assertHarDeltCVAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
 
         populateCVHjemmelKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
-        pollElasticUntil(() -> harDeltCv(aktoerId1, aktoerId2, aktoerId3));
-        assertHarDeltCVAreTrueInElastic(aktoerId1, aktoerId2, aktoerId3);
+        pollOpensearchUntil(() -> harDeltCv(aktoerId1, aktoerId2, aktoerId3));
+        assertHarDeltCVAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
     }
 
     @Test
     void testCVEksistere() throws ExecutionException, InterruptedException {
-        createCvDocumentsInElastic(aktoerId1, aktoerId2, aktoerId3);
-        assertCvEksistereAreFalseInElastic(aktoerId1, aktoerId2, aktoerId3);
+        createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+        assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
 
         populateCVEksistereKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
-        pollElasticUntil(() -> hvisCvEksistere(aktoerId1, aktoerId2, aktoerId3));
-        assertCvEksistereAreTrueInElastic(aktoerId1, aktoerId2, aktoerId3);
+        pollOpensearchUntil(() -> hvisCvEksistere(aktoerId1, aktoerId2, aktoerId3));
+        assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
     }
 
     private boolean harDeltCv(AktorId... aktoerIds) {
         return stream(aktoerIds)
-                .map(aktoerId -> elasticTestClient.fetchDocument(aktoerId))
+                .map(aktoerId -> opensearchTestClient.fetchDocument(aktoerId))
                 .allMatch(CvServiceKafkaConsumerTest::harDeltCv);
     }
 
     private boolean hvisCvEksistere(AktorId... aktoerIds) {
         return stream(aktoerIds)
-                .map(aktoerId -> elasticTestClient.fetchDocument(aktoerId))
+                .map(aktoerId -> opensearchTestClient.fetchDocument(aktoerId))
                 .allMatch(CvServiceKafkaConsumerTest::cvEksistere);
     }
 
-    private void createCvDocumentsInElastic(AktorId... aktoerIds) {
+    private void createCvDocumentsInOpensearch(AktorId... aktoerIds) {
         for (AktorId aktoerId : aktoerIds) {
             createCvDocument(aktoerId);
         }
     }
 
-    private void assertHarDeltCVAreTrueInElastic(AktorId... aktoerIds) {
+    private void assertHarDeltCVAreTrueInOpensearch(AktorId... aktoerIds) {
         for (AktorId aktoerId : aktoerIds) {
-            GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
-            Assert.assertTrue(harDeltCv(getResponse));
+            GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
+            Assertions.assertTrue(harDeltCv(getResponse));
         }
     }
 
-    private void assertHarDeltCVAreFalseInElastic(AktorId... aktoerIds) {
+    private void assertHarDeltCVAreFalseInOpensearch(AktorId... aktoerIds) {
         for (AktorId aktoerId : aktoerIds) {
-            GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
-            Assert.assertFalse(harDeltCv(getResponse));
+            GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
+            Assertions.assertFalse(harDeltCv(getResponse));
         }
     }
 
-    private void assertCvEksistereAreTrueInElastic(AktorId... aktoerIds) {
+    private void assertCvEksistereAreTrueInOpensearch(AktorId... aktoerIds) {
         for (AktorId aktoerId : aktoerIds) {
-            GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
-            Assert.assertTrue(cvEksistere(getResponse));
+            GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
+            Assertions.assertTrue(cvEksistere(getResponse));
         }
     }
 
-    private void assertCvEksistereAreFalseInElastic(AktorId... aktoerIds) {
+    private void assertCvEksistereAreFalseInOpensearch(AktorId... aktoerIds) {
         for (AktorId aktoerId : aktoerIds) {
-            GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
-            Assert.assertFalse(cvEksistere(getResponse));
+            GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
+            Assertions.assertFalse(cvEksistere(getResponse));
         }
     }
 
@@ -121,7 +121,7 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
                 .put("cv_eksistere", false)
                 .toString();
 
-        elasticTestClient.createDocument(aktoerId, document);
+        opensearchTestClient.createDocument(aktoerId, document);
     }
 
     private void populateCVHjemmelKafkaTopic(AktorId... aktoerIds) throws ExecutionException, InterruptedException {

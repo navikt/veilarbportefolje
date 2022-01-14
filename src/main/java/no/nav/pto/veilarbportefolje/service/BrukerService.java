@@ -9,8 +9,8 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +29,7 @@ public class BrukerService {
 
     private final BrukerRepository brukerRepository;
     private final AktorClient aktorClient;
-    private final ElasticServiceV2 elasticServiceV2;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
     private final UnleashService unleashService;
 
     public Optional<AktorId> hentAktorId(Fnr fnr) {
@@ -99,7 +99,7 @@ public class BrukerService {
             brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
         }
         if (unleashService.isEnabled(AUTO_SLETT)) {
-            brukerRepository.hentGamleAktorIder(personId).ifPresent(elasticServiceV2::slettDokumenter);
+            brukerRepository.hentGamleAktorIder(personId).ifPresent(opensearchIndexerV2::slettDokumenter);
         }
     }
 

@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakServiceV2;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.PostgresService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
@@ -25,7 +25,7 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 @RequiredArgsConstructor
 @RequestMapping("/api/enhet")
 public class EnhetController {
-    private final ElasticService elasticService;
+    private final OpensearchService opensearchService;
     private final PostgresService postgresService;
     private final AuthService authService;
     private final TiltakServiceV2 tiltakServiceV2;
@@ -54,7 +54,7 @@ public class EnhetController {
         if (erPostgresPa(unleashService, ident)) {
             brukereMedAntall = postgresService.hentBrukere(enhet, null, sortDirection, sortField, filtervalg, fra, antall);
         } else {
-            brukereMedAntall = elasticService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+            brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
         }
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
@@ -76,7 +76,7 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return elasticService.hentPortefoljestorrelser(enhet);
+        return opensearchService.hentPortefoljestorrelser(enhet);
     }
 
     @GetMapping("/{enhet}/statustall")
@@ -88,7 +88,7 @@ public class EnhetController {
         if (erPostgresPa(unleashService, ident)) {
             return postgresService.hentStatusTallForEnhet(enhet);
         }
-        return elasticService.hentStatusTallForEnhet(enhet);
+        return opensearchService.hentStatusTallForEnhet(enhet);
 
     }
 
