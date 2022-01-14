@@ -38,8 +38,8 @@ import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOpp
 @Service
 public class OpensearchIndexer {
 
-    static final int BATCH_SIZE = 1000;
-    static final int BATCH_SIZE_LIMIT = 1000;
+    public static final int BATCH_SIZE = 1000;
+    public static final int BATCH_SIZE_LIMIT = 1000;
     private final RestHighLevelClient restHighLevelClient;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;

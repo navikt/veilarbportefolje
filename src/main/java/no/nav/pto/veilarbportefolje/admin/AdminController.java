@@ -106,7 +106,6 @@ public class AdminController {
         authorizeAdmin();
         String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
         brukerAktiviteterService.syncAktivitetOgBrukerData(AktorId.of(aktorId));
-
         opensearchIndexer.indekser(AktorId.of(aktorId));
         return "Aktiviteter er naa i sync";
     }
@@ -167,6 +166,14 @@ public class AdminController {
         opensearchAdminService.opprettAliasForIndeks(indexName);
         return "Ok";
     }
+
+    @PostMapping("/opensearch/testSkrivMedNyeSettings")
+    public String testSkrivMedNyeSettings() {
+        authorizeAdmin();
+        opensearchAdminService.testSkrivMedNyeSettings();
+        return "Ok";
+    }
+
 
     private void authorizeAdmin() {
         final String ident = authContextHolder.getNavIdent().map(Id::toString).orElseThrow();
