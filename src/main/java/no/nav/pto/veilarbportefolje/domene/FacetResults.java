@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.pto.veilarbportefolje.elastic.domene.Bucket;
+import no.nav.pto.veilarbportefolje.opensearch.domene.Bucket;
 
 import java.util.List;
 

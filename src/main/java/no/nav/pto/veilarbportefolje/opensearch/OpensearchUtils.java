@@ -1,7 +1,7 @@
-package no.nav.pto.veilarbportefolje.elastic;
+package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -11,26 +11,14 @@ import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.RestClientBuilder;
 import org.opensearch.client.RestHighLevelClient;
-import org.opensearch.client.base.RestClientTransport;
-import org.opensearch.client.json.jackson.JacksonJsonpMapper;
-import org.opensearch.client.opensearch.OpenSearchClient;
 
 @Slf4j
-public class ElasticUtils {
+public class OpensearchUtils {
 
     private static final int SOCKET_TIMEOUT = 120_000;
     private static final int CONNECT_TIMEOUT = 60_000;
 
-    public static OpenSearchClient createESClient(ElasticClientConfig config) {
-        RestClient restClient = RestClient.builder(
-                new HttpHost(config.getHostname(), config.getPort())).build();
-
-        RestClientTransport transport = new RestClientTransport(
-                restClient, new JacksonJsonpMapper());
-        return new OpenSearchClient(transport);
-    }
-
-    public static RestHighLevelClient createClient(ElasticClientConfig config) {
+    public static RestHighLevelClient createClient(OpensearchClientConfig config) {
         HttpHost httpHost = new HttpHost(
                 config.getHostname(),
                 config.getPort(),
@@ -49,7 +37,7 @@ public class ElasticUtils {
                 ));
     }
 
-    private static RestClientBuilder.HttpClientConfigCallback getHttpClientConfigCallback(ElasticClientConfig config) {
+    private static RestClientBuilder.HttpClientConfigCallback getHttpClientConfigCallback(OpensearchClientConfig config) {
         if (config.isDisableSecurity()) {
             return httpClientBuilder -> httpClientBuilder;
         }

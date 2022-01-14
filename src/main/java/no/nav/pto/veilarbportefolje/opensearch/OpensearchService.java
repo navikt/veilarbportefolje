@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.elastic;
+package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
@@ -9,13 +9,13 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.FacetResults;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.StatusTall;
-import no.nav.pto.veilarbportefolje.elastic.domene.Bucket;
-import no.nav.pto.veilarbportefolje.elastic.domene.ElasticSearchResponse;
-import no.nav.pto.veilarbportefolje.elastic.domene.Hit;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.elastic.domene.PortefoljestorrelserResponse;
-import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse;
-import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
+import no.nav.pto.veilarbportefolje.opensearch.domene.Bucket;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
+import no.nav.pto.veilarbportefolje.opensearch.domene.Hit;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljestorrelserResponse;
+import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse;
+import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -34,20 +34,20 @@ import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggArbeidslisteQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggPortefoljestorrelserQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggStatusTallForEnhetQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggStatusTallForVeilederQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.leggTilFerdigFilter;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.leggTilManuelleFilter;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.sorterPaaNyForEnhet;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.sorterQueryParametere;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggArbeidslisteQuery;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggPortefoljestorrelserQuery;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggStatusTallForEnhetQuery;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggStatusTallForVeilederQuery;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.leggTilFerdigFilter;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.leggTilManuelleFilter;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.sorterPaaNyForEnhet;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.sorterQueryParametere;
 import static org.opensearch.index.query.QueryBuilders.boolQuery;
 import static org.opensearch.index.query.QueryBuilders.matchQuery;
 import static org.opensearch.index.query.QueryBuilders.termQuery;
 
 @Service
-public class ElasticService {
+public class OpensearchService {
     private final RestHighLevelClient restHighLevelClient;
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final VedtakstottePilotRequest vedtakstottePilotRequest;
@@ -55,7 +55,7 @@ public class ElasticService {
     private final UnleashService unleashService;
 
     @Autowired
-    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName, VedtakstottePilotRequest vedtakstottePilotRequest, UnleashService unleashService) {
+    public OpensearchService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName, VedtakstottePilotRequest vedtakstottePilotRequest, UnleashService unleashService) {
         this.restHighLevelClient = restHighLevelClient;
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.indexName = indexName;
@@ -104,10 +104,10 @@ public class ElasticService {
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
-        ElasticSearchResponse response = search(searchSourceBuilder, indexName.getValue(), ElasticSearchResponse.class);
-        int totalHits = response.getHits().getTotal().getValue();
+        OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
+        int totalHits = response.hits().getTotal().getValue();
 
-        List<Bruker> brukere = response.getHits().getHits().stream()
+        List<Bruker> brukere = response.hits().getHits().stream()
                 .map(Hit::get_source)
                 .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
                 .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, filtervalg, enhetId))
@@ -120,9 +120,9 @@ public class ElasticService {
 
         SearchSourceBuilder request = byggArbeidslisteQuery(enhetId, veilederId);
 
-        ElasticSearchResponse response = search(request, indexName.getValue(), ElasticSearchResponse.class);
+        OpensearchResponse response = search(request, indexName.getValue(), OpensearchResponse.class);
 
-        return response.getHits().getHits().stream()
+        return response.hits().getHits().stream()
                 .map(hit -> Bruker.of(hit.get_source(), erVedtakstottePilotPa(EnhetId.of(enhetId))))
                 .collect(toList());
     }

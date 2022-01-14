@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.elastic.domene.Endring;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.Assert;

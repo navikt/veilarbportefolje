@@ -3,10 +3,10 @@ package no.nav.pto.veilarbportefolje.util;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.elastic.IndexName;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.IndexName;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,16 +22,16 @@ import java.util.TimeZone;
 public abstract class EndToEndTest {
 
     @Autowired
-    protected ElasticTestClient elasticTestClient;
+    protected OpensearchTestClient opensearchTestClient;
 
     @Autowired
     protected TestDataClient testDataClient;
 
     @Autowired
-    protected ElasticIndexer elasticIndexer;
+    protected OpensearchIndexer opensearchIndexer;
 
     @Autowired
-    protected ElasticServiceV2 elasticServiceV2;
+    protected OpensearchIndexerV2 opensearchIndexerV2;
 
     @Autowired
     protected IndexName indexName;
@@ -43,19 +43,19 @@ public abstract class EndToEndTest {
     void setUp() {
         try {
             TimeZone.setDefault(TimeZone.getTimeZone(Optional.ofNullable(System.getenv("TZ")).orElse("Europe/Oslo")));
-            elasticServiceV2.opprettNyIndeks(indexName.getValue());
+            opensearchIndexerV2.opprettNyIndeks(indexName.getValue());
         } catch (Exception e) {
-            elasticServiceV2.slettIndex(indexName.getValue());
-            elasticServiceV2.opprettNyIndeks(indexName.getValue());
+            opensearchIndexerV2.slettIndex(indexName.getValue());
+            opensearchIndexerV2.opprettNyIndeks(indexName.getValue());
         }
     }
 
     @AfterEach
     void tearDown() {
-        elasticServiceV2.slettIndex(indexName.getValue());
+        opensearchIndexerV2.slettIndex(indexName.getValue());
     }
 
-    public void populateElastic(EnhetId enhetId, VeilederId veilederId, String... aktoerIder) {
+    public void populateOpensearch(EnhetId enhetId, VeilederId veilederId, String... aktoerIder) {
         List<OppfolgingsBruker> brukere = new ArrayList<>();
         for (String aktoerId : aktoerIder) {
             brukere.add(new OppfolgingsBruker()
@@ -66,6 +66,6 @@ public abstract class EndToEndTest {
             );
         }
 
-        brukere.forEach(bruker -> elasticTestClient.createUserInElastic(bruker));
+        brukere.forEach(bruker -> opensearchTestClient.createUserInOpensearch(bruker));
     }
 }

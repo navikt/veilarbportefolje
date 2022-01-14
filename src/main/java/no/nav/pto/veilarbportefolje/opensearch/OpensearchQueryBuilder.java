@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.elastic;
+package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
@@ -46,7 +46,7 @@ import static org.opensearch.search.sort.ScriptSortBuilder.ScriptSortType.STRING
 import static org.opensearch.search.sort.SortMode.MIN;
 
 @Slf4j
-public class ElasticQueryBuilder {
+public class OpensearchQueryBuilder {
 
     static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg, UnleashService unleashService) {
 

@@ -11,7 +11,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
@@ -37,7 +37,7 @@ public class ArbeidslisteService {
     private final ArbeidslisteRepositoryV1 arbeidslisteRepositoryOracle;
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryPostgres;
     private final BrukerService brukerService;
-    private final ElasticServiceV2 elasticServiceV2;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
     private final UnleashService unleashService;
     private final MetricsClient metricsClient;
 
@@ -73,7 +73,7 @@ public class ArbeidslisteService {
         dto.setNavKontorForArbeidsliste(navKontorForBruker);
         arbeidslisteRepositoryPostgres.insertArbeidsliste(dto);
         return arbeidslisteRepositoryOracle.insertArbeidsliste(dto)
-                .onSuccess(elasticServiceV2::updateArbeidsliste);
+                .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
 
     public Try<ArbeidslisteDTO> updateArbeidsliste(ArbeidslisteDTO data) {
@@ -85,14 +85,14 @@ public class ArbeidslisteService {
         arbeidslisteRepositoryPostgres.updateArbeidsliste(data);
         return arbeidslisteRepositoryOracle
                 .updateArbeidsliste(data)
-                .onSuccess(elasticServiceV2::updateArbeidsliste);
+                .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
 
     public int slettArbeidsliste(AktorId aktoerId) {
         arbeidslisteRepositoryPostgres.slettArbeidsliste(aktoerId);
         final int rowsUpdated = arbeidslisteRepositoryOracle.slettArbeidsliste(aktoerId);
         if (rowsUpdated == 1) {
-            elasticServiceV2.slettArbeidsliste(aktoerId);
+            opensearchIndexerV2.slettArbeidsliste(aktoerId);
         }
         return rowsUpdated;
     }

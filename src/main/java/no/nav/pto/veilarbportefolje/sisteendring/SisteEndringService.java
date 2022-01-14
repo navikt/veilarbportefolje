@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.elastic.domene.Endring;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Transactional
 @RequiredArgsConstructor
 public class SisteEndringService {
-    private final ElasticServiceV2 elasticServiceV2;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
     private final SisteEndringRepository sisteEndringRepository;
     private final SisteEndringRepositoryV2 sisteEndringRepositoryV2;
 
@@ -37,7 +37,7 @@ public class SisteEndringService {
             if (veilederharsett.isAfter(DateUtils.toLocalDateTimeOrNull(endring.getTidspunkt()))) {
                 sisteEndringRepository.oppdaterHarSett(aktorId, SisteEndringsKategori.valueOf(kategori), true);
                 sisteEndringRepositoryV2.oppdaterHarSett(aktorId, SisteEndringsKategori.valueOf(kategori), true);
-                elasticServiceV2.updateSisteEndring(aktorId, SisteEndringsKategori.valueOf(kategori));
+                opensearchIndexerV2.updateSisteEndring(aktorId, SisteEndringsKategori.valueOf(kategori));
             }
         });
     }
@@ -51,7 +51,7 @@ public class SisteEndringService {
             try {
                 sisteEndringRepository.upsert(sisteEndringDTO);
                 sisteEndringRepositoryV2.upsert(sisteEndringDTO);
-                elasticServiceV2.updateSisteEndring(sisteEndringDTO);
+                opensearchIndexerV2.updateSisteEndring(sisteEndringDTO);
             } catch (Exception e) {
                 String message = String.format("Kunne ikke lagre eller indexere siste endring for aktoer id: %s", melding.getAktorId());
                 log.error(message, e);
@@ -69,7 +69,7 @@ public class SisteEndringService {
         if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
             try {
                 sisteEndringRepository.upsert(sisteEndringDTO);
-                elasticServiceV2.updateSisteEndring(sisteEndringDTO);
+                opensearchIndexerV2.updateSisteEndring(sisteEndringDTO);
             } catch (Exception e) {
                 String message = String.format("Kunne ikke lagre eller indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId());
                 log.error(message, e);

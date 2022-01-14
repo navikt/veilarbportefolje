@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.elastic;
+package no.nav.pto.veilarbportefolje.opensearch;
 
 import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
@@ -12,18 +12,18 @@ import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggAktivitetFilterQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggAlderQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggPortefoljestorrelserQuery;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.byggVeilederPaaEnhetScript;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.sorterQueryParametere;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.sorterValgteAktiviteter;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggAktivitetFilterQuery;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggAlderQuery;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggPortefoljestorrelserQuery;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggVeilederPaaEnhetScript;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.sorterQueryParametere;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.sorterValgteAktiviteter;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.opensearch.index.query.QueryBuilders.boolQuery;
 import static org.opensearch.search.sort.SortOrder.ASC;
 
-public class ElasticQueryBuilderTest {
+public class OpensearchQueryBuilderTest {
 
     @BeforeClass
     public static void beforeAll() {

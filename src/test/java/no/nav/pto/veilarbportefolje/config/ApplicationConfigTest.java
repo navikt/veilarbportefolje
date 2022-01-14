@@ -36,11 +36,11 @@ import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.ElasticService;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.elastic.IndexName;
-import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.IndexName;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
 import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
@@ -62,7 +62,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
-import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
+import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import no.nav.pto.veilarbportefolje.util.TestUtil;
@@ -82,7 +82,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 
 import static no.nav.common.utils.IdUtils.generateId;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createClient;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchUtils.createClient;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -97,8 +97,8 @@ import static org.mockito.Mockito.when;
         AktivitetService.class,
         PersistentOppdatering.class,
         OppfolgingAvsluttetService.class,
-        ElasticService.class,
-        ElasticServiceV2.class,
+        OpensearchService.class,
+        OpensearchIndexerV2.class,
         AktivitetDAO.class,
         AktiviteterRepositoryV2.class,
         AktivitetStatusRepositoryV2.class,
@@ -110,7 +110,7 @@ import static org.mockito.Mockito.when;
         DialogService.class,
         DialogRepository.class,
         DialogRepositoryV2.class,
-        ElasticIndexer.class,
+        OpensearchIndexer.class,
         CvRepository.class,
         CVRepositoryV2.class,
         CVService.class,
@@ -146,8 +146,8 @@ public class ApplicationConfigTest {
 
     private static final OpenSearchContainer OPENSEARCH_CONTAINER;
     private static final String OPENSEARCH_VERSION = "1.2.3";
-    private static final String ELASTICSEARCH_TEST_PASSWORD = "test";
-    private static final String ELASTICSEARCH_TEST_USERNAME = "elastic";
+    private static final String OPENSEARCH_TEST_PASSWORD = "test";
+    private static final String OPENSEARCH_TEST_USERNAME = "opensearch";
 
     static {
         OPENSEARCH_CONTAINER = new OpenSearchContainer(OPENSEARCH_VERSION);
@@ -156,13 +156,13 @@ public class ApplicationConfigTest {
 
 
     @Bean
-    public TestDataClient dbTestClient(JdbcTemplate jdbcTemplate, ElasticTestClient elasticTestClient) {
-        return new TestDataClient(jdbcTemplate, elasticTestClient);
+    public TestDataClient dbTestClient(JdbcTemplate jdbcTemplate, OpensearchTestClient opensearchTestClient) {
+        return new TestDataClient(jdbcTemplate, opensearchTestClient);
     }
 
     @Bean
-    public ElasticTestClient elasticTestClient(RestHighLevelClient restHighLevelClient, IndexName indexName) {
-        return new ElasticTestClient(restHighLevelClient, indexName);
+    public OpensearchTestClient opensearchTestClient(RestHighLevelClient restHighLevelClient, IndexName indexName) {
+        return new OpensearchTestClient(restHighLevelClient, indexName);
     }
 
     @Bean
@@ -231,15 +231,15 @@ public class ApplicationConfigTest {
 
     @Bean
     public RestHighLevelClient restHighLevelClient() {
-        ElasticClientConfig elasticTestConfig = ElasticClientConfig.builder()
-                .username(ELASTICSEARCH_TEST_USERNAME)
-                .password(ELASTICSEARCH_TEST_PASSWORD)
+        OpensearchClientConfig opensearchTestConfig = OpensearchClientConfig.builder()
+                .username(OPENSEARCH_TEST_USERNAME)
+                .password(OPENSEARCH_TEST_PASSWORD)
                 .hostname(OPENSEARCH_CONTAINER.getHost())
                 .port(OPENSEARCH_CONTAINER.getFirstMappedPort())
                 .scheme("http")
                 .build();
 
-        return createClient(elasticTestConfig);
+        return createClient(opensearchTestConfig);
     }
 
     @Bean

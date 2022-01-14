@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.elastic;
+package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.BrukertiltakV2;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import org.opensearch.action.ActionListener;
 import org.opensearch.action.bulk.BulkRequest;
@@ -31,12 +31,12 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
-import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
+import static no.nav.pto.veilarbportefolje.opensearch.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
 @Slf4j
 @Service
-public class ElasticIndexer {
+public class OpensearchIndexer {
 
     static final int BATCH_SIZE = 1000;
     static final int BATCH_SIZE_LIMIT = 1000;
@@ -46,24 +46,24 @@ public class ElasticIndexer {
     private final IndexName alias;
     private final SisteEndringRepository sisteEndringRepository;
     private final TiltakRepositoryV1 tiltakRepositoryV1;
-    private final ElasticServiceV2 elasticServiceV2;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
 
     @Autowired
-    public ElasticIndexer(
+    public OpensearchIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient restHighLevelClient,
             SisteEndringRepository sisteEndringRepository,
-            IndexName alias,
-            TiltakRepositoryV1 tiltakRepositoryV1, ElasticServiceV2 elasticServiceV2) {
+            IndexName opensearchIndex,
+            TiltakRepositoryV1 tiltakRepositoryV1, OpensearchIndexerV2 opensearchIndexerV2) {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.restHighLevelClient = restHighLevelClient;
         this.sisteEndringRepository = sisteEndringRepository;
         this.tiltakRepositoryV1 = tiltakRepositoryV1;
-        this.alias = alias;
-        this.elasticServiceV2 = elasticServiceV2;
+        this.alias = opensearchIndex;
+        this.opensearchIndexerV2 = opensearchIndexerV2;
     }
 
     static int utregnTil(int from, int batchSize) {
@@ -89,7 +89,7 @@ public class ElasticIndexer {
             leggTilSisteEndring(bruker);
             skrivTilIndeks(alias.getValue(), bruker);
         } else {
-            elasticServiceV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
+            opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
         }
     }
 

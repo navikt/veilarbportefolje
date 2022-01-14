@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.elastic;
+package no.nav.pto.veilarbportefolje.opensearch;
 
 
 import lombok.Data;
@@ -8,7 +8,7 @@ import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -19,28 +19,28 @@ import java.util.Base64;
 
 @Slf4j
 @Service
-public class ElasticCountService {
-    private final ElasticClientConfig elasticsearchElasticClientConfig;
+public class OpensearchCountService {
+    private final OpensearchClientConfig opensearchClientConfig;
     private final String indexName;
     private final MetricsClient metricsClient;
     private final EnvironmentProperties environmentProperties;
 
     @Autowired
-    public ElasticCountService(
-            ElasticClientConfig elasticsearchElasticClientConfig,
+    public OpensearchCountService(
+            OpensearchClientConfig opensearchClientConfig,
             EnvironmentProperties environmentProperties,
-            IndexName elasticIndex,
+            IndexName opensearchIndex,
             MetricsClient metricsClient
     ) {
-        this.elasticsearchElasticClientConfig = elasticsearchElasticClientConfig;
+        this.opensearchClientConfig = opensearchClientConfig;
         this.environmentProperties = environmentProperties;
         this.metricsClient = metricsClient;
-        this.indexName = elasticIndex.getValue();
+        this.indexName = opensearchIndex.getValue();
     }
 
     @SneakyThrows
     public long getCount() {
-        String url = createAbsoluteUrl(elasticsearchElasticClientConfig, indexName) + "_doc/_count";
+        String url = createAbsoluteUrl(opensearchClientConfig, indexName) + "_doc/_count";
         OkHttpClient client = no.nav.common.rest.client.RestClient.baseClient();
 
         Request request = new Request.Builder()
@@ -66,7 +66,7 @@ public class ElasticCountService {
         metricsClient.report(event);
     }
 
-    private static String createAbsoluteUrl(ElasticClientConfig config, String indexName) {
+    private static String createAbsoluteUrl(OpensearchClientConfig config, String indexName) {
         return String.format(
                 "%s://%s:%s/%s/",
                 config.getScheme(),

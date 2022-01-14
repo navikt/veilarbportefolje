@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.elastic;
+package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BRUKERINDEKS_ALIAS;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
@@ -43,13 +43,13 @@ import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 @Service
-public class ElasticServiceV2 {
+public class OpensearchIndexerV2 {
 
     private final IndexName indexName;
     private final RestHighLevelClient restHighLevelClient;
 
     @Autowired
-    public ElasticServiceV2(RestHighLevelClient restHighLevelClient, IndexName indexName) {
+    public OpensearchIndexerV2(RestHighLevelClient restHighLevelClient, IndexName indexName) {
         this.restHighLevelClient = restHighLevelClient;
         this.indexName = indexName;
     }
@@ -234,7 +234,7 @@ public class ElasticServiceV2 {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId.toString());
             } else {
-                final String message = format("Det skjedde en feil ved oppdatering av elastic for bruker %s", aktoerId.toString());
+                final String message = format("Det skjedde en feil ved oppdatering av opensearch for bruker %s", aktoerId.toString());
                 log.error(message, e);
             }
         }
@@ -253,7 +253,7 @@ public class ElasticServiceV2 {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.info("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.get());
             } else {
-                final String message = format("Det skjedde en feil ved sletting i elastic for bruker %s", aktoerId.get());
+                final String message = format("Det skjedde en feil ved sletting i opensearch for bruker %s", aktoerId.get());
                 log.error(message, e);
             }
         }
@@ -267,7 +267,7 @@ public class ElasticServiceV2 {
     @SneakyThrows
     public String opprettNyIndeks(String indeksNavn) {
         String json = Optional.ofNullable(getClass()
-                        .getResourceAsStream("/elastic_settings.json"))
+                        .getResourceAsStream("/opensearch_settings.json"))
                         .map(this::readJsonFromFileStream)
                         .orElseThrow();
 

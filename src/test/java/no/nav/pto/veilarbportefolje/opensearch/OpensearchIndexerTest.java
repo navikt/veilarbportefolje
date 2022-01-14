@@ -1,13 +1,13 @@
-package no.nav.pto.veilarbportefolje.elastic;
+package no.nav.pto.veilarbportefolje.opensearch;
 
 import org.junit.Test;
 
-import static no.nav.pto.veilarbportefolje.elastic.ElasticIndexer.BATCH_SIZE;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticIndexer.utregnTil;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer.BATCH_SIZE;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer.utregnTil;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class ElasticIndexerTest {
+public class OpensearchIndexerTest {
 
     @Test
     public void skal_beregne_riktig_page_size_naar_fra_er_0() {
