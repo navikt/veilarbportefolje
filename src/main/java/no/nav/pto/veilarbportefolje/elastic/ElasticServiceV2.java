@@ -9,31 +9,46 @@ import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
-import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.get.GetRequest;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.rest.RestStatus;
+import org.apache.commons.io.IOUtils;
+import org.opensearch.OpenSearchException;
+import org.opensearch.action.admin.indices.alias.IndicesAliasesRequest;
+import org.opensearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.opensearch.action.delete.DeleteRequest;
+import org.opensearch.action.support.master.AcknowledgedResponse;
+import org.opensearch.action.update.UpdateRequest;
+import org.opensearch.client.RequestOptions;
+import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.client.indices.CreateIndexRequest;
+import org.opensearch.client.indices.CreateIndexResponse;
+import org.opensearch.common.xcontent.XContentBuilder;
+import org.opensearch.common.xcontent.XContentType;
+import org.opensearch.rest.RestStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static org.elasticsearch.client.RequestOptions.DEFAULT;
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
+import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
+@Service
 public class ElasticServiceV2 {
 
     private final IndexName indexName;
     private final RestHighLevelClient restHighLevelClient;
 
+    @Autowired
     public ElasticServiceV2(RestHighLevelClient restHighLevelClient, IndexName indexName) {
         this.restHighLevelClient = restHighLevelClient;
         this.indexName = indexName;
@@ -158,11 +173,18 @@ public class ElasticServiceV2 {
     public void updateArbeidsliste(ArbeidslisteDTO arbeidslisteDTO) {
         log.info("Oppdater arbeidsliste for {} med frist {}", arbeidslisteDTO.getAktorId(), arbeidslisteDTO.getFrist());
         final String frist = toIsoUTC(arbeidslisteDTO.getFrist());
+        int arbeidsListeLengde = Optional.ofNullable(arbeidslisteDTO.getOverskrift())
+                .map(String::length).orElse(0);
+        String arbeidsListeSorteringsVerdi = Optional.ofNullable(arbeidslisteDTO.getOverskrift())
+                .filter(s -> !s.isEmpty())
+                .map(s -> s.substring(0, Math.min(2,s.length())))
+                .orElse("");
+
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("arbeidsliste_aktiv", true)
-                .field("arbeidsliste_overskrift", arbeidslisteDTO.getOverskrift())
-                .field("arbeidsliste_kommentar", arbeidslisteDTO.getKommentar())
+                .field("arbeidsliste_tittel_sortering", arbeidsListeSorteringsVerdi)
+                .field("arbeidsliste_tittel_lengde", arbeidsListeLengde)
                 .field("arbeidsliste_frist", Optional.ofNullable(frist).orElse(getFarInTheFutureDate()))
                 .field("arbeidsliste_sist_endret_av_veilederid", arbeidslisteDTO.getVeilederId().getValue())
                 .field("arbeidsliste_endringstidspunkt", toIsoUTC(arbeidslisteDTO.getEndringstidspunkt()))
@@ -177,10 +199,10 @@ public class ElasticServiceV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("arbeidsliste_aktiv", false)
+                .field("arbeidsliste_tittel_sortering", (String) null)
+                .field("arbeidsliste_tittel_lengde", 0)
                 .field("arbeidsliste_sist_endret_av_veilederid", (String) null)
                 .field("arbeidsliste_endringstidspunkt", (String) null)
-                .field("arbeidsliste_kommentar", (String) null)
-                .field("arbeidsliste_overskrift", (String) null)
                 .field("arbeidsliste_frist", (String) null)
                 .field("arbeidsliste_kategori", (String) null)
                 .endObject();
@@ -201,15 +223,14 @@ public class ElasticServiceV2 {
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indexName.getValue());
-        updateRequest.type("_doc");
         updateRequest.id(aktoerId.get());
         updateRequest.doc(content);
         updateRequest.retryOnConflict(6);
 
         try {
-            restHighLevelClient.update(updateRequest, DEFAULT);
+            restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);
             log.info("Oppdaterte dokument for bruker {} med info {}", aktoerId, logInfo);
-        } catch (ElasticsearchException e) {
+        } catch (OpenSearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId.toString());
             } else {
@@ -223,13 +244,12 @@ public class ElasticServiceV2 {
     private void delete(AktorId aktoerId) {
         DeleteRequest deleteRequest = new DeleteRequest();
         deleteRequest.index(indexName.getValue());
-        deleteRequest.type("_doc");
         deleteRequest.id(aktoerId.get());
 
         try {
-            restHighLevelClient.delete(deleteRequest, DEFAULT);
+            restHighLevelClient.delete(deleteRequest, RequestOptions.DEFAULT);
             log.info("Slettet dokument for {} ", aktoerId);
-        } catch (ElasticsearchException e) {
+        } catch (OpenSearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.info("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.get());
             } else {
@@ -240,11 +260,57 @@ public class ElasticServiceV2 {
     }
 
     @SneakyThrows
-    private GetResponse fetchDocument(AktorId aktoerId) {
-        GetRequest getRequest = new GetRequest();
-        getRequest.index(indexName.getValue());
-        getRequest.id(aktoerId.toString());
-        return restHighLevelClient.get(getRequest, DEFAULT);
+    public String opprettNyIndeks() {
+        return opprettNyIndeks(createIndexName());
     }
 
+    @SneakyThrows
+    public String opprettNyIndeks(String indeksNavn) {
+        String json = Optional.ofNullable(getClass()
+                        .getResourceAsStream("/elastic_settings.json"))
+                        .map(this::readJsonFromFileStream)
+                        .orElseThrow();
+
+        CreateIndexRequest request = new CreateIndexRequest(indeksNavn)
+                .source(json, XContentType.JSON);
+        CreateIndexResponse response = restHighLevelClient.indices().create(request, RequestOptions.DEFAULT);
+
+        if (!response.isAcknowledged()) {
+            log.error("Kunne ikke opprette ny indeks {}", indeksNavn);
+            throw new RuntimeException();
+        }
+        return indeksNavn;
+    }
+
+    private static String createIndexName() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
+        String timestamp = LocalDateTime.now().format(formatter);
+        return String.format("%s_%s", BRUKERINDEKS_ALIAS, timestamp);
+    }
+
+    @SneakyThrows
+    public boolean slettIndex(String indexName) {
+        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName);
+        return restHighLevelClient.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT).isAcknowledged();
+    }
+
+    @SneakyThrows
+    public void opprettAliasForIndeks(String indeks) {
+        IndicesAliasesRequest.AliasActions addAliasAction = new IndicesAliasesRequest.AliasActions(ADD)
+                .index(indeks)
+                .alias(BRUKERINDEKS_ALIAS);
+
+        IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
+        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
+
+        if (!response.isAcknowledged()) {
+            log.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
+            throw new RuntimeException();
+        }
+    }
+
+    @SneakyThrows
+    private String readJsonFromFileStream(InputStream settings) {
+        return IOUtils.toString(settings, String.valueOf(StandardCharsets.UTF_8));
+    }
 }

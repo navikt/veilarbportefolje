@@ -10,8 +10,8 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
-import org.elasticsearch.action.get.GetResponse;
 import org.junit.jupiter.api.Test;
+import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.ZonedDateTime;

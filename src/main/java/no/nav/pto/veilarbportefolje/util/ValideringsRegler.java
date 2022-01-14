@@ -36,7 +36,6 @@ public class ValideringsRegler {
             "aapmaxtiduke",
             "aapunntakukerigjen",
             "arbeidslistefrist",
-            "arbeidsliste_overskrift",
             "venterpasvarfranav",
             "venterpasvarfrabruker",
             "utlopteaktiviteter",
@@ -52,6 +51,7 @@ public class ValideringsRegler {
             "ansvarlig_veileder_for_vedtak",
             "vedtak_status_endret",
             "arbeidslistekategori",
+            "arbeidsliste_overskrift",
             "siste_endring_tidspunkt"
     );
 

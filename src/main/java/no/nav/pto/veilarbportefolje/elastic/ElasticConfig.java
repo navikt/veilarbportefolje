@@ -1,69 +1,43 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import no.nav.common.health.HealthCheckResult;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
-import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
-import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.opensearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
-import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_PASSWORD_PROPERTY;
-import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_USERNAME_PROPERTY;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createClient;
 
 @Configuration
 @Import({DatabaseConfig.class})
 public class ElasticConfig {
-
-    public static String VEILARBELASTIC_USERNAME = getRequiredProperty(ELASTICSEARCH_USERNAME_PROPERTY);
-    public static String VEILARBELASTIC_PASSWORD = getRequiredProperty(ELASTICSEARCH_PASSWORD_PROPERTY);
-
-    public static final long FORVENTET_MINIMUM_ANTALL_DOKUMENTER = 200_000;
-
-    private static final ElasticClientConfig defaultConfig = ElasticClientConfig.builder()
-            .username(VEILARBELASTIC_USERNAME)
-            .password(VEILARBELASTIC_PASSWORD)
-            .hostname(getElasticHostname())
-            .port(getElasticPort())
-            .scheme(getElasticScheme())
-            .build();
+    public static final String BRUKERINDEKS_ALIAS = "brukerindeks";
 
     @Bean
-    public static RestHighLevelClient restHighLevelClient() {
-        return createClient(defaultConfig);
+    public IndexName elasticIndex() {
+        return new IndexName(BRUKERINDEKS_ALIAS);
     }
 
     @Bean
-    public ElasticServiceV2 elasticServiceV2(RestHighLevelClient restHighLevelClient) {
-        return new ElasticServiceV2(restHighLevelClient, new IndexName(getAlias()));
-    }
-
-    public static HealthCheckResult checkHealth() {
-        long antallDokumenter = ElasticUtils.getCount();
-        if (antallDokumenter < FORVENTET_MINIMUM_ANTALL_DOKUMENTER) {
-            String feilmelding = String.format("Antall dokumenter i elastic (%s) er mindre enn forventet antall (%s)", antallDokumenter, FORVENTET_MINIMUM_ANTALL_DOKUMENTER);
-            return HealthCheckResult.unhealthy("Feil mot elastic search", new RuntimeException(feilmelding));
-        }
-        return HealthCheckResult.healthy();
+    public ElasticClientConfig elasticsearchClientConfig(EnvironmentProperties environmentProperties) throws MalformedURLException {
+        URL elasticUrl = new URL(environmentProperties.getOpensearchUri());
+        return ElasticClientConfig.builder()
+                .username(environmentProperties.getOpensearchUsername())
+                .password(environmentProperties.getOpensearchPassword())
+                .hostname(elasticUrl.getHost())
+                .port(elasticUrl.getPort())
+                .scheme(elasticUrl.getProtocol())
+                .build();
     }
 
     @Bean
-    public ElasticService elasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, VedtakstottePilotRequest vedtakstottePilotRequest, UnleashService unleashService) {
-        return new ElasticService(restHighLevelClient, veilarbVeilederClient, new IndexName(getAlias()), vedtakstottePilotRequest, unleashService);
+    public RestHighLevelClient restHighLevelClient(ElasticClientConfig config) {
+        return createClient(config);
     }
 
-
-    @Bean
-    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, RestHighLevelClient restHighLevelClient, SisteEndringRepository sisteEndringRepository, TiltakRepositoryV1 tiltakRepositoryV1, ElasticServiceV2 elasticServiceV2) {
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, sisteEndringRepository, new IndexName(getAlias()), tiltakRepositoryV1, elasticServiceV2);
-    }
 }

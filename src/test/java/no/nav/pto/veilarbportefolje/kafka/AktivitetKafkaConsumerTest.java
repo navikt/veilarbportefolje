@@ -10,9 +10,9 @@ import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.sbl.sql.SqlUtils;
-import org.elasticsearch.action.get.GetResponse;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 

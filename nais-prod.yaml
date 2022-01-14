@@ -46,6 +46,9 @@ spec:
   prometheus:
     enabled: true
     path: veilarbportefolje/internal/prometheus
+  openSearch:
+    access: admin
+    instance: veilarbportefolje
   resources:
     limits:
       cpu: "4"

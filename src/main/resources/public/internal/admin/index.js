@@ -235,6 +235,50 @@ function handleMigrerProfilering(e) {
     }
 }
 
+const createIndexForm = document.getElementById('createIndexForm');
+createIndexForm.addEventListener('submit', handleCreateIndexForm)
+
+function handleCreateIndexForm(e) {
+    e.preventDefault();
+    if (window.confirm('Oprett ny elasticsearch indeks, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/elasticsearch/createIndex`,
+            {method: 'POST', credentials: 'same-origin'},
+            'createIndexFormResponse'
+        );
+    }
+}
+
+const assignAliasToIndexForm = document.getElementById('assignAliasToIndexForm');
+assignAliasToIndexForm.addEventListener('submit', handleAssignAliasToIndexForm)
+const indexNameEl = document.getElementById('indexName');
+
+function handleAssignAliasToIndexForm(e) {
+    e.preventDefault();
+    if (window.confirm('Opprett alias for indeks, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/elasticsearch/assignAliasToIndex`,
+            {method: 'POST', credentials: 'same-origin', body: indexNameEl.value},
+            'assignAliasToIndexFormResponse'
+        );
+    }
+}
+
+const deleteIndexForm = document.getElementById('deleteIndexForm');
+deleteIndexForm.addEventListener('submit', handleDeleteIndexForm)
+const deleteIndexNameEl = document.getElementById('deleteIndexName');
+
+function handleDeleteIndexForm(e) {
+    e.preventDefault();
+    if (window.confirm('Sletter alias for indeks, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/elasticsearch/deleteIndex`,
+            {method: 'POST', credentials: 'same-origin', body: deleteIndexNameEl.value},
+            'deleteIndexRespons'
+        );
+    }
+}
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);
