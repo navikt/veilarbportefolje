@@ -7,9 +7,11 @@ import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.opensearch.index.query.BoolQueryBuilder;
 import org.opensearch.index.query.QueryBuilder;
+import org.opensearch.index.query.QueryBuilders;
 import org.opensearch.script.Script;
 import org.opensearch.search.aggregations.AggregationBuilders;
 import org.opensearch.search.aggregations.BucketOrder;
@@ -20,6 +22,7 @@ import org.opensearch.search.sort.ScriptSortBuilder;
 import org.opensearch.search.sort.SortOrder;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -120,14 +123,26 @@ public class ElasticQueryBuilder {
     }
 
     private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
-        if (sisteEndringKategori.size() != 1) {
-            log.error("Det ble filtrert på flere ulike siste endringer: {}", sisteEndringKategori.size());
+        if (sisteEndringKategori != null && sisteEndringKategori.size() > 1) {
+            log.error("Det ble filtrert på flere ulike siste endringer (ulest): {}", sisteEndringKategori.size());
             throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
         }
-        queryBuilder.must(matchQuery("siste_endringer." + sisteEndringKategori.get(0) + ".er_sett", "N"));
+        List<String> relvanteKategorier = sisteEndringKategori;
+        if (sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
+            relvanteKategorier = (Arrays.stream(SisteEndringsKategori.values()).map(SisteEndringsKategori::name)).collect(toList());
+        }
+
+        BoolQueryBuilder orQuery = boolQuery();
+        relvanteKategorier.forEach(kategori -> orQuery.should(
+                QueryBuilders.matchQuery("siste_endringer." + kategori + ".er_sett", "N")
+        ));
+        queryBuilder.must(orQuery);
     }
 
     private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
+        if (sisteEndringKategori.size() == 0){
+            return;
+        }
         if (sisteEndringKategori.size() != 1) {
             log.error("Det ble filtrert på flere ulike siste endringer: {}", sisteEndringKategori.size());
             throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
@@ -195,8 +210,11 @@ public class ElasticQueryBuilder {
     }
 
     static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
+        if (filtervalg.sisteEndringKategori.size() == 0){
+            return;
+        }
         if (filtervalg.sisteEndringKategori.size() != 1) {
-            log.error("Det ble filtrert på flere ulike siste endringer: {}", filtervalg.sisteEndringKategori.size());
+            log.error("Det ble sortert på flere ulike siste endringer: {}", filtervalg.sisteEndringKategori.size());
             throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
         }
         String expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0) + ".tidspunkt']?.value.toInstant().toEpochMilli()";
