@@ -94,7 +94,7 @@ jobs:
           VAR: version=${{ env.IMAGE_TAG }},namespace=pto
   deploy-prod:
     name: Deploy application to prod
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/master'
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
