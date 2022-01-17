@@ -1,11 +1,11 @@
 package no.nav.pto.veilarbportefolje.postgres;
 
 import lombok.SneakyThrows;
-import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Kjonn;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -18,7 +18,25 @@ import java.util.stream.Collectors;
 
 import static java.lang.Integer.parseInt;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.ARB_ENDRINGSTIDSPUNKT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.CV_EKSISTERER;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.ETTERNAVN;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.FODSELSNR;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.FODSELS_DATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.FORMIDLINGSGRUPPEKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.FORNAVN;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.HAR_DELT_CV;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.KJONN;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.KVALIFISERINGSGRUPPEKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.MANUELL;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.NAV_KONTOR;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.NY_FOR_VEILEDER;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.OPPFOLGING;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.VEDTAKSTATUS;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.VEILEDERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.VENTER_PA_BRUKER;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.VENTER_PA_NAV;
 
 public class PostgresQueryBuilder {
     private final StringJoiner whereStatement = new StringJoiner(" AND ", " WHERE ", ";");
