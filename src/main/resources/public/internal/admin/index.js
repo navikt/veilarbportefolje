@@ -27,20 +27,20 @@ function handleOppfolgingRefreshForUserForm(e) {
     }
 }
 
-const slettElasticForm = document.getElementById('slettElasticForm')
-slettElasticForm.addEventListener('submit', handleslettElastic);
+const slettOpensearchForm = document.getElementById('slettOpensearchForm')
+slettOpensearchForm.addEventListener('submit', handleslettOpensearch);
 const aktoerIdInputSlett = document.getElementById('aktoerIdInputSlett')
 
-function handleslettElastic(e) {
+function handleslettOpensearch(e) {
     e.preventDefault()
     const aktoerId = aktoerIdInputSlett.value;
-    if (!window.confirm('Dette vil fjerne brukeren fra elastic, er du sikker på at du vil fortsette?')) {
+    if (!window.confirm('Dette vil fjerne brukeren fra Opensearch, er du sikker på at du vil fortsette?')) {
         return;
     }
 
     if (aktoerId && aktoerId.length > 0) {
         fetchData(
-            '/veilarbportefolje/api/admin/fjernBrukerElastic',
+            '/veilarbportefolje/api/admin/fjernBrukerOpensearch',
             {method: 'DELETE', credentials: 'same-origin', body: aktoerId},
             'slettingResponse'
         )
@@ -240,9 +240,9 @@ createIndexForm.addEventListener('submit', handleCreateIndexForm)
 
 function handleCreateIndexForm(e) {
     e.preventDefault();
-    if (window.confirm('Oprett ny elasticsearch indeks, er du sikker?')) {
+    if (window.confirm('Oprett ny Opensearch indeks, er du sikker?')) {
         fetchData(
-            `/veilarbportefolje/api/admin/elasticsearch/createIndex`,
+            `/veilarbportefolje/api/admin/opensearch/createIndex`,
             {method: 'POST', credentials: 'same-origin'},
             'createIndexFormResponse'
         );
@@ -257,7 +257,7 @@ function handleAssignAliasToIndexForm(e) {
     e.preventDefault();
     if (window.confirm('Opprett alias for indeks, er du sikker?')) {
         fetchData(
-            `/veilarbportefolje/api/admin/elasticsearch/assignAliasToIndex`,
+            `/veilarbportefolje/api/admin/opensearch/assignAliasToIndex`,
             {method: 'POST', credentials: 'same-origin', body: indexNameEl.value},
             'assignAliasToIndexFormResponse'
         );
@@ -272,7 +272,7 @@ function handleDeleteIndexForm(e) {
     e.preventDefault();
     if (window.confirm('Sletter alias for indeks, er du sikker?')) {
         fetchData(
-            `/veilarbportefolje/api/admin/elasticsearch/deleteIndex`,
+            `/veilarbportefolje/api/admin/opensearch/deleteIndex`,
             {method: 'POST', credentials: 'same-origin', body: deleteIndexNameEl.value},
             'deleteIndexRespons'
         );

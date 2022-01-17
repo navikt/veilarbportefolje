@@ -1,10 +1,10 @@
-package no.nav.pto.veilarbportefolje.elastic;
+package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.SneakyThrows;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,28 +23,28 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
+import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-class ElasticServiceIntegrationTest extends EndToEndTest {
+class OpensearchServiceIntegrationTest extends EndToEndTest {
     private static final String TEST_ENHET = "0000";
     private static final String TEST_VEILEDER_0 = "Z000000";
     private static final String TEST_VEILEDER_1 = "Z000001";
     private static final String LITE_PRIVILEGERT_VEILEDER = "Z000002";
 
-    private ElasticService elasticService;
-    private ElasticIndexer elasticIndexer;
+    private OpensearchService opensearchService;
+    private OpensearchIndexer opensearchIndexer;
     private VeilarbVeilederClient veilarbVeilederClientMock;
 
 
     @Autowired
-    public ElasticServiceIntegrationTest(ElasticService elasticService, ElasticIndexer elasticIndexer, VeilarbVeilederClient veilarbVeilederClientMock) {
-        this.elasticService = elasticService;
-        this.elasticIndexer = elasticIndexer;
+    public OpensearchServiceIntegrationTest(OpensearchService opensearchService, OpensearchIndexer opensearchIndexer, VeilarbVeilederClient veilarbVeilederClientMock) {
+        this.opensearchService = opensearchService;
+        this.opensearchIndexer = opensearchIndexer;
         this.veilarbVeilederClientMock = veilarbVeilederClientMock;
     }
     
@@ -70,9 +70,9 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         skrivBrukereTilTestindeks(brukere);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == brukere.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
-        BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "asc",
@@ -106,9 +106,9 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         skrivBrukereTilTestindeks(brukere);
 
         var filtervalg = new Filtervalg().setFerdigfilterListe(List.of(I_AVTALT_AKTIVITET));
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == brukere.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "asc",
@@ -162,9 +162,9 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setVeiledere(List.of(TEST_VEILEDER_0, TEST_VEILEDER_1));
 
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == brukere.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
-        var response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
+        var response = opensearchService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
 
         assertThat(response.getAntall()).isEqualTo(2);
     }
@@ -197,10 +197,10 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         skrivBrukereTilTestindeks(brukere);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == brukere.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
         var filtervalg = new Filtervalg().setFerdigfilterListe(List.of(UFORDELTE_BRUKERE));
-        var response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
+        var response = opensearchService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
         assertThat(response.getAntall()).isEqualTo(2);
     }
 
@@ -234,9 +234,9 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         skrivBrukereTilTestindeks(brukere);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == brukere.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
-        FacetResults portefoljestorrelser = elasticService.hentPortefoljestorrelser(TEST_ENHET);
+        FacetResults portefoljestorrelser = opensearchService.hentPortefoljestorrelser(TEST_ENHET);
 
         assertThat(facetResultCountForVeileder(veilederId1, portefoljestorrelser)).isEqualTo(4L);
         assertThat(facetResultCountForVeileder(veilederId2, portefoljestorrelser)).isEqualTo(3L);
@@ -265,9 +265,9 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(brukerMedArbeidsliste, brukerUtenArbeidsliste);
 
         skrivBrukereTilTestindeks(liste);
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
-        List<Bruker> brukereMedArbeidsliste = elasticService.hentBrukereMedArbeidsliste(TEST_VEILEDER_0, TEST_ENHET);
+        List<Bruker> brukereMedArbeidsliste = opensearchService.hentBrukereMedArbeidsliste(TEST_VEILEDER_0, TEST_ENHET);
         assertThat(brukereMedArbeidsliste.size()).isEqualTo(1);
     }
 
@@ -305,9 +305,9 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(testBruker1, testBruker2, inaktivBruker);
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
-        var statustall = elasticService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET);
+        var statustall = opensearchService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET);
         assertThat(statustall.erSykmeldtMedArbeidsgiver).isEqualTo(0);
         assertThat(statustall.iavtaltAktivitet).isEqualTo(1);
         assertThat(statustall.ikkeIavtaltAktivitet).isEqualTo(2);
@@ -341,11 +341,11 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
-        var statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET);
+        var statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
         assertThat(statustall.getUfordelteBrukere()).isEqualTo(1);
     }
 
@@ -370,9 +370,9 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         skrivBrukereTilTestindeks(blaBruker, lillaBruker);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
-        BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.empty(),
                 "desc",
@@ -420,7 +420,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         skrivBrukereTilTestindeks(tidligstfristBruker, senestFristBruker, nullBruker);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         Filtervalg filtervalg1 = new Filtervalg()
                 .setAktiviteterForenklet(List.of("EGEN", "MOTE"))
@@ -429,7 +429,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setAktiviteterForenklet(List.of("MOTE", "EGEN"))
                 .setFerdigfilterListe(List.of());
 
-        BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.empty(),
                 "desc",
@@ -438,7 +438,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 null,
                 null
         );
-        BrukereMedAntall brukereMedAntall2 = elasticService.hentBrukere(
+        BrukereMedAntall brukereMedAntall2 = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.empty(),
                 "desc",
@@ -486,14 +486,14 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(nyForEnhet, ikkeNyForEnhet);
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         List<Brukerstatus> ferdigFiltere = List.of(
                 NYE_BRUKERE,
                 TRENGER_VURDERING
         );
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
@@ -525,10 +525,10 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(brukerVeilederHarTilgangTil, brukerVeilederIkkeHarTilgangTil);
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
@@ -564,10 +564,10 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(brukerMedUfordeltStatus, brukerMedFordeltStatus);
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(LITE_PRIVILEGERT_VEILEDER),
                 "asc",
@@ -580,7 +580,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(veilederExistsInResponse(LITE_PRIVILEGERT_VEILEDER, response)).isTrue();
 
-        StatusTall statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET);
+        StatusTall statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
         assertThat(statustall.ufordelteBrukere).isEqualTo(1);
     }
 
@@ -608,9 +608,9 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(testBruker1, testBruker2);
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
@@ -644,13 +644,13 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(kvinne, mann);
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setKjonn(Kjonn.K);
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
@@ -684,13 +684,13 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(brukerMedAAP, brukerUtenAAP);
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setRettighetsgruppe(List.of(Rettighetsgruppe.AAP));
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
@@ -745,13 +745,13 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(brukerMedDagpengerMedPermittering, brukerMedPermitteringFiskeindustri, brukerMedAAP, brukerMedAnnenVeileder);
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setYtelse(YtelseFilter.DAGPENGER);
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
@@ -793,13 +793,13 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(brukerMedSokeAvtale, brukerMedUtenAktiviteter, brukerMedBehandling);
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setAktiviteter(Map.of("SOKEAVTALE", JA));
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "asc",
@@ -842,13 +842,13 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(brukerMedSokeAvtale, brukerMedUtenAktiviteter, brukerMedBehandling);
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setAktiviteter(Map.of("SOKEAVTALE", AktivitetFiltervalg.NEI));
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "asc",
@@ -890,13 +890,13 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(brukerMedTiltak, brukerMedBehandling, brukerUtenAktiviteter);
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setAktiviteter(Map.of("TILTAK", JA));
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "asc",
@@ -939,13 +939,13 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setAktiviteter(Map.of("TILTAK", AktivitetFiltervalg.NEI));
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "asc",
@@ -1015,12 +1015,12 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         skrivBrukereTilTestindeks(liste);
 
-        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of(UNDER_VURDERING));
 
-        var response = elasticService.hentBrukere(
+        var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "ascending",
@@ -1061,7 +1061,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
     @SneakyThrows
     private void skrivBrukereTilTestindeks(OppfolgingsBruker... brukere) {
-        elasticIndexer.skrivTilIndeks(indexName.getValue(), List.of(brukere));
+        opensearchIndexer.skrivTilIndeks(indexName.getValue(), List.of(brukere));
     }
 
 }

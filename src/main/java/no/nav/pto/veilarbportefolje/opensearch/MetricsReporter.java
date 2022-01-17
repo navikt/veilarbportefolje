@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.elastic;
+package no.nav.pto.veilarbportefolje.opensearch;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -16,8 +16,8 @@ public class MetricsReporter {
     private static final MeterRegistry prometheusMeterRegistry = new ProtectedPrometheusMeterRegistry();
 
     @Autowired
-    public MetricsReporter(ElasticCountService elasticCountService) {
-        Gauge.builder("veilarbelastic_number_of_docs", elasticCountService::getCount).register(getMeterRegistry());
+    public MetricsReporter(OpensearchCountService opensearchCountService) {
+        Gauge.builder("veilarbelastic_number_of_docs", opensearchCountService::getCount).register(getMeterRegistry());
     }
 
     public static MeterRegistry getMeterRegistry() {

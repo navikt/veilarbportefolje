@@ -19,12 +19,12 @@ import static no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER.FODS
 public class TestDataClient {
 
     private final JdbcTemplate jdbcTemplate;
-    private final ElasticTestClient elasticTestClient;
+    private final OpensearchTestClient opensearchTestClient;
 
     @Autowired
-    public TestDataClient(JdbcTemplate jdbcTemplate, ElasticTestClient elasticTestClient) {
+    public TestDataClient(JdbcTemplate jdbcTemplate, OpensearchTestClient opensearchTestClient) {
         this.jdbcTemplate = jdbcTemplate;
-        this.elasticTestClient = elasticTestClient;
+        this.opensearchTestClient = opensearchTestClient;
     }
 
     public void endreNavKontorForBruker(AktorId aktoerId, NavKontor navKontor) {
@@ -47,7 +47,7 @@ public class TestDataClient {
 
         setupBruker(aktoerId, navKontor, veilederId, startDato);
 
-        elasticTestClient.oppdaterArbeidsliste(aktoerId, true);
+        opensearchTestClient.oppdaterArbeidsliste(aktoerId, true);
     }
 
     public void setupBruker(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
@@ -77,7 +77,7 @@ public class TestDataClient {
                 .value(Table.BRUKER_REGISTRERING.AKTOERID, aktoerId.get())
                 .execute();
 
-        elasticTestClient.createUserInElastic(aktoerId);
+        opensearchTestClient.createUserInOpensearch(aktoerId);
     }
 
     public String hentOppfolgingFlaggFraDatabase(AktorId aktoerId) {

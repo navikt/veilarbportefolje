@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepo
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -26,7 +26,7 @@ public class BrukerAktiviteterService {
     private final OppfolgingRepository oppfolgingRepository;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerService brukerService;
-    private final ElasticIndexer elasticIndexer;
+    private final OpensearchIndexer opensearchIndexer;
 
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
@@ -38,7 +38,7 @@ public class BrukerAktiviteterService {
         log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
         syncAktivitetOgBrukerData(brukereSomMaOppdateres);
         log.info("Avslutter jobb: oppdater BrukerAktiviteter og BrukerData");
-        elasticIndexer.nyHovedIndeksering(brukereSomMaOppdateres);
+        opensearchIndexer.nyHovedIndeksering(brukereSomMaOppdateres);
     }
 
 
@@ -84,7 +84,7 @@ public class BrukerAktiviteterService {
             log.info("Fant ingen personId pa aktor: {}", aktorId);
         }
         syncAktiviteterOgBrukerData(personId, aktorId);
-        elasticIndexer.indekser(aktorId);
+        opensearchIndexer.indekser(aktorId);
     }
 
     public void syncAktiviteterOgBrukerData(PersonId personId, AktorId aktorId) {

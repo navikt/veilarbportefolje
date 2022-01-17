@@ -7,7 +7,7 @@ import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +36,7 @@ public class BrukerServiceTest {
 
     private BrukerRepository brukerRepository;
 
-    private ElasticServiceV2 elasticServiceV2;
+    private OpensearchIndexerV2 opensearchIndexerV2;
 
     private AktorClient aktorClient;
 
@@ -52,8 +52,8 @@ public class BrukerServiceTest {
         UnleashService unleashService = mock(UnleashService.class);
         when(unleashService.isEnabled(FeatureToggle.AUTO_SLETT)).thenReturn(true);
 
-        elasticServiceV2 = mock(ElasticServiceV2.class);
-        brukerService = new BrukerService(brukerRepository, aktorClient, elasticServiceV2, unleashService);
+        opensearchIndexerV2 = mock(OpensearchIndexerV2.class);
+        brukerService = new BrukerService(brukerRepository, aktorClient, opensearchIndexerV2, unleashService);
 
         db.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
         db.execute("truncate table AKTOERID_TO_PERSONID");
@@ -81,7 +81,7 @@ public class BrukerServiceTest {
 
         Try<PersonId> result = brukerService.hentPersonidFraAktoerid(aktoerId);
         verify(aktorClient, never()).hentFnr(any(AktorId.class));
-        verify(elasticServiceV2, never()).slettDokumenter(any());
+        verify(opensearchIndexerV2, never()).slettDokumenter(any());
         assertTrue(result.isSuccess());
         assertEquals(personId, result.get());
     }
@@ -108,7 +108,7 @@ public class BrukerServiceTest {
         Try<String> resultatNyAktorId = getGjeldeneAktorId(PERSON_ID);
         assertEquals(resultatNyAktorId.get(), nyAktorId.toString());
 
-        verify(elasticServiceV2).slettDokumenter(List.of(AktorId.of(AKTOER_ID)));
+        verify(opensearchIndexerV2).slettDokumenter(List.of(AktorId.of(AKTOER_ID)));
     }
 
     @Test
@@ -126,7 +126,7 @@ public class BrukerServiceTest {
         Try<String> gamleAktorId = getGamleAktorId(PERSON_ID);
         assertEquals(gamleAktorId.get(), aktoerId.toString());
 
-        verify(elasticServiceV2).slettDokumenter(List.of(aktoerId));
+        verify(opensearchIndexerV2).slettDokumenter(List.of(aktoerId));
     }
 
     private Try<String> getGjeldeneAktorId(String personId) {

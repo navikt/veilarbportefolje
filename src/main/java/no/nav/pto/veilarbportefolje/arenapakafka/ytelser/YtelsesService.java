@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -39,7 +39,7 @@ public class YtelsesService {
     private final YtelsesRepository ytelsesRepository;
     private final YtelsesServicePostgres ytelsesServicePostgres;
     private final ArenaHendelseRepository arenaHendelseRepository;
-    private final ElasticIndexer elasticIndexer;
+    private final OpensearchIndexer opensearchIndexer;
     private final OppfolgingRepository oppfolgingRepository;
 
     public void behandleKafkaRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding, TypeKafkaYtelse ytelse) {
@@ -82,7 +82,7 @@ public class YtelsesService {
         }
 
 
-        elasticIndexer.indekser(aktorId);
+        opensearchIndexer.indekser(aktorId);
     }
 
     public Optional<YtelseDAO> oppdaterYtelsesInformasjonOracle(AktorId aktorId, PersonId personId) {
@@ -179,7 +179,7 @@ public class YtelsesService {
                 return;
             }
             oppdaterYtelsesInformasjonOracle(aktorId, personId);
-            elasticIndexer.indekser(aktorId);
+            opensearchIndexer.indekser(aktorId);
         });
 
         log.info("Oppdatering av ytelser fullført");
@@ -199,7 +199,7 @@ public class YtelsesService {
                                     try {
                                         PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
                                         oppdaterYtelsesInformasjonOracle(aktorId, personId);
-                                        elasticIndexer.indekser(aktorId);
+                                        opensearchIndexer.indekser(aktorId);
                                     } catch (Exception e) {
                                         log.warn("Fikk error under sync jobb, men fortsetter. Aktoer: {}, exception: {}", aktorId, e);
                                     }

@@ -7,8 +7,8 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticService;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,18 +19,18 @@ import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste.Kategori.BLA;
 import static no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste.Kategori.GRONN;
 import static no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste.Kategori.LILLA;
-import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
+import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class ArbeidslistaSorteringElastic extends EndToEndTest {
-    private final ElasticService elasticService;
-    private final ElasticServiceV2 elasticServiceV2;
+public class ArbeidslistaSorteringOpensearch extends EndToEndTest {
+    private final OpensearchService opensearchService;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
 
     @Autowired
-    public ArbeidslistaSorteringElastic(ElasticService elasticService, ElasticServiceV2 elasticServiceV2) {
-        this.elasticService = elasticService;
-        this.elasticServiceV2 = elasticServiceV2;
+    public ArbeidslistaSorteringOpensearch(OpensearchService opensearchService, OpensearchIndexerV2 opensearchIndexerV2) {
+        this.opensearchService = opensearchService;
+        this.opensearchIndexerV2 = opensearchIndexerV2;
     }
 
     @Test
@@ -40,7 +40,7 @@ public class ArbeidslistaSorteringElastic extends EndToEndTest {
         final AktorId aktoerId_1 = randomAktorId();
         final AktorId aktoerId_2 = randomAktorId();
         final AktorId aktoerId_3 = randomAktorId();
-        populateElastic(enhetId, veilederId, aktoerId_1.get(), aktoerId_2.get(), aktoerId_3.get());
+        populateOpensearch(enhetId, veilederId, aktoerId_1.get(), aktoerId_2.get(), aktoerId_3.get());
         Arbeidsliste.Kategori arbeidsliste1_kategori = GRONN;
         Arbeidsliste.Kategori arbeidsliste2_kategori = BLA;
         Arbeidsliste.Kategori arbeidsliste3_kategori = LILLA;
@@ -63,12 +63,12 @@ public class ArbeidslistaSorteringElastic extends EndToEndTest {
                 .setOverskrift("Nav skal sist");
 
 
-        elasticServiceV2.updateArbeidsliste(arbeidsliste1);
-        elasticServiceV2.updateArbeidsliste(arbeidsliste3);
-        elasticServiceV2.updateArbeidsliste(arbeidsliste2);
+        opensearchIndexerV2.updateArbeidsliste(arbeidsliste1);
+        opensearchIndexerV2.updateArbeidsliste(arbeidsliste3);
+        opensearchIndexerV2.updateArbeidsliste(arbeidsliste2);
 
-        pollElasticUntil(() -> {
-            final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
+        pollOpensearchUntil(() -> {
+            final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                     enhetId.get(),
                     empty(),
                     "ascending",
@@ -80,7 +80,7 @@ public class ArbeidslistaSorteringElastic extends EndToEndTest {
             return brukereMedAntall.getAntall() == 3;
         });
 
-        var sortertResponsAscending = elasticService.hentBrukere(
+        var sortertResponsAscending = opensearchService.hentBrukere(
                 enhetId.get(),
                 empty(),
                 "ascending",
@@ -89,7 +89,7 @@ public class ArbeidslistaSorteringElastic extends EndToEndTest {
                 null,
                 null);
 
-        var sortertResponsDescending = elasticService.hentBrukere(
+        var sortertResponsDescending = opensearchService.hentBrukere(
                 enhetId.get(),
                 empty(),
                 "desc",

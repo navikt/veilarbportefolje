@@ -41,7 +41,7 @@ class CvServiceTest extends EndToEndTest {
                 .put("har_delt_cv", false)
                 .toString();
 
-        IndexResponse indexResponse = elasticTestClient.createDocument(aktoerId, document);
+        IndexResponse indexResponse = opensearchTestClient.createDocument(aktoerId, document);
         assertThat(indexResponse.status().getStatus()).isEqualTo(201);
 
         CVMelding cvMelding = new CVMelding();
@@ -50,7 +50,7 @@ class CvServiceTest extends EndToEndTest {
 
         cvService.behandleCVHjemmelMelding(cvMelding);
 
-        GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
+        GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
 
         boolean harDeltCv = (boolean) getResponse.getSourceAsMap().get("har_delt_cv");
@@ -58,13 +58,13 @@ class CvServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_oppdatere_dokumentet_i_db_og_elastic() {
+    void skal_oppdatere_dokumentet_i_db_og_opensearch() {
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("har_delt_cv", false)
                 .toString();
 
-        IndexResponse indexResponse = elasticTestClient.createDocument(aktoerId, document);
+        IndexResponse indexResponse = opensearchTestClient.createDocument(aktoerId, document);
         assertThat(indexResponse.status().getStatus()).isEqualTo(201);
 
         CVMelding cvMelding = new CVMelding();
@@ -76,7 +76,7 @@ class CvServiceTest extends EndToEndTest {
         Boolean harDeltCvDb = cvRepository.harDeltCv(aktoerId);
         assertThat(harDeltCvDb).isTrue();
 
-        GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
+        GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
 
         boolean harDeltCv = (boolean) getResponse.getSourceAsMap().get("har_delt_cv");
@@ -90,7 +90,7 @@ class CvServiceTest extends EndToEndTest {
                 .put("har_delt_cv", false)
                 .toString();
 
-        IndexResponse indexResponse = elasticTestClient.createDocument(aktoerId, document);
+        IndexResponse indexResponse = opensearchTestClient.createDocument(aktoerId, document);
         assertThat(indexResponse.status().getStatus()).isEqualTo(201);
 
         CVMelding cvMelding = new CVMelding();
@@ -99,7 +99,7 @@ class CvServiceTest extends EndToEndTest {
 
         cvService.behandleCVHjemmelMelding(cvMelding);
 
-        GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
+        GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
 
         boolean harDeltCv = (boolean) getResponse.getSourceAsMap().get("har_delt_cv");
@@ -113,7 +113,7 @@ class CvServiceTest extends EndToEndTest {
                 .put("har_delt_cv", false)
                 .toString();
 
-        IndexResponse indexResponse = elasticTestClient.createDocument(aktoerId, document);
+        IndexResponse indexResponse = opensearchTestClient.createDocument(aktoerId, document);
         assertThat(indexResponse.status().getStatus()).isEqualTo(201);
 
         CVMelding cvMelding = new CVMelding();
@@ -122,7 +122,7 @@ class CvServiceTest extends EndToEndTest {
 
         cvService.behandleCVHjemmelMelding(cvMelding);
 
-        GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
+        GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
 
         boolean harDeltCv = (boolean) getResponse.getSourceAsMap().get("har_delt_cv");
@@ -130,14 +130,14 @@ class CvServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_ignorere_tilfeller_hvor_dokumentet_ikke_finnes_i_elastic() {
+    void skal_ignorere_tilfeller_hvor_dokumentet_ikke_finnes_i_opensearch() {
         CVMelding cvMelding = new CVMelding();
         cvMelding.setAktoerId(aktoerId);
         cvMelding.setRessurs(Ressurs.CV_HJEMMEL);
 
         cvService.behandleCVHjemmelMelding(cvMelding);
 
-        GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
+        GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isFalse();
     }
 }

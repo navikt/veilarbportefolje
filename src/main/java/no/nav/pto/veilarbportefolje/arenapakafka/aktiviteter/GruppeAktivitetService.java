@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetInnhold
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +24,7 @@ public class GruppeAktivitetService {
     private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
     private final AktorClient aktorClient;
     private final BrukerDataService brukerDataService;
-    private final ElasticIndexer elasticIndexer;
+    private final OpensearchIndexer opensearchIndexer;
 
     public void behandleKafkaRecord(ConsumerRecord<String, GruppeAktivitetDTO> kafkaMelding) {
         GruppeAktivitetDTO melding = kafkaMelding.value();
@@ -52,7 +52,7 @@ public class GruppeAktivitetService {
         gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(aktorId, personId);
         brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
 
-        elasticIndexer.indekser(aktorId);
+        opensearchIndexer.indekser(aktorId);
     }
 
 

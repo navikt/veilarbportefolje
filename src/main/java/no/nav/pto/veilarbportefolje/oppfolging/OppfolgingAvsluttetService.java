@@ -7,7 +7,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -32,7 +32,7 @@ public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<Oppfo
     private final RegistreringService registreringService;
     private final CvRepository cvRepository;
     private final CVRepositoryV2 cvRepositoryV2;
-    private final ElasticServiceV2 elasticServiceV2;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
     private final SisteEndringService sisteEndringService;
 
     @Override
@@ -61,7 +61,7 @@ public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<Oppfo
         cvRepository.resetHarDeltCV(aktoerId);
         cvRepositoryV2.resetHarDeltCV(aktoerId);
 
-        elasticServiceV2.slettDokumenter(List.of(aktoerId));
+        opensearchIndexerV2.slettDokumenter(List.of(aktoerId));
         log.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);
     }
 }

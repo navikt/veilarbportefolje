@@ -8,9 +8,9 @@ Tjeneste som aggregerer data fra andre baksystemer og håndterer oppdatering av 
 Følgende data aggregeres:
 
 * Informasjon om brukere under oppfølging via databaselink til Arena (flyttet til veilarbindexer)
-* Informasjon om løpende ytelser fra arena via sftp (flyttet til veilarbindexer)
-* Informasjon om brukeraktiviteter fra arena via sftp (flyttet til veilarbindexer)
-* Reservering mot digitale henvendelser i KRR via dkif (flyttet til veilarbindexer)
+* Informasjon om løpende ytelser fra arena via Kafka
+* Informasjon om brukeraktiviteter fra arena via Kafka
+* Reservering mot digitale henvendelser i KRR via dkif (flyttet til veilarbindexer) (ikke fungerende)
 * Veiledertilordninger fra `veilarboppfolging` via Kafka
 * Dialoger fra `veilarbdialog` (aktivitetsplan) via Kafka
 * Aktiviteter fra `veilarbaktivitet` (aktivitetsplan) via Kafka
@@ -21,47 +21,19 @@ Følgende data aggregeres:
 
 Kjør `mvn clean install`
 
-## Oppsett av Postman
+## Oppsett av Opensearch
 
-Importer denne filen i Postman:
+Opensearch er satt opp via "Aiven infrastructure as code"-repo (aiven-iac) administert av på NAIS:
 
-```
-postman/config.json
-``` 
+https://github.com/navikt/aiven-iac
 
-Dette gir deg en samling av endepunkter man kan bruke i testing og feilsøk av Elasticsearch.
+Mere info om:
+https://aiven.io/opensearch
 
-Noen av disse requestene benytter seg av Postman-miljøvariabler, importer disse ved å trykke på tannhjulet øverst til
-høyre i Postman og velg `Import`. Importer disse filene:
+Innstillinger for index er definert i filen:
 
 ```
-postman/preprod_environment
-postman/prod_environment
-``` 
-
-Disse environment-ene inneholder en auth-variabel. For å sette denne må du hente oidc-token i Fasit. Last ned filen du
-finner under enten `veilarbsecret_preprod` eller
-`veilarbsecret_prod` og bruk tokenet som ligger i følgende del av fila:
-
-```
-stringData:
-    client_pwd: <token>
-```
-
-## Oppsett av Elasticsearch
-
-Elastic er satt opp via et "Infrastructure as code"-repo (IAC) for tredjepartsapplikasjoner på NAIS:
-
-https://github.com/navikt/nais-tpa/
-
-Selve clusteret er basert på følgende koderepo:
-
-https://www.github.com/navikt/pam-elasticsearch
-
-Innstillinger i clusteret er definert i filen:
-
-```
-src/main/resources/elastic_settings.json
+src/main/resources/opensearch_settings.json
 ```
 
 ## Sjekk at databaselink fra arena oppdateres
