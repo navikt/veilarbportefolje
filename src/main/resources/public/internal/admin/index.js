@@ -309,6 +309,20 @@ function handleFixReadOnlyModeForm(e) {
     }
 }
 
+const forceShardAssignmentForm = document.getElementById('forceShardAssignmentForm');
+forceShardAssignmentForm.addEventListener('submit', handleforceShardAssignmentForm)
+
+function handleforceShardAssignmentForm(e) {
+    e.preventDefault();
+    if (window.confirm('Er du sikker på at du vil tvinge shard assignment?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/forceShardAssignment`,
+            {method: 'POST', credentials: 'same-origin'},
+            'forceShardAssignmentRespons'
+        );
+    }
+}
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);

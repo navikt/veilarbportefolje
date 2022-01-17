@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static no.nav.common.rest.client.RestClient.baseClient;
+import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.createAbsoluteUrl;
@@ -122,12 +123,12 @@ public class OpensearchAdminService {
     }
 
     @SneakyThrows
-    public String uppdateFromReadOnlyMode(){
+    public String updateFromReadOnlyMode() {
         String url = createAbsoluteUrl(openSearchClientConfig);
 
         Request request = new Request.Builder()
                 .url(url)
-                .put(RequestBody.create(RestUtils.MEDIA_TYPE_JSON, """
+                .put(RequestBody.create(MEDIA_TYPE_JSON, """
                         {
                           "index": {
                             "blocks": {
@@ -150,6 +151,27 @@ public class OpensearchAdminService {
         }
     }
 
+    @SneakyThrows
+    public String forceShardAssignment() {
+        String url = createAbsoluteUrl(openSearchClientConfig) + "_cluster/reroute?retry_failed=true";
+
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
+                .post(RequestBody.create(MEDIA_TYPE_JSON, "{}"))
+                .header("Content-Length", "0")
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            try (ResponseBody responseBody = response.body()) {
+                if (responseBody == null) {
+                    return null;
+                }
+                return responseBody.string();
+            }
+        }
+    }
 
     @SneakyThrows
     private String readJsonFromFileStream(InputStream settings) {
