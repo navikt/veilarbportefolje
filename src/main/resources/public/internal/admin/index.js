@@ -279,6 +279,20 @@ function handleDeleteIndexForm(e) {
     }
 }
 
+const testSkrivForm = document.getElementById('testSkrivForm');
+testSkrivForm.addEventListener('submit', handleSkriveTestForm)
+
+function handleSkriveTestForm(e) {
+    e.preventDefault();
+    if (window.confirm('Sikker på at du vil starte denne testen?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/testSkrivMedNyeSettings`,
+            {method: 'POST', credentials: 'same-origin'},
+            'testSkrivRespons'
+        );
+    }
+}
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);
