@@ -238,7 +238,7 @@ public class OpensearchQueryBuilder {
     }
 
     static SearchSourceBuilder sorterAapRettighetsPeriode(SearchSourceBuilder builder, SortOrder order) {
-        Script script = new Script("Math.max(doc.aapmaxtiduke.value, doc.aapunntakukerigjen.value)");
+        Script script = new Script("Math.max((doc.aapmaxtiduke.size() != 0) ? doc.aapmaxtiduke.value : 0, (doc.aapunntakukerigjen.size() != 0) ? doc.aapunntakukerigjen.value : 0)");
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
