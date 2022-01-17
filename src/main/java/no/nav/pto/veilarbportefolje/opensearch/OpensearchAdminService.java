@@ -114,7 +114,7 @@ public class OpensearchAdminService {
 
     public void testSkrivMedNyeSettings() {
         final int ANTALL_BRUKERE = 100_000;
-        String testIndex = opprettNyIndeks();
+        String testIndex = opprettNyIndeks("slett_meg_" + createIndexName());
 
         log.info("Hovedindekserings (test): bruker index: {}", testIndex);
         List<AktorId> brukere = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
