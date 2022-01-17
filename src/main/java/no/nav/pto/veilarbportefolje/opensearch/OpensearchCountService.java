@@ -45,7 +45,7 @@ public class OpensearchCountService {
 
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("Authorization", getAuthHeaderValue(environmentProperties))
+                .addHeader("Authorization", getAuthHeaderValue(opensearchClientConfig))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -66,18 +66,24 @@ public class OpensearchCountService {
         metricsClient.report(event);
     }
 
-    private static String createAbsoluteUrl(OpensearchClientConfig config, String indexName) {
-        return String.format(
-                "%s://%s:%s/%s/",
-                config.getScheme(),
-                config.getHostname(),
-                config.getPort(),
+    public static String createAbsoluteUrl(OpensearchClientConfig config, String indexName) {
+        return String.format("%s%s/",
+                createAbsoluteUrl(config),
                 indexName
         );
     }
 
-    private static String getAuthHeaderValue(EnvironmentProperties environmentProperties) {
-        String auth = environmentProperties.getOpensearchUsername() + ":" + environmentProperties.getOpensearchPassword();
+    public static String createAbsoluteUrl(OpensearchClientConfig config) {
+        return String.format(
+                "%s://%s:%s/",
+                config.getScheme(),
+                config.getHostname(),
+                config.getPort()
+        );
+    }
+
+    public static String getAuthHeaderValue(OpensearchClientConfig config) {
+        String auth = config.getUsername() + ":" + config.getPassword();
         return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes());
     }
 

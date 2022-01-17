@@ -174,6 +174,12 @@ public class AdminController {
         return "Ok";
     }
 
+    @PostMapping("/opensearch/fixReadOnlyMode")
+    public String fixReadOnlyMode() {
+        authorizeAdmin();
+        return opensearchAdminService.uppdateFromReadOnlyMode();
+    }
+
 
     private void authorizeAdmin() {
         final String ident = authContextHolder.getNavIdent().map(Id::toString).orElseThrow();

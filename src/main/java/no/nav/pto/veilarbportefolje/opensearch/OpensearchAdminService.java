@@ -2,8 +2,15 @@ package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.commons.io.IOUtils;
 import org.opensearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.opensearch.action.admin.indices.delete.DeleteIndexRequest;
@@ -25,8 +32,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.common.rest.client.RestClient.baseClient;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.createAbsoluteUrl;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.getAuthHeaderValue;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer.BATCH_SIZE;
 import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 
@@ -36,12 +46,17 @@ public class OpensearchAdminService {
     private final RestHighLevelClient restHighLevelClient;
     private final OpensearchIndexer opensearchIndexer;
     private final OppfolgingRepository oppfolgingRepository;
+    private final OpensearchClientConfig openSearchClientConfig;
+    private final OkHttpClient httpClient;
 
     @Autowired
-    public OpensearchAdminService(RestHighLevelClient restHighLevelClient, OpensearchIndexer opensearchIndexer, OppfolgingRepository oppfolgingRepository) {
+    public OpensearchAdminService(RestHighLevelClient restHighLevelClient, OpensearchIndexer opensearchIndexer, OppfolgingRepository oppfolgingRepository, OpensearchClientConfig openSearchClientConfig) {
         this.restHighLevelClient = restHighLevelClient;
         this.opensearchIndexer = opensearchIndexer;
         this.oppfolgingRepository = oppfolgingRepository;
+        this.openSearchClientConfig = openSearchClientConfig;
+
+        this.httpClient = baseClient();
     }
 
     @SneakyThrows
@@ -104,6 +119,35 @@ public class OpensearchAdminService {
                                 .build()
                 );
         return restHighLevelClient.indices().putSettings(updateSettingsRequest, RequestOptions.DEFAULT).isAcknowledged();
+    }
+
+    @SneakyThrows
+    public String uppdateFromReadOnlyMode(){
+        String url = createAbsoluteUrl(openSearchClientConfig);
+
+        Request request = new Request.Builder()
+                .url(url)
+                .put(RequestBody.create(RestUtils.MEDIA_TYPE_JSON, """
+                        {
+                          "index": {
+                            "blocks": {
+                              "read_only_allow_delete": "false"
+                            }
+                          }
+                        }
+                        """))
+                .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            try (ResponseBody responseBody = response.body()) {
+                if (responseBody == null) {
+                    return null;
+                }
+                return responseBody.string();
+            }
+        }
     }
 
 

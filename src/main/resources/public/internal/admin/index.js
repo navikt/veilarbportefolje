@@ -293,6 +293,22 @@ function handleSkriveTestForm(e) {
     }
 }
 
+
+
+const fixReadOnlyModeForm = document.getElementById('fixReadOnlyModeForm');
+fixReadOnlyModeForm.addEventListener('submit', handleFixReadOnlyModeForm)
+
+function handleFixReadOnlyModeForm(e) {
+    e.preventDefault();
+    if (window.confirm('Er du sikker på at du vil kjøre en kommando relatert til ReadOnlyMode?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/fixReadOnlyMode`,
+            {method: 'POST', credentials: 'same-origin'},
+            'fixReadOnlyModeRespons'
+        );
+    }
+}
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);
