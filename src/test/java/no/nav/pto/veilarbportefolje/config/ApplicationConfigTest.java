@@ -233,15 +233,18 @@ public class ApplicationConfigTest {
 
     @Bean
     public RestHighLevelClient restHighLevelClient() {
-        OpensearchClientConfig opensearchTestConfig = OpensearchClientConfig.builder()
+        return createClient(opensearchClientConfig());
+    }
+
+    @Bean
+    public OpensearchClientConfig opensearchClientConfig() {
+        return OpensearchClientConfig.builder()
                 .username(OPENSEARCH_TEST_USERNAME)
                 .password(OPENSEARCH_TEST_PASSWORD)
                 .hostname(OPENSEARCH_CONTAINER.getHost())
                 .port(OPENSEARCH_CONTAINER.getFirstMappedPort())
                 .scheme("http")
                 .build();
-
-        return createClient(opensearchTestConfig);
     }
 
     @Bean
