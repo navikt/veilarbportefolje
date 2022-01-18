@@ -123,6 +123,26 @@ public class OpensearchAdminService {
     }
 
     @SneakyThrows
+    public String getSettingsOnIndex(String indexName) {
+        String url = createAbsoluteUrl(openSearchClientConfig, indexName) + "_settings";
+
+        Request request = new Request.Builder()
+                .url(url).get()
+                .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            try (ResponseBody responseBody = response.body()) {
+                if (responseBody == null) {
+                    return null;
+                }
+                return responseBody.string();
+            }
+        }
+    }
+
+    @SneakyThrows
     public String updateFromReadOnlyMode() {
         String url = createAbsoluteUrl(openSearchClientConfig);
 

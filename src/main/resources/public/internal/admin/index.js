@@ -279,6 +279,19 @@ function handleDeleteIndexForm(e) {
     }
 }
 
+const getSettingsIndexForm = document.getElementById('getSettingsIndexForm');
+getSettingsIndexForm.addEventListener('submit', handlegetSettingsIndexFormForm)
+const getSettingsIndexNameEl = document.getElementById('getSettingsIndexName');
+
+function handlegetSettingsIndexFormForm(e) {
+    e.preventDefault();
+    fetchData(
+        `/veilarbportefolje/api/admin/opensearch/getSettings`,
+        {method: 'GET', credentials: 'same-origin', body: getSettingsIndexNameEl.value},
+        'getSettingsIndexRespons'
+    );
+}
+
 const testSkrivForm = document.getElementById('testSkrivForm');
 testSkrivForm.addEventListener('submit', handleSkriveTestForm)
 
