@@ -58,7 +58,6 @@
     </form>
     <div id="oppdaterbrukereResponse"></div>
 </div>
-</body>
 
 <h2>Sync aktiviteter/Ytelser med kafka eller fil</h2>
 <div>
@@ -120,13 +119,22 @@
     <div id="migrerProfileringResponse"></div>
 </div>
 
-<h2>ES Admin</h2>
+<h2>OpenSearch Admin</h2>
 <div>
     <form id="createIndexForm">
         <input type="submit" value="Create Index"/>
     </form>
     <div id="createIndexFormResponse"></div>
 </div>
+
+<div>
+    <form id="getSettingsIndexForm">
+        <input type="text" id="getSettingsIndexName" placeholder="Index name">
+        <input type="submit" value="Get settings on index"/>
+    </form>
+    <div id="getSettingsIndexRespons"></div>
+</div>
+
 <div>
     <form id="assignAliasToIndexForm">
         <input type="text" id="indexName" placeholder="Index name">
@@ -134,12 +142,28 @@
     </form>
     <div id="assignAliasToIndexFormResponse"></div>
 </div>
+<br/>
 <div>
     <form id="deleteIndexForm">
         <input type="text" id="deleteIndexName" placeholder="Index name">
         <input type="submit" value="Delete index"/>
     </form>
     <div id="deleteIndexRespons"></div>
+</div>
+
+<h3>pto-playbook: Opensearch scenarioer</h3>
+<div>
+    <form id="fixReadOnlyModeForm">
+        <input type="submit" value="Få Oversikten ut av read only mode"/>
+    </form>
+    <div id="fixReadOnlyModeRespons"></div>
+</div>
+
+<div>
+    <form id="forceShardAssignmentForm">
+        <input type="submit" value="Force Shard Assignment"/>
+    </form>
+    <div id="forceShardAssignmentRespons"></div>
 </div>
 
 <div>

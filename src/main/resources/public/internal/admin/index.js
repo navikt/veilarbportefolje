@@ -279,6 +279,19 @@ function handleDeleteIndexForm(e) {
     }
 }
 
+const getSettingsIndexForm = document.getElementById('getSettingsIndexForm');
+getSettingsIndexForm.addEventListener('submit', handlegetSettingsIndexFormForm)
+const getSettingsIndexNameEl = document.getElementById('getSettingsIndexName');
+
+function handlegetSettingsIndexFormForm(e) {
+    e.preventDefault();
+    fetchData(
+        `/veilarbportefolje/api/admin/opensearch/getSettings`,
+        {method: 'GET', credentials: 'same-origin', body: getSettingsIndexNameEl.value},
+        'getSettingsIndexRespons'
+    );
+}
+
 const testSkrivForm = document.getElementById('testSkrivForm');
 testSkrivForm.addEventListener('submit', handleSkriveTestForm)
 
@@ -289,6 +302,36 @@ function handleSkriveTestForm(e) {
             `/veilarbportefolje/api/admin/opensearch/testSkrivMedNyeSettings`,
             {method: 'POST', credentials: 'same-origin'},
             'testSkrivRespons'
+        );
+    }
+}
+
+
+
+const fixReadOnlyModeForm = document.getElementById('fixReadOnlyModeForm');
+fixReadOnlyModeForm.addEventListener('submit', handleFixReadOnlyModeForm)
+
+function handleFixReadOnlyModeForm(e) {
+    e.preventDefault();
+    if (window.confirm('Er du sikker på at du vil kjøre en kommando relatert til ReadOnlyMode?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/fixReadOnlyMode`,
+            {method: 'POST', credentials: 'same-origin'},
+            'fixReadOnlyModeRespons'
+        );
+    }
+}
+
+const forceShardAssignmentForm = document.getElementById('forceShardAssignmentForm');
+forceShardAssignmentForm.addEventListener('submit', handleforceShardAssignmentForm)
+
+function handleforceShardAssignmentForm(e) {
+    e.preventDefault();
+    if (window.confirm('Er du sikker på at du vil tvinge shard assignment?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/forceShardAssignment`,
+            {method: 'POST', credentials: 'same-origin'},
+            'forceShardAssignmentRespons'
         );
     }
 }

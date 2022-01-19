@@ -167,6 +167,12 @@ public class AdminController {
         return "Ok";
     }
 
+    @GetMapping("/opensearch/getSettings")
+    public String getSettings(@RequestBody String indexName) {
+        authorizeAdmin();
+        return opensearchAdminService.getSettingsOnIndex(indexName);
+    }
+
     @PostMapping("/opensearch/testSkrivMedNyeSettings")
     public String testSkrivMedNyeSettings() {
         authorizeAdmin();
@@ -174,6 +180,17 @@ public class AdminController {
         return "Ok";
     }
 
+    @PostMapping("/opensearch/fixReadOnlyMode")
+    public String fixReadOnlyMode() {
+        authorizeAdmin();
+        return opensearchAdminService.updateFromReadOnlyMode();
+    }
+
+    @PostMapping("/opensearch/forceShardAssignment")
+    public String forceShardAssignment() {
+        authorizeAdmin();
+        return opensearchAdminService.forceShardAssignment();
+    }
 
     private void authorizeAdmin() {
         final String ident = authContextHolder.getNavIdent().map(Id::toString).orElseThrow();
