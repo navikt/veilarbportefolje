@@ -153,6 +153,12 @@ public class AdminController {
         return indexName;
     }
 
+    @GetMapping("/opensearch/getAliases")
+    public String getAliases() {
+        authorizeAdmin();
+        return opensearchAdminService.hentAliaser();
+    }
+
     @PostMapping("/opensearch/deleteIndex")
     public boolean deleteIndex(@RequestBody String indexName) {
         authorizeAdmin();

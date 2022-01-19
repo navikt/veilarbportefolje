@@ -249,6 +249,18 @@ function handleCreateIndexForm(e) {
     }
 }
 
+const getAliasesForm = document.getElementById('getAliasesForm');
+getAliasesForm.addEventListener('submit', handleGetAliasesForm)
+
+function handleGetAliasesForm(e) {
+    e.preventDefault();
+    fetchData(
+        `/veilarbindexer/api/admin/opensearch/getAliases`,
+        {method: 'GET', credentials: 'same-origin'},
+        'getAliasesFormResponse'
+    );
+}
+
 const assignAliasToIndexForm = document.getElementById('assignAliasToIndexForm');
 assignAliasToIndexForm.addEventListener('submit', handleAssignAliasToIndexForm)
 const indexNameEl = document.getElementById('indexName');
@@ -287,7 +299,7 @@ function handlegetSettingsIndexFormForm(e) {
     e.preventDefault();
     fetchData(
         `/veilarbportefolje/api/admin/opensearch/getSettings`,
-        {method: 'GET', credentials: 'same-origin', body: getSettingsIndexNameEl.value},
+        {method: 'POST', credentials: 'same-origin', body: getSettingsIndexNameEl.value},
         'getSettingsIndexRespons'
     );
 }
