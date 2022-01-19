@@ -255,7 +255,7 @@ getAliasesForm.addEventListener('submit', handleGetAliasesForm)
 function handleGetAliasesForm(e) {
     e.preventDefault();
     fetchData(
-        `/veilarbindexer/api/admin/opensearch/getAliases`,
+        `/veilarbportefolje/api/admin/opensearch/getAliases`,
         {method: 'GET', credentials: 'same-origin'},
         'getAliasesFormResponse'
     );
