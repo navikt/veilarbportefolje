@@ -183,24 +183,30 @@ public class OpensearchAdminService {
     }
 
     public void testSkrivMedNyeSettings() {
-        final int ANTALL_BRUKERE = 100_000;
-        String testIndex = opprettNyIndeks("slett_meg_" + createIndexName());
+        // Test 1: Med refresh_interval satt til 10s
+        String testIndex1 = opprettNyIndeks("slett_meg_1_" + createIndexName());
+        skriv100_000BrukeretilIndex(new IndexName(testIndex1));
 
-        log.info("Hovedindekserings (test): bruker index: {}", testIndex);
-        List<AktorId> brukere = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
-        brukere = brukere.subList(0, Math.min(ANTALL_BRUKERE, brukere.size()));
-
-        long tidsStempel0 = System.currentTimeMillis();
-        boolean oppdatertSettings = oppdaterRefreshInterval(testIndex, true);
+        // Test 2: Med refresh_interval satt til -1
+        String testIndex2 = opprettNyIndeks("slett_meg_2_" + createIndexName());
+        boolean oppdatertSettings = oppdaterRefreshInterval(testIndex2, true);
         if (oppdatertSettings) {
-            log.info("Hovedindeksering (test): Indekserer {} brukere", brukere.size());
-            partition(brukere, BATCH_SIZE).forEach(opensearchIndexer::indekserBolk);
-
-            boolean resetSettings = oppdaterRefreshInterval(testIndex, false);
-            log.info("Hovedindeksering (test): resetSetting: {} ", resetSettings);
+            skriv100_000BrukeretilIndex(new IndexName(testIndex2));
         } else {
             log.info("Hovedindeksering (test): fikk ikke oppdatertsettings");
         }
+        boolean resetSettings = oppdaterRefreshInterval(testIndex2, false);
+        log.info("Hovedindeksering (test): resetSetting: {} ", resetSettings);
+    }
+
+    private void skriv100_000BrukeretilIndex(IndexName testIndex) {
+        long tidsStempel0 = System.currentTimeMillis();
+
+        List<AktorId> brukere = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
+        brukere = brukere.subList(0, Math.min(100_000, brukere.size()));
+
+        log.info("Hovedindeksering (test): Indekserer {} brukere", brukere.size());
+        partition(brukere, BATCH_SIZE).forEach(bulk -> opensearchIndexer.indekserBolk(bulk, testIndex));
 
         long tidsStempel1 = System.currentTimeMillis();
         long tid = tidsStempel1 - tidsStempel0;
@@ -208,7 +214,7 @@ public class OpensearchAdminService {
     }
 
     @SneakyThrows
-    private String callAndGetBody(Request request){
+    private String callAndGetBody(Request request) {
         try (Response response = httpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             try (ResponseBody responseBody = response.body()) {

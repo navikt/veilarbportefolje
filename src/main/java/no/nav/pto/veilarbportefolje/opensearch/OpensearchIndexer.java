@@ -94,7 +94,6 @@ public class OpensearchIndexer {
     }
 
     public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
-
         BulkRequest bulk = new BulkRequest();
         oppfolgingsBrukere.stream()
                 .map(bruker -> {
@@ -224,13 +223,18 @@ public class OpensearchIndexer {
         long tid = tidsStempel1 - tidsStempel0;
         log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
     }
+
     public void indekserBolk(List<AktorId> aktorIds) {
+        indekserBolk(aktorIds, alias);
+    }
+
+    public void indekserBolk(List<AktorId> aktorIds, IndexName index) {
         partition(aktorIds, BATCH_SIZE).forEach(partition -> {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(partition).stream().filter(bruker -> bruker.getAktoer_id() != null).collect(toList());
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
             leggTilSisteEndring(brukere);
-            this.skrivTilIndeks(alias.getValue(), brukere);
+            this.skrivTilIndeks(index.getValue(), brukere);
         });
     }
 
