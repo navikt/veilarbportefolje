@@ -182,42 +182,27 @@ public class OpensearchAdminService {
     }
 
     public void testSkrivMedNyeSettings() {
-        // Test: Med batch satt til: 100
-        String testIndex100 = opprettNyIndeks("slett_meg_100batch_" + createIndexName());
-        skriv100_000BrukeretilIndex(new IndexName(testIndex100), 100);
-        slettIndex(testIndex100);
-
-        // Test: Med batch satt til: 200
-        String testIndex200 = opprettNyIndeks("slett_meg_200batch_" + createIndexName());
-        skriv100_000BrukeretilIndex(new IndexName(testIndex200), 200);
-        slettIndex(testIndex200);
-
-        // Test: Med batch satt til: 500
-        String testIndex2 = opprettNyIndeks("slett_meg_500batch_" + createIndexName());
-        skriv100_000BrukeretilIndex(new IndexName(testIndex2), 500);
-        slettIndex(testIndex2);
-
         // Test: Med batch satt til: 1000
         String testIndex5 = opprettNyIndeks("slett_meg_standard_" + createIndexName());
-        skriv100_000BrukeretilIndex(new IndexName(testIndex5), BATCH_SIZE);
+        skriv25_000BrukeretilIndex(new IndexName(testIndex5), BATCH_SIZE);
         slettIndex(testIndex5);
 
         // Test: Med batch satt til: 2000
         String testIndex3 = opprettNyIndeks("slett_meg_2000batch_" + createIndexName());
-        skriv100_000BrukeretilIndex(new IndexName(testIndex3), 2000);
+        skriv25_000BrukeretilIndex(new IndexName(testIndex3), 2000);
         slettIndex(testIndex3);
 
         // Test: Med batch satt til: 4000
         String testIndex4 = opprettNyIndeks("slett_meg_5000batch_" + createIndexName());
-        skriv100_000BrukeretilIndex(new IndexName(testIndex4), 4000);
+        skriv25_000BrukeretilIndex(new IndexName(testIndex4), 4000);
         slettIndex(testIndex4);
     }
 
-    private void skriv100_000BrukeretilIndex(IndexName testIndex, int batch_size) {
+    private void skriv25_000BrukeretilIndex(IndexName testIndex, int batch_size) {
         long tidsStempel0 = System.currentTimeMillis();
 
         List<AktorId> brukere = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
-        brukere = brukere.subList(0, Math.min(100_000, brukere.size()));
+        brukere = brukere.subList(0, Math.min(25_000, brukere.size()));
 
         log.info("Hovedindeksering (test): Indekserer {} brukere", brukere.size());
         opensearchIndexer.indekserBolk(brukere, testIndex, batch_size);

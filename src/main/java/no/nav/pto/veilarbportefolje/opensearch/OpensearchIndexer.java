@@ -21,6 +21,7 @@ import org.opensearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -229,13 +230,17 @@ public class OpensearchIndexer {
     }
 
     public void indekserBolk(List<AktorId> aktorIds, IndexName index,  int batchSize) {
-        partition(aktorIds, batchSize).forEach(partition -> {
-            List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(partition).stream().filter(bruker -> bruker.getAktoer_id() != null).collect(toList());
-            leggTilAktiviteter(brukere);
-            leggTilTiltak(brukere);
-            leggTilSisteEndring(brukere);
-            this.skrivTilIndeks(index.getValue(), brukere);
+        List<OppfolgingsBruker> brukere = new ArrayList<>(batchSize);
+
+        partition(aktorIds, BATCH_SIZE_LIMIT).forEach(partition -> {
+            List<OppfolgingsBruker> brukerBatch = brukerRepository.hentBrukereFraView(partition).stream().filter(bruker -> bruker.getAktoer_id() != null).collect(toList());
+            leggTilAktiviteter(brukerBatch);
+            leggTilTiltak(brukerBatch);
+            leggTilSisteEndring(brukerBatch);
+            brukere.addAll(brukerBatch);
         });
+
+        this.skrivTilIndeks(index.getValue(), brukere);
     }
 
 }
