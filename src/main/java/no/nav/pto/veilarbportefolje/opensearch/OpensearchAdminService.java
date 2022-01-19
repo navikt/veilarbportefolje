@@ -183,17 +183,17 @@ public class OpensearchAdminService {
 
     public void testSkrivMedNyeSettings() {
         // Test: Med batch satt til: 100
-        String testIndex100 = opprettNyIndeks("slett_meg_100Batch_" + createIndexName());
+        String testIndex100 = opprettNyIndeks("slett_meg_100batch_" + createIndexName());
         skriv100_000BrukeretilIndex(new IndexName(testIndex100), 100);
         slettIndex(testIndex100);
 
         // Test: Med batch satt til: 200
-        String testIndex200 = opprettNyIndeks("slett_meg_200Batch_" + createIndexName());
+        String testIndex200 = opprettNyIndeks("slett_meg_200batch_" + createIndexName());
         skriv100_000BrukeretilIndex(new IndexName(testIndex200), 200);
         slettIndex(testIndex200);
 
         // Test: Med batch satt til: 500
-        String testIndex2 = opprettNyIndeks("slett_meg_500Batch_" + createIndexName());
+        String testIndex2 = opprettNyIndeks("slett_meg_500batch_" + createIndexName());
         skriv100_000BrukeretilIndex(new IndexName(testIndex2), 500);
         slettIndex(testIndex2);
 
@@ -203,12 +203,12 @@ public class OpensearchAdminService {
         slettIndex(testIndex5);
 
         // Test: Med batch satt til: 2000
-        String testIndex3 = opprettNyIndeks("slett_meg_2000Batch_" + createIndexName());
+        String testIndex3 = opprettNyIndeks("slett_meg_2000batch_" + createIndexName());
         skriv100_000BrukeretilIndex(new IndexName(testIndex3), 2000);
         slettIndex(testIndex3);
 
         // Test: Med batch satt til: 4000
-        String testIndex4 = opprettNyIndeks("slett_meg_5000Batch_" + createIndexName());
+        String testIndex4 = opprettNyIndeks("slett_meg_5000batch_" + createIndexName());
         skriv100_000BrukeretilIndex(new IndexName(testIndex4), 4000);
         slettIndex(testIndex4);
     }
