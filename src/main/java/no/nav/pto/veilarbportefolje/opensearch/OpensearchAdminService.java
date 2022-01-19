@@ -183,20 +183,20 @@ public class OpensearchAdminService {
     }
 
     public void testSkrivMedNyeSettings() {
-        // Test 1: Med refresh_interval satt til 10s
-        String testIndex1 = opprettNyIndeks("slett_meg_1_" + createIndexName());
-        skriv100_000BrukeretilIndex(new IndexName(testIndex1));
-
-        // Test 2: Med refresh_interval satt til -1
-        String testIndex2 = opprettNyIndeks("slett_meg_2_" + createIndexName());
-        boolean oppdatertSettings = oppdaterRefreshInterval(testIndex2, true);
+        // Test 1: Med refresh_interval satt til -1
+        String testIndex = opprettNyIndeks("slett_meg_1_" + createIndexName());
+        boolean oppdatertSettings = oppdaterRefreshInterval(testIndex, true);
         if (oppdatertSettings) {
-            skriv100_000BrukeretilIndex(new IndexName(testIndex2));
+            skriv100_000BrukeretilIndex(new IndexName(testIndex));
         } else {
             log.info("Hovedindeksering (test): fikk ikke oppdatertsettings");
         }
-        boolean resetSettings = oppdaterRefreshInterval(testIndex2, false);
+        boolean resetSettings = oppdaterRefreshInterval(testIndex, false);
         log.info("Hovedindeksering (test): resetSetting: {} ", resetSettings);
+        
+        // Test 2: Med refresh_interval satt til 10s
+        String testIndex1 = opprettNyIndeks("slett_meg_2_" + createIndexName());
+        skriv100_000BrukeretilIndex(new IndexName(testIndex1));
     }
 
     private void skriv100_000BrukeretilIndex(IndexName testIndex) {
@@ -210,7 +210,7 @@ public class OpensearchAdminService {
 
         long tidsStempel1 = System.currentTimeMillis();
         long tid = tidsStempel1 - tidsStempel0;
-        log.info("Hovedindekserings (test): Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
+        log.info("Hovedindekserings ({}): Ferdig på {} ms, indekserte {} brukere", testIndex.getValue(), tid, brukere.size());
     }
 
     @SneakyThrows
