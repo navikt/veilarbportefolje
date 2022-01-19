@@ -249,6 +249,18 @@ function handleCreateIndexForm(e) {
     }
 }
 
+const getAliasesForm = document.getElementById('getAliasesForm');
+getAliasesForm.addEventListener('submit', handleGetAliasesForm)
+
+function handleGetAliasesForm(e) {
+    e.preventDefault();
+    fetchData(
+        `/veilarbportefolje/api/admin/opensearch/getAliases`,
+        {method: 'GET', credentials: 'same-origin'},
+        'getAliasesFormResponse'
+    );
+}
+
 const assignAliasToIndexForm = document.getElementById('assignAliasToIndexForm');
 assignAliasToIndexForm.addEventListener('submit', handleAssignAliasToIndexForm)
 const indexNameEl = document.getElementById('indexName');
@@ -275,6 +287,63 @@ function handleDeleteIndexForm(e) {
             `/veilarbportefolje/api/admin/opensearch/deleteIndex`,
             {method: 'POST', credentials: 'same-origin', body: deleteIndexNameEl.value},
             'deleteIndexRespons'
+        );
+    }
+}
+
+const getSettingsIndexForm = document.getElementById('getSettingsIndexForm');
+getSettingsIndexForm.addEventListener('submit', handlegetSettingsIndexFormForm)
+const getSettingsIndexNameEl = document.getElementById('getSettingsIndexName');
+
+function handlegetSettingsIndexFormForm(e) {
+    e.preventDefault();
+    fetchData(
+        `/veilarbportefolje/api/admin/opensearch/getSettings`,
+        {method: 'POST', credentials: 'same-origin', body: getSettingsIndexNameEl.value},
+        'getSettingsIndexRespons'
+    );
+}
+
+const testSkrivForm = document.getElementById('testSkrivForm');
+testSkrivForm.addEventListener('submit', handleSkriveTestForm)
+
+function handleSkriveTestForm(e) {
+    e.preventDefault();
+    if (window.confirm('Sikker på at du vil starte denne testen?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/testSkrivMedNyeSettings`,
+            {method: 'POST', credentials: 'same-origin'},
+            'testSkrivRespons'
+        );
+    }
+}
+
+
+
+const fixReadOnlyModeForm = document.getElementById('fixReadOnlyModeForm');
+fixReadOnlyModeForm.addEventListener('submit', handleFixReadOnlyModeForm)
+
+function handleFixReadOnlyModeForm(e) {
+    e.preventDefault();
+    if (window.confirm('Er du sikker på at du vil kjøre en kommando relatert til ReadOnlyMode?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/fixReadOnlyMode`,
+            {method: 'POST', credentials: 'same-origin'},
+            'fixReadOnlyModeRespons'
+        );
+    }
+}
+
+const forceShardAssignmentForm = document.getElementById('forceShardAssignmentForm');
+forceShardAssignmentForm.addEventListener('submit', handleforceShardAssignmentForm)
+
+function handleforceShardAssignmentForm(e) {
+    e.preventDefault();
+    if (window.confirm('Er du sikker på at du vil tvinge shard assignment?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/forceShardAssignment`,
+            {method: 'POST', credentials: 'same-origin'},
+            'forceShardAssignmentRespons'
         );
     }
 }

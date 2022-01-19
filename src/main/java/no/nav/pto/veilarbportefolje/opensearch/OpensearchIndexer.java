@@ -21,6 +21,7 @@ import org.opensearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +39,8 @@ import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOpp
 @Service
 public class OpensearchIndexer {
 
-    static final int BATCH_SIZE = 1000;
-    static final int BATCH_SIZE_LIMIT = 1000;
+    public static final int BATCH_SIZE = 1000;
+    public static final int ORACLE_BATCH_SIZE_LIMIT = 1000;
     private final RestHighLevelClient restHighLevelClient;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
@@ -94,7 +95,6 @@ public class OpensearchIndexer {
     }
 
     public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
-
         BulkRequest bulk = new BulkRequest();
         oppfolgingsBrukere.stream()
                 .map(bruker -> {
@@ -134,8 +134,8 @@ public class OpensearchIndexer {
 
 
     private void validateBatchSize(List<OppfolgingsBruker> brukere) {
-        if (brukere.size() > BATCH_SIZE_LIMIT) {
-            throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", BATCH_SIZE_LIMIT));
+        if (brukere.size() > ORACLE_BATCH_SIZE_LIMIT) {
+            throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", ORACLE_BATCH_SIZE_LIMIT));
         }
     }
 
@@ -224,14 +224,23 @@ public class OpensearchIndexer {
         long tid = tidsStempel1 - tidsStempel0;
         log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
     }
+
     public void indekserBolk(List<AktorId> aktorIds) {
-        partition(aktorIds, BATCH_SIZE).forEach(partition -> {
-            List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(partition).stream().filter(bruker -> bruker.getAktoer_id() != null).collect(toList());
-            leggTilAktiviteter(brukere);
-            leggTilTiltak(brukere);
-            leggTilSisteEndring(brukere);
-            this.skrivTilIndeks(alias.getValue(), brukere);
+        indekserBolk(aktorIds, this.alias);
+    }
+
+    public void indekserBolk(List<AktorId> aktorIds, IndexName index) {
+        List<OppfolgingsBruker> brukere = new ArrayList<>(aktorIds.size());
+
+        partition(aktorIds, ORACLE_BATCH_SIZE_LIMIT).forEach(partition -> {
+            List<OppfolgingsBruker> brukerBatch = brukerRepository.hentBrukereFraView(partition).stream().filter(bruker -> bruker.getAktoer_id() != null).collect(toList());
+            leggTilAktiviteter(brukerBatch);
+            leggTilTiltak(brukerBatch);
+            leggTilSisteEndring(brukerBatch);
+            brukere.addAll(brukerBatch);
         });
+
+        this.skrivTilIndeks(index.getValue(), brukere);
     }
 
 }

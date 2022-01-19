@@ -36,13 +36,14 @@ import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.opensearch.IndexName;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
+import no.nav.pto.veilarbportefolje.opensearch.IndexName;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
@@ -98,7 +99,9 @@ import static org.mockito.Mockito.when;
         PersistentOppdatering.class,
         OppfolgingAvsluttetService.class,
         OpensearchService.class,
+        OpensearchIndexer.class,
         OpensearchIndexerV2.class,
+        OpensearchAdminService.class,
         AktivitetDAO.class,
         AktiviteterRepositoryV2.class,
         AktivitetStatusRepositoryV2.class,
@@ -110,7 +113,6 @@ import static org.mockito.Mockito.when;
         DialogService.class,
         DialogRepository.class,
         DialogRepositoryV2.class,
-        OpensearchIndexer.class,
         CvRepository.class,
         CVRepositoryV2.class,
         CVService.class,
@@ -231,15 +233,18 @@ public class ApplicationConfigTest {
 
     @Bean
     public RestHighLevelClient restHighLevelClient() {
-        OpensearchClientConfig opensearchTestConfig = OpensearchClientConfig.builder()
+        return createClient(opensearchClientConfig());
+    }
+
+    @Bean
+    public OpensearchClientConfig opensearchClientConfig() {
+        return OpensearchClientConfig.builder()
                 .username(OPENSEARCH_TEST_USERNAME)
                 .password(OPENSEARCH_TEST_PASSWORD)
                 .hostname(OPENSEARCH_CONTAINER.getHost())
                 .port(OPENSEARCH_CONTAINER.getFirstMappedPort())
                 .scheme("http")
                 .build();
-
-        return createClient(opensearchTestConfig);
     }
 
     @Bean
