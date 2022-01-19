@@ -135,7 +135,7 @@ public class OpensearchAdminService {
 
     @SneakyThrows
     public String getSettingsOnIndex(String indexName) {
-        String url = createAbsoluteUrl(openSearchClientConfig, indexName) + "_settings";
+        String url = createAbsoluteUrl(openSearchClientConfig, indexName) + "_settings?include_defaults=true";
         Request request = new Request.Builder()
                 .url(url).get()
                 .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
@@ -193,7 +193,7 @@ public class OpensearchAdminService {
         }
         boolean resetSettings = oppdaterRefreshInterval(testIndex, false);
         log.info("Hovedindeksering (test): resetSetting: {} ", resetSettings);
-        
+
         // Test 2: Med refresh_interval satt til 10s
         String testIndex1 = opprettNyIndeks("slett_meg_2_" + createIndexName());
         skriv100_000BrukeretilIndex(new IndexName(testIndex1));
