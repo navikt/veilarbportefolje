@@ -34,6 +34,7 @@ import java.util.Optional;
 
 import static no.nav.common.rest.client.RestClient.baseClient;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
+import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.createAbsoluteUrl;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.getAuthHeaderValue;
@@ -205,7 +206,7 @@ public class OpensearchAdminService {
         brukere = brukere.subList(0, Math.min(25_000, brukere.size()));
 
         log.info("Hovedindeksering (test): Indekserer {} brukere", brukere.size());
-        opensearchIndexer.indekserBolk(brukere, testIndex, batch_size);
+        partition(brukere, batch_size).forEach(batch -> opensearchIndexer.indekserBolk(batch, testIndex));
 
         long tidsStempel1 = System.currentTimeMillis();
         long tid = tidsStempel1 - tidsStempel0;

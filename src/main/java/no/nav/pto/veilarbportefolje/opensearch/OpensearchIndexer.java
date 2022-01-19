@@ -40,7 +40,7 @@ import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOpp
 public class OpensearchIndexer {
 
     public static final int BATCH_SIZE = 1000;
-    public static final int BATCH_SIZE_LIMIT = 1000;
+    public static final int ORACLE_BATCH_SIZE_LIMIT = 1000;
     private final RestHighLevelClient restHighLevelClient;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
@@ -134,8 +134,8 @@ public class OpensearchIndexer {
 
 
     private void validateBatchSize(List<OppfolgingsBruker> brukere) {
-        if (brukere.size() > BATCH_SIZE_LIMIT) {
-            throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", BATCH_SIZE_LIMIT));
+        if (brukere.size() > ORACLE_BATCH_SIZE_LIMIT) {
+            throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", ORACLE_BATCH_SIZE_LIMIT));
         }
     }
 
@@ -218,7 +218,7 @@ public class OpensearchIndexer {
         long tidsStempel0 = System.currentTimeMillis();
         log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
-        indekserBolk(brukere);
+        partition(brukere, BATCH_SIZE).forEach(this::indekserBolk);
 
         long tidsStempel1 = System.currentTimeMillis();
         long tid = tidsStempel1 - tidsStempel0;
@@ -226,13 +226,13 @@ public class OpensearchIndexer {
     }
 
     public void indekserBolk(List<AktorId> aktorIds) {
-        indekserBolk(aktorIds, this.alias, BATCH_SIZE);
+        indekserBolk(aktorIds, this.alias);
     }
 
-    public void indekserBolk(List<AktorId> aktorIds, IndexName index,  int batchSize) {
-        List<OppfolgingsBruker> brukere = new ArrayList<>(batchSize);
+    public void indekserBolk(List<AktorId> aktorIds, IndexName index) {
+        List<OppfolgingsBruker> brukere = new ArrayList<>(aktorIds.size());
 
-        partition(aktorIds, BATCH_SIZE_LIMIT).forEach(partition -> {
+        partition(aktorIds, ORACLE_BATCH_SIZE_LIMIT).forEach(partition -> {
             List<OppfolgingsBruker> brukerBatch = brukerRepository.hentBrukereFraView(partition).stream().filter(bruker -> bruker.getAktoer_id() != null).collect(toList());
             leggTilAktiviteter(brukerBatch);
             leggTilTiltak(brukerBatch);
