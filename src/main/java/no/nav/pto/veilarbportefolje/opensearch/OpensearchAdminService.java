@@ -34,7 +34,6 @@ import java.util.Optional;
 
 import static no.nav.common.rest.client.RestClient.baseClient;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
-import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.createAbsoluteUrl;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.getAuthHeaderValue;
@@ -183,30 +182,39 @@ public class OpensearchAdminService {
     }
 
     public void testSkrivMedNyeSettings() {
-        // Test 1: Med refresh_interval satt til -1
-        String testIndex = opprettNyIndeks("slett_meg_1_" + createIndexName());
-        boolean oppdatertSettings = oppdaterRefreshInterval(testIndex, true);
-        if (oppdatertSettings) {
-            skriv100_000BrukeretilIndex(new IndexName(testIndex));
-        } else {
-            log.info("Hovedindeksering (test): fikk ikke oppdatertsettings");
-        }
-        boolean resetSettings = oppdaterRefreshInterval(testIndex, false);
-        log.info("Hovedindeksering (test): resetSetting: {} ", resetSettings);
+        // Test: Med batch satt til: 100
+        String testIndex100 = opprettNyIndeks("slett_meg_100Batch_" + createIndexName());
+        skriv100_000BrukeretilIndex(new IndexName(testIndex100), 100);
 
-        // Test 2: Med refresh_interval satt til 10s
-        String testIndex1 = opprettNyIndeks("slett_meg_2_" + createIndexName());
-        skriv100_000BrukeretilIndex(new IndexName(testIndex1));
+        // Test: Med batch satt til: 200
+        String testIndex200 = opprettNyIndeks("slett_meg_200Batch_" + createIndexName());
+        skriv100_000BrukeretilIndex(new IndexName(testIndex200), 200);
+
+        // Test: Med batch satt til: 500
+        String testIndex2 = opprettNyIndeks("slett_meg_500Batch_" + createIndexName());
+        skriv100_000BrukeretilIndex(new IndexName(testIndex2), 500);
+
+        // Test: Med batch satt til: 1000
+        String testIndex5 = opprettNyIndeks("slett_meg_standard_" + createIndexName());
+        skriv100_000BrukeretilIndex(new IndexName(testIndex5), BATCH_SIZE);
+
+        // Test: Med batch satt til: 2000
+        String testIndex3 = opprettNyIndeks("slett_meg_2000Batch_" + createIndexName());
+        skriv100_000BrukeretilIndex(new IndexName(testIndex3), 2000);
+
+        // Test: Med batch satt til: 4000
+        String testIndex4 = opprettNyIndeks("slett_meg_5000Batch_" + createIndexName());
+        skriv100_000BrukeretilIndex(new IndexName(testIndex4), 4000);
     }
 
-    private void skriv100_000BrukeretilIndex(IndexName testIndex) {
+    private void skriv100_000BrukeretilIndex(IndexName testIndex, int batch_size) {
         long tidsStempel0 = System.currentTimeMillis();
 
         List<AktorId> brukere = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         brukere = brukere.subList(0, Math.min(100_000, brukere.size()));
 
         log.info("Hovedindeksering (test): Indekserer {} brukere", brukere.size());
-        partition(brukere, BATCH_SIZE).forEach(bulk -> opensearchIndexer.indekserBolk(bulk, testIndex));
+        opensearchIndexer.indekserBolk(brukere, testIndex, batch_size);
 
         long tidsStempel1 = System.currentTimeMillis();
         long tid = tidsStempel1 - tidsStempel0;

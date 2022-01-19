@@ -217,7 +217,7 @@ public class OpensearchIndexer {
         long tidsStempel0 = System.currentTimeMillis();
         log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
-        partition(brukere, BATCH_SIZE).forEach(this::indekserBolk);
+        indekserBolk(brukere);
 
         long tidsStempel1 = System.currentTimeMillis();
         long tid = tidsStempel1 - tidsStempel0;
@@ -225,11 +225,11 @@ public class OpensearchIndexer {
     }
 
     public void indekserBolk(List<AktorId> aktorIds) {
-        indekserBolk(aktorIds, alias);
+        indekserBolk(aktorIds, this.alias, BATCH_SIZE);
     }
 
-    public void indekserBolk(List<AktorId> aktorIds, IndexName index) {
-        partition(aktorIds, BATCH_SIZE).forEach(partition -> {
+    public void indekserBolk(List<AktorId> aktorIds, IndexName index,  int batchSize) {
+        partition(aktorIds, batchSize).forEach(partition -> {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(partition).stream().filter(bruker -> bruker.getAktoer_id() != null).collect(toList());
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
