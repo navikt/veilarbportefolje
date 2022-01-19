@@ -123,29 +123,30 @@ public class OpensearchAdminService {
     }
 
     @SneakyThrows
+    public String hentAliaser() {
+        String url = createAbsoluteUrl(openSearchClientConfig) + "_aliases";
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
+                .build();
+
+        return callAndGetBody(request);
+    }
+
+    @SneakyThrows
     public String getSettingsOnIndex(String indexName) {
         String url = createAbsoluteUrl(openSearchClientConfig, indexName) + "_settings";
-
         Request request = new Request.Builder()
                 .url(url).get()
                 .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
                 .build();
 
-        try (Response response = httpClient.newCall(request).execute()) {
-            RestUtils.throwIfNotSuccessful(response);
-            try (ResponseBody responseBody = response.body()) {
-                if (responseBody == null) {
-                    return null;
-                }
-                return responseBody.string();
-            }
-        }
+        return callAndGetBody(request);
     }
 
     @SneakyThrows
     public String updateFromReadOnlyMode() {
         String url = createAbsoluteUrl(openSearchClientConfig);
-
         Request request = new Request.Builder()
                 .url(url)
                 .put(RequestBody.create(MEDIA_TYPE_JSON, """
@@ -160,21 +161,12 @@ public class OpensearchAdminService {
                 .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
                 .build();
 
-        try (Response response = httpClient.newCall(request).execute()) {
-            RestUtils.throwIfNotSuccessful(response);
-            try (ResponseBody responseBody = response.body()) {
-                if (responseBody == null) {
-                    return null;
-                }
-                return responseBody.string();
-            }
-        }
+        return callAndGetBody(request);
     }
 
     @SneakyThrows
     public String forceShardAssignment() {
         String url = createAbsoluteUrl(openSearchClientConfig) + "_cluster/reroute?retry_failed=true";
-
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
@@ -182,15 +174,7 @@ public class OpensearchAdminService {
                 .header("Content-Length", "0")
                 .build();
 
-        try (Response response = httpClient.newCall(request).execute()) {
-            RestUtils.throwIfNotSuccessful(response);
-            try (ResponseBody responseBody = response.body()) {
-                if (responseBody == null) {
-                    return null;
-                }
-                return responseBody.string();
-            }
-        }
+        return callAndGetBody(request);
     }
 
     @SneakyThrows
@@ -221,5 +205,18 @@ public class OpensearchAdminService {
         long tidsStempel1 = System.currentTimeMillis();
         long tid = tidsStempel1 - tidsStempel0;
         log.info("Hovedindekserings (test): Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
+    }
+
+    @SneakyThrows
+    private String callAndGetBody(Request request){
+        try (Response response = httpClient.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            try (ResponseBody responseBody = response.body()) {
+                if (responseBody == null) {
+                    return null;
+                }
+                return responseBody.string();
+            }
+        }
     }
 }
