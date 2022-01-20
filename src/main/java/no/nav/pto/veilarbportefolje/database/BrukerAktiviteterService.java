@@ -9,13 +9,17 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepo
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvAliasIndeksering;
 
 @Slf4j
 @Service
@@ -31,6 +35,8 @@ public class BrukerAktiviteterService {
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
+    private final HovedIndekserer hovedIndekserer;
+    private final UnleashService unleashService;
 
     public void syncAktivitetOgBrukerData() {
         log.info("Starter jobb: oppdater BrukerAktiviteter og BrukerData");
@@ -38,7 +44,12 @@ public class BrukerAktiviteterService {
         log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
         syncAktivitetOgBrukerData(brukereSomMaOppdateres);
         log.info("Avslutter jobb: oppdater BrukerAktiviteter og BrukerData");
-        opensearchIndexer.nyHovedIndeksering(brukereSomMaOppdateres);
+
+        if(brukAvAliasIndeksering(unleashService)){
+            hovedIndekserer.hovedIndeksering(brukereSomMaOppdateres);
+        } else {
+            opensearchIndexer.nyHovedIndeksering(brukereSomMaOppdateres);
+        }
     }
 
 

@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.Optional;
 
 import static no.nav.common.rest.client.RestClient.baseClient;
@@ -85,10 +86,11 @@ public class OpensearchAdminService {
     }
 
     @SneakyThrows
-    public void opprettAliasForIndeks(String indeks) {
+    public void opprettAliasForIndeks(String indeks, Boolean isWriteIndex) {
         IndicesAliasesRequest.AliasActions addAliasAction = new IndicesAliasesRequest.AliasActions(ADD)
                 .index(indeks)
-                .alias(BRUKERINDEKS_ALIAS);
+                .alias(BRUKERINDEKS_ALIAS)
+                .writeIndex(isWriteIndex);
 
         IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
         AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
@@ -110,6 +112,21 @@ public class OpensearchAdminService {
         return callAndGetBody(request);
     }
 
+    public String hentBrukerIndex() {
+        String url = createAbsoluteUrl(openSearchClientConfig) + "_cat/indices/" + BRUKERINDEKS_ALIAS + "/?h=index";
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
+                .build();
+
+        String[] indexerPaAlias = Objects.requireNonNull(callAndGetBody(request)).split("\\r?\\n");
+        if (indexerPaAlias.length != 1) {
+            throw new IllegalStateException("Feil antall indexer på alias: " + indexerPaAlias.length);
+        }
+        return indexerPaAlias[0];
+
+    }
+
     @SneakyThrows
     public String getSettingsOnIndex(String indexName) {
         String url = createAbsoluteUrl(openSearchClientConfig, indexName) + "_settings?include_defaults=true";
@@ -119,6 +136,17 @@ public class OpensearchAdminService {
                 .build();
 
         return callAndGetBody(request);
+    }
+
+    public String opprettSkriveIndeksPaAlias() {
+        String nyIndex = opprettNyIndeks();
+        opprettAliasForIndeks(nyIndex, true);
+
+        return nyIndex;
+    }
+
+    public void settAliasSettingsTilDefault(String indexNavn) {
+        opprettAliasForIndeks(indexNavn, null);
     }
 
     @SneakyThrows

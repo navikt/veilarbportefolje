@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -20,11 +21,14 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvAliasIndeksering;
 
 @Slf4j
 @RestController
@@ -45,6 +49,8 @@ public class AdminController {
     private final RegistreringService registreringService;
     private final ProfileringService profileringService;
     private final OpensearchAdminService opensearchAdminService;
+    private final HovedIndekserer hovedIndekserer;
+    private final UnleashService unleashService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -96,7 +102,11 @@ public class AdminController {
     public String indekserAlleBrukere() {
         authorizeAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
-        opensearchIndexer.nyHovedIndeksering(brukereUnderOppfolging);
+        if(brukAvAliasIndeksering(unleashService)){
+            hovedIndekserer.hovedIndeksering(brukereUnderOppfolging);
+        } else {
+            opensearchIndexer.nyHovedIndeksering(brukereUnderOppfolging);
+        }
         return "Indeksering fullfort";
     }
 
@@ -169,7 +179,7 @@ public class AdminController {
     @PostMapping("/opensearch/assignAliasToIndex")
     public String assignAliasToIndex(@RequestBody String indexName) {
         authorizeAdmin();
-        opensearchAdminService.opprettAliasForIndeks(indexName);
+        opensearchAdminService.opprettAliasForIndeks(indexName, false);
         return "Ok";
     }
 
