@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -222,21 +223,26 @@ public class OpensearchIndexer {
         long tidsStempel0 = System.currentTimeMillis();
         log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
-        indexerInParallel(brukere);
-
-        long tidsStempel1 = System.currentTimeMillis();
-        long tid = tidsStempel1 - tidsStempel0;
-        log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
+        boolean success = indexerInParallel(brukere);
+        if (success) {
+            long tid = System.currentTimeMillis() - tidsStempel0;
+            log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
+        } else {
+            log.error("Hovedindeksering: ble ikke fullført");
+        }
     }
 
-    private void indexerInParallel(List<AktorId> alleBrukere) {
+    @SneakyThrows
+    private boolean indexerInParallel(List<AktorId> alleBrukere) {
         List<List<AktorId>> brukerePartition = Lists.partition(alleBrukere, (alleBrukere.size() / getNumberOfThreads()) + 1);
         ExecutorService executor = Executors.newFixedThreadPool(getNumberOfThreads());
         executor.execute(() ->
                 brukerePartition.parallelStream().forEach(bolk ->
-                    partition(bolk, BATCH_SIZE).forEach(this::indekserBolk)
+                        partition(bolk, BATCH_SIZE).forEach(this::indekserBolk)
                 )
         );
+
+        return executor.awaitTermination(7, TimeUnit.HOURS);
     }
 
     public void indekserBolk(List<AktorId> aktorIds) {

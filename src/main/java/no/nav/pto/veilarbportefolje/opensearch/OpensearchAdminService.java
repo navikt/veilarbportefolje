@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -13,13 +12,11 @@ import okhttp3.ResponseBody;
 import org.apache.commons.io.IOUtils;
 import org.opensearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.opensearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.opensearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.opensearch.action.support.master.AcknowledgedResponse;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.client.indices.CreateIndexRequest;
 import org.opensearch.client.indices.CreateIndexResponse;
-import org.opensearch.common.settings.Settings;
 import org.opensearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,16 +38,12 @@ import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.Al
 @Service
 public class OpensearchAdminService {
     private final RestHighLevelClient restHighLevelClient;
-    private final OpensearchIndexer opensearchIndexer;
-    private final OppfolgingRepository oppfolgingRepository;
     private final OpensearchClientConfig openSearchClientConfig;
     private final OkHttpClient httpClient;
 
     @Autowired
-    public OpensearchAdminService(RestHighLevelClient restHighLevelClient, OpensearchIndexer opensearchIndexer, OppfolgingRepository oppfolgingRepository, OpensearchClientConfig openSearchClientConfig) {
+    public OpensearchAdminService(RestHighLevelClient restHighLevelClient, OpensearchClientConfig openSearchClientConfig) {
         this.restHighLevelClient = restHighLevelClient;
-        this.opensearchIndexer = opensearchIndexer;
-        this.oppfolgingRepository = oppfolgingRepository;
         this.openSearchClientConfig = openSearchClientConfig;
 
         this.httpClient = baseClient();
@@ -104,18 +97,6 @@ public class OpensearchAdminService {
             log.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
             throw new RuntimeException();
         }
-    }
-
-    @SneakyThrows
-    public boolean oppdaterRefreshInterval(String indexName, boolean optimalBatch) {
-        String value = optimalBatch ? "-1" : "10s";
-        UpdateSettingsRequest updateSettingsRequest = new UpdateSettingsRequest(indexName)
-                .settings(
-                        Settings.builder()
-                                .put("refresh_interval", value)
-                                .build()
-                );
-        return restHighLevelClient.indices().putSettings(updateSettingsRequest, RequestOptions.DEFAULT).isAcknowledged();
     }
 
     @SneakyThrows
