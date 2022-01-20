@@ -257,7 +257,7 @@ public class OpensearchIndexer {
 
     private int getNumberOfThreads() {
         if (isDevelopment().orElse(false)) {
-            return 1;
+            return 2;
         }
         return 8;
     }
