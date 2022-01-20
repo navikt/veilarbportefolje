@@ -242,6 +242,7 @@ public class OpensearchIndexer {
                 )
         );
 
+        executor.shutdown();
         return executor.awaitTermination(7, TimeUnit.HOURS);
     }
 
