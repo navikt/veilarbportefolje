@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
+import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -21,17 +22,20 @@ import org.opensearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.opensearch.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
@@ -56,7 +60,8 @@ public class OpensearchIndexer {
             RestHighLevelClient restHighLevelClient,
             SisteEndringRepository sisteEndringRepository,
             IndexName opensearchIndex,
-            TiltakRepositoryV1 tiltakRepositoryV1, OpensearchIndexerV2 opensearchIndexerV2) {
+            TiltakRepositoryV1 tiltakRepositoryV1,
+            OpensearchIndexerV2 opensearchIndexerV2) {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
@@ -133,7 +138,7 @@ public class OpensearchIndexer {
     }
 
 
-    private void validateBatchSize(List<OppfolgingsBruker> brukere) {
+    private void validateBatchSize(List<?> brukere) {
         if (brukere.size() > ORACLE_BATCH_SIZE_LIMIT) {
             throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", ORACLE_BATCH_SIZE_LIMIT));
         }
@@ -218,11 +223,27 @@ public class OpensearchIndexer {
         long tidsStempel0 = System.currentTimeMillis();
         log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
-        partition(brukere, BATCH_SIZE).forEach(this::indekserBolk);
+        boolean success = indexerInParallel(brukere);
+        if (success) {
+            long tid = System.currentTimeMillis() - tidsStempel0;
+            log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
+        } else {
+            log.error("Hovedindeksering: ble ikke fullført");
+        }
+    }
 
-        long tidsStempel1 = System.currentTimeMillis();
-        long tid = tidsStempel1 - tidsStempel0;
-        log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
+    @SneakyThrows
+    private boolean indexerInParallel(List<AktorId> alleBrukere) {
+        List<List<AktorId>> brukerePartition = Lists.partition(alleBrukere, (alleBrukere.size() / getNumberOfThreads()) + 1);
+        ExecutorService executor = Executors.newFixedThreadPool(getNumberOfThreads());
+        executor.execute(() ->
+                brukerePartition.parallelStream().forEach(bolk ->
+                        partition(bolk, BATCH_SIZE).forEach(this::indekserBolk)
+                )
+        );
+
+        executor.shutdown();
+        return executor.awaitTermination(7, TimeUnit.HOURS);
     }
 
     public void indekserBolk(List<AktorId> aktorIds) {
@@ -230,17 +251,22 @@ public class OpensearchIndexer {
     }
 
     public void indekserBolk(List<AktorId> aktorIds, IndexName index) {
-        List<OppfolgingsBruker> brukere = new ArrayList<>(aktorIds.size());
+        validateBatchSize(aktorIds);
+        List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(aktorIds)
+                .stream().filter(bruker -> bruker.getAktoer_id() != null).toList();
 
-        partition(aktorIds, ORACLE_BATCH_SIZE_LIMIT).forEach(partition -> {
-            List<OppfolgingsBruker> brukerBatch = brukerRepository.hentBrukereFraView(partition).stream().filter(bruker -> bruker.getAktoer_id() != null).collect(toList());
-            leggTilAktiviteter(brukerBatch);
-            leggTilTiltak(brukerBatch);
-            leggTilSisteEndring(brukerBatch);
-            brukere.addAll(brukerBatch);
-        });
+        leggTilAktiviteter(brukere);
+        leggTilTiltak(brukere);
+        leggTilSisteEndring(brukere);
 
         this.skrivTilIndeks(index.getValue(), brukere);
+    }
+
+    private int getNumberOfThreads() {
+        if (isDevelopment().orElse(false)) {
+            return 2;
+        }
+        return 8;
     }
 
 }

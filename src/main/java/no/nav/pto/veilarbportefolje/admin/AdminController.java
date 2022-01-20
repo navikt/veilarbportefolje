@@ -179,13 +179,6 @@ public class AdminController {
         return opensearchAdminService.getSettingsOnIndex(indexName);
     }
 
-    @PostMapping("/opensearch/testSkrivMedNyeSettings")
-    public String testSkrivMedNyeSettings() {
-        authorizeAdmin();
-        opensearchAdminService.testSkrivMedNyeSettings();
-        return "Ok";
-    }
-
     @PostMapping("/opensearch/fixReadOnlyMode")
     public String fixReadOnlyMode() {
         authorizeAdmin();

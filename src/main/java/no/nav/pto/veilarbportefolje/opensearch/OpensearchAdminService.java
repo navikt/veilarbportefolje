@@ -3,9 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -14,13 +12,11 @@ import okhttp3.ResponseBody;
 import org.apache.commons.io.IOUtils;
 import org.opensearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.opensearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.opensearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.opensearch.action.support.master.AcknowledgedResponse;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.client.indices.CreateIndexRequest;
 import org.opensearch.client.indices.CreateIndexResponse;
-import org.opensearch.common.settings.Settings;
 import org.opensearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,32 +25,25 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
 
 import static no.nav.common.rest.client.RestClient.baseClient;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
-import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.createAbsoluteUrl;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.getAuthHeaderValue;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer.BATCH_SIZE;
 import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 
 @Slf4j
 @Service
 public class OpensearchAdminService {
     private final RestHighLevelClient restHighLevelClient;
-    private final OpensearchIndexer opensearchIndexer;
-    private final OppfolgingRepository oppfolgingRepository;
     private final OpensearchClientConfig openSearchClientConfig;
     private final OkHttpClient httpClient;
 
     @Autowired
-    public OpensearchAdminService(RestHighLevelClient restHighLevelClient, OpensearchIndexer opensearchIndexer, OppfolgingRepository oppfolgingRepository, OpensearchClientConfig openSearchClientConfig) {
+    public OpensearchAdminService(RestHighLevelClient restHighLevelClient, OpensearchClientConfig openSearchClientConfig) {
         this.restHighLevelClient = restHighLevelClient;
-        this.opensearchIndexer = opensearchIndexer;
-        this.oppfolgingRepository = oppfolgingRepository;
         this.openSearchClientConfig = openSearchClientConfig;
 
         this.httpClient = baseClient();
@@ -108,18 +97,6 @@ public class OpensearchAdminService {
             log.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
             throw new RuntimeException();
         }
-    }
-
-    @SneakyThrows
-    public boolean oppdaterRefreshInterval(String indexName, boolean optimalBatch) {
-        String value = optimalBatch ? "-1" : "10s";
-        UpdateSettingsRequest updateSettingsRequest = new UpdateSettingsRequest(indexName)
-                .settings(
-                        Settings.builder()
-                                .put("refresh_interval", value)
-                                .build()
-                );
-        return restHighLevelClient.indices().putSettings(updateSettingsRequest, RequestOptions.DEFAULT).isAcknowledged();
     }
 
     @SneakyThrows
@@ -180,37 +157,6 @@ public class OpensearchAdminService {
     @SneakyThrows
     private String readJsonFromFileStream(InputStream settings) {
         return IOUtils.toString(settings, String.valueOf(StandardCharsets.UTF_8));
-    }
-
-    public void testSkrivMedNyeSettings() {
-        // Test: Med batch satt til: 1000
-        String testIndex5 = opprettNyIndeks("slett_meg_standard_" + createIndexName());
-        skriv25_000BrukeretilIndex(new IndexName(testIndex5), BATCH_SIZE);
-        slettIndex(testIndex5);
-
-        // Test: Med batch satt til: 2000
-        String testIndex3 = opprettNyIndeks("slett_meg_2000batch_" + createIndexName());
-        skriv25_000BrukeretilIndex(new IndexName(testIndex3), 2000);
-        slettIndex(testIndex3);
-
-        // Test: Med batch satt til: 4000
-        String testIndex4 = opprettNyIndeks("slett_meg_5000batch_" + createIndexName());
-        skriv25_000BrukeretilIndex(new IndexName(testIndex4), 4000);
-        slettIndex(testIndex4);
-    }
-
-    private void skriv25_000BrukeretilIndex(IndexName testIndex, int batch_size) {
-        long tidsStempel0 = System.currentTimeMillis();
-
-        List<AktorId> brukere = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
-        brukere = brukere.subList(0, Math.min(25_000, brukere.size()));
-
-        log.info("Hovedindeksering (test): Indekserer {} brukere", brukere.size());
-        partition(brukere, batch_size).forEach(batch -> opensearchIndexer.indekserBolk(batch, testIndex));
-
-        long tidsStempel1 = System.currentTimeMillis();
-        long tid = tidsStempel1 - tidsStempel0;
-        log.info("Hovedindekserings ({}): Ferdig på {} ms, indekserte {} brukere", testIndex.getValue(), tid, brukere.size());
     }
 
     @SneakyThrows
