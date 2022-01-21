@@ -21,16 +21,13 @@ public class HovedIndekserer {
         log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
         String gammelIndex = opensearchAdminService.hentBrukerIndex();
-        String nyIndex = opensearchAdminService.opprettSkriveIndeksPaAlias();
+        String nyIndex = opensearchAdminService.opprettSkjultSkriveIndeksPaAlias();
         log.info("Hovedindeksering: skaper 'write index': {}", nyIndex);
 
         boolean success = tryIndekserAlleBrukere(brukere);
         if (success) {
             opensearchAdminService.flyttAliasTilNyIndeks(gammelIndex, nyIndex);
-            boolean slettet = opensearchAdminService.slettIndex(gammelIndex);
-            if (slettet) {
-                log.info("Hovedindeksering: Slettet gammel index {}", gammelIndex);
-            }
+            opensearchAdminService.slettIndex(gammelIndex);
             long tid = System.currentTimeMillis() - tidsStempel0;
             log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
         } else {
@@ -38,7 +35,6 @@ public class HovedIndekserer {
             log.error("Hovedindeksering: ble ikke fullført");
         }
     }
-
 
     private boolean tryIndekserAlleBrukere(List<AktorId> brukere) {
         try {

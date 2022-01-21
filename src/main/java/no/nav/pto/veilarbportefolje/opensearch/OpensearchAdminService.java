@@ -88,18 +88,17 @@ public class OpensearchAdminService {
         boolean acknowledged = restHighLevelClient.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT).isAcknowledged();
         if (!acknowledged) {
             log.error("Kunne ikke slette index: {}", indexName);
+        } else {
+            log.info("Index: {}, er slettet", indexName);
         }
         return acknowledged;
     }
 
     @SneakyThrows
-    public void opprettAliasForIndeks(String indeks, Boolean isWriteIndex) {
-        BoolQueryBuilder hideAllUsers = QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery("fnr"));
+    public void opprettAliasForIndeks(String indeks) {
         IndicesAliasesRequest.AliasActions addAliasAction = new IndicesAliasesRequest.AliasActions(ADD)
                 .index(indeks)
-                .alias(BRUKERINDEKS_ALIAS)
-                .writeIndex(isWriteIndex)
-                .filter(hideAllUsers);
+                .alias(BRUKERINDEKS_ALIAS);
 
         IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
         AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
@@ -169,15 +168,26 @@ public class OpensearchAdminService {
         return callAndGetBody(request);
     }
 
-    public String opprettSkriveIndeksPaAlias() {
+    @SneakyThrows
+    public String opprettSkjultSkriveIndeksPaAlias() {
         String nyIndex = opprettNyIndeks();
-        opprettAliasForIndeks(nyIndex, true);
+
+        BoolQueryBuilder hideAllUsers = QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery("fnr"));
+        IndicesAliasesRequest.AliasActions addAliasAction = new IndicesAliasesRequest.AliasActions(ADD)
+                .index(nyIndex)
+                .alias(BRUKERINDEKS_ALIAS)
+                .writeIndex(true)
+                .filter(hideAllUsers);
+
+        IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
+        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
+
+        if (!response.isAcknowledged()) {
+            log.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
+            throw new RuntimeException();
+        }
 
         return nyIndex;
-    }
-
-    public void settAliasSettingsTilDefault(String indexNavn) {
-        opprettAliasForIndeks(indexNavn, null);
     }
 
     @SneakyThrows

@@ -179,7 +179,7 @@ public class AdminController {
     @PostMapping("/opensearch/assignAliasToIndex")
     public String assignAliasToIndex(@RequestBody String indexName) {
         authorizeAdmin();
-        opensearchAdminService.opprettAliasForIndeks(indexName, false);
+        opensearchAdminService.opprettAliasForIndeks(indexName);
         return "Ok";
     }
 
