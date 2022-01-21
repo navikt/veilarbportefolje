@@ -22,20 +22,15 @@ public class HovedIndekserer {
 
         String gammelIndex = opensearchAdminService.hentBrukerIndex();
         String nyIndex = opensearchAdminService.opprettSkriveIndeksPaAlias();
-
         log.info("Hovedindeksering: skaper 'write index': {}", nyIndex);
 
         boolean success = tryIndekserAlleBrukere(brukere);
-
         if (success) {
-            log.info("Hovedindeksering: Sletter gammel index {}", gammelIndex);
-            boolean bleSlettet = opensearchAdminService.slettIndex(gammelIndex);
-            if (bleSlettet) {
-                opensearchAdminService.settAliasSettingsTilDefault(nyIndex);
-            } else {
-                log.error("gammel index ble ikke slettet!");
+            opensearchAdminService.flyttAliasTilNyIndeks(gammelIndex, nyIndex);
+            boolean slettet = opensearchAdminService.slettIndex(gammelIndex);
+            if (slettet) {
+                log.info("Hovedindeksering: Slettet gammel index {}", gammelIndex);
             }
-
             long tid = System.currentTimeMillis() - tidsStempel0;
             log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
         } else {
