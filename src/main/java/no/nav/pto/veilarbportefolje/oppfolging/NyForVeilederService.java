@@ -6,10 +6,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 
 @Slf4j
@@ -39,8 +36,8 @@ public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeiled
         if (hentNyForVeileder(aktorId) == nyForVeileder) {
             return;
         }
-        Optional<Veilarbportefoljeinfo> oppfolgingsdata = oppfolgingService.hentOppfolgingsDataFraVeilarboppfolging(aktorId);
-        if (oppfolgingsdata.isPresent() && oppfolgingsdata.get().isErUnderOppfolging()) {
+        boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingService.hentUnderOppfolging(aktorId);
+        if (erUnderOppfolgingIVeilarboppfolging) {
             throw new IllegalStateException("Fikk 'ny for veiledere melding' på bruker som enda ikke er under oppfølging i veilarbportefolje");
         }
     }

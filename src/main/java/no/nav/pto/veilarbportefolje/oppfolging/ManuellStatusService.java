@@ -5,12 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
-import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 
 @Slf4j
@@ -39,8 +36,8 @@ public class ManuellStatusService extends KafkaCommonConsumerService<ManuellStat
         if (hentManuellStatus(aktorId) == dto.isErManuell()) {
             return;
         }
-        Optional<Veilarbportefoljeinfo> oppfolgingsdata = oppfolgingService.hentOppfolgingsDataFraVeilarboppfolging(aktorId);
-        if (oppfolgingsdata.isPresent() && oppfolgingsdata.get().isErUnderOppfolging()) {
+        boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingService.hentUnderOppfolging(aktorId);
+        if (erUnderOppfolgingIVeilarboppfolging) {
             throw new IllegalStateException("Fikk 'manuell status melding' på bruker som enda ikke er under oppfølging i veilarbportefolje");
         }
     }

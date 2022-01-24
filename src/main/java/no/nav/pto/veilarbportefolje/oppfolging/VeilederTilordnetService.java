@@ -6,12 +6,9 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
-import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 
 @Slf4j
@@ -52,13 +49,15 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         if (hentVeileder(aktorId).equals(veilederId)) {
             return;
         }
-        Optional<Veilarbportefoljeinfo> oppfolgingsdata = oppfolgingService.hentOppfolgingsDataFraVeilarboppfolging(aktorId);
-        if (oppfolgingsdata.isPresent() && oppfolgingsdata.get().isErUnderOppfolging()) {
+        boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingService.hentUnderOppfolging(aktorId);
+        if (erUnderOppfolgingIVeilarboppfolging) {
             throw new IllegalStateException("Fikk 'veileder melding' på bruker som enda ikke er under oppfølging i veilarbportefolje");
         }
     }
 
     private VeilederId hentVeileder(AktorId aktoerId) {
-        return VeilederId.of(oppfolgingRepository.hentOppfolgingData(aktoerId).map(BrukerOppdatertInformasjon::getVeileder).orElse(null));
+        return VeilederId.of(oppfolgingRepository.hentOppfolgingData(aktoerId)
+                .map(BrukerOppdatertInformasjon::getVeileder)
+                .orElse(null));
     }
 }

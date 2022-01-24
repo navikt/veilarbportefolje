@@ -8,8 +8,10 @@ import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.UrlUtils;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
@@ -38,24 +40,27 @@ public class OppfolgingService {
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final SystemUserTokenProvider systemUserTokenProvider;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+    private final AktorClient aktorClient;
 
     private static int antallBrukereSlettet;
 
     @Autowired
-    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
+    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
+        this.aktorClient = aktorClient;
         this.client = RestClient.baseClient();
         this.veilarboppfolgingUrl = UrlUtils.createServiceUrl("veilarboppfolging", "pto", true);
     }
 
-    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
+    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
+        this.aktorClient = aktorClient;
         this.client = RestClient.baseClient();
         this.veilarboppfolgingUrl = url;
     }
@@ -178,20 +183,6 @@ public class OppfolgingService {
         }
     }
 
-    public Optional<Veilarbportefoljeinfo> hentOppfolgingsDataFraVeilarboppfolging(AktorId aktoer) {
-        try {
-            return Optional.ofNullable(hentVeilarbData(aktoer));
-        } catch (RuntimeException e) {
-            log.error("RuntimeException under henting av oppfølgingdata for bruker {}", aktoer);
-            log.error("RuntimeException under henting av oppfølgingdata ", e);
-        } catch (Exception e) {
-            log.error("Exception under henting av oppfølgingdata for bruker {}", aktoer);
-            log.error("Exception under henting av oppfølgingdata OppfolgingsJobb", e);
-        }
-        return Optional.empty();
-    }
-
-
     private Veilarbportefoljeinfo hentVeilarbData(AktorId aktoer) throws RuntimeException, IOException {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarboppfolgingUrl, "/api/admin/hentVeilarbinfo/bruker?aktorId=" + aktoer))
@@ -207,46 +198,19 @@ public class OppfolgingService {
     }
 
     @SneakyThrows
-    public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(String fnr) {
+    public boolean hentUnderOppfolging(AktorId aktorId) {
+        Fnr fnr = aktorClient.hentFnr(aktorId);
         Request request = new Request.Builder()
-                .url(joinPaths(veilarboppfolgingUrl, "/api/oppfolging/oppfolgingsperioder?fnr=" + fnr))
+                .url(joinPaths(veilarboppfolgingUrl, "/api/v2/oppfolging?fnr=" + fnr))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             return RestUtils.getBodyStr(response)
-                    .map((bodyStr) -> JsonUtils.fromJsonArray(bodyStr, OppfolgingPeriodeDTO.class))
+                    .map((bodyStr) -> JsonUtils.fromJson(bodyStr, UnderOppfolgingV2Response.class))
+                    .map(r -> r.erUnderOppfolging)
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
-        } catch (RuntimeException exception) {
-            return null;
         }
-    }
-
-    public Optional<OppfolgingPeriodeDTO> hentSisteOppfolgingsPeriode(String fnr) {
-        List<OppfolgingPeriodeDTO> oppfolgingPerioder = hentOppfolgingsperioder(fnr);
-        if (oppfolgingPerioder == null) {
-            return Optional.empty();
-        }
-
-        return oppfolgingPerioder.stream().min((o1, o2) -> {
-            if (o1.sluttDato == null) {
-                return -1;
-            }
-
-            if (o2.sluttDato == null) {
-                return 1;
-            }
-
-            if (o1.sluttDato.isAfter(o2.sluttDato)) {
-                return -1;
-            }
-
-            if (o1.sluttDato.isBefore(o2.sluttDato)) {
-                return 1;
-            }
-
-            return 0;
-        });
     }
 }
