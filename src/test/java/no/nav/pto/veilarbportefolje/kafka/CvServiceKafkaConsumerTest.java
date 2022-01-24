@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.cv.dto.Ressurs;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -29,6 +30,10 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
     @Autowired
     private OppfolgingRepository oppfolgingRepository;
 
+    @Autowired
+    private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+
+
     private final AktorId aktoerId1 = AktorId.of("11111111111");
     private final AktorId aktoerId2 = AktorId.of("22222222222");
     private final AktorId aktoerId3 = AktorId.of("33333333333");
@@ -38,6 +43,9 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
         oppfolgingRepository.settUnderOppfolging(aktoerId1, ZonedDateTime.now());
         oppfolgingRepository.settUnderOppfolging(aktoerId2, ZonedDateTime.now());
         oppfolgingRepository.settUnderOppfolging(aktoerId3, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId1, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId2, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId3, ZonedDateTime.now());
     }
 
     @Test

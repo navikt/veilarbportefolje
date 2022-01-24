@@ -6,8 +6,9 @@ import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final CvRepository cvRepository;
     private final CVRepositoryV2 cvRepositoryV2;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     @Override
     public void behandleKafkaMeldingLogikk(Melding kafkaMelding) {
@@ -56,7 +58,9 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
         cvRepositoryV2.upsertHarDeltCv(aktoerId, harDeltCv);
         cvRepository.upsertHarDeltCv(aktoerId, harDeltCv);
 
-        opensearchIndexerV2.updateHarDeltCv(aktoerId, harDeltCv);
+        if (oppfolgingRepositoryV2.erUnderOppfolging(aktoerId)){
+            opensearchIndexerV2.updateHarDeltCv(aktoerId, harDeltCv);
+        }
     }
 
     private boolean cvEksistere(Melding melding) {
