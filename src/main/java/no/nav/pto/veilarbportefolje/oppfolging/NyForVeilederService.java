@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +20,7 @@ public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeiled
     private final OppfolgingService oppfolgingService;
     private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-    private final ElasticServiceV2 elasticServiceV2;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
 
     @Override
     protected void behandleKafkaMeldingLogikk(NyForVeilederDTO dto) {
@@ -31,8 +31,8 @@ public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeiled
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktorId, brukerErNyForVeileder);
 
-        elasticServiceV2.oppdaterNyForVeileder(aktorId, brukerErNyForVeileder);
-        log.info("Oppdatert bruker: {}, er ny for veileder: {}", aktorId, brukerErNyForVeileder);
+        opensearchIndexerV2.oppdaterNyForVeileder(dto.getAktorId(), brukerErNyForVeileder);
+        log.info("Oppdatert bruker: {}, er ny for veileder: {}", dto.getAktorId(), brukerErNyForVeileder);
     }
 
     private void kastErrorHvisBrukerSkalVaereUnderOppfolging(AktorId aktorId, boolean nyForVeileder) {

@@ -12,20 +12,16 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -38,17 +34,17 @@ public class AdminController {
     private final EnvironmentProperties environmentProperties;
     private final AktorClient aktorClient;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
-    private final ElasticServiceV2 elasticServiceV2;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
-    private final ElasticIndexer elasticIndexer;
+    private final OpensearchIndexer opensearchIndexer;
     private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
     private final OppfolgingRepository oppfolgingRepository;
     private final ArbeidslisteService arbeidslisteService;
     private final RegistreringService registreringService;
     private final ProfileringService profileringService;
-
+    private final OpensearchAdminService opensearchAdminService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -63,12 +59,12 @@ public class AdminController {
         return "Slettet oppfølgingsbruker " + aktoerId;
     }
 
-    @DeleteMapping("/fjernBrukerElastic")
+    @DeleteMapping("/fjernBrukerOpensearch")
     @SneakyThrows
-    public String fjernBrukerFraElastic(@RequestBody String aktoerId) {
+    public String fjernBrukerFraOpensearch(@RequestBody String aktoerId) {
         authorizeAdmin();
-        elasticServiceV2.slettDokumenter(List.of(AktorId.of(aktoerId)));
-        return "Slettet bruker fra elastic " + aktoerId;
+        opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(aktoerId)));
+        return "Slettet bruker fra opensearch " + aktoerId;
     }
 
 
@@ -92,7 +88,7 @@ public class AdminController {
 
         authorizeAdmin();
         String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
-        elasticIndexer.indekser(AktorId.of(aktorId));
+        opensearchIndexer.indekser(AktorId.of(aktorId));
         return "Indeksering fullfort";
     }
 
@@ -100,7 +96,7 @@ public class AdminController {
     public String indekserAlleBrukere() {
         authorizeAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
-        elasticIndexer.nyHovedIndeksering(brukereUnderOppfolging);
+        opensearchIndexer.nyHovedIndeksering(brukereUnderOppfolging);
         return "Indeksering fullfort";
     }
 
@@ -110,8 +106,7 @@ public class AdminController {
         authorizeAdmin();
         String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
         brukerAktiviteterService.syncAktivitetOgBrukerData(AktorId.of(aktorId));
-
-        elasticIndexer.indekser(AktorId.of(aktorId));
+        opensearchIndexer.indekser(AktorId.of(aktorId));
         return "Aktiviteter er naa i sync";
     }
 
@@ -148,6 +143,52 @@ public class AdminController {
         authorizeAdmin();
         registreringService.migrerTilPostgres();
         return "Registrering er nå migrert";
+    }
+
+    @PostMapping("/opensearch/createIndex")
+    public String createIndex() {
+        authorizeAdmin();
+        String indexName = opensearchAdminService.opprettNyIndeks();
+        log.info("Opprettet index: {}", indexName);
+        return indexName;
+    }
+
+    @GetMapping("/opensearch/getAliases")
+    public String getAliases() {
+        authorizeAdmin();
+        return opensearchAdminService.hentAliaser();
+    }
+
+    @PostMapping("/opensearch/deleteIndex")
+    public boolean deleteIndex(@RequestBody String indexName) {
+        authorizeAdmin();
+        log.info("Sletter index: {}", indexName);
+        return opensearchAdminService.slettIndex(indexName);
+    }
+
+    @PostMapping("/opensearch/assignAliasToIndex")
+    public String assignAliasToIndex(@RequestBody String indexName) {
+        authorizeAdmin();
+        opensearchAdminService.opprettAliasForIndeks(indexName);
+        return "Ok";
+    }
+
+    @PostMapping("/opensearch/getSettings")
+    public String getSettings(@RequestBody String indexName) {
+        authorizeAdmin();
+        return opensearchAdminService.getSettingsOnIndex(indexName);
+    }
+
+    @PostMapping("/opensearch/fixReadOnlyMode")
+    public String fixReadOnlyMode() {
+        authorizeAdmin();
+        return opensearchAdminService.updateFromReadOnlyMode();
+    }
+
+    @PostMapping("/opensearch/forceShardAssignment")
+    public String forceShardAssignment() {
+        authorizeAdmin();
+        return opensearchAdminService.forceShardAssignment();
     }
 
     private void authorizeAdmin() {

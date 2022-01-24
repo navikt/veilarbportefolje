@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
 
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 
 import java.util.HashSet;
 import java.util.Optional;

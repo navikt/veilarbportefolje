@@ -2,14 +2,14 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.ZonedDateTime;
 
-import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
+import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -31,7 +31,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
 
         veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder));
 
-        final OppfolgingsBruker bruker = elasticTestClient.hentBrukerFraElastic(aktoerId);
+        final OppfolgingsBruker bruker = opensearchTestClient.hentBrukerFraOpensearch(aktoerId);
         final VeilederId tilordnetVeileder = VeilederId.of(bruker.getVeileder_id());
 
 
@@ -49,7 +49,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
 
         veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder));
 
-        final OppfolgingsBruker bruker = elasticTestClient.hentBrukerFraElastic(aktoerId);
+        final OppfolgingsBruker bruker = opensearchTestClient.hentBrukerFraOpensearch(aktoerId);
         final VeilederId tilordnetVeileder = VeilederId.of(bruker.getVeileder_id());
 
 
@@ -69,10 +69,10 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
         assertThat(arbeidslisteAktiv).isTrue();
 
         veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder));
-        pollElasticUntil(() -> !arbeidslisteAktiv(aktoerId));
+        pollOpensearchUntil(() -> !arbeidslisteAktiv(aktoerId));
     }
 
     private Boolean arbeidslisteAktiv(AktorId aktoerId) {
-        return (Boolean) elasticTestClient.getDocument(aktoerId).get().getSourceAsMap().get("arbeidsliste_aktiv");
+        return (Boolean) opensearchTestClient.getDocument(aktoerId).get().getSourceAsMap().get("arbeidsliste_aktiv");
     }
 }

@@ -4,6 +4,8 @@ package no.nav.pto.veilarbportefolje.config;
 import no.finn.unleash.UnleashContext;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 
+import static no.nav.common.featuretoggle.UnleashUtils.resolveUnleashContextFromSubject;
+
 public class FeatureToggle {
     private FeatureToggle() {
     }
@@ -19,7 +21,7 @@ public class FeatureToggle {
     public static final String KAFKA_ONPREM_CONSUMERS_STOP = "veilarbportefolje.kafka_onprem_consumers_stop";
 
     public static boolean erPostgresPa(UnleashService unleashService, String userId) {
-        return unleashService.isEnabled(FeatureToggle.POSTGRES, new UnleashContext(userId, null, null, null));
+        return unleashService.isEnabled(FeatureToggle.POSTGRES, new UnleashContext(userId, null, null, resolveUnleashContextFromSubject().getProperties()));
     }
 
     public static boolean brukIkkeAvtalteAktiviteter(UnleashService unleashService) {

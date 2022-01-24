@@ -7,12 +7,12 @@ import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
+import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.sbl.sql.SqlUtils;
-import org.elasticsearch.action.get.GetResponse;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -24,24 +24,24 @@ import java.util.Optional;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
+import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AktivitetKafkaConsumerTest extends EndToEndTest {
 
     private final JdbcTemplate db;
-    private final ElasticTestClient elasticTestClient;
+    private final OpensearchTestClient opensearchTestClient;
     private final AktivitetService aktivitetService;
 
     @Autowired
-    public AktivitetKafkaConsumerTest(JdbcTemplate db, ElasticTestClient elasticTestClient, AktivitetService aktivitetService) {
+    public AktivitetKafkaConsumerTest(JdbcTemplate db, OpensearchTestClient opensearchTestClient, AktivitetService aktivitetService) {
         this.db = db;
-        this.elasticTestClient = elasticTestClient;
+        this.opensearchTestClient = opensearchTestClient;
         this.aktivitetService = aktivitetService;
     }
 
     @Test
-    void skal_oppdatere_aktivitet_i_elastic() {
+    void skal_oppdatere_aktivitet_i_opensearch() {
         final AktorId aktoerId = AktorId.of("123456789");
         final PersonId personId = PersonId.of("1234");
         final Fnr fnr = Fnr.ofValidFnr("00000000000");
@@ -80,15 +80,15 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
 
         aktivitetService.behandleKafkaMeldingLogikk(melding);
 
-        pollElasticUntil(() -> aktivitetIJobbUtlopsdatoErOppdatert(aktoerId));
+        pollOpensearchUntil(() -> aktivitetIJobbUtlopsdatoErOppdatert(aktoerId));
 
-        final String aktivitetIJobbUtlopsdato = getAktivitetIJobbUtlopsdato(elasticTestClient.fetchDocument(aktoerId));
+        final String aktivitetIJobbUtlopsdato = getAktivitetIJobbUtlopsdato(opensearchTestClient.fetchDocument(aktoerId));
 
         assertThat(aktivitetIJobbUtlopsdato).isEqualTo(toIsoUTC(timestampFromISO8601(tilDato)));
     }
 
     private Boolean aktivitetIJobbUtlopsdatoErOppdatert(AktorId aktoerId) {
-        return !Optional.of(elasticTestClient.fetchDocument(aktoerId))
+        return !Optional.of(opensearchTestClient.fetchDocument(aktoerId))
                 .map(AktivitetKafkaConsumerTest::getAktivitetIJobbUtlopsdato)
                 .map(utlopsDato -> utlopsDato.equals(getFarInTheFutureDate()))
                 .get();
@@ -113,6 +113,6 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
                 .put("aktoer_id", aktoerId.toString())
                 .toString();
 
-        elasticTestClient.createDocument(aktoerId, document);
+        opensearchTestClient.createDocument(aktoerId, document);
     }
 }

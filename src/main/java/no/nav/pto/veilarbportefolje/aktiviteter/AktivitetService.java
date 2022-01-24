@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -31,7 +31,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final BrukerDataService brukerDataService;
     private final SisteEndringService sisteEndringService;
     private final UnleashService unleashService;
-    private final ElasticIndexer elasticIndexer;
+    private final OpensearchIndexer opensearchIndexer;
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         log.info(
@@ -48,7 +48,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         if (bleProsessert && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
             utledAktivitetstatuserForAktoerid(aktorId);
-            elasticIndexer.indekser(aktorId);
+            opensearchIndexer.indekser(aktorId);
         }
 
         //POSTGRES
@@ -74,7 +74,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         //ORACLE
         aktivitetDAO.deleteById(aktivitetid);
         utledAktivitetstatuserForAktoerid(aktorId);
-        elasticIndexer.indekser(aktorId);
+        opensearchIndexer.indekser(aktorId);
 
         //POSTGRES
         aktiviteterRepositoryV2.deleteById(aktivitetid);
@@ -92,7 +92,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         //ORACLE
         aktivitetDAO.upsertAktivitet(melding);
         utledAktivitetstatuserForAktoerid(aktorId);
-        elasticIndexer.indekser(aktorId);
+        opensearchIndexer.indekser(aktorId);
 
         //POSTGRES
         aktiviteterRepositoryV2.upsertAktivitet(melding);

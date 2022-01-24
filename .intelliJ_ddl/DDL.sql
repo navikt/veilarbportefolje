@@ -649,6 +649,13 @@ CREATE INDEX aktorid_ytelser_idx ON public.ytelsesvedtak USING btree (aktorid);
 
 
 --
+-- Name: arbeidsliste_enhet; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX arbeidsliste_enhet ON public.arbeidsliste USING btree (nav_kontor_for_arbeidsliste);
+
+
+--
 -- Name: enhet_idx; Type: INDEX; Schema: public; Owner: -
 --
 

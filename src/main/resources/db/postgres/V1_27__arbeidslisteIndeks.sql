@@ -1,0 +1,1 @@
+CREATE INDEX arbeidsliste_enhet ON arbeidsliste(nav_kontor_for_arbeidsliste);

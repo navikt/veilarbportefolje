@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,7 @@ public class VedtakService extends KafkaCommonConsumerService<KafkaVedtakStatusE
 
     private final VedtakStatusRepository vedtakStatusRepository;
     private final VedtakStatusRepositoryV2 vedtakStatusRepositoryV2;
-    private final ElasticIndexer elasticIndexer;
+    private final OpensearchIndexer opensearchIndexer;
 
     @Override
     public void behandleKafkaMeldingLogikk(KafkaVedtakStatusEndring vedtakStatusEndring) {
@@ -27,7 +27,7 @@ public class VedtakService extends KafkaCommonConsumerService<KafkaVedtakStatusE
             case BESLUTTER_PROSESS_STARTET, BESLUTTER_PROSESS_AVBRUTT, BLI_BESLUTTER,
                     GODKJENT_AV_BESLUTTER, KLAR_TIL_BESLUTTER, KLAR_TIL_VEILEDER -> oppdaterUtkast(vedtakStatusEndring);
         }
-        elasticIndexer.indekser(AktorId.of(vedtakStatusEndring.getAktorId()));
+        opensearchIndexer.indekser(AktorId.of(vedtakStatusEndring.getAktorId()));
     }
 
     private void slettUtkast(KafkaVedtakStatusEndring melding) {

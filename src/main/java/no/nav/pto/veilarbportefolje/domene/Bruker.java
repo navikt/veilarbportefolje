@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.elastic.domene.Endring;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.PostgresUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
@@ -28,6 +28,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 @NoArgsConstructor
 public class Bruker {
     String fnr;
+    String aktoerid;
     String fornavn;
     String etternavn;
     String veilederId;
@@ -88,6 +89,7 @@ public class Bruker {
 
         return new Bruker()
                 .setFnr(bruker.getFnr())
+                .setAktoerid(bruker.getAktoer_id())
                 .setNyForEnhet(bruker.isNy_for_enhet())
                 .setNyForVeileder(bruker.isNy_for_veileder())
                 .setTrengerVurdering(trengerVurdering)

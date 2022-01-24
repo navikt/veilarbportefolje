@@ -27,20 +27,20 @@ function handleOppfolgingRefreshForUserForm(e) {
     }
 }
 
-const slettElasticForm = document.getElementById('slettElasticForm')
-slettElasticForm.addEventListener('submit', handleslettElastic);
+const slettOpensearchForm = document.getElementById('slettOpensearchForm')
+slettOpensearchForm.addEventListener('submit', handleslettOpensearch);
 const aktoerIdInputSlett = document.getElementById('aktoerIdInputSlett')
 
-function handleslettElastic(e) {
+function handleslettOpensearch(e) {
     e.preventDefault()
     const aktoerId = aktoerIdInputSlett.value;
-    if (!window.confirm('Dette vil fjerne brukeren fra elastic, er du sikker på at du vil fortsette?')) {
+    if (!window.confirm('Dette vil fjerne brukeren fra Opensearch, er du sikker på at du vil fortsette?')) {
         return;
     }
 
     if (aktoerId && aktoerId.length > 0) {
         fetchData(
-            '/veilarbportefolje/api/admin/fjernBrukerElastic',
+            '/veilarbportefolje/api/admin/fjernBrukerOpensearch',
             {method: 'DELETE', credentials: 'same-origin', body: aktoerId},
             'slettingResponse'
         )
@@ -231,6 +231,103 @@ function handleMigrerProfilering(e) {
             `/veilarbportefolje/api/admin/profilering/migrer`,
             {method: 'PUT', credentials: 'same-origin'},
             'migrerProfileringResponse'
+        );
+    }
+}
+
+const createIndexForm = document.getElementById('createIndexForm');
+createIndexForm.addEventListener('submit', handleCreateIndexForm)
+
+function handleCreateIndexForm(e) {
+    e.preventDefault();
+    if (window.confirm('Oprett ny Opensearch indeks, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/createIndex`,
+            {method: 'POST', credentials: 'same-origin'},
+            'createIndexFormResponse'
+        );
+    }
+}
+
+const getAliasesForm = document.getElementById('getAliasesForm');
+getAliasesForm.addEventListener('submit', handleGetAliasesForm)
+
+function handleGetAliasesForm(e) {
+    e.preventDefault();
+    fetchData(
+        `/veilarbportefolje/api/admin/opensearch/getAliases`,
+        {method: 'GET', credentials: 'same-origin'},
+        'getAliasesFormResponse'
+    );
+}
+
+const assignAliasToIndexForm = document.getElementById('assignAliasToIndexForm');
+assignAliasToIndexForm.addEventListener('submit', handleAssignAliasToIndexForm)
+const indexNameEl = document.getElementById('indexName');
+
+function handleAssignAliasToIndexForm(e) {
+    e.preventDefault();
+    if (window.confirm('Opprett alias for indeks, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/assignAliasToIndex`,
+            {method: 'POST', credentials: 'same-origin', body: indexNameEl.value},
+            'assignAliasToIndexFormResponse'
+        );
+    }
+}
+
+const deleteIndexForm = document.getElementById('deleteIndexForm');
+deleteIndexForm.addEventListener('submit', handleDeleteIndexForm)
+const deleteIndexNameEl = document.getElementById('deleteIndexName');
+
+function handleDeleteIndexForm(e) {
+    e.preventDefault();
+    if (window.confirm('Sletter alias for indeks, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/deleteIndex`,
+            {method: 'POST', credentials: 'same-origin', body: deleteIndexNameEl.value},
+            'deleteIndexRespons'
+        );
+    }
+}
+
+const getSettingsIndexForm = document.getElementById('getSettingsIndexForm');
+getSettingsIndexForm.addEventListener('submit', handlegetSettingsIndexFormForm)
+const getSettingsIndexNameEl = document.getElementById('getSettingsIndexName');
+
+function handlegetSettingsIndexFormForm(e) {
+    e.preventDefault();
+    fetchData(
+        `/veilarbportefolje/api/admin/opensearch/getSettings`,
+        {method: 'POST', credentials: 'same-origin', body: getSettingsIndexNameEl.value},
+        'getSettingsIndexRespons'
+    );
+}
+
+const fixReadOnlyModeForm = document.getElementById('fixReadOnlyModeForm');
+fixReadOnlyModeForm.addEventListener('submit', handleFixReadOnlyModeForm)
+
+function handleFixReadOnlyModeForm(e) {
+    e.preventDefault();
+    if (window.confirm('Er du sikker på at du vil kjøre en kommando relatert til ReadOnlyMode?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/fixReadOnlyMode`,
+            {method: 'POST', credentials: 'same-origin'},
+            'fixReadOnlyModeRespons'
+        );
+    }
+}
+
+const forceShardAssignmentForm = document.getElementById('forceShardAssignmentForm');
+forceShardAssignmentForm.addEventListener('submit', handleforceShardAssignmentForm)
+
+function handleforceShardAssignmentForm(e) {
+    e.preventDefault();
+    if (window.confirm('Er du sikker på at du vil tvinge shard assignment?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/opensearch/forceShardAssignment`,
+            {method: 'POST', credentials: 'same-origin'},
+            'forceShardAssignmentRespons'
         );
     }
 }

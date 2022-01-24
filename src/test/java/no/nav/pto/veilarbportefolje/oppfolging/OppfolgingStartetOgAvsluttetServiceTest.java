@@ -80,7 +80,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         assertThat(testDataClient.hentOppfolgingFlaggFraDatabase(aktoerId)).isNull();
 
-        Map<String, Object> source = elasticTestClient.fetchDocument(aktoerId).getSourceAsMap();
+        Map<String, Object> source = opensearchTestClient.fetchDocument(aktoerId).getSourceAsMap();
 
         assertThat(source).isNull();
     }

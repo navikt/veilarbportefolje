@@ -14,8 +14,6 @@ import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.auth.ModiaPep;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -34,13 +32,6 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 public class ApplicationConfig {
 
     public static final String APPLICATION_NAME = "veilarbportefolje";
-    public static final String ELASTICSEARCH_USERNAME_PROPERTY = "VEILARBELASTIC_USERNAME";
-    public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
-
-    @Bean
-    public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer) {
-        return new MetricsReporter(elasticIndexer);
-    }
 
     @Bean
     public TaskScheduler taskScheduler() {

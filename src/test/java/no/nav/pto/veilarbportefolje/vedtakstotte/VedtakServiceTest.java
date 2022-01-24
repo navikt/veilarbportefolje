@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,9 +37,9 @@ public class VedtakServiceTest {
     public void setup() {
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
-        ElasticIndexer elasticIndexer = mock(ElasticIndexer.class);
+        OpensearchIndexer opensearchIndexer = mock(OpensearchIndexer.class);
         VedtakStatusRepositoryV2 vedtakStatusRepositoryV2 = mock(VedtakStatusRepositoryV2.class);
-        this.vedtakService = new VedtakService(vedtakStatusRepository, vedtakStatusRepositoryV2, elasticIndexer);
+        this.vedtakService = new VedtakService(vedtakStatusRepository, vedtakStatusRepositoryV2, opensearchIndexer);
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
     }
 

@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.sql.Timestamp;
@@ -41,6 +41,7 @@ public class Arbeidsliste {
     Boolean isOppfolgendeVeileder;
     Boolean arbeidslisteAktiv;
     Boolean harVeilederTilgang;
+    String aktoerid;
 
     public static Arbeidsliste of(OppfolgingsBruker bruker) {
         Boolean arbeidslisteAktiv = bruker.isArbeidsliste_aktiv();
@@ -54,15 +55,12 @@ public class Arbeidsliste {
             endringstidspunkt = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
         }
 
-        String overskrift = bruker.getArbeidsliste_overskrift();
-        String kommentar = bruker.getArbeidsliste_kommentar();
-
         ZonedDateTime frist = null;
         if (bruker.getArbeidsliste_frist() != null) {
             frist = toZonedDateTime(dateIfNotFarInTheFutureDate(Instant.parse(bruker.getArbeidsliste_frist())));
         }
 
-        return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist, arbeidslisteKategori)
+        return new Arbeidsliste(sistEndretAv, endringstidspunkt, null, null, frist, arbeidslisteKategori)
                 .setArbeidslisteAktiv(arbeidslisteAktiv);
     }
 

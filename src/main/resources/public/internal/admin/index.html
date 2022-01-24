@@ -23,10 +23,10 @@
     <div id="aktoerIdResponse"></div>
 </div>
 <div>
-    <h2>Slett aktør fra elastic</h2>
-    <form id="slettElasticForm">
+    <h2>Slett aktør fra Opensearch</h2>
+    <form id="slettOpensearchForm">
         <input type="text" id="aktoerIdInputSlett" placeholder="aktørID">
-        <input type="submit" value="Slett fra elastic index"/>
+        <input type="submit" value="Slett fra Opensearch index"/>
     </form>
     <div id="slettingResponse"></div>
 </div>
@@ -42,7 +42,7 @@
     <div id="stoppAivenResponse"></div>
 </div>
 
-<h2>Oppdater bruker i Elastic</h2>
+<h2>Oppdater bruker i Opensearch</h2>
 
 <div>
     <form id="oppdaterbruker">
@@ -54,11 +54,10 @@
 <br/>
 <div>
     <form id="oppdaterbrukere">
-        <input type="submit" value="Oppdater alle brukere i Elastic"/>
+        <input type="submit" value="Oppdater alle brukere i Opensearch"/>
     </form>
     <div id="oppdaterbrukereResponse"></div>
 </div>
-</body>
 
 <h2>Sync aktiviteter/Ytelser med kafka eller fil</h2>
 <div>
@@ -119,6 +118,61 @@
     </form>
     <div id="migrerProfileringResponse"></div>
 </div>
+
+<h2>OpenSearch Admin</h2>
+<div>
+    <form id="getAliasesForm">
+        <input type="submit" value="Get aliases"/>
+    </form>
+    <div id="getAliasesFormResponse"></div>
+</div>
+
+<div>
+    <form id="createIndexForm">
+        <input type="submit" value="Create Index"/>
+    </form>
+    <div id="createIndexFormResponse"></div>
+</div>
+
+<div>
+    <form id="getSettingsIndexForm">
+        <input type="text" id="getSettingsIndexName" placeholder="Index name">
+        <input type="submit" value="Get settings on index"/>
+    </form>
+    <div id="getSettingsIndexRespons"></div>
+</div>
+
+<div>
+    <form id="assignAliasToIndexForm">
+        <input type="text" id="indexName" placeholder="Index name">
+        <input type="submit" value="Assign alias to index"/>
+    </form>
+    <div id="assignAliasToIndexFormResponse"></div>
+</div>
+<br/>
+<div>
+    <form id="deleteIndexForm">
+        <input type="text" id="deleteIndexName" placeholder="Index name">
+        <input type="submit" value="Delete index"/>
+    </form>
+    <div id="deleteIndexRespons"></div>
+</div>
+
+<h3>pto-playbook: Opensearch scenarioer</h3>
+<div>
+    <form id="fixReadOnlyModeForm">
+        <input type="submit" value="Få Oversikten ut av read only mode"/>
+    </form>
+    <div id="fixReadOnlyModeRespons"></div>
+</div>
+
+<div>
+    <form id="forceShardAssignmentForm">
+        <input type="submit" value="Force Shard Assignment"/>
+    </form>
+    <div id="forceShardAssignmentRespons"></div>
+</div>
+
 </body>
 <script src="index.js" type="application/javascript"></script>
 </html>

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class ManuellStatusService extends KafkaCommonConsumerService<ManuellStat
     private final OppfolgingService oppfolgingService;
     private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-    private final ElasticServiceV2 elasticServiceV2;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
 
     public void behandleKafkaMeldingLogikk(ManuellStatusDTO dto) {
         final AktorId aktorId = AktorId.of(dto.getAktorId());
@@ -31,7 +31,7 @@ public class ManuellStatusService extends KafkaCommonConsumerService<ManuellStat
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktorId, dto);
 
         String manuellStatus = dto.isErManuell() ? ManuellBrukerStatus.MANUELL.name() : null;
-        elasticServiceV2.settManuellStatus(aktorId, manuellStatus);
+        opensearchIndexerV2.settManuellStatus(aktorId, manuellStatus);
         log.info("Oppdatert manuellstatus for bruker {}, ny status: {}", aktorId, manuellStatus);
     }
 
