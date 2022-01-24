@@ -43,6 +43,8 @@ public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeiled
     }
 
     private boolean hentNyForVeileder(AktorId aktoerId) {
-        return oppfolgingRepository.hentOppfolgingData(aktoerId).map(BrukerOppdatertInformasjon::getNyForVeileder).orElse(false);
+        return oppfolgingRepository.hentOppfolgingData(aktoerId)
+                .map(BrukerOppdatertInformasjon::getNyForVeileder)
+                .orElse(false);
     }
 }
