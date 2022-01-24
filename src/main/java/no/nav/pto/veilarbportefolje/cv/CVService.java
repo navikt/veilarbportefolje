@@ -31,7 +31,10 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
         boolean cvEksisterer = cvEksistere(kafkaMelding);
         cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
         cvRepository.upsertCvEksistere(aktoerId, cvEksisterer);
-        opensearchIndexerV2.updateCvEksistere(aktoerId, cvEksisterer);
+
+        if (oppfolgingRepositoryV2.erUnderOppfolging(aktoerId)) {
+            opensearchIndexerV2.updateCvEksistere(aktoerId, cvEksisterer);
+        }
     }
 
     public void behandleKafkaMeldingCVHjemmel(ConsumerRecord<String, CVMelding> kafkaMelding) {
@@ -58,7 +61,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
         cvRepositoryV2.upsertHarDeltCv(aktoerId, harDeltCv);
         cvRepository.upsertHarDeltCv(aktoerId, harDeltCv);
 
-        if (oppfolgingRepositoryV2.erUnderOppfolging(aktoerId)){
+        if (oppfolgingRepositoryV2.erUnderOppfolging(aktoerId)) {
             opensearchIndexerV2.updateHarDeltCv(aktoerId, harDeltCv);
         }
     }
