@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.cv.dto.Ressurs;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,11 +28,15 @@ class CvServiceTest extends EndToEndTest {
     @Autowired
     private OppfolgingRepository oppfolgingRepository;
 
+    @Autowired
+    private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+
     private final AktorId aktoerId = AktorId.of("00000000000");
 
     @BeforeEach
     void set_under_oppfolging(){
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, ZonedDateTime.now());
     }
 
     @Test
