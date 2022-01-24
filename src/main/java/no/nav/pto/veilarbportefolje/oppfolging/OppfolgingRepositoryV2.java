@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +28,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 @Repository
 @RequiredArgsConstructor
 public class OppfolgingRepositoryV2 {
-    @NonNull
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
@@ -65,6 +63,12 @@ public class OppfolgingRepositoryV2 {
         return Optional.ofNullable(queryForObjectOrNull(() ->
                 db.queryForObject("SELECT * FROM oppfolging_data WHERE aktoerid = ?", this::mapToBrukerOppdatertInformasjon, aktoerId.get())
         ));
+    }
+
+    public boolean erUnderOppfolging(AktorId aktoerId) {
+        return Optional.ofNullable(queryForObjectOrNull(() ->
+                db.queryForObject("SELECT oppfolging FROM oppfolging_data WHERE aktoerid = ?", (s, i) -> s.getBoolean(OPPFOLGING), aktoerId.get())
+        )).orElse(false);
     }
 
     @SneakyThrows
