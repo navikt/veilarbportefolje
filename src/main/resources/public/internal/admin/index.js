@@ -332,22 +332,6 @@ function handleforceShardAssignmentForm(e) {
     }
 }
 
-const testHentForm = document.getElementById('testHentForm')
-testHentForm.addEventListener('submit', handleTestHent);
-const testHentInput = document.getElementById('testHentInput')
-
-function handleTestHent(e) {
-    e.preventDefault()
-    const id = testHentInput.value;
-    if (id && id.length > 0) {
-        fetchData(
-            '/veilarbportefolje/api/admin/test/getUnderOppfolging',
-            {method: 'PUT', credentials: 'same-origin', body: id},
-            'testHentResponse'
-        )
-    }
-}
-
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);

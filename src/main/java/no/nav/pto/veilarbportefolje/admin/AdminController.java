@@ -191,12 +191,6 @@ public class AdminController {
         return opensearchAdminService.forceShardAssignment();
     }
 
-    @PutMapping("/test/getUnderOppfolging")
-    public boolean testHentUnderOppfolging(@RequestBody String aktoerId) {
-        authorizeAdmin();
-        return oppfolgingService.hentUnderOppfolging(AktorId.of(aktoerId));
-    }
-
     private void authorizeAdmin() {
         final String ident = authContextHolder.getNavIdent().map(Id::toString).orElseThrow();
         if (!environmentProperties.getAdmins().contains(ident)) {
