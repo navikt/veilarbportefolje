@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.job.JobRunner;
 import no.nav.common.json.JsonUtils;
@@ -7,8 +8,10 @@ import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.UrlUtils;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
@@ -37,24 +40,27 @@ public class OppfolgingService {
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final SystemUserTokenProvider systemUserTokenProvider;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+    private final AktorClient aktorClient;
 
     private static int antallBrukereSlettet;
 
     @Autowired
-    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
+    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
+        this.aktorClient = aktorClient;
         this.client = RestClient.baseClient();
         this.veilarboppfolgingUrl = UrlUtils.createServiceUrl("veilarboppfolging", "pto", true);
     }
 
-    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
+    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
+        this.aktorClient = aktorClient;
         this.client = RestClient.baseClient();
         this.veilarboppfolgingUrl = url;
     }
@@ -187,6 +193,23 @@ public class OppfolgingService {
             RestUtils.throwIfNotSuccessful(response);
             return RestUtils.getBodyStr(response)
                     .map((bodyStr) -> JsonUtils.fromJson(bodyStr, Veilarbportefoljeinfo.class))
+                    .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
+        }
+    }
+
+    @SneakyThrows
+    public boolean hentUnderOppfolging(AktorId aktorId) {
+        Fnr fnr = aktorClient.hentFnr(aktorId);
+        Request request = new Request.Builder()
+                .url(joinPaths(veilarboppfolgingUrl, "/api/v2/oppfolging?fnr=" + fnr))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            return RestUtils.getBodyStr(response)
+                    .map((bodyStr) -> JsonUtils.fromJson(bodyStr, UnderOppfolgingV2Response.class))
+                    .map(r -> r.erUnderOppfolging)
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
         }
     }
