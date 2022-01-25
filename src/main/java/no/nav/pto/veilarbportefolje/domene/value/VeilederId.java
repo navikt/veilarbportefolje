@@ -31,7 +31,9 @@ public final class VeilederId {
         if (o == null || getClass() != o.getClass()) return false;
 
         VeilederId that = (VeilederId) o;
-
+        if (veilederId == null ){
+            return that.veilederId == null;
+        }
         return veilederId.equals(that.veilederId);
     }
 

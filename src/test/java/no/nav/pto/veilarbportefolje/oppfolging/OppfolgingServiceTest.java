@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.Before;
@@ -46,7 +47,7 @@ public class OppfolgingServiceTest {
         oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(SingletonPostgresContainer.init().createJdbcTemplate());
         oppfolgingRepository = new OppfolgingRepository(db);
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        oppfolgingService = new OppfolgingService(oppfolgingRepository, mock(OppfolgingAvsluttetService.class), systemUserTokenProvider, apiUrl, oppfolgingRepositoryV2);
+        oppfolgingService = new OppfolgingService(oppfolgingRepository, mock(OppfolgingAvsluttetService.class), systemUserTokenProvider, apiUrl, oppfolgingRepositoryV2, mock(AktorClient.class));
 
     }
 

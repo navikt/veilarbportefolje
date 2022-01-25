@@ -4,9 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
 
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class VeilederTilordnetService extends KafkaCommonConsumerService<VeilederTilordnetDTO> {
+    private final OppfolgingService oppfolgingService;
     private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final ArbeidslisteService arbeidslisteService;
@@ -27,6 +29,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         oppfolgingRepository.settVeileder(aktoerId, veilederId);
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
 
+        kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId);
         opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId);
         log.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
@@ -40,5 +43,21 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         if (harByttetNavKontor) {
             arbeidslisteService.slettArbeidsliste(aktoerId);
         }
+    }
+
+    private void kastErrorHvisBrukerSkalVaereUnderOppfolging(AktorId aktorId, VeilederId veilederId) {
+        if (hentVeileder(aktorId).equals(veilederId)) {
+            return;
+        }
+        boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingService.hentUnderOppfolging(aktorId);
+        if (erUnderOppfolgingIVeilarboppfolging) {
+            throw new IllegalStateException("Fikk 'veileder melding' på bruker som enda ikke er under oppfølging i veilarbportefolje");
+        }
+    }
+
+    private VeilederId hentVeileder(AktorId aktoerId) {
+        return VeilederId.of(oppfolgingRepository.hentOppfolgingData(aktoerId)
+                .map(BrukerOppdatertInformasjon::getVeileder)
+                .orElse(null));
     }
 }
