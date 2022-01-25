@@ -49,22 +49,14 @@ public class KafkaVedtakStatusEndring {
 
     //DENNE TRENGER VI FOR ATT SORETINGREKKEFOLGEN SKA BLI RIKTIG
     public static String vedtakStatusTilTekst(VedtakStatusEndring vedtakStatusEndring) {
-        switch(vedtakStatusEndring) {
-            case UTKAST_OPPRETTET:
-            case BESLUTTER_PROSESS_AVBRUTT:
-            return "Utkast";
-            case BESLUTTER_PROSESS_STARTET:
-                return "Trenger kvalitetssikring";
-            case BLI_BESLUTTER:
-            case KLAR_TIL_BESLUTTER:
-                return "Venter på tilbakemelding";
-            case GODKJENT_AV_BESLUTTER:
-                return "Klar til utsendelse";
-            case KLAR_TIL_VEILEDER:
-                return "Venter på veileder";
-            default:
-                return null;
-        }
+        return switch (vedtakStatusEndring) {
+            case UTKAST_OPPRETTET, BESLUTTER_PROSESS_AVBRUTT -> "Utkast";
+            case BESLUTTER_PROSESS_STARTET -> "Trenger kvalitetssikring";
+            case BLI_BESLUTTER, KLAR_TIL_BESLUTTER -> "Venter på tilbakemelding";
+            case GODKJENT_AV_BESLUTTER -> "Klar til utsendelse";
+            case KLAR_TIL_VEILEDER -> "Venter på veileder";
+            default -> null;
+        };
     }
 
 }
