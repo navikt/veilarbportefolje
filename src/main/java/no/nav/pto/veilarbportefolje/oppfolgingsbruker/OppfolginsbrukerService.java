@@ -57,11 +57,13 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
                 Optional.ofNullable(kafkaMelding.getHarOppfolgingssak()).orElse(false),
                 Optional.ofNullable(kafkaMelding.getSperretAnsatt()).orElse(false), Optional.ofNullable(kafkaMelding.getErDoed()).orElse(false),
                 dodFraDato, kafkaMelding.getSistEndretDato());
+
         OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
 
         String vedtakStatus = vedtakStatusRepositoryV2.hentVedtak(aktorId.get())
                 .map(KafkaVedtakStatusEndring::getVedtakStatusEndring)
-                .map(KafkaVedtakStatusEndring.VedtakStatusEndring::toString).orElse(null);
+                .map(KafkaVedtakStatusEndring.VedtakStatusEndring::toString)
+                .orElse(null);
         opensearchIndexerV2.updateOppfolgingsbruker(aktorId, oppfolgingsbruker, vedtakStatus);
     }
 

@@ -73,10 +73,10 @@ public class OpensearchIndexerV2 {
                 .field("sikkerhetstiltak", oppfolgingsbruker.sikkerhetstiltak_type_kode())
                 .field("diskresjonskode", oppfolgingsbruker.fr_kode())
 
-                .field("egen_ansatt", oppfolgingsbruker.sperret_ansatt() ? "J" : "N")
-                .field("er_doed", oppfolgingsbruker.er_doed() ? "J" : "N")
+                .field("egen_ansatt", oppfolgingsbruker.sperret_ansatt())
+                .field("er_doed", oppfolgingsbruker.er_doed())
                 .field("doed_fra_dato", toIsoUTC(oppfolgingsbruker.doed_fra_dato()))
-                .field("fodselsdato", Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(oppfolgingsbruker.fodselsnr())))
+                .field("fodselsdato", FodselsnummerUtils.lagFodselsdato(oppfolgingsbruker.fodselsnr()))
                 .field("kjonn", FodselsnummerUtils.lagKjonn(oppfolgingsbruker.fodselsnr()))
                 .field("fodselsdag_i_mnd", Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(oppfolgingsbruker.fodselsnr())))
 
@@ -85,7 +85,7 @@ public class OpensearchIndexerV2 {
                 .field("fullt_navn", String.format("%s, %s", oppfolgingsbruker.etternavn(), oppfolgingsbruker.fornavn()))
                 .endObject();
 
-        update(aktoerId, content, "Oppdater registrering");
+        update(aktoerId, content, "Oppdater oppfolgingsbruker");
     }
 
     @SneakyThrows

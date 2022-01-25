@@ -30,7 +30,6 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRU
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.RETTIGHETSGRUPPEKODE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.SIKKERHETSTILTAK_TYPE_KODE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.SPERRET_ANSATT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toSqlDateOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
@@ -56,9 +55,8 @@ public class OppfolginsbrukerRepositoryV2 {
         return upsert(oppfolgingsbruker);
     }
 
-
     public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(AktorId aktorId) {
-        String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, AKTOERID);
+        String sql = "SELECT * FROM OPPFOLGINGSBRUKER_ARENA WHERE AKTOERID = ?";
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilOppfolgingsbruker, aktorId.get()))
         );
@@ -66,28 +64,10 @@ public class OppfolginsbrukerRepositoryV2 {
 
 
     private Optional<ZonedDateTime> getEndretDato(String aktorId) {
-        String sql = String.format("SELECT %s FROM %s WHERE %s=? ", ENDRET_DATO, TABLE_NAME, AKTOERID);
+        String sql = "SELECT ENDRET_DATO FROM OPPFOLGINGSBRUKER_ARENA WHERE AKTOERID = ?";
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilZonedDateTime, aktorId))
         );
-    }
-
-    @SneakyThrows
-    private ZonedDateTime mapTilZonedDateTime(ResultSet rs, int row) {
-        return toZonedDateTime(rs.getTimestamp(ENDRET_DATO));
-    }
-
-    @SneakyThrows
-    private OppfolgingsbrukerEntity mapTilOppfolgingsbruker(ResultSet rs, int row) {
-        if (rs == null || rs.getString(AKTOERID) == null) {
-            return null;
-        }
-        return new OppfolgingsbrukerEntity(rs.getString(AKTOERID), rs.getString(FODSELSNR), rs.getString(FORMIDLINGSGRUPPEKODE),
-                toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)), rs.getString(ETTERNAVN), rs.getString(FORNAVN),
-                rs.getString(NAV_KONTOR), rs.getString(KVALIFISERINGSGRUPPEKODE), rs.getString(RETTIGHETSGRUPPEKODE),
-                rs.getString(HOVEDMAALKODE), rs.getString(SIKKERHETSTILTAK_TYPE_KODE), rs.getString(DISKRESJONSKODE),
-                rs.getBoolean(HAR_OPPFOLGINGSSAK), rs.getBoolean(SPERRET_ANSATT), rs.getBoolean(ER_DOED),
-                toZonedDateTime(rs.getTimestamp(DOED_FRA_DATO)), toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
 
     private int upsert(OppfolgingsbrukerEntity oppfolgingsbruker) {
@@ -124,5 +104,23 @@ public class OppfolginsbrukerRepositoryV2 {
                 oppfolgingsbruker.har_oppfolgingssak(), oppfolgingsbruker.sperret_ansatt(), oppfolgingsbruker.er_doed(),
                 toTimestamp(oppfolgingsbruker.doed_fra_dato()), toTimestamp(oppfolgingsbruker.endret_dato()), kjonn, fodselsDato
         );
+    }
+
+    @SneakyThrows
+    private ZonedDateTime mapTilZonedDateTime(ResultSet rs, int row) {
+        return toZonedDateTime(rs.getTimestamp(ENDRET_DATO));
+    }
+
+    @SneakyThrows
+    private OppfolgingsbrukerEntity mapTilOppfolgingsbruker(ResultSet rs, int row) {
+        if (rs == null || rs.getString(AKTOERID) == null) {
+            return null;
+        }
+        return new OppfolgingsbrukerEntity(rs.getString(AKTOERID), rs.getString(FODSELSNR), rs.getString(FORMIDLINGSGRUPPEKODE),
+                toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)), rs.getString(ETTERNAVN), rs.getString(FORNAVN),
+                rs.getString(NAV_KONTOR), rs.getString(KVALIFISERINGSGRUPPEKODE), rs.getString(RETTIGHETSGRUPPEKODE),
+                rs.getString(HOVEDMAALKODE), rs.getString(SIKKERHETSTILTAK_TYPE_KODE), rs.getString(DISKRESJONSKODE),
+                rs.getBoolean(HAR_OPPFOLGINGSSAK), rs.getBoolean(SPERRET_ANSATT), rs.getBoolean(ER_DOED),
+                toZonedDateTime(rs.getTimestamp(DOED_FRA_DATO)), toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
 }
