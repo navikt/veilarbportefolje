@@ -9,9 +9,6 @@ import static no.nav.common.featuretoggle.UnleashUtils.resolveUnleashContextFrom
 public class FeatureToggle {
     private FeatureToggle() {
     }
-
-    public static final String PDL = "voff.bruk_pdl";
-
     public static final String AUTO_SLETT = "pto.slett_gamle_aktorer_elastic";
 
     public static final String POSTGRES = "veilarbportefolje.sok_med_postgres";

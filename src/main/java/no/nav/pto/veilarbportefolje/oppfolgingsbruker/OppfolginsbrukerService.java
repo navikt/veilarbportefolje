@@ -7,6 +7,9 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.enums.arena.Rettighetsgruppe;
@@ -25,6 +28,8 @@ import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 @RequiredArgsConstructor
 public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringPaaOppfoelgingsBrukerV2> {
     private final OppfolginsbrukerRepositoryV2 OppfolginsbrukerRepositoryV2;
+    private final VedtakStatusRepositoryV2 vedtakStatusRepositoryV2;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
     private final AktorClient aktorClient;
 
     @Override
@@ -42,16 +47,24 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
             throw new IllegalStateException("Fnr -> AktoerId var null på topic endringPaaOppfoelgingsBruker");
         }
         log.info("Fikk endring pa oppfolgingsbruker: {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v2", aktorId);
-        OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(aktorId.get(), kafkaMelding.getFodselsnummer(), kafkaMelding.getFormidlingsgruppe().name(),
-                        iservDato, kafkaMelding.getEtternavn(), kafkaMelding.getFornavn(),
-                        kafkaMelding.getOppfolgingsenhet(),
-                        Optional.ofNullable(kafkaMelding.getKvalifiseringsgruppe()).map(Kvalifiseringsgruppe::name).orElse(null),
-                        Optional.ofNullable(kafkaMelding.getRettighetsgruppe()).map(Rettighetsgruppe::name).orElse(null),
-                        Optional.ofNullable(kafkaMelding.getHovedmaal()).map(Hovedmaal::name).orElse(null),
-                        Optional.ofNullable(kafkaMelding.getSikkerhetstiltakType()).map(SikkerhetstiltakType::name).orElse(null),
-                        kafkaMelding.getDiskresjonskode(), kafkaMelding.getHarOppfolgingssak(), kafkaMelding.getSperretAnsatt(), kafkaMelding.getErDoed(),
-                        dodFraDato, kafkaMelding.getSistEndretDato()));
+        OppfolgingsbrukerEntity oppfolgingsbruker =  new OppfolgingsbrukerEntity(
+                aktorId.get(), kafkaMelding.getFodselsnummer(), kafkaMelding.getFormidlingsgruppe().name(),
+                iservDato, kafkaMelding.getEtternavn(), kafkaMelding.getFornavn(),
+                kafkaMelding.getOppfolgingsenhet(), Optional.ofNullable(kafkaMelding.getKvalifiseringsgruppe()).map(Kvalifiseringsgruppe::name).orElse(null),
+                Optional.ofNullable(kafkaMelding.getRettighetsgruppe()).map(Rettighetsgruppe::name).orElse(null),
+                Optional.ofNullable(kafkaMelding.getHovedmaal()).map(Hovedmaal::name).orElse(null),
+                Optional.ofNullable(kafkaMelding.getSikkerhetstiltakType()).map(SikkerhetstiltakType::name).orElse(null), kafkaMelding.getDiskresjonskode(),
+                Optional.ofNullable(kafkaMelding.getHarOppfolgingssak()).orElse(false),
+                Optional.ofNullable(kafkaMelding.getSperretAnsatt()).orElse(false), Optional.ofNullable(kafkaMelding.getErDoed()).orElse(false),
+                dodFraDato, kafkaMelding.getSistEndretDato());
+
+        OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+
+        String vedtakStatus = vedtakStatusRepositoryV2.hentVedtak(aktorId.get())
+                .map(KafkaVedtakStatusEndring::getVedtakStatusEndring)
+                .map(KafkaVedtakStatusEndring.VedtakStatusEndring::toString)
+                .orElse(null);
+        opensearchIndexerV2.updateOppfolgingsbruker(aktorId, oppfolgingsbruker, vedtakStatus);
     }
 
     private AktorId hentAktorIdMedUnntakIDev(Fnr fodselsnummer) {

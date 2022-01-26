@@ -50,9 +50,8 @@ public class TestDataClient {
         opensearchTestClient.oppdaterArbeidsliste(aktoerId, true);
     }
 
-    public void setupBruker(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
+    public void setupBruker(AktorId aktoerId, Fnr fnr, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
         final PersonId personId = TestDataUtils.randomPersonId();
-        final Fnr fnr = TestDataUtils.randomFnr();
 
         SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
                 .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId.getValue())
@@ -78,6 +77,11 @@ public class TestDataClient {
                 .execute();
 
         opensearchTestClient.createUserInOpensearch(aktoerId);
+    }
+
+    public void setupBruker(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
+        final Fnr fnr = TestDataUtils.randomFnr();
+        setupBruker(aktoerId, fnr, navKontor,veilederId, startDato);
     }
 
     public String hentOppfolgingFlaggFraDatabase(AktorId aktoerId) {

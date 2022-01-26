@@ -183,14 +183,11 @@ public class DbUtils {
             return defaultValue;
         }
 
-        switch (janei.toString()) {
-            case "J":
-                return true;
-            case "N":
-                return false;
-            default:
-                throw new IllegalArgumentException(String.format("Kunne ikke parse verdi %s fra database til boolean", janei));
-        }
+        return switch (janei.toString()) {
+            case "J" -> true;
+            case "N" -> false;
+            default -> throw new IllegalArgumentException(String.format("Kunne ikke parse verdi %s fra database til boolean", janei));
+        };
     }
 
     static Integer parseInt(String integer) {
