@@ -30,7 +30,7 @@ public class ClientConfig {
     @Bean
     public AktorClient aktorClient(SystemUserTokenProvider systemUserTokenProvider) {
         AktorOppslagClient aktorOppslagClient = new PdlAktorOppslagClient(
-                internalDevOrProdIngress(),
+                internalDevOrProdPdlIngress(),
                 systemUserTokenProvider::getSystemUserToken,
                 systemUserTokenProvider::getSystemUserToken
         );
@@ -71,7 +71,7 @@ public class ClientConfig {
         return EnvironmentUtils.isProduction().orElseThrow();
     }
 
-    private String internalDevOrProdIngress() {
+    private String internalDevOrProdPdlIngress() {
         return isProduction()
                 ? createProdInternalIngressUrl("pdl-api")
                 : createDevInternalIngressUrl("pdl-api-q1");
