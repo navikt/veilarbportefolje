@@ -158,8 +158,8 @@ public class ApplicationConfigTest {
 
 
     @Bean
-    public TestDataClient dbTestClient(JdbcTemplate jdbcTemplate, OpensearchTestClient opensearchTestClient) {
-        return new TestDataClient(jdbcTemplate, opensearchTestClient);
+    public TestDataClient dbTestClient(JdbcTemplate jdbcTemplate, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
+        return new TestDataClient(jdbcTemplate, opensearchTestClient, oppfolgingRepositoryV2);
     }
 
     @Bean

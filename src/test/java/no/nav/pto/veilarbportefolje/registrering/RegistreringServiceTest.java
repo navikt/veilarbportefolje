@@ -5,8 +5,11 @@ import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -28,17 +31,20 @@ class RegistreringServiceTest extends EndToEndTest {
 
     private final RegistreringService registreringService;
     private final OpensearchService opensearchService;
+    private final OpensearchIndexer indexer;
 
     @Autowired
-    public RegistreringServiceTest(RegistreringService registreringService, OpensearchService opensearchService) {
+    public RegistreringServiceTest(RegistreringService registreringService, OpensearchService opensearchService, OpensearchIndexer indexer) {
         this.registreringService = registreringService;
         this.opensearchService = opensearchService;
+        this.indexer = indexer;
     }
+
 
     @Test
     void utdanning_full_integration() {
         final AktorId aktoerId = randomAktorId();
-
+        populateOpensearch(EnhetId.of("0000"), VeilederId.of(null), aktoerId.get());
         opensearchTestClient.createUserInOpensearch(aktoerId);
 
         ArbeidssokerRegistrertEvent kafkaMessage = ArbeidssokerRegistrertEvent.newBuilder()
@@ -70,7 +76,6 @@ class RegistreringServiceTest extends EndToEndTest {
     @Test
     void utdanning_filter_test() {
         final String testEnhet = "0000";
-
         populateOpensearch(testEnhet);
 
         // Må vente til dokumentet blir søkbart i Opensearch
@@ -193,6 +198,11 @@ class RegistreringServiceTest extends EndToEndTest {
                         .setUtdanning("GRUNNSKOLE")
         );
 
-        brukere.forEach(bruker -> opensearchTestClient.createUserInOpensearch(bruker));
+        brukere.forEach(bruker -> {
+                    populateOpensearch(EnhetId.of(enhet), VeilederId.of(null), bruker.getAktoer_id());
+                    indexer.skrivTilIndeks(indexName.getValue(), bruker);
+                }
+        );
+
     }
 }

@@ -13,12 +13,11 @@ import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
@@ -66,7 +65,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
         unleashService = Mockito.mock(UnleashService.class);
         this.oppfolgingRepositoryMock = mock(OppfolgingRepository.class);
-        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, mock(UnleashService.class), opensearchIndexer, mock(OppfolgingRepositoryV2.class));
+        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, persistentOppdatering, brukerService, brukerDataService, sisteEndringService, mock(UnleashService.class), opensearchIndexer);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.opensearchService = opensearchService;
         this.malService = malService;
@@ -80,7 +79,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void  sisteendring_populering_mal() {
         final AktorId aktoerId = randomAktorId();
-        opensearchTestClient.createUserInOpensearch(aktoerId);
+        populateOpensearch(testEnhet, veilederId, aktoerId.get());
         String endretTid = "2020-05-28T07:47:42.480Z";
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse(endretTid);
 
@@ -98,7 +97,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void sisteendring_populering_aktiviteter() {
         final AktorId aktoerId = randomAktorId();
-        opensearchTestClient.createUserInOpensearch(aktoerId);
+        populateOpensearch(testEnhet,veilederId, aktoerId.get());
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse("2020-05-28T07:47:42.480Z");
         ZonedDateTime endretTidZonedDateTime_NY_IJOBB = ZonedDateTime.parse("2028-05-28T07:47:42.480Z");
         ZonedDateTime endretTidNyZonedDateTime = ZonedDateTime.parse("2020-11-26T10:40:40.000Z");
