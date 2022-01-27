@@ -109,14 +109,6 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skal_returnere_riktig_antall_oppdaterte_brukere() {
-        jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT_ES = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
-        List<OppfolgingsBruker> oppdaterteBrukere = brukerRepository.hentOppdaterteBrukere();
-        int ANTALL_OPPDATERTE_BRUKERE_I_TESTDATA = 4;
-        assertThat(oppdaterteBrukere.size()).isEqualTo(ANTALL_OPPDATERTE_BRUKERE_I_TESTDATA);
-    }
-
-    @Test
     public void skal_returnere_true_for_bruker_som_har_oppfolgingsflagg_satt() throws SQLException {
         ResultSet rsMock = Mockito.mock(ResultSet.class);
         Mockito.when(rsMock.getString("formidlingsgruppekode")).thenReturn("foo");
