@@ -56,35 +56,4 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
             log.warn("Det var flere mappet en personId for aktoer: {}", aktorId.get());
         }
     }
-/*
-    public Try<PersonId> hentPersonidFraAktoerid(AktorId aktoerId) {
-        return brukerRepository.retrievePersonid(aktoerId)
-                .map(personId -> personId == null ? getPersonIdFromFnr(aktoerId) : personId)
-                .onFailure(e -> log.warn("Kunne ikke hente/mappe personId for aktorid: " + aktoerId, e));
-    }
-
-
-    public PersonId getPersonIdFromFnr(AktorId aktoerId) {
-        Fnr fnr = aktorClient.hentFnr(aktoerId);
-        PersonId nyPersonId = brukerRepository.retrievePersonidFromFnr(fnr).get();
-        AktorId nyAktorIdForPersonId = Try.of(() ->
-                        aktorClient.hentAktorId(fnr))
-                .get();
-
-        updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(aktoerId, nyPersonId, nyAktorIdForPersonId);
-        return nyPersonId;
-    }
-
-    void updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(AktorId aktoerId, PersonId personId, AktorId aktoerIdFraTPS) {
-        if (personId == null) {
-            return;
-        }
-
-        if (!aktoerId.equals(aktoerIdFraTPS)) {
-            brukerRepository.insertGamleAktoerIdMedGjeldeneFlaggNull(aktoerId, personId);
-        } else {
-            brukerRepository.setGjeldeneFlaggTilNull(personId);
-            brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
-        }
-    }*/
 }

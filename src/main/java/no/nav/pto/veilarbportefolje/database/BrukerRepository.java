@@ -262,14 +262,6 @@ public class BrukerRepository {
                 .execute();
     }
 
-    public Integer insertGamleAktoerIdMedGjeldeneFlaggNull(AktorId aktoerId, PersonId personId) {
-        return insert(db, Table.AKTOERID_TO_PERSONID.TABLE_NAME)
-                .value("AKTOERID", aktoerId.toString())
-                .value("PERSONID", personId.toString())
-                .value("GJELDENE", 0)
-                .execute();
-    }
-
     public Optional<List<AktorId>> hentGamleAktorIder(PersonId personId) {
         return Optional.ofNullable(SqlUtils
                 .select(db, AKTOERID_TO_PERSONID.TABLE_NAME, rs -> rs == null ? null : AktorId.of(rs.getString(AKTOERID_TO_PERSONID.AKTOERID)))
