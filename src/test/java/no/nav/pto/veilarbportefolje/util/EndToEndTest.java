@@ -1,19 +1,22 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.opensearch.IndexName;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.opensearch.IndexName;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +46,9 @@ public abstract class EndToEndTest {
     @Autowired
     protected OpensearchAdminService opensearchAdminService;
 
+    @Autowired
+    protected OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+
     @BeforeEach
     void setUp() {
         try {
@@ -62,6 +68,7 @@ public abstract class EndToEndTest {
     public void populateOpensearch(EnhetId enhetId, VeilederId veilederId, String... aktoerIder) {
         List<OppfolgingsBruker> brukere = new ArrayList<>();
         for (String aktoerId : aktoerIder) {
+            oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(aktoerId), ZonedDateTime.now());
             brukere.add(new OppfolgingsBruker()
                     .setAktoer_id(aktoerId)
                     .setOppfolging(true)
@@ -69,7 +76,6 @@ public abstract class EndToEndTest {
                     .setVeileder_id(veilederId.getValue())
             );
         }
-
         brukere.forEach(bruker -> opensearchTestClient.createUserInOpensearch(bruker));
     }
 }

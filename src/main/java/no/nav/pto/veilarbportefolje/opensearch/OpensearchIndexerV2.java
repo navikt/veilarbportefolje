@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
@@ -7,6 +8,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
@@ -19,7 +21,6 @@ import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.common.xcontent.XContentBuilder;
 import org.opensearch.rest.RestStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -33,16 +34,12 @@ import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class OpensearchIndexerV2 {
 
     private final IndexName indexName;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final RestHighLevelClient restHighLevelClient;
-
-    @Autowired
-    public OpensearchIndexerV2(RestHighLevelClient restHighLevelClient, IndexName indexName) {
-        this.restHighLevelClient = restHighLevelClient;
-        this.indexName = indexName;
-    }
 
     @SneakyThrows
     public void updateRegistering(AktorId aktoerId, ArbeidssokerRegistrertEvent utdanningEvent) {
@@ -242,6 +239,10 @@ public class OpensearchIndexerV2 {
     }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
+        if (!oppfolgingRepositoryV2.erUnderOppfolging(aktoerId)) {
+            log.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging: {}, med info {}", aktoerId, logInfo);
+            return;
+        }
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indexName.getValue());
         updateRequest.id(aktoerId.get());

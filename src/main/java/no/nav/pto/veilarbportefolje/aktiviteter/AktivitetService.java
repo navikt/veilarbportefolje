@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -33,7 +32,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final SisteEndringService sisteEndringService;
     private final UnleashService unleashService;
     private final OpensearchIndexer opensearchIndexer;
-    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         log.info(
@@ -60,7 +58,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         }
 
         //OPENSEARCH
-        if(bleProsessert && oppfolgingRepositoryV2.erUnderOppfolging(aktorId)){
+        if(bleProsessert){
             opensearchIndexer.indekser(aktorId);
         }
     }

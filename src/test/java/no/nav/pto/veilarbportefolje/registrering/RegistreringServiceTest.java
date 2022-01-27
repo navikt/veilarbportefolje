@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.Test;
 import org.opensearch.action.get.GetResponse;
@@ -28,17 +29,20 @@ class RegistreringServiceTest extends EndToEndTest {
 
     private final RegistreringService registreringService;
     private final OpensearchService opensearchService;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     @Autowired
-    public RegistreringServiceTest(RegistreringService registreringService, OpensearchService opensearchService) {
+    public RegistreringServiceTest(RegistreringService registreringService, OpensearchService opensearchService, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
         this.registreringService = registreringService;
         this.opensearchService = opensearchService;
+        this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
     }
+
 
     @Test
     void utdanning_full_integration() {
         final AktorId aktoerId = randomAktorId();
-
+        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         opensearchTestClient.createUserInOpensearch(aktoerId);
 
         ArbeidssokerRegistrertEvent kafkaMessage = ArbeidssokerRegistrertEvent.newBuilder()
@@ -192,6 +196,10 @@ class RegistreringServiceTest extends EndToEndTest {
                         .setUtdanning_godkjent("JA")
                         .setUtdanning("GRUNNSKOLE")
         );
+
+        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId1, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId2, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId3, ZonedDateTime.now());
 
         brukere.forEach(bruker -> opensearchTestClient.createUserInOpensearch(bruker));
     }
