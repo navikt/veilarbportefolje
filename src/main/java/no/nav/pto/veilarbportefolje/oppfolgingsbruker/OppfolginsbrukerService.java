@@ -27,7 +27,7 @@ import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 @Slf4j
 @RequiredArgsConstructor
 public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringPaaOppfoelgingsBrukerV2> {
-    private final OppfolginsbrukerRepositoryV2 OppfolginsbrukerRepositoryV2;
+    private final OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2;
     private final VedtakStatusRepositoryV2 vedtakStatusRepositoryV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final AktorClient aktorClient;
@@ -58,7 +58,7 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
                 Optional.ofNullable(kafkaMelding.getSperretAnsatt()).orElse(false), Optional.ofNullable(kafkaMelding.getErDoed()).orElse(false),
                 dodFraDato, kafkaMelding.getSistEndretDato());
 
-        OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
 
         String vedtakStatus = vedtakStatusRepositoryV2.hentVedtak(aktorId.get())
                 .map(KafkaVedtakStatusEndring::getVedtakStatusEndring)
