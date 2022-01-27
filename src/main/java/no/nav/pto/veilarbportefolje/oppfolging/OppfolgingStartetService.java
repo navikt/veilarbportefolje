@@ -12,8 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import static no.nav.pto.veilarbportefolje.database.Table.AKTIVITETER.AKTOERID;
+import java.util.Objects;
 
 
 @Slf4j
@@ -39,10 +38,11 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
     }
 
     private void mapAktoerTilPersonId(AktorId aktorId) {
-        List<AktorId> mappedePersonIder = db.queryForList("SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE GJELDENE = 1 AND AKTOERID = ?",
+        List<Object> mappedePersonIder = db.queryForList("SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE GJELDENE = 1 AND AKTOERID = ?",
                         aktorId.get())
                 .stream()
-                .map(map -> AktorId.of((String) map.get(AKTOERID)))
+                .map(map -> map.get("PERSONID"))
+                .filter(Objects::nonNull)
                 .toList();
         if (mappedePersonIder.size() == 0) {
             brukerRepository.retrievePersonidFromFnr(aktorClient.hentFnr(aktorId))
@@ -53,7 +53,7 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
                     );
         }
         if (mappedePersonIder.size() > 1) {
-            log.warn("Det var flere mappet en personId for aktoer: {}", aktorId.get());
+            log.warn("Det var flere mappet en personId for aktoer: {}, personIder: {}", aktorId.get(), mappedePersonIder);
         }
     }
 }
