@@ -10,7 +10,12 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGING_DATA;
 import no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO;
-import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping;
+import no.nav.pto.veilarbportefolje.domene.AAPUnntakUkerIgjenFasettMapping;
+import no.nav.pto.veilarbportefolje.domene.Brukerdata;
+import no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping;
+import no.nav.pto.veilarbportefolje.domene.ManedFasettMapping;
+import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
@@ -27,7 +32,12 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
@@ -38,10 +48,13 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.Table.AKTOERID_TO_PERSONID;
 import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.FODSELSNR;
-import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
+import static no.nav.pto.veilarbportefolje.util.DbUtils.mapTilOppfolgingsBruker;
+import static no.nav.pto.veilarbportefolje.util.DbUtils.not;
+import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.batchProcess;
-import static no.nav.sbl.sql.SqlUtils.*;
-import static no.nav.sbl.sql.where.WhereClause.gt;
+import static no.nav.sbl.sql.SqlUtils.insert;
+import static no.nav.sbl.sql.SqlUtils.select;
+import static no.nav.sbl.sql.SqlUtils.update;
 import static no.nav.sbl.sql.where.WhereClause.in;
 
 @Slf4j
@@ -107,21 +120,6 @@ public class BrukerRepository {
                "WHERE FORMIDLINGSGRUPPEKODE = 'ARBS' " +
                "OR OPPFOLGING = 'J' " +
                "OR (FORMIDLINGSGRUPPEKODE = 'IARBS' AND KVALIFISERINGSGRUPPEKODE IN ('BATT', 'BFORM', 'VARIG', 'IKVAL', 'VURDU', 'OPPFI'))";
-    }
-
-    public List<OppfolgingsBruker> hentOppdaterteBrukere() {
-        db.setFetchSize(1000);
-
-        Timestamp sistIndeksert = SqlUtils
-                .select(db, Table.METADATA.TABLE_NAME, rs -> rs.getTimestamp(Table.METADATA.SIST_INDEKSERT_ES))
-                .column(Table.METADATA.SIST_INDEKSERT_ES)
-                .execute();
-
-        return SqlUtils
-                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, DbUtils::mapTilOppfolgingsBruker)
-                .column("*")
-                .where(gt("TIDSSTEMPEL", sistIndeksert))
-                .executeToList();
     }
 
     public Optional<OppfolgingsBruker> hentBrukerFraView(AktorId aktoerId) {
