@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,8 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import static no.nav.pto.veilarbportefolje.database.Table.AKTIVITETER.AKTOERID;
 
 
 @Slf4j
@@ -39,10 +38,10 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
     }
 
     private void mapAktoerTilPersonId(AktorId aktorId) {
-        List<AktorId> mappedePersonIder = db.queryForList("SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE GJELDENE = 1 AND AKTOERID = ?",
+        List<PersonId> mappedePersonIder = db.queryForList("SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE GJELDENE = 1 AND AKTOERID = ?",
                         aktorId.get())
                 .stream()
-                .map(map -> AktorId.of((String) map.get(AKTOERID)))
+                .map(map -> PersonId.of((String) map.get("PERSONID")))
                 .toList();
         if (mappedePersonIder.size() == 0) {
             brukerRepository.retrievePersonidFromFnr(aktorClient.hentFnr(aktorId))
