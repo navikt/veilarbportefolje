@@ -19,10 +19,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OppfolgingStartetService extends KafkaCommonConsumerService<OppfolgingStartetDTO> {
     private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchIndexer opensearchIndexer;
     private final BrukerRepository brukerRepository;
     private final AktorClient aktorClient;
-    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     @Override
     public void behandleKafkaMeldingLogikk(OppfolgingStartetDTO dto) {

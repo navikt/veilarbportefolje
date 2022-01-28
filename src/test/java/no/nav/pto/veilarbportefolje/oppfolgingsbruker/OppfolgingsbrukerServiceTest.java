@@ -124,25 +124,4 @@ public class OppfolgingsbrukerServiceTest extends EndToEndTest {
         );
     }
 
-    @SneakyThrows
-    public static void verifiserAsynkront(long timeout, TimeUnit unit, Runnable verifiser) {
-        long timeoutMillis = unit.toMillis(timeout);
-        boolean prosessert = false;
-        boolean timedOut = false;
-        long start = System.currentTimeMillis();
-        while (!prosessert) {
-            try {
-                Thread.sleep(10);
-                long current = System.currentTimeMillis();
-                timedOut = current - start > timeoutMillis;
-                verifiser.run();
-                prosessert = true;
-            } catch (Throwable a) {
-                if (timedOut) {
-                    throw a;
-                }
-            }
-        }
-    }
-
 }
