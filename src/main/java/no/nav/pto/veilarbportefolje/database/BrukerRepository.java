@@ -281,13 +281,17 @@ public class BrukerRepository {
                 .onFailure(e -> log.warn("Fant ikke personid for aktoerid: " + aktoerId, e));
     }
 
-    public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
-        return Try.of(() ->
+    public Optional<PersonId> retrievePersonidFromFnr(Fnr fnr) {
+        Optional<PersonId> personId = ofNullable(
                 select(db, "OPPFOLGINGSBRUKER", this::mapPersonIdFromOppfolgingsbruker)
                         .column("PERSON_ID")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
-        ).onFailure(e -> log.warn("Fant ikke personid for fnr: " + fnr, e));
+        );
+        if(personId.isEmpty()){
+            log.warn("Fant ikke personid for fnr: " + fnr);
+        }
+        return personId;
     }
 
     public Try<Fnr> retrieveFnrFromPersonid(PersonId personId) {
@@ -377,6 +381,15 @@ public class BrukerRepository {
                 .forEach((ikkeFunnetBruker) -> brukere.put(ikkeFunnetBruker, empty()));
 
         return brukere;
+    }
+
+    public List<Object> hentMappedePersonIder(AktorId aktorId) {
+        return  db.queryForList("SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE GJELDENE = 1 AND AKTOERID = ?",
+                        aktorId.get())
+                .stream()
+                .map(map -> map.get("PERSONID"))
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {

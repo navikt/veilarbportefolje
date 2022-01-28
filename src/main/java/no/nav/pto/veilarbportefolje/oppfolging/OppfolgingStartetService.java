@@ -7,12 +7,10 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
 
 @Slf4j
@@ -20,7 +18,6 @@ import java.util.Objects;
 @Transactional
 @RequiredArgsConstructor
 public class OppfolgingStartetService extends KafkaCommonConsumerService<OppfolgingStartetDTO> {
-    private final JdbcTemplate db;
     private final OppfolgingRepository oppfolgingRepository;
     private final OpensearchIndexer opensearchIndexer;
     private final BrukerRepository brukerRepository;
@@ -38,21 +35,19 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
     }
 
     private void mapAktoerTilPersonId(AktorId aktorId) {
-        List<Object> mappedePersonIder = db.queryForList("SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE GJELDENE = 1 AND AKTOERID = ?",
-                        aktorId.get())
-                .stream()
-                .map(map -> map.get("PERSONID"))
-                .filter(Objects::nonNull)
-                .toList();
+        List<Object> mappedePersonIder = brukerRepository.hentMappedePersonIder(aktorId);
+
         if (mappedePersonIder.size() == 0) {
             brukerRepository.retrievePersonidFromFnr(aktorClient.hentFnr(aktorId))
-                    .onFailure(e ->
-                            log.info("(Test) Fant ikke personId i lenke ved oppfolging startet: {}", aktorId)
-                    ).onSuccess(personId ->
-                            log.info("(Test) Fant personId i lenke ved oppfolging startet: {}", aktorId)
+                    .ifPresentOrElse(
+                            personId -> {
+                                log.info("Mapper aktorId: {}, til personId: {}", aktorId, personId);
+                                brukerRepository.setGjeldeneFlaggTilNull(personId); // Greit for å sikre raceconditions mot veilarbindexer (?)
+                                brukerRepository.insertAktoeridToPersonidMapping(aktorId, personId);
+                            },
+                            () -> log.info("(Test) Fant ikke personId i lenke ved oppfolging startet: {}", aktorId)
                     );
-        }
-        if (mappedePersonIder.size() > 1) {
+        } else if (mappedePersonIder.size() > 1) {
             log.warn("Det var flere mappet en personId for aktoer: {}, personIder: {}", aktorId.get(), mappedePersonIder);
         }
     }
