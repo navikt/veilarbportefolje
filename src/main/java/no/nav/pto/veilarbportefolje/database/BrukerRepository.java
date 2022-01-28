@@ -226,16 +226,6 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker"));
     }
 
-    public Try<String> retrieveNavKontor(PersonId personId) {
-        return Try.of(
-                () -> select(db, "OPPFOLGINGSBRUKER", this::mapToEnhet)
-                        .column("NAV_KONTOR")
-                        .where(WhereClause.equals("PERSON_ID", personId.toString()))
-                        .execute()
-        )
-                .onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker med personId {}", personId.toString()));
-    }
-
     public Integer insertAktoeridToPersonidMapping(AktorId aktoerId, PersonId personId) {
         return insert(db, AKTOERID_TO_PERSONID.TABLE_NAME)
                 .value("AKTOERID", aktoerId.toString())
@@ -288,7 +278,7 @@ public class BrukerRepository {
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
         );
-        if(personId.isEmpty()){
+        if (personId.isEmpty()) {
             log.warn("Fant ikke personid for fnr: " + fnr);
         }
         return personId;
@@ -384,10 +374,10 @@ public class BrukerRepository {
     }
 
     public List<PersonId> hentMappedePersonIder(AktorId aktorId) {
-        return  db.queryForList("SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE GJELDENE = 1 AND AKTOERID = ?",
-                        aktorId.get())
+        final String sql = "SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE GJELDENE = 1 AND AKTOERID = ?";
+        return db.queryForList(sql, String.class, aktorId.get())
                 .stream()
-                .map(map -> PersonId.of((String) map.get("PERSONID")))
+                .map(PersonId::of)
                 .toList();
     }
 
