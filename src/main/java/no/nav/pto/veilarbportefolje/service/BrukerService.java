@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
@@ -72,10 +73,12 @@ public class BrukerService {
     public PersonId getPersonIdFromFnr(AktorId aktoerId) {
         Fnr fnr = aktorClient.hentFnr(aktoerId);
 
-        PersonId nyPersonId = brukerRepository.retrievePersonidFromFnr(fnr).get();
+        PersonId nyPersonId = brukerRepository
+                .retrievePersonidFromFnr(fnr)
+                .orElseThrow(() -> new NoSuchElementException("Fant ikke personId på aktoer: " + aktoerId));
 
         AktorId nyAktorIdForPersonId = Try.of(() ->
-                aktorClient.hentAktorId(fnr))
+                        aktorClient.hentAktorId(fnr))
                 .get();
 
         updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(aktoerId, nyPersonId, nyAktorIdForPersonId);

@@ -330,14 +330,14 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalHentePersonIdFraDatabase() throws Exception {
+    public void skalHentePersonIdFraDatabase()  {
         Fnr fnr = Fnr.ofValidFnr("12345678900");
 
         PersonId expectedPersonId = PersonId.of("123456");
         insertOppfolgingsbrukerForPersonIdToFnrMapping(fnr, expectedPersonId);
 
-        Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
-        assertTrue(result.isSuccess());
+        Optional<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
+        assertTrue(result.isPresent());
         assertEquals(expectedPersonId, result.get());
     }
 
@@ -350,11 +350,11 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalIkkeFeileOmIngenPersonIdFinnes() throws Exception {
+    public void skalIkkeFeileOmIngenPersonIdFinnes() {
         Fnr fnr = Fnr.ofValidFnr("99999999999");
-        Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
+        Optional<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
 
-        assertTrue(result.get() == null);
+        assertTrue(result.isEmpty());
     }
 
     @Test

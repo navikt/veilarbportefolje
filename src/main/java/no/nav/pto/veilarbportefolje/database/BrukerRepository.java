@@ -226,16 +226,6 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker"));
     }
 
-    public Try<String> retrieveNavKontor(PersonId personId) {
-        return Try.of(
-                () -> select(db, "OPPFOLGINGSBRUKER", this::mapToEnhet)
-                        .column("NAV_KONTOR")
-                        .where(WhereClause.equals("PERSON_ID", personId.toString()))
-                        .execute()
-        )
-                .onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker med personId {}", personId.toString()));
-    }
-
     public Integer insertAktoeridToPersonidMapping(AktorId aktoerId, PersonId personId) {
         return insert(db, AKTOERID_TO_PERSONID.TABLE_NAME)
                 .value("AKTOERID", aktoerId.toString())
@@ -281,13 +271,17 @@ public class BrukerRepository {
                 .onFailure(e -> log.warn("Fant ikke personid for aktoerid: " + aktoerId, e));
     }
 
-    public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
-        return Try.of(() ->
+    public Optional<PersonId> retrievePersonidFromFnr(Fnr fnr) {
+        Optional<PersonId> personId = ofNullable(
                 select(db, "OPPFOLGINGSBRUKER", this::mapPersonIdFromOppfolgingsbruker)
                         .column("PERSON_ID")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
-        ).onFailure(e -> log.warn("Fant ikke personid for fnr: " + fnr, e));
+        );
+        if (personId.isEmpty()) {
+            log.warn("Fant ikke personid for fnr: " + fnr);
+        }
+        return personId;
     }
 
     public Try<Fnr> retrieveFnrFromPersonid(PersonId personId) {
@@ -377,6 +371,14 @@ public class BrukerRepository {
                 .forEach((ikkeFunnetBruker) -> brukere.put(ikkeFunnetBruker, empty()));
 
         return brukere;
+    }
+
+    public List<PersonId> hentMappedePersonIder(AktorId aktorId) {
+        final String sql = "SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE GJELDENE = 1 AND AKTOERID = ?";
+        return db.queryForList(sql, String.class, aktorId.get())
+                .stream()
+                .map(PersonId::of)
+                .toList();
     }
 
     public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
