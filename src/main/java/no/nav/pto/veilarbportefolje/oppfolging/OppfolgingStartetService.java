@@ -43,7 +43,7 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
                     .ifPresentOrElse(
                             personId -> {
                                 log.info("Mapper aktorId: {}, til personId: {}", aktorId, personId);
-                                brukerRepository.setGjeldeneFlaggTilNull(personId); // Greit for å sikre raceconditions mot veilarbindexer (?)
+                                brukerRepository.setGjeldeneFlaggTilNull(personId);
                                 brukerRepository.insertAktoeridToPersonidMapping(aktorId, personId);
                             },
                             () -> log.info("(Test) Fant ikke personId i lenke ved oppfolging startet: {}", aktorId)
