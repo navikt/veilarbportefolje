@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 
 @Slf4j
@@ -46,7 +47,9 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
                                 brukerRepository.setGjeldeneFlaggTilNull(personId);
                                 brukerRepository.insertAktoeridToPersonidMapping(aktorId, personId);
                             },
-                            () -> log.info("(Test) Fant ikke personId i lenke ved oppfolging startet: {}", aktorId)
+                            () -> {
+                                throw new NoSuchElementException("Det finnes ingen personId i DB link for aktorId: " + aktorId);
+                            }
                     );
         } else if (mappedePersonIder.size() > 1) {
             log.warn("Det var flere mappet en personId for aktoer: {}, personIder: {}", aktorId.get(), mappedePersonIder);
