@@ -383,12 +383,11 @@ public class BrukerRepository {
         return brukere;
     }
 
-    public List<Object> hentMappedePersonIder(AktorId aktorId) {
+    public List<PersonId> hentMappedePersonIder(AktorId aktorId) {
         return  db.queryForList("SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE GJELDENE = 1 AND AKTOERID = ?",
                         aktorId.get())
                 .stream()
-                .map(map -> map.get("PERSONID"))
-                .filter(Objects::nonNull)
+                .map(map -> PersonId.of((String) map.get("PERSONID")))
                 .toList();
     }
 
