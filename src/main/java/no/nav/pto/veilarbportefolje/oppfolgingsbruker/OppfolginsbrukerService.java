@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
+import no.nav.common.client.utils.graphql.GraphqlErrorException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -70,7 +70,7 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
     private AktorId hentAktorIdMedUnntakIDev(Fnr fodselsnummer) {
         try {
             return aktorClient.hentAktorId(fodselsnummer);
-        } catch (IngenGjeldendeIdentException exception) {
+        } catch (GraphqlErrorException exception) {
             if (isDevelopment().orElse(false)) {
                 return AktorId.of("-1");
             }
