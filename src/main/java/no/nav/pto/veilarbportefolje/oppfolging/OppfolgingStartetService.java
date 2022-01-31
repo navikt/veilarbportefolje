@@ -48,6 +48,7 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
                                 brukerRepository.insertAktoeridToPersonidMapping(aktorId, personId);
                             },
                             () -> {
+                                // Kaster exception for å utnytte retry-mekanisme i KafkaConsumerClient
                                 throw new NoSuchElementException("Det finnes ingen personId i DB link for aktorId: " + aktorId);
                             }
                     );
