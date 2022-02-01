@@ -20,10 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static java.util.Optional.empty;
-import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -78,69 +78,66 @@ class RegistreringServiceTest extends EndToEndTest {
         final String testEnhet = "0000";
         populateOpensearch(testEnhet);
 
-        // Må vente til dokumentet blir søkbart i Opensearch
-        pollOpensearchUntil(() -> {
-            final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
-                    testEnhet,
-                    empty(),
-                    "asc",
-                    "ikke_satt",
-                    new Filtervalg(),
-                    null,
-                    null);
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukere2 = opensearchService.hentBrukere(
+                            testEnhet,
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            getFiltervalgBestatt(),
+                            null,
+                            null);
 
-            return brukereMedAntall.getAntall() == 3;
-        });
+                    assertThat(responseBrukere2.getAntall()).isEqualTo(1);
+                }
+        );
 
-        var responseBrukere2 = opensearchService.hentBrukere(
-                testEnhet,
-                empty(),
-                "asc",
-                "ikke_satt",
-                getFiltervalgBestatt(),
-                null,
-                null);
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    var responseBrukere3 = opensearchService.hentBrukere(
+                            testEnhet,
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            getFiltervalgGodkjent(),
+                            null,
+                            null);
 
-        // Trenger ikke vente som ovenfor da dokumentene mest sannsynlig nå er søkbare
-        assertThat(responseBrukere2.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukere3.getAntall()).isEqualTo(2);
+                }
+        );
 
-        var responseBrukere3 = opensearchService.hentBrukere(
-                testEnhet,
-                empty(),
-                "asc",
-                "ikke_satt",
-                getFiltervalgGodkjent(),
-                null,
-                null);
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    var responseBrukere4 = opensearchService.hentBrukere(
+                            testEnhet,
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            getFiltervalgUtdanning(),
+                            null,
+                            null);
 
-        assertThat(responseBrukere3.getAntall()).isEqualTo(2);
+                    assertThat(responseBrukere4.getAntall()).isEqualTo(2);
+                }
+        );
 
-        var responseBrukere4 = opensearchService.hentBrukere(
-                testEnhet,
-                empty(),
-                "asc",
-                "ikke_satt",
-                getFiltervalgUtdanning(),
-                null,
-                null);
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    var responseBrukere5 = opensearchService.hentBrukere(
+                            testEnhet,
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            getFiltervalgMix(),
+                            null,
+                            null);
 
-        assertThat(responseBrukere4.getAntall()).isEqualTo(2);
-
-        var responseBrukere5 = opensearchService.hentBrukere(
-                testEnhet,
-                empty(),
-                "asc",
-                "ikke_satt",
-                getFiltervalgMix(),
-                null,
-                null);
-
-        assertThat(responseBrukere5.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukere5.getAntall()).isEqualTo(1);
+                }
+        );
     }
 
     private static Filtervalg getFiltervalgBestatt() {
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.setFerdigfilterListe(new ArrayList<>()); // TODO: Denne må være der, er det en bug?
+        filtervalg.setFerdigfilterListe(new ArrayList<>());
         filtervalg.utdanningBestatt.add(UtdanningBestattSvar.JA);
         return filtervalg;
     }
