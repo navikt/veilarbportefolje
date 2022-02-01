@@ -53,7 +53,7 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
                             }
                     );
         } else if (mappedePersonIder.size() > 1) {
-            log.warn("Det var flere mappet en personId for aktoer: {}, personIder: {}", aktorId.get(), mappedePersonIder);
+            log.error("Det var flere mappet en personId for aktoer: {}, personIder: {}", aktorId.get(), mappedePersonIder);
         }
     }
 }
