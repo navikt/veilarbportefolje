@@ -66,19 +66,19 @@ public class PostgresOpensearchMapper {
     }
 
     private void flettInnPostgresData(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker) {
-        if (!bruker.getBrukers_situasjon().equals(postgresAktorIdEntity.getBrukers_situasjon())) {
+        if (!bothNullOrEquals(bruker.getBrukers_situasjon(), postgresAktorIdEntity.getBrukers_situasjon())) {
             log.warn("postgres Opensearch: Situsjon feil bruker: {}", bruker.getAktoer_id());
         }
-        if (!bruker.getProfilering_resultat().equals(postgresAktorIdEntity.getProfilering_resultat())) {
+        if (!bothNullOrEquals(bruker.getProfilering_resultat(), postgresAktorIdEntity.getProfilering_resultat())) {
             log.warn("postgres Opensearch: Profilering feil bruker: {}", bruker.getAktoer_id());
         }
-        if (!bruker.getUtdanning().equals(postgresAktorIdEntity.getUtdanning())) {
+        if (!bothNullOrEquals(bruker.getUtdanning(), postgresAktorIdEntity.getUtdanning())) {
             log.warn("postgres Opensearch: Utdanning feil bruker: {}", bruker.getAktoer_id());
         }
-        if (!bruker.getUtdanning_bestatt().equals(postgresAktorIdEntity.getUtdanning_bestatt())) {
+        if (!bothNullOrEquals(bruker.getUtdanning_bestatt(), postgresAktorIdEntity.getUtdanning_bestatt())) {
             log.warn("postgres Opensearch: Utdanning bestått feil bruker: {}", bruker.getAktoer_id());
         }
-        if (!bruker.getUtdanning_godkjent().equals(postgresAktorIdEntity.getUtdanning_godkjent())) {
+        if (!bothNullOrEquals(bruker.getUtdanning_godkjent(), postgresAktorIdEntity.getUtdanning_godkjent())) {
             log.warn("postgres Opensearch: Utdanning godskjent feil bruker: {}", bruker.getAktoer_id());
         }
         if(!bruker.isHar_delt_cv() == postgresAktorIdEntity.getHar_delt_cv()){
@@ -94,17 +94,17 @@ public class PostgresOpensearchMapper {
         if(!bruker.isNy_for_veileder() == postgresAktorIdEntity.getNy_for_veileder()){
             log.warn("postgres Opensearch: isNy_for_veileder feil bruker: {}", bruker.getAktoer_id());
         }
-        if(!bruker.getManuell_bruker().equals("MANUELL") == postgresAktorIdEntity.getManuell_bruker()){
+        if(!(bruker.getManuell_bruker() != null && bruker.getManuell_bruker().equals("MANUELL")) == postgresAktorIdEntity.getManuell_bruker()){
             log.warn("postgres Opensearch: getManuell_bruker feil bruker: {}", bruker.getAktoer_id());
         }
-        if(!bruker.getOppfolging_startdato().equals(postgresAktorIdEntity.getOppfolging_startdato())){
+        if(!bothNullOrEquals(bruker.getOppfolging_startdato(), postgresAktorIdEntity.getOppfolging_startdato())){
             log.warn("postgres Opensearch: getOppfolging_startdato feil bruker: {}", bruker.getAktoer_id());
         }
 
-        if(!bruker.getVenterpasvarfrabruker().equals(postgresAktorIdEntity.getVenterpasvarfrabruker())){
+        if(!bothNullOrEquals(bruker.getVenterpasvarfrabruker(), postgresAktorIdEntity.getVenterpasvarfrabruker())){
             log.warn("postgres Opensearch: Venterpasvarfrabruker feil bruker: {}", bruker.getAktoer_id());
         }
-        if(!bruker.getVenterpasvarfranav().equals(postgresAktorIdEntity.getVenterpasvarfranav())){
+        if(!bothNullOrEquals(bruker.getVenterpasvarfranav(), postgresAktorIdEntity.getVenterpasvarfranav())){
             log.warn("postgres Opensearch: getVenterpasvarfranav feil bruker: {}", bruker.getAktoer_id());
         }
 
@@ -113,6 +113,15 @@ public class PostgresOpensearchMapper {
         bruker.setUtdanning(postgresAktorIdEntity.getUtdanning());
         bruker.setUtdanning_bestatt(postgresAktorIdEntity.getUtdanning_bestatt());
         bruker.setUtdanning_godkjent(postgresAktorIdEntity.getUtdanning_godkjent());
+    }
+
+    private boolean bothNullOrEquals(Object o, Object other){
+        if(o == null && other == null) {
+            return true;
+        } else if(o == null || other == null) {
+            return false;
+        }
+        return o.equals(other);
     }
 
     @SneakyThrows
