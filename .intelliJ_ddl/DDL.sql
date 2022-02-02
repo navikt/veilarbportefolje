@@ -151,6 +151,59 @@ CREATE TABLE public.oppfolging_data (
 
 
 --
+-- Name: vedtakstatus; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.vedtakstatus (
+    aktoerid character varying(20) NOT NULL,
+    vedtakid character varying(20) NOT NULL,
+    vedtakstatus character varying(40),
+    innsatsgruppe character varying(40),
+    hovedmal character varying(30),
+    ansvarlig_veilderident character varying(20),
+    ansvarlig_veildernavn character varying(60),
+    endret_tidspunkt timestamp without time zone
+);
+
+
+--
+-- Name: aktorid_indeksert_data; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.aktorid_indeksert_data AS
+ SELECT od.aktoerid,
+    od.oppfolging,
+    od.startdato,
+    od.ny_for_veileder,
+    od.veilederid,
+    od.manuell,
+    d.venter_pa_bruker,
+    d.venter_pa_nav,
+    v.vedtakstatus,
+    bp.profilering_resultat,
+    cv.har_delt_cv,
+    cv.cv_eksisterer,
+    br.brukers_situasjon,
+    br.utdanning,
+    br.utdanning_bestatt,
+    br.utdanning_godkjent,
+    v.ansvarlig_veildernavn AS vedtakstatus_ansvarlig_veildernavn,
+    v.endret_tidspunkt AS vedtakstatus_endret_tidspunkt,
+    arb.sist_endret_av_veilederident AS arb_sist_endret_av_veilederident,
+    arb.endringstidspunkt AS arb_endringstidspunkt,
+    arb.overskrift AS arb_overskrift,
+    arb.frist AS arb_frist,
+    arb.kategori AS arb_kategori
+   FROM ((((((public.oppfolging_data od
+     LEFT JOIN public.dialog d ON (((d.aktoerid)::text = (od.aktoerid)::text)))
+     LEFT JOIN public.vedtakstatus v ON (((v.aktoerid)::text = (od.aktoerid)::text)))
+     LEFT JOIN public.arbeidsliste arb ON (((arb.aktoerid)::text = (od.aktoerid)::text)))
+     LEFT JOIN public.bruker_profilering bp ON (((bp.aktoerid)::text = (od.aktoerid)::text)))
+     LEFT JOIN public.bruker_cv cv ON (((cv.aktoerid)::text = (od.aktoerid)::text)))
+     LEFT JOIN public.bruker_registrering br ON (((br.aktoerid)::text = (od.aktoerid)::text)));
+
+
+--
 -- Name: oppfolgingsbruker_arena; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -174,22 +227,6 @@ CREATE TABLE public.oppfolgingsbruker_arena (
     endret_dato timestamp without time zone,
     fodsels_dato date,
     kjonn character varying(1)
-);
-
-
---
--- Name: vedtakstatus; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.vedtakstatus (
-    aktoerid character varying(20) NOT NULL,
-    vedtakid character varying(20) NOT NULL,
-    vedtakstatus character varying(40),
-    innsatsgruppe character varying(40),
-    hovedmal character varying(30),
-    ansvarlig_veilderident character varying(20),
-    ansvarlig_veildernavn character varying(60),
-    endret_tidspunkt timestamp without time zone
 );
 
 
@@ -646,13 +683,6 @@ CREATE INDEX aktoerid_gruppe_aktiviter_idx ON public.gruppe_aktiviter USING btre
 --
 
 CREATE INDEX aktorid_ytelser_idx ON public.ytelsesvedtak USING btree (aktorid);
-
-
---
--- Name: arbeidsliste_enhet; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX arbeidsliste_enhet ON public.arbeidsliste USING btree (nav_kontor_for_arbeidsliste);
 
 
 --

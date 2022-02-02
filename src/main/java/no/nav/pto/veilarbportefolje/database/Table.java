@@ -26,6 +26,7 @@ public class Table {
     public static final class OPPFOLGINGSBRUKER {
         public static final String TABLE_NAME = "OPPFOLGINGSBRUKER";
         public static final String FODSELSNR = "FODSELSNR";
+        public static final String AKTOERID = "AKTOERID";
         public static final String PERSON_ID = "PERSON_ID";
         public static final String NAV_KONTOR = "NAV_KONTOR";
     }

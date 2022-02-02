@@ -3,8 +3,6 @@ package no.nav.pto.veilarbportefolje.config;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import static no.nav.pto.veilarbportefolje.util.DbUtils.createDataSource;
-import static no.nav.pto.veilarbportefolje.util.DbUtils.getSqlAdminRole;
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +15,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
+
+import static no.nav.pto.veilarbportefolje.util.DbUtils.createDataSource;
+import static no.nav.pto.veilarbportefolje.util.DbUtils.getSqlAdminRole;
 
 @Slf4j
 @Configuration
@@ -50,6 +51,11 @@ public class DbConfigPostgres implements DatabaseConfig{
     @Bean("PostgresNamedJdbc")
     @Override
     public NamedParameterJdbcTemplate namedParameterJdbcTemplate(@Qualifier("Postgres")DataSource dataSource) {
+        return new NamedParameterJdbcTemplate(dataSource);
+    }
+
+    @Bean(name="PostgresNamedJdbcReadOnly")
+    public NamedParameterJdbcTemplate namedParameterJdbcTemplateRead(@Qualifier("PostgresReadOnly") DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
     }
 

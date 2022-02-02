@@ -2,13 +2,13 @@ package no.nav.pto.veilarbportefolje.opensearch.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktorIdEntity;
 
 import java.util.Map;
 import java.util.Set;
 
 import static java.util.Collections.emptySet;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
-
 
 @Data
 @Accessors(chain = true)
@@ -91,4 +91,11 @@ public class OppfolgingsBruker {
     String utdanning_godkjent;
     Map<String, Endring> siste_endringer;
 
+    public void flettInnPostgresData(PostgresAktorIdEntity postgresAktorIdEntity) {
+        brukers_situasjon = postgresAktorIdEntity.getBrukers_situasjon();
+        profilering_resultat = postgresAktorIdEntity.getProfilering_resultat();
+        utdanning = postgresAktorIdEntity.getUtdanning();
+        utdanning_bestatt = postgresAktorIdEntity.getUtdanning_bestatt();
+        utdanning_godkjent = postgresAktorIdEntity.getUtdanning_godkjent();
+    }
 }

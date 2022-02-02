@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
 import com.google.common.collect.Lists;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -11,6 +12,8 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.BrukertiltakV2;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import org.opensearch.action.ActionListener;
 import org.opensearch.action.bulk.BulkRequest;
@@ -19,7 +22,6 @@ import org.opensearch.action.index.IndexRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.common.xcontent.XContentType;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -36,63 +38,41 @@ import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPostgresIOpenSearch;
 import static no.nav.pto.veilarbportefolje.opensearch.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class OpensearchIndexer {
-
     public static final int BATCH_SIZE = 1000;
     public static final int ORACLE_BATCH_SIZE_LIMIT = 1000;
+
     private final RestHighLevelClient restHighLevelClient;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
     private final IndexName alias;
     private final SisteEndringRepository sisteEndringRepository;
+    private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-
-    @Autowired
-    public OpensearchIndexer(
-            AktivitetDAO aktivitetDAO,
-            BrukerRepository brukerRepository,
-            RestHighLevelClient restHighLevelClient,
-            SisteEndringRepository sisteEndringRepository,
-            IndexName opensearchIndex,
-            TiltakRepositoryV1 tiltakRepositoryV1,
-            OpensearchIndexerV2 opensearchIndexerV2) {
-
-        this.aktivitetDAO = aktivitetDAO;
-        this.brukerRepository = brukerRepository;
-        this.restHighLevelClient = restHighLevelClient;
-        this.sisteEndringRepository = sisteEndringRepository;
-        this.tiltakRepositoryV1 = tiltakRepositoryV1;
-        this.alias = opensearchIndex;
-        this.opensearchIndexerV2 = opensearchIndexerV2;
-    }
-
-    static int utregnTil(int from, int batchSize) {
-        if (from < 0 || batchSize < 0) {
-            throw new IllegalArgumentException("Negative numbers are not allowed");
-        }
-
-        if (from == 0) {
-            return batchSize;
-        }
-
-        return from + BATCH_SIZE;
-    }
+    private final UnleashService unleashService;
 
     public void indekser(AktorId aktoerId) {
-        brukerRepository.hentBrukerFraView(aktoerId).ifPresent(this::indekserBruker);
+        boolean brukPostgres = brukPostgresIOpenSearch(unleashService);
+        brukerRepository.hentBrukerFraView(aktoerId, brukPostgres)
+                .ifPresent(bruker -> indekserBruker(bruker, brukPostgres));
     }
 
-    private void indekserBruker(OppfolgingsBruker bruker) {
+    private void indekserBruker(OppfolgingsBruker bruker, boolean brukPostgres) {
         if (erUnderOppfolging(bruker)) {
             leggTilAktiviteter(bruker);
             leggTilTiltak(bruker);
             leggTilSisteEndring(bruker);
+            if (brukPostgres) {
+                postgresOpensearchMapper.mapBulk(List.of(bruker));
+            }
             skrivTilIndeks(alias.getValue(), bruker);
         } else {
             opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
@@ -121,7 +101,6 @@ public class OpensearchIndexer {
 
                 List<String> aktoerIds = oppfolgingsBrukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(toList());
                 log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
-
             }
 
             @Override
@@ -144,6 +123,10 @@ public class OpensearchIndexer {
         }
     }
 
+    private void leggTilTiltak(OppfolgingsBruker bruker) {
+        leggTilTiltak(Collections.singletonList(bruker));
+    }
+
     private void leggTilTiltak(List<OppfolgingsBruker> brukere) {
         validateBatchSize(brukere);
 
@@ -164,9 +147,8 @@ public class OpensearchIndexer {
         });
     }
 
-
-    private void leggTilTiltak(OppfolgingsBruker bruker) {
-        leggTilTiltak(Collections.singletonList(bruker));
+    private void leggTilAktiviteter(OppfolgingsBruker bruker) {
+        leggTilAktiviteter(Collections.singletonList(bruker));
     }
 
     private void leggTilAktiviteter(List<OppfolgingsBruker> brukere) {
@@ -201,6 +183,10 @@ public class OpensearchIndexer {
         });
     }
 
+    private void leggTilSisteEndring(OppfolgingsBruker bruker) {
+        leggTilSisteEndring(Collections.singletonList(bruker));
+    }
+
     private void leggTilSisteEndring(List<OppfolgingsBruker> brukere) {
         if (brukere == null || brukere.isEmpty()) {
             throw new IllegalArgumentException();
@@ -210,13 +196,6 @@ public class OpensearchIndexer {
         sisteEndringRepository.setAlleSisteEndringTidspunkter(brukere);
     }
 
-    private void leggTilAktiviteter(OppfolgingsBruker bruker) {
-        leggTilAktiviteter(Collections.singletonList(bruker));
-    }
-
-    private void leggTilSisteEndring(OppfolgingsBruker bruker) {
-        leggTilSisteEndring(Collections.singletonList(bruker));
-    }
 
     @SneakyThrows
     public void nyHovedIndeksering(List<AktorId> brukere) {
@@ -252,13 +231,18 @@ public class OpensearchIndexer {
 
     public void indekserBolk(List<AktorId> aktorIds, IndexName index) {
         validateBatchSize(aktorIds);
-        List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(aktorIds)
-                .stream().filter(bruker -> bruker.getAktoer_id() != null).toList();
+        boolean brukPostgres = brukPostgresIOpenSearch(unleashService);
 
+        List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(aktorIds, brukPostgres).stream()
+                .filter(bruker -> bruker.getAktoer_id() != null)
+                .toList();
         leggTilAktiviteter(brukere);
         leggTilTiltak(brukere);
         leggTilSisteEndring(brukere);
 
+        if (brukPostgres) {
+            postgresOpensearchMapper.mapBulk(brukere);
+        }
         this.skrivTilIndeks(index.getValue(), brukere);
     }
 
