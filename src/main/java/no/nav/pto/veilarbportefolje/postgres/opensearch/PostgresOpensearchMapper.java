@@ -61,8 +61,58 @@ public class PostgresOpensearchMapper {
 
         brukere.forEach(bruker ->
                 Optional.ofNullable(resultMap.get(bruker.getAktoer_id()))
-                        .ifPresent(bruker::flettInnPostgresData)
+                        .ifPresent(entity -> flettInnPostgresData(entity, bruker))
         );
+    }
+
+    private void flettInnPostgresData(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker) {
+        if (!bruker.getBrukers_situasjon().equals(postgresAktorIdEntity.getBrukers_situasjon())) {
+            log.warn("postgres Opensearch: Situsjon feil bruker: {}", bruker.getAktoer_id());
+        }
+        if (!bruker.getProfilering_resultat().equals(postgresAktorIdEntity.getProfilering_resultat())) {
+            log.warn("postgres Opensearch: Profilering feil bruker: {}", bruker.getAktoer_id());
+        }
+        if (!bruker.getUtdanning().equals(postgresAktorIdEntity.getUtdanning())) {
+            log.warn("postgres Opensearch: Utdanning feil bruker: {}", bruker.getAktoer_id());
+        }
+        if (!bruker.getUtdanning_bestatt().equals(postgresAktorIdEntity.getUtdanning_bestatt())) {
+            log.warn("postgres Opensearch: Utdanning bestått feil bruker: {}", bruker.getAktoer_id());
+        }
+        if (!bruker.getUtdanning_godkjent().equals(postgresAktorIdEntity.getUtdanning_godkjent())) {
+            log.warn("postgres Opensearch: Utdanning godskjent feil bruker: {}", bruker.getAktoer_id());
+        }
+        if(!bruker.isHar_delt_cv() == postgresAktorIdEntity.getHar_delt_cv()){
+            log.warn("postgres Opensearch: isHar_delt_cv feil bruker: {}", bruker.getAktoer_id());
+        }
+        if(!bruker.isCv_eksistere() == postgresAktorIdEntity.getCv_eksistere()){
+            log.warn("postgres Opensearch: isCv_eksistere feil bruker: {}", bruker.getAktoer_id());
+        }
+        if(!bruker.isOppfolging() == postgresAktorIdEntity.getOppfolging()){
+            log.warn("postgres Opensearch: isOppfolging feil bruker: {}", bruker.getAktoer_id());
+
+        }
+        if(!bruker.isNy_for_veileder() == postgresAktorIdEntity.getNy_for_veileder()){
+            log.warn("postgres Opensearch: isNy_for_veileder feil bruker: {}", bruker.getAktoer_id());
+        }
+        if(!bruker.getManuell_bruker().equals("MANUELL") == postgresAktorIdEntity.getManuell_bruker()){
+            log.warn("postgres Opensearch: getManuell_bruker feil bruker: {}", bruker.getAktoer_id());
+        }
+        if(!bruker.getOppfolging_startdato().equals(postgresAktorIdEntity.getOppfolging_startdato())){
+            log.warn("postgres Opensearch: getOppfolging_startdato feil bruker: {}", bruker.getAktoer_id());
+        }
+
+        if(!bruker.getVenterpasvarfrabruker().equals(postgresAktorIdEntity.getVenterpasvarfrabruker())){
+            log.warn("postgres Opensearch: Venterpasvarfrabruker feil bruker: {}", bruker.getAktoer_id());
+        }
+        if(!bruker.getVenterpasvarfranav().equals(postgresAktorIdEntity.getVenterpasvarfranav())){
+            log.warn("postgres Opensearch: getVenterpasvarfranav feil bruker: {}", bruker.getAktoer_id());
+        }
+
+        bruker.setBrukers_situasjon(postgresAktorIdEntity.getBrukers_situasjon());
+        bruker.setProfilering_resultat(postgresAktorIdEntity.getProfilering_resultat());
+        bruker.setUtdanning(postgresAktorIdEntity.getUtdanning());
+        bruker.setUtdanning_bestatt(postgresAktorIdEntity.getUtdanning_bestatt());
+        bruker.setUtdanning_godkjent(postgresAktorIdEntity.getUtdanning_godkjent());
     }
 
     @SneakyThrows
@@ -85,7 +135,7 @@ public class PostgresOpensearchMapper {
         postgresAktorIdData.setOppfolging_startdato(toIsoUTC(rs.getTimestamp(STARTDATO)));
 
         postgresAktorIdData.setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp(VENTER_PA_BRUKER)));
-        postgresAktorIdData.setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp(VENTER_PA_NAV)));
+        postgresAktorIdData.setVenterpasvarfranav(toIsoUTC(rs.getTimestamp(VENTER_PA_NAV)));
 
         postgresAktorIdData.setVedtak_status(rs.getString(VEDTAKSTATUS));
         postgresAktorIdData.setVedtak_status_endret(toIsoUTC(rs.getTimestamp(VEDTAKSTATUS_ENDRET_TIDSPUNKT)));

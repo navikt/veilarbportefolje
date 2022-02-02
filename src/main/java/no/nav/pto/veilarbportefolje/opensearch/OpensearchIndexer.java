@@ -253,4 +253,11 @@ public class OpensearchIndexer {
         return 8;
     }
 
+    public void testIndeksering(List<AktorId> brukereUnderOppfolging) {
+        brukereUnderOppfolging
+                .forEach(aktoerId -> brukerRepository
+                                .hentBrukerFraView(aktoerId, false)
+                                .ifPresent(bruker -> postgresOpensearchMapper.mapBulk(List.of(bruker)))
+                );
+    }
 }
