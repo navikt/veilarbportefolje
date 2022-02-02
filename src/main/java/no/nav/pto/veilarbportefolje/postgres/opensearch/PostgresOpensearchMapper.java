@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.ARB_ENDRINGSTIDSPUNKT;
@@ -46,9 +47,9 @@ public class PostgresOpensearchMapper {
     private final NamedParameterJdbcTemplate db;
 
     public void mapBulk(List<OppfolgingsBruker> brukere) {
-        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).toList();
+        String aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.joining(",", "{", "}"));
         HashMap<String, PostgresAktorIdEntity> resultMap = Optional.ofNullable(
-                        db.query("SELECT * FROM aktorid_indeksert_data WHERE aktoerid IN(:ids)",
+                        db.query("SELECT * FROM aktorid_indeksert_data WHERE aktoerid = ANY (:ids::varchar[])",
                                 new MapSqlParameterSource("ids", aktoerIder),
                                 (ResultSet rs) -> {
                                     HashMap<String, PostgresAktorIdEntity> results = new HashMap<>();
@@ -61,51 +62,53 @@ public class PostgresOpensearchMapper {
 
         brukere.forEach(bruker ->
                 Optional.ofNullable(resultMap.get(bruker.getAktoer_id()))
-                        .ifPresent(entity -> flettInnPostgresData(entity, bruker))
+                        .ifPresentOrElse(
+                                entity -> flettInnPostgresData(entity, bruker),
+                                () -> log.warn("Fant ikke aktoer i postgres: {}", bruker.getAktoer_id()
+                                )
+                        )
         );
     }
 
     private void flettInnPostgresData(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker) {
-        if (!bothNullOrEquals(bruker.getBrukers_situasjon(), postgresAktorIdEntity.getBrukers_situasjon())) {
+        if (isDifferent(bruker.getBrukers_situasjon(), postgresAktorIdEntity.getBrukers_situasjon())) {
             log.warn("postgres Opensearch: Situsjon feil bruker: {}", bruker.getAktoer_id());
         }
-        if (!bothNullOrEquals(bruker.getProfilering_resultat(), postgresAktorIdEntity.getProfilering_resultat())) {
+        if (isDifferent(bruker.getProfilering_resultat(), postgresAktorIdEntity.getProfilering_resultat())) {
             log.warn("postgres Opensearch: Profilering feil bruker: {}", bruker.getAktoer_id());
         }
-        if (!bothNullOrEquals(bruker.getUtdanning(), postgresAktorIdEntity.getUtdanning())) {
+        if (isDifferent(bruker.getUtdanning(), postgresAktorIdEntity.getUtdanning())) {
             log.warn("postgres Opensearch: Utdanning feil bruker: {}", bruker.getAktoer_id());
         }
-        if (!bothNullOrEquals(bruker.getUtdanning_bestatt(), postgresAktorIdEntity.getUtdanning_bestatt())) {
+        if (isDifferent(bruker.getUtdanning_bestatt(), postgresAktorIdEntity.getUtdanning_bestatt())) {
             log.warn("postgres Opensearch: Utdanning bestått feil bruker: {}", bruker.getAktoer_id());
         }
-        if (!bothNullOrEquals(bruker.getUtdanning_godkjent(), postgresAktorIdEntity.getUtdanning_godkjent())) {
+        if (isDifferent(bruker.getUtdanning_godkjent(), postgresAktorIdEntity.getUtdanning_godkjent())) {
             log.warn("postgres Opensearch: Utdanning godskjent feil bruker: {}", bruker.getAktoer_id());
         }
-        if(!bruker.isHar_delt_cv() == postgresAktorIdEntity.getHar_delt_cv()){
-            log.warn("postgres Opensearch: isHar_delt_cv feil bruker: {}", bruker.getAktoer_id());
+        if (bruker.isHar_delt_cv() != postgresAktorIdEntity.getHar_delt_cv()) {
+            log.info("postgres Opensearch: isHar_delt_cv feil bruker: {}", bruker.getAktoer_id());
         }
-        if(!bruker.isCv_eksistere() == postgresAktorIdEntity.getCv_eksistere()){
-            log.warn("postgres Opensearch: isCv_eksistere feil bruker: {}", bruker.getAktoer_id());
+        if (bruker.isCv_eksistere() != postgresAktorIdEntity.getCv_eksistere()) {
+            log.info("postgres Opensearch: isCv_eksistere feil bruker: {}", bruker.getAktoer_id());
         }
-        if(!bruker.isOppfolging() == postgresAktorIdEntity.getOppfolging()){
+        if (bruker.isOppfolging() != postgresAktorIdEntity.getOppfolging()) {
             log.warn("postgres Opensearch: isOppfolging feil bruker: {}", bruker.getAktoer_id());
-
         }
-        if(!bruker.isNy_for_veileder() == postgresAktorIdEntity.getNy_for_veileder()){
+        if (bruker.isNy_for_veileder() != postgresAktorIdEntity.getNy_for_veileder()) {
             log.warn("postgres Opensearch: isNy_for_veileder feil bruker: {}", bruker.getAktoer_id());
         }
-        if(!(bruker.getManuell_bruker() != null && bruker.getManuell_bruker().equals("MANUELL")) == postgresAktorIdEntity.getManuell_bruker()){
+        if ((bruker.getManuell_bruker() != null && bruker.getManuell_bruker().equals("MANUELL")) != postgresAktorIdEntity.getManuell_bruker()) {
             log.warn("postgres Opensearch: getManuell_bruker feil bruker: {}", bruker.getAktoer_id());
         }
-        if(!bothNullOrEquals(bruker.getOppfolging_startdato(), postgresAktorIdEntity.getOppfolging_startdato())){
+        if (isDifferent(bruker.getOppfolging_startdato(), postgresAktorIdEntity.getOppfolging_startdato())) {
             log.warn("postgres Opensearch: getOppfolging_startdato feil bruker: {}", bruker.getAktoer_id());
         }
-
-        if(!bothNullOrEquals(bruker.getVenterpasvarfrabruker(), postgresAktorIdEntity.getVenterpasvarfrabruker())){
-            log.warn("postgres Opensearch: Venterpasvarfrabruker feil bruker: {}", bruker.getAktoer_id());
+        if (isDifferent(bruker.getVenterpasvarfrabruker(), postgresAktorIdEntity.getVenterpasvarfrabruker())) {
+            log.info("postgres Opensearch: Venterpasvarfrabruker feil bruker: {}", bruker.getAktoer_id());
         }
-        if(!bothNullOrEquals(bruker.getVenterpasvarfranav(), postgresAktorIdEntity.getVenterpasvarfranav())){
-            log.warn("postgres Opensearch: getVenterpasvarfranav feil bruker: {}", bruker.getAktoer_id());
+        if (isDifferent(bruker.getVenterpasvarfranav(), postgresAktorIdEntity.getVenterpasvarfranav())) {
+            log.info("postgres Opensearch: getVenterpasvarfranav feil bruker: {}", bruker.getAktoer_id());
         }
 
         bruker.setBrukers_situasjon(postgresAktorIdEntity.getBrukers_situasjon());
@@ -115,13 +118,13 @@ public class PostgresOpensearchMapper {
         bruker.setUtdanning_godkjent(postgresAktorIdEntity.getUtdanning_godkjent());
     }
 
-    private boolean bothNullOrEquals(Object o, Object other){
-        if(o == null && other == null) {
-            return true;
-        } else if(o == null || other == null) {
+    private boolean isDifferent(Object o, Object other) {
+        if (o == null && other == null) {
             return false;
+        } else if (o == null || other == null) {
+            return true;
         }
-        return o.equals(other);
+        return !o.equals(other);
     }
 
     @SneakyThrows
