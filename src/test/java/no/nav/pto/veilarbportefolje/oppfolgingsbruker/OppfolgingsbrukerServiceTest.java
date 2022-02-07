@@ -102,6 +102,10 @@ public class OppfolgingsbrukerServiceTest extends EndToEndTest {
         Mockito.when(aktorClientMock.hentAktorId(fnr)).thenReturn(aktoerId);
         testDataClient.setupBruker(aktoerId, fnr, NavKontor.of("0000"), VeilederId.of(null), ZonedDateTime.now());
         opensearchIndexer.indekser(aktoerId);
+        verifiserAsynkront(2, TimeUnit.SECONDS, () ->
+                assertThat((String) opensearchTestClient.fetchDocument(aktoerId).getSourceAsMap().get("aktoer_id")).isEqualTo(aktoerId.get())
+        );
+
         ZonedDateTime endret_dato = DateUtils.now();
         EndringPaaOppfoelgingsBrukerV2 kafkaMelding = EndringPaaOppfoelgingsBrukerV2.builder().fodselsnummer(fnr.get()).formidlingsgruppe(Formidlingsgruppe.ARBS).iservFraDato(null)
                 .etternavn("Testerson").fornavn("Test").oppfolgingsenhet("0000").kvalifiseringsgruppe(Kvalifiseringsgruppe.IVURD).rettighetsgruppe(Rettighetsgruppe.IYT).hovedmaal(Hovedmaal.SKAFFEA).sikkerhetstiltakType(null)
