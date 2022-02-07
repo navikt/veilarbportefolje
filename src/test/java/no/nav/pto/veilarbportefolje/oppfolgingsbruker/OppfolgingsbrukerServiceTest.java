@@ -114,7 +114,7 @@ public class OppfolgingsbrukerServiceTest extends EndToEndTest {
         );
         var version2Indexing = opensearchTestClient.fetchDocument(aktoerId);
         opensearchIndexer.indekser(aktoerId);
-        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+        verifiserAsynkront(10, TimeUnit.SECONDS, () -> {
                     var version1Indexing = opensearchTestClient.fetchDocument(aktoerId);
                     // Versjon 1 vil ikke være lik versjon 2 da versjon 1 er koblet opp mot databaselenken
                     assertThat(version1Indexing).isNotEqualTo(version2Indexing);
