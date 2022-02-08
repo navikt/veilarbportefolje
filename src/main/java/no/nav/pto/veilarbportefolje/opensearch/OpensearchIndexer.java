@@ -254,10 +254,9 @@ public class OpensearchIndexer {
     }
 
     public void testIndeksering(List<AktorId> brukereUnderOppfolging) {
-        brukereUnderOppfolging
-                .forEach(aktoerId -> brukerRepository
-                                .hentBrukerFraView(aktoerId, false)
-                                .ifPresent(bruker -> postgresOpensearchMapper.mapBulk(List.of(bruker)))
-                );
+        List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(brukereUnderOppfolging, false).stream()
+                .filter(bruker -> bruker.getAktoer_id() != null)
+                .toList();
+        postgresOpensearchMapper.mapBulk(brukere);
     }
 }
