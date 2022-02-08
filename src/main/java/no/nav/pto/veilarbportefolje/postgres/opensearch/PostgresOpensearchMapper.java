@@ -59,7 +59,7 @@ public class PostgresOpensearchMapper {
                                     return results;
                                 }))
                 .orElse(new HashMap<>());
-
+        log.info("Hentet ut: {}, brukere fra postgres", resultMap.size());
         brukere.forEach(bruker ->
                 Optional.ofNullable(resultMap.get(bruker.getAktoer_id()))
                         .ifPresentOrElse(
@@ -68,9 +68,11 @@ public class PostgresOpensearchMapper {
                                 )
                         )
         );
+        log.info("Ferdig med mapping av: {}, brukere fra postgres", resultMap.size());
     }
 
     private void flettInnPostgresData(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker) {
+        /*
         if (isDifferent(bruker.getBrukers_situasjon(), postgresAktorIdEntity.getBrukers_situasjon())) {
             log.warn("postgres Opensearch: Situsjon feil bruker: {}", bruker.getAktoer_id());
         }
@@ -110,7 +112,7 @@ public class PostgresOpensearchMapper {
         if (isDifferent(bruker.getVenterpasvarfranav(), postgresAktorIdEntity.getVenterpasvarfranav())) {
             log.info("postgres Opensearch: getVenterpasvarfranav feil bruker: {}", bruker.getAktoer_id());
         }
-
+*/
         bruker.setBrukers_situasjon(postgresAktorIdEntity.getBrukers_situasjon());
         bruker.setProfilering_resultat(postgresAktorIdEntity.getProfilering_resultat());
         bruker.setUtdanning(postgresAktorIdEntity.getUtdanning());
