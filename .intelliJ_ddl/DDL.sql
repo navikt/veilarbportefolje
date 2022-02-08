@@ -167,6 +167,21 @@ CREATE TABLE public.vedtakstatus (
 
 
 --
+-- Name: ytelse_status_for_bruker; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.ytelse_status_for_bruker (
+    aktoerid character varying(20) NOT NULL,
+    utlopsdato timestamp without time zone,
+    dagputlopuke integer,
+    permutlopuke integer,
+    aapmaxtiduke integer,
+    aapunntakdagerigjen integer,
+    ytelse character varying(40)
+);
+
+
+--
 -- Name: aktorid_indeksert_data; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -187,6 +202,12 @@ CREATE VIEW public.aktorid_indeksert_data AS
     br.utdanning,
     br.utdanning_bestatt,
     br.utdanning_godkjent,
+    yb.ytelse,
+    yb.aapmaxtiduke,
+    yb.aapunntakdagerigjen,
+    yb.dagputlopuke,
+    yb.permutlopuke,
+    yb.utlopsdato AS ytelse_utlopsdato,
     v.ansvarlig_veildernavn AS vedtakstatus_ansvarlig_veildernavn,
     v.endret_tidspunkt AS vedtakstatus_endret_tidspunkt,
     arb.sist_endret_av_veilederident AS arb_sist_endret_av_veilederident,
@@ -194,13 +215,14 @@ CREATE VIEW public.aktorid_indeksert_data AS
     arb.overskrift AS arb_overskrift,
     arb.frist AS arb_frist,
     arb.kategori AS arb_kategori
-   FROM ((((((public.oppfolging_data od
+   FROM (((((((public.oppfolging_data od
      LEFT JOIN public.dialog d ON (((d.aktoerid)::text = (od.aktoerid)::text)))
      LEFT JOIN public.vedtakstatus v ON (((v.aktoerid)::text = (od.aktoerid)::text)))
      LEFT JOIN public.arbeidsliste arb ON (((arb.aktoerid)::text = (od.aktoerid)::text)))
      LEFT JOIN public.bruker_profilering bp ON (((bp.aktoerid)::text = (od.aktoerid)::text)))
      LEFT JOIN public.bruker_cv cv ON (((cv.aktoerid)::text = (od.aktoerid)::text)))
-     LEFT JOIN public.bruker_registrering br ON (((br.aktoerid)::text = (od.aktoerid)::text)));
+     LEFT JOIN public.bruker_registrering br ON (((br.aktoerid)::text = (od.aktoerid)::text)))
+     LEFT JOIN public.ytelse_status_for_bruker yb ON (((yb.aktoerid)::text = (od.aktoerid)::text)));
 
 
 --
@@ -449,21 +471,6 @@ CREATE TABLE public.siste_endring (
 CREATE TABLE public.tiltakkodeverket (
     kode character varying(10) NOT NULL,
     verdi character varying(80)
-);
-
-
---
--- Name: ytelse_status_for_bruker; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.ytelse_status_for_bruker (
-    aktoerid character varying(20) NOT NULL,
-    utlopsdato timestamp without time zone,
-    dagputlopuke integer,
-    permutlopuke integer,
-    aapmaxtiduke integer,
-    aapunntakdagerigjen integer,
-    ytelse character varying(40)
 );
 
 

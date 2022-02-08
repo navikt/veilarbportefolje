@@ -78,6 +78,14 @@ public class PostgresTable {
         public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
         public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
 
+        public static final String YTELSE = "YTELSE";
+        public static final String AAPMAXTIDUKE = "AAPMAXTIDUKE";
+        public static final String AAPUNNTAKDAGERIGJEN = "AAPUNNTAKDAGERIGJEN";
+        public static final String DAGPUTLOPUKE = "DAGPUTLOPUKE";
+        public static final String PERMUTLOPUKE = "PERMUTLOPUKE";
+        public static final String YTELSE_UTLOPSDATO = "YTELSE_UTLOPSDATO";
+
+
     }
 
 
