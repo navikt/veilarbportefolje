@@ -254,11 +254,13 @@ public class OpensearchIndexer {
     }
 
     public void testIndeksering(List<AktorId> brukereUnderOppfolging) {
+        log.info("postgres Opensearch: starter test på: {}, brukere",brukereUnderOppfolging.size());
         partition(brukereUnderOppfolging, BATCH_SIZE).forEach(bolk -> {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(bolk, false).stream()
                     .filter(bruker -> bruker.getAktoer_id() != null)
                     .toList();
             postgresOpensearchMapper.mapBulk(brukere);
         });
+        log.info("postgres Opensearch: testen er ferdig");
     }
 }
