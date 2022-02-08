@@ -10,17 +10,12 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.AUTO_SLETT;
 
 @Slf4j
@@ -34,15 +29,11 @@ public class BrukerService {
     private final UnleashService unleashService;
 
     public Optional<AktorId> hentAktorId(Fnr fnr) {
-        return brukerRepository.hentBrukerFraView(fnr)
-                .map(OppfolgingsBruker::getAktoer_id)
-                .map(AktorId::new);
+        return brukerRepository.hentAktorIdFraView(fnr);
     }
 
     public Optional<AktorId> hentAktorId(PersonId personid) {
-        return brukerRepository.hentBrukerFraView(personid)
-                .map(OppfolgingsBruker::getAktoer_id)
-                .map(AktorId::new);
+        return brukerRepository.hentAktorIdFraView(personid);
     }
 
     public Optional<String> hentNavKontor(AktorId aktoerId) {
@@ -54,13 +45,6 @@ public class BrukerService {
 
     public Optional<String> hentNavKontorFraDbLinkTilArena(Fnr fnr) {
         return brukerRepository.hentNavKontorFraDbLinkTilArena(fnr);
-    }
-
-    public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
-        Map<Fnr, Optional<PersonId>> typeMap = new HashMap<>();
-        Map<String, Optional<String>> stringMap = brukerRepository.retrievePersonidFromFnrs(fnrs.stream().map(Fnr::toString).collect(toList()));
-        stringMap.forEach((key, value) -> typeMap.put(Fnr.ofValidFnr(key), value.map(PersonId::of)));
-        return typeMap;
     }
 
     public Try<PersonId> hentPersonidFraAktoerid(AktorId aktoerId) {
@@ -83,10 +67,6 @@ public class BrukerService {
 
         updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(aktoerId, nyPersonId, nyAktorIdForPersonId);
         return nyPersonId;
-    }
-
-    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
-        return brukerRepository.hentAlleBrukereUnderOppfolging();
     }
 
     @Transactional

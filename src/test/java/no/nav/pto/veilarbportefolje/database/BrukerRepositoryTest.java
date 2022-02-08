@@ -36,6 +36,7 @@ import static java.util.Collections.singletonList;
 import static no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
@@ -81,25 +82,21 @@ public class BrukerRepositoryTest {
     @Test
     public void skal_hente_bruker_fra_view() {
         final Fnr fnr = randomFnr();
+        final AktorId aktorId = randomAktorId();
         final PersonId personId = randomPersonId();
         SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
                 .value(Table.OPPFOLGINGSBRUKER.FODSELSNR, fnr.toString())
                 .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId.toString())
                 .execute();
 
-        final Optional<OppfolgingsBruker> bruker = brukerRepository.hentBrukerFraView(fnr);
+        SqlUtils.insert(jdbcTemplate, Table.AKTOERID_TO_PERSONID.TABLE_NAME)
+                .value(Table.AKTOERID_TO_PERSONID.AKTOERID, aktorId.toString())
+                .value(Table.AKTOERID_TO_PERSONID.PERSONID, personId.toString())
+                .value(Table.AKTOERID_TO_PERSONID.GJELDENE, 1)
+                .execute();
+
+        final Optional<OppfolgingsBruker> bruker = brukerRepository.hentBrukerFraView(brukerRepository.hentAktorIdFraView(fnr).get(),false);
         assertThat(bruker).isPresent();
-    }
-
-    @Test
-    public void skal_hente_riktig_antall_fnr() {
-        List<String> fnr = brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10);
-        assertThat(fnr.size()).isEqualTo(10);
-    }
-
-    @Test
-    public void skal_ikke_tryne_om_man_proever_aa_hente_for_mange_fnr() {
-        brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10000);
     }
 
     @Test

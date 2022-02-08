@@ -332,6 +332,17 @@ function handleforceShardAssignmentForm(e) {
     }
 }
 
+const testForm = document.getElementById('testPostgresForm')
+testForm.addEventListener('submit', handleTest);
+function handleTest(e) {
+    e.preventDefault()
+    if (window.confirm('Er du sikker på at du vil starte testen?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/test/postgresIndeksering',
+            {method: 'POST', credentials: 'same-origin'}
+        )
+    }
+}
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);
