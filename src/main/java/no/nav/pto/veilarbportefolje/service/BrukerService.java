@@ -79,7 +79,7 @@ public class BrukerService {
             brukerRepository.insertGamleAktorIdMedGjeldeneFlaggNull(aktoerId, personId);
         } else {
             brukerRepository.setGjeldeneFlaggTilNull(personId);
-            brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
+            brukerRepository.upsertAktoeridToPersonidMapping(aktoerId, personId);
         }
         if (unleashService.isEnabled(AUTO_SLETT)) {
             brukerRepository.hentGamleAktorIder(personId).ifPresent(opensearchIndexerV2::slettDokumenter);

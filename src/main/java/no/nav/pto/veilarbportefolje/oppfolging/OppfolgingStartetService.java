@@ -45,7 +45,7 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
                             personId -> {
                                 log.info("Mapper aktorId: {}, til personId: {}", aktorId, personId);
                                 brukerRepository.setGjeldeneFlaggTilNull(personId);
-                                brukerRepository.insertAktoeridToPersonidMapping(aktorId, personId);
+                                brukerRepository.upsertAktoeridToPersonidMapping(aktorId, personId);
                             },
                             () -> {
                                 // Kaster exception for å utnytte retry-mekanisme i KafkaConsumerClient
