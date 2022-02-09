@@ -8,32 +8,32 @@ import lombok.experimental.Accessors;
 public class PostgresAktorIdEntity {
     String aktoerId;
 
-    String brukers_situasjon;
-    String profilering_resultat;
+    String brukersSituasjon;
+    String profileringResultat;
     String utdanning;
-    String utdanning_bestatt;
-    String utdanning_godkjent;
+    String utdanningBestatt;
+    String utdanningGodkjent;
 
-    Boolean har_delt_cv;
-    Boolean cv_eksistere;
+    Boolean harDeltCv;
+    Boolean cvEksistere;
 
     Boolean oppfolging;
-    Boolean ny_for_veileder;
-    Boolean manuell_bruker;
-    String oppfolging_startdato;
+    Boolean nyForVeileder;
+    Boolean manuellBruker;
+    String oppfolgingStartdato;
 
     String venterpasvarfrabruker;
     String venterpasvarfranav;
 
-    String vedtak_status;
-    String vedtak_status_endret;
-    String ansvarlig_veileder_for_vedtak;
+    String vedtak14AStatus;
+    String vedtak14AStatusEndret;
+    String ansvarligVeilederFor14AVedtak;
 
-    boolean arbeidsliste_aktiv = false;
-    String arbeidsliste_sist_endret_av_veilederid;
-    String arbeidsliste_endringstidspunkt;
-    String arbeidsliste_frist;
-    String arbeidsliste_kategori;
-    String arbeidsliste_tittel_sortering;
-    int arbeidsliste_tittel_lengde;
+    boolean arbeidslisteAktiv = false;
+    String arbeidslisteSistEndretAvVeilederid;
+    String arbeidslisteEndringstidspunkt;
+    String arbeidslisteFrist;
+    String arbeidslisteKategori;
+    String arbeidslisteTittelSortering;
+    int arbeidslisteTittelLengde;
 }

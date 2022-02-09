@@ -1,11 +1,8 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
-import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -28,7 +25,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -94,38 +90,6 @@ public class OppfolgingsbrukerServiceTest extends EndToEndTest {
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
         Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId);
         assertTrue(oppfolgingsBruker.isPresent());
-    }
-
-    @Test
-    @SneakyThrows
-    public void indexing_V2() {
-        Mockito.when(aktorClientMock.hentAktorId(fnr)).thenReturn(aktoerId);
-        testDataClient.setupBruker(aktoerId, fnr, NavKontor.of("0000"), VeilederId.of(null), ZonedDateTime.now());
-        opensearchIndexer.indekser(aktoerId);
-        verifiserAsynkront(2, TimeUnit.SECONDS, () ->
-                assertThat((String) opensearchTestClient.fetchDocument(aktoerId).getSourceAsMap().get("aktoer_id")).isEqualTo(aktoerId.get())
-        );
-
-        ZonedDateTime endret_dato = DateUtils.now();
-        EndringPaaOppfoelgingsBrukerV2 kafkaMelding = EndringPaaOppfoelgingsBrukerV2.builder().fodselsnummer(fnr.get()).formidlingsgruppe(Formidlingsgruppe.ARBS).iservFraDato(null)
-                .etternavn("Testerson").fornavn("Test").oppfolgingsenhet("0000").kvalifiseringsgruppe(Kvalifiseringsgruppe.IVURD).rettighetsgruppe(Rettighetsgruppe.IYT).hovedmaal(Hovedmaal.SKAFFEA).sikkerhetstiltakType(null)
-                .diskresjonskode(null).harOppfolgingssak(true).sperretAnsatt(false).erDoed(false).doedFraDato(null).sistEndretDato(endret_dato)
-                .build();
-        oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
-
-        verifiserAsynkront(2, TimeUnit.SECONDS, () ->
-                assertThat((String) opensearchTestClient.fetchDocument(aktoerId).getSourceAsMap().get("fornavn")).isEqualTo("Test")
-        );
-        var version2Indexing = opensearchTestClient.fetchDocument(aktoerId);
-        opensearchIndexer.indekser(aktoerId);
-        verifiserAsynkront(10, TimeUnit.SECONDS, () -> {
-                    var version1Indexing = opensearchTestClient.fetchDocument(aktoerId);
-                    // Versjon 1 vil ikke være lik versjon 2 da versjon 1 er koblet opp mot databaselenken
-                    assertThat(version1Indexing).isNotEqualTo(version2Indexing);
-                    assertThat(version2Indexing.getSourceAsMap().size()).isNotEqualTo(0);
-                    assertThat(version2Indexing.getSourceAsMap().size()).isEqualTo(version1Indexing.getSourceAsMap().size());
-                }
-        );
     }
 
 }

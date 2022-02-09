@@ -54,6 +54,7 @@ import static no.nav.pto.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static no.nav.sbl.sql.SqlUtils.select;
 import static no.nav.sbl.sql.SqlUtils.update;
+import static no.nav.sbl.sql.SqlUtils.upsert;
 import static no.nav.sbl.sql.where.WhereClause.in;
 
 @Slf4j
@@ -189,11 +190,12 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker"));
     }
 
-    public Integer insertAktoeridToPersonidMapping(AktorId aktoerId, PersonId personId) {
-        return insert(db, AKTOERID_TO_PERSONID.TABLE_NAME)
-                .value("AKTOERID", aktoerId.toString())
-                .value("PERSONID", personId.toString())
-                .value("GJELDENE", 1)
+    public void upsertAktoeridToPersonidMapping(AktorId aktoerId, PersonId personId) {
+        upsert(db, AKTOERID_TO_PERSONID.TABLE_NAME)
+                .set("AKTOERID", aktoerId.toString())
+                .set("PERSONID", personId.toString())
+                .set("GJELDENE", 1)
+                .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
 
     }
