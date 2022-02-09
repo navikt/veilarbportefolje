@@ -47,6 +47,10 @@ public class PostgresOpensearchMapper {
     private final NamedParameterJdbcTemplate db;
 
     public void mapBulk(List<OppfolgingsBruker> brukere) {
+        mapBulk(brukere, false);
+    }
+
+    public void mapBulk(List<OppfolgingsBruker> brukere, boolean medDiffLogging) {
         String aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.joining(",", "{", "}"));
         HashMap<String, PostgresAktorIdEntity> resultMap = Optional.ofNullable(
                         db.query("SELECT * FROM aktorid_indeksert_data WHERE aktoerid = ANY (:ids::varchar[])",
@@ -63,7 +67,7 @@ public class PostgresOpensearchMapper {
         brukere.forEach(bruker ->
                 Optional.ofNullable(resultMap.get(bruker.getAktoer_id()))
                         .ifPresentOrElse(
-                                entity -> flettInnPostgresData(entity, bruker),
+                                entity -> flettInnPostgresData(entity, bruker, medDiffLogging),
                                 () -> log.warn("Fant ikke aktoer i postgres: {}", bruker.getAktoer_id()
                                 )
                         )
@@ -71,38 +75,49 @@ public class PostgresOpensearchMapper {
         log.info("postgres Opensearch: Ferdig med mapping av {} brukere fra postgres", resultMap.size());
     }
 
-    private void flettInnPostgresData(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker) {
-        if (isDifferent(bruker.getBrukers_situasjon(), postgresAktorIdEntity.getBrukers_situasjon())) {
+    private void flettInnPostgresData(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker, boolean medDiffLogging) {
+        if(medDiffLogging){
+            loggDiff(postgresAktorIdEntity, bruker);
+        }
+        bruker.setBrukers_situasjon(postgresAktorIdEntity.getBrukersSituasjon());
+        bruker.setProfilering_resultat(postgresAktorIdEntity.getProfileringResultat());
+        bruker.setUtdanning(postgresAktorIdEntity.getUtdanning());
+        bruker.setUtdanning_bestatt(postgresAktorIdEntity.getUtdanningBestatt());
+        bruker.setUtdanning_godkjent(postgresAktorIdEntity.getUtdanningGodkjent());
+    }
+
+    private void loggDiff(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker){
+        if (isDifferent(bruker.getBrukers_situasjon(), postgresAktorIdEntity.getBrukersSituasjon())) {
             log.warn("postgres Opensearch: Situsjon feil bruker: {}", bruker.getAktoer_id());
         }
-        if (isDifferent(bruker.getProfilering_resultat(), postgresAktorIdEntity.getProfilering_resultat())) {
+        if (isDifferent(bruker.getProfilering_resultat(), postgresAktorIdEntity.getProfileringResultat())) {
             log.warn("postgres Opensearch: Profilering feil bruker: {}", bruker.getAktoer_id());
         }
         if (isDifferent(bruker.getUtdanning(), postgresAktorIdEntity.getUtdanning())) {
             log.warn("postgres Opensearch: Utdanning feil bruker: {}", bruker.getAktoer_id());
         }
-        if (isDifferent(bruker.getUtdanning_bestatt(), postgresAktorIdEntity.getUtdanning_bestatt())) {
+        if (isDifferent(bruker.getUtdanning_bestatt(), postgresAktorIdEntity.getUtdanningBestatt())) {
             log.warn("postgres Opensearch: Utdanning bestått feil bruker: {}", bruker.getAktoer_id());
         }
-        if (isDifferent(bruker.getUtdanning_godkjent(), postgresAktorIdEntity.getUtdanning_godkjent())) {
+        if (isDifferent(bruker.getUtdanning_godkjent(), postgresAktorIdEntity.getUtdanningGodkjent())) {
             log.warn("postgres Opensearch: Utdanning godskjent feil bruker: {}", bruker.getAktoer_id());
         }
-        if (bruker.isHar_delt_cv() != postgresAktorIdEntity.getHar_delt_cv()) {
+        if (bruker.isHar_delt_cv() != postgresAktorIdEntity.getHarDeltCv()) {
             log.info("postgres Opensearch: isHar_delt_cv feil bruker: {}", bruker.getAktoer_id());
         }
-        if (bruker.isCv_eksistere() != postgresAktorIdEntity.getCv_eksistere()) {
+        if (bruker.isCv_eksistere() != postgresAktorIdEntity.getCvEksistere()) {
             log.info("postgres Opensearch: isCv_eksistere feil bruker: {}", bruker.getAktoer_id());
         }
         if (bruker.isOppfolging() != postgresAktorIdEntity.getOppfolging()) {
             log.warn("postgres Opensearch: isOppfolging feil bruker: {}", bruker.getAktoer_id());
         }
-        if (bruker.isNy_for_veileder() != postgresAktorIdEntity.getNy_for_veileder()) {
+        if (bruker.isNy_for_veileder() != postgresAktorIdEntity.getNyForVeileder()) {
             log.warn("postgres Opensearch: isNy_for_veileder feil bruker: {}", bruker.getAktoer_id());
         }
-        if ((bruker.getManuell_bruker() != null && bruker.getManuell_bruker().equals("MANUELL")) != postgresAktorIdEntity.getManuell_bruker()) {
+        if ((bruker.getManuell_bruker() != null && bruker.getManuell_bruker().equals("MANUELL")) != postgresAktorIdEntity.getManuellBruker()) {
             log.warn("postgres Opensearch: getManuell_bruker feil bruker: {}", bruker.getAktoer_id());
         }
-        if (isDifferent(bruker.getOppfolging_startdato(), postgresAktorIdEntity.getOppfolging_startdato())) {
+        if (isDifferent(bruker.getOppfolging_startdato(), postgresAktorIdEntity.getOppfolgingStartdato())) {
             log.warn("postgres Opensearch: getOppfolging_startdato feil bruker: {}", bruker.getAktoer_id());
         }
         if (isDifferent(bruker.getVenterpasvarfrabruker(), postgresAktorIdEntity.getVenterpasvarfrabruker())) {
@@ -111,11 +126,6 @@ public class PostgresOpensearchMapper {
         if (isDifferent(bruker.getVenterpasvarfranav(), postgresAktorIdEntity.getVenterpasvarfranav())) {
             log.info("postgres Opensearch: getVenterpasvarfranav feil bruker: {}", bruker.getAktoer_id());
         }
-        bruker.setBrukers_situasjon(postgresAktorIdEntity.getBrukers_situasjon());
-        bruker.setProfilering_resultat(postgresAktorIdEntity.getProfilering_resultat());
-        bruker.setUtdanning(postgresAktorIdEntity.getUtdanning());
-        bruker.setUtdanning_bestatt(postgresAktorIdEntity.getUtdanning_bestatt());
-        bruker.setUtdanning_godkjent(postgresAktorIdEntity.getUtdanning_godkjent());
     }
 
     private boolean isDifferent(Object o, Object other) {
@@ -132,41 +142,41 @@ public class PostgresOpensearchMapper {
         PostgresAktorIdEntity postgresAktorIdData = new PostgresAktorIdEntity();
         postgresAktorIdData.setAktoerId(rs.getString(AKTOERID));
 
-        postgresAktorIdData.setBrukers_situasjon(rs.getString(BRUKERS_SITUASJON));
-        postgresAktorIdData.setProfilering_resultat(rs.getString(PROFILERING_RESULTAT));
+        postgresAktorIdData.setBrukersSituasjon(rs.getString(BRUKERS_SITUASJON));
+        postgresAktorIdData.setProfileringResultat(rs.getString(PROFILERING_RESULTAT));
         postgresAktorIdData.setUtdanning(rs.getString(UTDANNING));
-        postgresAktorIdData.setUtdanning_bestatt(rs.getString(UTDANNING_BESTATT));
-        postgresAktorIdData.setUtdanning_godkjent(rs.getString(UTDANNING_GODKJENT));
+        postgresAktorIdData.setUtdanningBestatt(rs.getString(UTDANNING_BESTATT));
+        postgresAktorIdData.setUtdanningGodkjent(rs.getString(UTDANNING_GODKJENT));
 
-        postgresAktorIdData.setHar_delt_cv(rs.getBoolean(HAR_DELT_CV));
-        postgresAktorIdData.setCv_eksistere(rs.getBoolean(CV_EKSISTERER));
+        postgresAktorIdData.setHarDeltCv(rs.getBoolean(HAR_DELT_CV));
+        postgresAktorIdData.setCvEksistere(rs.getBoolean(CV_EKSISTERER));
 
         postgresAktorIdData.setOppfolging(rs.getBoolean(OPPFOLGING));
-        postgresAktorIdData.setNy_for_veileder(rs.getBoolean(NY_FOR_VEILEDER));
-        postgresAktorIdData.setManuell_bruker(rs.getBoolean(MANUELL));
-        postgresAktorIdData.setOppfolging_startdato(toIsoUTC(rs.getTimestamp(STARTDATO)));
+        postgresAktorIdData.setNyForVeileder(rs.getBoolean(NY_FOR_VEILEDER));
+        postgresAktorIdData.setManuellBruker(rs.getBoolean(MANUELL));
+        postgresAktorIdData.setOppfolgingStartdato(toIsoUTC(rs.getTimestamp(STARTDATO)));
 
         postgresAktorIdData.setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp(VENTER_PA_BRUKER)));
         postgresAktorIdData.setVenterpasvarfranav(toIsoUTC(rs.getTimestamp(VENTER_PA_NAV)));
 
-        postgresAktorIdData.setVedtak_status(rs.getString(VEDTAKSTATUS));
-        postgresAktorIdData.setVedtak_status_endret(toIsoUTC(rs.getTimestamp(VEDTAKSTATUS_ENDRET_TIDSPUNKT)));
-        postgresAktorIdData.setAnsvarlig_veileder_for_vedtak(rs.getString(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN));
+        postgresAktorIdData.setVedtak14AStatus(rs.getString(VEDTAKSTATUS));
+        postgresAktorIdData.setVedtak14AStatusEndret(toIsoUTC(rs.getTimestamp(VEDTAKSTATUS_ENDRET_TIDSPUNKT)));
+        postgresAktorIdData.setAnsvarligVeilederFor14AVedtak(rs.getString(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN));
 
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));
         if (arbeidslisteTidspunkt != null) {
-            postgresAktorIdData.setArbeidsliste_aktiv(true);
-            postgresAktorIdData.setArbeidsliste_endringstidspunkt(arbeidslisteTidspunkt);
-            postgresAktorIdData.setArbeidsliste_frist(toIsoUTC(rs.getTimestamp(ARB_FRIST)));
-            postgresAktorIdData.setArbeidsliste_kategori(rs.getString(ARB_KATEGORI));
-            postgresAktorIdData.setArbeidsliste_sist_endret_av_veilederid(rs.getString(ARB_SIST_ENDRET_AV_VEILEDERIDENT));
+            postgresAktorIdData.setArbeidslisteAktiv(true);
+            postgresAktorIdData.setArbeidslisteEndringstidspunkt(arbeidslisteTidspunkt);
+            postgresAktorIdData.setArbeidslisteFrist(toIsoUTC(rs.getTimestamp(ARB_FRIST)));
+            postgresAktorIdData.setArbeidslisteKategori(rs.getString(ARB_KATEGORI));
+            postgresAktorIdData.setArbeidslisteSistEndretAvVeilederid(rs.getString(ARB_SIST_ENDRET_AV_VEILEDERIDENT));
             String overskrift = rs.getString(ARB_OVERSKRIFT);
 
-            postgresAktorIdData.setArbeidsliste_tittel_lengde(
+            postgresAktorIdData.setArbeidslisteTittelLengde(
                     Optional.ofNullable(overskrift)
                             .map(String::length)
                             .orElse(0));
-            postgresAktorIdData.setArbeidsliste_tittel_sortering(
+            postgresAktorIdData.setArbeidslisteTittelSortering(
                     Optional.ofNullable(overskrift)
                             .filter(s -> !s.isEmpty())
                             .map(s -> s.substring(0, Math.min(2, s.length())))

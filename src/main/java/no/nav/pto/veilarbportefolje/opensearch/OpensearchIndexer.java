@@ -259,7 +259,7 @@ public class OpensearchIndexer {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(bolk, false).stream()
                     .filter(bruker -> bruker.getAktoer_id() != null)
                     .toList();
-            postgresOpensearchMapper.mapBulk(brukere);
+            postgresOpensearchMapper.mapBulk(brukere, true);
         });
         log.info("postgres Opensearch: testen er ferdig");
     }
