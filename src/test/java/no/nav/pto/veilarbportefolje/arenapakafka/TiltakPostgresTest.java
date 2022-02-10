@@ -66,7 +66,8 @@ public class TiltakPostgresTest {
         AktiviteterRepositoryV2 aktiviteterRepositoryV2 = mock(AktiviteterRepositoryV2.class);
         Mockito.when(gruppeAktivitetRepositoryV2.hentAktiveAktivteter(any())).thenReturn(new ArrayList<>());
         Mockito.when(aktiviteterRepositoryV2.getAktiviteterForAktoerid(any(), anyBoolean())).thenReturn(new AktoerAktiviteter("1").setAktiviteter(new ArrayList<>()));
-        brukerDataService = new BrukerDataService(mock(AktivitetDAO.class), mock(TiltakRepositoryV1.class), tiltakRepositoryV2, mock(GruppeAktivitetRepository.class), gruppeAktivitetRepositoryV2, mock(BrukerDataRepository.class), aktiviteterRepositoryV2, aktivitetStatusRepositoryV2, ytelsesStatusRepositoryV2, mock(UnleashService.class));
+
+        brukerDataService = new BrukerDataService(mock(AktivitetDAO.class), mock(TiltakRepositoryV1.class), mock(GruppeAktivitetRepository.class), mock(BrukerDataRepository.class), ytelsesStatusRepositoryV2, mock(UnleashService.class));
     }
 
     @BeforeEach
@@ -94,7 +95,6 @@ public class TiltakPostgresTest {
         tiltakRepositoryV2.upsert(innhold, aktorId);
 
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
 
         List<String> tiltak = tiltakRepositoryV2.hentBrukertiltak(aktorId);
         Optional<AktivitetStatus> aktivitetStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), AktivitetTyper.tiltak.name());
@@ -142,7 +142,6 @@ public class TiltakPostgresTest {
         tiltakRepositoryV2.upsert(igar, aktorId);
 
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
 
         Optional<AktivitetStatus> aktivitetStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), AktivitetTyper.tiltak.name());
         Optional<Timestamp> utloptAktivitet = aktivitetStatusRepositoryV2.hentAktivitetStatusUtlopt(aktorId.get());
@@ -168,7 +167,6 @@ public class TiltakPostgresTest {
         tiltakRepositoryV2.delete(id);
 
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
 
         List<String> tiltak = tiltakRepositoryV2.hentBrukertiltak(aktorId);
         Optional<AktivitetStatus> aktivitetStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), AktivitetTyper.tiltak.name());

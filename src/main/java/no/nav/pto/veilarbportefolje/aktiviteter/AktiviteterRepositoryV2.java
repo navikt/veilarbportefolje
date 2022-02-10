@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -108,17 +108,12 @@ public class AktiviteterRepositoryV2 {
         db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTIVITETID), aktivitetid);
     }
 
-    private List<AktivitetDTO> mapToAktivitetDTOList(ResultSet rs) throws SQLException {
-        List<AktivitetDTO> aktiviteter = new ArrayList<>();
-        while (rs.next()) {
-            aktiviteter.add(new AktivitetDTO()
-                    .setAktivitetID(rs.getString(AKTIVITETID))
-                    .setAktivitetType(rs.getString(AKTIVITETTYPE))
-                    .setStatus(rs.getString(STATUS))
-                    .setFraDato(rs.getTimestamp(FRADATO))
-                    .setTilDato(rs.getTimestamp(TILDATO)));
-        }
-        return aktiviteter;
+    public List<AktivitetDTO> getPasserteUtdanningsAktiviter() {
+        final String sql = "SELECT * FROM aktiviteter WHERE date_trunc('day', tildato) < date_trunc('day', current_timestamp)";
+
+       return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList))
+        ).orElse(new ArrayList<>());
     }
 
     public void setTilFullfort(String aktivitetid) {
@@ -151,5 +146,19 @@ public class AktiviteterRepositoryV2 {
                 .setAktiv(!aktiveAktiviteter.isEmpty())
                 .setNesteStart(nesteStart)
                 .setNesteUtlop(nesteUtlopsdato);
+    }
+
+    @SneakyThrows
+    private List<AktivitetDTO> mapToAktivitetDTOList(ResultSet rs) {
+        List<AktivitetDTO> aktiviteter = new ArrayList<>();
+        while (rs.next()) {
+            aktiviteter.add(new AktivitetDTO()
+                    .setAktivitetID(rs.getString(AKTIVITETID))
+                    .setAktivitetType(rs.getString(AKTIVITETTYPE))
+                    .setStatus(rs.getString(STATUS))
+                    .setFraDato(rs.getTimestamp(FRADATO))
+                    .setTilDato(rs.getTimestamp(TILDATO)));
+        }
+        return aktiviteter;
     }
 }

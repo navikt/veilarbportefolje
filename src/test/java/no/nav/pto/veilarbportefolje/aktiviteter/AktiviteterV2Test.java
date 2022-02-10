@@ -42,8 +42,8 @@ public class AktiviteterV2Test {
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
-        aktivitetService.oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
+        //aktivitetService.oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
+        //brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
         AktoerAktiviteter avtalteAktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false);
         Optional<AktivitetStatus> aktivitettypeStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "egen");
 
@@ -75,9 +75,9 @@ public class AktiviteterV2Test {
 
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet1);
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet2);
-        aktivitetService.oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
-        aktivitetService.oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.MOTE);
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
+        //aktivitetService.oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
+        //aktivitetService.oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.MOTE);
+        //brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
 
         AktoerAktiviteter avtalteAktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, true);
         Optional<AktivitetStatus> aktivitettypeStatus1 = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "egen");

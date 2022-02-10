@@ -5,13 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.springframework.stereotype.Service;
 
@@ -28,26 +25,16 @@ public class BrukerAktiviteterService {
     private final BrukerService brukerService;
     private final OpensearchIndexer opensearchIndexer;
 
-    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-    private final TiltakRepositoryV2 tiltakRepositoryV2;
-    private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
-
     public void syncAktivitetOgBrukerData() {
         log.info("Starter jobb: oppdater BrukerAktiviteter og BrukerData");
         List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
+        deaktiverUtgatteUtdanningsAktivteterPostgres();
         syncAktivitetOgBrukerData(brukereSomMaOppdateres);
         log.info("Avslutter jobb: oppdater BrukerAktiviteter og BrukerData");
         opensearchIndexer.nyHovedIndeksering(brukereSomMaOppdateres);
     }
 
-
-    public void syncAktivitetOgBrukerDataPostgres() {
-        log.info("(Postgres)Starter jobb: oppdater BrukerAktiviteter og BrukerData");
-        List<AktorId> brukereSomMaOppdateres = oppfolgingRepositoryV2.hentAlleBrukereUnderOppfolging();
-        log.info("(Postgres) Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
-        syncAktivitetOgBrukerDataPostgres(brukereSomMaOppdateres);
-    }
 
     public void syncAktivitetOgBrukerData(List<AktorId> brukere) {
         brukere.forEach(aktorId -> {
@@ -58,20 +45,6 @@ public class BrukerAktiviteterService {
                             syncAktiviteterOgBrukerData(personId, aktorId);
                         } catch (Exception e) {
                             log.warn("Fikk error under sync jobb, men fortsetter. Aktoer: {}, exception: {}", aktorId, e);
-                        }
-                    }
-                }
-        );
-    }
-
-    public void syncAktivitetOgBrukerDataPostgres(List<AktorId> brukere) {
-        brukere.forEach(aktorId -> {
-                    log.info("(Postgres) Oppdater BrukerAktiviteter og BrukerData for aktorId: {}", aktorId);
-                    if (aktorId != null) {
-                        try {
-                            syncAktiviteterOgBrukerDataPostgres(aktorId);
-                        } catch (Exception e) {
-                            log.warn("(Postgres) Fikk error under sync jobb, men fortsetter. Aktoer: {}, exception: {}", aktorId, e);
                         }
                     }
                 }
@@ -101,11 +74,7 @@ public class BrukerAktiviteterService {
     }
 
 
-    public void syncAktiviteterOgBrukerDataPostgres(AktorId aktorId) {
-        aktivitetService.deaktiverUtgatteUtdanningsAktivteterPostgres(aktorId);
-
-        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
-        gruppeAktivitetRepositoryV2.utledOgLagreGruppeaktiviteter(aktorId);
-        aktivitetService.utledAktivitetstatuserForAktoeridPostgres(aktorId);
+    public void deaktiverUtgatteUtdanningsAktivteterPostgres() {
+        aktivitetService.deaktiverUtgatteUtdanningsAktivteterPostgres();
     }
 }

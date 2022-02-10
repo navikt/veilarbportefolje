@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakServiceV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.mock;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class TiltakTest {
-    private final TiltakServiceV2 tiltakServiceV2;
+    private final TiltakService tiltakService;
     private final JdbcTemplate jdbcTemplate;
     private final AktivitetDAO aktivitetDAO;
 
@@ -62,7 +62,7 @@ public class TiltakTest {
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
-        this.tiltakServiceV2 = new TiltakServiceV2(tiltakRepositoryV1, tiltakRepositoryV2,aktorClient, arenaHendelseRepository, mock(BrukerDataService.class), mock(OpensearchIndexer.class));
+        this.tiltakService = new TiltakService(tiltakRepositoryV1, tiltakRepositoryV2,aktorClient, arenaHendelseRepository, mock(BrukerDataService.class), mock(OpensearchIndexer.class));
     }
 
 
@@ -90,7 +90,7 @@ public class TiltakTest {
                         .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("TA-123456789")
                 );
-        tiltakServiceV2.behandleKafkaMeldingOracle(tiltakDTO);
+        tiltakService.behandleKafkaMeldingOracle(tiltakDTO);
 
         Optional<AktivitetStatus> tiltak = hentAktivitetStatus();
         assertThat(tiltak).isPresent();
@@ -113,9 +113,9 @@ public class TiltakTest {
                         .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("TA-123456789")
                 );
-        tiltakServiceV2.behandleKafkaMeldingOracle(tiltakDTO);
-        EnhetTiltak enhetTiltak = tiltakServiceV2.hentEnhettiltak(testEnhet);
-        EnhetTiltak annenEnhetTiltak = tiltakServiceV2.hentEnhettiltak(annenEnhet);
+        tiltakService.behandleKafkaMeldingOracle(tiltakDTO);
+        EnhetTiltak enhetTiltak = tiltakService.hentEnhettiltak(testEnhet);
+        EnhetTiltak annenEnhetTiltak = tiltakService.hentEnhettiltak(annenEnhet);
 
         assertThat(enhetTiltak.getTiltak().size()).isEqualTo(1);
         assertThat(annenEnhetTiltak.getTiltak().size()).isEqualTo(0);

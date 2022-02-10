@@ -28,7 +28,7 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class TiltakServiceV2 {
+public class TiltakService {
     private static final LocalDate LANSERING_AV_OVERSIKTEN = LocalDate.of(2017, 12, 4);
     private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
@@ -64,13 +64,14 @@ public class TiltakServiceV2 {
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
         }
-        behandleKafkaMeldingOracle(kafkaMelding);
+        AktorId aktorId = behandleKafkaMeldingOracle(kafkaMelding);
         behandleKafkaMeldingPostgres(kafkaMelding);
 
         arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
+        opensearchIndexer.indekser(aktorId);
     }
 
-    public void behandleKafkaMeldingOracle(TiltakDTO kafkaMelding) {
+    public AktorId behandleKafkaMeldingOracle(TiltakDTO kafkaMelding) {
         TiltakInnhold innhold = getInnhold(kafkaMelding);
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
@@ -85,7 +86,7 @@ public class TiltakServiceV2 {
         tiltakRepositoryV1.utledOgLagreTiltakInformasjon(aktorId, personId);
         brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
 
-        opensearchIndexer.indekser(aktorId);
+        return aktorId;
     }
 
     public void behandleKafkaMeldingPostgres(TiltakDTO kafkaMelding) {
@@ -99,8 +100,6 @@ public class TiltakServiceV2 {
             log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
             tiltakRepositoryV2.upsert(innhold, aktorId);
         }
-        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId); // TODO: Prøv å optimaliser metoden
     }
 
     public EnhetTiltak hentEnhettiltak(EnhetId enhet) {
@@ -122,7 +121,6 @@ public class TiltakServiceV2 {
         }
         return false;
     }
-
 
     static boolean skalSlettesTiltak(TiltakInnhold tiltakInnhold) {
         if (tiltakInnhold.getAktivitetperiodeTil() == null) {

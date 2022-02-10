@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
@@ -13,7 +12,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteAktiviteter;
@@ -25,10 +24,8 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
     private final AktivitetDAO aktivitetDAO;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
-    private final AktivitetStatusRepositoryV2 prossesertAktivitetRepositoryV2;
     private final PersistentOppdatering persistentOppdatering;
     private final BrukerService brukerService;
-    private final BrukerDataService brukerDataService;
     private final SisteEndringService sisteEndringService;
     private final UnleashService unleashService;
     private final OpensearchIndexer opensearchIndexer;
@@ -54,7 +51,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
 
         //OPENSEARCH
-        if(bleProsessert){
+        if (bleProsessert) {
             opensearchIndexer.indekser(aktorId);
         }
     }
@@ -65,11 +62,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
                 .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(oppdatering, aktoerId));
     }
 
-    public void utledAktivitetstatuserForAktoeridPostgres(AktorId aktoerId) {
-        Arrays.stream(KafkaAktivitetMelding.AktivitetTypeData.values()).forEach(type -> oppdaterAktivitetTypeStatus(aktoerId, type));
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktoerId);
-    }
-
     public void slettOgIndekserUtdanningsAktivitet(String aktivitetid, AktorId aktorId) {
         //ORACLE
         aktivitetDAO.deleteById(aktivitetid);
@@ -78,13 +70,9 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         //POSTGRES
         aktiviteterRepositoryV2.deleteById(aktivitetid);
-        oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.UTDANNINGAKTIVITET);
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
-    }
 
-    public void oppdaterAktivitetTypeStatus(AktorId aktorId, KafkaAktivitetMelding.AktivitetTypeData type) {
-        AktivitetStatus status = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, type, brukIkkeAvtalteAktiviteter(unleashService));
-        prossesertAktivitetRepositoryV2.upsertAktivitetTypeStatus(status, type.name().toLowerCase());
+        //OPENSEARCH
+        opensearchIndexer.indekser(aktorId);
     }
 
     public void upsertOgIndekserAktiviteter(KafkaAktivitetMelding melding) {
@@ -92,12 +80,12 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         //ORACLE
         aktivitetDAO.upsertAktivitet(melding);
         utledAktivitetstatuserForAktoerid(aktorId);
-        opensearchIndexer.indekser(aktorId);
 
         //POSTGRES
         aktiviteterRepositoryV2.upsertAktivitet(melding);
-        oppdaterAktivitetTypeStatus(aktorId, melding.getAktivitetType());
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
+
+        //OPENSEARCH
+        opensearchIndexer.indekser(aktorId);
     }
 
     public void deaktiverUtgatteUtdanningsAktivteter(AktorId aktorId) {
@@ -113,16 +101,17 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
                 );
     }
 
-    public void deaktiverUtgatteUtdanningsAktivteterPostgres(AktorId aktorId) {
-        AktoerAktiviteter utdanningsAktiviteter = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, brukIkkeAvtalteAktiviteter(unleashService));
-        utdanningsAktiviteter.getAktiviteter()
-                .stream()
-                .filter(aktivitetDTO -> AktivitetTyperFraKafka.utdanningaktivitet.name().equals(aktivitetDTO.getAktivitetType()))
-                .filter(aktivitetDTO -> aktivitetDTO.getTilDato().toLocalDateTime().isBefore(LocalDateTime.now()))
-                .forEach(aktivitetDTO -> {
-                            log.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}, på aktorId: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato(), aktorId);
-                            aktiviteterRepositoryV2.setTilFullfort(aktivitetDTO.getAktivitetID());
-                        }
-                );
+    public void deaktiverUtgatteUtdanningsAktivteterPostgres() {
+        List<AktivitetDTO> utdanningsAktiviteter = aktiviteterRepositoryV2.getPasserteUtdanningsAktiviter();
+        log.info("Skal markere: {} utdanningsaktivteter som utgått", utdanningsAktiviteter.size());
+        utdanningsAktiviteter.forEach(aktivitetDTO -> {
+                    if (AktivitetTyperFraKafka.utdanningaktivitet.name().equals(aktivitetDTO.getAktivitetType()) || aktivitetDTO.getTilDato().toLocalDateTime().isBefore(LocalDateTime.now())) {
+                        log.error("SQL for deaktiverUtgatteUtdanningsAktivteterPostgres fungerer ikke...");
+                        return;
+                    }
+                    log.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato());
+                    aktiviteterRepositoryV2.setTilFullfort(aktivitetDTO.getAktivitetID());
+                }
+        );
     }
 }
