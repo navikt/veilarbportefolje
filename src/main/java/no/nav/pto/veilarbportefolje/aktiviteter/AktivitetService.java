@@ -51,11 +51,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         }
 
         //POSTGRES
-        boolean bleProsessertPostgres = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-        if (bleProsessertPostgres && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
-            oppdaterAktivitetTypeStatus(AktorId.of(aktivitetData.getAktorId()), aktivitetData.getAktivitetType());
-            brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
-        }
+        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
 
         //OPENSEARCH
         if(bleProsessert){
