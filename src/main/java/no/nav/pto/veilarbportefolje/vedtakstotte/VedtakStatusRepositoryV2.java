@@ -74,7 +74,7 @@ public class VedtakStatusRepositoryV2 {
         );
     }
 
-    public Optional<KafkaVedtakStatusEndring> hentVedtak(String aktorId) {
+    public Optional<KafkaVedtakStatusEndring> hent14aVedtak(String aktorId) {
         String sql = "SELECT * FROM VEDTAKSTATUS WHERE AKTOERID = ?";
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, this::mapKafkaVedtakStatusEndring, aktorId))
@@ -111,6 +111,6 @@ public class VedtakStatusRepositoryV2 {
     }
 
     private boolean erIkkeUtkast(String aktorId, long vedtakId) {
-        return hentVedtak(aktorId).map(lagretVedtak -> lagretVedtak.getVedtakId() != vedtakId).orElse(true);
+        return hent14aVedtak(aktorId).map(lagretVedtak -> lagretVedtak.getVedtakId() != vedtakId).orElse(true);
     }
 }
