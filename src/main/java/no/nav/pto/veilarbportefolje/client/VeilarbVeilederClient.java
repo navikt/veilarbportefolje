@@ -31,7 +31,7 @@ public class VeilarbVeilederClient {
         this.url = environmentProperties.getVeilarbVeilederUrl();
         this.client = RestClient.baseClient();
         hentVeilederePaaEnhetCache = Caffeine.newBuilder()
-                .expireAfterWrite(10, TimeUnit.HOURS)
+                .expireAfterWrite(10, TimeUnit.MINUTES)
                 .maximumSize(600)
                 .build();
     }
