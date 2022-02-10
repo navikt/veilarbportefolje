@@ -63,7 +63,6 @@ public class PostgresOpensearchMapper {
                                     return results;
                                 }))
                 .orElse(new HashMap<>());
-        log.info("postgres Opensearch: Hentet ut {} brukere fra postgres", resultMap.size());
         brukere.forEach(bruker ->
                 Optional.ofNullable(resultMap.get(bruker.getAktoer_id()))
                         .ifPresentOrElse(
@@ -72,7 +71,6 @@ public class PostgresOpensearchMapper {
                                 )
                         )
         );
-        log.info("postgres Opensearch: Ferdig med mapping av {} brukere fra postgres", resultMap.size());
     }
 
     private void flettInnPostgresData(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker, boolean medDiffLogging) {
