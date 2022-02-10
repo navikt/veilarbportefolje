@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.dialog;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
@@ -12,7 +12,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 @Service
 @RequiredArgsConstructor
 public class DialogService extends KafkaCommonConsumerService<Dialogdata> {
-
     private final DialogRepository dialogRepository;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final DialogRepositoryV2 dialogRepositoryV2;

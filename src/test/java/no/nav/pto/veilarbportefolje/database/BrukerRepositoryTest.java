@@ -36,6 +36,7 @@ import static java.util.Collections.singletonList;
 import static no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
@@ -81,39 +82,27 @@ public class BrukerRepositoryTest {
     @Test
     public void skal_hente_bruker_fra_view() {
         final Fnr fnr = randomFnr();
+        final AktorId aktorId = randomAktorId();
         final PersonId personId = randomPersonId();
         SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
                 .value(Table.OPPFOLGINGSBRUKER.FODSELSNR, fnr.toString())
                 .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId.toString())
                 .execute();
 
-        final Optional<OppfolgingsBruker> bruker = brukerRepository.hentBrukerFraView(fnr);
+        SqlUtils.insert(jdbcTemplate, Table.AKTOERID_TO_PERSONID.TABLE_NAME)
+                .value(Table.AKTOERID_TO_PERSONID.AKTOERID, aktorId.toString())
+                .value(Table.AKTOERID_TO_PERSONID.PERSONID, personId.toString())
+                .value(Table.AKTOERID_TO_PERSONID.GJELDENE, 1)
+                .execute();
+
+        final Optional<OppfolgingsBruker> bruker = brukerRepository.hentBrukerFraView(brukerRepository.hentAktorIdFraView(fnr).get(),false);
         assertThat(bruker).isPresent();
-    }
-
-    @Test
-    public void skal_hente_riktig_antall_fnr() {
-        List<String> fnr = brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10);
-        assertThat(fnr.size()).isEqualTo(10);
-    }
-
-    @Test
-    public void skal_ikke_tryne_om_man_proever_aa_hente_for_mange_fnr() {
-        brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10000);
     }
 
     @Test
     public void skal_returnere_riktig_antall_brukere() {
         int antallBrukere = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(IllegalStateException::new);
         assertThat(antallBrukere).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
-    }
-
-    @Test
-    public void skal_returnere_riktig_antall_oppdaterte_brukere() {
-        jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT_ES = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
-        List<OppfolgingsBruker> oppdaterteBrukere = brukerRepository.hentOppdaterteBrukere();
-        int ANTALL_OPPDATERTE_BRUKERE_I_TESTDATA = 4;
-        assertThat(oppdaterteBrukere.size()).isEqualTo(ANTALL_OPPDATERTE_BRUKERE_I_TESTDATA);
     }
 
     @Test
@@ -338,14 +327,14 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalHentePersonIdFraDatabase() throws Exception {
+    public void skalHentePersonIdFraDatabase()  {
         Fnr fnr = Fnr.ofValidFnr("12345678900");
 
         PersonId expectedPersonId = PersonId.of("123456");
         insertOppfolgingsbrukerForPersonIdToFnrMapping(fnr, expectedPersonId);
 
-        Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
-        assertTrue(result.isSuccess());
+        Optional<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
+        assertTrue(result.isPresent());
         assertEquals(expectedPersonId, result.get());
     }
 
@@ -358,11 +347,11 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalIkkeFeileOmIngenPersonIdFinnes() throws Exception {
+    public void skalIkkeFeileOmIngenPersonIdFinnes() {
         Fnr fnr = Fnr.ofValidFnr("99999999999");
-        Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
+        Optional<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
 
-        assertTrue(result.get() == null);
+        assertTrue(result.isEmpty());
     }
 
     @Test

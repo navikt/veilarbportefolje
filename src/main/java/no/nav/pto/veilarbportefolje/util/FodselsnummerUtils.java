@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.util;
 public class FodselsnummerUtils {
     private static final String DATO_POSTFIX = "T00:00:00Z";
 
-    static String lagFodselsdagIMnd(String fnr) {
+    public static String lagFodselsdagIMnd(String fnr) {
         if (erDNummer(fnr)) {
             fnr = konverterDNummerTilFodselsnummer(fnr);
         }

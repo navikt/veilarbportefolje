@@ -3,10 +3,12 @@ package no.nav.pto.veilarbportefolje.util;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.Table;
-import no.nav.pto.veilarbportefolje.domene.value.*;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
@@ -20,11 +22,12 @@ public class TestDataClient {
 
     private final JdbcTemplate jdbcTemplate;
     private final OpensearchTestClient opensearchTestClient;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
-    @Autowired
-    public TestDataClient(JdbcTemplate jdbcTemplate, OpensearchTestClient opensearchTestClient) {
+    public TestDataClient(JdbcTemplate jdbcTemplate, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
         this.jdbcTemplate = jdbcTemplate;
         this.opensearchTestClient = opensearchTestClient;
+        this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
     }
 
     public void endreNavKontorForBruker(AktorId aktoerId, NavKontor navKontor) {
@@ -50,9 +53,9 @@ public class TestDataClient {
         opensearchTestClient.oppdaterArbeidsliste(aktoerId, true);
     }
 
-    public void setupBruker(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
+    public void setupBruker(AktorId aktoerId, Fnr fnr, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
         final PersonId personId = TestDataUtils.randomPersonId();
-        final Fnr fnr = TestDataUtils.randomFnr();
+        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato);
 
         SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
                 .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId.getValue())
@@ -78,6 +81,11 @@ public class TestDataClient {
                 .execute();
 
         opensearchTestClient.createUserInOpensearch(aktoerId);
+    }
+
+    public void setupBruker(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
+        final Fnr fnr = TestDataUtils.randomFnr();
+        setupBruker(aktoerId, fnr, navKontor,veilederId, startDato);
     }
 
     public String hentOppfolgingFlaggFraDatabase(AktorId aktoerId) {

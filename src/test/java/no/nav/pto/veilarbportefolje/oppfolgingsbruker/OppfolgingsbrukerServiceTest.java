@@ -2,9 +2,12 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
+import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
@@ -16,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
@@ -29,21 +31,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-@SpringBootTest(classes = ApplicationConfigTest.class)
-public class OppfolgingsbrukerServiceTest {
+public class OppfolgingsbrukerServiceTest extends EndToEndTest {
     private final JdbcTemplate db;
     private final OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OppfolginsbrukerService oppfolginsbrukerService;
     private final AktorClient aktorClientMock;
     private final AktorId aktoerId = randomAktorId();
     private final Fnr fnr = Fnr.ofValidFnr("10108000399"); //TESTFAMILIE
 
     @Autowired
-    public OppfolgingsbrukerServiceTest(@Qualifier("PostgresJdbc") JdbcTemplate db, OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2) {
+    public OppfolgingsbrukerServiceTest(@Qualifier("PostgresJdbc") JdbcTemplate db, OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2,
+                                        OppfolgingRepositoryV2 oppfolgingRepositoryV2, VedtakStatusRepositoryV2 vedtakStatusRepositoryV2, OpensearchIndexerV2 opensearchIndexerV2) {
         this.db = db;
         this.oppfolginsbrukerRepositoryV2 = oppfolginsbrukerRepositoryV2;
+        this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         aktorClientMock = mock(AktorClient.class);
-        oppfolginsbrukerService = new OppfolginsbrukerService(oppfolginsbrukerRepositoryV2, aktorClientMock);
+        oppfolginsbrukerService = new OppfolginsbrukerService(oppfolginsbrukerRepositoryV2, vedtakStatusRepositoryV2, opensearchIndexerV2, aktorClientMock);
     }
 
     @BeforeEach

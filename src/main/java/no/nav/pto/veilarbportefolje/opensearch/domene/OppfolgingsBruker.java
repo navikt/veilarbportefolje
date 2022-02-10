@@ -9,7 +9,6 @@ import java.util.Set;
 import static java.util.Collections.emptySet;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 
-
 @Data
 @Accessors(chain = true)
 public class OppfolgingsBruker {
@@ -90,5 +89,4 @@ public class OppfolgingsBruker {
     String utdanning_bestatt;
     String utdanning_godkjent;
     Map<String, Endring> siste_endringer;
-
 }

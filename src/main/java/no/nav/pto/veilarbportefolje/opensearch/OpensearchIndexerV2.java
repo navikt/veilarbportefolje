@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
@@ -7,52 +8,38 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
-import org.apache.commons.io.IOUtils;
+import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
+import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import org.opensearch.OpenSearchException;
-import org.opensearch.action.admin.indices.alias.IndicesAliasesRequest;
-import org.opensearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.opensearch.action.delete.DeleteRequest;
-import org.opensearch.action.support.master.AcknowledgedResponse;
 import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
-import org.opensearch.client.indices.CreateIndexRequest;
-import org.opensearch.client.indices.CreateIndexResponse;
 import org.opensearch.common.xcontent.XContentBuilder;
-import org.opensearch.common.xcontent.XContentType;
 import org.opensearch.rest.RestStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class OpensearchIndexerV2 {
 
     private final IndexName indexName;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final RestHighLevelClient restHighLevelClient;
-
-    @Autowired
-    public OpensearchIndexerV2(RestHighLevelClient restHighLevelClient, IndexName indexName) {
-        this.restHighLevelClient = restHighLevelClient;
-        this.indexName = indexName;
-    }
 
     @SneakyThrows
     public void updateRegistering(AktorId aktoerId, ArbeidssokerRegistrertEvent utdanningEvent) {
@@ -65,6 +52,37 @@ public class OpensearchIndexerV2 {
                 .endObject();
 
         update(aktoerId, content, "Oppdater registrering");
+    }
+
+    @SneakyThrows
+    public void updateOppfolgingsbruker(AktorId aktoerId, OppfolgingsbrukerEntity oppfolgingsbruker, String vedtakstatus) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("fnr", oppfolgingsbruker.fodselsnr())
+                .field("formidlingsgruppekode", oppfolgingsbruker.formidlingsgruppekode())
+                .field("iserv_fra_dato", toIsoUTC(oppfolgingsbruker.iserv_fra_dato()))
+                .field("etternavn", oppfolgingsbruker.etternavn())
+                .field("fornavn", oppfolgingsbruker.fornavn())
+                .field("enhet_id", oppfolgingsbruker.nav_kontor())
+                .field("kvalifiseringsgruppekode", oppfolgingsbruker.kvalifiseringsgruppekode())
+                .field("rettighetsgruppekode", oppfolgingsbruker.rettighetsgruppekode())
+                .field("hovedmaalkode", oppfolgingsbruker.hovedmaalkode())
+                .field("sikkerhetstiltak", oppfolgingsbruker.sikkerhetstiltak_type_kode())
+                .field("diskresjonskode", oppfolgingsbruker.fr_kode())
+
+                .field("egen_ansatt", oppfolgingsbruker.sperret_ansatt())
+                .field("er_doed", oppfolgingsbruker.er_doed())
+                .field("doed_fra_dato", toIsoUTC(oppfolgingsbruker.doed_fra_dato()))
+                .field("fodselsdato", FodselsnummerUtils.lagFodselsdato(oppfolgingsbruker.fodselsnr()))
+                .field("kjonn", FodselsnummerUtils.lagKjonn(oppfolgingsbruker.fodselsnr()))
+                .field("fodselsdag_i_mnd", Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(oppfolgingsbruker.fodselsnr())))
+
+                .field("trenger_revurdering", OppfolgingUtils.trengerRevurderingVedtakstotte(oppfolgingsbruker.formidlingsgruppekode(), oppfolgingsbruker.kvalifiseringsgruppekode(), vedtakstatus))
+                .field("trenger_vurdering", OppfolgingUtils.trengerVurdering(oppfolgingsbruker.rettighetsgruppekode(), oppfolgingsbruker.kvalifiseringsgruppekode()))
+                .field("fullt_navn", String.format("%s, %s", oppfolgingsbruker.etternavn(), oppfolgingsbruker.fornavn()))
+                .endObject();
+
+        update(aktoerId, content, "Oppdater oppfolgingsbruker");
     }
 
     @SneakyThrows
@@ -177,7 +195,7 @@ public class OpensearchIndexerV2 {
                 .map(String::length).orElse(0);
         String arbeidsListeSorteringsVerdi = Optional.ofNullable(arbeidslisteDTO.getOverskrift())
                 .filter(s -> !s.isEmpty())
-                .map(s -> s.substring(0, Math.min(2,s.length())))
+                .map(s -> s.substring(0, Math.min(2, s.length())))
                 .orElse("");
 
         final XContentBuilder content = jsonBuilder()
@@ -221,6 +239,10 @@ public class OpensearchIndexerV2 {
     }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
+        if (!oppfolgingRepositoryV2.erUnderOppfolging(aktoerId)) {
+            log.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging: {}, med info {}", aktoerId, logInfo);
+            return;
+        }
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indexName.getValue());
         updateRequest.id(aktoerId.get());

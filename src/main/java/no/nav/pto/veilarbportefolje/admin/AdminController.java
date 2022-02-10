@@ -38,10 +38,10 @@ public class AdminController {
     private final EnvironmentProperties environmentProperties;
     private final AktorClient aktorClient;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
+    private final OpensearchIndexer opensearchIndexer;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
-    private final OpensearchIndexer opensearchIndexer;
     private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
     private final OppfolgingRepository oppfolgingRepository;
@@ -199,6 +199,13 @@ public class AdminController {
     public String forceShardAssignment() {
         authorizeAdmin();
         return opensearchAdminService.forceShardAssignment();
+    }
+
+    @PostMapping("/test/postgresIndeksering")
+    public void testHentUnderOppfolging() {
+        authorizeAdmin();
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
+        opensearchIndexer.testIndeksering(brukereUnderOppfolging);
     }
 
     private void authorizeAdmin() {

@@ -1,8 +1,10 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.Test;
@@ -15,7 +17,6 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 class DialogKafkaConsumerTest extends EndToEndTest {
 
     private final DialogService dialogService;
-    private final OpensearchTestClient opensearchTestClient;
 
     @Autowired
     public DialogKafkaConsumerTest(DialogService dialogService, OpensearchTestClient opensearchTestClient) {
@@ -27,7 +28,7 @@ class DialogKafkaConsumerTest extends EndToEndTest {
     void skal_oppdatere_dialog_datoer() {
         final AktorId aktoerId = randomAktorId();
 
-        opensearchTestClient.createUserInOpensearch(aktoerId);
+        populateOpensearch(EnhetId.of("0000"), VeilederId.of(null), aktoerId.get());
 
         final Dialogdata melding = new Dialogdata().setAktorId(aktoerId.toString())
                 .setSisteEndring(ZonedDateTime.parse("2020-10-10T00:00:00+02:00"))

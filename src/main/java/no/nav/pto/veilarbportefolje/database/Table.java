@@ -1,11 +1,6 @@
 package no.nav.pto.veilarbportefolje.database;
 
 public class Table {
-    public static final class METADATA {
-        public static final String TABLE_NAME = "METADATA";
-        public static final String SIST_INDEKSERT_ES = "SIST_INDEKSERT_ES";
-    }
-
     public static final class BRUKER_REGISTRERING {
         public static final String TABLE_NAME = "BRUKER_REGISTRERING";
         public static final String AKTOERID = "AKTOERID";
@@ -31,6 +26,7 @@ public class Table {
     public static final class OPPFOLGINGSBRUKER {
         public static final String TABLE_NAME = "OPPFOLGINGSBRUKER";
         public static final String FODSELSNR = "FODSELSNR";
+        public static final String AKTOERID = "AKTOERID";
         public static final String PERSON_ID = "PERSON_ID";
         public static final String NAV_KONTOR = "NAV_KONTOR";
     }

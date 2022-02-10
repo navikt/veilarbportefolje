@@ -41,35 +41,16 @@ public class IndekseringUtils {
         String utlop = AktivitetUtils.statusToIsoUtcString(status);
         AktivitetTyper type = AktivitetTyper.valueOf(status.getAktivitetType());
         switch (type) {
-            case egen:
-                bruker.setAktivitet_egen_utlopsdato(utlop);
-                break;
-            case stilling:
-                bruker.setAktivitet_stilling_utlopsdato(utlop);
-                break;
-            case sokeavtale:
-                bruker.setAktivitet_sokeavtale_utlopsdato(utlop);
-                break;
-            case behandling:
-                bruker.setAktivitet_behandling_utlopsdato(utlop);
-                break;
-            case ijobb:
-                bruker.setAktivitet_ijobb_utlopsdato(utlop);
-                break;
-            case mote:
-                bruker.setAktivitet_mote_utlopsdato(utlop);
-                break;
-            case tiltak:
-                bruker.setAktivitet_tiltak_utlopsdato(utlop);
-                break;
-            case gruppeaktivitet:
-                bruker.setAktivitet_gruppeaktivitet_utlopsdato(utlop);
-                break;
-            case utdanningaktivitet:
-                bruker.setAktivitet_utdanningaktivitet_utlopsdato(utlop);
-                break;
-            default:
-                throw new IllegalStateException("Fant ikke riktig aktivitetstype");
+            case egen -> bruker.setAktivitet_egen_utlopsdato(utlop);
+            case stilling -> bruker.setAktivitet_stilling_utlopsdato(utlop);
+            case sokeavtale -> bruker.setAktivitet_sokeavtale_utlopsdato(utlop);
+            case behandling -> bruker.setAktivitet_behandling_utlopsdato(utlop);
+            case ijobb -> bruker.setAktivitet_ijobb_utlopsdato(utlop);
+            case mote -> bruker.setAktivitet_mote_utlopsdato(utlop);
+            case tiltak -> bruker.setAktivitet_tiltak_utlopsdato(utlop);
+            case gruppeaktivitet -> bruker.setAktivitet_gruppeaktivitet_utlopsdato(utlop);
+            case utdanningaktivitet -> bruker.setAktivitet_utdanningaktivitet_utlopsdato(utlop);
+            default -> throw new IllegalStateException("Fant ikke riktig aktivitetstype");
         }
     }
 

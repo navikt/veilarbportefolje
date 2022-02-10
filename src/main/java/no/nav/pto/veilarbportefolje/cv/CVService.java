@@ -6,8 +6,9 @@ import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
         boolean cvEksisterer = cvEksistere(kafkaMelding);
         cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
         cvRepository.upsertCvEksistere(aktoerId, cvEksisterer);
+
         opensearchIndexerV2.updateCvEksistere(aktoerId, cvEksisterer);
     }
 

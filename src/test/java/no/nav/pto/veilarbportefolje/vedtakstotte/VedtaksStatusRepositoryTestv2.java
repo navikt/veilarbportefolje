@@ -29,7 +29,7 @@ public class VedtaksStatusRepositoryTestv2 {
     @Test
     public void skallSetteInVedtak() {
         insertVedtakIDB();
-        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
+        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hent14aVedtak(AKTORID);
         assertThat(endringer.isPresent()).isTrue();
     }
 
@@ -47,7 +47,7 @@ public class VedtaksStatusRepositoryTestv2 {
                 .setVedtakId(VEDTAKID);
 
         vedtakStatusRepository.upsertVedtak(vedtakStatusEndring);
-        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
+        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hent14aVedtak(AKTORID);
         assertThat(endringer.isPresent()).isTrue();
         assertThat(endringer.get().veilederIdent).isEqualTo(VEILEDER_IDENT);
         assertThat(endringer.get().veilederNavn).isEqualTo(VEILEDER_NAVN);
@@ -60,7 +60,7 @@ public class VedtaksStatusRepositoryTestv2 {
     public void skallOppdatereVedtakMedAnsvarligVeileder() {
         insertVedtakIDB();
 
-        Optional<KafkaVedtakStatusEndring> endringer1 = vedtakStatusRepository.hentVedtak(AKTORID);
+        Optional<KafkaVedtakStatusEndring> endringer1 = vedtakStatusRepository.hent14aVedtak(AKTORID);
         assertThat(endringer1.isPresent()).isTrue();
         assertThat(endringer1.get().veilederIdent).isEqualTo(null);
         assertThat(endringer1.get().veilederNavn).isEqualTo(null);
@@ -73,7 +73,7 @@ public class VedtaksStatusRepositoryTestv2 {
 
         vedtakStatusRepository.oppdaterAnsvarligVeileder(vedtakStatusEndring);
 
-        Optional<KafkaVedtakStatusEndring> endringer2 = vedtakStatusRepository.hentVedtak(AKTORID);
+        Optional<KafkaVedtakStatusEndring> endringer2 = vedtakStatusRepository.hent14aVedtak(AKTORID);
         assertThat(endringer2.isPresent()).isTrue();
         assertThat(endringer2.get().veilederIdent).isEqualTo(VEILEDER_IDENT);
         assertThat(endringer2.get().veilederNavn).isEqualTo(VEILEDER_NAVN);
@@ -83,7 +83,7 @@ public class VedtaksStatusRepositoryTestv2 {
     public void skallSletteVedtak() {
         insertVedtakIDB();
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
-        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
+        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hent14aVedtak(AKTORID);
         assertThat(endringer.isEmpty()).isTrue();
     }
     @Test
@@ -102,7 +102,7 @@ public class VedtaksStatusRepositoryTestv2 {
                 .setVedtakId(VEDTAKID);
 
         vedtakStatusRepository.updateVedtak(vedtakStatusEndring);
-        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
+        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hent14aVedtak(AKTORID);
         assertThat(endringer.isPresent()).isTrue();
         assertThat(endringer.get().veilederIdent).isEqualTo(null); //TODO: finn ut om dette er riktig.
         assertThat(endringer.get().veilederNavn).isEqualTo(null);  // her som i den "gamle" versjonen oppdaters dette og forrige felt kun i funksjonen oppdaterAnsvarligVeileder()

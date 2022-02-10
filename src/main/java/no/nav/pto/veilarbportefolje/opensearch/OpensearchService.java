@@ -60,7 +60,7 @@ public class OpensearchService {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         int from = Optional.ofNullable(fra).orElse(0);
-        int size = Optional.ofNullable(antall).orElse(9999);
+        int size = Optional.ofNullable(antall).orElse(5000);
 
         searchSourceBuilder.from(from);
         searchSourceBuilder.size(size);
