@@ -19,7 +19,6 @@ import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,19 +125,8 @@ public class BrukerRepository {
                 .toList();
     }
 
-    public boolean erUnderOppfolging(ResultSet rs) {
-        return harOppfolgingsFlaggSatt(rs) || erUnderOppfolgingIArena(rs);
-    }
-
     @SneakyThrows
-    private static boolean erUnderOppfolgingIArena(ResultSet rs) {
-        String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
-        String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
-        return UnderOppfolgingRegler.erUnderOppfolging(formidlingsgruppekode, kvalifiseringsgruppekode);
-    }
-
-    @SneakyThrows
-    private static boolean harOppfolgingsFlaggSatt(ResultSet rs) {
+    public static boolean erUnderOppfolging(ResultSet rs) {
         return parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
     }
 

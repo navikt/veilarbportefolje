@@ -67,7 +67,7 @@ public class PostgresOpensearchMapper {
                 Optional.ofNullable(resultMap.get(bruker.getAktoer_id()))
                         .ifPresentOrElse(
                                 entity -> flettInnPostgresData(entity, bruker, medDiffLogging),
-                                () -> log.error("Fant ikke aktoer i postgres: {}", bruker.getAktoer_id()
+                                () -> log.warn("Fant ikke aktoer i postgres: {}", bruker.getAktoer_id()
                                 )
                         )
         );
