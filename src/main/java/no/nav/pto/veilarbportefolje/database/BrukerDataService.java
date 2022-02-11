@@ -149,7 +149,7 @@ public class BrukerDataService {
                 .orElse(null);
     }
 
-    private static Timestamp finnForrigeAktivitetStartDatoer(List<Timestamp> startDatoer, LocalDate today) {
+    public static Timestamp finnForrigeAktivitetStartDatoer(List<Timestamp> startDatoer, LocalDate today) {
         return startDatoer
                 .stream()
                 .filter(aktivitet -> aktivitet.toLocalDateTime().toLocalDate().isBefore(today))
@@ -157,7 +157,7 @@ public class BrukerDataService {
                 .orElse(null);
     }
 
-    private static List<Timestamp> finnDatoerEtterDagensDato(List<Timestamp> aktiviteter, LocalDate today) {
+    public static List<Timestamp> finnDatoerEtterDagensDato(List<Timestamp> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()
                 .filter(aktivitet -> !aktivitet.toLocalDateTime().toLocalDate().isBefore(today))

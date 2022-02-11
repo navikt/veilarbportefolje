@@ -54,6 +54,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
@@ -97,6 +98,7 @@ import static org.mockito.Mockito.when;
         BrukerService.class,
         RegistreringService.class,
         AktivitetService.class,
+        AktivitetOpensearchMapper.class,
         PersistentOppdatering.class,
         OppfolgingAvsluttetService.class,
         OpensearchService.class,

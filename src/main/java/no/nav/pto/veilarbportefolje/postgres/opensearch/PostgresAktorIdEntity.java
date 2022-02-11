@@ -6,34 +6,34 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class PostgresAktorIdEntity {
-    String aktoerId;
+    private String aktoerId;
 
-    String brukersSituasjon;
-    String profileringResultat;
-    String utdanning;
-    String utdanningBestatt;
-    String utdanningGodkjent;
+    private String brukersSituasjon;
+    private String profileringResultat;
+    private String utdanning;
+    private String utdanningBestatt;
+    private String utdanningGodkjent;
 
-    Boolean harDeltCv;
-    Boolean cvEksistere;
+    private Boolean harDeltCv;
+    private Boolean cvEksistere;
 
-    Boolean oppfolging;
-    Boolean nyForVeileder;
-    Boolean manuellBruker;
-    String oppfolgingStartdato;
+    private Boolean oppfolging;
+    private Boolean nyForVeileder;
+    private Boolean manuellBruker;
+    private String oppfolgingStartdato;
 
-    String venterpasvarfrabruker;
-    String venterpasvarfranav;
+    private String venterpasvarfrabruker;
+    private String venterpasvarfranav;
 
-    String vedtak14AStatus;
-    String vedtak14AStatusEndret;
-    String ansvarligVeilederFor14AVedtak;
+    private String vedtak14AStatus;
+    private String vedtak14AStatusEndret;
+    private String ansvarligVeilederFor14AVedtak;
 
-    boolean arbeidslisteAktiv = false;
-    String arbeidslisteSistEndretAvVeilederid;
-    String arbeidslisteEndringstidspunkt;
-    String arbeidslisteFrist;
-    String arbeidslisteKategori;
-    String arbeidslisteTittelSortering;
-    int arbeidslisteTittelLengde;
+    private boolean arbeidslisteAktiv = false;
+    private String arbeidslisteSistEndretAvVeilederid;
+    private String arbeidslisteEndringstidspunkt;
+    private String arbeidslisteFrist;
+    private String arbeidslisteKategori;
+    private String arbeidslisteTittelSortering;
+    private int arbeidslisteTittelLengde;
 }
