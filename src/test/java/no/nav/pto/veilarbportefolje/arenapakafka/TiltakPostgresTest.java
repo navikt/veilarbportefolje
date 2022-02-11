@@ -3,8 +3,6 @@ package no.nav.pto.veilarbportefolje.arenapakafka;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetType;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
@@ -17,6 +15,7 @@ import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetSamling;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +23,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -37,7 +35,6 @@ public class TiltakPostgresTest {
     private final JdbcTemplate db;
     private final OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
-    private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
     private final AktivitetOpensearchMapper aktivitetOpensearchMapper;
 
     private final AktorId aktorId = AktorId.of("123");
@@ -48,7 +45,6 @@ public class TiltakPostgresTest {
     public TiltakPostgresTest(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, AktivitetOpensearchMapper aktivitetOpensearchMapper) {
         this.db = jdbcTemplatePostgres;
         this.oppfolginsbrukerRepositoryV2 = new OppfolginsbrukerRepositoryV2(db);
-        this.aktivitetStatusRepositoryV2 = new AktivitetStatusRepositoryV2(db);
         this.aktivitetOpensearchMapper = aktivitetOpensearchMapper;
         this.tiltakRepositoryV2 = tiltakRepositoryV2;
     }
@@ -78,21 +74,15 @@ public class TiltakPostgresTest {
                 .setAktivitetid("TA-123456789");
         tiltakRepositoryV2.upsert(innhold, aktorId);
 
-        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
-
-        List<String> tiltak = tiltakRepositoryV2.hentBrukertiltak(aktorId);
-
-        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper.mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
+        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
+                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
                 .get(aktorId.get())
                 .bygg();
 
         Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
 
-        assertThat(tiltak.size()).isEqualTo(1);
-        assertThat(tiltak.get(0)).isEqualTo(tiltaksType);
         assertThat(kodeVerkNavn.isPresent()).isTrue();
         assertThat(kodeVerkNavn.get()).isEqualTo(tiltaksNavn);
-
 
         //Opensearch mapping
         assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(1);
@@ -132,16 +122,19 @@ public class TiltakPostgresTest {
         tiltakRepositoryV2.upsert(idag, aktorId);
         tiltakRepositoryV2.upsert(igar, aktorId);
 
-        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
+        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
+                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
+                .get(aktorId.get())
+                .bygg();
 
-        Optional<AktivitetStatus> aktivitetStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), AktivitetType.tiltak.name());
-        Optional<Timestamp> utloptAktivitet = aktivitetStatusRepositoryV2.hentAktivitetStatusUtlopt(aktorId.get());
+        assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(1);
+        assertThat(postgresAktivitet.getTiltak().contains(tiltaksType)).isTrue();
+        assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.tiltak.name())).isTrue();
+        assertThat(postgresAktivitet.getAktivitetStart()).isNull();
+        assertThat(postgresAktivitet.getNesteAktivitetStart()).isNull();
 
-        assertThat(aktivitetStatus.isPresent()).isTrue();
-        assertThat(utloptAktivitet.isPresent()).isTrue();
-
-        assertThat(aktivitetStatus.get().getNesteUtlop().toLocalDateTime().toLocalDate()).isEqualTo(LocalDate.now());
-        assertThat(utloptAktivitet.get().toLocalDateTime().toLocalDate()).isEqualTo(LocalDate.now().minusDays(1));
+        assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo(toIsoUTC(igarTid).substring(0,10)+"T22:59:59Z");
+        assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isEqualTo(toIsoUTC(idagTid).substring(0,10)+"T22:59:59Z");
     }
 
     @Test
@@ -157,21 +150,15 @@ public class TiltakPostgresTest {
         tiltakRepositoryV2.upsert(innhold, aktorId);
         tiltakRepositoryV2.delete(id);
 
-        tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
-
-        List<String> tiltak = tiltakRepositoryV2.hentBrukertiltak(aktorId);
-        Optional<AktivitetStatus> aktivitetStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), AktivitetType.tiltak.name());
-        Optional<Timestamp> utloptAktivitet = aktivitetStatusRepositoryV2.hentAktivitetStatusUtlopt(aktorId.get());
-
         Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
 
-        assertThat(tiltak.size()).isEqualTo(0);
+        AktivitetSamling postgresAktivitet = aktivitetOpensearchMapper
+                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
+                .get(aktorId.get());
+
         assertThat(kodeVerkNavn.isPresent()).isTrue();
         assertThat(kodeVerkNavn.get()).isEqualTo(tiltaksNavn);
-
-        assertThat(aktivitetStatus.isPresent()).isTrue();
-        assertThat(aktivitetStatus.get().isAktiv()).isFalse();
-        assertThat(utloptAktivitet.isPresent()).isFalse();
+        assertThat(postgresAktivitet).isNull();
     }
 
     @Test

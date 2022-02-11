@@ -33,8 +33,7 @@ public class AktivitetSamling {
         byggAktivitetBrukerData(entity, avtalteAktiveAktivteter);
         byggAktivitetStatusBrukerData(entity, avtalteAktiveAktivteter);
 
-        return entity
-                .setAktiviteter(avtalteAktiveAktivteter.stream()
+        return entity.setAktiviteter(avtalteAktiveAktivteter.stream()
                         .map(AktivitetEntity::getAktivitetType)
                         .map(AktivitetType::name)
                         .collect(Collectors.toSet()))
@@ -61,7 +60,7 @@ public class AktivitetSamling {
                 if (aktivitet.aktivitetType.equals(mote) && !(aktivitet.getStart() == null || idag.isBefore(aktivitet.getUtlop().toLocalDateTime().toLocalDate()))) {
                     moteFremtidigStartdato = nesteFremITiden(moteFremtidigStartdato, aktivitet.getUtlop());
                 }
-                break;
+                continue;
             }
             switch (aktivitet.aktivitetType) {
                 case egen -> egenFremtidigUtlopsdato = nesteFremITiden(egenFremtidigUtlopsdato, aktivitet.getUtlop());
