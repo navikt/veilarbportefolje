@@ -38,6 +38,7 @@ import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
+import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.IndexName;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
@@ -103,6 +104,7 @@ import static org.mockito.Mockito.when;
         OpensearchIndexer.class,
         OpensearchIndexerV2.class,
         OpensearchAdminService.class,
+        HovedIndekserer.class,
         AktivitetDAO.class,
         AktiviteterRepositoryV2.class,
         AktivitetStatusRepositoryV2.class,
