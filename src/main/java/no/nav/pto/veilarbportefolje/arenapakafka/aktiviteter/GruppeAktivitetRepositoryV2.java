@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetType;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -90,12 +90,12 @@ public class GruppeAktivitetRepositoryV2 {
         boolean aktiv = (nesteUtlopsdato != null
                 && gruppeAktiviteter.stream().anyMatch(GruppeAktivitetSchedueldDTO::isAktiv));
         AktivitetStatus aktivitetStatus = new AktivitetStatus()
-                .setAktivitetType(AktivitetTyper.gruppeaktivitet.name())
+                .setAktivitetType(AktivitetType.gruppeaktivitet.name())
                 .setAktiv(aktiv)
                 .setAktoerid(aktorId)
                 .setNesteStart(nesteStart)
                 .setNesteUtlop(nesteUtlopsdato);
-        aktivitetStatusRepositoryV2.upsertAktivitetTypeStatus(aktivitetStatus, AktivitetTyper.gruppeaktivitet.name());
+        aktivitetStatusRepositoryV2.upsertAktivitetTypeStatus(aktivitetStatus, AktivitetType.gruppeaktivitet.name());
     }
 
     public List<GruppeAktivitetSchedueldDTO> hentAktiveAktivteter(AktorId aktorId) {

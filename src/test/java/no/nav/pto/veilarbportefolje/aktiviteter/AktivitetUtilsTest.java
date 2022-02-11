@@ -20,7 +20,7 @@ import static java.util.Arrays.asList;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraAktivitetsplanList;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraKafka;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.*;
-import static no.nav.pto.veilarbportefolje.util.AktivitetData.aktivitetTyperList;
+import static no.nav.pto.veilarbportefolje.util.AktivitetData.AKTIVITET_TYPE_LIST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -179,7 +179,7 @@ public class AktivitetUtilsTest {
 
     @Test
     public void skalFinneUtlopsdatoNaarÉnerNull() {
-        String aktivitetstype = aktivitetTyperList.get(0).toString();
+        String aktivitetstype = AKTIVITET_TYPE_LIST.get(0).toString();
         String IKKE_FULLFORT_STATUS = "IKKE_FULLFORT_STATUS";
         Timestamp t1 = new Timestamp(200000000);
         AktivitetDTO a1 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS);

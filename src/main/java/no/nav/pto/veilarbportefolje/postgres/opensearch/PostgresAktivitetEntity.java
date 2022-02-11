@@ -20,7 +20,7 @@ public class PostgresAktivitetEntity {
     private String aktivitetMoteStartdato;
     private String aktivitetStillingUtlopsdato;
     private String aktivitetEgenUtlopsdato;
-    private String aktivitetUbehandlingUtlopsdato;
+    private String aktivitetBehandlingUtlopsdato;
     private String aktivitetIjobbUtlopsdato;
     private String aktivitetSokeavtaleUtlopsdato;
     private String aktivitetTiltakUtlopsdato;

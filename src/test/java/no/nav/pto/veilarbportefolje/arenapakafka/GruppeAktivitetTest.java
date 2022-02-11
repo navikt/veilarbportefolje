@@ -78,7 +78,7 @@ public class GruppeAktivitetTest {
     public void skal_komme_i_gruppe_aktivitet_V2() {
         GruppeAktivitetDTO gruppeAktivitet = getInsertDTO();
         gruppeAktivitetService.behandleKafkaMeldingPostgres(gruppeAktivitet);
-        Optional<AktivitetStatus> aktivitetStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), AktivitetTyper.gruppeaktivitet.name());
+        Optional<AktivitetStatus> aktivitetStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), AktivitetType.gruppeaktivitet.name());
         assertThat(aktivitetStatus).isPresent();
     }
 
@@ -132,7 +132,7 @@ public class GruppeAktivitetTest {
         }
         return aktivitetstatusForBrukere.stream()
                 .filter(AktivitetStatus::isAktiv)
-                .filter(x -> x.getAktivitetType().equals(AktivitetTyper.gruppeaktivitet.name()))
+                .filter(x -> x.getAktivitetType().equals(AktivitetType.gruppeaktivitet.name()))
                 .findFirst();
     }
 

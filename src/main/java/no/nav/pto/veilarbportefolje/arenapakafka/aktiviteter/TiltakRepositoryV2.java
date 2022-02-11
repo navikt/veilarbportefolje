@@ -7,7 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetType;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.BrukertiltakV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
@@ -113,11 +113,11 @@ public class TiltakRepositoryV2 {
 
         boolean aktiv = !tiltak.isEmpty();
         AktivitetStatus aktivitetStatus = new AktivitetStatus()
-                .setAktivitetType(AktivitetTyper.tiltak.name())
+                .setAktivitetType(AktivitetType.tiltak.name())
                 .setAktiv(aktiv)
                 .setAktoerid(aktorId)
                 .setNesteUtlop(nesteUtlopsdato);
-        aktivitetStatusRepositoryV2.upsertAktivitetTypeStatus(aktivitetStatus, AktivitetTyper.tiltak.name());
+        aktivitetStatusRepositoryV2.upsertAktivitetTypeStatus(aktivitetStatus, AktivitetType.tiltak.name());
     }
 
     private List<BrukertiltakV2> hentTiltak(AktorId aktorId) {

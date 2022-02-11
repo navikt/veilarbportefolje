@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.postgres.opensearch;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetType;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetSamling;
@@ -103,10 +104,14 @@ public class AktivitetOpensearchMapper {
 
     @SneakyThrows
     private AktivitetEntity mapAktivitetTilEntity(ResultSet rs) {
+        String type = rs.getString("aktivitettype");
+        if(!AktivitetType.contains(type)){
+            log.warn("Det finnes aktivteter i postgres som ikke blir vist i oversikten: {}", type);
+        }
         return new AktivitetEntity()
                 .setStart(rs.getTimestamp("fradato"))
                 .setUtlop(rs.getTimestamp("tildato"))
-                .setAktivitetType("aktivitettype");
+                .setAktivitetType(AktivitetType.valueOf(type));
     }
 
     @SneakyThrows
@@ -114,7 +119,7 @@ public class AktivitetOpensearchMapper {
         return new AktivitetEntity()
                 .setStart(rs.getTimestamp("moteplan_startdato"))
                 .setUtlop(rs.getTimestamp("moteplan_sluttdato"))
-                .setAktivitetType("gruppeaktivitet");
+                .setAktivitetType(AktivitetType.gruppeaktivitet);
     }
 
     @SneakyThrows
@@ -122,7 +127,7 @@ public class AktivitetOpensearchMapper {
         return new AktivitetEntity()
                 .setStart(rs.getTimestamp("fradato"))
                 .setUtlop(rs.getTimestamp("tildato"))
-                .setAktivitetType("tiltak");
+                .setAktivitetType(AktivitetType.tiltak);
     }
 
 }

@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
-public enum AktivitetTyper {
+public enum AktivitetType {
     egen,
     stilling,
     sokeavtale,
@@ -13,7 +13,7 @@ public enum AktivitetTyper {
 
     public static boolean contains(String value) {
         try {
-            AktivitetTyper.valueOf(value);
+            AktivitetType.valueOf(value);
             return true;
         } catch (Exception e) {
             return false;

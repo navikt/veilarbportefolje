@@ -5,7 +5,7 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetType;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
@@ -129,7 +129,7 @@ public class TiltakTest {
         }
         return aktivitetstatusForBrukere.stream()
                 .filter(AktivitetStatus::isAktiv)
-                .filter(x -> x.getAktivitetType().equals(AktivitetTyper.tiltak.name()))
+                .filter(x -> x.getAktivitetType().equals(AktivitetType.tiltak.name()))
                 .findFirst();
     }
 
