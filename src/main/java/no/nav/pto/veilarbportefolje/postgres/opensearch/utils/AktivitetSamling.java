@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -20,10 +21,10 @@ import static no.nav.pto.veilarbportefolje.database.BrukerDataService.finnNyeste
 @Data
 @Accessors(chain = true)
 public class AktivitetSamling {
-    List<AktivitetEntity> avtalteAktiveAktivteter =  new ArrayList<>();
-    HashSet<String> tiltak =  new HashSet<>();
+    List<AktivitetEntity> avtalteAktiveAktivteter = new ArrayList<>();
+    HashSet<String> tiltak = new HashSet<>();
 
-    public PostgresAktivitetEntity bygg(){
+    public PostgresAktivitetEntity bygg() {
         PostgresAktivitetEntity entity = new PostgresAktivitetEntity();
 
         byggAktivitetBrukerData(entity, avtalteAktiveAktivteter);
@@ -37,11 +38,11 @@ public class AktivitetSamling {
     private void byggAktivitetStatusBrukerData(PostgresAktivitetEntity entity, List<AktivitetEntity> alleAktiviter) {
     }
 
-    private void byggAktivitetBrukerData(PostgresAktivitetEntity postgresAktivitetEntity, List<AktivitetEntity> alleAktiviter){
+    private void byggAktivitetBrukerData(PostgresAktivitetEntity postgresAktivitetEntity, List<AktivitetEntity> alleAktiviter) {
         LocalDate idag = LocalDate.now();
 
-        List<Timestamp> startDatoer = alleAktiviter.stream().map(AktivitetEntity::getStart).toList();
-        List<Timestamp> sluttdatoer = alleAktiviter.stream().map(AktivitetEntity::getUtlop).toList();
+        List<Timestamp> startDatoer = alleAktiviter.stream().map(AktivitetEntity::getStart).filter(Objects::nonNull).toList();
+        List<Timestamp> sluttdatoer = alleAktiviter.stream().map(AktivitetEntity::getUtlop).filter(Objects::nonNull).toList();
 
         Optional<Timestamp> nyesteUtlopteDato = Optional.ofNullable(finnNyesteUtlopteAktivAktivitet(sluttdatoer, idag));
         Optional<Timestamp> forrigeAktivitetStart = Optional.ofNullable(finnForrigeAktivitetStartDatoer(startDatoer, idag));

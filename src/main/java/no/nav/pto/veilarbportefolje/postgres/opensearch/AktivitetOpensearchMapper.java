@@ -18,8 +18,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AKTOERID;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -40,13 +38,13 @@ public class AktivitetOpensearchMapper {
 
     private void mapTiltak(String aktoerIder, HashMap<String, AktivitetSamling> result) {
         db.query("""
-                SELECT tildato, fradato FROM brukertiltak
+                SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak
                 WHERE aktoerid = ANY (:ids::varchar[])
                 """,
                 new MapSqlParameterSource("ids", aktoerIder),
                 (ResultSet rs) -> {
                     while (rs.next()) {
-                        String aktoerId = rs.getString(AKTOERID);
+                        String aktoerId = rs.getString("aktoerid");
                         AktivitetEntity aktivitet = mapTiltakTilEntity(rs);
                         updateHashTable(result, aktoerId, aktivitet, Optional.ofNullable(rs.getString("tiltakskode")));
                     }
@@ -56,14 +54,14 @@ public class AktivitetOpensearchMapper {
 
     private void mapGruppeAktiviteter(String aktoerIder, HashMap<String, AktivitetSamling> result) {
         db.query("""
-                        SELECT moteplan_startdato, moteplan_sluttdato FROM gruppe_aktiviter
+                        SELECT aktoerid, moteplan_startdato, moteplan_sluttdato FROM gruppe_aktiviter
                         WHERE date_trunc('day', moteplan_sluttdato) > date_trunc('day',current_timestamp)
                         AND aktiv = true AND aktoerid = ANY (:ids::varchar[])
                         """,
                 new MapSqlParameterSource("ids", aktoerIder),
                 (ResultSet rs) -> {
                     while (rs.next()) {
-                        String aktoerId = rs.getString(AKTOERID);
+                        String aktoerId = rs.getString("aktoerid");
                         AktivitetEntity aktivitet = mapGruppeAktivitetTilEntity(rs);
                         updateHashTable(result, aktoerId, aktivitet, Optional.empty());
                     }
@@ -73,13 +71,13 @@ public class AktivitetOpensearchMapper {
 
     private void mapAktivitetsplanen(String aktoerIder, HashMap<String, AktivitetSamling> results) {
         db.query("""
-                SELECT tildato, fradato, aktivitettype FROM aktiviteter
+                SELECT aktoerid, tildato, fradato, aktivitettype FROM aktiviteter
                 WHERE aktoerid = ANY (:ids::varchar[])
                 """,
                 new MapSqlParameterSource("ids", aktoerIder),
                 (ResultSet rs) -> {
                     while (rs.next()) {
-                        String aktoerId = rs.getString(AKTOERID);
+                        String aktoerId = rs.getString("aktoerid");
                         AktivitetEntity aktivitet = mapAktivitetTilEntity(rs);
                         updateHashTable(results, aktoerId, aktivitet, Optional.empty());
                     }

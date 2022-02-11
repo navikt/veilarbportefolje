@@ -12,9 +12,11 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +73,7 @@ public class TiltakPostgresTest {
                 .setTiltakstype(tiltaksType)
                 .setDeltakerStatus("GJENN")
                 .setEndretDato(new ArenaDato("2021-01-01"))
+                .setAktivitetperiodeFra(new ArenaDato("1989-01-01"))
                 .setAktivitetperiodeTil(new ArenaDato("1990-01-01"))
                 .setAktivitetid("TA-123456789");
         tiltakRepositoryV2.upsert(innhold, aktorId);
@@ -78,23 +81,35 @@ public class TiltakPostgresTest {
         tiltakRepositoryV2.utledOgLagreTiltakInformasjon(aktorId);
 
         List<String> tiltak = tiltakRepositoryV2.hentBrukertiltak(aktorId);
-        Optional<AktivitetStatus> aktivitetStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), AktivitetTyper.tiltak.name());
-        Optional<Timestamp> utloptAktivitet = aktivitetStatusRepositoryV2.hentAktivitetStatusUtlopt(aktorId.get());
+
+        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper.mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
+                .get(aktorId.get())
+                .bygg();
 
         Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
 
         assertThat(tiltak.size()).isEqualTo(1);
         assertThat(tiltak.get(0)).isEqualTo(tiltaksType);
+        assertThat(kodeVerkNavn.isPresent()).isTrue();
+        assertThat(kodeVerkNavn.get()).isEqualTo(tiltaksNavn);
 
+
+        // Ny test
+        assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(1);
+        assertThat(postgresAktivitet.getTiltak().contains("T123")).isTrue();
+
+        assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo("1990-01-01T22:59:59Z");
+        assertThat(postgresAktivitet.getForrigeAktivitetStart()).isEqualTo("1988-12-31T23:00:00Z");
+
+        // TODO: tiltakstaus felter
+        /*
         assertThat(aktivitetStatus.isPresent()).isTrue();
         assertThat(aktivitetStatus.get().isAktiv()).isTrue();
         assertThat(aktivitetStatus.get().getNesteUtlop()).isNull();
 
-        assertThat(kodeVerkNavn.isPresent()).isTrue();
-        assertThat(kodeVerkNavn.get()).isEqualTo(tiltaksNavn);
-
         assertThat(utloptAktivitet.isPresent()).isTrue();
         assertThat(utloptAktivitet.get().toLocalDateTime().getYear()).isEqualTo(1990);
+        */
     }
 
     @Test
