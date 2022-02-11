@@ -2,37 +2,40 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.ZonedDateTime;
-import java.util.Optional;
+import java.util.List;
 
 import static java.lang.String.valueOf;
 import static java.util.concurrent.ThreadLocalRandom.current;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class AktiviteterV2Test {
-    private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
+    private final AktivitetOpensearchMapper aktivitetOpensearchMapper;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktivitetService aktivitetService;
-    private final BrukerDataService brukerDataService;
 
     @Autowired
-    public AktiviteterV2Test(AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetService aktivitetService, BrukerDataService brukerDataService) {
-        this.aktivitetStatusRepositoryV2 = aktivitetStatusRepositoryV2;
+    public AktiviteterV2Test(AktivitetOpensearchMapper aktivitetOpensearchMapper, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetService aktivitetService) {
+        this.aktivitetOpensearchMapper = aktivitetOpensearchMapper;
         this.aktiviteterRepositoryV2 = aktiviteterRepositoryV2;
         this.aktivitetService = aktivitetService;
-        this.brukerDataService = brukerDataService;
     }
 
     @Test
     public void skal_komme_i_aktivitet_V2() {
         final AktorId aktorId = randomAktorId();
+        final ZonedDateTime fraDato = ZonedDateTime.now().plusDays(1);
+        final ZonedDateTime tilDato = ZonedDateTime.now().plusDays(2);
         KafkaAktivitetMelding aktivitet = new KafkaAktivitetMelding()
                 .setAktivitetId(valueOf(current().nextInt()))
                 .setVersion(1L)
@@ -40,29 +43,117 @@ public class AktiviteterV2Test {
                 .setAktorId(aktorId.get())
                 .setAvtalt(true)
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
-        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
-        //aktivitetService.oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
-        //brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
-        AktoerAktiviteter avtalteAktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false);
-        Optional<AktivitetStatus> aktivitettypeStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "egen");
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setFraDato(fraDato)
+                .setTilDato(tilDato);
+        aktivitetService.behandleKafkaMeldingLogikk(aktivitet);
 
-        assertThat(avtalteAktiviteterForAktoerid.getAktiviteter().size()).isEqualTo(1);
-        assertThat(aktivitettypeStatus).isPresent();
-        assertThat(aktivitettypeStatus.get().aktiv).isTrue();
+        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
+                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
+                .get(aktorId.get())
+                .bygg();
+
+        //Opensearch mapping
+        Assertions.assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(0);
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().size()).isEqualTo(1);
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.egen.name())).isTrue();
+
+        Assertions.assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isNull();
+        Assertions.assertThat(postgresAktivitet.getForrigeAktivitetStart()).isNull();
+
+        Assertions.assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isNull();
+        Assertions.assertThat(postgresAktivitet.getNesteAktivitetStart()).isNull();
+        Assertions.assertThat(postgresAktivitet.getAktivitetStart()).isEqualTo(toIsoUTC(fraDato));
+        Assertions.assertThat(postgresAktivitet.getAktivitetEgenUtlopsdato()).isEqualTo(toIsoUTC(tilDato));
     }
+
+    @Test
+    public void mote_idag_er_aktivt() {
+        final AktorId aktorId = randomAktorId();
+        final ZonedDateTime fraDato = ZonedDateTime.now();
+        final ZonedDateTime tilDato = ZonedDateTime.now().plusSeconds(2);
+
+        KafkaAktivitetMelding aktivitet = new KafkaAktivitetMelding()
+                .setAktivitetId(valueOf(current().nextInt()))
+                .setVersion(1L)
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
+                .setAktorId(aktorId.get())
+                .setAvtalt(true)
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setFraDato(fraDato)
+                .setTilDato(tilDato);
+
+        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
+
+        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
+                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
+                .get(aktorId.get())
+                .bygg();
+
+        //Opensearch mapping
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().size()).isEqualTo(1);
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.mote.name())).isTrue();
+
+        Assertions.assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isNull();
+        Assertions.assertThat(postgresAktivitet.getAktivitetStart()).isEqualTo(toIsoUTC(fraDato));
+
+        Assertions.assertThat(postgresAktivitet.getAktivitetMoteUtlopsdato()).isEqualTo(toIsoUTC(tilDato));
+        Assertions.assertThat(postgresAktivitet.getAktivitetMoteStartdato()).isEqualTo(toIsoUTC(fraDato));
+    }
+
+    @Test
+    public void mote_igår_er_ikke_aktivt() {
+        final AktorId aktorId = randomAktorId();
+        final ZonedDateTime fraDato = ZonedDateTime.now().minusDays(1);
+        final ZonedDateTime tilDato = ZonedDateTime.now().minusDays(1).plusSeconds(2);
+
+        KafkaAktivitetMelding aktivitet = new KafkaAktivitetMelding()
+                .setAktivitetId(valueOf(current().nextInt()))
+                .setVersion(1L)
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
+                .setAktorId(aktorId.get())
+                .setAvtalt(true)
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setFraDato(fraDato)
+                .setTilDato(tilDato);
+
+        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
+
+        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
+                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
+                .get(aktorId.get())
+                .bygg();
+
+        //Opensearch mapping
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().size()).isEqualTo(1);
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.mote.name())).isTrue();
+        Assertions.assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo(toIsoUTC(tilDato));
+
+        Assertions.assertThat(postgresAktivitet.getAktivitetMoteUtlopsdato()).isNull();
+        Assertions.assertThat(postgresAktivitet.getAktivitetMoteStartdato()).isNull();
+    }
+
 
     @Test
     public void skal_kunne_ha_flere_typer_aktiviteter_V2() {
         final AktorId aktorId = randomAktorId();
+        final ZonedDateTime fraDato1 = ZonedDateTime.now().plusDays(1);
+        final ZonedDateTime tilDato1 = ZonedDateTime.now().plusDays(2);
+        final ZonedDateTime fraDato2 = ZonedDateTime.now().plusDays(3);
+        final ZonedDateTime tilDato2 = ZonedDateTime.now().plusDays(4);
+
         KafkaAktivitetMelding aktivitet1 = new KafkaAktivitetMelding()
                 .setAktivitetId(valueOf(current().nextInt()))
                 .setVersion(1L)
-                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.EGEN)
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.BEHANDLING)
                 .setAktorId(aktorId.get())
                 .setAvtalt(true)
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setFraDato(fraDato1)
+                .setTilDato(tilDato1);
 
         KafkaAktivitetMelding aktivitet2 = new KafkaAktivitetMelding()
                 .setAktivitetId(valueOf(current().nextInt()))
@@ -71,22 +162,32 @@ public class AktiviteterV2Test {
                 .setAktorId(aktorId.get())
                 .setAvtalt(true)
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setFraDato(fraDato2)
+                .setTilDato(tilDato2);
 
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet1);
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet2);
-        //aktivitetService.oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.EGEN);
-        //aktivitetService.oppdaterAktivitetTypeStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.MOTE);
-        //brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
 
-        AktoerAktiviteter avtalteAktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, true);
-        Optional<AktivitetStatus> aktivitettypeStatus1 = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "egen");
-        Optional<AktivitetStatus> aktivitettypeStatus2 = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), "mote");
+        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
+                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
+                .get(aktorId.get())
+                .bygg();
 
-        assertThat(avtalteAktiviteterForAktoerid.getAktiviteter().size()).isEqualTo(2);
-        assertThat(aktivitettypeStatus1).isPresent();
-        assertThat(aktivitettypeStatus1.get().aktiv).isTrue();
-        assertThat(aktivitettypeStatus2).isPresent();
-        assertThat(aktivitettypeStatus2.get().aktiv).isTrue();
+        //Opensearch mapping
+        Assertions.assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(0);
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().size()).isEqualTo(2);
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.behandling.name())).isTrue();
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.mote.name())).isTrue();
+
+        Assertions.assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isNull();
+        Assertions.assertThat(postgresAktivitet.getForrigeAktivitetStart()).isNull();
+        Assertions.assertThat(postgresAktivitet.getAktivitetStart()).isEqualTo(toIsoUTC(fraDato1));
+        Assertions.assertThat(postgresAktivitet.getNesteAktivitetStart()).isEqualTo(toIsoUTC(fraDato2));
+
+        Assertions.assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isNull();
+        Assertions.assertThat(postgresAktivitet.getAktivitetBehandlingUtlopsdato()).isEqualTo(toIsoUTC(tilDato1));
+        Assertions.assertThat(postgresAktivitet.getAktivitetMoteUtlopsdato()).isEqualTo(toIsoUTC(tilDato2));
+        Assertions.assertThat(postgresAktivitet.getAktivitetMoteStartdato()).isEqualTo(toIsoUTC(fraDato2));
     }
 }

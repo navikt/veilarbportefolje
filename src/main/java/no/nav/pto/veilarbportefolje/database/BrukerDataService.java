@@ -37,10 +37,10 @@ public class BrukerDataService {
     private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerDataRepository brukerDataRepository;
+    private final UnleashService unleashService;
 
     //POSTGRES
     private final YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2;
-    private final UnleashService unleashService;
 
     public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId) {
         if (aktorId == null || personId == null) {
@@ -69,7 +69,6 @@ public class BrukerDataService {
                 .setAktivitetStart(aktivitetStart)
                 .setNesteAktivitetStart(nesteAktivitetStart);
         brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
-
     }
 
     public void oppdaterYtelserOracle(AktorId aktorId, PersonId personId, Optional<YtelseDAO> innhold) {

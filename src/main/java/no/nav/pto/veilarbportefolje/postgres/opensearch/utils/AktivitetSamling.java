@@ -55,11 +55,10 @@ public class AktivitetSamling {
         Timestamp gruppeaktivitetFremtidigUtlopsdato = null;
 
         for (AktivitetEntity aktivitet : alleAktiviter) {
-            boolean harUGyldigUtlopsdato = aktivitet.getUtlop() == null || idag.isAfter(aktivitet.getUtlop().toLocalDateTime().toLocalDate());
-            if (harUGyldigUtlopsdato) {
-                if (aktivitet.aktivitetType.equals(mote) && !(aktivitet.getStart() == null || idag.isBefore(aktivitet.getUtlop().toLocalDateTime().toLocalDate()))) {
-                    moteFremtidigStartdato = nesteFremITiden(moteFremtidigStartdato, aktivitet.getUtlop());
-                }
+            if (aktivitet.aktivitetType.equals(mote) && !(aktivitet.getStart() == null || aktivitet.getUtlop().toLocalDateTime().toLocalDate().isBefore(idag))) {
+                moteFremtidigStartdato = nesteFremITiden(moteFremtidigStartdato, aktivitet.getStart());
+            }
+            if (aktivitet.getUtlop() == null || idag.isAfter(aktivitet.getUtlop().toLocalDateTime().toLocalDate())) {
                 continue;
             }
             switch (aktivitet.aktivitetType) {

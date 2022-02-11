@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -11,14 +10,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETTYPE;
@@ -36,7 +30,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 @Repository
 @RequiredArgsConstructor
 public class AktiviteterRepositoryV2 {
-    @NonNull
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
@@ -108,8 +101,8 @@ public class AktiviteterRepositoryV2 {
         db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTIVITETID), aktivitetid);
     }
 
-    public List<AktivitetDTO> getPasserteUtdanningsAktiviter() {
-        final String sql = "SELECT * FROM aktiviteter WHERE date_trunc('day', tildato) < date_trunc('day', current_timestamp)";
+    public List<AktivitetDTO> getPasserteAktiveUtdanningsAktiviter() {
+        final String sql = "SELECT * FROM aktiviteter WHERE NOT status = 'fullfort' AND date_trunc('day', tildato) < date_trunc('day', current_timestamp)";
 
        return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList))
@@ -118,34 +111,7 @@ public class AktiviteterRepositoryV2 {
 
     public void setTilFullfort(String aktivitetid) {
         log.info("Setter status flagget til aktivitet: {}, til verdien fullfort", aktivitetid);
-        db.update(String.format("UPDATE %s SET %s = 'fullfort' WHERE %s = ?", TABLE_NAME, AVTALT, AKTIVITETID), aktivitetid);
-    }
-
-    public AktivitetStatus getAktivitetStatus(AktorId aktoerid, KafkaAktivitetMelding.AktivitetTypeData aktivitetType, boolean brukIkkeAvtalteAktiviteter) {
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        List<AktivitetDTO> aktiveAktiviteter = getAktiviteterForAktoerid(aktoerid, brukIkkeAvtalteAktiviteter).getAktiviteter().stream()
-                .filter(AktivitetUtils::harIkkeStatusFullfort)
-                .filter(aktivitetDTO -> aktivitetType.name().toLowerCase().equals(aktivitetDTO.getAktivitetType()))
-                .collect(Collectors.toList());
-
-        Timestamp nesteStart = aktiveAktiviteter.stream()
-                .map(AktivitetDTO::getFraDato)
-                .filter(Objects::nonNull)
-                .filter(startDato -> startDato.toLocalDateTime().toLocalDate().isAfter(yesterday))
-                .min(Comparator.naturalOrder())
-                .orElse(null);
-        Timestamp nesteUtlopsdato = aktiveAktiviteter.stream()
-                .map(AktivitetDTO::getTilDato)
-                .filter(Objects::nonNull)
-                .filter(utlopsDato -> utlopsDato.toLocalDateTime().toLocalDate().isAfter(yesterday))
-                .min(Comparator.naturalOrder())
-                .orElse(null);
-
-        return new AktivitetStatus()
-                .setAktoerid(aktoerid)
-                .setAktiv(!aktiveAktiviteter.isEmpty())
-                .setNesteStart(nesteStart)
-                .setNesteUtlop(nesteUtlopsdato);
+        db.update("UPDATE aktiviteter SET status = 'fullfort' WHERE aktivitetid = ?", aktivitetid);
     }
 
     @SneakyThrows

@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyperFraKafka;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktoerAktiviteter;
-import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO;
@@ -85,11 +84,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
 
         AktoerAktiviteter aktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false);
-        AktivitetStatus aktivitetStatus = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.UTDANNINGAKTIVITET, false);
-        Optional<AktivitetStatus> utdanning = hentAktivitetStatus(AktivitetTyperFraKafka.utdanningaktivitet);
-        assertThat(utdanning).isPresent();
-        assertThat(aktiviteterForAktoerid.getAktiviteter().stream().anyMatch(x->x.getAktivitetID().equals("UA-123456789"))).isTrue();
-        assertThat(aktivitetStatus.isAktiv()).isTrue();
+        assertThat(aktiviteterForAktoerid.getAktiviteter().stream().anyMatch(x -> x.getAktivitetID().equals("UA-123456789"))).isTrue();
     }
 
 

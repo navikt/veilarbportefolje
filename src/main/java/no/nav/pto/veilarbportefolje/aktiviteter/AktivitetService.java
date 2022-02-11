@@ -102,7 +102,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     }
 
     public void deaktiverUtgatteUtdanningsAktivteterPostgres() {
-        List<AktivitetDTO> utdanningsAktiviteter = aktiviteterRepositoryV2.getPasserteUtdanningsAktiviter();
+        List<AktivitetDTO> utdanningsAktiviteter = aktiviteterRepositoryV2.getPasserteAktiveUtdanningsAktiviter();
         log.info("Skal markere: {} utdanningsaktivteter som utgått", utdanningsAktiviteter.size());
         utdanningsAktiviteter.forEach(aktivitetDTO -> {
                     if (AktivitetTyperFraKafka.utdanningaktivitet.name().equals(aktivitetDTO.getAktivitetType()) || aktivitetDTO.getTilDato().toLocalDateTime().isBefore(LocalDateTime.now())) {
