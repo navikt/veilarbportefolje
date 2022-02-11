@@ -31,19 +31,6 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: aktivitet_status_for_bruker; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.aktivitet_status_for_bruker (
-    aktoerid character varying(20) NOT NULL,
-    nyesteutlopteaktivitet timestamp without time zone,
-    forrige_aktivitet_start timestamp without time zone,
-    aktivitet_start timestamp without time zone,
-    neste_aktivitet_start timestamp without time zone
-);
-
-
---
 -- Name: aktiviteter; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -56,19 +43,6 @@ CREATE TABLE public.aktiviteter (
     tildato timestamp without time zone,
     status character varying(255),
     version bigint
-);
-
-
---
--- Name: aktivitettype_status_for_bruker; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.aktivitettype_status_for_bruker (
-    aktoerid character varying(20) NOT NULL,
-    aktivitettype character varying(255) NOT NULL,
-    neste_utlopsdato timestamp without time zone,
-    neste_startdato timestamp without time zone,
-    aktiv boolean DEFAULT false
 );
 
 
@@ -495,27 +469,11 @@ CREATE TABLE public.ytelsesvedtak (
 
 
 --
--- Name: aktivitet_status_for_bruker aktivitet_status_for_bruker_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.aktivitet_status_for_bruker
-    ADD CONSTRAINT aktivitet_status_for_bruker_pkey PRIMARY KEY (aktoerid);
-
-
---
 -- Name: aktiviteter aktiviteter_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aktiviteter
     ADD CONSTRAINT aktiviteter_pkey PRIMARY KEY (aktivitetid);
-
-
---
--- Name: aktivitettype_status_for_bruker aktivitettype_status_for_bruker_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.aktivitettype_status_for_bruker
-    ADD CONSTRAINT aktivitettype_status_for_bruker_pkey PRIMARY KEY (aktoerid, aktivitettype);
 
 
 --

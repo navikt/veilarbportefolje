@@ -53,8 +53,6 @@ public class TiltakPostgresTest {
     public void reset() {
         db.update("TRUNCATE " + PostgresTable.BRUKERTILTAK.TABLE_NAME + " CASCADE");
         db.update("TRUNCATE " + PostgresTable.TILTAKKODEVERK.TABLE_NAME + " CASCADE");
-        db.update("TRUNCATE " + PostgresTable.AKTIVITETTYPE_STATUS.TABLE_NAME + " CASCADE");
-        db.update("TRUNCATE " + PostgresTable.AKTIVITET_STATUS.TABLE_NAME + " CASCADE");
         db.update("TRUNCATE " + PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME + " CASCADE");
     }
 

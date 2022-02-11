@@ -1,17 +1,11 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import io.vavr.control.Try;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraKafka;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.Brukertiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import no.nav.pto.veilarbportefolje.util.DbUtils;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -22,11 +16,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraKafka;
 
 @Slf4j
 public class AktivitetUtils {
@@ -174,18 +170,6 @@ public class AktivitetUtils {
 
     public static String startDatoToIsoUtcString(AktivitetStatus status) {
         return Optional.ofNullable(status).map(AktivitetStatus::getNesteStart).map(DateUtils::toIsoUTC).orElse(null);
-    }
-
-    public static Map<Fnr, Set<Brukertiltak>> filtrerBrukertiltak(List<Brukertiltak> brukertiltak) {
-        return brukertiltak
-                .stream()
-                .filter(tiltak -> etterFilterDato(tiltak.getTildato()))
-                .collect(toMap(Brukertiltak::getFnr, DbUtils::toSet,
-                        (oldValue, newValue) -> {
-                            oldValue.addAll(newValue);
-                            return oldValue;
-                        }
-                ));
     }
 
 

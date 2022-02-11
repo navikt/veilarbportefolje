@@ -1,0 +1,2 @@
+CREATE INDEX AKTOER_AKTIVITET_INDX ON aktiviteter(aktoerid);
+CREATE INDEX AKTOER_TILTAK_INDX ON brukertiltak(aktoerid);

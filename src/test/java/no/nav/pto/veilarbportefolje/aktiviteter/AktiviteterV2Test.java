@@ -15,6 +15,7 @@ import java.util.List;
 
 import static java.lang.String.valueOf;
 import static java.util.concurrent.ThreadLocalRandom.current;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 
@@ -34,8 +35,8 @@ public class AktiviteterV2Test {
     @Test
     public void skal_komme_i_aktivitet_V2() {
         final AktorId aktorId = randomAktorId();
-        final ZonedDateTime fraDato = ZonedDateTime.now().plusDays(1);
-        final ZonedDateTime tilDato = ZonedDateTime.now().plusDays(2);
+        final ZonedDateTime fraDato = now().plusDays(1);
+        final ZonedDateTime tilDato = now().plusDays(2);
         KafkaAktivitetMelding aktivitet = new KafkaAktivitetMelding()
                 .setAktivitetId(valueOf(current().nextInt()))
                 .setVersion(1L)
@@ -70,8 +71,8 @@ public class AktiviteterV2Test {
     @Test
     public void mote_idag_er_aktivt() {
         final AktorId aktorId = randomAktorId();
-        final ZonedDateTime fraDato = ZonedDateTime.now();
-        final ZonedDateTime tilDato = ZonedDateTime.now().plusSeconds(2);
+        final ZonedDateTime fraDato = now();
+        final ZonedDateTime tilDato = now().plusSeconds(2);
 
         KafkaAktivitetMelding aktivitet = new KafkaAktivitetMelding()
                 .setAktivitetId(valueOf(current().nextInt()))
@@ -105,8 +106,8 @@ public class AktiviteterV2Test {
     @Test
     public void mote_igår_er_ikke_aktivt() {
         final AktorId aktorId = randomAktorId();
-        final ZonedDateTime fraDato = ZonedDateTime.now().minusDays(1);
-        final ZonedDateTime tilDato = ZonedDateTime.now().minusDays(1).plusSeconds(2);
+        final ZonedDateTime fraDato = now().minusDays(1);
+        final ZonedDateTime tilDato = now().minusDays(1).plusSeconds(2);
 
         KafkaAktivitetMelding aktivitet = new KafkaAktivitetMelding()
                 .setAktivitetId(valueOf(current().nextInt()))
@@ -139,10 +140,10 @@ public class AktiviteterV2Test {
     @Test
     public void skal_kunne_ha_flere_typer_aktiviteter_V2() {
         final AktorId aktorId = randomAktorId();
-        final ZonedDateTime fraDato1 = ZonedDateTime.now().plusDays(1);
-        final ZonedDateTime tilDato1 = ZonedDateTime.now().plusDays(2);
-        final ZonedDateTime fraDato2 = ZonedDateTime.now().plusDays(3);
-        final ZonedDateTime tilDato2 = ZonedDateTime.now().plusDays(4);
+        final ZonedDateTime fraDato1 = now().plusDays(1);
+        final ZonedDateTime tilDato1 = now().plusDays(2);
+        final ZonedDateTime fraDato2 = now().plusDays(3);
+        final ZonedDateTime tilDato2 = now().plusDays(4);
 
         KafkaAktivitetMelding aktivitet1 = new KafkaAktivitetMelding()
                 .setAktivitetId(valueOf(current().nextInt()))
