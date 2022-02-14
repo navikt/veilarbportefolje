@@ -637,6 +637,20 @@ ALTER TABLE ONLY public.ytelsesvedtak
 
 
 --
+-- Name: aktoer_aktivitet_indx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX aktoer_aktivitet_indx ON public.aktiviteter USING btree (aktoerid);
+
+
+--
+-- Name: aktoer_tiltak_indx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX aktoer_tiltak_indx ON public.brukertiltak USING btree (aktoerid);
+
+
+--
 -- Name: aktoerid_gruppe_aktiviter_idx; Type: INDEX; Schema: public; Owner: -
 --
 
