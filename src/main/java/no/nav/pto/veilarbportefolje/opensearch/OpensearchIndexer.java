@@ -198,7 +198,7 @@ public class OpensearchIndexer {
 
 
     @SneakyThrows
-    public void nyHovedIndeksering(List<AktorId> brukere) {
+    public void oppdaterAlleBrukereIOpensearch(List<AktorId> brukere) {
         long tidsStempel0 = System.currentTimeMillis();
         log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 

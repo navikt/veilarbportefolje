@@ -179,10 +179,12 @@ public class YtelsesService {
                 return;
             }
             oppdaterYtelsesInformasjonOracle(aktorId, personId);
-            opensearchIndexer.indekser(aktorId);
         });
 
-        log.info("Oppdatering av ytelser fullført");
+        log.info("Oppdatering av ytelser fullført. Starter indeksering");
+        brukere.forEach(opensearchIndexer::indekser);
+
+        log.info("Oppdatering av ytelser fullført og indeksert");
     }
 
     public void syncYtelserForAlleBrukere() {

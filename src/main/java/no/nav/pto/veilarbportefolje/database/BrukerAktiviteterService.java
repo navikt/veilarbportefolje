@@ -48,7 +48,7 @@ public class BrukerAktiviteterService {
         if(brukAvAliasIndeksering(unleashService)){
             hovedIndekserer.hovedIndeksering(brukereSomMaOppdateres);
         } else {
-            opensearchIndexer.nyHovedIndeksering(brukereSomMaOppdateres);
+            opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereSomMaOppdateres);
         }
     }
 

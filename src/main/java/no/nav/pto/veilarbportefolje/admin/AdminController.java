@@ -23,12 +23,16 @@ import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvAliasIndeksering;
 
 @Slf4j
 @RestController
@@ -102,11 +106,7 @@ public class AdminController {
     public String indekserAlleBrukere() {
         authorizeAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
-        if(brukAvAliasIndeksering(unleashService)){
-            hovedIndekserer.hovedIndeksering(brukereUnderOppfolging);
-        } else {
-            opensearchIndexer.nyHovedIndeksering(brukereUnderOppfolging);
-        }
+        opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereUnderOppfolging);
         return "Indeksering fullfort";
     }
 
