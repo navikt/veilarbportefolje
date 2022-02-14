@@ -189,7 +189,7 @@ public class AktivitetDAO {
                 .queryForList(getAktivitetStatuserForListOfPersonIds(), params)
                 .stream()
                 .map(AktivitetDAO::mapAktivitetStatus)
-                .filter(aktivitetStatus -> AktivitetType.contains(aktivitetStatus.getAktivitetType()))
+                .filter(aktivitetStatus -> AktivitetsType.contains(aktivitetStatus.getAktivitetType()))
                 .collect(toMap(AktivitetStatus::getPersonid, DbUtils::toSet,
                         (oldValue, newValue) -> {
                             oldValue.addAll(newValue);

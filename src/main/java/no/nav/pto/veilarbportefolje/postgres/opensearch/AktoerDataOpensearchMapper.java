@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.postgres.opensearch;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.common.types.identer.AktorId;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -46,15 +46,15 @@ public class AktoerDataOpensearchMapper {
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate db;
 
-    public HashMap<String, PostgresAktorIdEntity> mapBulk(List<OppfolgingsBruker> brukere) {
-        String aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.joining(",", "{", "}"));
+    public HashMap<AktorId, PostgresAktorIdEntity> mapBulk(List<AktorId> brukere) {
+        String aktoerIder = brukere.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
         return Optional.ofNullable(
                         db.query("SELECT * FROM aktorid_indeksert_data WHERE aktoerid = ANY (:ids::varchar[])",
                                 new MapSqlParameterSource("ids", aktoerIder),
                                 (ResultSet rs) -> {
-                                    HashMap<String, PostgresAktorIdEntity> results = new HashMap<>();
+                                    HashMap<AktorId, PostgresAktorIdEntity> results = new HashMap<>();
                                     while (rs.next()) {
-                                        results.put(rs.getString(AKTOERID), mapTilEntity(rs));
+                                        results.put(AktorId.of(rs.getString(AKTOERID)), mapTilEntity(rs));
                                     }
                                     return results;
                                 }))

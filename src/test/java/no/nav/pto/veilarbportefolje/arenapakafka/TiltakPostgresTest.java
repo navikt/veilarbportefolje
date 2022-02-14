@@ -3,19 +3,19 @@ package no.nav.pto.veilarbportefolje.arenapakafka;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetType;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetSamling;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,10 +72,9 @@ public class TiltakPostgresTest {
                 .setAktivitetid("TA-123456789");
         tiltakRepositoryV2.upsert(innhold, aktorId);
 
-        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
-                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
-                .get(aktorId.get())
-                .bygg();
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+                .mapBulk(List.of(aktorId))
+                .get(aktorId));
 
         Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
 
@@ -85,7 +84,7 @@ public class TiltakPostgresTest {
         //Opensearch mapping
         assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(1);
         assertThat(postgresAktivitet.getTiltak().contains("T123")).isTrue();
-        assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.tiltak.name())).isTrue();
+        assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.tiltak.name())).isTrue();
 
         assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo("1990-01-01T22:59:59Z");
         assertThat(postgresAktivitet.getForrigeAktivitetStart()).isEqualTo("1988-12-31T23:00:00Z");
@@ -120,19 +119,18 @@ public class TiltakPostgresTest {
         tiltakRepositoryV2.upsert(idag, aktorId);
         tiltakRepositoryV2.upsert(igar, aktorId);
 
-        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
-                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
-                .get(aktorId.get())
-                .bygg();
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+                .mapBulk(List.of(aktorId))
+                .get(aktorId));
 
         assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(1);
         assertThat(postgresAktivitet.getTiltak().contains(tiltaksType)).isTrue();
-        assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.tiltak.name())).isTrue();
+        assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.tiltak.name())).isTrue();
         assertThat(postgresAktivitet.getAktivitetStart()).isNull();
         assertThat(postgresAktivitet.getNesteAktivitetStart()).isNull();
 
-        assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo(toIsoUTC(igarTid).substring(0,10)+"T22:59:59Z");
-        assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isEqualTo(toIsoUTC(idagTid).substring(0,10)+"T22:59:59Z");
+        assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo(toIsoUTC(igarTid).substring(0, 10) + "T22:59:59Z");
+        assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isEqualTo(toIsoUTC(idagTid).substring(0, 10) + "T22:59:59Z");
     }
 
     @Test
@@ -150,9 +148,9 @@ public class TiltakPostgresTest {
 
         Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
 
-        AktivitetSamling postgresAktivitet = aktivitetOpensearchMapper
-                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
-                .get(aktorId.get());
+        List<AktivitetEntity> postgresAktivitet = aktivitetOpensearchMapper
+                .mapBulk(List.of(aktorId))
+                .get(aktorId);
 
         assertThat(kodeVerkNavn.isPresent()).isTrue();
         assertThat(kodeVerkNavn.get()).isEqualTo(tiltaksNavn);

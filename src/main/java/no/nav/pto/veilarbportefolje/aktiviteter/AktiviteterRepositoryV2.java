@@ -35,17 +35,12 @@ public class AktiviteterRepositoryV2 {
 
     @Transactional
     public boolean tryLagreAktivitetData(KafkaAktivitetMelding aktivitet) {
-        try {
-            if (aktivitet.isHistorisk()) {
-                deleteById(aktivitet.getAktivitetId());
-                return true;
-            } else if (erNyVersjonAvAktivitet(aktivitet)) {
-                upsertAktivitet(aktivitet);
-                return true;
-            }
-        } catch (Exception e) {
-            String message = String.format("Kunne ikke lagre aktivitetdata fra topic for aktivitetid %s", aktivitet.getAktivitetId());
-            log.error(message, e);
+        if (aktivitet.isHistorisk()) {
+            deleteById(aktivitet.getAktivitetId());
+            return true;
+        } else if (erNyVersjonAvAktivitet(aktivitet)) {
+            upsertAktivitet(aktivitet);
+            return true;
         }
         return false;
     }
@@ -104,7 +99,7 @@ public class AktiviteterRepositoryV2 {
     public List<AktivitetDTO> getPasserteAktiveUtdanningsAktiviter() {
         final String sql = "SELECT * FROM aktiviteter WHERE NOT status = 'fullfort' AND date_trunc('day', tildato) < date_trunc('day', current_timestamp)";
 
-       return Optional.ofNullable(
+        return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList))
         ).orElse(new ArrayList<>());
     }

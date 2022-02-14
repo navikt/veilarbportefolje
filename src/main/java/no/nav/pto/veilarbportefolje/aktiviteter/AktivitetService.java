@@ -41,15 +41,14 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         //ORACLE
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
+        // TODO: dra ut oppdatering aktorId -> PersonId_mapping
         boolean bleProsessert = aktivitetDAO.tryLagreAktivitetData(aktivitetData);
-
         if (bleProsessert && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
             utledAktivitetstatuserForAktoerid(aktorId);
         }
 
         //POSTGRES
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-
         //OPENSEARCH
         if (bleProsessert) {
             opensearchIndexer.indekser(aktorId);

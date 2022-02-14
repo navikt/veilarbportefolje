@@ -5,7 +5,7 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetType;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
@@ -18,9 +18,9 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetBuilder;
 import no.nav.sbl.sql.SqlUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,14 +94,13 @@ public class GruppeAktivitetTest {
         GruppeAktivitetDTO gruppeAktivitet = getInsertDTO();
         gruppeAktivitetService.behandleKafkaMeldingPostgres(gruppeAktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
-                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
-                .get(aktorId.get())
-                .bygg();
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+                .mapBulk(List.of(aktorId))
+                .get(aktorId));
 
         //Opensearch mapping
         Assertions.assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(0);
-        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.gruppeaktivitet.name())).isTrue();
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.gruppeaktivitet.name())).isTrue();
 
         Assertions.assertThat(postgresAktivitet.getAktivitetGruppeaktivitetUtlopsdato()).isNotNull();
         Assertions.assertThat(postgresAktivitet.getNesteAktivitetStart()).isNull();
@@ -158,7 +157,7 @@ public class GruppeAktivitetTest {
         }
         return aktivitetstatusForBrukere.stream()
                 .filter(AktivitetStatus::isAktiv)
-                .filter(x -> x.getAktivitetType().equals(AktivitetType.gruppeaktivitet.name()))
+                .filter(x -> x.getAktivitetType().equals(AktivitetsType.gruppeaktivitet.name()))
                 .findFirst();
     }
 

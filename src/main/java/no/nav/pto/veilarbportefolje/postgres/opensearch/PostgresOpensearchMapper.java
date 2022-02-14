@@ -2,8 +2,10 @@ package no.nav.pto.veilarbportefolje.postgres.opensearch;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetSamling;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetBuilder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -19,20 +21,22 @@ public class PostgresOpensearchMapper {
     private final AktivitetOpensearchMapper aktivitetOpensearchMapper;
 
     public List<OppfolgingsBruker> mapBulk(List<OppfolgingsBruker> brukere, boolean mapAktiviteter, boolean medDiffLogging) {
-        HashMap<String, PostgresAktorIdEntity> aktorIdEntityMap = aktoerDataOpensearchMapper.mapBulk(brukere);
-        Map<String, AktivitetSamling> aktivitetSamlingMap = aktivitetOpensearchMapper.mapBulk(brukere);
+        List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
+
+        HashMap<AktorId, PostgresAktorIdEntity> aktorIdEntityMap = aktoerDataOpensearchMapper.mapBulk(aktoerIder);
+        Map<AktorId, List<AktivitetEntity>> aktivitetSamlingMap = aktivitetOpensearchMapper.mapBulk(aktoerIder);
 
         brukere.forEach(bruker -> {
-                    Optional.ofNullable(aktorIdEntityMap.get(bruker.getAktoer_id()))
+                    Optional.ofNullable(aktorIdEntityMap.get(AktorId.of(bruker.getAktoer_id())))
                             .ifPresentOrElse(
-                                    entity -> flettInnAktoerData(entity, bruker, medDiffLogging),
+                                    postgresAktorIdData -> flettInnAktoerData(postgresAktorIdData, bruker, medDiffLogging),
                                     () -> log.warn("Fant ikke aktoer i aktoer basert postgres: {}", bruker.getAktoer_id()
                                     )
                             );
                     if (mapAktiviteter) {
-                        Optional.ofNullable(aktivitetSamlingMap.get(bruker.getAktoer_id()))
+                        Optional.ofNullable(aktivitetSamlingMap.get(AktorId.of(bruker.getAktoer_id())))
                                 .ifPresentOrElse(
-                                        entity -> flettInnAktivitetData(entity, bruker, medDiffLogging),
+                                        aktivitetsListe -> flettInnAktivitetData(aktivitetsListe, bruker, medDiffLogging),
                                         () -> log.warn("Fant ikke aktoer i aktivitets basert postgres (ingen aktivitetete på brukeren?): {}", bruker.getAktoer_id()
                                         )
                                 );
@@ -43,8 +47,8 @@ public class PostgresOpensearchMapper {
         return brukere;
     }
 
-    private void flettInnAktivitetData(AktivitetSamling aktivitetSamling, OppfolgingsBruker bruker, boolean medDiffLogging) {
-        PostgresAktivitetEntity aktivitetEntity = aktivitetSamling.bygg();
+    private void flettInnAktivitetData(List<AktivitetEntity> aktivitetSamling, OppfolgingsBruker bruker, boolean medDiffLogging) {
+        PostgresAktivitetEntity aktivitetEntity = PostgresAktivitetBuilder.build(aktivitetSamling);
         if (medDiffLogging) {
             loggDiff(aktivitetEntity, bruker);
         }

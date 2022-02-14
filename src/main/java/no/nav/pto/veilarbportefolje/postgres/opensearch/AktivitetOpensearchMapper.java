@@ -3,17 +3,17 @@ package no.nav.pto.veilarbportefolje.postgres.opensearch;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetIkkeAktivStatuser;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetType;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetSamling;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -30,9 +30,9 @@ public class AktivitetOpensearchMapper {
     private final static String aktivitetsplanenIkkeAktiveStatuser = Arrays.stream(AktivitetIkkeAktivStatuser.values())
             .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
 
-    public Map<String, AktivitetSamling> mapBulk(List<OppfolgingsBruker> brukere) {
-        String aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.joining(",", "{", "}"));
-        HashMap<String, AktivitetSamling> result = new HashMap<>(brukere.size());
+    public Map<AktorId, List<AktivitetEntity>> mapBulk(List<AktorId> brukere) {
+        String aktoerIder = brukere.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
+        HashMap<AktorId, List<AktivitetEntity>> result = new HashMap<>(brukere.size());
 
         mapAvtalteAktiviteterFraAktivitetsplanen(aktoerIder, result);
         mapGruppeAktiviteter(aktoerIder, result);
@@ -41,7 +41,7 @@ public class AktivitetOpensearchMapper {
         return result;
     }
 
-    private void mapTiltak(String aktoerIder, HashMap<String, AktivitetSamling> result) {
+    private void mapTiltak(String aktoerIder, HashMap<AktorId, List<AktivitetEntity>> result) {
         db.query("""
                         SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak
                         WHERE aktoerid = ANY (:ids::varchar[])
@@ -49,15 +49,23 @@ public class AktivitetOpensearchMapper {
                 new MapSqlParameterSource("ids", aktoerIder),
                 (ResultSet rs) -> {
                     while (rs.next()) {
-                        String aktoerId = rs.getString("aktoerid");
+                        AktorId aktoerId = AktorId.of(rs.getString("aktoerid"));
                         AktivitetEntity aktivitet = mapTiltakTilEntity(rs);
-                        updateHashTable(result, aktoerId, aktivitet, Optional.ofNullable(rs.getString("tiltakskode")));
+
+                        Optional.ofNullable(result.get(aktoerId)).ifPresentOrElse(
+                                samling -> samling.add(aktivitet),
+                                () -> {
+                                    ArrayList<AktivitetEntity> liste = new ArrayList<>();
+                                    liste.add(aktivitet);
+                                    result.put(aktoerId, liste);
+                                }
+                        );
                     }
                     return result;
                 });
     }
 
-    private void mapGruppeAktiviteter(String aktoerIder, HashMap<String, AktivitetSamling> result) {
+    private void mapGruppeAktiviteter(String aktoerIder, HashMap<AktorId, List<AktivitetEntity>> result) {
         db.query("""
                         SELECT aktoerid, moteplan_startdato, moteplan_sluttdato FROM gruppe_aktiviter
                         WHERE date_trunc('day', moteplan_sluttdato) > date_trunc('day',current_timestamp)
@@ -66,15 +74,23 @@ public class AktivitetOpensearchMapper {
                 new MapSqlParameterSource("ids", aktoerIder),
                 (ResultSet rs) -> {
                     while (rs.next()) {
-                        String aktoerId = rs.getString("aktoerid");
+                        AktorId aktoerId = AktorId.of(rs.getString("aktoerid"));
                         AktivitetEntity aktivitet = mapGruppeAktivitetTilEntity(rs);
-                        updateHashTable(result, aktoerId, aktivitet, Optional.empty());
+
+                        Optional.ofNullable(result.get(aktoerId)).ifPresentOrElse(
+                                samling -> samling.add(aktivitet),
+                                () -> {
+                                    ArrayList<AktivitetEntity> liste = new ArrayList<>();
+                                    liste.add(aktivitet);
+                                    result.put(aktoerId, liste);
+                                }
+                        );
                     }
                     return result;
                 });
     }
 
-    private void mapAvtalteAktiviteterFraAktivitetsplanen(String aktoerIder, HashMap<String, AktivitetSamling> results) {
+    private void mapAvtalteAktiviteterFraAktivitetsplanen(String aktoerIder, HashMap<AktorId, List<AktivitetEntity>> result) {
         var params = new MapSqlParameterSource();
         params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
         params.addValue("ids", aktoerIder);
@@ -84,40 +100,33 @@ public class AktivitetOpensearchMapper {
                         """,
                 params, (ResultSet rs) -> {
                     while (rs.next()) {
-                        String aktoerId = rs.getString("aktoerid");
+                        AktorId aktoerId = AktorId.of(rs.getString("aktoerid"));
                         AktivitetEntity aktivitet = mapAktivitetTilEntity(rs);
-                        updateHashTable(results, aktoerId, aktivitet, Optional.empty());
-                    }
-                    return results;
-                });
-    }
 
-    private void updateHashTable(HashMap<String, AktivitetSamling> results, String aktoerId, AktivitetEntity aktivitet, Optional<String> tiltak) {
-        Optional.ofNullable(results.get(aktoerId)).ifPresentOrElse(
-                samling -> {
-                    samling.getAvtalteAktiveAktivteter().add(aktivitet);
-                    tiltak.ifPresent(t -> samling.getTiltak().add(t));
-                },
-                () -> {
-                    AktivitetSamling samling = new AktivitetSamling();
-                    samling.getAvtalteAktiveAktivteter().add(aktivitet);
-                    tiltak.ifPresent(t -> samling.getTiltak().add(t));
-                    results.put(aktoerId, samling);
-                }
-        );
+                        Optional.ofNullable(result.get(aktoerId)).ifPresentOrElse(
+                                samling -> samling.add(aktivitet),
+                                () -> {
+                                    ArrayList<AktivitetEntity> liste = new ArrayList<>();
+                                    liste.add(aktivitet);
+                                    result.put(aktoerId, liste);
+                                }
+                        );
+                    }
+                    return result;
+                });
     }
 
 
     @SneakyThrows
     private AktivitetEntity mapAktivitetTilEntity(ResultSet rs) {
         String type = rs.getString("aktivitettype");
-        if (!AktivitetType.contains(type)) {
+        if (!AktivitetsType.contains(type)) {
             log.warn("Det finnes aktivteter i postgres som ikke blir vist i oversikten: {}", type);
         }
         return new AktivitetEntity()
                 .setStart(rs.getTimestamp("fradato"))
                 .setUtlop(rs.getTimestamp("tildato"))
-                .setAktivitetType(AktivitetType.valueOf(type));
+                .setAktivitetsType(AktivitetsType.valueOf(type));
     }
 
     @SneakyThrows
@@ -125,7 +134,7 @@ public class AktivitetOpensearchMapper {
         return new AktivitetEntity()
                 .setStart(rs.getTimestamp("moteplan_startdato"))
                 .setUtlop(rs.getTimestamp("moteplan_sluttdato"))
-                .setAktivitetType(AktivitetType.gruppeaktivitet);
+                .setAktivitetsType(AktivitetsType.gruppeaktivitet);
     }
 
     @SneakyThrows
@@ -133,7 +142,8 @@ public class AktivitetOpensearchMapper {
         return new AktivitetEntity()
                 .setStart(rs.getTimestamp("fradato"))
                 .setUtlop(rs.getTimestamp("tildato"))
-                .setAktivitetType(AktivitetType.tiltak);
+                .setMuligTiltaksNavn(rs.getString("tiltakskode"))
+                .setAktivitetsType(AktivitetsType.tiltak);
     }
 
 }

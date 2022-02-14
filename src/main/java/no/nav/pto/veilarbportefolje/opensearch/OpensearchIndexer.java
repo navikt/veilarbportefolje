@@ -72,6 +72,7 @@ public class OpensearchIndexer {
                 leggTilTiltak(bruker);
             }
             leggTilSisteEndring(bruker);
+
             postgresOpensearchMapper.mapBulk(List.of(bruker), brukPostgres, false);
             skrivTilIndeks(alias.getValue(), bruker);
         } else {

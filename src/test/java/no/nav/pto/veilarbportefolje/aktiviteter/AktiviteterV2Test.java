@@ -2,9 +2,9 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetBuilder;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,15 +49,14 @@ public class AktiviteterV2Test {
                 .setTilDato(tilDato);
         aktivitetService.behandleKafkaMeldingLogikk(aktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
-                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
-                .get(aktorId.get())
-                .bygg();
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+                .mapBulk(List.of(aktorId))
+                .get(aktorId));
 
         //Opensearch mapping
         Assertions.assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(0);
         Assertions.assertThat(postgresAktivitet.getAktiviteter().size()).isEqualTo(1);
-        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.egen.name())).isTrue();
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.egen.name())).isTrue();
 
         Assertions.assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isNull();
         Assertions.assertThat(postgresAktivitet.getForrigeAktivitetStart()).isNull();
@@ -87,14 +86,13 @@ public class AktiviteterV2Test {
 
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
-                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
-                .get(aktorId.get())
-                .bygg();
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+                .mapBulk(List.of(aktorId))
+                .get(aktorId));
 
         //Opensearch mapping
         Assertions.assertThat(postgresAktivitet.getAktiviteter().size()).isEqualTo(1);
-        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.mote.name())).isTrue();
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.mote.name())).isTrue();
 
         Assertions.assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isNull();
         Assertions.assertThat(postgresAktivitet.getAktivitetStart()).isEqualTo(toIsoUTC(fraDato));
@@ -122,14 +120,13 @@ public class AktiviteterV2Test {
 
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
-                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
-                .get(aktorId.get())
-                .bygg();
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+                .mapBulk(List.of(aktorId))
+                .get(aktorId));
 
         //Opensearch mapping
         Assertions.assertThat(postgresAktivitet.getAktiviteter().size()).isEqualTo(1);
-        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.mote.name())).isTrue();
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.mote.name())).isTrue();
         Assertions.assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo(toIsoUTC(tilDato));
 
         Assertions.assertThat(postgresAktivitet.getAktivitetMoteUtlopsdato()).isNull();
@@ -170,16 +167,15 @@ public class AktiviteterV2Test {
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet1);
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet2);
 
-        PostgresAktivitetEntity postgresAktivitet = aktivitetOpensearchMapper
-                .mapBulk(List.of(new OppfolgingsBruker().setAktoer_id(aktorId.get())))
-                .get(aktorId.get())
-                .bygg();
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+                .mapBulk(List.of(aktorId))
+                .get(aktorId));
 
         //Opensearch mapping
         Assertions.assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(0);
         Assertions.assertThat(postgresAktivitet.getAktiviteter().size()).isEqualTo(2);
-        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.behandling.name())).isTrue();
-        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetType.mote.name())).isTrue();
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.behandling.name())).isTrue();
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.mote.name())).isTrue();
 
         Assertions.assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isNull();
         Assertions.assertThat(postgresAktivitet.getForrigeAktivitetStart()).isNull();

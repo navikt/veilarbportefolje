@@ -4,14 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetType;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetType.mote;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType.mote;
 
 @Slf4j
 public class IndekseringUtils {
@@ -39,7 +39,7 @@ public class IndekseringUtils {
 
     static void leggTilUtlopsDato(OppfolgingsBruker bruker, AktivitetStatus status) {
         String utlop = AktivitetUtils.statusToIsoUtcString(status);
-        AktivitetType type = AktivitetType.valueOf(status.getAktivitetType());
+        AktivitetsType type = AktivitetsType.valueOf(status.getAktivitetType());
         switch (type) {
             case egen -> bruker.setAktivitet_egen_utlopsdato(utlop);
             case stilling -> bruker.setAktivitet_stilling_utlopsdato(utlop);
@@ -56,7 +56,7 @@ public class IndekseringUtils {
 
     static void leggTilStartDato(OppfolgingsBruker bruker, AktivitetStatus status) {
         String start = AktivitetUtils.startDatoToIsoUtcString(status);
-        AktivitetType type = AktivitetType.valueOf(status.getAktivitetType());
+        AktivitetsType type = AktivitetsType.valueOf(status.getAktivitetType());
         if (type.equals(mote)) {
             bruker.setAktivitet_mote_startdato(start);
         }

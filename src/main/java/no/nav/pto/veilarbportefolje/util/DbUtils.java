@@ -72,10 +72,9 @@ public class DbUtils {
      Oracle
      ***/
     @SneakyThrows
-    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean brukPostgres) {
+    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean brukPostgresAktiviteter) {
         String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
         String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
-        String brukersSituasjon = rs.getString("BRUKERS_SITUASJON");
 
         String fornavn = rs.getString("fornavn");
         String etternavn = rs.getString("etternavn");
@@ -129,7 +128,7 @@ public class DbUtils {
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus))
                 .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
                 .setCv_eksistere(parseJaNei(rs.getString(CV_EKSISTERE), CV_EKSISTERE));
-        if(!brukPostgres) {
+        if(!brukPostgresAktiviteter) {
              bruker
                      .setAktivitet_start(toIsoUTC(rs.getTimestamp("aktivitet_start")))
                      .setNyesteutlopteaktivitet(toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")))

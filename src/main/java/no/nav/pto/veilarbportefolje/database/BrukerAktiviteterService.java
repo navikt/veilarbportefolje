@@ -35,7 +35,8 @@ public class BrukerAktiviteterService {
         log.info("Starter jobb: oppdater BrukerAktiviteter og BrukerData");
         List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
-        deaktiverUtgatteUtdanningsAktivteterPostgres();
+        aktivitetService.deaktiverUtgatteUtdanningsAktivteterPostgres();
+
         syncAktivitetOgBrukerData(brukereSomMaOppdateres);
         log.info("Avslutter jobb: oppdater BrukerAktiviteter og BrukerData");
 
@@ -82,10 +83,5 @@ public class BrukerAktiviteterService {
         tiltakRepositoryV1.utledOgLagreTiltakInformasjon(aktorId, personId);
         gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(aktorId, personId);
         aktivitetService.utledAktivitetstatuserForAktoerid(aktorId);
-    }
-
-
-    public void deaktiverUtgatteUtdanningsAktivteterPostgres() {
-        aktivitetService.deaktiverUtgatteUtdanningsAktivteterPostgres();
     }
 }
