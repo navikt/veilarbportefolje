@@ -124,6 +124,13 @@ public class AdminController {
         return "Aktiviteter er nå i sync";
     }
 
+    @PutMapping("/ytelser/idag")
+    public String syncYtelserForIDag() {
+        authorizeAdmin();
+        ytelsesService.oppdaterBrukereMedYtelserSomStarterIDagOracle();
+        return "Aktiviteter er nå i sync";
+    }
+
     @PutMapping("/arbeidslista/migrer")
     public String migrerArbeidslista() {
         authorizeAdmin();
