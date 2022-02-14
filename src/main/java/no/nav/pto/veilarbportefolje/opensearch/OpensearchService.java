@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.EnhetId;
@@ -10,8 +11,8 @@ import no.nav.pto.veilarbportefolje.domene.FacetResults;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.StatusTall;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Bucket;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Hit;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljestorrelserResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse;
@@ -26,7 +27,6 @@ import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.index.query.BoolQueryBuilder;
 import org.opensearch.search.builder.SearchSourceBuilder;
 import org.opensearch.search.sort.SortOrder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -47,6 +47,7 @@ import static org.opensearch.index.query.QueryBuilders.matchQuery;
 import static org.opensearch.index.query.QueryBuilders.termQuery;
 
 @Service
+@RequiredArgsConstructor
 public class OpensearchService {
     private final RestHighLevelClient restHighLevelClient;
     private final VeilarbVeilederClient veilarbVeilederClient;
@@ -54,17 +55,8 @@ public class OpensearchService {
     private final IndexName indexName;
     private final UnleashService unleashService;
 
-    @Autowired
-    public OpensearchService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName, VedtakstottePilotRequest vedtakstottePilotRequest, UnleashService unleashService) {
-        this.restHighLevelClient = restHighLevelClient;
-        this.veilarbVeilederClient = veilarbVeilederClient;
-        this.indexName = indexName;
-        this.vedtakstottePilotRequest = vedtakstottePilotRequest;
-        this.unleashService = unleashService;
-    }
-
-    public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
-
+    public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder,
+                                        String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         int from = Optional.ofNullable(fra).orElse(0);

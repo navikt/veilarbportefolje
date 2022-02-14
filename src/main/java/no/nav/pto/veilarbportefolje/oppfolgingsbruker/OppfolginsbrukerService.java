@@ -23,8 +23,8 @@ import java.util.Optional;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 
-@Service
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringPaaOppfoelgingsBrukerV2> {
     private final OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2;
@@ -59,12 +59,15 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
                 dodFraDato, kafkaMelding.getSistEndretDato());
 
         oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+        oppdaterOpensearch(aktorId, oppfolgingsbruker);
+    }
 
-        String vedtakStatus = vedtakStatusRepositoryV2.hentVedtak(aktorId.get())
+    private void oppdaterOpensearch(AktorId aktorId, OppfolgingsbrukerEntity oppfolgingsbruker){
+        String vedtak14aStatus = vedtakStatusRepositoryV2.hent14aVedtak(aktorId.get())
                 .map(KafkaVedtakStatusEndring::getVedtakStatusEndring)
                 .map(KafkaVedtakStatusEndring.VedtakStatusEndring::toString)
                 .orElse(null);
-        opensearchIndexerV2.updateOppfolgingsbruker(aktorId, oppfolgingsbruker, vedtakStatus);
+        opensearchIndexerV2.updateOppfolgingsbruker(aktorId, oppfolgingsbruker, vedtak14aStatus);
     }
 
     private AktorId hentAktorIdMedUnntakIDev(Fnr fodselsnummer) {

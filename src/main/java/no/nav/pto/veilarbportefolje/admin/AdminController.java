@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -20,8 +21,15 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -45,6 +53,8 @@ public class AdminController {
     private final RegistreringService registreringService;
     private final ProfileringService profileringService;
     private final OpensearchAdminService opensearchAdminService;
+    private final HovedIndekserer hovedIndekserer;
+    private final UnleashService unleashService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -96,7 +106,7 @@ public class AdminController {
     public String indekserAlleBrukere() {
         authorizeAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
-        opensearchIndexer.nyHovedIndeksering(brukereUnderOppfolging);
+        opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereUnderOppfolging);
         return "Indeksering fullfort";
     }
 
@@ -121,6 +131,13 @@ public class AdminController {
     public String syncYtelserForAlle() {
         authorizeAdmin();
         ytelsesService.syncYtelserForAlleBrukere();
+        return "Aktiviteter er nå i sync";
+    }
+
+    @PutMapping("/ytelser/idag")
+    public String syncYtelserForIDag() {
+        authorizeAdmin();
+        ytelsesService.oppdaterBrukereMedYtelserSomStarterIDagOracle();
         return "Aktiviteter er nå i sync";
     }
 
