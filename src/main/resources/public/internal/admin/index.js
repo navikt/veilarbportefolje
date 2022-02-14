@@ -193,6 +193,20 @@ function handleOppdaterYtelserForAlle(e) {
     }
 }
 
+const oppdaterYtelserForm = document.getElementById('oppdaterYtelser');
+oppdaterYtelserForm.addEventListener('submit', handleOppdaterYtelser)
+
+function handleOppdaterYtelser(e) {
+    e.preventDefault();
+    if (window.confirm('Oppdaterer alle ytelser som starter i dag...')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/ytelser/idag`,
+            {method: 'PUT', credentials: 'same-origin'},
+            'oppdaterYtelserResponse'
+        );
+    }
+}
+
 const migrerArbeidslistaForm = document.getElementById('migrerArbeidslista');
 migrerArbeidslistaForm.addEventListener('submit', handleMigrerArbeidslista)
 

@@ -7,12 +7,16 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvAliasIndeksering;
 
 @Slf4j
 @Service
@@ -24,6 +28,8 @@ public class BrukerAktiviteterService {
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerService brukerService;
     private final OpensearchIndexer opensearchIndexer;
+    private final HovedIndekserer hovedIndekserer;
+    private final UnleashService unleashService;
 
     public void syncAktivitetOgBrukerData() {
         log.info("Starter jobb: oppdater BrukerAktiviteter og BrukerData");
@@ -32,7 +38,12 @@ public class BrukerAktiviteterService {
         deaktiverUtgatteUtdanningsAktivteterPostgres();
         syncAktivitetOgBrukerData(brukereSomMaOppdateres);
         log.info("Avslutter jobb: oppdater BrukerAktiviteter og BrukerData");
-        opensearchIndexer.nyHovedIndeksering(brukereSomMaOppdateres);
+
+        if(brukAvAliasIndeksering(unleashService)){
+            hovedIndekserer.hovedIndeksering(brukereSomMaOppdateres);
+        } else {
+            opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereSomMaOppdateres);
+        }
     }
 
 
