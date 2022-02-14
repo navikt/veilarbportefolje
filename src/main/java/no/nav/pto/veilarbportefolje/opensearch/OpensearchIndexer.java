@@ -212,7 +212,7 @@ public class OpensearchIndexer {
     }
 
     @SneakyThrows
-    private boolean indexerInParallel(List<AktorId> alleBrukere) {
+    public boolean indexerInParallel(List<AktorId> alleBrukere) {
         List<List<AktorId>> brukerePartition = Lists.partition(alleBrukere, (alleBrukere.size() / getNumberOfThreads()) + 1);
         ExecutorService executor = Executors.newFixedThreadPool(getNumberOfThreads());
         executor.execute(() ->

@@ -18,6 +18,8 @@ import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.client.indices.CreateIndexRequest;
 import org.opensearch.client.indices.CreateIndexResponse;
 import org.opensearch.common.xcontent.XContentType;
+import org.opensearch.index.query.BoolQueryBuilder;
+import org.opensearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.Optional;
 
 import static no.nav.common.rest.client.RestClient.baseClient;
@@ -33,6 +36,7 @@ import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERIND
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.createAbsoluteUrl;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.getAuthHeaderValue;
 import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
+import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 
 @Slf4j
 @Service
@@ -81,7 +85,13 @@ public class OpensearchAdminService {
     @SneakyThrows
     public boolean slettIndex(String indexName) {
         DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName);
-        return restHighLevelClient.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT).isAcknowledged();
+        boolean acknowledged = restHighLevelClient.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT).isAcknowledged();
+        if (!acknowledged) {
+            log.error("Kunne ikke slette index: {}", indexName);
+        } else {
+            log.info("Index: {}, er slettet", indexName);
+        }
+        return acknowledged;
     }
 
     @SneakyThrows
@@ -100,6 +110,28 @@ public class OpensearchAdminService {
     }
 
     @SneakyThrows
+    public void flyttAliasTilNyIndeks(String gammelIndeks, String nyIndeks) {
+        IndicesAliasesRequest.AliasActions removeAliasAction = new IndicesAliasesRequest.AliasActions(REMOVE)
+                .index(gammelIndeks)
+                .alias(BRUKERINDEKS_ALIAS);
+
+        IndicesAliasesRequest.AliasActions addAliasAction = new IndicesAliasesRequest.AliasActions(ADD)
+                .index(nyIndeks)
+                .writeIndex(null)
+                .alias(BRUKERINDEKS_ALIAS);
+
+        IndicesAliasesRequest request = new IndicesAliasesRequest()
+                .addAliasAction(removeAliasAction)
+                .addAliasAction(addAliasAction);
+
+        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
+
+        if (!response.isAcknowledged()) {
+            log.error("Kunne ikke oppdatere alias {}", BRUKERINDEKS_ALIAS);
+        }
+    }
+
+    @SneakyThrows
     public String hentAliaser() {
         String url = createAbsoluteUrl(openSearchClientConfig) + "_aliases";
         Request request = new Request.Builder()
@@ -108,6 +140,21 @@ public class OpensearchAdminService {
                 .build();
 
         return callAndGetBody(request);
+    }
+
+    public String hentBrukerIndex() {
+        String url = createAbsoluteUrl(openSearchClientConfig) + "_cat/indices/" + BRUKERINDEKS_ALIAS + "/?h=index";
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
+                .build();
+
+        String[] indexerPaAlias = Objects.requireNonNull(callAndGetBody(request)).split("\\r?\\n");
+        if (indexerPaAlias.length != 1) {
+            throw new IllegalStateException("Feil antall indexer på alias: " + indexerPaAlias.length);
+        }
+        return indexerPaAlias[0];
+
     }
 
     @SneakyThrows
@@ -119,6 +166,28 @@ public class OpensearchAdminService {
                 .build();
 
         return callAndGetBody(request);
+    }
+
+    @SneakyThrows
+    public String opprettSkjultSkriveIndeksPaAlias() {
+        String nyIndex = opprettNyIndeks();
+
+        BoolQueryBuilder hideAllUsers = QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery("fnr"));
+        IndicesAliasesRequest.AliasActions addAliasAction = new IndicesAliasesRequest.AliasActions(ADD)
+                .index(nyIndex)
+                .alias(BRUKERINDEKS_ALIAS)
+                .writeIndex(true)
+                .filter(hideAllUsers);
+
+        IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
+        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
+
+        if (!response.isAcknowledged()) {
+            log.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
+            throw new RuntimeException();
+        }
+
+        return nyIndex;
     }
 
     @SneakyThrows
