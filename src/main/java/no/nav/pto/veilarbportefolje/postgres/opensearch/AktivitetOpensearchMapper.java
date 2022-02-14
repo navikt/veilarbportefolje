@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.postgres.opensearch;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetIkkeAktivStatuser;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetType;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
@@ -13,6 +14,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.ResultSet;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,12 +27,14 @@ import java.util.stream.Collectors;
 public class AktivitetOpensearchMapper {
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate db;
+    private final static String aktivitetsplanenIkkeAktiveStatuser = Arrays.stream(AktivitetIkkeAktivStatuser.values())
+            .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
 
     public Map<String, AktivitetSamling> mapBulk(List<OppfolgingsBruker> brukere) {
         String aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.joining(",", "{", "}"));
         HashMap<String, AktivitetSamling> result = new HashMap<>(brukere.size());
 
-        mapAktivitetsplanen(aktoerIder, result);
+        mapAvtalteAktiviteterFraAktivitetsplanen(aktoerIder, result);
         mapGruppeAktiviteter(aktoerIder, result);
         mapTiltak(aktoerIder, result);
 
@@ -39,9 +43,9 @@ public class AktivitetOpensearchMapper {
 
     private void mapTiltak(String aktoerIder, HashMap<String, AktivitetSamling> result) {
         db.query("""
-                SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak
-                WHERE aktoerid = ANY (:ids::varchar[])
-                """,
+                        SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak
+                        WHERE aktoerid = ANY (:ids::varchar[])
+                        """,
                 new MapSqlParameterSource("ids", aktoerIder),
                 (ResultSet rs) -> {
                     while (rs.next()) {
@@ -70,13 +74,15 @@ public class AktivitetOpensearchMapper {
                 });
     }
 
-    private void mapAktivitetsplanen(String aktoerIder, HashMap<String, AktivitetSamling> results) {
+    private void mapAvtalteAktiviteterFraAktivitetsplanen(String aktoerIder, HashMap<String, AktivitetSamling> results) {
+        var params = new MapSqlParameterSource();
+        params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
+        params.addValue("ids", aktoerIder);
         db.query("""
-                SELECT aktoerid, tildato, fradato, aktivitettype FROM aktiviteter
-                WHERE aktoerid = ANY (:ids::varchar[])
-                """,
-                new MapSqlParameterSource("ids", aktoerIder),
-                (ResultSet rs) -> {
+                        SELECT aktoerid, tildato, fradato, aktivitettype FROM aktiviteter
+                        WHERE avtalt AND NOT status = ANY (:ikkestatuser::varchar[]) AND aktoerid = ANY (:ids::varchar[])
+                        """,
+                params, (ResultSet rs) -> {
                     while (rs.next()) {
                         String aktoerId = rs.getString("aktoerid");
                         AktivitetEntity aktivitet = mapAktivitetTilEntity(rs);
@@ -105,7 +111,7 @@ public class AktivitetOpensearchMapper {
     @SneakyThrows
     private AktivitetEntity mapAktivitetTilEntity(ResultSet rs) {
         String type = rs.getString("aktivitettype");
-        if(!AktivitetType.contains(type)){
+        if (!AktivitetType.contains(type)) {
             log.warn("Det finnes aktivteter i postgres som ikke blir vist i oversikten: {}", type);
         }
         return new AktivitetEntity()
