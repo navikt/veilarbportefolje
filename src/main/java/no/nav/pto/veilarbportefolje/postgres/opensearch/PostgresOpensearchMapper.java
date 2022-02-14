@@ -1,80 +1,74 @@
 package no.nav.pto.veilarbportefolje.postgres.opensearch;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetSamling;
 import org.springframework.stereotype.Service;
 
-import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.ARB_ENDRINGSTIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.ARB_FRIST;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.ARB_KATEGORI;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.ARB_OVERSKRIFT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.ARB_SIST_ENDRET_AV_VEILEDERIDENT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.BRUKERS_SITUASJON;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.CV_EKSISTERER;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.HAR_DELT_CV;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.MANUELL;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.NY_FOR_VEILEDER;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.OPPFOLGING;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.PROFILERING_RESULTAT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.STARTDATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.UTDANNING;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.UTDANNING_BESTATT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.UTDANNING_GODKJENT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VEDTAKSTATUS;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VEDTAKSTATUS_ENDRET_TIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VENTER_PA_BRUKER;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VENTER_PA_NAV;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostgresOpensearchMapper {
-    @Qualifier("PostgresNamedJdbcReadOnly")
-    private final NamedParameterJdbcTemplate db;
+    private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
+    private final AktivitetOpensearchMapper aktivitetOpensearchMapper;
 
-    public void mapBulk(List<OppfolgingsBruker> brukere) {
-        mapBulk(brukere, false);
-    }
+    public List<OppfolgingsBruker> mapBulk(List<OppfolgingsBruker> brukere, boolean mapAktiviteter, boolean medDiffLogging) {
+        HashMap<String, PostgresAktorIdEntity> aktorIdEntityMap = aktoerDataOpensearchMapper.mapBulk(brukere);
+        Map<String, AktivitetSamling> aktivitetSamlingMap = aktivitetOpensearchMapper.mapBulk(brukere);
 
-    public void mapBulk(List<OppfolgingsBruker> brukere, boolean medDiffLogging) {
-        String aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.joining(",", "{", "}"));
-        HashMap<String, PostgresAktorIdEntity> resultMap = Optional.ofNullable(
-                        db.query("SELECT * FROM aktorid_indeksert_data WHERE aktoerid = ANY (:ids::varchar[])",
-                                new MapSqlParameterSource("ids", aktoerIder),
-                                (ResultSet rs) -> {
-                                    HashMap<String, PostgresAktorIdEntity> results = new HashMap<>();
-                                    while (rs.next()) {
-                                        results.put(rs.getString(AKTOERID), mapTilEntity(rs));
-                                    }
-                                    return results;
-                                }))
-                .orElse(new HashMap<>());
-        brukere.forEach(bruker ->
-                Optional.ofNullable(resultMap.get(bruker.getAktoer_id()))
-                        .ifPresentOrElse(
-                                entity -> flettInnPostgresData(entity, bruker, medDiffLogging),
-                                () -> log.warn("Fant ikke aktoer i postgres: {}", bruker.getAktoer_id()
-                                )
-                        )
+        brukere.forEach(bruker -> {
+                    Optional.ofNullable(aktorIdEntityMap.get(bruker.getAktoer_id()))
+                            .ifPresentOrElse(
+                                    entity -> flettInnAktoerData(entity, bruker, medDiffLogging),
+                                    () -> log.warn("Fant ikke aktoer i aktoer basert postgres: {}", bruker.getAktoer_id()
+                                    )
+                            );
+                    if (mapAktiviteter) {
+                        Optional.ofNullable(aktivitetSamlingMap.get(bruker.getAktoer_id()))
+                                .ifPresentOrElse(
+                                        entity -> flettInnAktivitetData(entity, bruker, medDiffLogging),
+                                        () -> log.warn("Fant ikke aktoer i aktivitets basert postgres (ingen aktivitetete på brukeren?): {}", bruker.getAktoer_id()
+                                        )
+                                );
+                    }
+                }
         );
+
+        return brukere;
     }
 
-    private void flettInnPostgresData(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker, boolean medDiffLogging) {
-        if(medDiffLogging){
+    private void flettInnAktivitetData(AktivitetSamling aktivitetSamling, OppfolgingsBruker bruker, boolean medDiffLogging) {
+        PostgresAktivitetEntity aktivitetEntity = aktivitetSamling.bygg();
+        if (medDiffLogging) {
+            loggDiff(aktivitetEntity, bruker);
+        }
+        bruker.setNyesteutlopteaktivitet(aktivitetEntity.getNyesteUtlopteAktivitet());
+        bruker.setAktivitet_start(aktivitetEntity.getAktivitetStart());
+        bruker.setNeste_aktivitet_start(aktivitetEntity.getNesteAktivitetStart());
+        bruker.setForrige_aktivitet_start(aktivitetEntity.getForrigeAktivitetStart());
+        bruker.setAktivitet_mote_utlopsdato(aktivitetEntity.getAktivitetMoteUtlopsdato());
+        bruker.setAktivitet_mote_startdato(aktivitetEntity.getAktivitetMoteStartdato());
+        bruker.setAktivitet_stilling_utlopsdato(aktivitetEntity.getAktivitetStillingUtlopsdato());
+        bruker.setAktivitet_egen_utlopsdato(aktivitetEntity.getAktivitetEgenUtlopsdato());
+        bruker.setAktivitet_behandling_utlopsdato(aktivitetEntity.getAktivitetBehandlingUtlopsdato());
+        bruker.setAktivitet_ijobb_utlopsdato(aktivitetEntity.getAktivitetIjobbUtlopsdato());
+        bruker.setAktivitet_sokeavtale_utlopsdato(aktivitetEntity.getAktivitetSokeavtaleUtlopsdato());
+        bruker.setAktivitet_tiltak_utlopsdato(aktivitetEntity.getAktivitetTiltakUtlopsdato());
+        bruker.setAktivitet_utdanningaktivitet_utlopsdato(aktivitetEntity.getAktivitetUtdanningaktivitetUtlopsdato());
+        bruker.setAktivitet_gruppeaktivitet_utlopsdato(aktivitetEntity.getAktivitetGruppeaktivitetUtlopsdato());
+
+        bruker.setAktiviteter(aktivitetEntity.getAktiviteter());
+        bruker.setTiltak(aktivitetEntity.getTiltak());
+    }
+
+    private void flettInnAktoerData(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker, boolean medDiffLogging) {
+        if (medDiffLogging) {
             loggDiff(postgresAktorIdEntity, bruker);
         }
         bruker.setBrukers_situasjon(postgresAktorIdEntity.getBrukersSituasjon());
@@ -84,7 +78,52 @@ public class PostgresOpensearchMapper {
         bruker.setUtdanning_godkjent(postgresAktorIdEntity.getUtdanningGodkjent());
     }
 
-    private void loggDiff(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker){
+    private void loggDiff(PostgresAktivitetEntity postgresEntity, OppfolgingsBruker bruker) {
+        if (isDifferent(bruker.getNyesteutlopteaktivitet(), postgresEntity.getNyesteUtlopteAktivitet())) {
+            log.warn("postgres Opensearch: Situsjon feil bruker: {}", bruker.getAktoer_id());
+        }
+        if (isDifferent(bruker.getAktivitet_start(), postgresEntity.getAktivitetStart())) {
+            log.warn("postgres Opensearch: feil aktivitet_start");
+        }
+        if (isDifferent(bruker.getNeste_aktivitet_start(), postgresEntity.getNesteAktivitetStart())) {
+            log.warn("postgres Opensearch: feil neste_aktivitet_start");
+        }
+        if (isDifferent(bruker.getForrige_aktivitet_start(), postgresEntity.getForrigeAktivitetStart())) {
+            log.warn("postgres Opensearch: feil forrige_aktivitet_start");
+        }
+        if (isDifferent(bruker.getAktivitet_mote_utlopsdato(), postgresEntity.getAktivitetMoteUtlopsdato())) {
+            log.warn("postgres Opensearch: feil mote_utlopsdato");
+        }
+        if (isDifferent(bruker.getAktivitet_mote_startdato(), postgresEntity.getAktivitetMoteStartdato())) {
+            log.warn("postgres Opensearch: feil mote_startdato");
+        }
+        if (isDifferent(bruker.getAktivitet_stilling_utlopsdato(), postgresEntity.getAktivitetStillingUtlopsdato())) {
+            log.warn("postgres Opensearch: feil stilling_utlopsdato");
+        }
+        if (isDifferent(bruker.getAktivitet_egen_utlopsdato(), postgresEntity.getAktivitetEgenUtlopsdato())) {
+            log.warn("postgres Opensearch: feil egen_utlopsdato");
+        }
+        if (isDifferent(bruker.getAktivitet_behandling_utlopsdato(), postgresEntity.getAktivitetBehandlingUtlopsdato())) {
+            log.warn("postgres Opensearch: feil behandling_utlopsdato");
+        }
+        if (isDifferent(bruker.getAktivitet_ijobb_utlopsdato(), postgresEntity.getAktivitetIjobbUtlopsdato())) {
+            log.warn("postgres Opensearch: feil ijobb_utlopsdato");
+        }
+        if (isDifferent(bruker.getAktivitet_sokeavtale_utlopsdato(), postgresEntity.getAktivitetSokeavtaleUtlopsdato())) {
+            log.warn("postgres Opensearch: feil sokeavtale_utlopsdato");
+        }
+        if (isDifferent(bruker.getAktivitet_tiltak_utlopsdato(), postgresEntity.getAktivitetTiltakUtlopsdato())) {
+            log.warn("postgres Opensearch: feil tiltak_utlopsdato");
+        }
+        if (isDifferent(bruker.getAktivitet_utdanningaktivitet_utlopsdato(), postgresEntity.getAktivitetUtdanningaktivitetUtlopsdato())) {
+            log.warn("postgres Opensearch: feil utdanningaktivitet_utlopsdato");
+        }
+        if (isDifferent(bruker.getAktivitet_gruppeaktivitet_utlopsdato(), postgresEntity.getAktivitetGruppeaktivitetUtlopsdato())) {
+            log.warn("postgres Opensearch: feil gruppeaktivitet_utlopsdato");
+        }
+    }
+
+    private void loggDiff(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker) {
         if (isDifferent(bruker.getBrukers_situasjon(), postgresAktorIdEntity.getBrukersSituasjon())) {
             log.warn("postgres Opensearch: Situsjon feil bruker: {}", bruker.getAktoer_id());
         }
@@ -135,51 +174,4 @@ public class PostgresOpensearchMapper {
         return !o.equals(other);
     }
 
-    @SneakyThrows
-    private PostgresAktorIdEntity mapTilEntity(ResultSet rs) {
-        PostgresAktorIdEntity postgresAktorIdData = new PostgresAktorIdEntity();
-        postgresAktorIdData.setAktoerId(rs.getString(AKTOERID));
-
-        postgresAktorIdData.setBrukersSituasjon(rs.getString(BRUKERS_SITUASJON));
-        postgresAktorIdData.setProfileringResultat(rs.getString(PROFILERING_RESULTAT));
-        postgresAktorIdData.setUtdanning(rs.getString(UTDANNING));
-        postgresAktorIdData.setUtdanningBestatt(rs.getString(UTDANNING_BESTATT));
-        postgresAktorIdData.setUtdanningGodkjent(rs.getString(UTDANNING_GODKJENT));
-
-        postgresAktorIdData.setHarDeltCv(rs.getBoolean(HAR_DELT_CV));
-        postgresAktorIdData.setCvEksistere(rs.getBoolean(CV_EKSISTERER));
-
-        postgresAktorIdData.setOppfolging(rs.getBoolean(OPPFOLGING));
-        postgresAktorIdData.setNyForVeileder(rs.getBoolean(NY_FOR_VEILEDER));
-        postgresAktorIdData.setManuellBruker(rs.getBoolean(MANUELL));
-        postgresAktorIdData.setOppfolgingStartdato(toIsoUTC(rs.getTimestamp(STARTDATO)));
-
-        postgresAktorIdData.setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp(VENTER_PA_BRUKER)));
-        postgresAktorIdData.setVenterpasvarfranav(toIsoUTC(rs.getTimestamp(VENTER_PA_NAV)));
-
-        postgresAktorIdData.setVedtak14AStatus(rs.getString(VEDTAKSTATUS));
-        postgresAktorIdData.setVedtak14AStatusEndret(toIsoUTC(rs.getTimestamp(VEDTAKSTATUS_ENDRET_TIDSPUNKT)));
-        postgresAktorIdData.setAnsvarligVeilederFor14AVedtak(rs.getString(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN));
-
-        String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));
-        if (arbeidslisteTidspunkt != null) {
-            postgresAktorIdData.setArbeidslisteAktiv(true);
-            postgresAktorIdData.setArbeidslisteEndringstidspunkt(arbeidslisteTidspunkt);
-            postgresAktorIdData.setArbeidslisteFrist(toIsoUTC(rs.getTimestamp(ARB_FRIST)));
-            postgresAktorIdData.setArbeidslisteKategori(rs.getString(ARB_KATEGORI));
-            postgresAktorIdData.setArbeidslisteSistEndretAvVeilederid(rs.getString(ARB_SIST_ENDRET_AV_VEILEDERIDENT));
-            String overskrift = rs.getString(ARB_OVERSKRIFT);
-
-            postgresAktorIdData.setArbeidslisteTittelLengde(
-                    Optional.ofNullable(overskrift)
-                            .map(String::length)
-                            .orElse(0));
-            postgresAktorIdData.setArbeidslisteTittelSortering(
-                    Optional.ofNullable(overskrift)
-                            .filter(s -> !s.isEmpty())
-                            .map(s -> s.substring(0, Math.min(2, s.length())))
-                            .orElse(""));
-        }
-        return postgresAktorIdData;
-    }
 }

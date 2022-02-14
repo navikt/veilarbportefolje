@@ -121,10 +121,6 @@ public class DbUtils {
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")))
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp("venterpasvarfranav")))
-                .setNyesteutlopteaktivitet(toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")))
-                .setAktivitet_start(toIsoUTC(rs.getTimestamp("aktivitet_start")))
-                .setNeste_aktivitet_start(toIsoUTC(rs.getTimestamp("neste_aktivitet_start")))
-                .setForrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")))
                 .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")))
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setVedtak_status(Optional.ofNullable(vedtakstatus).map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf).map(KafkaVedtakStatusEndring::vedtakStatusTilTekst).orElse(null))
@@ -135,11 +131,10 @@ public class DbUtils {
                 .setCv_eksistere(parseJaNei(rs.getString(CV_EKSISTERE), CV_EKSISTERE));
         if(!brukPostgres) {
              bruker
-                     .setBrukers_situasjon(brukersSituasjon)
-                     .setProfilering_resultat(rs.getString("profilering_resultat"))
-                     .setUtdanning(rs.getString("UTDANNING"))
-                     .setUtdanning_bestatt(rs.getString("UTDANNING_BESTATT"))
-                     .setUtdanning_godkjent(rs.getString("UTDANNING_GODKJENT"));
+                     .setAktivitet_start(toIsoUTC(rs.getTimestamp("aktivitet_start")))
+                     .setNyesteutlopteaktivitet(toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")))
+                     .setNeste_aktivitet_start(toIsoUTC(rs.getTimestamp("neste_aktivitet_start")))
+                     .setForrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")));
         }
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
