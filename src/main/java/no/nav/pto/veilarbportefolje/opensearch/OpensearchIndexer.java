@@ -73,7 +73,7 @@ public class OpensearchIndexer {
             }
             leggTilSisteEndring(bruker);
 
-            postgresOpensearchMapper.mapBulk(List.of(bruker), brukPostgres, false);
+            postgresOpensearchMapper.flettInnPostgresData(List.of(bruker), brukPostgres, false);
             skrivTilIndeks(alias.getValue(), bruker);
         } else {
             opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
@@ -243,7 +243,7 @@ public class OpensearchIndexer {
         }
         leggTilSisteEndring(brukere);
 
-        postgresOpensearchMapper.mapBulk(brukere,  brukPostgres, false);
+        postgresOpensearchMapper.flettInnPostgresData(brukere,  brukPostgres, false);
 
         this.skrivTilIndeks(index.getValue(), brukere);
     }
@@ -260,7 +260,7 @@ public class OpensearchIndexer {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(bolk, false).stream()
                     .filter(bruker -> bruker.getAktoer_id() != null)
                     .toList();
-            postgresOpensearchMapper.mapBulk(brukere, true, true);
+            postgresOpensearchMapper.flettInnPostgresData(brukere, true, true);
         });
     }
 }

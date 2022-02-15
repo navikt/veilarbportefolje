@@ -20,24 +20,24 @@ public class PostgresOpensearchMapper {
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final AktivitetOpensearchMapper aktivitetOpensearchMapper;
 
-    public List<OppfolgingsBruker> mapBulk(List<OppfolgingsBruker> brukere, boolean mapAktiviteter, boolean medDiffLogging) {
+    public List<OppfolgingsBruker> flettInnPostgresData(List<OppfolgingsBruker> brukere, boolean mapAktiviteter, boolean medDiffLogging) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
 
-        HashMap<AktorId, PostgresAktorIdEntity> aktorIdEntityMap = aktoerDataOpensearchMapper.mapBulk(aktoerIder);
-        Map<AktorId, List<AktivitetEntity>> aktivitetSamlingMap = aktivitetOpensearchMapper.mapBulk(aktoerIder);
+        HashMap<AktorId, PostgresAktorIdEntity> aktorIdData = aktoerDataOpensearchMapper.hentAktoerData(aktoerIder);
+        Map<AktorId, List<AktivitetEntity>> aktiveAktiviter = aktivitetOpensearchMapper.hentAktivitetData(aktoerIder);
 
         brukere.forEach(bruker -> {
-                    Optional.ofNullable(aktorIdEntityMap.get(AktorId.of(bruker.getAktoer_id())))
+                    Optional.ofNullable(aktorIdData.get(AktorId.of(bruker.getAktoer_id())))
                             .ifPresentOrElse(
                                     postgresAktorIdData -> flettInnAktoerData(postgresAktorIdData, bruker, medDiffLogging),
                                     () -> log.warn("Fant ikke aktoer i aktoer basert postgres: {}", bruker.getAktoer_id()
                                     )
                             );
                     if (mapAktiviteter) {
-                        Optional.ofNullable(aktivitetSamlingMap.get(AktorId.of(bruker.getAktoer_id())))
+                        Optional.ofNullable(aktiveAktiviter.get(AktorId.of(bruker.getAktoer_id())))
                                 .ifPresentOrElse(
                                         aktivitetsListe -> flettInnAktivitetData(aktivitetsListe, bruker, medDiffLogging),
-                                        () -> log.warn("Fant ikke aktoer i aktivitets basert postgres (ingen aktivitetete på brukeren?): {}", bruker.getAktoer_id()
+                                        () -> log.info("Fant ikke aktoer i aktivitets basert postgres (ingen aktivitetete på brukeren?): {}", bruker.getAktoer_id()
                                         )
                                 );
                     }
@@ -47,39 +47,39 @@ public class PostgresOpensearchMapper {
         return brukere;
     }
 
-    private void flettInnAktivitetData(List<AktivitetEntity> aktivitetSamling, OppfolgingsBruker bruker, boolean medDiffLogging) {
-        PostgresAktivitetEntity aktivitetEntity = PostgresAktivitetBuilder.build(aktivitetSamling);
+    private void flettInnAktivitetData(List<AktivitetEntity> aktiveAktiviteter, OppfolgingsBruker bruker, boolean medDiffLogging) {
+        PostgresAktivitetEntity aktivitetData = PostgresAktivitetBuilder.build(aktiveAktiviteter);
         if (medDiffLogging) {
-            loggDiff(aktivitetEntity, bruker);
+            loggDiff(aktivitetData, bruker);
         }
-        bruker.setNyesteutlopteaktivitet(aktivitetEntity.getNyesteUtlopteAktivitet());
-        bruker.setAktivitet_start(aktivitetEntity.getAktivitetStart());
-        bruker.setNeste_aktivitet_start(aktivitetEntity.getNesteAktivitetStart());
-        bruker.setForrige_aktivitet_start(aktivitetEntity.getForrigeAktivitetStart());
-        bruker.setAktivitet_mote_utlopsdato(aktivitetEntity.getAktivitetMoteUtlopsdato());
-        bruker.setAktivitet_mote_startdato(aktivitetEntity.getAktivitetMoteStartdato());
-        bruker.setAktivitet_stilling_utlopsdato(aktivitetEntity.getAktivitetStillingUtlopsdato());
-        bruker.setAktivitet_egen_utlopsdato(aktivitetEntity.getAktivitetEgenUtlopsdato());
-        bruker.setAktivitet_behandling_utlopsdato(aktivitetEntity.getAktivitetBehandlingUtlopsdato());
-        bruker.setAktivitet_ijobb_utlopsdato(aktivitetEntity.getAktivitetIjobbUtlopsdato());
-        bruker.setAktivitet_sokeavtale_utlopsdato(aktivitetEntity.getAktivitetSokeavtaleUtlopsdato());
-        bruker.setAktivitet_tiltak_utlopsdato(aktivitetEntity.getAktivitetTiltakUtlopsdato());
-        bruker.setAktivitet_utdanningaktivitet_utlopsdato(aktivitetEntity.getAktivitetUtdanningaktivitetUtlopsdato());
-        bruker.setAktivitet_gruppeaktivitet_utlopsdato(aktivitetEntity.getAktivitetGruppeaktivitetUtlopsdato());
+        bruker.setNyesteutlopteaktivitet(aktivitetData.getNyesteUtlopteAktivitet());
+        bruker.setAktivitet_start(aktivitetData.getAktivitetStart());
+        bruker.setNeste_aktivitet_start(aktivitetData.getNesteAktivitetStart());
+        bruker.setForrige_aktivitet_start(aktivitetData.getForrigeAktivitetStart());
+        bruker.setAktivitet_mote_utlopsdato(aktivitetData.getAktivitetMoteUtlopsdato());
+        bruker.setAktivitet_mote_startdato(aktivitetData.getAktivitetMoteStartdato());
+        bruker.setAktivitet_stilling_utlopsdato(aktivitetData.getAktivitetStillingUtlopsdato());
+        bruker.setAktivitet_egen_utlopsdato(aktivitetData.getAktivitetEgenUtlopsdato());
+        bruker.setAktivitet_behandling_utlopsdato(aktivitetData.getAktivitetBehandlingUtlopsdato());
+        bruker.setAktivitet_ijobb_utlopsdato(aktivitetData.getAktivitetIjobbUtlopsdato());
+        bruker.setAktivitet_sokeavtale_utlopsdato(aktivitetData.getAktivitetSokeavtaleUtlopsdato());
+        bruker.setAktivitet_tiltak_utlopsdato(aktivitetData.getAktivitetTiltakUtlopsdato());
+        bruker.setAktivitet_utdanningaktivitet_utlopsdato(aktivitetData.getAktivitetUtdanningaktivitetUtlopsdato());
+        bruker.setAktivitet_gruppeaktivitet_utlopsdato(aktivitetData.getAktivitetGruppeaktivitetUtlopsdato());
 
-        bruker.setAktiviteter(aktivitetEntity.getAktiviteter());
-        bruker.setTiltak(aktivitetEntity.getTiltak());
+        bruker.setAktiviteter(aktivitetData.getAktiviteter());
+        bruker.setTiltak(aktivitetData.getTiltak());
     }
 
-    private void flettInnAktoerData(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker, boolean medDiffLogging) {
+    private void flettInnAktoerData(PostgresAktorIdEntity dataPaAktorId, OppfolgingsBruker bruker, boolean medDiffLogging) {
         if (medDiffLogging) {
-            loggDiff(postgresAktorIdEntity, bruker);
+            loggDiff(dataPaAktorId, bruker);
         }
-        bruker.setBrukers_situasjon(postgresAktorIdEntity.getBrukersSituasjon());
-        bruker.setProfilering_resultat(postgresAktorIdEntity.getProfileringResultat());
-        bruker.setUtdanning(postgresAktorIdEntity.getUtdanning());
-        bruker.setUtdanning_bestatt(postgresAktorIdEntity.getUtdanningBestatt());
-        bruker.setUtdanning_godkjent(postgresAktorIdEntity.getUtdanningGodkjent());
+        bruker.setBrukers_situasjon(dataPaAktorId.getBrukersSituasjon());
+        bruker.setProfilering_resultat(dataPaAktorId.getProfileringResultat());
+        bruker.setUtdanning(dataPaAktorId.getUtdanning());
+        bruker.setUtdanning_bestatt(dataPaAktorId.getUtdanningBestatt());
+        bruker.setUtdanning_godkjent(dataPaAktorId.getUtdanningGodkjent());
     }
 
     private void loggDiff(PostgresAktivitetEntity postgresEntity, OppfolgingsBruker bruker) {

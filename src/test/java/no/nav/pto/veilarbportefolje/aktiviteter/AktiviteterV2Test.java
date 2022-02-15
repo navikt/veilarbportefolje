@@ -50,7 +50,7 @@ public class AktiviteterV2Test {
         aktivitetService.behandleKafkaMeldingLogikk(aktivitet);
 
         PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
-                .mapBulk(List.of(aktorId))
+                .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         //Opensearch mapping
@@ -87,7 +87,7 @@ public class AktiviteterV2Test {
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
 
         PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
-                .mapBulk(List.of(aktorId))
+                .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         //Opensearch mapping
@@ -121,7 +121,7 @@ public class AktiviteterV2Test {
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
 
         PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
-                .mapBulk(List.of(aktorId))
+                .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         //Opensearch mapping
@@ -168,7 +168,7 @@ public class AktiviteterV2Test {
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet2);
 
         PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
-                .mapBulk(List.of(aktorId))
+                .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         //Opensearch mapping

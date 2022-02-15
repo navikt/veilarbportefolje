@@ -46,7 +46,7 @@ public class AktoerDataOpensearchMapper {
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate db;
 
-    public HashMap<AktorId, PostgresAktorIdEntity> mapBulk(List<AktorId> brukere) {
+    public HashMap<AktorId, PostgresAktorIdEntity> hentAktoerData(List<AktorId> brukere) {
         String aktoerIder = brukere.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
         return Optional.ofNullable(
                         db.query("SELECT * FROM aktorid_indeksert_data WHERE aktoerid = ANY (:ids::varchar[])",

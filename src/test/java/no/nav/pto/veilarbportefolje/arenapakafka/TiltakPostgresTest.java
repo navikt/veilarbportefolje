@@ -73,7 +73,7 @@ public class TiltakPostgresTest {
         tiltakRepositoryV2.upsert(innhold, aktorId);
 
         PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
-                .mapBulk(List.of(aktorId))
+                .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
@@ -120,7 +120,7 @@ public class TiltakPostgresTest {
         tiltakRepositoryV2.upsert(igar, aktorId);
 
         PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
-                .mapBulk(List.of(aktorId))
+                .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(1);
@@ -149,7 +149,7 @@ public class TiltakPostgresTest {
         Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
 
         List<AktivitetEntity> postgresAktivitet = aktivitetOpensearchMapper
-                .mapBulk(List.of(aktorId))
+                .hentAktivitetData(List.of(aktorId))
                 .get(aktorId);
 
         assertThat(kodeVerkNavn.isPresent()).isTrue();

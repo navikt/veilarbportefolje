@@ -30,18 +30,18 @@ public class AktivitetOpensearchMapper {
     private final static String aktivitetsplanenIkkeAktiveStatuser = Arrays.stream(AktivitetIkkeAktivStatuser.values())
             .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
 
-    public Map<AktorId, List<AktivitetEntity>> mapBulk(List<AktorId> brukere) {
+    public Map<AktorId, List<AktivitetEntity>> hentAktivitetData(List<AktorId> brukere) {
         String aktoerIder = brukere.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
         HashMap<AktorId, List<AktivitetEntity>> result = new HashMap<>(brukere.size());
 
-        mapAvtalteAktiviteterFraAktivitetsplanen(aktoerIder, result);
-        mapGruppeAktiviteter(aktoerIder, result);
-        mapTiltak(aktoerIder, result);
+        leggTilAvtalteAktiviteterFraAktivitetsplanen(aktoerIder, result);
+        leggTilGruppeAktiviteter(aktoerIder, result);
+        leggTilTiltak(aktoerIder, result);
 
         return result;
     }
 
-    private void mapTiltak(String aktoerIder, HashMap<AktorId, List<AktivitetEntity>> result) {
+    private void leggTilTiltak(String aktoerIder, HashMap<AktorId, List<AktivitetEntity>> result) {
         db.query("""
                         SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak
                         WHERE aktoerid = ANY (:ids::varchar[])
@@ -52,20 +52,13 @@ public class AktivitetOpensearchMapper {
                         AktorId aktoerId = AktorId.of(rs.getString("aktoerid"));
                         AktivitetEntity aktivitet = mapTiltakTilEntity(rs);
 
-                        Optional.ofNullable(result.get(aktoerId)).ifPresentOrElse(
-                                samling -> samling.add(aktivitet),
-                                () -> {
-                                    ArrayList<AktivitetEntity> liste = new ArrayList<>();
-                                    liste.add(aktivitet);
-                                    result.put(aktoerId, liste);
-                                }
-                        );
+                        leggTilAktivitetPaResultat(aktoerId, aktivitet, result);
                     }
                     return result;
                 });
     }
 
-    private void mapGruppeAktiviteter(String aktoerIder, HashMap<AktorId, List<AktivitetEntity>> result) {
+    private void leggTilGruppeAktiviteter(String aktoerIder, HashMap<AktorId, List<AktivitetEntity>> result) {
         db.query("""
                         SELECT aktoerid, moteplan_startdato, moteplan_sluttdato FROM gruppe_aktiviter
                         WHERE date_trunc('day', moteplan_sluttdato) > date_trunc('day',current_timestamp)
@@ -77,20 +70,13 @@ public class AktivitetOpensearchMapper {
                         AktorId aktoerId = AktorId.of(rs.getString("aktoerid"));
                         AktivitetEntity aktivitet = mapGruppeAktivitetTilEntity(rs);
 
-                        Optional.ofNullable(result.get(aktoerId)).ifPresentOrElse(
-                                samling -> samling.add(aktivitet),
-                                () -> {
-                                    ArrayList<AktivitetEntity> liste = new ArrayList<>();
-                                    liste.add(aktivitet);
-                                    result.put(aktoerId, liste);
-                                }
-                        );
+                        leggTilAktivitetPaResultat(aktoerId, aktivitet, result);
                     }
                     return result;
                 });
     }
 
-    private void mapAvtalteAktiviteterFraAktivitetsplanen(String aktoerIder, HashMap<AktorId, List<AktivitetEntity>> result) {
+    private void leggTilAvtalteAktiviteterFraAktivitetsplanen(String aktoerIder, HashMap<AktorId, List<AktivitetEntity>> result) {
         var params = new MapSqlParameterSource();
         params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
         params.addValue("ids", aktoerIder);
@@ -103,19 +89,22 @@ public class AktivitetOpensearchMapper {
                         AktorId aktoerId = AktorId.of(rs.getString("aktoerid"));
                         AktivitetEntity aktivitet = mapAktivitetTilEntity(rs);
 
-                        Optional.ofNullable(result.get(aktoerId)).ifPresentOrElse(
-                                samling -> samling.add(aktivitet),
-                                () -> {
-                                    ArrayList<AktivitetEntity> liste = new ArrayList<>();
-                                    liste.add(aktivitet);
-                                    result.put(aktoerId, liste);
-                                }
-                        );
+                        leggTilAktivitetPaResultat(aktoerId, aktivitet, result);
                     }
                     return result;
                 });
     }
 
+    private void leggTilAktivitetPaResultat(AktorId aktoerId, AktivitetEntity aktivitet, HashMap<AktorId, List<AktivitetEntity>> result){
+        Optional.ofNullable(result.get(aktoerId)).ifPresentOrElse(
+                liste -> liste.add(aktivitet),
+                () -> {
+                    ArrayList<AktivitetEntity> liste = new ArrayList<>();
+                    liste.add(aktivitet);
+                    result.put(aktoerId, liste);
+                }
+        );
+    }
 
     @SneakyThrows
     private AktivitetEntity mapAktivitetTilEntity(ResultSet rs) {

@@ -95,7 +95,7 @@ public class GruppeAktivitetTest {
         gruppeAktivitetService.behandleKafkaMeldingPostgres(gruppeAktivitet);
 
         PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
-                .mapBulk(List.of(aktorId))
+                .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         //Opensearch mapping
