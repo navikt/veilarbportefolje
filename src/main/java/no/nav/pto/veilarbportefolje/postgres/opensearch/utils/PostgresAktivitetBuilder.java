@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,6 +21,11 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 public class PostgresAktivitetBuilder {
     public static PostgresAktivitetEntity build(List<AktivitetEntity> aktiveAktivteter) {
+        if(aktiveAktivteter == null){
+            return new PostgresAktivitetEntity()
+                    .setAktiviteter(new HashSet<>())
+                    .setTiltak(new HashSet<>());
+        }
         PostgresAktivitetEntity entity = new PostgresAktivitetEntity();
 
         byggAktivitetStatusBrukerData(entity, aktiveAktivteter);

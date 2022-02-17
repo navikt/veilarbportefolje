@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyperFraKafka;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktoerAktiviteter;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO;
@@ -21,7 +20,6 @@ import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,8 +34,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -46,7 +42,6 @@ public class ArenaAktivitetIntegrasjonsTest {
     private final JdbcTemplate jdbcTemplate;
     private final AktivitetService aktivitetService;
     private final AktivitetDAO aktivitetDAO;
-    private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktorId aktorId = AktorId.of("1000123");
     private final Fnr fnr = Fnr.of("12345678912");
     private final VeilederId veilederId = VeilederId.of("Z123456");
@@ -54,18 +49,15 @@ public class ArenaAktivitetIntegrasjonsTest {
     private final PersonId personId = PersonId.of("123");
 
     @Autowired
-    public ArenaAktivitetIntegrasjonsTest(SisteEndringService sisteEndringService, BrukerService brukerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, JdbcTemplate jdbcTemplate, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktiviteterRepositoryV2 aktiviteterRepositoryV21) {
+    public ArenaAktivitetIntegrasjonsTest(OpensearchIndexer opensearchIndexer, SisteEndringService sisteEndringService, BrukerService brukerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, JdbcTemplate jdbcTemplate, AktiviteterRepositoryV2 aktiviteterRepositoryV2) {
         this.jdbcTemplate = jdbcTemplate;
         this.aktivitetDAO = aktivitetDAO;
-        this.aktiviteterRepositoryV2 = aktiviteterRepositoryV21;
 
-        ArenaHendelseRepository arenaHendelseRepository = mock(ArenaHendelseRepository.class);
-        Mockito.when(arenaHendelseRepository.upsertAktivitetHendelse(anyString(), anyLong())).thenReturn(1);
         AktorClient aktorClient = Mockito.mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
-        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, persistentOppdatering, brukerService, sisteEndringService, mock(OpensearchIndexer.class));
-        this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient, arenaHendelseRepository);
+        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, persistentOppdatering, brukerService, sisteEndringService, opensearchIndexer);
+        this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient, mock(ArenaHendelseRepository.class));
     }
 
     @BeforeEach
@@ -75,15 +67,6 @@ public class ArenaAktivitetIntegrasjonsTest {
         jdbcTemplate.execute("truncate table " + Table.AKTOERID_TO_PERSONID.TABLE_NAME);
         jdbcTemplate.execute("truncate table " + Table.AKTIVITETER.TABLE_NAME);
         jdbcTemplate.execute("truncate table BRUKERSTATUS_AKTIVITETER");
-    }
-
-    @Test
-    public void skal_komme_i_utdannnings_aktivitet() {
-        insertBruker();
-        utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
-
-        AktoerAktiviteter aktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId);
-        assertThat(aktiviteterForAktoerid.getAktiviteter().stream().anyMatch(x -> x.getAktivitetID().equals("UA-123456789"))).isTrue();
     }
 
     @Test
@@ -132,6 +115,10 @@ public class ArenaAktivitetIntegrasjonsTest {
     }
 
     private void insertBruker() {
+        insertBruker(jdbcTemplate, fnr, personId, aktorId, veilederId, testEnhet);
+    }
+
+    public static void insertBruker(JdbcTemplate jdbcTemplate, Fnr fnr, PersonId personId, AktorId aktorId, VeilederId veilederId, EnhetId testEnhet) {
         SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
                 .value(Table.OPPFOLGINGSBRUKER.FODSELSNR, fnr.toString())
                 .value(Table.OPPFOLGINGSBRUKER.NAV_KONTOR, testEnhet.toString())

@@ -8,10 +8,8 @@ import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -26,9 +24,6 @@ import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTy
 
 @Slf4j
 public class AktivitetUtils {
-    private static final String ARENA_AKTIVITET_DATOFILTER = "2017-12-04";
-    private static final String DATO_FORMAT = "yyyy-MM-dd";
-
     public static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(AktoerAktiviteter aktoerAktiviteter,
                                                                            BrukerService brukerService) {
         AktorId aktoerId = AktorId.of(aktoerAktiviteter.getAktoerid());

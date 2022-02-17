@@ -70,7 +70,7 @@ public class UtdanningsAktivitetService {
         return false;
     }
 
-    private KafkaAktivitetMelding mapTilKafkaAktivitetMelding(UtdanningsAktivitetInnhold melding, AktorId aktorId) {
+    public static KafkaAktivitetMelding mapTilKafkaAktivitetMelding(UtdanningsAktivitetInnhold melding, AktorId aktorId) {
         if (melding == null || aktorId == null) {
             return null;
         }

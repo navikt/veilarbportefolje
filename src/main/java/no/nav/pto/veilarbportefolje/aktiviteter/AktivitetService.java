@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
@@ -100,10 +99,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         List<AktivitetDTO> utdanningsAktiviteter = aktiviteterRepositoryV2.getPasserteAktiveUtdanningsAktiviter();
         log.info("Skal markere: {} utdanningsaktivteter som utgått", utdanningsAktiviteter.size());
         utdanningsAktiviteter.forEach(aktivitetDTO -> {
-                    if (AktivitetTyperFraKafka.utdanningaktivitet.name().equals(aktivitetDTO.getAktivitetType()) || aktivitetDTO.getTilDato().toLocalDateTime().isBefore(LocalDateTime.now())) {
-                        log.error("SQL for deaktiverUtgatteUtdanningsAktivteterPostgres fungerer ikke...");
-                        return;
-                    }
                     log.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato());
                     aktiviteterRepositoryV2.setTilFullfort(aktivitetDTO.getAktivitetID());
                 }
