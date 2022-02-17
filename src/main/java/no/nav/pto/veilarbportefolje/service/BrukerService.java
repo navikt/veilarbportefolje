@@ -16,8 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.AUTO_SLETT;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,7 +24,6 @@ public class BrukerService {
     private final BrukerRepository brukerRepository;
     private final AktorClient aktorClient;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final UnleashService unleashService;
 
     public Optional<AktorId> hentAktorId(Fnr fnr) {
         return brukerRepository.hentAktorIdFraView(fnr);
@@ -81,9 +78,7 @@ public class BrukerService {
             brukerRepository.setGjeldeneFlaggTilNull(personId);
             brukerRepository.upsertAktoeridToPersonidMapping(aktoerId, personId);
         }
-        if (unleashService.isEnabled(AUTO_SLETT)) {
-            brukerRepository.hentGamleAktorIder(personId).ifPresent(opensearchIndexerV2::slettDokumenter);
-        }
+        brukerRepository.hentGamleAktorIder(personId).ifPresent(opensearchIndexerV2::slettDokumenter);
     }
 
     public Optional<VeilederId> hentVeilederForBruker(AktorId aktoerId) {

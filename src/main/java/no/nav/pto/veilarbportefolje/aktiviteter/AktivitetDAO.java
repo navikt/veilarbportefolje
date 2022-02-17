@@ -70,32 +70,20 @@ public class AktivitetDAO {
                 .execute();
     }
 
-    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid, boolean brukIkkeAvtalteAktiviteter) {
-        List<AktivitetDTO> queryResult;
-        if (brukIkkeAvtalteAktiviteter) {
-            queryResult = SqlUtils.select(db, Table.AKTIVITETER.TABLE_NAME, AktivitetDAO::mapToAktivitetDTO)
-                    .column(AKTOERID)
-                    .column(AKTIVITETID)
-                    .column(AKTIVITETTYPE)
-                    .column(STATUS)
-                    .column(FRADATO)
-                    .column(TILDATO)
-                    .where(WhereClause.equals(AKTOERID, aktoerid.get()))
-                    .executeToList();
-        } else {
-            queryResult = SqlUtils.select(db, Table.AKTIVITETER.TABLE_NAME, AktivitetDAO::mapToAktivitetDTO)
-                    .column(AKTOERID)
-                    .column(AKTIVITETID)
-                    .column(AKTIVITETTYPE)
-                    .column(STATUS)
-                    .column(FRADATO)
-                    .column(TILDATO)
-                    .where(WhereClause.equals(AKTOERID, aktoerid.get())
-                            .and(WhereClause.equals(AVTALT, 1)
-                                    .or(WhereClause.equals(AVTALT, true)
-                                    )))
-                    .executeToList();
-        }
+    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid) {
+        List<AktivitetDTO> queryResult = SqlUtils.select(db, Table.AKTIVITETER.TABLE_NAME, AktivitetDAO::mapToAktivitetDTO)
+                .column(AKTOERID)
+                .column(AKTIVITETID)
+                .column(AKTIVITETTYPE)
+                .column(STATUS)
+                .column(FRADATO)
+                .column(TILDATO)
+                .where(WhereClause.equals(AKTOERID, aktoerid.get())
+                        .and(WhereClause.equals(AVTALT, 1)
+                                .or(WhereClause.equals(AVTALT, true)
+                                )))
+                .executeToList();
+
         return new AktoerAktiviteter(aktoerid.get()).setAktiviteter(queryResult);
     }
 
