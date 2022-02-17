@@ -48,7 +48,7 @@ public class UtdanningsAktivitetService {
         } else {
             log.info("Lagrer aktivitet: {}", innhold.getAktivitetid());
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
-            aktivitetService.upsertOgIndekserAktiviteter(melding);
+            aktivitetService.upsertOgIndekserUtdanningsAktivitet(melding);
         }
         log.debug("Ferdig behandlet aktivitet: {}, pa aktor: {}, hendelse: {}", innhold.getAktivitetid(), aktorId, innhold.getHendelseId());
         arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());

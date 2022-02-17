@@ -15,19 +15,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteAktiviteter;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> {
-
     private final AktivitetDAO aktivitetDAO;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final PersistentOppdatering persistentOppdatering;
     private final BrukerService brukerService;
     private final SisteEndringService sisteEndringService;
-    private final UnleashService unleashService;
     private final OpensearchIndexer opensearchIndexer;
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
@@ -43,7 +39,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
         // TODO: dra ut oppdatering aktorId -> PersonId_mapping
         boolean bleProsessert = aktivitetDAO.tryLagreAktivitetData(aktivitetData);
-        if (bleProsessert && (aktivitetData.isAvtalt() || brukIkkeAvtalteAktiviteter(unleashService))) {
+        if (bleProsessert && aktivitetData.isAvtalt()) {
             utledAktivitetstatuserForAktoerid(aktorId);
         }
 
@@ -56,7 +52,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     }
 
     public void utledAktivitetstatuserForAktoerid(AktorId aktoerId) {
-        AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO, brukIkkeAvtalteAktiviteter(unleashService));
+        AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO);
         Optional.ofNullable(aktivitetBrukerOppdateringer)
                 .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(oppdatering, aktoerId));
     }
@@ -74,7 +70,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         opensearchIndexer.indekser(aktorId);
     }
 
-    public void upsertOgIndekserAktiviteter(KafkaAktivitetMelding melding) {
+    public void upsertOgIndekserUtdanningsAktivitet(KafkaAktivitetMelding melding) {
         AktorId aktorId = AktorId.of(melding.getAktorId());
         //ORACLE
         aktivitetDAO.upsertAktivitet(melding);
@@ -88,7 +84,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     }
 
     public void deaktiverUtgatteUtdanningsAktivteter(AktorId aktorId) {
-        AktoerAktiviteter utdanningsAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId, brukIkkeAvtalteAktiviteter(unleashService));
+        AktoerAktiviteter utdanningsAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId);
         utdanningsAktiviteter.getAktiviteter()
                 .stream()
                 .filter(aktivitetDTO -> AktivitetTyperFraKafka.utdanningaktivitet.name().equals(aktivitetDTO.getAktivitetType()))

@@ -64,8 +64,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         AktorClient aktorClient = Mockito.mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
-
-        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, persistentOppdatering, brukerService, sisteEndringService, mock(UnleashService.class), mock(OpensearchIndexer.class));
+        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, persistentOppdatering, brukerService, sisteEndringService, mock(OpensearchIndexer.class));
         this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient, arenaHendelseRepository);
     }
 
@@ -83,10 +82,9 @@ public class ArenaAktivitetIntegrasjonsTest {
         insertBruker();
         utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
 
-        AktoerAktiviteter aktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false);
+        AktoerAktiviteter aktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId);
         assertThat(aktiviteterForAktoerid.getAktiviteter().stream().anyMatch(x -> x.getAktivitetID().equals("UA-123456789"))).isTrue();
     }
-
 
     @Test
     public void skal_ut_av_aktivitet() {

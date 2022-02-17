@@ -73,8 +73,8 @@ public class AktivitetUtils {
     }
 
 
-    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktorId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO, boolean brukIkkeAvtalteAktiviteter) {
-        AktoerAktiviteter aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktoerId, brukIkkeAvtalteAktiviteter);
+    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktorId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO) {
+        AktoerAktiviteter aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktoerId);
 
         return konverterTilBrukerOppdatering(aktiviteter, brukerService);
     }
@@ -170,22 +170,6 @@ public class AktivitetUtils {
 
     public static String startDatoToIsoUtcString(AktivitetStatus status) {
         return Optional.ofNullable(status).map(AktivitetStatus::getNesteStart).map(DateUtils::toIsoUTC).orElse(null);
-    }
-
-
-    public static boolean etterFilterDato(Timestamp tilDato) {
-        Timestamp datofilter = parseDato(ARENA_AKTIVITET_DATOFILTER);
-        return tilDato == null || datofilter == null || datofilter.before(tilDato);
-    }
-
-    public static Timestamp parseDato(String konfigurertDato) {
-        try {
-            Date parse = new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
-            return new Timestamp(parse.getTime());
-        } catch (Exception e) {
-            log.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
-            return null;
-        }
     }
 
     public static boolean harIkkeStatusFullfort(AktivitetDTO aktivitetDTO) {

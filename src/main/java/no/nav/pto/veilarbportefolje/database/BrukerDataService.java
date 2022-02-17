@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepository
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -27,7 +26,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteAktiviteter;
 
 @Slf4j
 @Service
@@ -37,7 +35,6 @@ public class BrukerDataService {
     private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerDataRepository brukerDataRepository;
-    private final UnleashService unleashService;
 
     //POSTGRES
     private final YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2;
@@ -168,7 +165,7 @@ public class BrukerDataService {
     private List<Timestamp> hentAlleStartdatoer(AktorId aktorId, PersonId personId) {
         List<Timestamp> startDatoer = tiltakRepositoryV1.hentStartDatoer(personId).stream()
                 .filter(Objects::nonNull).collect(toList());
-        List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId, brukIkkeAvtalteAktiviteter(unleashService)).getAktiviteter().stream()
+        List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .map(AktivitetDTO::getFraDato)
                 .filter(Objects::nonNull).collect(toList());
@@ -186,7 +183,7 @@ public class BrukerDataService {
     private List<Timestamp> hentAlleSluttdatoer(AktorId aktorId, PersonId personId) {
         List<Timestamp> sluttdatoer = tiltakRepositoryV1.hentSluttdatoer(personId).stream()
                 .filter(Objects::nonNull).collect(toList());
-        List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId, brukIkkeAvtalteAktiviteter(unleashService)).getAktiviteter().stream()
+        List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .map(AktivitetDTO::getTilDato)
                 .filter(Objects::nonNull).collect(toList());

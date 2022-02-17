@@ -76,16 +76,9 @@ public class AktiviteterRepositoryV2 {
         ).orElse(-1L);
     }
 
-    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid, boolean brukIkkeAvtalteAktiviteter) {
-        String sql;
-        if (brukIkkeAvtalteAktiviteter) {
-            sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID);
-        } else {
-            sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s", TABLE_NAME, AKTOERID, AVTALT);
-        }
-
+    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid) {
         List<AktivitetDTO> aktiviteter = Optional.ofNullable(
-                queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid.get()))
+                queryForObjectOrNull(() -> db.query("SELECT * FROM aktiviteter WHERE aktoerid = ?", this::mapToAktivitetDTOList, aktoerid.get()))
         ).orElse(new ArrayList<>());
 
         return new AktoerAktiviteter(aktoerid.get()).setAktiviteter(aktiviteter);

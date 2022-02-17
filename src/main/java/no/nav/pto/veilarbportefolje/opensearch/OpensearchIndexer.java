@@ -242,7 +242,6 @@ public class OpensearchIndexer {
             leggTilTiltak(brukere);
         }
         leggTilSisteEndring(brukere);
-
         postgresOpensearchMapper.flettInnPostgresData(brukere,  brukPostgres, false);
 
         this.skrivTilIndeks(index.getValue(), brukere);

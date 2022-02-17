@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.service;
 import io.vavr.control.Try;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -20,7 +19,11 @@ import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -49,11 +52,9 @@ public class BrukerServiceTest {
         db = new JdbcTemplate(setupInMemoryDatabase());
         brukerRepository = new BrukerRepository(db, null);
         aktorClient = mock(AktorClient.class);
-        UnleashService unleashService = mock(UnleashService.class);
-        when(unleashService.isEnabled(FeatureToggle.AUTO_SLETT)).thenReturn(true);
 
         opensearchIndexerV2 = mock(OpensearchIndexerV2.class);
-        brukerService = new BrukerService(brukerRepository, aktorClient, opensearchIndexerV2, unleashService);
+        brukerService = new BrukerService(brukerRepository, aktorClient, opensearchIndexerV2);
 
         db.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
         db.execute("truncate table AKTOERID_TO_PERSONID");
