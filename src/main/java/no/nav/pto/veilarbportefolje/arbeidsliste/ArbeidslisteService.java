@@ -26,7 +26,7 @@ import java.util.Optional;
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erArbeidslistaPaPostgres;
 
 @Service
 @RequiredArgsConstructor
@@ -46,14 +46,14 @@ public class ArbeidslisteService {
     }
 
     public Try<Arbeidsliste> getArbeidsliste(AktorId aktoerId, String innloggetVeileder) {
-        if (erPostgresPa(unleashService, innloggetVeileder)) {
+        if (erArbeidslistaPaPostgres(unleashService, innloggetVeileder)) {
             return arbeidslisteRepositoryPostgres.retrieveArbeidsliste(aktoerId);
         }
         return arbeidslisteRepositoryOracle.retrieveArbeidsliste(aktoerId);
     }
 
     public List<Arbeidsliste> getArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident, String innloggetVeileder) {
-        if (erPostgresPa(unleashService, innloggetVeileder)) {
+        if (erArbeidslistaPaPostgres(unleashService, innloggetVeileder)) {
             return arbeidslisteRepositoryPostgres.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);
         }
         return arbeidslisteRepositoryOracle.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);

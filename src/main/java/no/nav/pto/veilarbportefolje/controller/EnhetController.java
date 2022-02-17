@@ -7,30 +7,36 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakServiceV2;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.domene.Bruker;
+import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
+import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
+import no.nav.pto.veilarbportefolje.domene.FacetResults;
+import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.Portefolje;
+import no.nav.pto.veilarbportefolje.domene.StatusTall;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.PostgresService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Optional;
-
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/enhet")
 public class EnhetController {
     private final OpensearchService opensearchService;
-    private final PostgresService postgresService;
     private final AuthService authService;
     private final TiltakServiceV2 tiltakServiceV2;
     private final MetricsClient metricsClient;
-    private final UnleashService unleashService;
 
     @PostMapping("/{enhet}/portefolje")
     public Portefolje hentPortefoljeForEnhet(
@@ -50,12 +56,7 @@ public class EnhetController {
         String ident = AuthUtils.getInnloggetVeilederIdent().toString();
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-        BrukereMedAntall brukereMedAntall;
-        if (erPostgresPa(unleashService, ident)) {
-            brukereMedAntall = postgresService.hentBrukere(enhet, null, sortDirection, sortField, filtervalg, fra, antall);
-        } else {
-            brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
-        }
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
@@ -70,7 +71,6 @@ public class EnhetController {
         return portefolje;
     }
 
-    //TODO: postgres
     @GetMapping("/{enhet}/portefoljestorrelser")
     public FacetResults hentPortefoljestorrelser(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
@@ -84,22 +84,14 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        String ident = AuthUtils.getInnloggetVeilederIdent().toString();
-        if (erPostgresPa(unleashService, ident)) {
-            return postgresService.hentStatusTallForEnhet(enhet);
-        }
         return opensearchService.hentStatusTallForEnhet(enhet);
-
     }
 
     @GetMapping("/{enhet}/tiltak")
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
-        String ident = AuthUtils.getInnloggetVeilederIdent().toString();
-        if (erPostgresPa(unleashService, ident)) {
-            return tiltakServiceV2.hentEnhettiltakPostgres(EnhetId.of(enhet));
-        }
+
         return tiltakServiceV2.hentEnhettiltak(EnhetId.of(enhet));
     }
 }

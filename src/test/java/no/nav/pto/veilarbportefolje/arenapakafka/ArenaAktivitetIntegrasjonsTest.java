@@ -87,7 +87,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
 
         AktoerAktiviteter aktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false);
-        AktivitetStatus aktivitetStatus = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.UTDANNINGAKTIVITET, false);
+        AktivitetStatus aktivitetStatus = aktiviteterRepositoryV2.getAktivitetStatus(aktorId, KafkaAktivitetMelding.AktivitetTypeData.UTDANNINGAKTIVITET);
         Optional<AktivitetStatus> utdanning = hentAktivitetStatus(AktivitetTyperFraKafka.utdanningaktivitet);
         assertThat(utdanning).isPresent();
         assertThat(aktiviteterForAktoerid.getAktiviteter().stream().anyMatch(x->x.getAktivitetID().equals("UA-123456789"))).isTrue();

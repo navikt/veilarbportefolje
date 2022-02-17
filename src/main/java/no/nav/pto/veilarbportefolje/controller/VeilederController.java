@@ -16,8 +16,6 @@ import no.nav.pto.veilarbportefolje.domene.Portefolje;
 import no.nav.pto.veilarbportefolje.domene.StatusTall;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.PostgresService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -32,19 +30,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/veileder")
 public class VeilederController {
-
     private final OpensearchService opensearchService;
     private final AuthService authService;
     private final MetricsClient metricsClient;
-    private final PostgresService postgresService;
-    private final UnleashService unleashService;
     private final ArbeidslisteService arbeidslisteService;
 
     @PostMapping("/{veilederident}/portefolje")
@@ -68,12 +61,7 @@ public class VeilederController {
         String ident = AuthUtils.getInnloggetVeilederIdent().toString();
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-        BrukereMedAntall brukereMedAntall;
-        if (erPostgresPa(unleashService, ident)) {
-            brukereMedAntall = postgresService.hentBrukere(enhet, veilederIdent, sortDirection, sortField, filtervalg, fra, antall);
-        } else {
-            brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
-        }
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
@@ -96,27 +84,7 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
         authService.tilgangTilEnhet(enhet);
 
-        String ident = AuthUtils.getInnloggetVeilederIdent().toString();
-        if (erPostgresPa(unleashService, ident)) {
-            return postgresService.hentStatusTallForVeileder(veilederIdent, enhet);
-        }
         return opensearchService.hentStatusTallForVeileder(veilederIdent, enhet);
-    }
-
-    // TODO: sjekk om dette kallet fortsatt er i bruk
-    @GetMapping("/{veilederident}/arbeidsliste")
-    public List<Bruker> hentArbeidsliste(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
-        Event event = new Event("minoversiktportefolje.arbeidsliste.lastet");
-        metricsClient.report(event);
-        ValideringsRegler.sjekkEnhet(enhet);
-        ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
-        authService.tilgangTilEnhet(enhet);
-
-        String ident = AuthUtils.getInnloggetVeilederIdent().toString();
-        if (erPostgresPa(unleashService, ident)) {
-            return postgresService.hentBrukereMedArbeidsliste(veilederIdent, enhet);
-        }
-        return opensearchService.hentBrukereMedArbeidsliste(veilederIdent, enhet);
     }
 
     @GetMapping("/{veilederident}/hentArbeidslisteForVeileder")
@@ -126,7 +94,6 @@ public class VeilederController {
         authService.tilgangTilEnhet(enhet.get());
 
         String ident = AuthUtils.getInnloggetVeilederIdent().toString();
-
         return arbeidslisteService.getArbeidslisteForVeilederPaEnhet(enhet, veilederIdent, ident);
     }
 }

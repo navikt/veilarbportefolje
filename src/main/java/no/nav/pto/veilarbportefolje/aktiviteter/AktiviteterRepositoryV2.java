@@ -126,9 +126,9 @@ public class AktiviteterRepositoryV2 {
         db.update(String.format("UPDATE %s SET %s = 'fullfort' WHERE %s = ?", TABLE_NAME, AVTALT, AKTIVITETID), aktivitetid);
     }
 
-    public AktivitetStatus getAktivitetStatus(AktorId aktoerid, KafkaAktivitetMelding.AktivitetTypeData aktivitetType, boolean brukIkkeAvtalteAktiviteter) {
+    public AktivitetStatus getAktivitetStatus(AktorId aktoerid, KafkaAktivitetMelding.AktivitetTypeData aktivitetType) {
         LocalDate yesterday = LocalDate.now().minusDays(1);
-        List<AktivitetDTO> aktiveAktiviteter = getAktiviteterForAktoerid(aktoerid, brukIkkeAvtalteAktiviteter).getAktiviteter().stream()
+        List<AktivitetDTO> aktiveAktiviteter = getAktiviteterForAktoerid(aktoerid, false).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .filter(aktivitetDTO -> aktivitetType.name().toLowerCase().equals(aktivitetDTO.getAktivitetType()))
                 .collect(Collectors.toList());
