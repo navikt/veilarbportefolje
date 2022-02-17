@@ -24,7 +24,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteAktiviteter;
 
 @Slf4j
 @Service
@@ -183,7 +182,7 @@ public class BrukerDataService {
     private List<Timestamp> hentAlleStartdatoer(AktorId aktorId, PersonId personId) {
         List<Timestamp> startDatoer = tiltakRepositoryV1.hentStartDatoer(personId).stream()
                 .filter(Objects::nonNull).collect(toList());
-        List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId, brukIkkeAvtalteAktiviteter(unleashService)).getAktiviteter().stream()
+        List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .map(AktivitetDTO::getFraDato)
                 .filter(Objects::nonNull).collect(toList());
@@ -201,7 +200,7 @@ public class BrukerDataService {
     private List<Timestamp> hentAlleSluttdatoer(AktorId aktorId, PersonId personId) {
         List<Timestamp> sluttdatoer = tiltakRepositoryV1.hentSluttdatoer(personId).stream()
                 .filter(Objects::nonNull).collect(toList());
-        List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId, brukIkkeAvtalteAktiviteter(unleashService)).getAktiviteter().stream()
+        List<Timestamp> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktorId).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .map(AktivitetDTO::getTilDato)
                 .filter(Objects::nonNull).collect(toList());
@@ -217,7 +216,7 @@ public class BrukerDataService {
 
 
     private List<Timestamp> hentAlleStartdatoerPostgres(AktorId aktorId) {
-        List<Timestamp> startDatoer = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, brukIkkeAvtalteAktiviteter(unleashService)).getAktiviteter().stream()
+        List<Timestamp> startDatoer = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .map(AktivitetDTO::getFraDato)
                 .filter(Objects::nonNull)
@@ -235,7 +234,7 @@ public class BrukerDataService {
     }
 
     private List<Timestamp> hentAlleSluttdatoerPostgres(AktorId aktorId) {
-        List<Timestamp> sluttdatoer = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, brukIkkeAvtalteAktiviteter(unleashService)).getAktiviteter().stream()
+        List<Timestamp> sluttdatoer = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false).getAktiviteter().stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .map(AktivitetDTO::getTilDato)
                 .filter(Objects::nonNull)

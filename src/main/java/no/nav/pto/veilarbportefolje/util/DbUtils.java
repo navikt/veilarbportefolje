@@ -72,10 +72,9 @@ public class DbUtils {
      Oracle
      ***/
     @SneakyThrows
-    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean brukPostgres) {
+    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
         String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
         String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
-        String brukersSituasjon = rs.getString("BRUKERS_SITUASJON");
 
         String fornavn = rs.getString("fornavn");
         String etternavn = rs.getString("etternavn");
@@ -133,14 +132,6 @@ public class DbUtils {
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus))
                 .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
                 .setCv_eksistere(parseJaNei(rs.getString(CV_EKSISTERE), CV_EKSISTERE));
-        if(!brukPostgres) {
-             bruker
-                     .setBrukers_situasjon(brukersSituasjon)
-                     .setProfilering_resultat(rs.getString("profilering_resultat"))
-                     .setUtdanning(rs.getString("UTDANNING"))
-                     .setUtdanning_bestatt(rs.getString("UTDANNING_BESTATT"))
-                     .setUtdanning_godkjent(rs.getString("UTDANNING_GODKJENT"));
-        }
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
 

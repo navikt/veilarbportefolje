@@ -108,7 +108,7 @@ public class YtelserTest {
 
         ytelsesService.behandleKafkaMeldingOracle(dto, TypeKafkaYtelse.AAP);
         ytelsesService.behandleKafkaMeldingPostgres(dto, TypeKafkaYtelse.AAP);
-        OppfolgingsBruker bruker = brukerRepository.hentBrukerFraView(aktorId, false).get();
+        OppfolgingsBruker bruker = brukerRepository.hentBrukerFraView(aktorId).get();
 
         assertThat(bruker.getYtelse()).isEqualTo("AAP_MAXTID");
         assertThat(getYtelse(aktorId)).isEqualTo("AAP_MAXTID");
