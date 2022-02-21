@@ -26,8 +26,8 @@ import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringPaaOppfoelgingsBrukerV2> {
-    private final OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2;
+public class OppfolgingsbrukerService extends KafkaCommonConsumerService<EndringPaaOppfoelgingsBrukerV2> {
+    private final OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
     private final VedtakStatusRepositoryV2 vedtakStatusRepositoryV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final AktorClient aktorClient;
@@ -58,7 +58,7 @@ public class OppfolginsbrukerService extends KafkaCommonConsumerService<EndringP
                 Optional.ofNullable(kafkaMelding.getSperretAnsatt()).orElse(false), Optional.ofNullable(kafkaMelding.getErDoed()).orElse(false),
                 dodFraDato, kafkaMelding.getSistEndretDato());
 
-        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
         oppdaterOpensearch(aktorId, oppfolgingsbruker);
     }
 

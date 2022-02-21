@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -15,6 +16,8 @@ import no.nav.sbl.sql.where.WhereClause;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
@@ -29,15 +32,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest(classes = ApplicationConfigTest.class)
 class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
-
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final OppfolgingStartetService oppfolgingStartetService;
     private final OppfolgingRepository oppfolgingRepository;
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepository oppfolgingRepository, JdbcTemplate jdbcTemplate) {
+    public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepository oppfolgingRepository, OppfolgingRepositoryV2 oppfolgingRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, OpensearchIndexer opensearchIndexer) {
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.oppfolgingRepository = oppfolgingRepository;
         this.jdbcTemplate = jdbcTemplate;
@@ -45,7 +48,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         BrukerRepository brukerRepository = mock(BrukerRepository.class);
         Mockito.when(aktorClient.hentFnr(any())).thenReturn(Fnr.of("-1"));
         when(brukerRepository.retrievePersonidFromFnr(Fnr.of("-1"))).thenReturn(Optional.of(PersonId.of("0000")));
-        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, mock(OppfolgingRepositoryV2.class), mock(OpensearchIndexer.class), brukerRepository, aktorClient);
+        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, oppfolgingRepositoryV2, opensearchIndexer, brukerRepository, aktorClient);
     }
 
     @Test
@@ -91,7 +94,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         assertThat(registrering).isNull();
 
-        assertThat(testDataClient.hentOppfolgingFlaggFraDatabase(aktoerId)).isNull();
+        assertThat(testDataClient.hentOppfolgingFlaggFraDatabase(aktoerId)).isFalse();
 
         Map<String, Object> source = opensearchTestClient.fetchDocument(aktoerId).getSourceAsMap();
 

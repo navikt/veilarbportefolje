@@ -18,7 +18,7 @@ import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.registrering.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.junit.jupiter.api.Test;
@@ -45,16 +45,16 @@ public class PostgresServiceTest {
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final DialogRepositoryV2 dialogRepositoryV2;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-    private final OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2;
+    private final OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
 
     private final String enhetId = "1234";
 
     @Autowired
-    public PostgresServiceTest(@Qualifier("PostgresJdbc") JdbcTemplate db, DialogRepositoryV2 dialogRepositoryV2, OppfolgingRepositoryV2 oppfolgingRepositoryV2, OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2) {
+    public PostgresServiceTest(@Qualifier("PostgresJdbc") JdbcTemplate db, DialogRepositoryV2 dialogRepositoryV2, OppfolgingRepositoryV2 oppfolgingRepositoryV2, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2) {
         this.dialogRepositoryV2 = dialogRepositoryV2;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
-        this.oppfolginsbrukerRepositoryV2 = oppfolginsbrukerRepositoryV2;
+        this.oppfolgingsbrukerRepositoryV2 = oppfolgingsbrukerRepositoryV2;
         this.arbeidslisteRepositoryV2 = arbeidslisteRepositoryV2;
         VedtakstottePilotRequest vedtakstottePilotRequest = mock(VedtakstottePilotRequest.class);
         veilarbVeilederClient = mock(VeilarbVeilederClient.class);
@@ -100,7 +100,7 @@ public class PostgresServiceTest {
         AktorId aktorId = AktorId.of("123456789");
         Fnr fnr = Fnr.ofValidFnr("01010101010");
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
-        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktorId.get(), fnr.get(), null, null, "Testerson", "Testerson",
                         enhetId, null, null, null, null,
                         null, true, true, false, null, ZonedDateTime.now()));
@@ -176,7 +176,7 @@ public class PostgresServiceTest {
     public void sok_pa_dialog() {
         AktorId aktorId = AktorId.of("123456789");
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, now());
-        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktorId.get(), null, null, null, "Testerson", "Testerson",
                         enhetId, null, null, null, null,
                         null, true, true, false, null, ZonedDateTime.now()));
@@ -196,7 +196,7 @@ public class PostgresServiceTest {
 
     private void lastOppBruker(Fnr fnr, AktorId aktorId) {
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
-        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktorId.get(), fnr.get(), null, null, "Testerson", "Testerson",
                         enhetId, null, null, null, null,
                         null, true, true, false, null, ZonedDateTime.now()));

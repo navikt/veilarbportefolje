@@ -15,13 +15,13 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class OppfolginsbrukerRepositoryTestV2 {
     private JdbcTemplate db;
-    private OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2;
+    private OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
     private final AktorId aktoerId = AktorId.of("0");
 
     @Before
     public void setup() {
         db = SingletonPostgresContainer.init().createJdbcTemplate();
-        oppfolginsbrukerRepositoryV2 = new OppfolginsbrukerRepositoryV2(db);
+        oppfolgingsbrukerRepositoryV2 = new OppfolgingsbrukerRepositoryV2(db);
 
         SqlUtils.delete(db, PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME)
                 .where(WhereClause.equals(PostgresTable.OPPFOLGINGSBRUKER_ARENA.AKTOERID, aktoerId.get()))
@@ -37,11 +37,11 @@ public class OppfolginsbrukerRepositoryTestV2 {
                 "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
                 "1234", true, true, false, null, ZonedDateTime.now().minusDays(5));
 
-        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(msg);
-        assertThat(oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(msg);
+        assertThat(oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);
 
-        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(old_msg);
-        assertThat(oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isNotEqualTo(old_msg);
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(old_msg);
+        assertThat(oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isNotEqualTo(old_msg);
     }
 
 
@@ -54,10 +54,10 @@ public class OppfolginsbrukerRepositoryTestV2 {
                 "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
                 "1234", false, true, true, ZonedDateTime.now(), ZonedDateTime.now());
 
-        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(msg);
-        assertThat(oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(msg);
+        assertThat(oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);
 
-        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(new_msg);
-        assertThat(oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(new_msg);
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(new_msg);
+        assertThat(oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(new_msg);
     }
 }

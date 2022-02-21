@@ -24,7 +24,6 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 @Repository
 @RequiredArgsConstructor
 public class AktivitetStatusRepositoryV2 {
-    @NonNull
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 

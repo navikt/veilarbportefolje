@@ -22,7 +22,7 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +46,7 @@ import static org.mockito.Mockito.mock;
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class TiltakPostgresTest {
     private final JdbcTemplate db;
-    private final OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2;
+    private final OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
     private final BrukerDataService brukerDataService;
@@ -57,7 +57,7 @@ public class TiltakPostgresTest {
 
     public TiltakPostgresTest() {
         db = SingletonPostgresContainer.init().createJdbcTemplate();
-        oppfolginsbrukerRepositoryV2 = new OppfolginsbrukerRepositoryV2(db);
+        oppfolgingsbrukerRepositoryV2 = new OppfolgingsbrukerRepositoryV2(db);
         aktivitetStatusRepositoryV2 = new AktivitetStatusRepositoryV2(db);
         tiltakRepositoryV2 = new TiltakRepositoryV2(db, aktivitetStatusRepositoryV2);
         YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2 = new YtelsesStatusRepositoryV2(db);
@@ -188,7 +188,7 @@ public class TiltakPostgresTest {
     @Test
     public void skal_lagre_tiltak_pa_enhet() {
         String navKontor = "0007";
-        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktorId.get(), null, null, null, "" +
                         "Tester", "Testerson", navKontor, null, null, null, null,
                         "1234", true, true, false, null, ZonedDateTime.now()));

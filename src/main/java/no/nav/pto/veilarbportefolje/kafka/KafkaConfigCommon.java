@@ -47,7 +47,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerService;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -124,7 +124,7 @@ public class KafkaConfigCommon {
                              VedtakService vedtakService, DialogService dialogService, OppfolgingStartetService oppfolgingStartetService,
                              OppfolgingAvsluttetService oppfolgingAvsluttetService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
-                             MalService malService, OppfolginsbrukerService oppfolginsbrukerService, TiltakServiceV2 tiltakServiceV2,
+                             MalService malService, OppfolgingsbrukerService oppfolginsbrukerService, TiltakServiceV2 tiltakServiceV2,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
                              YtelsesService ytelsesService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
                              UnleashService unleashService) {

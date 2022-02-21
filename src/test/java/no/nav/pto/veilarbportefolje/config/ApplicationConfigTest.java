@@ -53,10 +53,9 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -72,6 +71,7 @@ import no.nav.pto.veilarbportefolje.util.TestUtil;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
 import org.opensearch.client.RestHighLevelClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -111,7 +111,7 @@ import static org.mockito.Mockito.when;
         BrukerRepository.class,
         OppfolgingRepository.class,
         OppfolgingRepositoryV2.class,
-        OppfolginsbrukerRepositoryV2.class,
+        OppfolgingsbrukerRepositoryV2.class,
         ManuellStatusService.class,
         DialogService.class,
         DialogRepository.class,
@@ -119,7 +119,6 @@ import static org.mockito.Mockito.when;
         CvRepository.class,
         CVRepositoryV2.class,
         CVService.class,
-        RegistreringRepository.class,
         RegistreringRepositoryV2.class,
         PersonRepository.class,
         NyForVeilederService.class,
@@ -162,8 +161,8 @@ public class ApplicationConfigTest {
 
 
     @Bean
-    public TestDataClient dbTestClient(JdbcTemplate jdbcTemplate, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
-        return new TestDataClient(jdbcTemplate, opensearchTestClient, oppfolgingRepositoryV2);
+    public TestDataClient dbTestClient(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, RegistreringRepositoryV2 registreringRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
+        return new TestDataClient(jdbcTemplate, registreringRepositoryV2, oppfolgingsbrukerRepositoryV2, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2);
     }
 
     @Bean
