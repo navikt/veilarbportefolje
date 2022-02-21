@@ -2,9 +2,9 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetBuilder;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +21,13 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class AktiviteterV2Test {
-    private final AktivitetOpensearchMapper aktivitetOpensearchMapper;
+    private final AktivitetOpensearchService aktivitetOpensearchService;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktivitetService aktivitetService;
 
     @Autowired
-    public AktiviteterV2Test(AktivitetOpensearchMapper aktivitetOpensearchMapper, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetService aktivitetService) {
-        this.aktivitetOpensearchMapper = aktivitetOpensearchMapper;
+    public AktiviteterV2Test(AktivitetOpensearchService aktivitetOpensearchService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetService aktivitetService) {
+        this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.aktiviteterRepositoryV2 = aktiviteterRepositoryV2;
         this.aktivitetService = aktivitetService;
     }
@@ -49,7 +49,7 @@ public class AktiviteterV2Test {
                 .setTilDato(tilDato);
         aktivitetService.behandleKafkaMeldingLogikk(aktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
@@ -86,7 +86,7 @@ public class AktiviteterV2Test {
 
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
@@ -120,7 +120,7 @@ public class AktiviteterV2Test {
 
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
@@ -167,7 +167,7 @@ public class AktiviteterV2Test {
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet1);
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet2);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 

@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -76,14 +75,6 @@ public class AktiviteterRepositoryV2 {
         ).orElse(-1L);
     }
 
-    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid) {
-        List<AktivitetDTO> aktiviteter = Optional.ofNullable(
-                queryForObjectOrNull(() -> db.query("SELECT * FROM aktiviteter WHERE aktoerid = ?", this::mapToAktivitetDTOList, aktoerid.get()))
-        ).orElse(new ArrayList<>());
-
-        return new AktoerAktiviteter(aktoerid.get()).setAktiviteter(aktiviteter);
-    }
-
     public void deleteById(String aktivitetid) {
         log.info("Sletter alle aktiviteter med id {}", aktivitetid);
         db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTIVITETID), aktivitetid);
@@ -91,10 +82,7 @@ public class AktiviteterRepositoryV2 {
 
     public List<AktivitetDTO> getPasserteAktiveUtdanningsAktiviter() {
         final String sql = "SELECT * FROM aktiviteter WHERE NOT status = 'fullfort' AND date_trunc('day', tildato) < date_trunc('day', current_timestamp)";
-
-        return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList))
-        ).orElse(new ArrayList<>());
+        return db.query(sql, this::mapToAktivitetDTOList);
     }
 
     public void setTilFullfort(String aktivitetid) {

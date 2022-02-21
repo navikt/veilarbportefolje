@@ -5,7 +5,6 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktoerAktiviteter;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO;
@@ -13,10 +12,10 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetInn
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetBuilder;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -39,7 +38,7 @@ import static org.mockito.Mockito.mock;
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class UtdanningsAktivitetTest {
     private final UtdanningsAktivitetService utdanningsAktivitetService;
-    private final AktivitetOpensearchMapper aktivitetOpensearchMapper;
+    private final AktivitetOpensearchService aktivitetOpensearchService;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktivitetService aktivitetService;
     private final JdbcTemplate jbPostgres;
@@ -48,8 +47,8 @@ public class UtdanningsAktivitetTest {
     private final Fnr fnr = Fnr.of("12345678912");
 
     @Autowired
-    public UtdanningsAktivitetTest(AktivitetService aktivitetService, AktivitetOpensearchMapper aktivitetOpensearchMapper, AktiviteterRepositoryV2 aktiviteterRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jbPostgres, JdbcTemplate jbOracle) {
-        this.aktivitetOpensearchMapper = aktivitetOpensearchMapper;
+    public UtdanningsAktivitetTest(AktivitetService aktivitetService, AktivitetOpensearchService aktivitetOpensearchService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jbPostgres, JdbcTemplate jbOracle) {
+        this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.aktiviteterRepositoryV2 = aktiviteterRepositoryV2;
         this.jbOracle = jbOracle;
         this.jbPostgres = jbPostgres;
@@ -77,7 +76,7 @@ public class UtdanningsAktivitetTest {
     @Test
     public void utdannningsaktivitet_skalInnKommeIAktivitet() {
         String utlopsdato = "2040-01-01";
-        PostgresAktivitetEntity pre_apostgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+        PostgresAktivitetEntity pre_apostgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
@@ -91,7 +90,7 @@ public class UtdanningsAktivitetTest {
                                 .setEndretDato(new ArenaDato("2021-01-01"))
                                 .setAktivitetid("UA-123456789")
                         ));
-        PostgresAktivitetEntity post_apostgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+        PostgresAktivitetEntity post_apostgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
@@ -115,7 +114,7 @@ public class UtdanningsAktivitetTest {
                                 .setAktivitetid("UA-1234")
                         ));
 
-        List<AktivitetEntity> aktiviteter = aktivitetOpensearchMapper
+        List<AktivitetEntity> aktiviteter = aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId)).get(aktorId);
         assertThat(aktiviteter).isNull();
     }
@@ -161,13 +160,11 @@ public class UtdanningsAktivitetTest {
         );
 
 
-        List<AktivitetEntity> pre_aktiviteter = aktivitetOpensearchMapper
+        List<AktivitetEntity> pre_aktiviteter = aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId)).get(aktorId);
         aktivitetService.deaktiverUtgatteUtdanningsAktivteterPostgres();
-        List<AktivitetEntity> post_aktiviteter = aktivitetOpensearchMapper
+        List<AktivitetEntity> post_aktiviteter = aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId)).get(aktorId);
-        AktoerAktiviteter aktiviteterForAktoerid = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId);
-        System.out.println(aktiviteterForAktoerid);
         assertThat(pre_aktiviteter.size()).isEqualTo(3);
         assertThat(post_aktiviteter.size()).isEqualTo(1);
         assertThat(toIsoUTC(post_aktiviteter.get(0).getUtlop()).substring(0, 10))

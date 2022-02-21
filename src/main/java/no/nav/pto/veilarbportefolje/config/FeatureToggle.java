@@ -24,7 +24,7 @@ public class FeatureToggle {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
 
-    public static boolean mapAktiviteterIOpenSearch(UnleashService unleashService) {
+    public static boolean mapAktiviteterFraPostgresTilOpenSearch(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.POSTGRES_OS);
     }
 }

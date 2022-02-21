@@ -18,9 +18,9 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetBuilder;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
 import no.nav.sbl.sql.SqlUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +44,7 @@ import static org.mockito.Mockito.mock;
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class GruppeAktivitetTest {
     private final GruppeAktivitetService gruppeAktivitetService;
-    private final AktivitetOpensearchMapper aktivitetOpensearchMapper;
+    private final AktivitetOpensearchService aktivitetOpensearchService;
     private final JdbcTemplate jdbcTemplate;
     private final AktivitetDAO aktivitetDAO;
 
@@ -55,8 +55,8 @@ public class GruppeAktivitetTest {
     private final PersonId personId;
 
     @Autowired
-    public GruppeAktivitetTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, GruppeAktivitetRepository gruppeAktivitetRepository, GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2, AktivitetOpensearchMapper aktivitetOpensearchMapper) {
-        this.aktivitetOpensearchMapper = aktivitetOpensearchMapper;
+    public GruppeAktivitetTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, GruppeAktivitetRepository gruppeAktivitetRepository, GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService) {
+        this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.jdbcTemplate = jdbcTemplate;
         this.aktivitetDAO = aktivitetDAO;
         this.veilederId = randomVeilederId();
@@ -94,7 +94,7 @@ public class GruppeAktivitetTest {
         GruppeAktivitetDTO gruppeAktivitet = getInsertDTO();
         gruppeAktivitetService.behandleKafkaMeldingPostgres(gruppeAktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 

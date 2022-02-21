@@ -54,7 +54,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.AktoerDataOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
@@ -143,7 +143,7 @@ import static org.mockito.Mockito.when;
         BrukerDataRepository.class,
         PostgresOpensearchMapper.class,
         AktoerDataOpensearchMapper.class,
-        AktivitetOpensearchMapper.class,
+        AktivitetOpensearchService.class,
         YtelsesService.class,
         YtelsesServicePostgres.class,
         YtelsesRepository.class,

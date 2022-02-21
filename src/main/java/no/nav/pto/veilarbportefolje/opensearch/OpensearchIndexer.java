@@ -38,7 +38,7 @@ import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.mapAktiviteterIOpenSearch;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.mapAktiviteterFraPostgresTilOpenSearch;
 import static no.nav.pto.veilarbportefolje.opensearch.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
@@ -60,7 +60,7 @@ public class OpensearchIndexer {
     private final UnleashService unleashService;
 
     public void indekser(AktorId aktoerId) {
-        boolean brukPostgres = mapAktiviteterIOpenSearch(unleashService);
+        boolean brukPostgres = mapAktiviteterFraPostgresTilOpenSearch(unleashService);
         brukerRepository.hentBrukerFraView(aktoerId, brukPostgres)
                 .ifPresent(bruker -> indekserBruker(bruker, brukPostgres));
     }
@@ -232,7 +232,7 @@ public class OpensearchIndexer {
 
     public void indekserBolk(List<AktorId> aktorIds, IndexName index) {
         validateBatchSize(aktorIds);
-        boolean brukPostgres = mapAktiviteterIOpenSearch(unleashService);
+        boolean brukPostgres = mapAktiviteterFraPostgresTilOpenSearch(unleashService);
 
         List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(aktorIds, brukPostgres).stream()
                 .filter(bruker -> bruker.getAktoer_id() != null)
@@ -254,7 +254,7 @@ public class OpensearchIndexer {
         return 8;
     }
 
-    public void testIndeksering(List<AktorId> brukereUnderOppfolging) {
+    public void dryrunAvPostgresTilOpensearchMapping(List<AktorId> brukereUnderOppfolging) {
         partition(brukereUnderOppfolging, BATCH_SIZE).forEach(bolk -> {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(bolk, false).stream()
                     .filter(bruker -> bruker.getAktoer_id() != null)

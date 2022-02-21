@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvAliasIndeksering;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.mapAktiviteterIOpenSearch;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.mapAktiviteterFraPostgresTilOpenSearch;
 
 @Slf4j
 @Service
@@ -37,7 +37,7 @@ public class BrukerAktiviteterService {
         List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         aktivitetService.deaktiverUtgatteUtdanningsAktivteterPostgres();
 
-        if(!mapAktiviteterIOpenSearch(unleashService)){
+        if(!mapAktiviteterFraPostgresTilOpenSearch(unleashService)){
             log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
             syncAktivitetOgBrukerData(brukereSomMaOppdateres);
             log.info("Avslutter jobb: oppdater BrukerAktiviteter og BrukerData");

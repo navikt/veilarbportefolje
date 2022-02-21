@@ -19,7 +19,7 @@ import static no.nav.pto.veilarbportefolje.database.BrukerDataService.finnForrig
 import static no.nav.pto.veilarbportefolje.database.BrukerDataService.finnNyesteUtlopteAktivAktivitet;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
-public class PostgresAktivitetBuilder {
+public class PostgresAktivitetMapper {
     public static PostgresAktivitetEntity build(List<AktivitetEntity> aktiveAktivteter) {
         if(aktiveAktivteter == null){
             return new PostgresAktivitetEntity()

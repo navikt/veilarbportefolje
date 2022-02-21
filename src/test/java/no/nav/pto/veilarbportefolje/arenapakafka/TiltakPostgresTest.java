@@ -12,10 +12,10 @@ import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetBuilder;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,17 +35,17 @@ public class TiltakPostgresTest {
     private final JdbcTemplate db;
     private final OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
-    private final AktivitetOpensearchMapper aktivitetOpensearchMapper;
+    private final AktivitetOpensearchService aktivitetOpensearchService;
 
     private final AktorId aktorId = AktorId.of("123");
     private final Fnr fnr = Fnr.of("12345678912");
     private final PersonId personId = PersonId.of("123");
 
     @Autowired
-    public TiltakPostgresTest(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, AktivitetOpensearchMapper aktivitetOpensearchMapper) {
+    public TiltakPostgresTest(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService) {
         this.db = jdbcTemplatePostgres;
         this.oppfolginsbrukerRepositoryV2 = new OppfolginsbrukerRepositoryV2(db);
-        this.aktivitetOpensearchMapper = aktivitetOpensearchMapper;
+        this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.tiltakRepositoryV2 = tiltakRepositoryV2;
     }
 
@@ -72,7 +72,7 @@ public class TiltakPostgresTest {
                 .setAktivitetid("TA-123456789");
         tiltakRepositoryV2.upsert(innhold, aktorId);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
@@ -119,7 +119,7 @@ public class TiltakPostgresTest {
         tiltakRepositoryV2.upsert(idag, aktorId);
         tiltakRepositoryV2.upsert(igar, aktorId);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetBuilder.build(aktivitetOpensearchMapper
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
@@ -148,7 +148,7 @@ public class TiltakPostgresTest {
 
         Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
 
-        List<AktivitetEntity> postgresAktivitet = aktivitetOpensearchMapper
+        List<AktivitetEntity> postgresAktivitet = aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId))
                 .get(aktorId);
 

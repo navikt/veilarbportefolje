@@ -5,10 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetBuilder;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,13 +18,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PostgresOpensearchMapper {
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
-    private final AktivitetOpensearchMapper aktivitetOpensearchMapper;
+    private final AktivitetOpensearchService aktivitetOpensearchService;
 
     public List<OppfolgingsBruker> flettInnPostgresData(List<OppfolgingsBruker> brukere, boolean mapAktiviteter, boolean medDiffLogging) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
 
         HashMap<AktorId, PostgresAktorIdEntity> aktorIdData = aktoerDataOpensearchMapper.hentAktoerData(aktoerIder);
-        Map<AktorId, List<AktivitetEntity>> aktiveAktiviter = aktivitetOpensearchMapper.hentAktivitetData(aktoerIder);
+        Map<AktorId, List<AktivitetEntity>> aktiveAktiviter = aktivitetOpensearchService.hentAktivitetData(aktoerIder);
 
         brukere.forEach(bruker -> {
                     Optional.ofNullable(aktorIdData.get(AktorId.of(bruker.getAktoer_id())))
@@ -36,8 +35,11 @@ public class PostgresOpensearchMapper {
                     if (mapAktiviteter) {
                         Optional.ofNullable(aktiveAktiviter.get(AktorId.of(bruker.getAktoer_id())))
                                 .ifPresentOrElse(
-                                        aktivitetsListe -> flettInnAktivitetData(aktivitetsListe, bruker, medDiffLogging),
-                                        () -> flettInnAktivitetData(new ArrayList<>(), bruker, medDiffLogging)
+                                        aktivitetsListe -> {
+                                            PostgresAktivitetEntity aktivitetData = PostgresAktivitetMapper.build(aktivitetsListe);
+                                            flettInnAktivitetData(aktivitetData, bruker, medDiffLogging);
+                                        },
+                                        () -> flettInnAktivitetData(new PostgresAktivitetEntity(), bruker, medDiffLogging)
                                 );
                     }
                 }
@@ -46,8 +48,7 @@ public class PostgresOpensearchMapper {
         return brukere;
     }
 
-    private void flettInnAktivitetData(List<AktivitetEntity> aktiveAktiviteter, OppfolgingsBruker bruker, boolean medDiffLogging) {
-        PostgresAktivitetEntity aktivitetData = PostgresAktivitetBuilder.build(aktiveAktiviteter);
+    private void flettInnAktivitetData(PostgresAktivitetEntity aktivitetData, OppfolgingsBruker bruker, boolean medDiffLogging) {
         if (medDiffLogging) {
             loggDiff(aktivitetData, bruker);
         }
@@ -82,8 +83,14 @@ public class PostgresOpensearchMapper {
     }
 
     private void loggDiff(PostgresAktivitetEntity postgresEntity, OppfolgingsBruker bruker) {
+        if (isDifferent(bruker.getAktiviteter(), postgresEntity.getAktiviteter())) {
+            log.warn("postgres Opensearch: getAktiviteter feil, på bruker: {}", bruker.getAktoer_id());
+        }
+        if (isDifferent(bruker.getTiltak(), postgresEntity.getTiltak())) {
+            log.warn("postgres Opensearch: getTiltak feil, på bruker: {}", bruker.getAktoer_id());
+        }
         if (isDifferent(bruker.getNyesteutlopteaktivitet(), postgresEntity.getNyesteUtlopteAktivitet())) {
-            log.warn("postgres Opensearch: Situsjon feil bruker: {}", bruker.getAktoer_id());
+            log.warn("postgres Opensearch: NyesteUtlopteAktivitet feil, på bruker: {}", bruker.getAktoer_id());
         }
         if (isDifferent(bruker.getAktivitet_start(), postgresEntity.getAktivitetStart())) {
             log.warn("postgres Opensearch: feil aktivitet_start, på bruker: {}", bruker.getAktoer_id());

@@ -60,7 +60,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         //ORACLE
         aktivitetDAO.deleteById(aktivitetid);
         utledAktivitetstatuserForAktoerid(aktorId);
-        opensearchIndexer.indekser(aktorId);
 
         //POSTGRES
         aktiviteterRepositoryV2.deleteById(aktivitetid);
