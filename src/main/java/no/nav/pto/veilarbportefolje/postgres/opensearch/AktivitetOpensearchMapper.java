@@ -87,15 +87,15 @@ public class AktivitetOpensearchMapper {
                 params, (ResultSet rs) -> {
                     while (rs.next()) {
                         AktorId aktoerId = AktorId.of(rs.getString("aktoerid"));
-                        AktivitetEntity aktivitet = mapAktivitetTilEntity(rs);
-
-                        leggTilAktivitetPaResultat(aktoerId, aktivitet, result);
+                        mapAktivitetTilEntity(rs).ifPresent(aktivitet ->
+                                leggTilAktivitetPaResultat(aktoerId, aktivitet, result)
+                        );
                     }
                     return result;
                 });
     }
 
-    private void leggTilAktivitetPaResultat(AktorId aktoerId, AktivitetEntity aktivitet, HashMap<AktorId, List<AktivitetEntity>> result){
+    private void leggTilAktivitetPaResultat(AktorId aktoerId, AktivitetEntity aktivitet, HashMap<AktorId, List<AktivitetEntity>> result) {
         Optional.ofNullable(result.get(aktoerId)).ifPresentOrElse(
                 liste -> liste.add(aktivitet),
                 () -> {
@@ -107,15 +107,18 @@ public class AktivitetOpensearchMapper {
     }
 
     @SneakyThrows
-    private AktivitetEntity mapAktivitetTilEntity(ResultSet rs) {
+    private Optional<AktivitetEntity> mapAktivitetTilEntity(ResultSet rs) {
         String type = rs.getString("aktivitettype");
         if (!AktivitetsType.contains(type)) {
-            log.warn("Det finnes aktivteter i postgres som ikke blir vist i oversikten: {}", type);
+            // Noen aktiviteter skal ikke vises i oversikten: samtalereferat
+            return Optional.empty();
         }
-        return new AktivitetEntity()
-                .setStart(rs.getTimestamp("fradato"))
-                .setUtlop(rs.getTimestamp("tildato"))
-                .setAktivitetsType(AktivitetsType.valueOf(type));
+        return Optional.of(
+                new AktivitetEntity()
+                        .setStart(rs.getTimestamp("fradato"))
+                        .setUtlop(rs.getTimestamp("tildato"))
+                        .setAktivitetsType(AktivitetsType.valueOf(type))
+        );
     }
 
     @SneakyThrows

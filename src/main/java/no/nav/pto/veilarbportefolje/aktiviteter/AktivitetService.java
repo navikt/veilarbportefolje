@@ -36,9 +36,9 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         //ORACLE
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
-        // TODO: dra ut oppdatering aktorId -> PersonId_mapping
         boolean bleProsessert = aktivitetDAO.tryLagreAktivitetData(aktivitetData);
         if (bleProsessert && aktivitetData.isAvtalt()) {
+            // TODO: ved fjerning av oracle lagring. Dra ut oppdatering av mapping aktorId -> PersonId
             utledAktivitetstatuserForAktoerid(aktorId);
         }
 
