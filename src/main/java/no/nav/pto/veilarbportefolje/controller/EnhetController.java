@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.EnhetId;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakServiceV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
@@ -35,7 +35,7 @@ import java.util.Optional;
 public class EnhetController {
     private final OpensearchService opensearchService;
     private final AuthService authService;
-    private final TiltakServiceV2 tiltakServiceV2;
+    private final TiltakService tiltakService;
     private final MetricsClient metricsClient;
 
     @PostMapping("/{enhet}/portefolje")
@@ -91,7 +91,6 @@ public class EnhetController {
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
-
-        return tiltakServiceV2.hentEnhettiltak(EnhetId.of(enhet));
+        return tiltakService.hentEnhettiltak(EnhetId.of(enhet));
     }
 }

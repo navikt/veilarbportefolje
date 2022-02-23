@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import io.vavr.control.Try;
-import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -14,13 +14,17 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraAktivitetsplanList;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraKafka;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.*;
-import static no.nav.pto.veilarbportefolje.util.AktivitetData.aktivitetTyperList;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.erAktivitetIPeriode;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnNyesteUtlopteAktivAktivitet;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.konverterTilBrukerOppdatering;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.lagAktivitetSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -178,8 +182,8 @@ public class AktivitetUtilsTest {
     }
 
     @Test
-    public void skalFinneUtlopsdatoNaarÉnerNull() {
-        String aktivitetstype = aktivitetTyperList.get(0).toString();
+    public void skalFinneUtlopsdatoNaarEnerNull() {
+        String aktivitetstype = AktivitetsType.values()[0].toString();
         String IKKE_FULLFORT_STATUS = "IKKE_FULLFORT_STATUS";
         Timestamp t1 = new Timestamp(200000000);
         AktivitetDTO a1 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS);

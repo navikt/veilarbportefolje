@@ -102,8 +102,8 @@ public class BrukerRepository {
         ).map(AktorId::of);
     }
 
-    public Optional<OppfolgingsBruker> hentBrukerFraView(AktorId aktoerId) {
-        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
+    public Optional<OppfolgingsBruker> hentBrukerFraView(AktorId aktoerId, boolean brukPostgres) {
+        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs, brukPostgres))
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
@@ -112,11 +112,11 @@ public class BrukerRepository {
     }
 
 
-    public List<OppfolgingsBruker> hentBrukereFraView(List<AktorId> aktorIds) {
+    public List<OppfolgingsBruker> hentBrukereFraView(List<AktorId> aktorIds, boolean brukPostgres) {
         db.setFetchSize(1000);
         List<String> ids = aktorIds.stream().map(AktorId::get).collect(toList());
         return SqlUtils
-                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, brukPostgres) : null)
                 .column("*")
                 .where(in("AKTOERID", ids))
                 .executeToList()

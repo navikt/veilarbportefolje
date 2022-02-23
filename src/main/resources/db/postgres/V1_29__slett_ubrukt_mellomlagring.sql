@@ -1,0 +1,2 @@
+DROP TABLE aktivitet_status_for_bruker;
+DROP TABLE aktivitettype_status_for_bruker;

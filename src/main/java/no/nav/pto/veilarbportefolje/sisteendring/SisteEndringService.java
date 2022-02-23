@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
-import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,22 +67,15 @@ public class SisteEndringService {
 
         SisteEndringDTO sisteEndringDTO = new SisteEndringDTO(kafkaAktivitet);
         if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
-            try {
-                sisteEndringRepository.upsert(sisteEndringDTO);
-                opensearchIndexerV2.updateSisteEndring(sisteEndringDTO);
-            } catch (Exception e) {
-                String message = String.format("Kunne ikke lagre eller indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId());
-                log.error(message, e);
-            }
+            sisteEndringRepository.upsert(sisteEndringDTO);
         }
 
-
         if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIPostgres(sisteEndringDTO)) {
+            sisteEndringRepositoryV2.upsert(sisteEndringDTO);
             try {
-                sisteEndringRepositoryV2.upsert(sisteEndringDTO);
+                opensearchIndexerV2.updateSisteEndring(sisteEndringDTO);
             } catch (Exception e) {
-                String message = String.format("Kunne ikke lagre eller indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId());
-                log.error(message, e);
+                log.error(String.format("Kunne ikke indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId()), e);
             }
         }
     }

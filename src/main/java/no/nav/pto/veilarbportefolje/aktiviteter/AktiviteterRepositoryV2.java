@@ -1,24 +1,17 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETTYPE;
@@ -36,23 +29,17 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 @Repository
 @RequiredArgsConstructor
 public class AktiviteterRepositoryV2 {
-    @NonNull
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
     @Transactional
     public boolean tryLagreAktivitetData(KafkaAktivitetMelding aktivitet) {
-        try {
-            if (aktivitet.isHistorisk()) {
-                deleteById(aktivitet.getAktivitetId());
-                return true;
-            } else if (erNyVersjonAvAktivitet(aktivitet)) {
-                upsertAktivitet(aktivitet);
-                return true;
-            }
-        } catch (Exception e) {
-            String message = String.format("Kunne ikke lagre aktivitetdata fra topic for aktivitetid %s", aktivitet.getAktivitetId());
-            log.error(message, e);
+        if (aktivitet.isHistorisk()) {
+            deleteById(aktivitet.getAktivitetId());
+            return true;
+        } else if (erNyVersjonAvAktivitet(aktivitet)) {
+            upsertAktivitet(aktivitet);
+            return true;
         }
         return false;
     }
@@ -88,27 +75,23 @@ public class AktiviteterRepositoryV2 {
         ).orElse(-1L);
     }
 
-    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid, boolean brukIkkeAvtalteAktiviteter) {
-        String sql;
-        if (brukIkkeAvtalteAktiviteter) {
-            sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID);
-        } else {
-            sql = String.format("SELECT * FROM %s WHERE %s = ? AND %s", TABLE_NAME, AKTOERID, AVTALT);
-        }
-
-        List<AktivitetDTO> aktiviteter = Optional.ofNullable(
-                queryForObjectOrNull(() -> db.query(sql, this::mapToAktivitetDTOList, aktoerid.get()))
-        ).orElse(new ArrayList<>());
-
-        return new AktoerAktiviteter(aktoerid.get()).setAktiviteter(aktiviteter);
-    }
-
     public void deleteById(String aktivitetid) {
         log.info("Sletter alle aktiviteter med id {}", aktivitetid);
         db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTIVITETID), aktivitetid);
     }
 
-    private List<AktivitetDTO> mapToAktivitetDTOList(ResultSet rs) throws SQLException {
+    public List<AktivitetDTO> getPasserteAktiveUtdanningsAktiviter() {
+        final String sql = "SELECT * FROM aktiviteter WHERE NOT status = 'fullfort' AND date_trunc('day', tildato) < date_trunc('day', current_timestamp)";
+        return db.query(sql, this::mapToAktivitetDTOList);
+    }
+
+    public void setTilFullfort(String aktivitetid) {
+        log.info("Setter status flagget til aktivitet: {}, til verdien fullfort", aktivitetid);
+        db.update("UPDATE aktiviteter SET status = 'fullfort' WHERE aktivitetid = ?", aktivitetid);
+    }
+
+    @SneakyThrows
+    private List<AktivitetDTO> mapToAktivitetDTOList(ResultSet rs) {
         List<AktivitetDTO> aktiviteter = new ArrayList<>();
         while (rs.next()) {
             aktiviteter.add(new AktivitetDTO()
@@ -119,37 +102,5 @@ public class AktiviteterRepositoryV2 {
                     .setTilDato(rs.getTimestamp(TILDATO)));
         }
         return aktiviteter;
-    }
-
-    public void setTilFullfort(String aktivitetid) {
-        log.info("Setter status flagget til aktivitet: {}, til verdien fullfort", aktivitetid);
-        db.update(String.format("UPDATE %s SET %s = 'fullfort' WHERE %s = ?", TABLE_NAME, AVTALT, AKTIVITETID), aktivitetid);
-    }
-
-    public AktivitetStatus getAktivitetStatus(AktorId aktoerid, KafkaAktivitetMelding.AktivitetTypeData aktivitetType) {
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        List<AktivitetDTO> aktiveAktiviteter = getAktiviteterForAktoerid(aktoerid, false).getAktiviteter().stream()
-                .filter(AktivitetUtils::harIkkeStatusFullfort)
-                .filter(aktivitetDTO -> aktivitetType.name().toLowerCase().equals(aktivitetDTO.getAktivitetType()))
-                .collect(Collectors.toList());
-
-        Timestamp nesteStart = aktiveAktiviteter.stream()
-                .map(AktivitetDTO::getFraDato)
-                .filter(Objects::nonNull)
-                .filter(startDato -> startDato.toLocalDateTime().toLocalDate().isAfter(yesterday))
-                .min(Comparator.naturalOrder())
-                .orElse(null);
-        Timestamp nesteUtlopsdato = aktiveAktiviteter.stream()
-                .map(AktivitetDTO::getTilDato)
-                .filter(Objects::nonNull)
-                .filter(utlopsDato -> utlopsDato.toLocalDateTime().toLocalDate().isAfter(yesterday))
-                .min(Comparator.naturalOrder())
-                .orElse(null);
-
-        return new AktivitetStatus()
-                .setAktoerid(aktoerid)
-                .setAktiv(!aktiveAktiviteter.isEmpty())
-                .setNesteStart(nesteStart)
-                .setNesteUtlop(nesteUtlopsdato);
     }
 }
