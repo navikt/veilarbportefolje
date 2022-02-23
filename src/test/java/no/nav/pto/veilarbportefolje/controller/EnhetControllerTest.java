@@ -17,7 +17,7 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.NavIdent;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakServiceV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.ModiaPep;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
@@ -59,7 +59,7 @@ public class EnhetControllerTest {
         authContextHolder = AuthContextHolderThreadLocal.instance();
 
         AuthService authService = new AuthService(pep, modiaPep);
-        enhetController = new EnhetController(opensearchService, authService, mock(TiltakServiceV2.class), mock(MetricsClient.class));
+        enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(MetricsClient.class));
     }
 
     @Test

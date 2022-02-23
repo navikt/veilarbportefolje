@@ -18,7 +18,7 @@ import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakServiceV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
@@ -124,7 +124,7 @@ public class KafkaConfigCommon {
                              VedtakService vedtakService, DialogService dialogService, OppfolgingStartetService oppfolgingStartetService,
                              OppfolgingAvsluttetService oppfolgingAvsluttetService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
-                             MalService malService, OppfolginsbrukerService oppfolginsbrukerService, TiltakServiceV2 tiltakServiceV2,
+                             MalService malService, OppfolginsbrukerService oppfolginsbrukerService, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
                              YtelsesService ytelsesService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
                              UnleashService unleashService) {
@@ -170,7 +170,7 @@ public class KafkaConfigCommon {
                                         Topic.TILTAK_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(TiltakDTO.class),
-                                        tiltakServiceV2::behandleKafkaRecord
+                                        tiltakService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerRegistrertEvent>()
                                 .withLogging()

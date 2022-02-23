@@ -48,7 +48,7 @@ public class UtdanningsAktivitetService {
         } else {
             log.info("Lagrer aktivitet: {}", innhold.getAktivitetid());
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
-            aktivitetService.upsertOgIndekserAktiviteter(melding);
+            aktivitetService.upsertOgIndekserUtdanningsAktivitet(melding);
         }
         log.debug("Ferdig behandlet aktivitet: {}, pa aktor: {}, hendelse: {}", innhold.getAktivitetid(), aktorId, innhold.getHendelseId());
         arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
@@ -70,7 +70,7 @@ public class UtdanningsAktivitetService {
         return false;
     }
 
-    private KafkaAktivitetMelding mapTilKafkaAktivitetMelding(UtdanningsAktivitetInnhold melding, AktorId aktorId) {
+    public static KafkaAktivitetMelding mapTilKafkaAktivitetMelding(UtdanningsAktivitetInnhold melding, AktorId aktorId) {
         if (melding == null || aktorId == null) {
             return null;
         }

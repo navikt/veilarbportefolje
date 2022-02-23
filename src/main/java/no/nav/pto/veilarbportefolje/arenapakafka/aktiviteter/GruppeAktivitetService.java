@@ -13,7 +13,13 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
+import java.util.Optional;
+
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHendelseBasertPaOperasjon;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erUtgatt;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getAktorId;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getInnhold;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGoldenGate;
 
 @Slf4j
 @Service
@@ -35,14 +41,16 @@ public class GruppeAktivitetService {
                 kafkaMelding.partition(),
                 kafkaMelding.topic()
         );
-        behandleKafkaMeldingOracle(melding);
+        Optional<AktorId> aktorId = behandleKafkaMeldingOracle(melding);
         behandleKafkaMeldingPostgres(melding);
+
+        aktorId.ifPresent(opensearchIndexer::indekser);
     }
 
-    public void behandleKafkaMeldingOracle(GruppeAktivitetDTO kafkaMelding) {
+    public Optional<AktorId> behandleKafkaMeldingOracle(GruppeAktivitetDTO kafkaMelding) {
         GruppeAktivitetInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
-            return;
+            return Optional.empty();
         }
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
@@ -52,7 +60,7 @@ public class GruppeAktivitetService {
         gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(aktorId, personId);
         brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
 
-        opensearchIndexer.indekser(aktorId);
+        return Optional.of(aktorId);
     }
 
 
@@ -65,9 +73,6 @@ public class GruppeAktivitetService {
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         boolean aktiv = !(skalSlettesGoldenGate(kafkaMelding) || skalSletteGruppeAktivitet(innhold));
         gruppeAktivitetRepositoryV2.upsertGruppeAktivitet(innhold, aktorId, aktiv);
-        gruppeAktivitetRepositoryV2.utledOgLagreGruppeaktiviteter(aktorId);
-
-        brukerDataService.oppdaterAktivitetBrukerDataPostgres(aktorId);
     }
 
 

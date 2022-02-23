@@ -3,24 +3,26 @@ package no.nav.pto.veilarbportefolje.database;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aktiviteter.*;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDTO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -31,27 +33,14 @@ import static java.util.stream.Collectors.toList;
 public class BrukerDataService {
     private final AktivitetDAO aktivitetDAO;
     private final TiltakRepositoryV1 tiltakRepositoryV1;
-    private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
-    private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
     private final BrukerDataRepository brukerDataRepository;
 
     //POSTGRES
-    private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
-    private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
     private final YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2;
-    private final UnleashService unleashService;
-
-    public void oppdaterAktivitetBrukerDataPostgres(AktorId aktorId) {
-        oppdaterAktivitetBrukerData(aktorId, null, true);
-    }
 
     public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId) {
-        oppdaterAktivitetBrukerData(aktorId, personId, false);
-    }
-
-    public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId, boolean postgres) {
-        if (aktorId == null || (personId == null && !postgres)) {
+        if (aktorId == null || personId == null) {
             log.error("PersonId null pa bruker: {}", aktorId);
             return;
         }
@@ -59,8 +48,8 @@ public class BrukerDataService {
         Brukerdata brukerAktivitetTilstand = new Brukerdata();
         LocalDate idag = LocalDate.now();
 
-        List<Timestamp> sluttdatoer = postgres ? hentAlleSluttdatoerPostgres(aktorId) : hentAlleSluttdatoer(aktorId, personId);
-        List<Timestamp> startDatoer = postgres ? hentAlleStartdatoerPostgres(aktorId) : hentAlleStartdatoer(aktorId, personId);
+        List<Timestamp> sluttdatoer = hentAlleSluttdatoer(aktorId, personId);
+        List<Timestamp> startDatoer = hentAlleStartdatoer(aktorId, personId);
 
         Timestamp nyesteUtlopteDato = finnNyesteUtlopteAktivAktivitet(sluttdatoer, idag);
         Timestamp forigeAktivitetStart = finnForrigeAktivitetStartDatoer(startDatoer, idag);
@@ -76,11 +65,7 @@ public class BrukerDataService {
                 .setForrigeAktivitetStart(forigeAktivitetStart)
                 .setAktivitetStart(aktivitetStart)
                 .setNesteAktivitetStart(nesteAktivitetStart);
-        if (postgres) {
-            aktivitetStatusRepositoryV2.upsertAktivitetStatus(brukerAktivitetTilstand);
-        } else {
-            brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
-        }
+        brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
     }
 
     public void oppdaterYtelserOracle(AktorId aktorId, PersonId personId, Optional<YtelseDAO> innhold) {
@@ -93,17 +78,15 @@ public class BrukerDataService {
         }
 
         switch (innhold.get().getType()) {
-            case DAGPENGER:
+            case DAGPENGER -> {
                 leggTilYtelsesData(ytelsesTilstand, innhold.get());
                 leggTilRelevantDagpengeData(ytelsesTilstand, innhold.get());
-                break;
-            case AAP:
+            }
+            case AAP -> {
                 leggTilYtelsesData(ytelsesTilstand, innhold.get());
                 leggTilRelevantAAPData(ytelsesTilstand, innhold.get());
-                break;
-            case TILTAKSPENGER:
-                leggTilYtelsesData(ytelsesTilstand, innhold.get());
-                break;
+            }
+            case TILTAKSPENGER -> leggTilYtelsesData(ytelsesTilstand, innhold.get());
         }
 
         brukerDataRepository.upsertYtelser(ytelsesTilstand);
@@ -162,7 +145,7 @@ public class BrukerDataService {
                 .orElse(null);
     }
 
-    private static Timestamp finnForrigeAktivitetStartDatoer(List<Timestamp> startDatoer, LocalDate today) {
+    public static Timestamp finnForrigeAktivitetStartDatoer(List<Timestamp> startDatoer, LocalDate today) {
         return startDatoer
                 .stream()
                 .filter(aktivitet -> aktivitet.toLocalDateTime().toLocalDate().isBefore(today))
@@ -170,7 +153,7 @@ public class BrukerDataService {
                 .orElse(null);
     }
 
-    private static List<Timestamp> finnDatoerEtterDagensDato(List<Timestamp> aktiviteter, LocalDate today) {
+    public static List<Timestamp> finnDatoerEtterDagensDato(List<Timestamp> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()
                 .filter(aktivitet -> !aktivitet.toLocalDateTime().toLocalDate().isBefore(today))
@@ -209,42 +192,6 @@ public class BrukerDataService {
                 .filter(Objects::nonNull).collect(toList());
 
         sluttdatoer.addAll(aktiviteter);
-        sluttdatoer.addAll(gruppeAktiviteter);
-        sluttdatoer.sort(Comparator.naturalOrder());
-        return sluttdatoer;
-    }
-
-
-    private List<Timestamp> hentAlleStartdatoerPostgres(AktorId aktorId) {
-        List<Timestamp> startDatoer = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false).getAktiviteter().stream()
-                .filter(AktivitetUtils::harIkkeStatusFullfort)
-                .map(AktivitetDTO::getFraDato)
-                .filter(Objects::nonNull)
-                .collect(toList());
-        List<Timestamp> gruppeAktiviteter = gruppeAktivitetRepositoryV2.hentAktiveAktivteter(aktorId).stream()
-                .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeFra)
-                .filter(Objects::nonNull).collect(toList());
-        List<Timestamp> tiltak = tiltakRepositoryV2.hentStartDatoer(aktorId).stream()
-                .filter(Objects::nonNull).collect(toList());
-        startDatoer.addAll(tiltak);
-        startDatoer.addAll(gruppeAktiviteter);
-        startDatoer.sort(Comparator.naturalOrder());
-        return startDatoer;
-
-    }
-
-    private List<Timestamp> hentAlleSluttdatoerPostgres(AktorId aktorId) {
-        List<Timestamp> sluttdatoer = aktiviteterRepositoryV2.getAktiviteterForAktoerid(aktorId, false).getAktiviteter().stream()
-                .filter(AktivitetUtils::harIkkeStatusFullfort)
-                .map(AktivitetDTO::getTilDato)
-                .filter(Objects::nonNull)
-                .collect(toList());
-        List<Timestamp> gruppeAktiviteter = gruppeAktivitetRepositoryV2.hentAktiveAktivteter(aktorId).stream()
-                .map(GruppeAktivitetSchedueldDTO::getAktivitetperiodeTil)
-                .filter(Objects::nonNull).collect(toList());
-        List<Timestamp> tiltak = tiltakRepositoryV2.hentSluttdatoer(aktorId).stream()
-                .filter(Objects::nonNull).collect(toList());
-        sluttdatoer.addAll(tiltak);
         sluttdatoer.addAll(gruppeAktiviteter);
         sluttdatoer.sort(Comparator.naturalOrder());
         return sluttdatoer;

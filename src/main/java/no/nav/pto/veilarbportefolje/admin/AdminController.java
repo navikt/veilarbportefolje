@@ -212,7 +212,7 @@ public class AdminController {
     public void testHentUnderOppfolging() {
         authorizeAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
-        opensearchIndexer.testIndeksering(brukereUnderOppfolging);
+        opensearchIndexer.dryrunAvPostgresTilOpensearchMapping(brukereUnderOppfolging);
     }
 
     private void authorizeAdmin() {

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesServicePostgres;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -20,6 +21,7 @@ public class SchedulConfig implements SchedulingConfigurer{
     private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
     private final LeaderElectionClient leaderElectionClient;
+    private final YtelsesServicePostgres ytelsesServicePostgres;
 
     // Denne jobben må kjøre etter midnatt
     @Scheduled(cron = "0 1 0 * * ?")
@@ -41,18 +43,7 @@ public class SchedulConfig implements SchedulingConfigurer{
         }
     }
 
-    /*
-    @Scheduled(cron = "0 1 0 * * ?")
-    public void oppdaterBrukerAktiviteterPostgres() {
-        if (leaderElectionClient.isLeader()) {
-            brukerAktiviteterService.syncAktivitetOgBrukerDataPostgres();
-        } else {
-            log.info("(Postgres) Starter ikke jobb: oppdaterBrukerData");
-        }
-    }
-
     // Denne jobben må kjøre etter midnatt
-    @Scheduled(cron = "0 0 1 * * ?")
     public void oppdaterNyeYtelserPostgres() {
         if (leaderElectionClient.isLeader()) {
             ytelsesServicePostgres.oppdaterBrukereMedYtelserSomStarterIDagPostgres();
@@ -60,7 +51,6 @@ public class SchedulConfig implements SchedulingConfigurer{
             log.info("(Postgres) Starter ikke jobb: oppdaterYtelser");
         }
     }
-*/
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
@@ -69,5 +59,4 @@ public class SchedulConfig implements SchedulingConfigurer{
         taskScheduler.initialize();
         taskRegistrar.setTaskScheduler(taskScheduler);
     }
-
 }
