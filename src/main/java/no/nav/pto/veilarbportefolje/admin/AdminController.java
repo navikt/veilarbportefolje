@@ -228,7 +228,7 @@ public class AdminController {
         OppfolgingsBruker fraPostgres = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId), true).get();
         postgresOpensearchMapper.flettInnPostgresData(List.of(fraPostgres), true, true);
 
-        return "{ \"oracle\":"+JsonUtils.toJson(fraOracle)+", \"postgres\":" +JsonUtils.toJson(fraPostgres)+" ]";
+        return "{ \"oracle\":"+JsonUtils.toJson(fraOracle)+", \"postgres\":" +JsonUtils.toJson(fraPostgres)+" }";
     }
     private void authorizeAdmin() {
         final String ident = authContextHolder.getNavIdent().map(Id::toString).orElseThrow();
