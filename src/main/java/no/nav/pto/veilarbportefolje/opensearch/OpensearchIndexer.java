@@ -124,7 +124,7 @@ public class OpensearchIndexer {
         }
     }
 
-    private void leggTilTiltak(OppfolgingsBruker bruker) {
+    public void leggTilTiltak(OppfolgingsBruker bruker) {
         leggTilTiltak(Collections.singletonList(bruker));
     }
 
@@ -148,7 +148,7 @@ public class OpensearchIndexer {
         });
     }
 
-    private void leggTilAktiviteter(OppfolgingsBruker bruker) {
+    public void leggTilAktiviteter(OppfolgingsBruker bruker) {
         leggTilAktiviteter(Collections.singletonList(bruker));
     }
 
@@ -184,7 +184,7 @@ public class OpensearchIndexer {
         });
     }
 
-    private void leggTilSisteEndring(OppfolgingsBruker bruker) {
+    public void leggTilSisteEndring(OppfolgingsBruker bruker) {
         leggTilSisteEndring(Collections.singletonList(bruker));
     }
 
@@ -259,6 +259,10 @@ public class OpensearchIndexer {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(bolk, false).stream()
                     .filter(bruker -> bruker.getAktoer_id() != null)
                     .toList();
+            leggTilAktiviteter(brukere);
+            leggTilTiltak(brukere);
+            leggTilSisteEndring(brukere);
+
             postgresOpensearchMapper.flettInnPostgresData(brukere, true, true);
         });
     }

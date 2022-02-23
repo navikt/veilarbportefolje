@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -11,17 +12,18 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
+import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,8 +55,8 @@ public class AdminController {
     private final RegistreringService registreringService;
     private final ProfileringService profileringService;
     private final OpensearchAdminService opensearchAdminService;
-    private final HovedIndekserer hovedIndekserer;
-    private final UnleashService unleashService;
+    private final PostgresOpensearchMapper postgresOpensearchMapper;
+    private final BrukerRepository brukerRepository;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -215,6 +217,19 @@ public class AdminController {
         opensearchIndexer.dryrunAvPostgresTilOpensearchMapping(brukereUnderOppfolging);
     }
 
+    @PutMapping("/test/hentFraOracleOgPostgres")
+    public String testHentIndeksertPostgresOgOracleBruker(@RequestBody String aktoerId) {
+        authorizeAdmin();
+        OppfolgingsBruker fraOracle = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId), false).get();
+        opensearchIndexer.leggTilAktiviteter(fraOracle);
+        opensearchIndexer.leggTilTiltak(fraOracle);
+        opensearchIndexer.leggTilSisteEndring(fraOracle);
+
+        OppfolgingsBruker fraPostgres = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId), true).get();
+        postgresOpensearchMapper.flettInnPostgresData(List.of(fraPostgres), true, true);
+
+        return "{ \"oracle\":"+JsonUtils.toJson(fraOracle)+", \"postgres\":" +JsonUtils.toJson(fraPostgres)+" ]";
+    }
     private void authorizeAdmin() {
         final String ident = authContextHolder.getNavIdent().map(Id::toString).orElseThrow();
         if (!environmentProperties.getAdmins().contains(ident)) {
