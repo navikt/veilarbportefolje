@@ -163,8 +163,8 @@ public class ApplicationConfigTest {
 
 
     @Bean
-    public TestDataClient dbTestClient(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, RegistreringRepositoryV2 registreringRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
-        return new TestDataClient(jdbcTemplate, registreringRepositoryV2, oppfolgingsbrukerRepositoryV2, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2);
+    public TestDataClient dbTestClient(JdbcTemplate jdbcTemplateOracle, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, RegistreringRepositoryV2 registreringRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
+        return new TestDataClient(jdbcTemplateOracle, jdbcTemplatePostgres, registreringRepositoryV2, oppfolgingsbrukerRepositoryV2, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2);
     }
 
     @Bean
