@@ -29,6 +29,7 @@ import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaAktivitetIntegrasjonsTest.insertBruker;
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService.mapTilKafkaAktivitetMelding;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.FAR_IN_THE_FUTURE_DATE;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
@@ -94,7 +95,7 @@ public class UtdanningsAktivitetTest {
                 .hentAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
-        assertThat(pre_apostgresAktivitet.getAktivitetUtdanningaktivitetUtlopsdato()).isNull();
+        assertThat(pre_apostgresAktivitet.getAktivitetUtdanningaktivitetUtlopsdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
         assertThat(post_apostgresAktivitet.getAktivitetUtdanningaktivitetUtlopsdato().substring(0, 10))
                 .isEqualTo(utlopsdato);
     }

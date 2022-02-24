@@ -14,7 +14,7 @@ import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
 public class DateUtils {
 
-    private static final String FAR_IN_THE_FUTURE_DATE = "3017-10-07T00:00:00Z";
+    public static final String FAR_IN_THE_FUTURE_DATE = "3017-10-07T00:00:00Z";
     private static final String EPOCH_0 = "1970-01-01T00:00:00Z";
 
     public static Duration calculateTimeElapsed(Instant instant) {

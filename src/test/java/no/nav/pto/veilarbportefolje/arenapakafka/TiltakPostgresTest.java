@@ -27,6 +27,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.util.DateUtils.FAR_IN_THE_FUTURE_DATE;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -89,7 +90,7 @@ public class TiltakPostgresTest {
         assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo("1990-01-01T22:59:59Z");
         assertThat(postgresAktivitet.getForrigeAktivitetStart()).isEqualTo("1988-12-31T23:00:00Z");
 
-        assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isNull();
+        assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
         assertThat(postgresAktivitet.getNesteAktivitetStart()).isNull();
         assertThat(postgresAktivitet.getAktivitetStart()).isNull();
     }

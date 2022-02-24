@@ -17,38 +17,38 @@ import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType.mote;
 import static no.nav.pto.veilarbportefolje.database.BrukerDataService.finnDatoerEtterDagensDato;
 import static no.nav.pto.veilarbportefolje.database.BrukerDataService.finnForrigeAktivitetStartDatoer;
 import static no.nav.pto.veilarbportefolje.database.BrukerDataService.finnNyesteUtlopteAktivAktivitet;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 public class PostgresAktivitetMapper {
     public static PostgresAktivitetEntity build(List<AktivitetEntity> aktiveAktivteter) {
+        PostgresAktivitetEntity entity = new PostgresAktivitetEntity();
         if(aktiveAktivteter == null){
-            return new PostgresAktivitetEntity()
+            return entity
                     .setAktiviteter(new HashSet<>())
                     .setTiltak(new HashSet<>());
         }
-        PostgresAktivitetEntity entity = new PostgresAktivitetEntity();
-
-        byggAktivitetStatusBrukerData(entity, aktiveAktivteter);
-        byggAktivitetBrukerData(entity, aktiveAktivteter);
-
-        Set<String> aktiviteter = aktiveAktivteter.stream()
+        Set<String> aktiveAktiviteter = aktiveAktivteter.stream()
                 .map(AktivitetEntity::getAktivitetsType)
                 .map(AktivitetsType::name)
                 .collect(Collectors.toSet());
-        Set<String> tiltak = aktiveAktivteter.stream()
+        Set<String> aktiveTiltak = aktiveAktivteter.stream()
                 .map(AktivitetEntity::getMuligTiltaksNavn)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+
+        byggAktivitetStatusBrukerData(entity, aktiveAktivteter);
+        byggAktivitetBrukerData(entity, aktiveAktivteter);
         return entity
-                .setAktiviteter(aktiviteter)
-                .setTiltak(tiltak);
+                .setAktiviteter(aktiveAktiviteter)
+                .setTiltak(aktiveTiltak);
     }
 
     private static void byggAktivitetStatusBrukerData(PostgresAktivitetEntity postgresAktivitetEntity, List<AktivitetEntity> alleAktiviter) {
         LocalDate idag = LocalDate.now();
 
-        Timestamp moteFremtidigUtlopsdato = null;
         Timestamp moteFremtidigStartdato = null;
+        Timestamp moteFremtidigUtlopsdato = null;
         Timestamp stillingFremtidigUtlopsdato = null;
         Timestamp egenFremtidigUtlopsdato = null;
         Timestamp behandlingFremtidigUtlopsdato = null;
@@ -78,17 +78,25 @@ public class PostgresAktivitetMapper {
             }
         }
         postgresAktivitetEntity
-                .setAktivitetEgenUtlopsdato(toIsoUTC(egenFremtidigUtlopsdato))
-                .setAktivitetStillingUtlopsdato(toIsoUTC(stillingFremtidigUtlopsdato))
                 .setAktivitetMoteStartdato(toIsoUTC(moteFremtidigStartdato))
-                .setAktivitetMoteUtlopsdato(toIsoUTC(moteFremtidigUtlopsdato))
-                .setAktivitetBehandlingUtlopsdato(toIsoUTC(behandlingFremtidigUtlopsdato))
-                .setAktivitetIjobbUtlopsdato(toIsoUTC(ijobbFremtidigUtlopsdato))
-                .setAktivitetSokeavtaleUtlopsdato(toIsoUTC(sokeavtaleFremtidigUtlopsdato))
-                .setAktivitetTiltakUtlopsdato(toIsoUTC(tiltakFremtidigUtlopsdato))
-                .setAktivitetUtdanningaktivitetUtlopsdato(toIsoUTC(utdanningaktivitetFremtidigUtlopsdato))
-                .setAktivitetGruppeaktivitetUtlopsdato(toIsoUTC(gruppeaktivitetFremtidigUtlopsdato));
-
+                .setAktivitetEgenUtlopsdato(Optional.ofNullable(toIsoUTC(egenFremtidigUtlopsdato))
+                        .orElse(getFarInTheFutureDate()))
+                .setAktivitetStillingUtlopsdato(Optional.ofNullable(toIsoUTC(stillingFremtidigUtlopsdato))
+                        .orElse(getFarInTheFutureDate()))
+                .setAktivitetMoteUtlopsdato(Optional.ofNullable(toIsoUTC(moteFremtidigUtlopsdato))
+                        .orElse(getFarInTheFutureDate()))
+                .setAktivitetBehandlingUtlopsdato(Optional.ofNullable(toIsoUTC(behandlingFremtidigUtlopsdato))
+                        .orElse(getFarInTheFutureDate()))
+                .setAktivitetIjobbUtlopsdato(Optional.ofNullable(toIsoUTC(ijobbFremtidigUtlopsdato))
+                        .orElse(getFarInTheFutureDate()))
+                .setAktivitetSokeavtaleUtlopsdato(Optional.ofNullable(toIsoUTC(sokeavtaleFremtidigUtlopsdato))
+                        .orElse(getFarInTheFutureDate()))
+                .setAktivitetTiltakUtlopsdato(Optional.ofNullable(toIsoUTC(tiltakFremtidigUtlopsdato))
+                        .orElse(getFarInTheFutureDate()))
+                .setAktivitetUtdanningaktivitetUtlopsdato(Optional.ofNullable(toIsoUTC(utdanningaktivitetFremtidigUtlopsdato))
+                        .orElse(getFarInTheFutureDate()))
+                .setAktivitetGruppeaktivitetUtlopsdato(Optional.ofNullable(toIsoUTC(gruppeaktivitetFremtidigUtlopsdato))
+                        .orElse(getFarInTheFutureDate()));
     }
 
     private static void byggAktivitetBrukerData(PostgresAktivitetEntity postgresAktivitetEntity, List<AktivitetEntity> alleAktiviter) {
