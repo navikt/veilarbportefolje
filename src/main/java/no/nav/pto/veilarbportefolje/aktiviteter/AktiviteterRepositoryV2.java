@@ -65,7 +65,7 @@ public class AktiviteterRepositoryV2 {
         if (databaseVersjon == null) {
             return true;
         }
-        return kommendeVersjon.compareTo(databaseVersjon) > 0;
+        return kommendeVersjon.compareTo(databaseVersjon) >= 0;
     }
 
     private Long getVersjon(String aktivitetId) {

@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,12 +27,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final OpensearchIndexer opensearchIndexer;
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
-        log.info(
-                "Behandler kafka-aktivtet-melding på aktorId: {} med aktivtetId: {}, version: {}",
-                aktivitetData.getAktorId(),
-                aktivitetData.getAktivitetId(),
-                aktivitetData.getVersion()
-        );
         sisteEndringService.behandleAktivitet(aktivitetData);
 
         //ORACLE
@@ -48,6 +43,18 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         if (bleProsessert) {
             opensearchIndexer.indekser(aktorId);
         }
+    }
+
+    public void oppdaterKunPostgresAktiviteter(ConsumerRecord<String, KafkaAktivitetMelding> kafkaMelding){
+        log.info(
+                "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
+                kafkaMelding.key(),
+                kafkaMelding.offset(),
+                kafkaMelding.partition(),
+                kafkaMelding.topic()
+        );
+        KafkaAktivitetMelding aktivitetData = kafkaMelding.value();
+        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
     }
 
     public void utledAktivitetstatuserForAktoerid(AktorId aktoerId) {
