@@ -37,13 +37,13 @@ public class BrukerAktiviteterService {
         List<AktorId> brukereSomMaOppdateres = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         aktivitetService.deaktiverUtgatteUtdanningsAktivteterPostgres();
 
-        if(!mapAktiviteterFraPostgresTilOpenSearch(unleashService)){
+        if (!mapAktiviteterFraPostgresTilOpenSearch(unleashService)) {
             log.info("Oppdaterer brukerdata for alle brukere under oppfolging: {}", brukereSomMaOppdateres.size());
             syncAktivitetOgBrukerData(brukereSomMaOppdateres);
             log.info("Avslutter jobb: oppdater BrukerAktiviteter og BrukerData");
         }
 
-        if(brukAvAliasIndeksering(unleashService)){
+        if (brukAvAliasIndeksering(unleashService)) {
             hovedIndekserer.hovedIndeksering(brukereSomMaOppdateres);
         } else {
             opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereSomMaOppdateres);
@@ -53,7 +53,7 @@ public class BrukerAktiviteterService {
 
     public void syncAktivitetOgBrukerData(List<AktorId> brukere) {
         brukere.forEach(aktorId -> {
-            log.info("Oppdater BrukerAktiviteter og BrukerData for aktorId: {}", aktorId);
+                    log.info("Oppdater BrukerAktiviteter og BrukerData for aktorId: {}", aktorId);
                     if (aktorId != null) {
                         try {
                             PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
@@ -76,7 +76,7 @@ public class BrukerAktiviteterService {
     }
 
     public void syncAktiviteterOgBrukerData(PersonId personId, AktorId aktorId) {
-        if(personId == null){
+        if (personId == null) {
             // TODO: check om utdatert
             log.warn("AktoerId ble ikke oppdatert da personId er null: {}. Inaktiv aktorId?", aktorId.get());
             return;
