@@ -15,6 +15,7 @@ import java.util.List;
 
 import static java.lang.String.valueOf;
 import static java.util.concurrent.ThreadLocalRandom.current;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.FAR_IN_THE_FUTURE_DATE;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
@@ -61,7 +62,7 @@ public class AktiviteterV2Test {
         Assertions.assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isNull();
         Assertions.assertThat(postgresAktivitet.getForrigeAktivitetStart()).isNull();
 
-        Assertions.assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isNull();
+        Assertions.assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
         Assertions.assertThat(postgresAktivitet.getNesteAktivitetStart()).isNull();
         Assertions.assertThat(postgresAktivitet.getAktivitetStart()).isEqualTo(toIsoUTC(fraDato));
         Assertions.assertThat(postgresAktivitet.getAktivitetEgenUtlopsdato()).isEqualTo(toIsoUTC(tilDato));
@@ -129,7 +130,7 @@ public class AktiviteterV2Test {
         Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.mote.name())).isTrue();
         Assertions.assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo(toIsoUTC(tilDato));
 
-        Assertions.assertThat(postgresAktivitet.getAktivitetMoteUtlopsdato()).isNull();
+        Assertions.assertThat(postgresAktivitet.getAktivitetMoteUtlopsdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
         Assertions.assertThat(postgresAktivitet.getAktivitetMoteStartdato()).isNull();
     }
 
@@ -182,7 +183,7 @@ public class AktiviteterV2Test {
         Assertions.assertThat(postgresAktivitet.getAktivitetStart()).isEqualTo(toIsoUTC(fraDato1));
         Assertions.assertThat(postgresAktivitet.getNesteAktivitetStart()).isEqualTo(toIsoUTC(fraDato2));
 
-        Assertions.assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isNull();
+        Assertions.assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
         Assertions.assertThat(postgresAktivitet.getAktivitetBehandlingUtlopsdato()).isEqualTo(toIsoUTC(tilDato1));
         Assertions.assertThat(postgresAktivitet.getAktivitetMoteUtlopsdato()).isEqualTo(toIsoUTC(tilDato2));
         Assertions.assertThat(postgresAktivitet.getAktivitetMoteStartdato()).isEqualTo(toIsoUTC(fraDato2));
