@@ -98,6 +98,10 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         List<AktivitetDTO> utdanningsAktiviteter = aktiviteterRepositoryV2.getPasserteAktiveUtdanningsAktiviter();
         log.info("Skal markere: {} utdanningsaktivteter som utgått", utdanningsAktiviteter.size());
         utdanningsAktiviteter.forEach(aktivitetDTO -> {
+                    if(!AktivitetsType.utdanningaktivitet.name().equals(aktivitetDTO.getAktivitetType())){
+                        log.error("Feil i utdanningsaktivteter sql!!!");
+                        return;
+                    }
                     log.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato());
                     aktiviteterRepositoryV2.setTilFullfort(aktivitetDTO.getAktivitetID());
                 }

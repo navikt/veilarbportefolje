@@ -15,8 +15,6 @@ import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETTYPE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AVTALT;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.FRADATO;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.STATUS;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TABLE_NAME;
@@ -45,14 +43,16 @@ public class AktiviteterRepositoryV2 {
     }
 
     public void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
-        db.update("INSERT INTO " + TABLE_NAME +
-                        " (" + AKTIVITETID + ", " + AKTOERID + ", " + AKTIVITETTYPE + ", " + AVTALT + ", " + FRADATO + ", " + TILDATO + ", " + STATUS + ", " + VERSION + ") " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
-                        "ON CONFLICT (" + AKTIVITETID + ") " +
-                        "DO UPDATE SET (" + AKTOERID + ", " + AKTIVITETTYPE + ", " + AVTALT + ", " + FRADATO + ", " + TILDATO + ", " + STATUS + ", " + VERSION + ") = (?, ?, ?, ?, ?, ?, ?)",
-                aktivitet.getAktivitetId(),
-                aktivitet.getAktorId(), aktivitet.getAktivitetType().name().toLowerCase(), aktivitet.isAvtalt(), toTimestamp(aktivitet.getFraDato()), toTimestamp(aktivitet.getTilDato()), aktivitet.getAktivitetStatus().name().toLowerCase(), aktivitet.getVersion(),
-                aktivitet.getAktorId(), aktivitet.getAktivitetType().name().toLowerCase(), aktivitet.isAvtalt(), toTimestamp(aktivitet.getFraDato()), toTimestamp(aktivitet.getTilDato()), aktivitet.getAktivitetStatus().name().toLowerCase(), aktivitet.getVersion()
+        db.update("""
+                        INSERT INTO aktiviteter
+                        (AKTIVITETID, AKTOERID, AKTIVITETTYPE, AVTALT , FRADATO, TILDATO, STATUS, VERSION)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT (AKTIVITETID)
+                        DO UPDATE SET (AKTOERID, AKTIVITETTYPE, AVTALT, FRADATO, TILDATO, STATUS, VERSION) =
+                        (excluded.aktoerid, excluded.aktivitettype, excluded.avtalt, excluded.fradato, excluded.tildato, excluded.status, excluded.version)
+                        """,
+                aktivitet.getAktivitetId(), aktivitet.getAktorId(), aktivitet.getAktivitetType().name().toLowerCase(), aktivitet.isAvtalt(),
+                toTimestamp(aktivitet.getFraDato()), toTimestamp(aktivitet.getTilDato()), aktivitet.getAktivitetStatus().name().toLowerCase(), aktivitet.getVersion()
         );
     }
 
@@ -81,7 +81,12 @@ public class AktiviteterRepositoryV2 {
     }
 
     public List<AktivitetDTO> getPasserteAktiveUtdanningsAktiviter() {
-        final String sql = "SELECT * FROM aktiviteter WHERE NOT status = 'fullfort' AND date_trunc('day', tildato) < date_trunc('day', current_timestamp)";
+        final String sql = """
+                    SELECT * FROM aktiviteter
+                    WHERE aktivitettype = 'utdanningaktivitet'
+                    AND NOT status = 'fullfort'
+                    AND date_trunc('day', tildato) < date_trunc('day', current_timestamp)
+                    """;
         return db.query(sql, this::mapToAktivitetDTOList);
     }
 
