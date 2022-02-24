@@ -18,7 +18,7 @@ import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakServiceV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
@@ -30,13 +30,13 @@ import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
-import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.AivenAvroDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.OnpremAvroDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
+import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
 import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederDTO;
@@ -76,6 +76,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 @Configuration
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
+    public final static String CLIENT_ID_REWIND_CONFIG = "veilarbportefolje-consumer-rewind";
     public static final String KAFKA_BROKERS = EnvironmentUtils.getRequiredProperty("KAFKA_BROKERS_URL");
     private static final Credentials serviceUserCredentials = getCredentials("service_user");
     private static final String KAFKA_SCHEMAS_URL = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMAS_URL");
@@ -124,7 +125,7 @@ public class KafkaConfigCommon {
                              VedtakService vedtakService, DialogService dialogService, OppfolgingStartetService oppfolgingStartetService,
                              OppfolgingAvsluttetService oppfolgingAvsluttetService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
-                             MalService malService, OppfolgingsbrukerService oppfolginsbrukerService, TiltakServiceV2 tiltakServiceV2,
+                             MalService malService, OppfolgingsbrukerService oppfolgingsbrukerService, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
                              YtelsesService ytelsesService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
                              UnleashService unleashService) {
@@ -170,7 +171,7 @@ public class KafkaConfigCommon {
                                         Topic.TILTAK_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(TiltakDTO.class),
-                                        tiltakServiceV2::behandleKafkaRecord
+                                        tiltakService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerRegistrertEvent>()
                                 .withLogging()
@@ -236,7 +237,7 @@ public class KafkaConfigCommon {
                                         Topic.ENDRING_PAA_OPPFOLGINGSBRUKER.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
-                                        oppfolginsbrukerService::behandleKafkaRecord
+                                        oppfolgingsbrukerService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
                                 .withLogging()
@@ -367,6 +368,26 @@ public class KafkaConfigCommon {
                                 .withToggle(kafkaAivenUnleash)
                                 .build())
                 .collect(Collectors.toList());
+
+
+        Properties aivenConsumerRewindProperties = aivenDefaultConsumerProperties(CLIENT_ID_REWIND_CONFIG);
+        aivenConsumerRewindProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
+        consumerClientAiven.add(
+                KafkaConsumerClientBuilder.builder()
+                        .withProperties(aivenConsumerRewindProperties)
+                        .withTopicConfig(new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.AIVEN_AKTIVITER_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(KafkaAktivitetMelding.class),
+                                        aktivitetService::oppdaterKunPostgresAktiviteter
+                                ))
+                        .withToggle(kafkaAivenUnleash)
+                        .build()
+        );
 
         consumerClientsOnPrem = topicConfigsOnPrem.stream()
                 .map(config ->

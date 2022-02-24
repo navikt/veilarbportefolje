@@ -9,6 +9,7 @@ import static no.nav.common.featuretoggle.UnleashUtils.resolveUnleashContextFrom
 public class FeatureToggle {
     private FeatureToggle() {
     }
+    public static final String POSTGRES_OS = "veilarbportefolje.postgres_opensearchV2";
     public static final String ARBEIDSLISTA_POSTGRES = "veilarbportefolje.arbeidslista_med_postgres";
     public static final String ALIAS_INDEKSERING = "veilarbportefolje.aliasIndeksering";
 
@@ -21,5 +22,9 @@ public class FeatureToggle {
 
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
+    }
+
+    public static boolean mapAktiviteterFraPostgresTilOpenSearch(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.POSTGRES_OS);
     }
 }

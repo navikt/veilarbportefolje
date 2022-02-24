@@ -3,11 +3,14 @@ package no.nav.pto.veilarbportefolje.arenapakafka;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.aktiviteter.*;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.*;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetDTO;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.Table;
@@ -15,7 +18,11 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
 import no.nav.sbl.sql.SqlUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -27,27 +34,35 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class GruppeAktivitetTest {
     private final GruppeAktivitetService gruppeAktivitetService;
-    private final AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2;
+    private final AktivitetOpensearchService aktivitetOpensearchService;
     private final JdbcTemplate jdbcTemplate;
     private final AktivitetDAO aktivitetDAO;
 
-    private final AktorId aktorId = AktorId.of("1000123");
-    private final Fnr fnr = Fnr.of("12345678912");
-    private final VeilederId veilederId = VeilederId.of("Z123456");
+    private final AktorId aktorId;
+    private final Fnr fnr;
+    private final VeilederId veilederId;
     private final EnhetId testEnhet = EnhetId.of("0000");
-    private final PersonId personId = PersonId.of("123");
+    private final PersonId personId;
 
     @Autowired
-    public GruppeAktivitetTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, GruppeAktivitetRepository gruppeAktivitetRepository, GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2, AktivitetStatusRepositoryV2 aktivitetStatusRepositoryV2) {
+    public GruppeAktivitetTest(AktivitetDAO aktivitetDAO, JdbcTemplate jdbcTemplate, GruppeAktivitetRepository gruppeAktivitetRepository, GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService) {
+        this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.jdbcTemplate = jdbcTemplate;
         this.aktivitetDAO = aktivitetDAO;
-        this.aktivitetStatusRepositoryV2 = aktivitetStatusRepositoryV2;
+        this.veilederId = randomVeilederId();
+        this.personId = randomPersonId();
+        this.aktorId = randomAktorId();
+        this.fnr = randomFnr();
 
         AktorClient aktorClient = mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
@@ -78,8 +93,18 @@ public class GruppeAktivitetTest {
     public void skal_komme_i_gruppe_aktivitet_V2() {
         GruppeAktivitetDTO gruppeAktivitet = getInsertDTO();
         gruppeAktivitetService.behandleKafkaMeldingPostgres(gruppeAktivitet);
-        Optional<AktivitetStatus> aktivitetStatus = aktivitetStatusRepositoryV2.hentAktivitetTypeStatus(aktorId.get(), AktivitetTyper.gruppeaktivitet.name());
-        assertThat(aktivitetStatus).isPresent();
+
+        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
+                .hentAktivitetData(List.of(aktorId))
+                .get(aktorId));
+
+        //Opensearch mapping
+        Assertions.assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(0);
+        Assertions.assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.gruppeaktivitet.name())).isTrue();
+
+        Assertions.assertThat(postgresAktivitet.getAktivitetGruppeaktivitetUtlopsdato()).isNotNull();
+        Assertions.assertThat(postgresAktivitet.getNesteAktivitetStart()).isNull();
+        Assertions.assertThat(postgresAktivitet.getAktivitetStart()).isNull();
     }
 
     @Test
@@ -132,7 +157,7 @@ public class GruppeAktivitetTest {
         }
         return aktivitetstatusForBrukere.stream()
                 .filter(AktivitetStatus::isAktiv)
-                .filter(x -> x.getAktivitetType().equals(AktivitetTyper.gruppeaktivitet.name()))
+                .filter(x -> x.getAktivitetType().equals(AktivitetsType.gruppeaktivitet.name()))
                 .findFirst();
     }
 

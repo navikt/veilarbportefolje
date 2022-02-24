@@ -7,7 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.BrukertiltakV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.database.Table;
@@ -153,7 +153,7 @@ public class TiltakRepositoryV1 {
 
         boolean aktiv = !tiltak.isEmpty();
         AktivitetStatus aktivitetStatus = new AktivitetStatus()
-                .setAktivitetType(AktivitetTyper.tiltak.name())
+                .setAktivitetType(AktivitetsType.tiltak.name())
                 .setAktiv(aktiv)
                 .setAktoerid(aktorId)
                 .setPersonid(personId)

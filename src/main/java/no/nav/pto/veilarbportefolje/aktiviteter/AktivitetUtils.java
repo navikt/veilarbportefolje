@@ -3,37 +3,27 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.Brukertiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import no.nav.pto.veilarbportefolje.util.DbUtils;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraKafka;
 
 @Slf4j
 public class AktivitetUtils {
-    private static final String ARENA_AKTIVITET_DATOFILTER = "2017-12-04";
-    private static final String DATO_FORMAT = "yyyy-MM-dd";
-
     public static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(AktoerAktiviteter aktoerAktiviteter,
                                                                            BrukerService brukerService) {
         AktorId aktoerId = AktorId.of(aktoerAktiviteter.getAktoerid());
@@ -175,34 +165,6 @@ public class AktivitetUtils {
 
     public static String startDatoToIsoUtcString(AktivitetStatus status) {
         return Optional.ofNullable(status).map(AktivitetStatus::getNesteStart).map(DateUtils::toIsoUTC).orElse(null);
-    }
-
-    public static Map<Fnr, Set<Brukertiltak>> filtrerBrukertiltak(List<Brukertiltak> brukertiltak) {
-        return brukertiltak
-                .stream()
-                .filter(tiltak -> etterFilterDato(tiltak.getTildato()))
-                .collect(toMap(Brukertiltak::getFnr, DbUtils::toSet,
-                        (oldValue, newValue) -> {
-                            oldValue.addAll(newValue);
-                            return oldValue;
-                        }
-                ));
-    }
-
-
-    public static boolean etterFilterDato(Timestamp tilDato) {
-        Timestamp datofilter = parseDato(ARENA_AKTIVITET_DATOFILTER);
-        return tilDato == null || datofilter == null || datofilter.before(tilDato);
-    }
-
-    public static Timestamp parseDato(String konfigurertDato) {
-        try {
-            Date parse = new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
-            return new Timestamp(parse.getTime());
-        } catch (Exception e) {
-            log.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
-            return null;
-        }
     }
 
     public static boolean harIkkeStatusFullfort(AktivitetDTO aktivitetDTO) {

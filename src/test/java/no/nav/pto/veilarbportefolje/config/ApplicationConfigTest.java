@@ -8,7 +8,6 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
@@ -55,6 +54,8 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.AktoerDataOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -107,7 +108,6 @@ import static org.mockito.Mockito.when;
         HovedIndekserer.class,
         AktivitetDAO.class,
         AktiviteterRepositoryV2.class,
-        AktivitetStatusRepositoryV2.class,
         BrukerRepository.class,
         OppfolgingRepository.class,
         OppfolgingRepositoryV2.class,
@@ -141,6 +141,8 @@ import static org.mockito.Mockito.when;
         BrukerDataService.class,
         BrukerDataRepository.class,
         PostgresOpensearchMapper.class,
+        AktoerDataOpensearchMapper.class,
+        AktivitetOpensearchService.class,
         YtelsesService.class,
         YtelsesServicePostgres.class,
         YtelsesRepository.class,

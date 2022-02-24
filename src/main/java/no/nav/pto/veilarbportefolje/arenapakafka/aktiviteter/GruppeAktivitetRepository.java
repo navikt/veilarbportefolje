@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -87,7 +87,7 @@ public class GruppeAktivitetRepository {
         boolean aktiv = (nesteUtlopsdato != null
                 && gruppeAktiviteter.stream().anyMatch(GruppeAktivitetSchedueldDTO::isAktiv));
         AktivitetStatus aktivitetStatus = new AktivitetStatus()
-                .setAktivitetType(AktivitetTyper.gruppeaktivitet.name())
+                .setAktivitetType(AktivitetsType.gruppeaktivitet.name())
                 .setAktiv(aktiv)
                 .setAktoerid(aktorId)
                 .setPersonid(personId)
