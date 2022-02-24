@@ -47,7 +47,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
     public void oppdaterKunPostgresAktiviteter(ConsumerRecord<String, KafkaAktivitetMelding> kafkaMelding){
         log.info(
-                "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
+                "Rewind: Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
                 kafkaMelding.key(),
                 kafkaMelding.offset(),
                 kafkaMelding.partition(),
