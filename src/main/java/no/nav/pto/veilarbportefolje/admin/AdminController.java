@@ -252,8 +252,8 @@ public class AdminController {
         partition(brukereUnderOppfolging, 1000)
                 .forEach(bulk -> {
                     List<OppfolgingsBruker> fraPostgres = brukerRepository.hentBrukereFraView(bulk, true);
+                    opensearchIndexer.leggTilSisteEndring(fraPostgres);
                     postgresOpensearchMapper.flettInnPostgresData(fraPostgres, true, false);
-
                 });
         long t1Postgres = System.nanoTime();
 
