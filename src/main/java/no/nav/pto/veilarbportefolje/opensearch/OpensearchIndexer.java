@@ -128,7 +128,7 @@ public class OpensearchIndexer {
         leggTilTiltak(Collections.singletonList(bruker));
     }
 
-    private void leggTilTiltak(List<OppfolgingsBruker> brukere) {
+    public void leggTilTiltak(List<OppfolgingsBruker> brukere) {
         validateBatchSize(brukere);
 
         List<AktorId> aktorIder = brukere.stream()
@@ -152,7 +152,7 @@ public class OpensearchIndexer {
         leggTilAktiviteter(Collections.singletonList(bruker));
     }
 
-    private void leggTilAktiviteter(List<OppfolgingsBruker> brukere) {
+    public void leggTilAktiviteter(List<OppfolgingsBruker> brukere) {
         if (brukere == null || brukere.isEmpty()) {
             throw new IllegalArgumentException();
         }
@@ -188,7 +188,7 @@ public class OpensearchIndexer {
         leggTilSisteEndring(Collections.singletonList(bruker));
     }
 
-    private void leggTilSisteEndring(List<OppfolgingsBruker> brukere) {
+    public void leggTilSisteEndring(List<OppfolgingsBruker> brukere) {
         if (brukere == null || brukere.isEmpty()) {
             throw new IllegalArgumentException();
         }

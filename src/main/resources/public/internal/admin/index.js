@@ -363,6 +363,7 @@ function handleTest(e) {
 const testHentPostgresOracleForm = document.getElementById('testHentPostgresOracleForm')
 const testInputHentAktoerId = document.getElementById('testInputHentAktoerId');
 testHentPostgresOracleForm.addEventListener('submit', handleHentPostgresOracleTest);
+
 function handleHentPostgresOracleTest(e) {
     e.preventDefault()
     const aktoerId = testInputHentAktoerId.value;
@@ -374,6 +375,19 @@ function handleHentPostgresOracleTest(e) {
         )
     }
 }
+
+const hastighetPostgresForm = document.getElementById('hastighetPostgresForm')
+hastighetPostgresForm.addEventListener('submit', handleTestHastighet);
+function handleTestHastighet(e) {
+    e.preventDefault()
+    fetchData(
+        '/veilarbportefolje/api/admin/test/hastighetFraOracleOgPostgres',
+        {method: 'POST', credentials: 'same-origin'},
+        'hastighetRes'
+    )
+
+}
+
 
 function sjekkStatus(resp) {
     if (!resp.ok) {
