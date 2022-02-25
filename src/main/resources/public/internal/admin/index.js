@@ -148,37 +148,6 @@ function handleOppdaterBrukere(e) {
 }
 
 
-const oppdaterbrukerAktiviteterForm = document.getElementById('oppdaterbrukerAktiviteter');
-oppdaterbrukerAktiviteterForm.addEventListener('submit', handleOppdaterBrukerAktiviteter)
-const fnrInputOppdaterAktiviteter = document.getElementById('fnroppdaterbrukerAktiviteter');
-
-function handleOppdaterBrukerAktiviteter(e) {
-    e.preventDefault();
-
-    const fnr = fnrInputOppdaterAktiviteter.value;
-    if (fnr && fnr.length > 0) {
-        fetchData(
-            `/veilarbportefolje/api/admin/brukerAktiviteter`,
-            {method: 'PUT', credentials: 'same-origin', body: fnr},
-            'oppdaterbrukerAktiviteterResponse'
-        );
-    }
-}
-
-const oppdaterbrukerAktiviteterForAlleForm = document.getElementById('oppdaterallebrukerAktiviteter');
-oppdaterbrukerAktiviteterForAlleForm.addEventListener('submit', handleOppdaterBrukerAktiviteterForAlle)
-
-function handleOppdaterBrukerAktiviteterForAlle(e) {
-    e.preventDefault();
-    if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
-        fetchData(
-            `/veilarbportefolje/api/admin/brukerAktiviteter/allUsers`,
-            {method: 'PUT', credentials: 'same-origin'},
-            'oppdaterallebrukerAktiviteterResponse'
-        );
-    }
-}
-
 const oppdaterYtelserForAlleForm = document.getElementById('oppdateralleYtelser');
 oppdaterYtelserForAlleForm.addEventListener('submit', handleOppdaterYtelserForAlle)
 
