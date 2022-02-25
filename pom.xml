@@ -229,7 +229,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.33</version>
+            <version>1.7.35</version>
         </dependency>
 
         <!--Jackson-->
@@ -273,7 +273,7 @@
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc-template</artifactId>
-            <version>4.31.0</version>
+            <version>4.32.0</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
