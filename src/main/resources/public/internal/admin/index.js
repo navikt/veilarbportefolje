@@ -376,19 +376,6 @@ function handleHentPostgresOracleTest(e) {
     }
 }
 
-const hastighetPostgresForm = document.getElementById('hastighetPostgresForm')
-hastighetPostgresForm.addEventListener('submit', handleTestHastighet);
-function handleTestHastighet(e) {
-    e.preventDefault()
-    fetchData(
-        '/veilarbportefolje/api/admin/test/hastighetFraOracleOgPostgres',
-        {method: 'GET', credentials: 'same-origin'},
-        'hastighetRes'
-    )
-
-}
-
-
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);

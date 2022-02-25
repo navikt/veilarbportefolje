@@ -36,8 +36,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
-import static no.nav.common.utils.CollectionUtils.partition;
-
 @Slf4j
 @RestController
 @RequestMapping("/api/admin")
@@ -231,35 +229,6 @@ public class AdminController {
         postgresOpensearchMapper.flettInnPostgresData(List.of(fraPostgres), true, true);
 
         return "{ \"oracle\":" + JsonUtils.toJson(fraOracle) + ", \"postgres\":" + JsonUtils.toJson(fraPostgres) + " }";
-    }
-
-    @GetMapping("/test/hastighetFraOracleOgPostgres")
-    public String testHastighetPostgresOgOracleBruker() {
-        authorizeAdmin();
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging().subList(0, 10_000);
-
-        long t0Oracle = System.nanoTime();
-        partition(brukereUnderOppfolging, 1000)
-                .forEach(bulk -> {
-                    List<OppfolgingsBruker> fraOracle = brukerRepository.hentBrukereFraView(bulk, false);
-                    opensearchIndexer.leggTilAktiviteter(fraOracle);
-                    opensearchIndexer.leggTilTiltak(fraOracle);
-                    opensearchIndexer.leggTilSisteEndring(fraOracle);
-                });
-        long t1Oracle = System.nanoTime();
-
-        long t0Postgres = System.nanoTime();
-        partition(brukereUnderOppfolging, 1000)
-                .forEach(bulk -> {
-                    List<OppfolgingsBruker> fraPostgres = brukerRepository.hentBrukereFraView(bulk, true);
-                    opensearchIndexer.leggTilSisteEndring(fraPostgres);
-                    postgresOpensearchMapper.flettInnPostgresData(fraPostgres, true, false);
-                });
-        long t1Postgres = System.nanoTime();
-
-        long tidOracle = t1Oracle - t0Oracle;
-        long tidPostgres = t1Postgres - t0Postgres;
-        return "Oracle: " + tidOracle + "ns, Postgres: " + tidPostgres + "ns";
     }
 
     private void authorizeAdmin() {
