@@ -233,7 +233,7 @@ public class AdminController {
         return "{ \"oracle\":" + JsonUtils.toJson(fraOracle) + ", \"postgres\":" + JsonUtils.toJson(fraPostgres) + " }";
     }
 
-    @PutMapping("/test/hastighetFraOracleOgPostgres")
+    @GetMapping("/test/hastighetFraOracleOgPostgres")
     public String testHastighetPostgresOgOracleBruker() {
         authorizeAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging().subList(0, 10_000);

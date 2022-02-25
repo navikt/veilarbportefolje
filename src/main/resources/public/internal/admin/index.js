@@ -382,7 +382,7 @@ function handleTestHastighet(e) {
     e.preventDefault()
     fetchData(
         '/veilarbportefolje/api/admin/test/hastighetFraOracleOgPostgres',
-        {method: 'POST', credentials: 'same-origin'},
+        {method: 'GET', credentials: 'same-origin'},
         'hastighetRes'
     )
 
