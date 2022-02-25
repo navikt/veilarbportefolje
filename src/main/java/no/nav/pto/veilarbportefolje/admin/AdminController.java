@@ -11,7 +11,6 @@ import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
@@ -47,7 +46,6 @@ public class AdminController {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
-    private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
     private final OppfolgingRepository oppfolgingRepository;
     private final ArbeidslisteService arbeidslisteService;
@@ -108,23 +106,6 @@ public class AdminController {
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereUnderOppfolging);
         return "Indeksering fullfort";
-    }
-
-
-    @PutMapping("/brukerAktiviteter")
-    public String syncBrukerAktiviteter(@RequestBody String fnr) {
-        authorizeAdmin();
-        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
-        brukerAktiviteterService.syncAktivitetOgBrukerData(AktorId.of(aktorId));
-        opensearchIndexer.indekser(AktorId.of(aktorId));
-        return "Aktiviteter er naa i sync";
-    }
-
-    @PutMapping("/brukerAktiviteter/allUsers")
-    public String syncBrukerAktiviteterForAlle() {
-        authorizeAdmin();
-        brukerAktiviteterService.syncAktivitetOgBrukerData();
-        return "Aktiviteter er nå i sync";
     }
 
     @PutMapping("/ytelser/allUsers")
@@ -212,10 +193,7 @@ public class AdminController {
     public String testHentIndeksertPostgresOgOracleBruker(@RequestBody String aktoerId) {
         authorizeAdmin();
         OppfolgingsBruker fraOracle = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId), false).get();
-        opensearchIndexer.leggTilAktiviteter(fraOracle);
-        opensearchIndexer.leggTilTiltak(fraOracle);
         opensearchIndexer.leggTilSisteEndring(fraOracle);
-
         OppfolgingsBruker fraPostgres = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId), true).get();
         postgresOpensearchMapper.flettInnPostgresData(List.of(fraPostgres), true, true);
 

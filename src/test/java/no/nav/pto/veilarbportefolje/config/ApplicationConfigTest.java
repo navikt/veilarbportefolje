@@ -6,14 +6,12 @@ import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
@@ -30,7 +28,6 @@ import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerDataRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
@@ -99,14 +96,12 @@ import static org.mockito.Mockito.when;
         BrukerService.class,
         RegistreringService.class,
         AktivitetService.class,
-        PersistentOppdatering.class,
         OppfolgingAvsluttetService.class,
         OpensearchService.class,
         OpensearchIndexer.class,
         OpensearchIndexerV2.class,
         OpensearchAdminService.class,
         HovedIndekserer.class,
-        AktivitetDAO.class,
         AktiviteterRepositoryV2.class,
         BrukerRepository.class,
         OppfolgingRepository.class,
@@ -134,7 +129,6 @@ import static org.mockito.Mockito.when;
         ArbeidslisteRepositoryV2.class,
         UtdanningsAktivitetService.class,
         ArenaHendelseRepository.class,
-        GruppeAktivitetRepository.class,
         GruppeAktivitetRepositoryV2.class,
         TiltakRepositoryV1.class,
         TiltakRepositoryV2.class,

@@ -9,10 +9,8 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.arenapakafka.TiltakStatuser;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
@@ -22,7 +20,10 @@ import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
 
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHendelseBasertPaOperasjon;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getAktorId;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getInnhold;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGoldenGate;
 
 @Slf4j
 @Service
@@ -34,7 +35,6 @@ public class TiltakService {
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final AktorClient aktorClient;
     private final ArenaHendelseRepository arenaHendelseRepository;
-    private final BrukerDataService brukerDataService;
     private final OpensearchIndexer opensearchIndexer;
 
     private final Cache<EnhetId, EnhetTiltak> enhetTiltakCache = Caffeine.newBuilder()
@@ -75,7 +75,6 @@ public class TiltakService {
         TiltakInnhold innhold = getInnhold(kafkaMelding);
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
-        PersonId personId = PersonId.of(String.valueOf(innhold.getPersonId()));
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
             log.info("Sletter tiltak: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
             tiltakRepositoryV1.delete(innhold.getAktivitetid());
@@ -83,9 +82,6 @@ public class TiltakService {
             log.info("Lagrer tiltak: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
             tiltakRepositoryV1.upsert(innhold, aktorId);
         }
-        tiltakRepositoryV1.utledOgLagreTiltakInformasjon(aktorId, personId);
-        brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
-
         return aktorId;
     }
 

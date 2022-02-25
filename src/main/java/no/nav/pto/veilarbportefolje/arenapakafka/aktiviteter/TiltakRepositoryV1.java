@@ -5,18 +5,12 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.BrukertiltakV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.database.Table.TILTAKKODEVERK_V2;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,14 +18,19 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getDateOrNull;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2;
-import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2.*;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2.AKTIVITETID;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2.FRADATO;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2.PERSONID;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2.TILDATO;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKERTILTAK_V2.TILTAKSKODE;
 import static no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER.PERSON_ID;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
@@ -41,7 +40,6 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 public class TiltakRepositoryV1 {
     private final JdbcTemplate db;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private final AktivitetDAO aktivitetDAO;
 
     public void upsert(TiltakInnhold innhold, AktorId aktorId) {
         Timestamp tilDato = Optional.ofNullable(getDateOrNull(innhold.getAktivitetperiodeTil(), true))
@@ -93,83 +91,6 @@ public class TiltakRepositoryV1 {
         );
     }
 
-    public List<Timestamp> hentSluttdatoer(PersonId personId) {
-        if (personId == null) {
-            throw new IllegalArgumentException("Trenger personId for å hente ut sluttdatoer");
-        }
-
-        final String hentSluttDatoerSql = "SELECT " + TILDATO + " FROM " + TABLE_NAME +
-                " WHERE " + PERSONID + "=?";
-        return db.queryForList(hentSluttDatoerSql, Timestamp.class, personId.getValue());
-    }
-
-
-    public List<Timestamp> hentStartDatoer(PersonId personId) {
-        if (personId == null) {
-            throw new IllegalArgumentException("Trenger personId for å hente ut startdatoer");
-        }
-
-        final String hentStartDatoerSql = "SELECT " + FRADATO + " FROM " + TABLE_NAME +
-                " WHERE " + PERSONID + "=?";
-        return db.queryForList(hentStartDatoerSql, Timestamp.class, personId.getValue());
-    }
-
-    /*
-    Kan forenkles til kun en bruker ved overgang til postgres
-    String sql = "SELECT DISTINCT " + Table.BRUKERTILTAK_V2.TILTAKSKODE + " FROM " + Table.BRUKERTILTAK_V2.TABLE_NAME
-            + " WHERE " + Table.BRUKERTILTAK_V2.AKTOERID + " = ?";
-     */
-    public Map<AktorId, Set<BrukertiltakV2>> hentBrukertiltak(List<AktorId> aktorIder) {
-        if (aktorIder == null || aktorIder.isEmpty()) {
-            throw new IllegalArgumentException("Trenger aktor-ider for å hente ut tiltak");
-        }
-        Map<String, Object> params = new HashMap<>();
-        params.put("aktorIder", aktorIder.stream().map(AktorId::toString).collect(toList()));
-
-        final String tiltaksTyperForListOfAktorIdsSql =
-                "SELECT TILTAKSKODE, AKTOERID, TILDATO " +
-                        "FROM  BRUKERTILTAK_V2 " +
-                        "WHERE  AKTOERID in (:aktorIder)";
-        return namedParameterJdbcTemplate
-                .queryForList(tiltaksTyperForListOfAktorIdsSql, params)
-                .stream()
-                .map(this::mapTilBrukertiltakV2)
-                .collect(toMap(BrukertiltakV2::getAktorId, DbUtils::toSet,
-                        (oldValue, newValue) -> {
-                            oldValue.addAll(newValue);
-                            return oldValue;
-                        }));
-    }
-
-    public void utledOgLagreTiltakInformasjon(AktorId aktorId, PersonId personId) {
-        List<BrukertiltakV2> tiltak = hentTiltak(aktorId);
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        Timestamp nesteUtlopsdato = tiltak.stream()
-                .map(BrukertiltakV2::getTildato)
-                .filter(Objects::nonNull)
-                .filter(utlopsdato -> utlopsdato.toLocalDateTime().toLocalDate().isAfter(yesterday))
-                .min(Comparator.naturalOrder())
-                .orElse(null);
-
-        boolean aktiv = !tiltak.isEmpty();
-        AktivitetStatus aktivitetStatus = new AktivitetStatus()
-                .setAktivitetType(AktivitetsType.tiltak.name())
-                .setAktiv(aktiv)
-                .setAktoerid(aktorId)
-                .setPersonid(personId)
-                .setNesteUtlop(nesteUtlopsdato);
-        aktivitetDAO.upsertAktivitetStatus(aktivitetStatus);
-    }
-
-    private List<BrukertiltakV2> hentTiltak(AktorId aktorId) {
-        String sql = "SELECT * FROM " + TABLE_NAME
-                + " WHERE " + AKTOERID + " = ?";
-        return db.queryForList(sql, aktorId.get())
-                .stream()
-                .map(this::mapTilBrukertiltakV2)
-                .collect(toList());
-    }
-
     private boolean skalOppdatereTiltakskodeVerk(String tiltaksKode, String verdiFraKafka) {
         Optional<String> verdiITiltakskodeVerk = hentVerdiITiltakskodeVerk(tiltaksKode);
         return verdiITiltakskodeVerk.map(lagretVerdi -> !lagretVerdi.equals(verdiFraKafka)).orElse(true);
@@ -181,15 +102,6 @@ public class TiltakRepositoryV1 {
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, String.class, kode))
         );
-    }
-
-
-    @SneakyThrows
-    private BrukertiltakV2 mapTilBrukertiltakV2(Map<String, Object> rs) {
-        return new BrukertiltakV2()
-                .setTiltak((String) rs.get(TILTAKSKODE))
-                .setTildato((Timestamp) rs.get(TILDATO))
-                .setAktorId(AktorId.of((String) rs.get(AKTOERID)));
     }
 
     @SneakyThrows

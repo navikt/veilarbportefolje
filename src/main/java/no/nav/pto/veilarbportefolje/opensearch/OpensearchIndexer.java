@@ -5,12 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.BrukertiltakV2;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -26,20 +21,16 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.mapAktiviteterFraPostgresTilOpenSearch;
-import static no.nav.pto.veilarbportefolje.opensearch.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
 @Slf4j
@@ -50,11 +41,9 @@ public class OpensearchIndexer {
     public static final int ORACLE_BATCH_SIZE_LIMIT = 1000;
 
     private final RestHighLevelClient restHighLevelClient;
-    private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
     private final IndexName alias;
     private final SisteEndringRepository sisteEndringRepository;
-    private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final UnleashService unleashService;
@@ -67,12 +56,7 @@ public class OpensearchIndexer {
 
     private void indekserBruker(OppfolgingsBruker bruker, boolean brukPostgres) {
         if (erUnderOppfolging(bruker)) {
-            if(!brukPostgres){
-                leggTilAktiviteter(bruker);
-                leggTilTiltak(bruker);
-            }
             leggTilSisteEndring(bruker);
-
             postgresOpensearchMapper.flettInnPostgresData(List.of(bruker), brukPostgres, false);
             skrivTilIndeks(alias.getValue(), bruker);
         } else {
@@ -122,66 +106,6 @@ public class OpensearchIndexer {
         if (brukere.size() > ORACLE_BATCH_SIZE_LIMIT) {
             throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", ORACLE_BATCH_SIZE_LIMIT));
         }
-    }
-
-    public void leggTilTiltak(OppfolgingsBruker bruker) {
-        leggTilTiltak(Collections.singletonList(bruker));
-    }
-
-    private void leggTilTiltak(List<OppfolgingsBruker> brukere) {
-        validateBatchSize(brukere);
-
-        List<AktorId> aktorIder = brukere.stream()
-                .map(OppfolgingsBruker::getAktoer_id)
-                .map(AktorId::of)
-                .collect(toList());
-
-        Map<AktorId, Set<BrukertiltakV2>> alleTiltakForBrukere = tiltakRepositoryV1.hentBrukertiltak(aktorIder);
-
-        alleTiltakForBrukere.forEach((aktorId, brukerMedTiltak) -> {
-            Set<String> tiltak = brukerMedTiltak.stream()
-                    .map(BrukertiltakV2::getTiltak)
-                    .collect(toSet());
-
-            OppfolgingsBruker bruker = finnBruker(brukere, aktorId);
-            bruker.setTiltak(tiltak);
-        });
-    }
-
-    public void leggTilAktiviteter(OppfolgingsBruker bruker) {
-        leggTilAktiviteter(Collections.singletonList(bruker));
-    }
-
-    private void leggTilAktiviteter(List<OppfolgingsBruker> brukere) {
-        if (brukere == null || brukere.isEmpty()) {
-            throw new IllegalArgumentException();
-        }
-
-        validateBatchSize(brukere);
-
-        List<PersonId> personIder = brukere.stream()
-                .map(OppfolgingsBruker::getPerson_id)
-                .map(PersonId::of)
-                .collect(toList());
-
-        Map<PersonId, Set<AktivitetStatus>> alleAktiviteterForBrukere = aktivitetDAO.getAktivitetstatusForBrukere(personIder);
-
-        alleAktiviteterForBrukere.forEach((personId, statuserForBruker) -> {
-
-            OppfolgingsBruker bruker = finnBruker(brukere, personId);
-
-            statuserForBruker.forEach(status -> {
-                IndekseringUtils.leggTilUtlopsDato(bruker, status);
-                IndekseringUtils.leggTilStartDato(bruker, status);
-            });
-
-            Set<String> aktiviteterSomErAktive = statuserForBruker.stream()
-                    .filter(AktivitetStatus::isAktiv)
-                    .map(AktivitetStatus::getAktivitetType)
-                    .collect(toSet());
-
-            bruker.setAktiviteter(aktiviteterSomErAktive);
-        });
     }
 
     public void leggTilSisteEndring(OppfolgingsBruker bruker) {
@@ -237,10 +161,6 @@ public class OpensearchIndexer {
         List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(aktorIds, brukPostgres).stream()
                 .filter(bruker -> bruker.getAktoer_id() != null)
                 .toList();
-        if(!brukPostgres){
-            leggTilAktiviteter(brukere);
-            leggTilTiltak(brukere);
-        }
         leggTilSisteEndring(brukere);
         postgresOpensearchMapper.flettInnPostgresData(brukere,  brukPostgres, false);
 
@@ -259,8 +179,6 @@ public class OpensearchIndexer {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(bolk, false).stream()
                     .filter(bruker -> bruker.getAktoer_id() != null)
                     .toList();
-            leggTilAktiviteter(brukere);
-            leggTilTiltak(brukere);
             leggTilSisteEndring(brukere);
 
             postgresOpensearchMapper.flettInnPostgresData(brukere, true, true);

@@ -3,9 +3,6 @@ package no.nav.pto.veilarbportefolje.arenapakafka;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
@@ -13,7 +10,6 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
@@ -28,10 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,7 +33,6 @@ import static org.mockito.Mockito.mock;
 public class TiltakTest {
     private final TiltakService tiltakService;
     private final JdbcTemplate jdbcTemplate;
-    private final AktivitetDAO aktivitetDAO;
 
     private final AktorId aktorId = AktorId.of("1000123");
     private final Fnr fnr = Fnr.of("12345678912");
@@ -50,11 +41,9 @@ public class TiltakTest {
     private final EnhetId annenEnhet = EnhetId.of("0001");
     private final PersonId personId = PersonId.of("123");
 
-
     @Autowired
-    public TiltakTest(TiltakRepositoryV1 tiltakRepositoryV1, TiltakRepositoryV2 tiltakRepositoryV2, JdbcTemplate jdbcTemplate, AktivitetDAO aktivitetDAO) {
+    public TiltakTest(TiltakRepositoryV1 tiltakRepositoryV1, TiltakRepositoryV2 tiltakRepositoryV2, JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.aktivitetDAO = aktivitetDAO;
 
         ArenaHendelseRepository arenaHendelseRepository = mock(ArenaHendelseRepository.class);
         Mockito.when(arenaHendelseRepository.upsertAktivitetHendelse(anyString(), anyLong())).thenReturn(1);
@@ -62,9 +51,8 @@ public class TiltakTest {
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
-        this.tiltakService = new TiltakService(tiltakRepositoryV1, tiltakRepositoryV2,aktorClient, arenaHendelseRepository, mock(BrukerDataService.class), mock(OpensearchIndexer.class));
+        this.tiltakService = new TiltakService(tiltakRepositoryV1, tiltakRepositoryV2, aktorClient, arenaHendelseRepository, mock(OpensearchIndexer.class));
     }
-
 
     @BeforeEach
     public void reset() {
@@ -75,27 +63,6 @@ public class TiltakTest {
         jdbcTemplate.execute("truncate table " + Table.TILTAKKODEVERK_V2.TABLE_NAME);
         jdbcTemplate.execute("truncate table BRUKERSTATUS_AKTIVITETER");
     }
-
-    @Test
-    public void skal_komme_i_tiltak() {
-        insertBruker();
-        TiltakDTO tiltakDTO = new TiltakDTO()
-                .setAfter(new TiltakInnhold()
-                        .setFnr(fnr.get())
-                        .setPersonId(personId.toInteger())
-                        .setHendelseId(1)
-                        .setTiltaksnavn("Test")
-                        .setTiltakstype("T123")
-                        .setDeltakerStatus("GJENN")
-                        .setEndretDato(new ArenaDato("2021-01-01"))
-                        .setAktivitetid("TA-123456789")
-                );
-        tiltakService.behandleKafkaMeldingOracle(tiltakDTO);
-
-        Optional<AktivitetStatus> tiltak = hentAktivitetStatus();
-        assertThat(tiltak).isPresent();
-    }
-
 
     @Test
     public void skal_ha_tiltak_pa_enhet() {
@@ -120,17 +87,6 @@ public class TiltakTest {
         assertThat(enhetTiltak.getTiltak().size()).isEqualTo(1);
         assertThat(annenEnhetTiltak.getTiltak().size()).isEqualTo(0);
         assertThat(enhetTiltak.getTiltak().get("T123")).isEqualTo("Test");
-    }
-
-    private Optional<AktivitetStatus> hentAktivitetStatus() {
-        Set<AktivitetStatus> aktivitetstatusForBrukere = aktivitetDAO.getAktivitetstatusForBrukere(List.of(personId)).get(personId);
-        if(aktivitetstatusForBrukere == null){
-            return Optional.empty();
-        }
-        return aktivitetstatusForBrukere.stream()
-                .filter(AktivitetStatus::isAktiv)
-                .filter(x -> x.getAktivitetType().equals(AktivitetsType.tiltak.name()))
-                .findFirst();
     }
 
     private void insertBruker() {
