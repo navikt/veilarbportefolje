@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -77,7 +78,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         OppfolgingAvsluttetDTO melding = new OppfolgingAvsluttetDTO(aktoerId, ZonedDateTime.parse("2020-12-01T00:00:01+02:00"));
 
         oppfolgingAvsluttetService.behandleKafkaMeldingLogikk(melding);
-
         String arbeidsliste = SqlUtils
                 .select(jdbcTemplate, Table.ARBEIDSLISTE.TABLE_NAME, rs -> rs.getString(Table.ARBEIDSLISTE.AKTOERID))
                 .column(Table.ARBEIDSLISTE.AKTOERID)
@@ -86,18 +86,11 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         assertThat(arbeidsliste).isNull();
 
-        String registrering = SqlUtils
-                .select(jdbcTemplate, Table.BRUKER_REGISTRERING.TABLE_NAME, rs -> rs.getString(Table.BRUKER_REGISTRERING.AKTOERID))
-                .column(Table.BRUKER_REGISTRERING.AKTOERID)
-                .where(WhereClause.equals(Table.BRUKER_REGISTRERING.AKTOERID, aktoerId.get()))
-                .execute();
+        List<String> registrering = jdbcTemplate.query("select * from bruker_registrering where aktoerid = ?", (r, i) -> r.getString("aktoerid"), aktoerId.get());
 
-        assertThat(registrering).isNull();
-
+        assertThat(registrering.size()).isEqualTo(0);
         assertThat(testDataClient.hentOppfolgingFlaggFraDatabase(aktoerId)).isFalse();
-
         Map<String, Object> source = opensearchTestClient.fetchDocument(aktoerId).getSourceAsMap();
-
         assertThat(source).isNull();
     }
 

@@ -123,9 +123,5 @@ public class TestDataClient {
                 .value(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.getValue())
                 .value(Table.OPPFOLGING_DATA.STARTDATO, Timestamp.from(startDato.toInstant()))
                 .execute();
-
-        SqlUtils.insert(jdbcTemplateOracle, Table.BRUKER_REGISTRERING.TABLE_NAME)
-                .value(Table.BRUKER_REGISTRERING.AKTOERID, aktoerId.get())
-                .execute();
     }
 }
