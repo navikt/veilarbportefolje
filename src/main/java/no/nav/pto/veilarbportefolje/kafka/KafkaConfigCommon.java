@@ -76,7 +76,6 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 @Configuration
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
-    public final static String CLIENT_ID_REWIND_CONFIG = "veilarbportefolje-consumer-rewind";
     public static final String KAFKA_BROKERS = EnvironmentUtils.getRequiredProperty("KAFKA_BROKERS_URL");
     private static final Credentials serviceUserCredentials = getCredentials("service_user");
     private static final String KAFKA_SCHEMAS_URL = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMAS_URL");
@@ -368,26 +367,6 @@ public class KafkaConfigCommon {
                                 .withToggle(kafkaAivenUnleash)
                                 .build())
                 .collect(Collectors.toList());
-
-
-        Properties aivenConsumerRewindProperties = aivenDefaultConsumerProperties(CLIENT_ID_REWIND_CONFIG);
-        aivenConsumerRewindProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
-        consumerClientAiven.add(
-                KafkaConsumerClientBuilder.builder()
-                        .withProperties(aivenConsumerRewindProperties)
-                        .withTopicConfig(new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.AIVEN_AKTIVITER_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(KafkaAktivitetMelding.class),
-                                        aktivitetService::oppdaterKunPostgresAktiviteter
-                                ))
-                        .withToggle(kafkaAivenUnleash)
-                        .build()
-        );
 
         consumerClientsOnPrem = topicConfigsOnPrem.stream()
                 .map(config ->
