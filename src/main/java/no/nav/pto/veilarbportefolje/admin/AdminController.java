@@ -22,7 +22,6 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
-import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,7 +50,6 @@ public class AdminController {
     private final YtelsesService ytelsesService;
     private final OppfolgingRepository oppfolgingRepository;
     private final ArbeidslisteService arbeidslisteService;
-    private final ProfileringService profileringService;
     private final OpensearchAdminService opensearchAdminService;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final BrukerRepository brukerRepository;
@@ -146,13 +144,6 @@ public class AdminController {
         authorizeAdmin();
         arbeidslisteService.migrerArbeidslistaTilPostgres();
         return "Arbeidslista er nå migrert";
-    }
-
-    @PutMapping("/profilering/migrer")
-    public String migrerProfilering() {
-        authorizeAdmin();
-        profileringService.migrerTilPostgres();
-        return "Profilering er nå migrert";
     }
 
     @PostMapping("/opensearch/createIndex")

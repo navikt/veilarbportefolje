@@ -51,10 +51,6 @@ public class ProfileringRepositoryV2 {
         );
     }
 
-    public List<AktorId> hentAlleBrukereMedProfileringer() {
-        return db.queryForList("SELECT DISTINCT aktoerid FROM bruker_profilering", AktorId.class);
-    }
-
     @SneakyThrows
     private ArbeidssokerProfilertEvent mapTilArbeidssokerProfilertEvent(ResultSet rs, int i) {
         return ArbeidssokerProfilertEvent.newBuilder()

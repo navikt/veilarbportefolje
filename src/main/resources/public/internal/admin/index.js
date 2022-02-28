@@ -221,20 +221,6 @@ function handleMigrerArbeidslista(e) {
     }
 }
 
-const migrerProfileringForm = document.getElementById('migrerProfilering');
-migrerProfileringForm.addEventListener('submit', handleMigrerProfilering)
-
-function handleMigrerProfilering(e) {
-    e.preventDefault();
-    if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
-        fetchData(
-            `/veilarbportefolje/api/admin/profilering/migrer`,
-            {method: 'PUT', credentials: 'same-origin'},
-            'migrerProfileringResponse'
-        );
-    }
-}
-
 const createIndexForm = document.getElementById('createIndexForm');
 createIndexForm.addEventListener('submit', handleCreateIndexForm)
 
