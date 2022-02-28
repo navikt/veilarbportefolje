@@ -35,7 +35,7 @@ public class SchedulConfig {
 
         scheduler = Scheduler.create(dataSource)
                 .startTasks(oppdaterBrukerAktiviteter(), oppdaterNyeYtelser(),
-                        oppdaterNyeYtelserPostgres(), test())
+                        oppdaterNyeYtelserPostgres())
                 .build();
     }
 
@@ -55,11 +55,6 @@ public class SchedulConfig {
     private RecurringTask<Void> oppdaterNyeYtelserPostgres() {
         return Tasks.recurring("indekserer_ytelse_endringer_postgres", Schedules.daily(LocalTime.of(1, 1)))
                 .execute((instance, ctx) -> ytelsesServicePostgres.oppdaterBrukereMedYtelserSomStarterIDagPostgres());
-    }
-
-    private RecurringTask<Void> test() {
-        return Tasks.recurring("test", Schedules.daily(LocalTime.of(16, 30)))
-                .execute((instance, ctx) -> log.info("hello world: db-schedule"));
     }
 
     @PostConstruct
