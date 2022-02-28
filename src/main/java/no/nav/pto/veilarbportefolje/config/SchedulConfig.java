@@ -32,34 +32,28 @@ public class SchedulConfig {
         this.brukerAktiviteterService = brukerAktiviteterService;
         this.ytelsesServicePostgres = ytelsesServicePostgres;
         this.ytelsesService = ytelsesService;
-        scheduler = Scheduler.create(dataSource, oppdaterBrukerAktiviteter(), oppdaterNyeYtelser(),
-                        oppdaterNyeYtelserPostgres(), test())
+        scheduler = Scheduler.create(dataSource)
                 .startTasks(oppdaterBrukerAktiviteter(), oppdaterNyeYtelser(),
-                        oppdaterNyeYtelserPostgres(), test())
+                        oppdaterNyeYtelserPostgres())
                 .build();
     }
 
     // Denne jobben må kjøre etter midnatt
     private RecurringTask<Void> oppdaterBrukerAktiviteter() {
-        return Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(0, 1)))
+        return Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(1, 1)))
                 .execute((instance, ctx) -> brukerAktiviteterService.syncAktivitetOgBrukerData());
     }
 
     // Denne jobben må kjøre etter midnatt
     private RecurringTask<Void> oppdaterNyeYtelser() {
-        return Tasks.recurring("indekserer_ytelse_endringer", Schedules.daily(LocalTime.of(1, 0)))
+        return Tasks.recurring("indekserer_ytelse_endringer", Schedules.daily(LocalTime.of(2, 0)))
                 .execute((instance, ctx) -> ytelsesService.oppdaterBrukereMedYtelserSomStarterIDagOracle());
     }
 
     // Denne jobben må kjøre etter midnatt
     private RecurringTask<Void> oppdaterNyeYtelserPostgres() {
-        return Tasks.recurring("indekserer_ytelse_endringer_postgres", Schedules.daily(LocalTime.of(1, 1)))
+        return Tasks.recurring("indekserer_ytelse_endringer_postgres", Schedules.daily(LocalTime.of(2, 1)))
                 .execute((instance, ctx) -> ytelsesServicePostgres.oppdaterBrukereMedYtelserSomStarterIDagPostgres());
-    }
-
-    private RecurringTask<Void> test() {
-        return Tasks.recurring("test", Schedules.daily(LocalTime.of(16, 30)))
-                .execute((instance, ctx) -> log.info("hello world: db-schedule"));
     }
 
     @PostConstruct
