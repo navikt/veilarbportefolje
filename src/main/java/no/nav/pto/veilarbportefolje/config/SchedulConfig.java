@@ -5,7 +5,6 @@ import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.job.JobRunner;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesServicePostgres;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
@@ -26,20 +25,26 @@ public class SchedulConfig {
     @Bean
     public Task<Void> oppdaterBrukerAktiviteter() {
         return Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(0, 1)))
-                .execute((instance, ctx) -> JobRunner.run("indekserer_aktivitet_endringer", brukerAktiviteterService::syncAktivitetOgBrukerData));
+                .execute((instance, ctx) -> brukerAktiviteterService.syncAktivitetOgBrukerData());
     }
 
     // Denne jobben må kjøre etter midnatt
     @Bean
     public Task<Void> oppdaterNyeYtelser() {
         return Tasks.recurring("indekserer_ytelse_endringer", Schedules.daily(LocalTime.of(1, 0)))
-                .execute((instance, ctx) -> JobRunner.run("indekserer_ytelse_endringer", ytelsesService::oppdaterBrukereMedYtelserSomStarterIDagOracle));
+                .execute((instance, ctx) -> ytelsesService.oppdaterBrukereMedYtelserSomStarterIDagOracle());
     }
 
     // Denne jobben må kjøre etter midnatt
     @Bean
     public Task<Void> oppdaterNyeYtelserPostgres() {
         return Tasks.recurring("indekserer_ytelse_endringer_postgres", Schedules.daily(LocalTime.of(1, 1)))
-                .execute((instance, ctx) -> JobRunner.run("indekserer_ytelse_endringer_postgres", ytelsesServicePostgres::oppdaterBrukereMedYtelserSomStarterIDagPostgres));
+                .execute((instance, ctx) -> ytelsesServicePostgres.oppdaterBrukereMedYtelserSomStarterIDagPostgres());
+    }
+
+    @Bean
+    public Task<Void> test() {
+        return Tasks.recurring("test", Schedules.daily(LocalTime.of(15, 0)))
+                .execute((instance, ctx) -> log.info("hello world: db-schedule"));
     }
 }
