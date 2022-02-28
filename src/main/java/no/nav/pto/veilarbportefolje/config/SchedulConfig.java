@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import com.github.kagkarlsson.scheduler.Scheduler;
-import com.github.kagkarlsson.scheduler.task.Task;
+import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import lombok.extern.slf4j.Slf4j;
@@ -40,30 +40,31 @@ public class SchedulConfig {
     }
 
     // Denne jobben må kjøre etter midnatt
-    private Task<Void> oppdaterBrukerAktiviteter() {
+    private RecurringTask<Void> oppdaterBrukerAktiviteter() {
         return Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(0, 1)))
                 .execute((instance, ctx) -> brukerAktiviteterService.syncAktivitetOgBrukerData());
     }
 
     // Denne jobben må kjøre etter midnatt
-    private Task<Void> oppdaterNyeYtelser() {
+    private RecurringTask<Void> oppdaterNyeYtelser() {
         return Tasks.recurring("indekserer_ytelse_endringer", Schedules.daily(LocalTime.of(1, 0)))
                 .execute((instance, ctx) -> ytelsesService.oppdaterBrukereMedYtelserSomStarterIDagOracle());
     }
 
     // Denne jobben må kjøre etter midnatt
-    private Task<Void> oppdaterNyeYtelserPostgres() {
+    private RecurringTask<Void> oppdaterNyeYtelserPostgres() {
         return Tasks.recurring("indekserer_ytelse_endringer_postgres", Schedules.daily(LocalTime.of(1, 1)))
                 .execute((instance, ctx) -> ytelsesServicePostgres.oppdaterBrukereMedYtelserSomStarterIDagPostgres());
     }
 
-    private Task<Void> test() {
-        return Tasks.recurring("test", Schedules.daily(LocalTime.of(15, 50)))
+    private RecurringTask<Void> test() {
+        return Tasks.recurring("test", Schedules.daily(LocalTime.of(16, 30)))
                 .execute((instance, ctx) -> log.info("hello world: db-schedule"));
     }
 
     @PostConstruct
     public void start() {
         scheduler.start();
+        log.info("Starting... Scheduler state: {}", scheduler.getSchedulerState());
     }
 }
