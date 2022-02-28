@@ -363,20 +363,6 @@
                     <url>https://repo.maven.apache.org/maven2</url>
                 </repository>
                 <repository>
-                    <id>jitpack</id>
-                    <url>https://jitpack.io</url>
-                </repository>
-                <repository>
-                    <id>central</id>
-                    <url>https://repo1.maven.org/maven2</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
-                <repository>
                     <id>github</id>
                     <name>github-package-registry-navikt</name>
                     <url>https://maven.pkg.github.com/navikt/maven-release</url>
@@ -384,6 +370,10 @@
                 <repository>
                     <id>confluent</id>
                     <url>https://packages.confluent.io/maven</url>
+                </repository>
+                <repository>
+                    <id>jitpack</id>
+                    <url>https://jitpack.io</url>
                 </repository>
             </repositories>
         </profile>
