@@ -34,7 +34,6 @@ spec:
         mountPath: /var/run/secrets/nais.io/oracle_config
   envFrom:
     - configmap: pto-config
-  leaderElection: true
   liveness:
     path: veilarbportefolje/internal/isAlive
     initialDelay: 60
