@@ -266,7 +266,7 @@
         <!--Diverse-->
         <dependency>
             <groupId>com.github.kagkarlsson</groupId>
-            <artifactId>db-scheduler-spring-boot-starter</artifactId>
+            <artifactId>db-scheduler</artifactId>
             <version>11.0</version>
         </dependency>
         <dependency>
