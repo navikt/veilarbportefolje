@@ -8,8 +8,6 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.featuretoggle.UnleashClientImpl;
-import no.nav.common.job.leader_election.LeaderElectionClient;
-import no.nav.common.job.leader_election.ShedLockLeaderElectionClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -43,11 +41,6 @@ public class ApplicationConfig {
     @Bean
     public LockProvider lockProvider(JdbcTemplate jdbcTemplate) {
         return new JdbcTemplateLockProvider(jdbcTemplate);
-    }
-
-    @Bean
-    public LeaderElectionClient leaderElectionClient(LockProvider lockProvider) {
-        return new ShedLockLeaderElectionClient(lockProvider);
     }
 
     @Bean
