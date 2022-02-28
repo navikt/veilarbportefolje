@@ -33,8 +33,8 @@ public class SchedulConfig {
         this.ytelsesServicePostgres = ytelsesServicePostgres;
         this.ytelsesService = ytelsesService;
 
-        scheduler = Scheduler.create(dataSource,
-                        oppdaterBrukerAktiviteter(), oppdaterNyeYtelser(),
+        scheduler = Scheduler.create(dataSource)
+                .startTasks(oppdaterBrukerAktiviteter(), oppdaterNyeYtelser(),
                         oppdaterNyeYtelserPostgres(), test())
                 .build();
     }
