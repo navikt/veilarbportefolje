@@ -55,9 +55,7 @@ public class SchedulConfig {
 
     private List<RecurringTask<?>> test() {
         return List.of(Tasks.recurring("cron_test1", Schedules.cron("*/10 * * * * ?"))
-                        .execute((instance, ctx) -> log.info("cron1 test")),
-                Tasks.recurring("cron_test2", Schedules.cron("*/15 * * * * ?"))
-                        .execute((instance, ctx) -> log.info("cron2 test")));
+                        .execute((instance, ctx) -> log.info("cron1 test"));
     }
 
     @PostConstruct
