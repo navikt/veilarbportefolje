@@ -335,6 +335,7 @@ function handleTest(e) {
 const testHentPostgresOracleForm = document.getElementById('testHentPostgresOracleForm')
 const testInputHentAktoerId = document.getElementById('testInputHentAktoerId');
 testHentPostgresOracleForm.addEventListener('submit', handleHentPostgresOracleTest);
+
 function handleHentPostgresOracleTest(e) {
     e.preventDefault()
     const aktoerId = testInputHentAktoerId.value;

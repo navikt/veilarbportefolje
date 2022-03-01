@@ -1,62 +1,69 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import lombok.RequiredArgsConstructor;
+import com.github.kagkarlsson.scheduler.Scheduler;
+import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
+import com.github.kagkarlsson.scheduler.task.helper.Tasks;
+import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesServicePostgres;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+
+import javax.annotation.PostConstruct;
+import javax.sql.DataSource;
+import java.time.Duration;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static java.time.temporal.ChronoUnit.HOURS;
 
 @Slf4j
 @Configuration
-@EnableScheduling
-@RequiredArgsConstructor
-public class SchedulConfig implements SchedulingConfigurer{
+public class SchedulConfig {
     private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
-    private final LeaderElectionClient leaderElectionClient;
     private final YtelsesServicePostgres ytelsesServicePostgres;
+    private final Scheduler scheduler;
 
-    // Denne jobben må kjøre etter midnatt
-    @Scheduled(cron = "0 1 0 * * ?")
-    public void oppdaterBrukerAktiviteter() {
-        if (leaderElectionClient.isLeader()) {
-            brukerAktiviteterService.syncAktivitetOgBrukerData();
-        } else {
-            log.info("Starter ikke jobb: oppdaterBrukerData");
-        }
+    @Autowired
+    public SchedulConfig(@Qualifier("Postgres") DataSource dataSource,
+                         BrukerAktiviteterService brukerAktiviteterService,
+                         YtelsesServicePostgres ytelsesServicePostgres,
+                         YtelsesService ytelsesService) {
+        this.brukerAktiviteterService = brukerAktiviteterService;
+        this.ytelsesServicePostgres = ytelsesServicePostgres;
+        this.ytelsesService = ytelsesService;
+
+        List<RecurringTask<?>> jobber = Stream.concat(nattligeJobber().stream(), test().stream()).toList();
+        scheduler = Scheduler
+                .create(dataSource)
+                .deleteUnresolvedAfter(Duration.of(1, HOURS)) // Sletter recurring tasks som ikke er i listen av jobber
+                .startTasks(jobber)
+                .registerShutdownHook()
+                .build();
     }
 
-    // Denne jobben må kjøre etter midnatt
-    @Scheduled(cron = "0 0 1 * * ?")
-    public void oppdaterNyeYtelser() {
-        if (leaderElectionClient.isLeader()) {
-            ytelsesService.oppdaterBrukereMedYtelserSomStarterIDagOracle();
-        } else {
-            log.info("Starter ikke jobb: oppdaterYtelser");
-        }
+    private List<RecurringTask<?>> nattligeJobber() {
+        return List.of(Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(1, 1)))
+                        .execute((instance, ctx) -> brukerAktiviteterService.syncAktivitetOgBrukerData()),
+                Tasks.recurring("indekserer_ytelse_endringer", Schedules.daily(LocalTime.of(2, 0)))
+                        .execute((instance, ctx) -> ytelsesService.oppdaterBrukereMedYtelserSomStarterIDagOracle()),
+                Tasks.recurring("indekserer_ytelse_endringer_postgres", Schedules.daily(LocalTime.of(2, 1)))
+                        .execute((instance, ctx) -> ytelsesServicePostgres.oppdaterBrukereMedYtelserSomStarterIDagPostgres())
+        );
     }
 
-    // Denne jobben må kjøre etter midnatt
-    public void oppdaterNyeYtelserPostgres() {
-        if (leaderElectionClient.isLeader()) {
-            ytelsesServicePostgres.oppdaterBrukereMedYtelserSomStarterIDagPostgres();
-        } else {
-            log.info("(Postgres) Starter ikke jobb: oppdaterYtelser");
-        }
+    private List<RecurringTask<?>> test() {
+        return List.of(Tasks.recurring("cron_test1", Schedules.cron("*/10 * * * * ?"))
+                .execute((instance, ctx) -> log.info("cron1 test")));
     }
 
-    @Override
-    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-        taskScheduler.setPoolSize(20);
-        taskScheduler.initialize();
-        taskRegistrar.setTaskScheduler(taskScheduler);
+    @PostConstruct
+    public void start() {
+        scheduler.start();
     }
 }

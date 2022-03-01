@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -264,11 +263,6 @@ public class ApplicationConfigTest {
     @Bean
     public SystemUserTokenProvider systemUserTokenProvider() {
         return mock(SystemUserTokenProvider.class);
-    }
-
-    @Bean
-    public LeaderElectionClient leaderElectionClient() {
-        return mock(LeaderElectionClient.class);
     }
 
     @Bean(name = "PostgresJdbc")
