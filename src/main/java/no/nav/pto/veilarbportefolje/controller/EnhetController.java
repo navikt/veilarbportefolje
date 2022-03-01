@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Portefolje;
 import no.nav.pto.veilarbportefolje.domene.StatusTall;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -29,6 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.hentEnhetsTiltakFraPostgres;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/enhet")
@@ -37,6 +40,7 @@ public class EnhetController {
     private final AuthService authService;
     private final TiltakService tiltakService;
     private final MetricsClient metricsClient;
+    private final UnleashService unleashService;
 
     @PostMapping("/{enhet}/portefolje")
     public Portefolje hentPortefoljeForEnhet(
@@ -91,6 +95,9 @@ public class EnhetController {
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
+        if(hentEnhetsTiltakFraPostgres(unleashService)){
+            return tiltakService.hentEnhettiltakPostgres(EnhetId.of(enhet));
+        }
         return tiltakService.hentEnhettiltak(EnhetId.of(enhet));
     }
 }

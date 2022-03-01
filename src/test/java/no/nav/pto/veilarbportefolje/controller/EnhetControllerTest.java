@@ -23,6 +23,7 @@ import no.nav.pto.veilarbportefolje.auth.ModiaPep;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,7 +60,7 @@ public class EnhetControllerTest {
         authContextHolder = AuthContextHolderThreadLocal.instance();
 
         AuthService authService = new AuthService(pep, modiaPep);
-        enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(MetricsClient.class));
+        enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(MetricsClient.class), mock(UnleashService.class));
     }
 
     @Test
