@@ -20,7 +20,7 @@ public class PostgresOpensearchMapper {
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final AktivitetOpensearchService aktivitetOpensearchService;
 
-    public List<OppfolgingsBruker> flettInnPostgresData(List<OppfolgingsBruker> brukere, boolean mapAktiviteter, boolean medDiffLogging) {
+    public List<OppfolgingsBruker> flettInnPostgresData(List<OppfolgingsBruker> brukere, boolean medDiffLogging) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
 
         HashMap<AktorId, PostgresAktorIdEntity> aktorIdData = aktoerDataOpensearchMapper.hentAktoerData(aktoerIder);
@@ -32,26 +32,21 @@ public class PostgresOpensearchMapper {
                                     postgresAktorIdData -> flettInnAktoerData(postgresAktorIdData, bruker, medDiffLogging),
                                     () -> log.warn("Fant ikke aktoer i aktoer basert postgres: {}", bruker.getAktoer_id())
                             );
-                    if (mapAktiviteter) {
-                        Optional.ofNullable(aktiveAktiviter.get(AktorId.of(bruker.getAktoer_id())))
-                                .ifPresentOrElse(
-                                        aktivitetsListe -> {
-                                            PostgresAktivitetEntity aktivitetData = PostgresAktivitetMapper.build(aktivitetsListe);
-                                            flettInnAktivitetData(aktivitetData, bruker, medDiffLogging);
-                                        },
-                                        () -> flettInnAktivitetData(new PostgresAktivitetEntity(), bruker, medDiffLogging)
-                                );
-                    }
+                    Optional.ofNullable(aktiveAktiviter.get(AktorId.of(bruker.getAktoer_id())))
+                            .ifPresentOrElse(
+                                    aktivitetsListe -> {
+                                        PostgresAktivitetEntity aktivitetData = PostgresAktivitetMapper.build(aktivitetsListe);
+                                        flettInnAktivitetData(aktivitetData, bruker);
+                                    },
+                                    () -> flettInnAktivitetData(new PostgresAktivitetEntity(), bruker)
+                            );
                 }
         );
 
         return brukere;
     }
 
-    private void flettInnAktivitetData(PostgresAktivitetEntity aktivitetData, OppfolgingsBruker bruker, boolean medDiffLogging) {
-        if (medDiffLogging) {
-            loggDiff(aktivitetData, bruker);
-        }
+    private void flettInnAktivitetData(PostgresAktivitetEntity aktivitetData, OppfolgingsBruker bruker) {
         bruker.setNyesteutlopteaktivitet(aktivitetData.getNyesteUtlopteAktivitet());
         bruker.setAktivitet_start(aktivitetData.getAktivitetStart());
         bruker.setNeste_aktivitet_start(aktivitetData.getNesteAktivitetStart());
@@ -80,57 +75,6 @@ public class PostgresOpensearchMapper {
         bruker.setUtdanning(dataPaAktorId.getUtdanning());
         bruker.setUtdanning_bestatt(dataPaAktorId.getUtdanningBestatt());
         bruker.setUtdanning_godkjent(dataPaAktorId.getUtdanningGodkjent());
-    }
-
-    private void loggDiff(PostgresAktivitetEntity postgresEntity, OppfolgingsBruker bruker) {
-        if (isDifferent(bruker.getAktiviteter(), postgresEntity.getAktiviteter())) {
-            log.warn("postgres Opensearch: getAktiviteter feil, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferent(bruker.getTiltak(), postgresEntity.getTiltak())) {
-            log.warn("postgres Opensearch: getTiltak feil, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getNyesteutlopteaktivitet(), postgresEntity.getNyesteUtlopteAktivitet())) {
-            log.warn("postgres Opensearch: NyesteUtlopteAktivitet feil, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getAktivitet_start(), postgresEntity.getAktivitetStart())) {
-            log.warn("postgres Opensearch: feil aktivitet_start, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getNeste_aktivitet_start(), postgresEntity.getNesteAktivitetStart())) {
-            log.warn("postgres Opensearch: feil neste_aktivitet_start, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getForrige_aktivitet_start(), postgresEntity.getForrigeAktivitetStart())) {
-            log.warn("postgres Opensearch: feil forrige_aktivitet_start, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getAktivitet_mote_utlopsdato(), postgresEntity.getAktivitetMoteUtlopsdato())) {
-            log.warn("postgres Opensearch: feil mote_utlopsdato, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getAktivitet_mote_startdato(), postgresEntity.getAktivitetMoteStartdato())) {
-            log.warn("postgres Opensearch: feil mote_startdato, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getAktivitet_stilling_utlopsdato(), postgresEntity.getAktivitetStillingUtlopsdato())) {
-            log.warn("postgres Opensearch: feil stilling_utlopsdato, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getAktivitet_egen_utlopsdato(), postgresEntity.getAktivitetEgenUtlopsdato())) {
-            log.warn("postgres Opensearch: feil egen_utlopsdato, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getAktivitet_behandling_utlopsdato(), postgresEntity.getAktivitetBehandlingUtlopsdato())) {
-            log.warn("postgres Opensearch: feil behandling_utlopsdato, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getAktivitet_ijobb_utlopsdato(), postgresEntity.getAktivitetIjobbUtlopsdato())) {
-            log.warn("postgres Opensearch: feil ijobb_utlopsdato, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getAktivitet_sokeavtale_utlopsdato(), postgresEntity.getAktivitetSokeavtaleUtlopsdato())) {
-            log.warn("postgres Opensearch: feil sokeavtale_utlopsdato, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getAktivitet_tiltak_utlopsdato(), postgresEntity.getAktivitetTiltakUtlopsdato())) {
-            log.warn("postgres Opensearch: feil tiltak_utlopsdato, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getAktivitet_utdanningaktivitet_utlopsdato(), postgresEntity.getAktivitetUtdanningaktivitetUtlopsdato())) {
-            log.warn("postgres Opensearch: feil utdanningaktivitet_utlopsdato, på bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getAktivitet_gruppeaktivitet_utlopsdato(), postgresEntity.getAktivitetGruppeaktivitetUtlopsdato())) {
-            log.warn("postgres Opensearch: feil gruppeaktivitet_utlopsdato, på bruker: {}", bruker.getAktoer_id());
-        }
     }
 
     private void loggDiff(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker) {
