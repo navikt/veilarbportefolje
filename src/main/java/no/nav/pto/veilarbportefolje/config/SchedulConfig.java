@@ -14,9 +14,12 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
+import java.time.Duration;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Stream;
+
+import static java.time.temporal.ChronoUnit.HOURS;
 
 @Slf4j
 @Configuration
@@ -38,6 +41,7 @@ public class SchedulConfig {
         List<RecurringTask<?>> jobber = Stream.concat(nattligeJobber().stream(), test().stream()).toList();
         scheduler = Scheduler
                 .create(dataSource)
+                .deleteUnresolvedAfter(Duration.of(1, HOURS)) // Sletter recurring tasks som ikke er i listen av jobber
                 .startTasks(jobber)
                 .registerShutdownHook()
                 .build();
@@ -55,7 +59,7 @@ public class SchedulConfig {
 
     private List<RecurringTask<?>> test() {
         return List.of(Tasks.recurring("cron_test1", Schedules.cron("*/10 * * * * ?"))
-                        .execute((instance, ctx) -> log.info("cron1 test")));
+                .execute((instance, ctx) -> log.info("cron1 test")));
     }
 
     @PostConstruct
