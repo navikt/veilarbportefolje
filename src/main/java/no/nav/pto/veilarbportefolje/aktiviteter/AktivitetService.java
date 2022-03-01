@@ -36,18 +36,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         brukerService.hentPersonidFraAktoerid(aktorId);
     }
 
-    public void oppdaterKunPostgresAktiviteter(ConsumerRecord<String, KafkaAktivitetMelding> kafkaMelding){
-        log.info(
-                "Rewind: Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
-                kafkaMelding.key(),
-                kafkaMelding.offset(),
-                kafkaMelding.partition(),
-                kafkaMelding.topic()
-        );
-        KafkaAktivitetMelding aktivitetData = kafkaMelding.value();
-        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-    }
-
     public void slettOgIndekserUtdanningsAktivitet(String aktivitetid, AktorId aktorId) {
         aktiviteterRepositoryV2.deleteById(aktivitetid);
         opensearchIndexer.indekser(aktorId);
