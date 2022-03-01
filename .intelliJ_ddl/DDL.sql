@@ -414,6 +414,25 @@ CREATE VIEW public.optimaliser_bruker AS
 
 
 --
+-- Name: scheduled_tasks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scheduled_tasks (
+    task_name text NOT NULL,
+    task_instance text NOT NULL,
+    task_data bytea,
+    execution_time timestamp with time zone NOT NULL,
+    picked boolean NOT NULL,
+    picked_by text,
+    last_success timestamp with time zone,
+    last_failure timestamp with time zone,
+    consecutive_failures integer,
+    last_heartbeat timestamp with time zone,
+    version bigint NOT NULL
+);
+
+
+--
 -- Name: shedlock; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -586,6 +605,14 @@ ALTER TABLE ONLY public.oppfolging_data
 
 ALTER TABLE ONLY public.oppfolgingsbruker_arena
     ADD CONSTRAINT oppfolgingsbruker_arena_pkey PRIMARY KEY (aktoerid);
+
+
+--
+-- Name: scheduled_tasks scheduled_tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scheduled_tasks
+    ADD CONSTRAINT scheduled_tasks_pkey PRIMARY KEY (task_name, task_instance);
 
 
 --

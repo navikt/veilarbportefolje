@@ -265,6 +265,11 @@
 
         <!--Diverse-->
         <dependency>
+            <groupId>com.github.kagkarlsson</groupId>
+            <artifactId>db-scheduler</artifactId>
+            <version>11.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>7.15.0</version>
@@ -352,19 +357,10 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <repositories>
-                <repository>
-                    <id>jitpack</id>
-                    <url>https://jitpack.io</url>
-                </repository>
+                <!-- Legger til central eksplisitt for prioritet over jitpack -->
                 <repository>
                     <id>central</id>
-                    <url>https://repo1.maven.org/maven2</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
+                    <url>https://repo.maven.apache.org/maven2</url>
                 </repository>
                 <repository>
                     <id>github</id>
@@ -374,6 +370,10 @@
                 <repository>
                     <id>confluent</id>
                     <url>https://packages.confluent.io/maven</url>
+                </repository>
+                <repository>
+                    <id>jitpack</id>
+                    <url>https://jitpack.io</url>
                 </repository>
             </repositories>
         </profile>
