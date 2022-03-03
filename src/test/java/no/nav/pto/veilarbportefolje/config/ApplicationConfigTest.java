@@ -270,9 +270,14 @@ public class ApplicationConfigTest {
         return SingletonPostgresContainer.init().createJdbcTemplate();
     }
 
+    @Bean("PostgresJdbcReadOnly")
+    public JdbcTemplate dbMockReadOnly() {
+        return db();
+    }
+
     @Bean(name = "PostgresNamedJdbcReadOnly")
-    public NamedParameterJdbcTemplate dbMockReadOnly() {
-        return new NamedParameterJdbcTemplate(SingletonPostgresContainer.init().createDataSource());
+    public NamedParameterJdbcTemplate dbNamedMockReadOnly() {
+        return new NamedParameterJdbcTemplate(db());
     }
 
     @Bean

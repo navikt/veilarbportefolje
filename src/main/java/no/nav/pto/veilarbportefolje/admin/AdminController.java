@@ -202,13 +202,13 @@ public class AdminController {
     @PutMapping("/test/hentFraOracleOgPostgres")
     public String testHentIndeksertPostgresOgOracleBruker(@RequestBody String aktoerId) {
         authorizeAdmin();
-        OppfolgingsBruker fraOracle = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId), false).get();
+        OppfolgingsBruker fraOracle = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId)).get();
         opensearchIndexer.leggTilAktiviteter(fraOracle);
         opensearchIndexer.leggTilTiltak(fraOracle);
         opensearchIndexer.leggTilSisteEndring(fraOracle);
 
-        OppfolgingsBruker fraPostgres = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId), true).get();
-        postgresOpensearchMapper.flettInnPostgresData(List.of(fraPostgres), true, true);
+        OppfolgingsBruker fraPostgres = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId)).get();
+        postgresOpensearchMapper.flettInnPostgresData(List.of(fraPostgres), true);
 
         return "{ \"oracle\":" + JsonUtils.toJson(fraOracle) + ", \"postgres\":" + JsonUtils.toJson(fraPostgres) + " }";
     }
