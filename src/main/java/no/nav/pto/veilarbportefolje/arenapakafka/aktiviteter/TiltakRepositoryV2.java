@@ -27,6 +27,8 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 public class TiltakRepositoryV2 {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
+    @Qualifier("PostgresJdbcReadOnly")
+    private final JdbcTemplate dbReadOnly;
 
     public void upsert(TiltakInnhold innhold, AktorId aktorId) {
         LocalDateTime fraDato = getLocalDateTimeOrNull(innhold.getAktivitetperiodeFra(), false);
@@ -62,7 +64,7 @@ public class TiltakRepositoryV2 {
                 """;
 
         return new EnhetTiltak().setTiltak(
-                db.queryForList(hentTiltakPaEnhetSql, enhetId.get())
+                dbReadOnly.queryForList(hentTiltakPaEnhetSql, enhetId.get())
                         .stream().map(this::mapTilTiltak)
                         .collect(toMap(Tiltakkodeverk::getKode, Tiltakkodeverk::getVerdi))
         );
