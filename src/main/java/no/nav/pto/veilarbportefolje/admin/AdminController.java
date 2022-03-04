@@ -10,6 +10,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesServicePostgres;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -50,6 +51,7 @@ public class AdminController {
     private final AuthContextHolder authContextHolder;
     private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
+    private final YtelsesServicePostgres ytelsesServicePostgres;
     private final OppfolgingRepository oppfolgingRepository;
     private final ArbeidslisteService arbeidslisteService;
     private final RegistreringService registreringService;
@@ -132,8 +134,9 @@ public class AdminController {
     @PutMapping("/ytelser/allUsers")
     public String syncYtelserForAlle() {
         authorizeAdmin();
-        ytelsesService.syncYtelserForAlleBrukere();
-        return "Aktiviteter er nå i sync";
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
+        brukereUnderOppfolging.forEach(ytelsesServicePostgres::oppdaterYtelsesInformasjonPostgres);
+        return "Ytelser er nå i sync";
     }
 
     @PutMapping("/ytelser/idag")
