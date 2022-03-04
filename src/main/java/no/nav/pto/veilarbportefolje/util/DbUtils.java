@@ -122,7 +122,7 @@ public class DbUtils {
                 .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
                 .setCv_eksistere(parseJaNei(rs.getString(CV_EKSISTERE), CV_EKSISTERE));
 
-        if (erYtelserPaPostgres(unleashService)) {
+        if (!erYtelserPaPostgres(unleashService)) {
             bruker.setYtelse(rs.getString("ytelse"))
                     .setUtlopsdato(toIsoUTC(rs.getTimestamp("utlopsdato")))
                     .setUtlopsdatofasett(rs.getString("utlopsdatofasett"))
@@ -136,7 +136,7 @@ public class DbUtils {
 
         }
 
-        if (erArbeidslistaPaPostgres(unleashService)) {
+        if (!erArbeidslistaPaPostgres(unleashService)) {
             boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
 
             if (brukerHarArbeidsliste) {
