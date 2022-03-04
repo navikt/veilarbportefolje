@@ -21,7 +21,6 @@ import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +73,7 @@ public class YtelserTest {
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         YtelsesServicePostgres ytelsesServicePostgres = new YtelsesServicePostgres(aktorClient, brukerDataService, ytelsesRepositoryV2);
-        this.ytelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, ytelsesRepository, ytelsesServicePostgres, arenaHendelseRepository,mock(OpensearchIndexer.class), mock(OppfolgingRepository.class));
+        this.ytelsesService = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, ytelsesRepository, ytelsesServicePostgres, arenaHendelseRepository,mock(OpensearchIndexer.class));
     }
 
     @BeforeEach
@@ -126,7 +125,7 @@ public class YtelserTest {
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
         YtelsesRepositoryV2 mockRepositoryV2 = mock(YtelsesRepositoryV2.class);
         YtelsesServicePostgres tempYtelsesServicePostgres = new YtelsesServicePostgres(aktorClient, brukerDataService, mockRepositoryV2);
-        YtelsesService tempYtelsesServiceOracle = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, tempYtelsesServicePostgres, mock(ArenaHendelseRepository.class), mock(OpensearchIndexer.class), mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesServiceOracle = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, tempYtelsesServicePostgres, mock(ArenaHendelseRepository.class), mock(OpensearchIndexer.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setUtlopsDato(tomorrow),
                 new YtelseDAO().setSaksId(sak1).setStartDato(tomorrow).setUtlopsDato(nextWeek),
@@ -155,7 +154,7 @@ public class YtelserTest {
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
         YtelsesRepositoryV2 mockRepositoryV2 = mock(YtelsesRepositoryV2.class);
         YtelsesServicePostgres tempYtelsesServicePostgres = new YtelsesServicePostgres(aktorClient, brukerDataService, mockRepositoryV2);
-        YtelsesService tempYtelsesServiceOracle = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, tempYtelsesServicePostgres, mock(ArenaHendelseRepository.class), mock(OpensearchIndexer.class), mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesServiceOracle = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, tempYtelsesServicePostgres, mock(ArenaHendelseRepository.class), mock(OpensearchIndexer.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(tomorrow).setUtlopsDato(nextWeek),
                 new YtelseDAO().setSaksId(sak1).setStartDato(nextWeek).setUtlopsDato(nextMonth)
@@ -179,7 +178,7 @@ public class YtelserTest {
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
         YtelsesRepositoryV2 mockRepositoryV2 = mock(YtelsesRepositoryV2.class);
         YtelsesServicePostgres tempYtelsesServicePostgres = new YtelsesServicePostgres(aktorClient, brukerDataService, mockRepositoryV2);
-        YtelsesService tempYtelsesServiceOracle = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, tempYtelsesServicePostgres, mock(ArenaHendelseRepository.class), mock(OpensearchIndexer.class), mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesServiceOracle = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, tempYtelsesServicePostgres, mock(ArenaHendelseRepository.class), mock(OpensearchIndexer.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setUtlopsDato(nextWeek).setType(TypeKafkaYtelse.DAGPENGER)
         );
@@ -201,7 +200,7 @@ public class YtelserTest {
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
         YtelsesRepositoryV2 mockRepositoryV2 = mock(YtelsesRepositoryV2.class);
         YtelsesServicePostgres tempYtelsesServicePostgres = new YtelsesServicePostgres(aktorClient, brukerDataService, mockRepositoryV2);
-        YtelsesService tempYtelsesServiceOracle = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, tempYtelsesServicePostgres, mock(ArenaHendelseRepository.class), mock(OpensearchIndexer.class), mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesServiceOracle = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, tempYtelsesServicePostgres, mock(ArenaHendelseRepository.class), mock(OpensearchIndexer.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(yesterday).setType(TypeKafkaYtelse.AAP)
         );
@@ -227,7 +226,7 @@ public class YtelserTest {
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
         YtelsesRepositoryV2 mockRepositoryV2 = mock(YtelsesRepositoryV2.class);
         YtelsesServicePostgres tempYtelsesServicePostgres = new YtelsesServicePostgres(aktorClient, brukerDataService, mockRepositoryV2);
-        YtelsesService tempYtelsesServiceOracle = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, tempYtelsesServicePostgres, mock(ArenaHendelseRepository.class), mock(OpensearchIndexer.class), mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesServiceOracle = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, tempYtelsesServicePostgres, mock(ArenaHendelseRepository.class), mock(OpensearchIndexer.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak1).setStartDato(nextWeek).setUtlopsDato(nextMonth)
                         .setType(TypeKafkaYtelse.DAGPENGER)
@@ -260,7 +259,7 @@ public class YtelserTest {
         YtelsesRepository mockRepository = mock(YtelsesRepository.class);
         YtelsesRepositoryV2 mockRepositoryV2 = mock(YtelsesRepositoryV2.class);
         YtelsesServicePostgres tempYtelsesServicePostgres = new YtelsesServicePostgres(aktorClient, brukerDataService, mockRepositoryV2);
-        YtelsesService tempYtelsesServiceOracle = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, tempYtelsesServicePostgres, mock(ArenaHendelseRepository.class), mock(OpensearchIndexer.class), mock(OppfolgingRepository.class));
+        YtelsesService tempYtelsesServiceOracle = new YtelsesService(aktorClient, mock(BrukerService.class), brukerDataService, mockRepository, tempYtelsesServicePostgres, mock(ArenaHendelseRepository.class), mock(OpensearchIndexer.class));
         List<YtelseDAO> ytelser = List.of(
                 new YtelseDAO().setSaksId(sak2).setStartDato(nextWeek).setUtlopsDato(nextWeek)
                         .setType(TypeKafkaYtelse.DAGPENGER)

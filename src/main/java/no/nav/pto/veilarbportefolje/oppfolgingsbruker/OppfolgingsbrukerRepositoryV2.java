@@ -38,7 +38,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class OppfolginsbrukerRepositoryV2 {
+public class OppfolgingsbrukerRepositoryV2 {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 

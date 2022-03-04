@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
 
@@ -16,10 +17,12 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 class VeilederTilordnetServiceTest extends EndToEndTest {
 
     private final VeilederTilordnetService veilederTilordnetService;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public VeilederTilordnetServiceTest(VeilederTilordnetService veilederTilordnetService) {
+    public VeilederTilordnetServiceTest(VeilederTilordnetService veilederTilordnetService, JdbcTemplate jdbcTemplate) {
         this.veilederTilordnetService = veilederTilordnetService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Test

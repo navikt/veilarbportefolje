@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AAPMAXTIDUKE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AAPUNNTAKDAGERIGJEN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.ARB_ENDRINGSTIDSPUNKT;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.ARB_FRIST;
@@ -23,10 +25,12 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeks
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.ARB_SIST_ENDRET_AV_VEILEDERIDENT;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.BRUKERS_SITUASJON;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.CV_EKSISTERER;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.DAGPUTLOPUKE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.HAR_DELT_CV;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.MANUELL;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.NY_FOR_VEILEDER;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.OPPFOLGING;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.PERMUTLOPUKE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.PROFILERING_RESULTAT;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.STARTDATO;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.UTDANNING;
@@ -37,6 +41,8 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeks
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VEDTAKSTATUS_ENDRET_TIDSPUNKT;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VENTER_PA_BRUKER;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VENTER_PA_NAV;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.YTELSE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.YTELSE_UTLOPSDATO;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 @Slf4j
@@ -86,6 +92,13 @@ public class AktoerDataOpensearchMapper {
         postgresAktorIdData.setVedtak14AStatus(rs.getString(VEDTAKSTATUS));
         postgresAktorIdData.setVedtak14AStatusEndret(toIsoUTC(rs.getTimestamp(VEDTAKSTATUS_ENDRET_TIDSPUNKT)));
         postgresAktorIdData.setAnsvarligVeilederFor14AVedtak(rs.getString(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN));
+
+        postgresAktorIdData.setYtelse(rs.getString(YTELSE));
+        postgresAktorIdData.setYtelseUtlopsdato(toIsoUTC(rs.getTimestamp(YTELSE_UTLOPSDATO)));
+        postgresAktorIdData.setDagputlopuke(rs.getInt(DAGPUTLOPUKE));
+        postgresAktorIdData.setPermutlopuke(rs.getInt(PERMUTLOPUKE));
+        postgresAktorIdData.setAapmaxtiduke(rs.getInt(AAPMAXTIDUKE));
+        postgresAktorIdData.setAapunntakukerigjen(rs.getInt(AAPUNNTAKDAGERIGJEN));
 
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));
         if (arbeidslisteTidspunkt != null) {

@@ -85,22 +85,69 @@ public class PostgresOpensearchMapper {
             log.info("postgres Opensearch: isCv_eksistere feil bruker: {}", bruker.getAktoer_id());
         }
         if (bruker.isOppfolging() != postgresAktorIdEntity.getOppfolging()) {
-            log.warn("postgres Opensearch: isOppfolging feil bruker: {}", bruker.getAktoer_id());
+            log.info("postgres Opensearch: isOppfolging feil bruker: {}", bruker.getAktoer_id());
         }
         if (bruker.isNy_for_veileder() != postgresAktorIdEntity.getNyForVeileder()) {
-            log.warn("postgres Opensearch: isNy_for_veileder feil bruker: {}", bruker.getAktoer_id());
+            log.info("postgres Opensearch: isNy_for_veileder feil bruker: {}", bruker.getAktoer_id());
         }
         if ((bruker.getManuell_bruker() != null && bruker.getManuell_bruker().equals("MANUELL")) != postgresAktorIdEntity.getManuellBruker()) {
-            log.warn("postgres Opensearch: getManuell_bruker feil bruker: {}", bruker.getAktoer_id());
+            log.info("postgres Opensearch: getManuell_bruker feil bruker: {}", bruker.getAktoer_id());
         }
         if (isDifferent(bruker.getOppfolging_startdato(), postgresAktorIdEntity.getOppfolgingStartdato())) {
-            log.warn("postgres Opensearch: getOppfolging_startdato feil bruker: {}", bruker.getAktoer_id());
+            log.info("postgres Opensearch: getOppfolging_startdato feil bruker: {}", bruker.getAktoer_id());
         }
         if (isDifferent(bruker.getVenterpasvarfrabruker(), postgresAktorIdEntity.getVenterpasvarfrabruker())) {
             log.info("postgres Opensearch: Venterpasvarfrabruker feil bruker: {}", bruker.getAktoer_id());
         }
         if (isDifferent(bruker.getVenterpasvarfranav(), postgresAktorIdEntity.getVenterpasvarfranav())) {
             log.info("postgres Opensearch: getVenterpasvarfranav feil bruker: {}", bruker.getAktoer_id());
+        }
+
+        if (isDifferent(bruker.getYtelse(), postgresAktorIdEntity.getYtelse())) {
+            log.info("postgres Opensearch: getYtelse feil bruker: {}", bruker.getAktoer_id());
+        }
+
+        // Ytelser
+        if (isDifferent(bruker.getUtlopsdato(), postgresAktorIdEntity.getYtelseUtlopsdato())) {
+            log.info("postgres Opensearch: ytelseUtlopsdato feil på bruker {}", bruker.getAktoer_id());
+        }
+        if (isDifferent(bruker.getDagputlopuke(), postgresAktorIdEntity.getDagputlopuke())) {
+            log.info("postgres Opensearch: dagputlopuke feil på bruker {}", bruker.getAktoer_id());
+        }
+        if (isDifferent(bruker.getPermutlopuke(), postgresAktorIdEntity.getPermutlopuke())) {
+            log.info("postgres Opensearch: permutlopuke feil på bruker {}", bruker.getAktoer_id());
+        }
+        if (isDifferent(bruker.getAapmaxtiduke(), postgresAktorIdEntity.getAapmaxtiduke())) {
+            log.info("postgres Opensearch: aapmaxtiduke feil på bruker {}", bruker.getAktoer_id());
+        }
+        if (isDifferent(bruker.getAapunntakukerigjen(), postgresAktorIdEntity.getAapunntakukerigjen())) {
+            log.info("postgres Opensearch: aapunntakukerigjen feil på bruker {}", bruker.getAktoer_id());
+        }
+
+
+        // Arbeidslista
+        if (isDifferent(bruker.isArbeidsliste_aktiv(), postgresAktorIdEntity.isArbeidslisteAktiv())) {
+            log.info("postgres Opensearch: arbeidslisteAktiv feil på bruker {}", bruker.getAktoer_id());
+        }
+        if (bruker.isArbeidsliste_aktiv()) {
+            if (isDifferent(bruker.getArbeidsliste_sist_endret_av_veilederid(), postgresAktorIdEntity.getArbeidslisteSistEndretAvVeilederid())) {
+                log.info("postgres Opensearch: arbeidslisteSistEndretAvVeilederid feil på bruker {}", bruker.getAktoer_id());
+            }
+            if (isDifferent(bruker.getArbeidsliste_endringstidspunkt(), postgresAktorIdEntity.getArbeidslisteEndringstidspunkt())) {
+                log.info("postgres Opensearch: arbeidslisteEndringstidspunkt feil på bruker {}", bruker.getAktoer_id());
+            }
+            if (isDifferent(bruker.getArbeidsliste_frist(), postgresAktorIdEntity.getArbeidslisteFrist())) {
+                log.info("postgres Opensearch: arbeidslisteFrist feil på bruker {}", bruker.getAktoer_id());
+            }
+            if (isDifferent(bruker.getArbeidsliste_kategori(), postgresAktorIdEntity.getArbeidslisteKategori())) {
+                log.info("postgres Opensearch: arbeidslisteKategori feil på bruker {}", bruker.getAktoer_id());
+            }
+            if (isDifferent(bruker.getArbeidsliste_tittel_sortering(), postgresAktorIdEntity.getArbeidslisteTittelSortering())) {
+                log.info("postgres Opensearch: arbeidslisteTittelSortering feil på bruker {}", bruker.getAktoer_id());
+            }
+            if (isDifferent(bruker.getArbeidsliste_tittel_lengde(), postgresAktorIdEntity.getArbeidslisteTittelLengde())) {
+                log.info("postgres Opensearch: arbeidslisteTittelLengde feil på bruker {}", bruker.getAktoer_id());
+            }
         }
     }
 
@@ -111,16 +158,6 @@ public class PostgresOpensearchMapper {
             return true;
         }
         return !o.equals(other);
-    }
-
-
-    private boolean isDifferentDate(String o, String other) {
-        if (o == null && other == null) {
-            return false;
-        } else if (o == null || other == null) {
-            return true;
-        }
-        return !o.substring(0, 10).equals(other.substring(0, 10));
     }
 
 }

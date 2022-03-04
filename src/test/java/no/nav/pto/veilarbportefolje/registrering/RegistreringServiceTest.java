@@ -28,7 +28,6 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class RegistreringServiceTest extends EndToEndTest {
-
     private final RegistreringService registreringService;
     private final OpensearchService opensearchService;
     private final OpensearchIndexer indexer;
@@ -39,7 +38,6 @@ class RegistreringServiceTest extends EndToEndTest {
         this.opensearchService = opensearchService;
         this.indexer = indexer;
     }
-
 
     @Test
     void utdanning_full_integration() {
