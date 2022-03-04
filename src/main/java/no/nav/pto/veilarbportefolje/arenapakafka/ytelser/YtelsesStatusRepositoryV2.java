@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arenapakafka.ytelser;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
@@ -15,7 +14,6 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class YtelsesStatusRepositoryV2 {
-    @NonNull
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 

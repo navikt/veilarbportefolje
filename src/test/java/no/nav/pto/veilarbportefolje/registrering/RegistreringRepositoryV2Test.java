@@ -5,28 +5,23 @@ import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Optional;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@SpringBootTest(classes = ApplicationConfigTest.class)
 public class RegistreringRepositoryV2Test {
-    private JdbcTemplate db;
+    @Autowired
     private RegistreringRepositoryV2 registreringRepositoryV2;
-    private static String AKTORID = "123456789";
-
-
-    @Before
-    public void setup() {
-        db = SingletonPostgresContainer.init().createJdbcTemplate();
-        registreringRepositoryV2 = new RegistreringRepositoryV2(db);
-    }
+    private final static String AKTORID = randomAktorId().get();
 
     @Test
     public void skallSetteInBrukerSituasjon() {
@@ -42,8 +37,6 @@ public class RegistreringRepositoryV2Test {
         registreringRepositoryV2.upsertBrukerRegistrering(event);
 
         Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepositoryV2.hentBrukerRegistrering(AktorId.of(AKTORID));
-
-        assertThat(registrering.isPresent()).isTrue();
         assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event);
     }
 
@@ -57,9 +50,6 @@ public class RegistreringRepositoryV2Test {
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
                 .setRegistreringOpprettet(DateUtils.now().minusDays(4).format(ISO_ZONED_DATE_TIME))
                 .build();
-
-        registreringRepositoryV2.upsertBrukerRegistrering(event1);
-
         ArbeidssokerRegistrertEvent event2 = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(AKTORID)
                 .setBrukersSituasjon("Hjemmekontor")
@@ -69,11 +59,10 @@ public class RegistreringRepositoryV2Test {
                 .setRegistreringOpprettet(DateUtils.nowToStr())
                 .build();
 
+        registreringRepositoryV2.upsertBrukerRegistrering(event1);
         registreringRepositoryV2.upsertBrukerRegistrering(event2);
 
         Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepositoryV2.hentBrukerRegistrering(AktorId.of(AKTORID));
-
-        assertThat(registrering.isPresent()).isTrue();
         assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event2);
     }
 
@@ -87,8 +76,6 @@ public class RegistreringRepositoryV2Test {
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
                 .setRegistreringOpprettet(DateUtils.now().minusDays(4).format(ISO_ZONED_DATE_TIME))
                 .build();
-        registreringRepositoryV2.upsertBrukerRegistrering(event1);
-
         ArbeidssokerRegistrertEvent event2 = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(AKTORID)
                 .setBrukersSituasjon("Permittert")
@@ -97,10 +84,11 @@ public class RegistreringRepositoryV2Test {
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.INGEN_SVAR)
                 .setRegistreringOpprettet(DateUtils.nowToStr())
                 .build();
+
+        registreringRepositoryV2.upsertBrukerRegistrering(event1);
         registreringRepositoryV2.upsertBrukerRegistrering(event2);
 
         Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepositoryV2.hentBrukerRegistrering(AktorId.of(AKTORID));
-
         assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event2);
     }
 
