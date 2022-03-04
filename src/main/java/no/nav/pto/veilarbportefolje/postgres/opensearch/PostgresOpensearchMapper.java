@@ -6,6 +6,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -13,12 +14,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erArbeidslistaPaPostgres;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erYtelserPaPostgres;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostgresOpensearchMapper {
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final AktivitetOpensearchService aktivitetOpensearchService;
+    private final UnleashService unleashService;
 
     public List<OppfolgingsBruker> flettInnPostgresData(List<OppfolgingsBruker> brukere, boolean medDiffLogging) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -75,6 +80,26 @@ public class PostgresOpensearchMapper {
         bruker.setUtdanning(dataPaAktorId.getUtdanning());
         bruker.setUtdanning_bestatt(dataPaAktorId.getUtdanningBestatt());
         bruker.setUtdanning_godkjent(dataPaAktorId.getUtdanningGodkjent());
+
+        if(erArbeidslistaPaPostgres(unleashService)){
+            bruker.setArbeidsliste_aktiv(dataPaAktorId.isArbeidslisteAktiv());
+            if(dataPaAktorId.isArbeidslisteAktiv()) {
+                bruker.setArbeidsliste_sist_endret_av_veilederid(dataPaAktorId.getArbeidslisteSistEndretAvVeilederid());
+                bruker.setArbeidsliste_endringstidspunkt(dataPaAktorId.getArbeidslisteEndringstidspunkt());
+                bruker.setArbeidsliste_frist(dataPaAktorId.getArbeidslisteFrist());
+                bruker.setArbeidsliste_kategori(dataPaAktorId.getArbeidslisteKategori());
+                bruker.setArbeidsliste_tittel_sortering(dataPaAktorId.getArbeidslisteTittelSortering());
+                bruker.setArbeidsliste_tittel_lengde(dataPaAktorId.getArbeidslisteTittelLengde());
+            }
+        }
+        if(erYtelserPaPostgres(unleashService)){
+            bruker.setYtelse(dataPaAktorId.getYtelse());
+            bruker.setUtlopsdato(dataPaAktorId.getYtelseUtlopsdato());
+            bruker.setDagputlopuke(dataPaAktorId.getDagputlopuke());
+            bruker.setPermutlopuke(dataPaAktorId.getPermutlopuke());
+            bruker.setAapmaxtiduke(dataPaAktorId.getAapmaxtiduke());
+            bruker.setAapunntakukerigjen(dataPaAktorId.getAapunntakukerigjen());
+        }
     }
 
     private void loggDiff(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker) {
