@@ -33,21 +33,21 @@ import static org.mockito.Mockito.mock;
 
 public class OppfolgingsbrukerServiceTest extends EndToEndTest {
     private final JdbcTemplate db;
-    private final OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2;
+    private final OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-    private final OppfolginsbrukerService oppfolginsbrukerService;
+    private final OppfolgingsbrukerService oppfolginsbrukerService;
     private final AktorClient aktorClientMock;
     private final AktorId aktoerId = randomAktorId();
     private final Fnr fnr = Fnr.ofValidFnr("10108000399"); //TESTFAMILIE
 
     @Autowired
-    public OppfolgingsbrukerServiceTest(@Qualifier("PostgresJdbc") JdbcTemplate db, OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2,
+    public OppfolgingsbrukerServiceTest(@Qualifier("PostgresJdbc") JdbcTemplate db, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2,
                                         OppfolgingRepositoryV2 oppfolgingRepositoryV2, VedtakStatusRepositoryV2 vedtakStatusRepositoryV2, OpensearchIndexerV2 opensearchIndexerV2) {
         this.db = db;
-        this.oppfolginsbrukerRepositoryV2 = oppfolginsbrukerRepositoryV2;
+        this.oppfolgingsbrukerRepositoryV2 = oppfolgingsbrukerRepositoryV2;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         aktorClientMock = mock(AktorClient.class);
-        oppfolginsbrukerService = new OppfolginsbrukerService(oppfolginsbrukerRepositoryV2, vedtakStatusRepositoryV2, opensearchIndexerV2, aktorClientMock);
+        oppfolginsbrukerService = new OppfolgingsbrukerService(oppfolgingsbrukerRepositoryV2, vedtakStatusRepositoryV2, opensearchIndexerV2, aktorClientMock);
     }
 
     @BeforeEach
@@ -73,7 +73,7 @@ public class OppfolgingsbrukerServiceTest extends EndToEndTest {
                 .diskresjonskode("6").harOppfolgingssak(false).sperretAnsatt(false).erDoed(true).doedFraDato(doed_fra_dato).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
-        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId);
         assertTrue(oppfolgingsBruker.isPresent());
         assertThat(oppfolgingsBruker.get()).isEqualTo(forventetResultat);
     }
@@ -88,7 +88,7 @@ public class OppfolgingsbrukerServiceTest extends EndToEndTest {
                 .diskresjonskode(null).harOppfolgingssak(true).sperretAnsatt(false).erDoed(false).doedFraDato(null).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
-        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId);
         assertTrue(oppfolgingsBruker.isPresent());
     }
 
