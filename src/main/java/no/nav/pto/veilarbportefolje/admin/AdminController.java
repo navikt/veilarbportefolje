@@ -22,6 +22,8 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.AktoerDataOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -54,6 +56,7 @@ public class AdminController {
     private final ArbeidslisteService arbeidslisteService;
     private final OpensearchAdminService opensearchAdminService;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
+    private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final BrukerRepository brukerRepository;
 
     @PostMapping("/aktoerId")
@@ -203,17 +206,17 @@ public class AdminController {
     }
 
     @PutMapping("/test/hentFraOracleOgPostgres")
-    public String testHentIndeksertPostgresOgOracleBruker(@RequestBody String aktoerId) {
+    public String testHentIndeksertPostgresOgOracleBruker(@RequestBody String aktoerIdString) {
         authorizeAdmin();
-        OppfolgingsBruker fraOracle = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId)).get();
-        opensearchIndexer.leggTilAktiviteter(fraOracle);
-        opensearchIndexer.leggTilTiltak(fraOracle);
-        opensearchIndexer.leggTilSisteEndring(fraOracle);
+        AktorId aktoerId = AktorId.of(aktoerIdString);
+        OppfolgingsBruker fraOracle = brukerRepository.hentBrukerFraView(aktoerId).get();
 
-        OppfolgingsBruker fraPostgres = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId)).get();
+        OppfolgingsBruker fraPostgres = brukerRepository.hentBrukerFraView(aktoerId).get();
         postgresOpensearchMapper.flettInnPostgresData(List.of(fraPostgres), true);
 
-        return "{ \"oracle\":" + JsonUtils.toJson(fraOracle) + ", \"postgres\":" + JsonUtils.toJson(fraPostgres) + " }";
+        PostgresAktorIdEntity aktorIdData = aktoerDataOpensearchMapper.hentAktoerData(List.of(aktoerId)).get(aktoerId);
+
+        return "{ \"oracle\":" + JsonUtils.toJson(fraOracle) + ", \"postgres\":" + JsonUtils.toJson(aktorIdData) + " }";
     }
 
     private void authorizeAdmin() {
