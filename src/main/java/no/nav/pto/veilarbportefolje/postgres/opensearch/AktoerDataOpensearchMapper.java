@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AAPMAXTIDUKE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AAPUNNTAKDAGERIGJEN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AKTOERID;
@@ -98,7 +99,7 @@ public class AktoerDataOpensearchMapper {
         postgresAktorIdData.setDagputlopuke(rs.getObject(DAGPUTLOPUKE, Integer.class));
         postgresAktorIdData.setPermutlopuke(rs.getObject(PERMUTLOPUKE, Integer.class));
         postgresAktorIdData.setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class));
-        postgresAktorIdData.setAapunntakukerigjen(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class));
+        postgresAktorIdData.setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)));
 
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));
         if (arbeidslisteTidspunkt != null) {
