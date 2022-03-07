@@ -22,7 +22,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.Timestamp;
 
 import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,49 +75,6 @@ class ArbeidslisteServiceTest {
         NavKontor actualNavKontor = NavKontor.of(arbeidslisteRepositoryV1.hentNavKontorForArbeidsliste(aktoerId).orElseThrow());
 
         assertThat(actualNavKontor).isEqualTo(excpectedNavKontor);
-    }
-
-    @Test
-    public void migrerArbeidslista(){
-        AktorId aktorId1 = randomAktorId();
-        AktorId aktorId2 = randomAktorId();
-
-        ArbeidslisteDTO dto1 = new ArbeidslisteDTO(randomFnr())
-                .setNavKontorForArbeidsliste("0000")
-                .setAktorId(aktorId1)
-                .setVeilederId(VeilederId.of("0"))
-                .setFrist(Timestamp.from(now()))
-                .setKategori(Arbeidsliste.Kategori.BLA)
-                .setOverskrift("foo");
-
-        ArbeidslisteDTO dto2 = new ArbeidslisteDTO(randomFnr())
-                .setNavKontorForArbeidsliste("1111")
-                .setAktorId(aktorId2)
-                .setVeilederId(VeilederId.of("1"))
-                .setFrist(Timestamp.from(now()))
-                .setKategori(Arbeidsliste.Kategori.GRONN)
-                .setKommentar("test")
-                .setOverskrift("foo2");
-
-        arbeidslisteRepositoryV1.insertArbeidsliste(dto1);
-        arbeidslisteRepositoryV1.insertArbeidsliste(dto2);
-
-        arbeidslisteService.migrerArbeidslistaTilPostgres();
-        Arbeidsliste arbeidsliste1Oracle = arbeidslisteRepositoryV1.retrieveArbeidsliste(aktorId1).get();
-        Arbeidsliste arbeidsliste2Oracle = arbeidslisteRepositoryV1.retrieveArbeidsliste(aktorId2).get();
-
-        Arbeidsliste arbeidsliste1Postgres = arbeidslisteRepositoryV2.retrieveArbeidsliste(aktorId1).get();
-        Arbeidsliste arbeidsliste2Postgres = arbeidslisteRepositoryV2.retrieveArbeidsliste(aktorId2).get();
-
-
-        String navKontor1 = arbeidslisteRepositoryV2.hentNavKontorForArbeidsliste(aktorId1).get();
-        String navKontor2 = arbeidslisteRepositoryV2.hentNavKontorForArbeidsliste(aktorId2).get();
-
-        assertThat(arbeidsliste1Postgres).isEqualTo(arbeidsliste1Oracle);
-        assertThat(arbeidsliste2Postgres).isEqualTo(arbeidsliste2Oracle);
-        assertThat(arbeidsliste2Postgres).isEqualTo(arbeidsliste2Oracle);
-        assertThat(navKontor1).isEqualTo("0000");
-        assertThat(navKontor2).isEqualTo("1111");
     }
 
     private FnrOgNavKontor setUpInitialState(AktorId aktoerId, NavKontor navKontor) {

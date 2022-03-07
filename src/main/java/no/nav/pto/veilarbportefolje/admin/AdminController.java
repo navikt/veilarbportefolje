@@ -146,10 +146,10 @@ public class AdminController {
     }
 
     @PutMapping("/arbeidslista/migrer")
-    public String migrerArbeidslista() {
+    public String migrerArbeidslista(@RequestBody String aktoerId) {
         authorizeAdmin();
-        arbeidslisteService.migrerArbeidslistaTilPostgres();
-        return "Arbeidslista er nå migrert";
+        arbeidslisteService.migrerArbeidslistaTilPostgres(AktorId.of(aktoerId));
+        return "Arbeidslista er nå migrert for: "+ aktoerId;
     }
 
     @PostMapping("/opensearch/createIndex")

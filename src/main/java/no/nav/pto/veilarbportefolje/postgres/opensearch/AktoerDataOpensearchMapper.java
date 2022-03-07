@@ -44,6 +44,7 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeks
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VENTER_PA_NAV;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.YTELSE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.YTELSE_UTLOPSDATO;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 @Slf4j
@@ -105,7 +106,7 @@ public class AktoerDataOpensearchMapper {
         if (arbeidslisteTidspunkt != null) {
             postgresAktorIdData.setArbeidslisteAktiv(true);
             postgresAktorIdData.setArbeidslisteEndringstidspunkt(arbeidslisteTidspunkt);
-            postgresAktorIdData.setArbeidslisteFrist(toIsoUTC(rs.getTimestamp(ARB_FRIST)));
+            postgresAktorIdData.setArbeidslisteFrist(Optional.ofNullable(toIsoUTC(rs.getTimestamp(ARB_FRIST))).orElse(getFarInTheFutureDate()));
             postgresAktorIdData.setArbeidslisteKategori(rs.getString(ARB_KATEGORI));
             postgresAktorIdData.setArbeidslisteSistEndretAvVeilederid(rs.getString(ARB_SIST_ENDRET_AV_VEILEDERIDENT));
             String overskrift = rs.getString(ARB_OVERSKRIFT);
