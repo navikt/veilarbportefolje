@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil;
 
@@ -16,6 +17,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erArbeidslistaPaPostgres;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erYtelserPaPostgres;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.CV_EKSISTERE;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
@@ -72,7 +75,7 @@ public class DbUtils {
      Oracle
      ***/
     @SneakyThrows
-    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
+    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, UnleashService unleashService) {
         String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
         String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
 
@@ -104,16 +107,6 @@ public class DbUtils {
                 .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr"))))
                 .setFodselsdato(FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr")))
                 .setKjonn(FodselsnummerUtils.lagKjonn(rs.getString("fodselsnr")))
-                .setYtelse(rs.getString("ytelse"))
-                .setUtlopsdato(toIsoUTC(rs.getTimestamp("utlopsdato")))
-                .setUtlopsdatofasett(rs.getString("utlopsdatofasett"))
-                .setDagputlopuke(parseInt(rs.getString("dagputlopuke")))
-                .setDagputlopukefasett(rs.getString("dagputlopukefasett"))
-                .setPermutlopuke(parseInt(rs.getString("permutlopuke")))
-                .setAapmaxtiduke(parseInt(rs.getString("aapmaxtiduke")))
-                .setAapmaxtidukefasett(rs.getString("aapmaxtidukefasett"))
-                .setAapunntakukerigjen(konverterDagerTilUker(rs.getString("aapunntakdagerigjen")))
-                .setAapunntakukerigjenfasett(rs.getString("aapunntakukerigjenfasett"))
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
                 .setNy_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
                 .setNy_for_enhet(isNyForEnhet(rs.getString("veilederident")))
@@ -129,23 +122,39 @@ public class DbUtils {
                 .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
                 .setCv_eksistere(parseJaNei(rs.getString(CV_EKSISTERE), CV_EKSISTERE));
 
-        boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
+        if (!erYtelserPaPostgres(unleashService)) {
+            bruker.setYtelse(rs.getString("ytelse"))
+                    .setUtlopsdato(toIsoUTC(rs.getTimestamp("utlopsdato")))
+                    .setUtlopsdatofasett(rs.getString("utlopsdatofasett"))
+                    .setDagputlopuke(parseInt(rs.getString("dagputlopuke")))
+                    .setDagputlopukefasett(rs.getString("dagputlopukefasett"))
+                    .setPermutlopuke(parseInt(rs.getString("permutlopuke")))
+                    .setAapmaxtiduke(parseInt(rs.getString("aapmaxtiduke")))
+                    .setAapmaxtidukefasett(rs.getString("aapmaxtidukefasett"))
+                    .setAapunntakukerigjen(konverterDagerTilUker(rs.getString("aapunntakdagerigjen")))
+                    .setAapunntakukerigjenfasett(rs.getString("aapunntakukerigjenfasett"));
 
-        if (brukerHarArbeidsliste) {
-            int arbeidsListeLengde = Optional.ofNullable(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
-                    .map(String::length).orElse(0);
-            String arbeidsListeSorteringsVerdi = Optional.ofNullable(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
-                    .filter(s -> !s.isEmpty())
-                    .map(s -> s.substring(0, Math.min(2,s.length())))
-                    .orElse("");
-            bruker
-                    .setArbeidsliste_aktiv(true)
-                    .setArbeidsliste_sist_endret_av_veilederid(rs.getString("ARBEIDSLISTE_ENDRET_AV"))
-                    .setArbeidsliste_endringstidspunkt(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_ENDRET_TID")))
-                    .setArbeidsliste_kategori(rs.getString("ARBEIDSLISTE_KATEGORI"))
-                    .setArbeidsliste_tittel_lengde(arbeidsListeLengde)
-                    .setArbeidsliste_tittel_sortering(arbeidsListeSorteringsVerdi)
-                    .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getFarInTheFutureDate()));
+        }
+
+        if (!erArbeidslistaPaPostgres(unleashService)) {
+            boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
+
+            if (brukerHarArbeidsliste) {
+                int arbeidsListeLengde = Optional.ofNullable(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
+                        .map(String::length).orElse(0);
+                String arbeidsListeSorteringsVerdi = Optional.ofNullable(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
+                        .filter(s -> !s.isEmpty())
+                        .map(s -> s.substring(0, Math.min(2, s.length())))
+                        .orElse("");
+                bruker
+                        .setArbeidsliste_aktiv(true)
+                        .setArbeidsliste_sist_endret_av_veilederid(rs.getString("ARBEIDSLISTE_ENDRET_AV"))
+                        .setArbeidsliste_endringstidspunkt(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_ENDRET_TID")))
+                        .setArbeidsliste_kategori(rs.getString("ARBEIDSLISTE_KATEGORI"))
+                        .setArbeidsliste_tittel_lengde(arbeidsListeLengde)
+                        .setArbeidsliste_tittel_sortering(arbeidsListeSorteringsVerdi)
+                        .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getFarInTheFutureDate()));
+            }
         }
 
         return bruker;

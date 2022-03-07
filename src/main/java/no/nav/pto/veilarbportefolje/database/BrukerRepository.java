@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.database;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -19,9 +20,9 @@ import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -58,16 +59,11 @@ import static no.nav.sbl.sql.where.WhereClause.in;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class BrukerRepository {
-
     private final JdbcTemplate db;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    @Autowired
-    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        this.db = db;
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-    }
+    private final UnleashService unleashService;
 
     public Optional<Integer> hentAntallBrukereUnderOppfolging() {
         Integer count = db.query(countOppfolgingsBrukereSql(), rs -> {
@@ -103,7 +99,7 @@ public class BrukerRepository {
     }
 
     public Optional<OppfolgingsBruker> hentBrukerFraView(AktorId aktoerId) {
-        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
+        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs, unleashService))
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
@@ -116,7 +112,7 @@ public class BrukerRepository {
         db.setFetchSize(1000);
         List<String> ids = aktorIds.stream().map(AktorId::get).collect(toList());
         return SqlUtils
-                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, unleashService) : null)
                 .column("*")
                 .where(in("AKTOERID", ids))
                 .executeToList()

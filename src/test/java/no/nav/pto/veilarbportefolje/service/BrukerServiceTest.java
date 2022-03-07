@@ -50,7 +50,7 @@ public class BrukerServiceTest {
     public void setUp() {
 
         db = new JdbcTemplate(setupInMemoryDatabase());
-        brukerRepository = new BrukerRepository(db, null);
+        brukerRepository = new BrukerRepository(db, null, mock(UnleashService.class));
         aktorClient = mock(AktorClient.class);
 
         opensearchIndexerV2 = mock(OpensearchIndexerV2.class);
