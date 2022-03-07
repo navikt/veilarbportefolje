@@ -132,24 +132,6 @@ public class PostgresOpensearchMapper {
             log.info("postgres Opensearch: getYtelse feil bruker: {}", bruker.getAktoer_id());
         }
 
-        // Ytelser
-        if (isDifferentDate(bruker.getUtlopsdato(), postgresAktorIdEntity.getYtelseUtlopsdato())) {
-            log.info("postgres Opensearch: ytelseUtlopsdato feil på bruker {}", bruker.getAktoer_id());
-        }
-        if (isDifferent(bruker.getDagputlopuke(), postgresAktorIdEntity.getDagputlopuke())) {
-            log.info("postgres Opensearch: dagputlopuke feil på bruker {}", bruker.getAktoer_id());
-        }
-        if (isDifferent(bruker.getPermutlopuke(), postgresAktorIdEntity.getPermutlopuke())) {
-            log.info("postgres Opensearch: permutlopuke feil på bruker {}", bruker.getAktoer_id());
-        }
-        if (isDifferent(bruker.getAapmaxtiduke(), postgresAktorIdEntity.getAapmaxtiduke())) {
-            log.info("postgres Opensearch: aapmaxtiduke feil på bruker {}", bruker.getAktoer_id());
-        }
-        if (isDifferent(bruker.getAapunntakukerigjen(), postgresAktorIdEntity.getAapunntakukerigjen())) {
-            log.info("postgres Opensearch: aapunntakukerigjen feil på bruker {}", bruker.getAktoer_id());
-        }
-
-
         // Arbeidslista
         if (isDifferent(bruker.isArbeidsliste_aktiv(), postgresAktorIdEntity.isArbeidslisteAktiv())) {
             log.info("postgres Opensearch: arbeidslisteAktiv feil på bruker {}", bruker.getAktoer_id());
