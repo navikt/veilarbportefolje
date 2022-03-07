@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.parseInteger;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erArbeidslistaPaPostgres;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erYtelserPaPostgres;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.CV_EKSISTERE;
@@ -126,10 +128,10 @@ public class DbUtils {
             bruker.setYtelse(rs.getString("ytelse"))
                     .setUtlopsdato(toIsoUTC(rs.getTimestamp("utlopsdato")))
                     .setUtlopsdatofasett(rs.getString("utlopsdatofasett"))
-                    .setDagputlopuke(parseInt(rs.getString("dagputlopuke")))
+                    .setDagputlopuke(parseInteger(rs.getString("dagputlopuke")))
                     .setDagputlopukefasett(rs.getString("dagputlopukefasett"))
-                    .setPermutlopuke(parseInt(rs.getString("permutlopuke")))
-                    .setAapmaxtiduke(parseInt(rs.getString("aapmaxtiduke")))
+                    .setPermutlopuke(parseInteger(rs.getString("permutlopuke")))
+                    .setAapmaxtiduke(parseInteger(rs.getString("aapmaxtiduke")))
                     .setAapmaxtidukefasett(rs.getString("aapmaxtidukefasett"))
                     .setAapunntakukerigjen(konverterDagerTilUker(rs.getString("aapunntakdagerigjen")))
                     .setAapunntakukerigjenfasett(rs.getString("aapunntakukerigjenfasett"));
@@ -160,11 +162,6 @@ public class DbUtils {
         return bruker;
     }
 
-    public static Integer konverterDagerTilUker(String antallDagerFraDB) {
-        Integer antallDager = parseInt(antallDagerFraDB);
-        return antallDager == null ? 0 : (antallDager / 5);
-    }
-
     public static String identifiserManuellEllerKRRBruker(String krrJaNei, String manuellJaNei) {
         if ("J".equals(krrJaNei)) {
             return "KRR";
@@ -186,13 +183,6 @@ public class DbUtils {
             case "N" -> false;
             default -> throw new IllegalArgumentException(String.format("Kunne ikke parse verdi %s fra database til boolean", janei));
         };
-    }
-
-    static Integer parseInt(String integer) {
-        if (integer == null) {
-            return null;
-        }
-        return Integer.parseInt(integer);
     }
 
     public static Boolean parse0OR1(String value) {
