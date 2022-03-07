@@ -203,6 +203,7 @@ public class AdminController {
         authorizeAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         opensearchIndexer.dryrunAvPostgresTilOpensearchMapping(brukereUnderOppfolging);
+        log.info("ferdig med dryrun");
     }
 
     @PutMapping("/test/hentFraOracleOgPostgres")
