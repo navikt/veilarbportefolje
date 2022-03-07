@@ -133,7 +133,7 @@ public class PostgresOpensearchMapper {
         }
 
         // Ytelser
-        if (isDifferent(bruker.getUtlopsdato(), postgresAktorIdEntity.getYtelseUtlopsdato())) {
+        if (isDifferentDate(bruker.getUtlopsdato(), postgresAktorIdEntity.getYtelseUtlopsdato())) {
             log.info("postgres Opensearch: ytelseUtlopsdato feil på bruker {}", bruker.getAktoer_id());
         }
         if (isDifferent(bruker.getDagputlopuke(), postgresAktorIdEntity.getDagputlopuke())) {
@@ -158,7 +158,7 @@ public class PostgresOpensearchMapper {
             if (isDifferent(bruker.getArbeidsliste_sist_endret_av_veilederid(), postgresAktorIdEntity.getArbeidslisteSistEndretAvVeilederid())) {
                 log.info("postgres Opensearch: arbeidslisteSistEndretAvVeilederid feil på bruker {}", bruker.getAktoer_id());
             }
-            if (isDifferent(bruker.getArbeidsliste_endringstidspunkt(), postgresAktorIdEntity.getArbeidslisteEndringstidspunkt())) {
+            if (isDifferentDate(bruker.getArbeidsliste_endringstidspunkt(), postgresAktorIdEntity.getArbeidslisteEndringstidspunkt())) {
                 log.info("postgres Opensearch: arbeidslisteEndringstidspunkt feil på bruker {}", bruker.getAktoer_id());
             }
             if (isDifferent(bruker.getArbeidsliste_frist(), postgresAktorIdEntity.getArbeidslisteFrist())) {
@@ -183,6 +183,15 @@ public class PostgresOpensearchMapper {
             return true;
         }
         return !o.equals(other);
+    }
+
+    private boolean isDifferentDate(String o, String other) {
+        if (o == null && other == null) {
+            return false;
+        } else if (o == null || other == null) {
+            return true;
+        }
+        return !o.substring(0, 10).equals(other.substring(0, 10));
     }
 
 }

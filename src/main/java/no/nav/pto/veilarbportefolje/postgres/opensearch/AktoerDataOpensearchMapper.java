@@ -95,10 +95,10 @@ public class AktoerDataOpensearchMapper {
 
         postgresAktorIdData.setYtelse(rs.getString(YTELSE));
         postgresAktorIdData.setYtelseUtlopsdato(toIsoUTC(rs.getTimestamp(YTELSE_UTLOPSDATO)));
-        postgresAktorIdData.setDagputlopuke(rs.getInt(DAGPUTLOPUKE));
-        postgresAktorIdData.setPermutlopuke(rs.getInt(PERMUTLOPUKE));
-        postgresAktorIdData.setAapmaxtiduke(rs.getInt(AAPMAXTIDUKE));
-        postgresAktorIdData.setAapunntakukerigjen(rs.getInt(AAPUNNTAKDAGERIGJEN));
+        postgresAktorIdData.setDagputlopuke(rs.getObject(DAGPUTLOPUKE, Integer.class));
+        postgresAktorIdData.setPermutlopuke(rs.getObject(PERMUTLOPUKE, Integer.class));
+        postgresAktorIdData.setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class));
+        postgresAktorIdData.setAapunntakukerigjen(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class));
 
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));
         if (arbeidslisteTidspunkt != null) {
