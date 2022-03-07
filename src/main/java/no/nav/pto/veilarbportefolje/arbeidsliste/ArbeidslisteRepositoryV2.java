@@ -36,6 +36,9 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
+    @Qualifier("PostgresJdbcReadOnly")
+    private final JdbcTemplate dbReadOnly;
+
 
     public Optional<String> hentNavKontorForArbeidsliste(AktorId aktorId) {
         String sql = String.format("SELECT %s FROM %s WHERE %s=? ", NAV_KONTOR_FOR_ARBEIDSLISTE, TABLE_NAME, AKTOERID);
@@ -54,7 +57,7 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
     }
 
     public List<Arbeidsliste> hentArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
-        return db.queryForList("""
+        return dbReadOnly.queryForList("""
                                 SELECT a.* FROM arbeidsliste a
                                 INNER JOIN oppfolging_data o ON a.aktoerid = o.aktoerid
                                 LEFT JOIN oppfolgingsbruker_arena ob on a.aktoerid = ob.aktoerid
