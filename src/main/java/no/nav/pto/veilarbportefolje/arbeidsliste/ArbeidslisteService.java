@@ -192,11 +192,10 @@ public class ArbeidslisteService {
         arbeidslisteRepositoryPostgres.slettArbeidsliste(aktoerId);
     }
 
-    public void migrerArbeidslistaTilPostgres(){
-        List<AktorId> brukereMedArbeidsliste = arbeidslisteRepositoryOracle.hentAlleBrukereMedArbeidsliste();
-        brukereMedArbeidsliste.forEach(aktorId -> arbeidslisteRepositoryOracle.retrieveArbeidslisteDTO(aktorId)
-                .onSuccess(arbeidsliste -> arbeidslisteRepositoryPostgres.upsert(aktorId.get(), arbeidsliste))
-                .onFailure(e -> log.error("Feil i arbeidsliste migrering, aktoer: {}", aktorId.get(), e)));
+    public void migrerArbeidslistaTilPostgres(AktorId aktoer){
+        arbeidslisteRepositoryOracle.retrieveArbeidslisteDTO(aktoer)
+                .onSuccess(arbeidsliste -> arbeidslisteRepositoryPostgres.upsert(aktoer.get(), arbeidsliste))
+                .onFailure(e -> log.error("Feil i arbeidsliste migrering, aktoer: {}", aktoer.get(), e));
         log.info("Arbeidslisten er migrert");
     }
 }

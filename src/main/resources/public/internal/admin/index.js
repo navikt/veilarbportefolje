@@ -209,13 +209,14 @@ function handleOppdaterYtelser(e) {
 
 const migrerArbeidslistaForm = document.getElementById('migrerArbeidslista');
 migrerArbeidslistaForm.addEventListener('submit', handleMigrerArbeidslista)
+const arbeidslistaAktoer = document.getElementById('arbeidslistaAktoer')
 
 function handleMigrerArbeidslista(e) {
     e.preventDefault();
     if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
         fetchData(
             `/veilarbportefolje/api/admin/arbeidslista/migrer`,
-            {method: 'PUT', credentials: 'same-origin'},
+            {method: 'PUT', credentials: 'same-origin', body: arbeidslistaAktoer.value},
             'migrerArbeidslistaResponse'
         );
     }
