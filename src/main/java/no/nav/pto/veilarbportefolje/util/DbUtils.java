@@ -19,11 +19,9 @@ import java.util.function.Predicate;
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.parseInteger;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erArbeidslistaPaPostgres;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erYtelserPaPostgres;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.CV_EKSISTERE;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.isNyForEnhet;
 
@@ -136,27 +134,6 @@ public class DbUtils {
                     .setAapunntakukerigjen(konverterDagerTilUker(rs.getString("aapunntakdagerigjen")))
                     .setAapunntakukerigjenfasett(rs.getString("aapunntakukerigjenfasett"));
 
-        }
-
-        if (!erArbeidslistaPaPostgres(unleashService)) {
-            boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
-
-            if (brukerHarArbeidsliste) {
-                int arbeidsListeLengde = Optional.ofNullable(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
-                        .map(String::length).orElse(0);
-                String arbeidsListeSorteringsVerdi = Optional.ofNullable(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
-                        .filter(s -> !s.isEmpty())
-                        .map(s -> s.substring(0, Math.min(2, s.length())))
-                        .orElse("");
-                bruker
-                        .setArbeidsliste_aktiv(true)
-                        .setArbeidsliste_sist_endret_av_veilederid(rs.getString("ARBEIDSLISTE_ENDRET_AV"))
-                        .setArbeidsliste_endringstidspunkt(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_ENDRET_TID")))
-                        .setArbeidsliste_kategori(rs.getString("ARBEIDSLISTE_KATEGORI"))
-                        .setArbeidsliste_tittel_lengde(arbeidsListeLengde)
-                        .setArbeidsliste_tittel_sortering(arbeidsListeSorteringsVerdi)
-                        .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getFarInTheFutureDate()));
-            }
         }
 
         return bruker;
