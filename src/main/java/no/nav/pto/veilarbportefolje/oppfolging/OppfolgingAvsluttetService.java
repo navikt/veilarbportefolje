@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
@@ -26,7 +25,6 @@ import static java.time.ZonedDateTime.ofInstant;
 @RequiredArgsConstructor
 public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<OppfolgingAvsluttetDTO> {
     private final ArbeidslisteService arbeidslisteService;
-    private final ArbeidslisteRepositoryV1 arbeidslisteRepositoryV2;
     private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final RegistreringService registreringService;
@@ -56,7 +54,6 @@ public class OppfolgingAvsluttetService extends KafkaCommonConsumerService<Oppfo
         oppfolgingRepositoryV2.slettOppfolgingData(aktoerId);
         registreringService.slettRegistering(aktoerId);
         arbeidslisteService.slettArbeidsliste(aktoerId);
-        arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);// TODO: slett denne linjen når vi kun bruker postgres
         sisteEndringService.slettSisteEndringer(aktoerId);
         cvRepository.resetHarDeltCV(aktoerId);
         cvRepositoryV2.resetHarDeltCV(aktoerId);
