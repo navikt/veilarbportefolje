@@ -95,7 +95,7 @@ public class ArbeidsListeController {
                 .orElse(false);
 
         Arbeidsliste arbeidsliste = aktoerId
-                .flatMap((id) -> arbeidslisteService.getArbeidsliste(id, innloggetVeileder))
+                .flatMap(arbeidslisteService::getArbeidsliste)
                 .toJavaOptional()
                 .orElse(emptyArbeidsliste())
                 .setIsOppfolgendeVeileder(aktoerId.map(id ->
@@ -111,13 +111,11 @@ public class ArbeidsListeController {
         validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
-        String veileder  = AuthUtils.getInnloggetVeilederIdent().toString();
-
         arbeidslisteService.createArbeidsliste(data(body, Fnr.ofValidFnr(fnr)))
                 .onFailure(e -> log.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        return arbeidslisteService.getArbeidsliste(Fnr.ofValidFnr(fnr), veileder).get()
+        return arbeidslisteService.getArbeidsliste(Fnr.ofValidFnr(fnr)).get()
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(true);
     }
@@ -129,13 +127,12 @@ public class ArbeidsListeController {
         sjekkTilgangTilEnhet(fnr);
         validerArbeidsliste(body, true);
 
-        String veileder  = AuthUtils.getInnloggetVeilederIdent().toString();
         arbeidslisteService
                 .updateArbeidsliste(data(body, fnr))
                 .onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        return arbeidslisteService.getArbeidsliste(fnr, veileder).get()
+        return arbeidslisteService.getArbeidsliste(fnr).get()
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(arbeidslisteService.erVeilederForBruker(
                         fnr,

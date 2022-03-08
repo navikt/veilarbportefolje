@@ -37,15 +37,15 @@ public class ArbeidslisteService {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final MetricsClient metricsClient;
 
-    public Try<Arbeidsliste> getArbeidsliste(Fnr fnr, String innloggetVeileder) {
-        return hentAktorId(fnr).map((aktoerId) -> getArbeidsliste(aktoerId, innloggetVeileder)).get();
+    public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
+        return hentAktorId(fnr).map(this::getArbeidsliste).get();
     }
 
-    public Try<Arbeidsliste> getArbeidsliste(AktorId aktoerId, String innloggetVeileder) {
+    public Try<Arbeidsliste> getArbeidsliste(AktorId aktoerId) {
         return arbeidslisteRepositoryPostgres.retrieveArbeidsliste(aktoerId);
     }
 
-    public List<Arbeidsliste> getArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident, String innloggetVeileder) {
+    public List<Arbeidsliste> getArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
         return arbeidslisteRepositoryPostgres.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);
     }
 
