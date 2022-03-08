@@ -13,7 +13,6 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +25,6 @@ import java.util.Optional;
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erArbeidslistaPaPostgres;
 
 @Service
 @RequiredArgsConstructor
@@ -34,29 +32,21 @@ public class ArbeidslisteService {
     private static final Logger log = LoggerFactory.getLogger(ArbeidslisteService.class);
 
     private final AktorClient aktorClient;
-    private final ArbeidslisteRepositoryV1 arbeidslisteRepositoryOracle;
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryPostgres;
     private final BrukerService brukerService;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final UnleashService unleashService;
     private final MetricsClient metricsClient;
 
-    public Try<Arbeidsliste> getArbeidsliste(Fnr fnr, String innloggetVeileder) {
-        return hentAktorId(fnr).map((aktoerId) -> getArbeidsliste(aktoerId, innloggetVeileder)).get();
+    public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
+        return hentAktorId(fnr).map(this::getArbeidsliste).get();
     }
 
-    public Try<Arbeidsliste> getArbeidsliste(AktorId aktoerId, String innloggetVeileder) {
-        if (erArbeidslistaPaPostgres(unleashService, innloggetVeileder)) {
-            return arbeidslisteRepositoryPostgres.retrieveArbeidsliste(aktoerId);
-        }
-        return arbeidslisteRepositoryOracle.retrieveArbeidsliste(aktoerId);
+    public Try<Arbeidsliste> getArbeidsliste(AktorId aktoerId) {
+        return arbeidslisteRepositoryPostgres.retrieveArbeidsliste(aktoerId);
     }
 
-    public List<Arbeidsliste> getArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident, String innloggetVeileder) {
-        if (erArbeidslistaPaPostgres(unleashService, innloggetVeileder)) {
-            return arbeidslisteRepositoryPostgres.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);
-        }
-        return arbeidslisteRepositoryOracle.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);
+    public List<Arbeidsliste> getArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
+        return arbeidslisteRepositoryPostgres.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);
     }
 
     public Try<ArbeidslisteDTO> createArbeidsliste(ArbeidslisteDTO dto) {
@@ -71,8 +61,7 @@ public class ArbeidslisteService {
 
         String navKontorForBruker = brukerService.hentNavKontorFraDbLinkTilArena(dto.getFnr()).orElseThrow();
         dto.setNavKontorForArbeidsliste(navKontorForBruker);
-        arbeidslisteRepositoryPostgres.insertArbeidsliste(dto);
-        return arbeidslisteRepositoryOracle.insertArbeidsliste(dto)
+        return arbeidslisteRepositoryPostgres.insertArbeidsliste(dto)
                 .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
 
@@ -82,15 +71,12 @@ public class ArbeidslisteService {
             return Try.failure(aktoerId.getCause());
         }
         data.setAktorId(aktoerId.get());
-        arbeidslisteRepositoryPostgres.updateArbeidsliste(data);
-        return arbeidslisteRepositoryOracle
-                .updateArbeidsliste(data)
+        return arbeidslisteRepositoryPostgres.updateArbeidsliste(data)
                 .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
 
     public int slettArbeidsliste(AktorId aktoerId) {
-        arbeidslisteRepositoryPostgres.slettArbeidsliste(aktoerId);
-        final int rowsUpdated = arbeidslisteRepositoryOracle.slettArbeidsliste(aktoerId);
+        final int rowsUpdated = arbeidslisteRepositoryPostgres.slettArbeidsliste(aktoerId);
         if (rowsUpdated == 1) {
             opensearchIndexerV2.slettArbeidsliste(aktoerId);
         }
@@ -151,25 +137,7 @@ public class ArbeidslisteService {
                 .orElse(false);
     }
 
-    public boolean brukerHarByttetNavKontorOracle(AktorId aktoerId) {
-        Optional<String> navKontorForArbeidsliste = arbeidslisteRepositoryOracle.hentNavKontorForArbeidsliste(aktoerId);
-
-        if (navKontorForArbeidsliste.isEmpty()) {
-            log.info("Bruker {} har ikke NAV-kontor på arbeidsliste", aktoerId);
-            return false;
-        }
-
-        final Optional<String> navKontorForBruker = brukerService.hentNavKontor(aktoerId);
-        if (navKontorForBruker.isEmpty()) {
-            log.error("Kunne ikke hente NAV-kontor fra db-link til arena for bruker {}", aktoerId);
-            return false;
-        }
-
-        log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId, navKontorForBruker.get(), navKontorForArbeidsliste.get());
-        return !navKontorForBruker.orElseThrow().equals(navKontorForArbeidsliste.orElseThrow());
-    }
-
-    public boolean brukerHarByttetNavKontorPostgres(AktorId aktoerId) {
+    public boolean brukerHarByttetNavKontor(AktorId aktoerId) {
         Optional<String> navKontorForArbeidsliste = arbeidslisteRepositoryPostgres.hentNavKontorForArbeidsliste(aktoerId);
 
         if (navKontorForArbeidsliste.isEmpty()) {
@@ -185,17 +153,5 @@ public class ArbeidslisteService {
 
         log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorForBruker.get(), navKontorForArbeidsliste.get());
         return !navKontorForBruker.orElseThrow().equals(navKontorForArbeidsliste.orElseThrow());
-    }
-
-    //TODO: Slett ved full overgang til postgres
-    public void slettArbeidslistePostgres(AktorId aktoerId) {
-        arbeidslisteRepositoryPostgres.slettArbeidsliste(aktoerId);
-    }
-
-    public void migrerArbeidslistaTilPostgres(AktorId aktoer){
-        arbeidslisteRepositoryOracle.retrieveArbeidslisteDTO(aktoer)
-                .onSuccess(arbeidsliste -> arbeidslisteRepositoryPostgres.upsert(aktoer.get(), arbeidsliste))
-                .onFailure(e -> log.error("Feil i arbeidsliste migrering, aktoer: {}", aktoer.get(), e));
-        log.info("Arbeidslisten er migrert");
     }
 }

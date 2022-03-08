@@ -53,7 +53,6 @@ public class AdminController {
     private final YtelsesService ytelsesService;
     private final YtelsesServicePostgres ytelsesServicePostgres;
     private final OppfolgingRepository oppfolgingRepository;
-    private final ArbeidslisteService arbeidslisteService;
     private final OpensearchAdminService opensearchAdminService;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
@@ -143,13 +142,6 @@ public class AdminController {
         authorizeAdmin();
         ytelsesService.oppdaterBrukereMedYtelserSomStarterIDagOracle();
         return "Aktiviteter er nå i sync";
-    }
-
-    @PutMapping("/arbeidslista/migrer")
-    public String migrerArbeidslista(@RequestBody String aktoerId) {
-        authorizeAdmin();
-        arbeidslisteService.migrerArbeidslistaTilPostgres(AktorId.of(aktoerId));
-        return "Arbeidslista er nå migrert for: "+ aktoerId;
     }
 
     @PostMapping("/opensearch/createIndex")

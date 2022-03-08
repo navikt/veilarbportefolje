@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erArbeidslistaPaPostgres;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erYtelserPaPostgres;
 
 @Slf4j
@@ -80,19 +79,17 @@ public class PostgresOpensearchMapper {
         bruker.setUtdanning(dataPaAktorId.getUtdanning());
         bruker.setUtdanning_bestatt(dataPaAktorId.getUtdanningBestatt());
         bruker.setUtdanning_godkjent(dataPaAktorId.getUtdanningGodkjent());
-
-        if(erArbeidslistaPaPostgres(unleashService)){
-            bruker.setArbeidsliste_aktiv(dataPaAktorId.isArbeidslisteAktiv());
-            if(dataPaAktorId.isArbeidslisteAktiv()) {
-                bruker.setArbeidsliste_sist_endret_av_veilederid(dataPaAktorId.getArbeidslisteSistEndretAvVeilederid());
-                bruker.setArbeidsliste_endringstidspunkt(dataPaAktorId.getArbeidslisteEndringstidspunkt());
-                bruker.setArbeidsliste_frist(dataPaAktorId.getArbeidslisteFrist());
-                bruker.setArbeidsliste_kategori(dataPaAktorId.getArbeidslisteKategori());
-                bruker.setArbeidsliste_tittel_sortering(dataPaAktorId.getArbeidslisteTittelSortering());
-                bruker.setArbeidsliste_tittel_lengde(dataPaAktorId.getArbeidslisteTittelLengde());
-            }
+        bruker.setArbeidsliste_aktiv(dataPaAktorId.isArbeidslisteAktiv());
+        if (dataPaAktorId.isArbeidslisteAktiv()) {
+            bruker.setArbeidsliste_sist_endret_av_veilederid(dataPaAktorId.getArbeidslisteSistEndretAvVeilederid());
+            bruker.setArbeidsliste_endringstidspunkt(dataPaAktorId.getArbeidslisteEndringstidspunkt());
+            bruker.setArbeidsliste_frist(dataPaAktorId.getArbeidslisteFrist());
+            bruker.setArbeidsliste_kategori(dataPaAktorId.getArbeidslisteKategori());
+            bruker.setArbeidsliste_tittel_sortering(dataPaAktorId.getArbeidslisteTittelSortering());
+            bruker.setArbeidsliste_tittel_lengde(dataPaAktorId.getArbeidslisteTittelLengde());
         }
-        if(erYtelserPaPostgres(unleashService)){
+
+        if (erYtelserPaPostgres(unleashService)) {
             bruker.setYtelse(dataPaAktorId.getYtelse());
             bruker.setUtlopsdato(dataPaAktorId.getYtelseUtlopsdato());
             bruker.setDagputlopuke(dataPaAktorId.getDagputlopuke());
@@ -126,10 +123,6 @@ public class PostgresOpensearchMapper {
         }
         if (isDifferent(bruker.getVenterpasvarfranav(), postgresAktorIdEntity.getVenterpasvarfranav())) {
             log.info("postgres Opensearch: getVenterpasvarfranav feil bruker: {}", bruker.getAktoer_id());
-        }
-
-        if (isDifferent(bruker.getYtelse(), postgresAktorIdEntity.getYtelse())) {
-            log.info("postgres Opensearch: getYtelse feil bruker: {}", bruker.getAktoer_id());
         }
 
         // Arbeidslista
