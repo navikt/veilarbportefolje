@@ -149,7 +149,7 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
                 (String) rs.get(KOMMENTAR),
                 toZonedDateTime((Timestamp) rs.get(FRIST)),
                 Arbeidsliste.Kategori.valueOf((String) rs.get(KATEGORI))
-        );
+        ).setAktoerid((String) rs.get(AKTOERID));
     }
 
 }
