@@ -35,7 +35,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
 
         final boolean harByttetNavKontor = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
         if (harByttetNavKontor) {
-            arbeidslisteService.slettArbeidslistePostgres(aktoerId);
+            arbeidslisteService.slettArbeidsliste(aktoerId);
         }
     }
 

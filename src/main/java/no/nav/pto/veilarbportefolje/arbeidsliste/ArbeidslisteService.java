@@ -154,9 +154,4 @@ public class ArbeidslisteService {
         log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorForBruker.get(), navKontorForArbeidsliste.get());
         return !navKontorForBruker.orElseThrow().equals(navKontorForArbeidsliste.orElseThrow());
     }
-
-    //TODO: Slett ved full overgang til postgres
-    public void slettArbeidslistePostgres(AktorId aktoerId) {
-        arbeidslisteRepositoryPostgres.slettArbeidsliste(aktoerId);
-    }
 }
