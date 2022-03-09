@@ -17,9 +17,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.parseInteger;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erYtelserPaPostgres;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.CV_EKSISTERE;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
@@ -121,21 +118,6 @@ public class DbUtils {
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus))
                 .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
                 .setCv_eksistere(parseJaNei(rs.getString(CV_EKSISTERE), CV_EKSISTERE));
-
-        if (!erYtelserPaPostgres(unleashService)) {
-            bruker.setYtelse(rs.getString("ytelse"))
-                    .setUtlopsdato(toIsoUTC(rs.getTimestamp("utlopsdato")))
-                    .setUtlopsdatofasett(rs.getString("utlopsdatofasett"))
-                    .setDagputlopuke(parseInteger(rs.getString("dagputlopuke")))
-                    .setDagputlopukefasett(rs.getString("dagputlopukefasett"))
-                    .setPermutlopuke(parseInteger(rs.getString("permutlopuke")))
-                    .setAapmaxtiduke(parseInteger(rs.getString("aapmaxtiduke")))
-                    .setAapmaxtidukefasett(rs.getString("aapmaxtidukefasett"))
-                    .setAapunntakukerigjen(konverterDagerTilUker(rs.getString("aapunntakdagerigjen")))
-                    .setAapunntakukerigjenfasett(rs.getString("aapunntakukerigjenfasett"));
-
-        }
-
         return bruker;
     }
 

@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erYtelserPaPostgres;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -80,6 +78,14 @@ public class PostgresOpensearchMapper {
         bruker.setUtdanning_bestatt(dataPaAktorId.getUtdanningBestatt());
         bruker.setUtdanning_godkjent(dataPaAktorId.getUtdanningGodkjent());
         bruker.setArbeidsliste_aktiv(dataPaAktorId.isArbeidslisteAktiv());
+
+        bruker.setYtelse(dataPaAktorId.getYtelse());
+        bruker.setUtlopsdato(dataPaAktorId.getYtelseUtlopsdato());
+        bruker.setDagputlopuke(dataPaAktorId.getDagputlopuke());
+        bruker.setPermutlopuke(dataPaAktorId.getPermutlopuke());
+        bruker.setAapmaxtiduke(dataPaAktorId.getAapmaxtiduke());
+        bruker.setAapunntakukerigjen(dataPaAktorId.getAapunntakukerigjen());
+
         if (dataPaAktorId.isArbeidslisteAktiv()) {
             bruker.setArbeidsliste_sist_endret_av_veilederid(dataPaAktorId.getArbeidslisteSistEndretAvVeilederid());
             bruker.setArbeidsliste_endringstidspunkt(dataPaAktorId.getArbeidslisteEndringstidspunkt());
@@ -87,15 +93,6 @@ public class PostgresOpensearchMapper {
             bruker.setArbeidsliste_kategori(dataPaAktorId.getArbeidslisteKategori());
             bruker.setArbeidsliste_tittel_sortering(dataPaAktorId.getArbeidslisteTittelSortering());
             bruker.setArbeidsliste_tittel_lengde(dataPaAktorId.getArbeidslisteTittelLengde());
-        }
-
-        if (erYtelserPaPostgres(unleashService)) {
-            bruker.setYtelse(dataPaAktorId.getYtelse());
-            bruker.setUtlopsdato(dataPaAktorId.getYtelseUtlopsdato());
-            bruker.setDagputlopuke(dataPaAktorId.getDagputlopuke());
-            bruker.setPermutlopuke(dataPaAktorId.getPermutlopuke());
-            bruker.setAapmaxtiduke(dataPaAktorId.getAapmaxtiduke());
-            bruker.setAapunntakukerigjen(dataPaAktorId.getAapunntakukerigjen());
         }
     }
 
