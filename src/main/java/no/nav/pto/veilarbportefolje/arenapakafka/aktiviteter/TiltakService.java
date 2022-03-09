@@ -31,16 +31,10 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGo
 @RequiredArgsConstructor
 public class TiltakService {
     private static final LocalDate LANSERING_AV_OVERSIKTEN = LocalDate.of(2017, 12, 4);
-    private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final AktorClient aktorClient;
     private final ArenaHendelseRepository arenaHendelseRepository;
     private final OpensearchIndexer opensearchIndexer;
-
-    private final Cache<EnhetId, EnhetTiltak> enhetTiltakCache = Caffeine.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .maximumSize(1000)
-            .build();
 
     private final Cache<EnhetId, EnhetTiltak> enhetTiltakCachePostgres = Caffeine.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
@@ -64,30 +58,6 @@ public class TiltakService {
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
         }
-        AktorId aktorId = behandleKafkaMeldingOracle(kafkaMelding);
-        behandleKafkaMeldingPostgres(kafkaMelding);
-
-        arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
-        opensearchIndexer.indekser(aktorId);
-    }
-
-    public AktorId behandleKafkaMeldingOracle(TiltakDTO kafkaMelding) {
-        TiltakInnhold innhold = getInnhold(kafkaMelding);
-
-        AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
-        if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
-            log.info("Sletter tiltak: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
-            tiltakRepositoryV1.delete(innhold.getAktivitetid());
-        } else {
-            log.info("Lagrer tiltak: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
-            tiltakRepositoryV1.upsert(innhold, aktorId);
-        }
-        return aktorId;
-    }
-
-    public void behandleKafkaMeldingPostgres(TiltakDTO kafkaMelding) {
-        TiltakInnhold innhold = getInnhold(kafkaMelding);
-
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
             log.info("Sletter tiltak postgres: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
@@ -96,14 +66,12 @@ public class TiltakService {
             log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
             tiltakRepositoryV2.upsert(innhold, aktorId);
         }
+
+        arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
+        opensearchIndexer.indekser(aktorId);
     }
 
     public EnhetTiltak hentEnhettiltak(EnhetId enhet) {
-        return tryCacheFirst(enhetTiltakCache, enhet,
-                () -> tiltakRepositoryV1.hentTiltakPaEnhet(enhet));
-    }
-
-    public EnhetTiltak hentEnhettiltakPostgres(EnhetId enhet) {
         return tryCacheFirst(enhetTiltakCachePostgres, enhet,
                 () -> tiltakRepositoryV2.hentTiltakPaEnhet(enhet));
     }
