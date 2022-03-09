@@ -16,10 +16,8 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepo
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
-import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
-import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesServicePostgres;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
@@ -141,8 +139,6 @@ import static org.mockito.Mockito.when;
         AktoerDataOpensearchMapper.class,
         AktivitetOpensearchService.class,
         YtelsesService.class,
-        YtelsesServicePostgres.class,
-        YtelsesRepository.class,
         YtelsesRepositoryV2.class,
         YtelsesStatusRepositoryV2.class
 })

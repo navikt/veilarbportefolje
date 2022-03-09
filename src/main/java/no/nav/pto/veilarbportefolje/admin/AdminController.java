@@ -8,9 +8,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
-import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesServicePostgres;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -51,7 +49,6 @@ public class AdminController {
     private final AuthContextHolder authContextHolder;
     private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
-    private final YtelsesServicePostgres ytelsesServicePostgres;
     private final OppfolgingRepository oppfolgingRepository;
     private final OpensearchAdminService opensearchAdminService;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
@@ -133,14 +130,14 @@ public class AdminController {
     public String syncYtelserForAlle() {
         authorizeAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
-        brukereUnderOppfolging.forEach(ytelsesServicePostgres::oppdaterYtelsesInformasjonPostgres);
+        brukereUnderOppfolging.forEach(ytelsesService::oppdaterYtelsesInformasjon);
         return "Ytelser er nå i sync";
     }
 
     @PutMapping("/ytelser/idag")
     public String syncYtelserForIDag() {
         authorizeAdmin();
-        ytelsesService.oppdaterBrukereMedYtelserSomStarterIDagOracle();
+        ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag();
         return "Aktiviteter er nå i sync";
     }
 

@@ -68,30 +68,6 @@ public class BrukerDataService {
         brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
     }
 
-    public void oppdaterYtelserOracle(AktorId aktorId, PersonId personId, Optional<YtelseDAO> innhold) {
-        Brukerdata ytelsesTilstand = new Brukerdata()
-                .setAktoerid(aktorId.get())
-                .setPersonid(personId.getValue());
-        if (innhold.isEmpty()) {
-            brukerDataRepository.upsertYtelser(ytelsesTilstand);
-            return;
-        }
-
-        switch (innhold.get().getType()) {
-            case DAGPENGER -> {
-                leggTilYtelsesData(ytelsesTilstand, innhold.get());
-                leggTilRelevantDagpengeData(ytelsesTilstand, innhold.get());
-            }
-            case AAP -> {
-                leggTilYtelsesData(ytelsesTilstand, innhold.get());
-                leggTilRelevantAAPData(ytelsesTilstand, innhold.get());
-            }
-            case TILTAKSPENGER -> leggTilYtelsesData(ytelsesTilstand, innhold.get());
-        }
-
-        brukerDataRepository.upsertYtelser(ytelsesTilstand);
-    }
-
     public void oppdaterYtelserPostgres(AktorId aktorId, Optional<YtelseDAO> innhold) {
         Brukerdata ytelsesTilstand = new Brukerdata()
                 .setAktoerid(aktorId.get());
