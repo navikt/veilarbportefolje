@@ -30,8 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.hentEnhetsTiltakFraPostgres;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/enhet")
@@ -95,9 +93,7 @@ public class EnhetController {
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
-        if(hentEnhetsTiltakFraPostgres(unleashService)){
-            return tiltakService.hentEnhettiltakPostgres(EnhetId.of(enhet));
-        }
-        return tiltakService.hentEnhettiltak(EnhetId.of(enhet));
+
+        return tiltakService.hentEnhettiltakPostgres(EnhetId.of(enhet));
     }
 }
