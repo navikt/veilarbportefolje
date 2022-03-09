@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.util;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.database.Table;
@@ -65,6 +66,8 @@ public class TestDataClient {
         arbeidslisteRepositoryV2.insertArbeidsliste(new ArbeidslisteDTO(fnr)
                 .setAktorId(aktoerId)
                 .setNavKontorForArbeidsliste(navKontor.getValue())
+                .setVeilederId(veilederId)
+                .setKategori(Arbeidsliste.Kategori.GUL)
         );
 
         SqlUtils.insert(jdbcTemplateOracle, Table.ARBEIDSLISTE.TABLE_NAME)
@@ -122,10 +125,6 @@ public class TestDataClient {
                 .value(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
                 .value(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.getValue())
                 .value(Table.OPPFOLGING_DATA.STARTDATO, Timestamp.from(startDato.toInstant()))
-                .execute();
-
-        SqlUtils.insert(jdbcTemplateOracle, Table.BRUKER_REGISTRERING.TABLE_NAME)
-                .value(Table.BRUKER_REGISTRERING.AKTOERID, aktoerId.get())
                 .execute();
     }
 }

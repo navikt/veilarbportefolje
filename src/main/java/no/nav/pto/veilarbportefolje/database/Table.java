@@ -1,11 +1,6 @@
 package no.nav.pto.veilarbportefolje.database;
 
 public class Table {
-    public static final class BRUKER_REGISTRERING {
-        public static final String TABLE_NAME = "BRUKER_REGISTRERING";
-        public static final String AKTOERID = "AKTOERID";
-    }
-
     public static final class AKTOERID_TO_PERSONID {
         public static final String TABLE_NAME = "AKTOERID_TO_PERSONID";
         public static final String AKTOERID = "AKTOERID";

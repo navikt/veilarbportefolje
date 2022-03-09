@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Portefolje;
 import no.nav.pto.veilarbportefolje.domene.StatusTall;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -37,6 +38,7 @@ public class EnhetController {
     private final AuthService authService;
     private final TiltakService tiltakService;
     private final MetricsClient metricsClient;
+    private final UnleashService unleashService;
 
     @PostMapping("/{enhet}/portefolje")
     public Portefolje hentPortefoljeForEnhet(
@@ -91,6 +93,7 @@ public class EnhetController {
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
-        return tiltakService.hentEnhettiltak(EnhetId.of(enhet));
+
+        return tiltakService.hentEnhettiltakPostgres(EnhetId.of(enhet));
     }
 }

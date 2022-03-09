@@ -36,6 +36,9 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
+    @Qualifier("PostgresJdbcReadOnly")
+    private final JdbcTemplate dbReadOnly;
+
 
     public Optional<String> hentNavKontorForArbeidsliste(AktorId aktorId) {
         String sql = String.format("SELECT %s FROM %s WHERE %s=? ", NAV_KONTOR_FOR_ARBEIDSLISTE, TABLE_NAME, AKTOERID);
@@ -54,7 +57,7 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
     }
 
     public List<Arbeidsliste> hentArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
-        return db.queryForList("""
+        return dbReadOnly.queryForList("""
                                 SELECT a.* FROM arbeidsliste a
                                 INNER JOIN oppfolging_data o ON a.aktoerid = o.aktoerid
                                 LEFT JOIN oppfolgingsbruker_arena ob on a.aktoerid = ob.aktoerid
@@ -117,12 +120,10 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
                         INSERT INTO ARBEIDSLISTE (AKTOERID, SIST_ENDRET_AV_VEILEDERIDENT , ENDRINGSTIDSPUNKT,
                         OVERSKRIFT, KOMMENTAR, FRIST , KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE)
                         VALUES(?,?,?,?,?,?,?,?) ON CONFLICT (AKTOERID) DO UPDATE SET
-                        (SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT,
-                        OVERSKRIFT, KOMMENTAR , FRIST , KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE) = (?,?,?,?,?,?,?)
+                        (SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT, OVERSKRIFT, KOMMENTAR , FRIST , KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE) =
+                        (excluded.SIST_ENDRET_AV_VEILEDERIDENT, excluded.ENDRINGSTIDSPUNKT, excluded.OVERSKRIFT, excluded.KOMMENTAR , excluded.FRIST , excluded.KATEGORI, excluded.NAV_KONTOR_FOR_ARBEIDSLISTE)
                         """,
-                aktoerId,
-                dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), dto.getKategori().toString(), dto.getNavKontorForArbeidsliste(),
-                dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), dto.getKategori().toString(), dto.getNavKontorForArbeidsliste());
+                aktoerId, dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), dto.getKategori().toString(), dto.getNavKontorForArbeidsliste());
     }
 
     @SneakyThrows
@@ -146,7 +147,7 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
                 (String) rs.get(KOMMENTAR),
                 toZonedDateTime((Timestamp) rs.get(FRIST)),
                 Arbeidsliste.Kategori.valueOf((String) rs.get(KATEGORI))
-        );
+        ).setAktoerid((String) rs.get(AKTOERID));
     }
 
 }

@@ -10,6 +10,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesServicePostgres;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -20,8 +21,9 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.AktoerDataOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
-import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,11 +49,11 @@ public class AdminController {
     private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
     private final YtelsesService ytelsesService;
+    private final YtelsesServicePostgres ytelsesServicePostgres;
     private final OppfolgingRepository oppfolgingRepository;
-    private final ArbeidslisteService arbeidslisteService;
-    private final ProfileringService profileringService;
     private final OpensearchAdminService opensearchAdminService;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
+    private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final BrukerRepository brukerRepository;
 
     @PostMapping("/aktoerId")
@@ -111,8 +113,9 @@ public class AdminController {
     @PutMapping("/ytelser/allUsers")
     public String syncYtelserForAlle() {
         authorizeAdmin();
-        ytelsesService.syncYtelserForAlleBrukere();
-        return "Aktiviteter er nå i sync";
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
+        brukereUnderOppfolging.forEach(ytelsesServicePostgres::oppdaterYtelsesInformasjonPostgres);
+        return "Ytelser er nå i sync";
     }
 
     @PutMapping("/ytelser/idag")
@@ -120,20 +123,6 @@ public class AdminController {
         authorizeAdmin();
         ytelsesService.oppdaterBrukereMedYtelserSomStarterIDagOracle();
         return "Aktiviteter er nå i sync";
-    }
-
-    @PutMapping("/arbeidslista/migrer")
-    public String migrerArbeidslista() {
-        authorizeAdmin();
-        arbeidslisteService.migrerArbeidslistaTilPostgres();
-        return "Arbeidslista er nå migrert";
-    }
-
-    @PutMapping("/profilering/migrer")
-    public String migrerProfilering() {
-        authorizeAdmin();
-        profileringService.migrerTilPostgres();
-        return "Profilering er nå migrert";
     }
 
     @PostMapping("/opensearch/createIndex")
@@ -187,18 +176,21 @@ public class AdminController {
         authorizeAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         opensearchIndexer.dryrunAvPostgresTilOpensearchMapping(brukereUnderOppfolging);
+        log.info("ferdig med dryrun");
     }
 
     @PutMapping("/test/hentFraOracleOgPostgres")
-    public String testHentIndeksertPostgresOgOracleBruker(@RequestBody String aktoerId) {
+    public String testHentIndeksertPostgresOgOracleBruker(@RequestBody String aktoerIdString) {
         authorizeAdmin();
-        OppfolgingsBruker fraOracle = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId)).get();
-        opensearchIndexer.leggTilSisteEndring(fraOracle);
+        AktorId aktoerId = AktorId.of(aktoerIdString);
+        OppfolgingsBruker fraOracle = brukerRepository.hentBrukerFraView(aktoerId).get();
 
-        OppfolgingsBruker fraPostgres = brukerRepository.hentBrukerFraView(AktorId.of(aktoerId)).get();
+        OppfolgingsBruker fraPostgres = brukerRepository.hentBrukerFraView(aktoerId).get();
         postgresOpensearchMapper.flettInnPostgresData(List.of(fraPostgres), true);
 
-        return "{ \"oracle\":" + JsonUtils.toJson(fraOracle) + ", \"postgres\":" + JsonUtils.toJson(fraPostgres) + " }";
+        PostgresAktorIdEntity aktorIdData = aktoerDataOpensearchMapper.hentAktoerData(List.of(aktoerId)).get(aktoerId);
+
+        return "{ \"oracle\":" + JsonUtils.toJson(fraOracle) + ", \"postgres\":" + JsonUtils.toJson(aktorIdData) + " }";
     }
 
     private void authorizeAdmin() {

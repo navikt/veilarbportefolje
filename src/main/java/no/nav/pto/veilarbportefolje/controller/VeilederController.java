@@ -93,7 +93,6 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
         authService.tilgangTilEnhet(enhet.get());
 
-        String ident = AuthUtils.getInnloggetVeilederIdent().toString();
-        return arbeidslisteService.getArbeidslisteForVeilederPaEnhet(enhet, veilederIdent, ident);
+        return arbeidslisteService.getArbeidslisteForVeilederPaEnhet(enhet, veilederIdent);
     }
 }

@@ -7,7 +7,6 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
@@ -124,7 +123,6 @@ import static org.mockito.Mockito.when;
         SistLestService.class,
         MalService.class,
         OppfolgingService.class,
-        ArbeidslisteRepositoryV1.class,
         ArbeidslisteRepositoryV2.class,
         UtdanningsAktivitetService.class,
         ArenaHendelseRepository.class,
@@ -264,9 +262,14 @@ public class ApplicationConfigTest {
         return SingletonPostgresContainer.init().createJdbcTemplate();
     }
 
+    @Bean("PostgresJdbcReadOnly")
+    public JdbcTemplate dbMockReadOnly() {
+        return db();
+    }
+
     @Bean(name = "PostgresNamedJdbcReadOnly")
-    public NamedParameterJdbcTemplate dbMockReadOnly() {
-        return new NamedParameterJdbcTemplate(SingletonPostgresContainer.init().createDataSource());
+    public NamedParameterJdbcTemplate dbNamedMockReadOnly() {
+        return new NamedParameterJdbcTemplate(db());
     }
 
     @Bean
