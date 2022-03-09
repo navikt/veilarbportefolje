@@ -33,13 +33,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId);
         log.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
-        // TODO: Slett oracle basert kode naar vi er over paa postgres.
-        final boolean harByttetNavKontorPostgres = arbeidslisteService.brukerHarByttetNavKontorPostgres(aktoerId);
-        if (harByttetNavKontorPostgres) {
-            arbeidslisteService.slettArbeidslistePostgres(aktoerId);
-        }
-
-        final boolean harByttetNavKontor = arbeidslisteService.brukerHarByttetNavKontorOracle(aktoerId);
+        final boolean harByttetNavKontor = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
         if (harByttetNavKontor) {
             arbeidslisteService.slettArbeidsliste(aktoerId);
         }
