@@ -273,9 +273,6 @@ public class OpensearchQueryBuilder {
 
         QueryBuilder queryBuilder;
         switch (brukerStatus) {
-            case NYE_BRUKERE:
-                queryBuilder = matchQuery("ny_for_enhet", true);
-                break;
             case UFORDELTE_BRUKERE:
                 queryBuilder = byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet);
                 break;

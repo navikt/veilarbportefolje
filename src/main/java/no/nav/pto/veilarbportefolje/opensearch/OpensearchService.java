@@ -34,7 +34,6 @@ import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggArbeidslisteQuery;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggPortefoljestorrelserQuery;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggStatusTallForEnhetQuery;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggStatusTallForVeilederQuery;
@@ -101,22 +100,10 @@ public class OpensearchService {
 
         List<Bruker> brukere = response.hits().getHits().stream()
                 .map(Hit::get_source)
-                .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
-                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, filtervalg, enhetId))
+                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg, enhetId))
                 .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
-    }
-
-    public List<Bruker> hentBrukereMedArbeidsliste(String veilederId, String enhetId) {
-
-        SearchSourceBuilder request = byggArbeidslisteQuery(enhetId, veilederId);
-
-        OpensearchResponse response = search(request, indexName.getValue(), OpensearchResponse.class);
-
-        return response.hits().getHits().stream()
-                .map(hit -> Bruker.of(hit.get_source(), erVedtakstottePilotPa(EnhetId.of(enhetId))))
-                .collect(toList());
     }
 
     public StatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
@@ -151,7 +138,7 @@ public class OpensearchService {
     }
 
     @SneakyThrows
-    private <T> T search(SearchSourceBuilder searchSourceBuilder, String indexAlias, Class<T> clazz) {
+    public <T> T search(SearchSourceBuilder searchSourceBuilder, String indexAlias, Class<T> clazz) {
         SearchRequest request = new SearchRequest()
                 .indices(indexAlias)
                 .source(searchSourceBuilder);
@@ -160,8 +147,8 @@ public class OpensearchService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
-    private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, Filtervalg filtervalg, String enhetId) {
-        Bruker bruker = Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa(EnhetId.of(enhetId)));
+    private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg, String enhetId) {
+        Bruker bruker = Bruker.of(oppfolgingsBruker, erUfordelt(oppfolgingsBruker, aktiveVeilederePaEnhet), erVedtakstottePilotPa(EnhetId.of(enhetId)));
 
         if (filtervalg.harAktiviteterForenklet()) {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(filtervalg.aktiviteterForenklet);
@@ -176,11 +163,10 @@ public class OpensearchService {
     }
 
 
-    private OppfolgingsBruker setNyForEnhet(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
+    private boolean erUfordelt(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
         boolean harVeilederPaaSammeEnhet = oppfolgingsBruker.getVeileder_id() != null && veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
-        return oppfolgingsBruker.setNy_for_enhet(!harVeilederPaaSammeEnhet);
+        return !harVeilederPaaSammeEnhet;
     }
-
 
     private boolean erVedtakstottePilotPa(EnhetId enhetId) {
         return vedtakstottePilotRequest.erVedtakstottePilotPa(enhetId);

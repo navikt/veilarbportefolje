@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene;
 
 public enum Brukerstatus {
-    NYE_BRUKERE,
     TRENGER_VURDERING,
     UFORDELTE_BRUKERE,
     INAKTIVE_BRUKERE,

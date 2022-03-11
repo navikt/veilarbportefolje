@@ -20,7 +20,6 @@ import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.CV_EKSISTERE;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.isNyForEnhet;
 
 @Slf4j
 public class DbUtils {
@@ -100,17 +99,12 @@ public class DbUtils {
                 .setEgen_ansatt(parseJaNei(rs.getString("sperret_ansatt"), "sperret_ansatt"))
                 .setEr_doed(parseJaNei(rs.getString("er_doed"), "er_doed"))
                 .setDoed_fra_dato(toIsoUTC(rs.getTimestamp("doed_fra_dato")))
-                .setVeileder_id(rs.getString("veilederident"))
                 .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr"))))
                 .setFodselsdato(FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr")))
                 .setKjonn(FodselsnummerUtils.lagKjonn(rs.getString("fodselsnr")))
-                .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
-                .setNy_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
-                .setNy_for_enhet(isNyForEnhet(rs.getString("veilederident")))
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")))
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp("venterpasvarfranav")))
-                .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")))
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setVedtak_status(Optional.ofNullable(vedtakstatus).map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf).map(KafkaVedtakStatusEndring::vedtakStatusTilTekst).orElse(null))
                 .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
@@ -118,6 +112,13 @@ public class DbUtils {
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus))
                 .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
                 .setCv_eksistere(parseJaNei(rs.getString(CV_EKSISTERE), CV_EKSISTERE));
+        if (true) {
+            bruker
+                    .setNy_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
+                    .setVeileder_id(rs.getString("veilederident"))
+                    .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
+                    .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")));
+        }
         return bruker;
     }
 

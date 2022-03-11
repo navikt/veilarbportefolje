@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.Statust
 @Accessors(chain = true)
 public class StatusTall {
     public long totalt;
-    public long nyeBrukere;
     public long ufordelteBrukere;
     public long trengerVurdering;
     public long nyeBrukereForVeileder;
@@ -34,7 +33,6 @@ public class StatusTall {
 
     public StatusTall(StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
         this.totalt = buckets.getTotalt().getDoc_count();
-        this.nyeBrukere = buckets.getNyeBrukere().getDoc_count();
         this.ufordelteBrukere = buckets.getUfordelteBrukere().getDoc_count();
         this.trengerVurdering = buckets.getTrengerVurdering().getDoc_count();
         this.nyeBrukereForVeileder = buckets.getNyeBrukereForVeileder().getDoc_count();
