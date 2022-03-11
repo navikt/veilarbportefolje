@@ -46,14 +46,9 @@ public class Bruker {
     String kjonn;
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
-    ManedFasettMapping utlopsdatoFasett;
     Integer dagputlopUke;
-    DagpengerUkeFasettMapping dagputlopUkeFasett;
     Integer permutlopUke;
-    DagpengerUkeFasettMapping permutlopUkeFasett;
     Integer aapmaxtidUke;
-    AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
-    AAPUnntakUkerIgjenFasettMapping aapUnntakUkerIgjenFasett;
     Integer aapUnntakUkerIgjen;
     Arbeidsliste arbeidsliste;
     LocalDateTime venterPaSvarFraNAV;
@@ -107,15 +102,10 @@ public class Bruker {
                 .setKjonn(bruker.getKjonn())
                 .setYtelse(YtelseMapping.of(bruker.getYtelse()))
                 .setUtlopsdato(toLocalDateTimeOrNull(bruker.getUtlopsdato()))
-                .setUtlopsdatoFasett(ManedFasettMapping.of(bruker.getUtlopsdatofasett()))
                 .setDagputlopUke(bruker.getDagputlopuke())
-                .setDagputlopUkeFasett(DagpengerUkeFasettMapping.of(bruker.getDagputlopukefasett()))
                 .setPermutlopUke(bruker.getPermutlopuke())
-                .setPermutlopUkeFasett(DagpengerUkeFasettMapping.of(bruker.getPermutlopukefasett()))
                 .setAapmaxtidUke(bruker.getAapmaxtiduke())
-                .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.of(bruker.getAapmaxtidukefasett()))
                 .setAapUnntakUkerIgjen(bruker.getAapunntakukerigjen())
-                .setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.of(bruker.getAapunntakukerigjenfasett()))
                 .setArbeidsliste(Arbeidsliste.of(bruker))
                 .setVenterPaSvarFraNAV(toLocalDateTimeOrNull(bruker.getVenterpasvarfranav()))
                 .setVenterPaSvarFraBruker(toLocalDateTimeOrNull(bruker.getVenterpasvarfrabruker()))

@@ -22,7 +22,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class YtelseRepositoryV2Test {
     private final YtelsesRepositoryV2 ytelsesRepositoryV2;

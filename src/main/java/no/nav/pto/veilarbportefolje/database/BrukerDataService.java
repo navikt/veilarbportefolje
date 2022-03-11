@@ -9,20 +9,15 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetSchedueldDTO;
-import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
-import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
-import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -35,9 +30,6 @@ public class BrukerDataService {
     private final TiltakRepositoryV1 tiltakRepositoryV1;
     private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final BrukerDataRepository brukerDataRepository;
-
-    //POSTGRES
-    private final YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2;
 
     public void oppdaterAktivitetBrukerData(AktorId aktorId, PersonId personId) {
         if (aktorId == null || personId == null) {
@@ -66,51 +58,6 @@ public class BrukerDataService {
                 .setAktivitetStart(aktivitetStart)
                 .setNesteAktivitetStart(nesteAktivitetStart);
         brukerDataRepository.upsertAktivitetData(brukerAktivitetTilstand);
-    }
-
-    public void oppdaterYtelserPostgres(AktorId aktorId, Optional<YtelseDAO> innhold) {
-        Brukerdata ytelsesTilstand = new Brukerdata()
-                .setAktoerid(aktorId.get());
-        if (innhold.isEmpty()) {
-            ytelsesStatusRepositoryV2.upsertYtelse(ytelsesTilstand);
-            return;
-        }
-
-        switch (innhold.get().getType()) {
-            case DAGPENGER -> {
-                leggTilYtelsesData(ytelsesTilstand, innhold.get());
-                leggTilRelevantDagpengeData(ytelsesTilstand, innhold.get());
-            }
-            case AAP -> {
-                leggTilYtelsesData(ytelsesTilstand, innhold.get());
-                leggTilRelevantAAPData(ytelsesTilstand, innhold.get());
-            }
-            case TILTAKSPENGER -> leggTilYtelsesData(ytelsesTilstand, innhold.get());
-        }
-
-        ytelsesStatusRepositoryV2.upsertYtelse(ytelsesTilstand);
-    }
-
-    private void leggTilYtelsesData(Brukerdata ytelsesTilstand, YtelseDAO innhold) {
-        YtelseMapping ytelseMapping = YtelseMapping.of(innhold)
-                .orElseThrow(() -> new RuntimeException(innhold.toString()));
-        LocalDateTime utlopsDato = Optional.ofNullable(innhold.getUtlopsDato())
-                .map(Timestamp::toLocalDateTime)
-                .orElse(null);
-
-        ytelsesTilstand.setYtelse(ytelseMapping).setUtlopsdato(utlopsDato);
-    }
-
-    private void leggTilRelevantDagpengeData(Brukerdata ytelsesTilstand, YtelseDAO innhold) {
-        ytelsesTilstand
-                .setDagputlopUke(innhold.getAntallUkerIgjen())
-                .setPermutlopUke(innhold.getAntallUkerIgjenPermittert());
-    }
-
-    private void leggTilRelevantAAPData(Brukerdata ytelsesTilstand, YtelseDAO innhold) {
-        ytelsesTilstand
-                .setAapmaxtidUke(innhold.getAntallUkerIgjen())
-                .setAapUnntakDagerIgjen(innhold.getAntallDagerIgjenUnntak());
     }
 
     public static Timestamp finnNyesteUtlopteAktivAktivitet(List<Timestamp> aktiviteter, LocalDate today) {

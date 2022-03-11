@@ -37,15 +37,10 @@ public class OppfolgingsBruker {
     String kjonn;
     String ytelse;
     String utlopsdato;
-    String utlopsdatofasett;
     Integer dagputlopuke;
-    String dagputlopukefasett;
     Integer permutlopuke;
-    String permutlopukefasett;
     Integer aapmaxtiduke;
-    String aapmaxtidukefasett;
     Integer aapunntakukerigjen;
-    String aapunntakukerigjenfasett;
     boolean oppfolging;
     boolean ny_for_veileder;
     boolean ny_for_enhet;

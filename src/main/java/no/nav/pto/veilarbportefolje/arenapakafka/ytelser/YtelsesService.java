@@ -6,8 +6,9 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.Brukerdata;
+import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,8 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHende
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getAktorId;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getInnhold;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGoldenGate;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse.AAP;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse.DAGPENGER;
 
 @Slf4j
 @Service
@@ -33,8 +36,8 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGo
 public class YtelsesService {
     private final AktorClient aktorClient;
     private final YtelsesRepositoryV2 ytelsesRepositoryV2;
-    private final BrukerDataService brukerDataService;
     private final ArenaHendelseRepository arenaHendelseRepository;
+    private final YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2;
     private final OpensearchIndexer opensearchIndexer;
 
     public void behandleKafkaRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding, TypeKafkaYtelse ytelse) {
@@ -73,7 +76,7 @@ public class YtelsesService {
     public Optional<YtelseDAO> oppdaterYtelsesInformasjon(AktorId aktorId) {
         Optional<YtelseDAO> lopendeYtelse = finnLopendeYtelse(aktorId);
         log.info("Postgres: AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, lopendeYtelse.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
-        brukerDataService.oppdaterYtelserPostgres(aktorId, lopendeYtelse);
+        oppdaterAktivYtelse(aktorId, lopendeYtelse.orElse(null));
 
         return lopendeYtelse;
     }
@@ -96,7 +99,7 @@ public class YtelsesService {
             Optional<YtelseDAO> sisteYtelsePaSakId = finnSisteYtelsePaSakIdSomIkkeErUtlopt(aktorId, innhold.getSaksId());
             if (sisteYtelsePaSakId.isPresent()) {
                 log.info("AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, sisteYtelsePaSakId.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
-                brukerDataService.oppdaterYtelserPostgres(aktorId, sisteYtelsePaSakId);
+                oppdaterAktivYtelse(aktorId, sisteYtelsePaSakId.get());
 
                 return sisteYtelsePaSakId;
             }
@@ -122,7 +125,7 @@ public class YtelsesService {
         if (!harPassertStartdato(tidligsteYtelse.getStartDato(), iDag)) {
             return Optional.empty();
         }
-        if (TypeKafkaYtelse.DAGPENGER.equals(tidligsteYtelse.getType())) {
+        if (DAGPENGER.equals(tidligsteYtelse.getType())) {
             // Dagpenger skal aldri ha en utløpsdato
             // Hvis det finnes en utløpsdato er det mest sannynlig et annet dagpengevedtak som skal ta over for det løpende vedtaket, eller en bug
             return Optional.of(tidligsteYtelse.setUtlopsDato(null));
@@ -189,5 +192,31 @@ public class YtelsesService {
             return true;
         }
         return false;
+    }
+
+    private void oppdaterAktivYtelse(AktorId aktorId, YtelseDAO ytelse) {
+        Brukerdata ytelsesTilstand = new Brukerdata()
+                .setAktoerid(aktorId.get());
+        if (ytelse == null) {
+            ytelsesStatusRepositoryV2.upsertYtelse(ytelsesTilstand);
+            return;
+        }
+        ytelsesTilstand
+                .setUtlopsdato(Optional.ofNullable(ytelse.getUtlopsDato())
+                        .map(Timestamp::toLocalDateTime)
+                        .orElse(null))
+                .setYtelse(YtelseMapping.of(ytelse)
+                        .orElseThrow(() -> new RuntimeException("Feil i ytelses mapping! Pa vedtak: " + ytelse.getSaksId())));
+        if (ytelse.getType() == DAGPENGER) {
+            ytelsesTilstand
+                    .setDagputlopUke(ytelse.getAntallUkerIgjen())
+                    .setPermutlopUke(ytelse.getAntallUkerIgjenPermittert());
+        } else if (ytelse.getType() == AAP) {
+            ytelsesTilstand
+                    .setAapmaxtidUke(ytelse.getAntallUkerIgjen())
+                    .setAapUnntakDagerIgjen(ytelse.getAntallDagerIgjenUnntak());
+        }
+
+        ytelsesStatusRepositoryV2.upsertYtelse(ytelsesTilstand);
     }
 }
