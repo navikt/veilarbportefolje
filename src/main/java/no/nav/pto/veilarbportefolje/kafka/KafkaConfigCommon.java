@@ -377,7 +377,7 @@ public class KafkaConfigCommon {
                                 .withTopicConfig(config)
                                 .withToggle(kafkaAivenUnleash)
                                 .build())
-                .toList();
+                .collect(Collectors.toList());
 
         consumerClientsOnPrem = topicConfigsOnPrem.stream()
                 .map(config ->
@@ -390,7 +390,7 @@ public class KafkaConfigCommon {
                                 .withTopicConfig(config)
                                 .withToggle(kafkaOnpremUnleash)
                                 .build())
-                .toList();
+                .collect(Collectors.toList());
 
         Properties aivenConsumerRewindProperties = aivenDefaultConsumerProperties(CLIENT_ID_REWIND_CONFIG);
         aivenConsumerRewindProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
