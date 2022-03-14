@@ -8,10 +8,10 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesServicePostgres;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
+import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -57,6 +57,14 @@ public class AdminController {
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final BrukerRepository brukerRepository;
+    private final CVService cvService;
+
+    @PutMapping("/cv/migrer")
+    public String migrerArbeidslista() {
+        authorizeAdmin();
+        cvService.migrerCVInfo();
+        return "Ferdig! ";
+    }
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {

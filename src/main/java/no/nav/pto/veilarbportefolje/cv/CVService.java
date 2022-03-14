@@ -8,9 +8,10 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
 
@@ -59,6 +60,27 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
         cvRepository.upsertHarDeltCv(aktoerId, harDeltCv);
 
         opensearchIndexerV2.updateHarDeltCv(aktoerId, harDeltCv);
+    }
+
+    public void migrerCVInfo() {
+        List<AktorId> aktivCvData = cvRepository.hentAllleBrukereMedLagretCvData();
+        aktivCvData.forEach(aktorId -> {
+            boolean harDeltCVOracle = cvRepository.harDeltCv(aktorId);
+            boolean harCvOracle = cvRepository.harCv(aktorId);
+
+            boolean harDeltCVPostgres = cvRepositoryV2.harDeltCv(aktorId);
+            boolean harCvPostgres = cvRepositoryV2.cvEksisterer(aktorId);
+            if (harCvOracle != harCvPostgres || harDeltCVOracle != harDeltCVPostgres) {
+                if (harDeltCVOracle != harDeltCVPostgres) {
+                    cvRepositoryV2.upsertHarDeltCv(aktorId, harDeltCVOracle);
+                }
+                if (harCvOracle != harCvPostgres) {
+                    cvRepositoryV2.upsertCVEksisterer(aktorId, harCvOracle);
+                }
+                log.info("Migrerer CV for bruker: {}, diff CV eksisterer {}, diff delt CV: {}", aktorId, harCvOracle != harCvPostgres, harDeltCVOracle != harDeltCVPostgres);
+            }
+        });
+        log.info("Migrerer CV jobb er ferdig");
     }
 
     private boolean cvEksistere(Melding melding) {

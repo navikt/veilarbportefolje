@@ -51,20 +51,20 @@ public class CVRepositoryV2 {
                 Timestamp.from(now()));
     }
 
-    public Optional<Boolean> harDeltCv(AktorId aktoerId) {
+    public boolean harDeltCv(AktorId aktoerId) {
         log.info("Hent delt CV for bruker: {}", aktoerId.get());
         String sql = String.format("SELECT %s FROM %s WHERE %s = ?", HAR_DELT_CV, TABLE_NAME, AKTOERID);
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getBoolean(HAR_DELT_CV), aktoerId.get()))
-        );
+        ).orElse(false);
     }
 
-    public Optional<Boolean> cvEksisterer(AktorId aktoerId) {
+    public boolean cvEksisterer(AktorId aktoerId) {
         log.info("Hent CV eksisterer for bruker: {}", aktoerId.get());
         String sql = String.format("SELECT %s FROM %s WHERE %s = ?", CV_EKSISTERER, TABLE_NAME, AKTOERID);
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getBoolean(CV_EKSISTERER), aktoerId.get()))
-        );
+        ).orElse(false);
     }
 
     public int resetHarDeltCV(AktorId aktoerId) {
