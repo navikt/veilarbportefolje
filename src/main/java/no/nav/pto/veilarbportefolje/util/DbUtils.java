@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvCvdataPaPostgres;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvOppfolgingsdataPaPostgres;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.CV_EKSISTERE;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
@@ -110,8 +111,6 @@ public class DbUtils {
                 .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
                 .setAnsvarlig_veileder_for_vedtak(ansvarligVeilederForVedtak)
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus))
-                .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
-                .setCv_eksistere(parseJaNei(rs.getString(CV_EKSISTERE), CV_EKSISTERE))
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING")); // Oppfolging hentes fra Oracle helt til at alt er migrert
         if (!brukAvOppfolgingsdataPaPostgres(unleashService)) {
             bruker
@@ -119,6 +118,11 @@ public class DbUtils {
                     .setNy_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
                     .setVeileder_id(rs.getString("veilederident"))
                     .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")));
+        }
+        if(!brukAvCvdataPaPostgres(unleashService)){
+            bruker
+                    .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
+                    .setCv_eksistere(parseJaNei(rs.getString(CV_EKSISTERE), CV_EKSISTERE));
         }
         return bruker;
     }

@@ -266,7 +266,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.CV_ENDRET_AIVEN.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new OnpremAvroDeserializer<Melding>().getDeserializer(),
+                                        new AivenAvroDeserializer<Melding>().getDeserializer(),
                                         cvService::behandleKafkaMeldingCVAiven
                                 )
                 );

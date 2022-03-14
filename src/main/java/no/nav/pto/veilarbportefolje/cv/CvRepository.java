@@ -8,10 +8,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.*;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.CV_EKSISTERE;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.SISTE_MELDING_MOTTATT;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
 
 @Repository
@@ -49,24 +52,10 @@ public class CvRepository {
                 .execute();
     }
 
-    public Boolean harCv(AktorId aktoerId) {
-        return SqlUtils
-                .select(jdbcTemplate, TABLE_NAME, rs -> DbUtils.parseJaNei(rs.getString(CV_EKSISTERE), CV_EKSISTERE))
-                .column(CV_EKSISTERE)
-                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
-                .execute();
-    }
-
     public void resetHarDeltCV(AktorId aktoerId) {
         SqlUtils.update(jdbcTemplate, TABLE_NAME)
                 .set(HAR_DELT_CV, boolToJaNei(false))
                 .whereEquals(AKTOERID, aktoerId.get())
                 .execute();
-    }
-
-    public List<AktorId> hentAllleBrukereMedLagretCvData() {
-        return SqlUtils.select(jdbcTemplate, TABLE_NAME, rs -> AktorId.of(rs.getString(AKTOERID)))
-                .column(AKTOERID)
-                .executeToList();
     }
 }
