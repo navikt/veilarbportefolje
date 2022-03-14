@@ -318,12 +318,6 @@ public class OpensearchQueryBuilder {
                     throw new IllegalStateException();
                 }
                 break;
-            case PERMITTERTE_ETTER_NIENDE_MARS:
-                queryBuilder = byggPermittertFilter();
-                break;
-            case IKKE_PERMITTERTE_ETTER_NIENDE_MARS:
-                queryBuilder = byggIkkePermittertFilter();
-                break;
             default:
                 throw new IllegalStateException();
 
@@ -486,7 +480,6 @@ public class OpensearchQueryBuilder {
                                 ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
                                 inaktiveBrukere(filtrereVeilederOgEnhet),
                                 mustBeTrueFilter(filtrereVeilederOgEnhet, "minArbeidsliste", "arbeidsliste_aktiv"),
-                                mustBeTrueFilter(filtrereVeilederOgEnhet, "nyeBrukere", "ny_for_enhet"),
                                 mustBeTrueFilter(filtrereVeilederOgEnhet, "nyeBrukereForVeileder", "ny_for_veileder"),
                                 totalt(filtrereVeilederOgEnhet),
                                 trengerVurderingFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
@@ -496,8 +489,6 @@ public class OpensearchQueryBuilder {
                                 mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
                                 moterMedNavIdag(filtrereVeilederOgEnhet),
                                 mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status"),
-                                permitterteEtterNiendeMarsStatusTall(filtrereVeilederOgEnhet),
-                                ikkePermitterteEtterNiendeMarsStatusTall(filtrereVeilederOgEnhet),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteBla", "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),

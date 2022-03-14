@@ -20,7 +20,6 @@ public class StatustallResponse {
             @Data
             public static class StatustallBuckets {
                 Bucket totalt;
-                Bucket nyeBrukere;
                 Bucket ufordelteBrukere;
                 Bucket trengerVurdering;
                 Bucket nyeBrukereForVeileder;
@@ -34,8 +33,6 @@ public class StatustallResponse {
                 Bucket erSykmeldtMedArbeidsgiver;
                 Bucket moterMedNAVIdag;
                 Bucket underVurdering;
-                Bucket permitterteEtterNiendeMars;
-                Bucket ikkePermitterteEtterNiendeMars;
                 Bucket minArbeidslisteBla;
                 Bucket minArbeidslisteLilla;
                 Bucket minArbeidslisteGronn;

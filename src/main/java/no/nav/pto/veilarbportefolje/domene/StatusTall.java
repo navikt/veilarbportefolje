@@ -21,8 +21,6 @@ public class StatusTall {
     public long erSykmeldtMedArbeidsgiver;
     public long moterMedNAVIdag;
     public long underVurdering;
-    public long permitterteEtterNiendeMars;
-    public long ikkePermitterteEtterNiendeMars;
     public long minArbeidslisteBla;
     public long minArbeidslisteLilla;
     public long minArbeidslisteGronn;
@@ -45,8 +43,6 @@ public class StatusTall {
         this.minArbeidsliste = buckets.getMinArbeidsliste().getDoc_count();
         this.erSykmeldtMedArbeidsgiver = buckets.getErSykmeldtMedArbeidsgiver().getDoc_count();
         this.moterMedNAVIdag = buckets.getMoterMedNAVIdag().getDoc_count();
-        this.permitterteEtterNiendeMars = buckets.getPermitterteEtterNiendeMars().getDoc_count();
-        this.ikkePermitterteEtterNiendeMars = buckets.getIkkePermitterteEtterNiendeMars().getDoc_count();
         this.minArbeidslisteBla = buckets.getMinArbeidslisteBla().getDoc_count();
         this.minArbeidslisteLilla = buckets.getMinArbeidslisteLilla().getDoc_count();
         this.minArbeidslisteGronn = buckets.getMinArbeidslisteGronn().getDoc_count();
