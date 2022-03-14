@@ -27,8 +27,9 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
     @Override
     public void behandleKafkaMeldingLogikk(Melding kafkaMelding) {
         AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
-
         boolean cvEksisterer = cvEksistere(kafkaMelding);
+        log.info("Oppdater CV eksisterer for bruker: {}, eksisterer: {}", aktoerId.get(), cvEksisterer);
+
         cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
         cvRepository.upsertCvEksistere(aktoerId, cvEksisterer);
 
