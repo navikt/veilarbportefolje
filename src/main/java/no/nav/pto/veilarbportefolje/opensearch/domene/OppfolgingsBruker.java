@@ -48,7 +48,6 @@ public class OppfolgingsBruker {
     String aapunntakukerigjenfasett;
     boolean oppfolging;
     boolean ny_for_veileder;
-    boolean ny_for_enhet;
     boolean trenger_vurdering;
     String venterpasvarfrabruker;
     String venterpasvarfranav;

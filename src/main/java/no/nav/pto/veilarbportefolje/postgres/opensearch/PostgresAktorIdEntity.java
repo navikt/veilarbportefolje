@@ -20,6 +20,7 @@ public class PostgresAktorIdEntity {
     private Boolean oppfolging;
     private Boolean nyForVeileder;
     private Boolean manuellBruker;
+    private String veileder;
     private String oppfolgingStartdato;
 
     private String venterpasvarfrabruker;

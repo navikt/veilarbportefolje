@@ -10,7 +10,13 @@ public class FeatureToggle {
     public static final String KAFKA_AIVEN_CONSUMERS_STOP = "veilarbportefolje.kafka_aiven_consumers_stop";
     public static final String KAFKA_ONPREM_CONSUMERS_STOP = "veilarbportefolje.kafka_onprem_consumers_stop";
 
+    public static final String OPPFOLGING_POSTGRES = "veilarbportefolje.oppfolgingsdataPaPostgres";
+
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
+    }
+
+    public static boolean brukAvOppfolgingsdataPaPostgres(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.OPPFOLGING_POSTGRES);
     }
 }

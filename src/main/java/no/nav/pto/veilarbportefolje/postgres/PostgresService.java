@@ -165,14 +165,6 @@ public class PostgresService {
             case UNDER_VURDERING:
                 query.underVurdering(erVedtakstottePilotPa);
                 break;
-            case NYE_BRUKERE:                       // Ikke lengre bruk???
-                break;
-            case PERMITTERTE_ETTER_NIENDE_MARS:     // Ikke lengre bruk
-                // byggPermittertFilter();
-                break;
-            case IKKE_PERMITTERTE_ETTER_NIENDE_MARS: // Ikke lengre bruk
-                // byggIkkePermittertFilter();
-                break;
             default:
                 throw new IllegalStateException();
 
