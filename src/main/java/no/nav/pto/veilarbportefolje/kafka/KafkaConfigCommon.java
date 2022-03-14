@@ -76,9 +76,9 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 @Configuration
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
+    public final static String CLIENT_ID_REWIND_CONFIG = "veilarbportefolje-consumer-rewind";
     public static final String KAFKA_BROKERS = EnvironmentUtils.getRequiredProperty("KAFKA_BROKERS_URL");
     private static final Credentials serviceUserCredentials = getCredentials("service_user");
-    private static final String KAFKA_SCHEMAS_URL = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMAS_URL");
 
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
@@ -92,6 +92,7 @@ public class KafkaConfigCommon {
         SIST_LEST("aapen-fo-veilederHarLestAktivitetsplanen-v1"),
         ENDRING_PAA_OPPFOLGINGSBRUKER("pto.endring-paa-oppfolgingsbruker-v2"),
         CV_ENDRET("arbeid-pam-cv-endret-v6"),
+        CV_ENDRET_AIVEN("cv-endret-avro-v1"),
         CV_TOPIC("teampam.samtykke-status-1"),
 
         AIVEN_REGISTRERING_TOPIC("paw.arbeidssoker-registrert-v1"),
@@ -257,6 +258,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(KafkaVedtakStatusEndring.class),
                                         vedtakService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.CV_ENDRET_AIVEN.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new OnpremAvroDeserializer<Melding>().getDeserializer(),
+                                        cvService::behandleKafkaMeldingCVAiven
                                 )
                 );
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
@@ -366,7 +377,7 @@ public class KafkaConfigCommon {
                                 .withTopicConfig(config)
                                 .withToggle(kafkaAivenUnleash)
                                 .build())
-                .collect(Collectors.toList());
+                .toList();
 
         consumerClientsOnPrem = topicConfigsOnPrem.stream()
                 .map(config ->
@@ -379,7 +390,26 @@ public class KafkaConfigCommon {
                                 .withTopicConfig(config)
                                 .withToggle(kafkaOnpremUnleash)
                                 .build())
-                .collect(Collectors.toList());
+                .toList();
+
+        Properties aivenConsumerRewindProperties = aivenDefaultConsumerProperties(CLIENT_ID_REWIND_CONFIG);
+        aivenConsumerRewindProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
+        consumerClientAiven.add(
+                KafkaConsumerClientBuilder.builder()
+                        .withProperties(aivenConsumerRewindProperties)
+                        .withTopicConfig(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.CV_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(CVMelding.class),
+                                        cvService::behandleKafkaMeldingCVHjemmelRewind
+                                ))
+                        .withToggle(kafkaAivenUnleash)
+                        .build()
+        );
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()

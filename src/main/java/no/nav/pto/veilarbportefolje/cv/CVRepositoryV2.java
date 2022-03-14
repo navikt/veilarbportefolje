@@ -14,7 +14,6 @@ import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.CV_EKSISTERER;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.HAR_DELT_CV;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.SISTE_MELDING_MOTTATT;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
@@ -26,29 +25,23 @@ public class CVRepositoryV2 {
     private final JdbcTemplate db;
 
     public int upsertHarDeltCv(AktorId aktoerId, boolean harDeltCv) {
-        return db.update("INSERT INTO " + TABLE_NAME +
-                        " (" + AKTOERID + ", " + HAR_DELT_CV + ", " + SISTE_MELDING_MOTTATT + ") " +
-                        "VALUES (?, ?, ?) " +
-                        "ON CONFLICT (" + AKTOERID + ") " +
-                        "DO UPDATE SET (" + HAR_DELT_CV + ", " + SISTE_MELDING_MOTTATT + ") = (?, ?)",
-                aktoerId.get(),
-                harDeltCv,
-                Timestamp.from(now()),
-                harDeltCv,
-                Timestamp.from(now()));
+        return db.update("""
+                        INSERT INTO bruker_cv
+                        (AKTOERID, HAR_DELT_CV, SISTE_MELDING_MOTTATT) VALUES (?, ?, ?)
+                        ON CONFLICT (AKTOERID) DO UPDATE SET (HAR_DELT_CV, SISTE_MELDING_MOTTATT)
+                        = (excluded.har_delt_cv, excluded.siste_melding_mottatt)
+                        """,
+                aktoerId.get(), harDeltCv, Timestamp.from(now()));
     }
 
     public int upsertCVEksisterer(AktorId aktoerId, boolean cvEksisterer) {
-        return db.update("INSERT INTO " + TABLE_NAME +
-                        " (" + AKTOERID + ", " + CV_EKSISTERER + ", " + SISTE_MELDING_MOTTATT + ") " +
-                        "VALUES (?, ?, ?) " +
-                        "ON CONFLICT (" + AKTOERID + ") " +
-                        "DO UPDATE SET (" + CV_EKSISTERER + ", " + SISTE_MELDING_MOTTATT + ") = (?, ?)",
-                aktoerId.get(),
-                cvEksisterer,
-                Timestamp.from(now()),
-                cvEksisterer,
-                Timestamp.from(now()));
+        return db.update("""
+                        INSERT INTO bruker_cv
+                        (AKTOERID, CV_EKSISTERER, SISTE_MELDING_MOTTATT) VALUES (?, ?, ?)
+                        ON CONFLICT (AKTOERID) DO UPDATE SET (CV_EKSISTERER, SISTE_MELDING_MOTTATT)
+                        = (excluded.cv_eksisterer, excluded.siste_melding_mottatt)
+                        """,
+                aktoerId.get(), cvEksisterer, Timestamp.from(now()));
     }
 
     public boolean harDeltCv(AktorId aktoerId) {
@@ -72,11 +65,6 @@ public class CVRepositoryV2 {
                 TABLE_NAME, HAR_DELT_CV, AKTOERID
         );
         return db.update(updateSql, false, aktoerId.get());
-    }
-
-    public int slettCVData(AktorId aktoerId) {
-        log.info("Slett CV for bruker: {}", aktoerId.get());
-        return db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
     }
 
 }
