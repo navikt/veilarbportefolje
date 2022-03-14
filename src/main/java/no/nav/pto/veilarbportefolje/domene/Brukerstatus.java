@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene;
 
 public enum Brukerstatus {
-    NYE_BRUKERE,
     TRENGER_VURDERING,
     UFORDELTE_BRUKERE,
     INAKTIVE_BRUKERE,
@@ -15,6 +14,4 @@ public enum Brukerstatus {
     ER_SYKMELDT_MED_ARBEIDSGIVER,
     MOTER_IDAG,
     UNDER_VURDERING,
-    PERMITTERTE_ETTER_NIENDE_MARS,
-    IKKE_PERMITTERTE_ETTER_NIENDE_MARS
 }

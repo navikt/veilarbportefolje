@@ -9,18 +9,17 @@ public class StatustallResponse {
     StatustallAggregation aggregations;
 
     @Data
-    public class StatustallAggregation {
+    public static class StatustallAggregation {
         @JsonProperty("filters#statustall")
         StatustallFilter filters;
 
         @Data
-        public class StatustallFilter {
+        public static class StatustallFilter {
             StatustallBuckets buckets;
 
             @Data
-            public class StatustallBuckets {
+            public static class StatustallBuckets {
                 Bucket totalt;
-                Bucket nyeBrukere;
                 Bucket ufordelteBrukere;
                 Bucket trengerVurdering;
                 Bucket nyeBrukereForVeileder;
@@ -34,8 +33,6 @@ public class StatustallResponse {
                 Bucket erSykmeldtMedArbeidsgiver;
                 Bucket moterMedNAVIdag;
                 Bucket underVurdering;
-                Bucket permitterteEtterNiendeMars;
-                Bucket ikkePermitterteEtterNiendeMars;
                 Bucket minArbeidslisteBla;
                 Bucket minArbeidslisteLilla;
                 Bucket minArbeidslisteGronn;

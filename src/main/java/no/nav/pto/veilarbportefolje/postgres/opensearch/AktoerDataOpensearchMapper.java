@@ -40,6 +40,7 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeks
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VEDTAKSTATUS;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VEDTAKSTATUS_ENDRET_TIDSPUNKT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VEILEDERID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VENTER_PA_BRUKER;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.VENTER_PA_NAV;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.YTELSE;
@@ -85,6 +86,7 @@ public class AktoerDataOpensearchMapper {
 
         postgresAktorIdData.setOppfolging(rs.getBoolean(OPPFOLGING));
         postgresAktorIdData.setNyForVeileder(rs.getBoolean(NY_FOR_VEILEDER));
+        postgresAktorIdData.setVeileder(rs.getString(VEILEDERID));
         postgresAktorIdData.setManuellBruker(rs.getBoolean(MANUELL));
         postgresAktorIdData.setOppfolgingStartdato(toIsoUTC(rs.getTimestamp(STARTDATO)));
 
