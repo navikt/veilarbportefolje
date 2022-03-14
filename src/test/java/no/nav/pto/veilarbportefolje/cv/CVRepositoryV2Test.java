@@ -24,10 +24,10 @@ public class CVRepositoryV2Test {
         AktorId aktoerId = AktorId.of("0");
 
         cvRepositoryV2.upsertHarDeltCv(aktoerId, true);
-        assertThat(cvRepositoryV2.harDeltCv(aktoerId).get()).isTrue();
+        assertThat(cvRepositoryV2.harDeltCv(aktoerId)).isTrue();
 
         cvRepositoryV2.upsertHarDeltCv(aktoerId, false);
-        assertThat(cvRepositoryV2.harDeltCv(aktoerId).get()).isFalse();
+        assertThat(cvRepositoryV2.harDeltCv(aktoerId)).isFalse();
     }
 
     @Test
@@ -35,10 +35,10 @@ public class CVRepositoryV2Test {
         AktorId aktoerId = AktorId.of("0");
 
         cvRepositoryV2.upsertCVEksisterer(aktoerId, true);
-        assertThat(cvRepositoryV2.cvEksisterer(aktoerId).get()).isTrue();
+        assertThat(cvRepositoryV2.cvEksisterer(aktoerId)).isTrue();
 
         cvRepositoryV2.upsertCVEksisterer(aktoerId, false);
-        assertThat(cvRepositoryV2.cvEksisterer(aktoerId).get()).isFalse();
+        assertThat(cvRepositoryV2.cvEksisterer(aktoerId)).isFalse();
     }
 
 
@@ -46,9 +46,9 @@ public class CVRepositoryV2Test {
     public void skal_resette_CV_for_aktoer() {
         AktorId aktoerId = AktorId.of("1");
         cvRepositoryV2.upsertHarDeltCv(aktoerId, true);
-        assertThat(cvRepositoryV2.harDeltCv(aktoerId).get()).isTrue();
+        assertThat(cvRepositoryV2.harDeltCv(aktoerId)).isTrue();
 
         cvRepositoryV2.resetHarDeltCV(aktoerId);
-        assertThat(cvRepositoryV2.harDeltCv(aktoerId).get()).isFalse();
+        assertThat(cvRepositoryV2.harDeltCv(aktoerId)).isFalse();
     }
 }
