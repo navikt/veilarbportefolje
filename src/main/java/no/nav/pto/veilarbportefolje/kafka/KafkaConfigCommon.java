@@ -92,7 +92,7 @@ public class KafkaConfigCommon {
         SIST_LEST("aapen-fo-veilederHarLestAktivitetsplanen-v1"),
         ENDRING_PAA_OPPFOLGINGSBRUKER("pto.endring-paa-oppfolgingsbruker-v2"),
         CV_ENDRET("arbeid-pam-cv-endret-v6"),
-        CV_ENDRET_AIVEN("cv-endret-avro-v1"),
+        CV_ENDRET_AIVEN("teampam.cv-endret-avro-v1"),
         CV_TOPIC("teampam.samtykke-status-1"),
 
         AIVEN_REGISTRERING_TOPIC("paw.arbeidssoker-registrert-v1"),
