@@ -8,7 +8,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.AKTOERID;
@@ -67,4 +69,19 @@ public class CVRepositoryV2 {
         return db.update(updateSql, false, aktoerId.get());
     }
 
+    public Set<AktorId> hentAlleBrukereSomHarCV() {
+        Set<AktorId> alleBrukereSomHarCv = new HashSet<>();
+        db.query("select aktoerid from bruker_cv where cv_eksisterer",
+                (rs, i) -> alleBrukereSomHarCv.add(AktorId.of(rs.getString("aktoerid")))
+        );
+        return alleBrukereSomHarCv;
+    }
+
+    public Set<AktorId> hentAlleBrukereSomHarSettHjemmel() {
+        Set<AktorId> alleBrukereSomHarSettHjemmel = new HashSet<>();
+        db.query("select aktoerid from bruker_cv where har_delt_cv",
+                (rs, i) -> alleBrukereSomHarSettHjemmel.add(AktorId.of(rs.getString("aktoerid")))
+        );
+        return alleBrukereSomHarSettHjemmel;
+    }
 }

@@ -11,6 +11,9 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Set;
+
 import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
 
 
@@ -80,29 +83,36 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
         opensearchIndexerV2.updateHarDeltCv(aktoerId, harDeltCv);
     }
 
-    // TODO: slett etter rewind
-    public void behandleKafkaMeldingCVHjemmelRewind(ConsumerRecord<String, CVMelding> kafkaMelding) {
-        log.info(
-                "Rewind Behandler kafka-melding med key {} og offset {} på topic {}",
-                kafkaMelding.key(),
-                kafkaMelding.offset(),
-                kafkaMelding.topic()
-        );
-        CVMelding cvMelding = kafkaMelding.value();
-        behandleCVHjemmelMeldingRewind(cvMelding);
-    }
-
-    public void behandleCVHjemmelMeldingRewind(CVMelding cvMelding) {
-        AktorId aktoerId = cvMelding.getAktoerId();
-        boolean harDeltCv = (cvMelding.getSlettetDato() == null);
-
-        if (cvMelding.getRessurs() != CV_HJEMMEL) {
-            return;
-        }
-        cvRepositoryV2.upsertHarDeltCv(aktoerId, harDeltCv);
-    }
-
     private boolean cvEksistere(Melding melding) {
         return melding.getMeldingstype() == Meldingstype.ENDRE || melding.getMeldingstype() == Meldingstype.OPPRETT;
+    }
+
+    public void migrerCVInfo() {
+        brukereSomMåFåNyCvEksistererVerdiIPostgres()
+                .forEach(bruker ->
+                        cvRepositoryV2.upsertCVEksisterer(bruker, true)
+                );
+        brukereSomMåFåNyHarSettCVHjemmelVerdiIPostgres()
+                .forEach(bruker ->
+                        cvRepositoryV2.upsertHarDeltCv(bruker, true)
+                );
+    }
+
+    public List<AktorId> brukereSomMåFåNyCvEksistererVerdiIPostgres(){
+        Set<AktorId> alleBrukereSomHarCVPostgres = cvRepositoryV2.hentAlleBrukereSomHarCV();
+        List<AktorId> alleBrukereSomHarCvHjemmelOracle = cvRepository.hentAlleBrukereSomHarCV();
+
+        return alleBrukereSomHarCvHjemmelOracle.stream()
+                .filter(cvOracle -> !alleBrukereSomHarCVPostgres.contains(cvOracle))
+                .toList();
+    }
+
+    public List<AktorId> brukereSomMåFåNyHarSettCVHjemmelVerdiIPostgres(){
+        Set<AktorId> alleBrukereSomHarSettHjemmelPostgres = cvRepositoryV2.hentAlleBrukereSomHarSettHjemmel();
+        List<AktorId> alleBrukereSomHarSettHjemmelOracle = cvRepository.hentAlleBrukereSomHarSettHjemmel();
+
+        return alleBrukereSomHarSettHjemmelOracle.stream()
+                .filter(cvOracle -> !alleBrukereSomHarSettHjemmelPostgres.contains(cvOracle))
+                .toList();
     }
 }
