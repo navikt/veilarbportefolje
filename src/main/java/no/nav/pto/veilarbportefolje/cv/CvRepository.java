@@ -10,7 +10,11 @@ import org.springframework.stereotype.Repository;
 import java.sql.Timestamp;
 
 import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.*;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.CV_EKSISTERE;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.SISTE_MELDING_MOTTATT;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
 
 @Repository
@@ -54,5 +58,4 @@ public class CvRepository {
                 .whereEquals(AKTOERID, aktoerId.get())
                 .execute();
     }
-
 }
