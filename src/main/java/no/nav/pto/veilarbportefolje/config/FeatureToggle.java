@@ -13,7 +13,6 @@ public class FeatureToggle {
 
     public static final String OPPFOLGING_POSTGRES = "veilarbportefolje.oppfolgingsdataPaPostgres";
     public static final String CV_POSTGRES = "veilarbportefolje.cvPaPostgres";
-    public static final String SISTE_TILORDNET_VEILEDER = "veilarbportefolje.bruk_siste_tilordnet_veileder";
 
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
