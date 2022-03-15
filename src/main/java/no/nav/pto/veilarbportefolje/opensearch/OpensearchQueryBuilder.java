@@ -488,6 +488,7 @@ public class OpensearchQueryBuilder {
                                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
                                 mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
                                 moterMedNavIdag(filtrereVeilederOgEnhet),
+                                alleMoterMedNavIdag(filtrereVeilederOgEnhet),
                                 mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status"),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteBla", "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
@@ -520,12 +521,16 @@ public class OpensearchQueryBuilder {
         return new FiltersAggregator.KeyedFilter("erSykmeldtMedArbeidsgiver", boolQueryBuilder);
     }
 
-    private static FiltersAggregator.KeyedFilter permitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        return new FiltersAggregator.KeyedFilter("permitterteEtterNiendeMars", byggPermittertFilter().must(filtrereVeilederOgEnhet));
-    }
-
-    private static FiltersAggregator.KeyedFilter ikkePermitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        return new FiltersAggregator.KeyedFilter("ikkePermitterteEtterNiendeMars", byggIkkePermittertFilter().must(filtrereVeilederOgEnhet));
+    private static FiltersAggregator.KeyedFilter alleMoterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        LocalDate localDate = LocalDate.now();
+        return new FiltersAggregator.KeyedFilter(
+                "alleMoterMedNAVIdag",
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .must(rangeQuery("alle_aktiviteter_mote_startdato")
+                                .gte(toIsoUTC(localDate.atStartOfDay()))
+                                .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay())))
+        );
     }
 
     private static FiltersAggregator.KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
