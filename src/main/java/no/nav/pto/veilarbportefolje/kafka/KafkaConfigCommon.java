@@ -46,7 +46,6 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
-import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
@@ -76,7 +75,7 @@ public class KafkaConfigCommon {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
         DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireKafkaTopicPostfix()),
         ENDRING_PAA_MANUELL_STATUS("aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-" + requireKafkaTopicPostfix()),
-        VEILEDER_TILORDNET("aapen-arbeidsrettetOppfolging-veilederTilordnet-v1-" + requireKafkaTopicPostfix()),
+        VEILEDER_TILORDNET("pto.veileder-tilordnet-v1"),
         SISTE_VEILEDER_TILORDNET("pto.siste-tilordnet-veileder-v1"),
         ENDRING_PAA_NY_FOR_VEILEDER("aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-" + requireKafkaTopicPostfix()),
         OPPFOLGING_STARTET("aapen-arbeidsrettetOppfolging-oppfolgingStartet-v1-" + requireKafkaTopicPostfix()),
@@ -262,15 +261,15 @@ public class KafkaConfigCommon {
                                         new AivenAvroDeserializer<Melding>().getDeserializer(),
                                         cvService::behandleKafkaMeldingCVAiven
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, SisteTilordnetVeilederV1>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, VeilederTilordnetDTO>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.SISTE_VEILEDER_TILORDNET.topicName,
+                                        Topic.VEILEDER_TILORDNET.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(SisteTilordnetVeilederV1.class),
-                                        veilederTilordnetService::behandleKafkaRecordAiven
+                                        Deserializers.jsonDeserializer(VeilederTilordnetDTO.class),
+                                        veilederTilordnetService::behandleKafkaRecord
                                 )
                 );
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
@@ -333,16 +332,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(NyForVeilederDTO.class),
                                         nyForVeilederService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, VeilederTilordnetDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.VEILEDER_TILORDNET.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(VeilederTilordnetDTO.class),
-                                        veilederTilordnetService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, MalEndringKafkaDTO>()
                                 .withLogging()
