@@ -8,6 +8,8 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 
@@ -26,6 +28,22 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         final AktorId aktoerId = dto.getAktorId();
         final VeilederId veilederId = dto.getVeilederId();
 
+        tilordneVeileder(aktoerId, veilederId);
+    }
+
+    public void behandleKafkaRecordAiven(ConsumerRecord<String, SisteTilordnetVeilederV1> kafkaMelding) {
+        log.info(
+                "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
+                kafkaMelding.key(),
+                kafkaMelding.offset(),
+                kafkaMelding.partition(),
+                kafkaMelding.topic()
+        );
+        SisteTilordnetVeilederV1 dto = kafkaMelding.value();
+        final AktorId aktoerId = AktorId.of(dto.getAktorId());
+        final VeilederId veilederId = VeilederId.of(dto.getVeilederId());
+
+        log.info("Sett siste tilordnet veileder for aktorId: " + aktoerId + ", veileder: " + veilederId);
         tilordneVeileder(aktoerId, veilederId);
     }
 

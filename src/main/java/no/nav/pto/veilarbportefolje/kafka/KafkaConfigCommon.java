@@ -120,7 +120,7 @@ public class KafkaConfigCommon {
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
                              MalService malService, OppfolgingsbrukerService oppfolgingsbrukerService, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
-                             YtelsesService ytelsesService, SisteVeilederTilordnetService sisteVeilederTilordnetService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
+                             YtelsesService ytelsesService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
                              UnleashService unleashService) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
@@ -270,7 +270,7 @@ public class KafkaConfigCommon {
                                         Topic.SISTE_VEILEDER_TILORDNET.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(SisteTilordnetVeilederV1.class),
-                                        sisteVeilederTilordnetService::behandleKafkaRecord
+                                        veilederTilordnetService::behandleKafkaRecordAiven
                                 )
                 );
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
