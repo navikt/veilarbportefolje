@@ -37,16 +37,7 @@ import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -55,6 +46,7 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
+import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
@@ -85,6 +77,7 @@ public class KafkaConfigCommon {
         DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireKafkaTopicPostfix()),
         ENDRING_PAA_MANUELL_STATUS("aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-" + requireKafkaTopicPostfix()),
         VEILEDER_TILORDNET("aapen-arbeidsrettetOppfolging-veilederTilordnet-v1-" + requireKafkaTopicPostfix()),
+        SISTE_VEILEDER_TILORDNET("pto.siste-tilordnet-veileder-v1"),
         ENDRING_PAA_NY_FOR_VEILEDER("aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-" + requireKafkaTopicPostfix()),
         OPPFOLGING_STARTET("aapen-arbeidsrettetOppfolging-oppfolgingStartet-v1-" + requireKafkaTopicPostfix()),
         OPPFOLGING_AVSLUTTET("aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-" + requireKafkaTopicPostfix()),
@@ -268,6 +261,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         new AivenAvroDeserializer<Melding>().getDeserializer(),
                                         cvService::behandleKafkaMeldingCVAiven
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, SisteTilordnetVeilederV1>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.SISTE_VEILEDER_TILORDNET.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(SisteTilordnetVeilederV1.class),
+                                        veilederTilordnetService::behandleKafkaRecordAiven
                                 )
                 );
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
@@ -367,8 +370,8 @@ public class KafkaConfigCommon {
         KafkaOnpremUnleash kafkaOnpremUnleash = new KafkaOnpremUnleash(unleashService);
 
         Properties aivenConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_CONFIG);
-        //aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
-        aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
+        aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
+        //aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         consumerClientAiven = topicConfigsAiven.stream()
                 .map(config ->
