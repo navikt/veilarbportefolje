@@ -37,16 +37,7 @@ import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -76,7 +67,6 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 @Configuration
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
-    public final static String CLIENT_ID_REWIND_CONFIG = "veilarbportefolje-consumer-rewind";
     public static final String KAFKA_BROKERS = EnvironmentUtils.getRequiredProperty("KAFKA_BROKERS_URL");
     private static final Credentials serviceUserCredentials = getCredentials("service_user");
 
@@ -84,7 +74,7 @@ public class KafkaConfigCommon {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
         DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireKafkaTopicPostfix()),
         ENDRING_PAA_MANUELL_STATUS("aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-" + requireKafkaTopicPostfix()),
-        VEILEDER_TILORDNET("aapen-arbeidsrettetOppfolging-veilederTilordnet-v1-" + requireKafkaTopicPostfix()),
+        VEILEDER_TILORDNET("pto.veileder-tilordnet-v1"),
         ENDRING_PAA_NY_FOR_VEILEDER("aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-" + requireKafkaTopicPostfix()),
         OPPFOLGING_STARTET("aapen-arbeidsrettetOppfolging-oppfolgingStartet-v1-" + requireKafkaTopicPostfix()),
         OPPFOLGING_AVSLUTTET("aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-" + requireKafkaTopicPostfix()),
@@ -268,6 +258,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         new AivenAvroDeserializer<Melding>().getDeserializer(),
                                         cvService::behandleKafkaMeldingCVAiven
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, VeilederTilordnetDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.VEILEDER_TILORDNET.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(VeilederTilordnetDTO.class),
+                                        veilederTilordnetService::behandleKafkaRecord
                                 )
                 );
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
@@ -331,16 +331,6 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(NyForVeilederDTO.class),
                                         nyForVeilederService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, VeilederTilordnetDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.VEILEDER_TILORDNET.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(VeilederTilordnetDTO.class),
-                                        veilederTilordnetService::behandleKafkaRecord
-                                ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, MalEndringKafkaDTO>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
@@ -367,8 +357,8 @@ public class KafkaConfigCommon {
         KafkaOnpremUnleash kafkaOnpremUnleash = new KafkaOnpremUnleash(unleashService);
 
         Properties aivenConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_CONFIG);
-        //aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
-        aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
+        aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
+        //aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         consumerClientAiven = topicConfigsAiven.stream()
                 .map(config ->
@@ -391,25 +381,6 @@ public class KafkaConfigCommon {
                                 .withToggle(kafkaOnpremUnleash)
                                 .build())
                 .collect(Collectors.toList());
-
-        Properties aivenConsumerRewindProperties = aivenDefaultConsumerProperties(CLIENT_ID_REWIND_CONFIG);
-        aivenConsumerRewindProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
-        consumerClientAiven.add(
-                KafkaConsumerClientBuilder.builder()
-                        .withProperties(aivenConsumerRewindProperties)
-                        .withTopicConfig(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.CV_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(CVMelding.class),
-                                        cvService::behandleKafkaMeldingCVHjemmelRewind
-                                ))
-                        .withToggle(kafkaAivenUnleash)
-                        .build()
-        );
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()

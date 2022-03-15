@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.client;
+package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.VeilarbPepFactory;
@@ -11,7 +11,7 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
-import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.springframework.context.annotation.Bean;

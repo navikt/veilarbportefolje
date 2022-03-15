@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.AKTOERID;
@@ -57,5 +58,19 @@ public class CvRepository {
                 .set(HAR_DELT_CV, boolToJaNei(false))
                 .whereEquals(AKTOERID, aktoerId.get())
                 .execute();
+    }
+
+    public List<AktorId> hentAlleBrukereSomHarSettHjemmel() {
+        return  SqlUtils.select(jdbcTemplate, TABLE_NAME, rs -> AktorId.of(rs.getString(AKTOERID)))
+                .column(AKTOERID)
+                .where(WhereClause.equals(HAR_DELT_CV, "J"))
+                .executeToList();
+    }
+
+    public List<AktorId> hentAlleBrukereSomHarCV() {
+        return  SqlUtils.select(jdbcTemplate, TABLE_NAME, rs -> AktorId.of(rs.getString(AKTOERID)))
+                .column(AKTOERID)
+                .where(WhereClause.equals(CV_EKSISTERE, "J"))
+                .executeToList();
     }
 }
