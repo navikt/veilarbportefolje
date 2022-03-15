@@ -63,10 +63,10 @@ public class AdminController {
     public String migrerCv() {
         authorizeAdmin();
         cvService.migrerCVInfo();
-        return "Ferdig! ";
+        return "Ferdig!";
     }
 
-    @PutMapping("/cv/migrer")
+    @PutMapping("/cv/diff")
     public String sjekkDCdiff() {
         authorizeAdmin();
         List<AktorId> antallCv= cvService.brukereSomMåFåNyCvEksistererVerdiIPostgres();
