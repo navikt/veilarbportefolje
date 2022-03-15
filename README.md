@@ -2,6 +2,7 @@
 
 # Beskrivelse
 
+
 Tjeneste som aggregerer data fra andre baksystemer og håndterer oppdatering av søkeindeks brukt i modia oversikten.
 
 Følgende data aggregeres:
@@ -43,6 +44,7 @@ Les i jobbtabellen til oracle for å undersøke statusen på den automatisk oppd
 select * from dba_scheduler_jobs;
 ```
 
+
 ## PostgreSQL
 
 Innloggingsinformasjon til databasen:
@@ -61,4 +63,3 @@ Plugin kan lastes ned her: https://plugins.jetbrains.com/plugin/6317-lombok
 Opprett en issue i GitHub for eventuelle spørsmål.
 
 Er du ansatt i NAV kan du stille spørsmål på Slack i kanalen #produktområdet_arbeidsoppfølging.
-
