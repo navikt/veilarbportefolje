@@ -12,12 +12,10 @@ import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntityDto;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,8 +73,8 @@ public class TiltakPostgresTest {
                 .setAktivitetid("TA-123456789");
         tiltakRepositoryV2.upsert(innhold, aktorId);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
+        AvtaltAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
@@ -122,8 +120,8 @@ public class TiltakPostgresTest {
         tiltakRepositoryV2.upsert(idag, aktorId);
         tiltakRepositoryV2.upsert(igar, aktorId);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
+        AvtaltAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         assertThat(postgresAktivitet.getTiltak().size()).isEqualTo(1);
@@ -151,8 +149,8 @@ public class TiltakPostgresTest {
 
         Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
 
-        List<AktivitetEntity> postgresAktivitet = aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
+        List<AktivitetEntityDto> postgresAktivitet = aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId);
 
         assertThat(kodeVerkNavn.isPresent()).isTrue();

@@ -23,7 +23,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.AktoerDataOpensearchMapper;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktorIdEntity;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;

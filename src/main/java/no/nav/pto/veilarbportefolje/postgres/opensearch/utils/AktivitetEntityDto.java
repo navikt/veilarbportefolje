@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 
 @Data
 @Accessors(chain = true)
-public class AktivitetEntity {
+public class AktivitetEntityDto {
     AktivitetsType aktivitetsType;
     String muligTiltaksNavn; // Er kun satt for aktiviteter lagret i tiltaks tabellen
     Timestamp utlop;

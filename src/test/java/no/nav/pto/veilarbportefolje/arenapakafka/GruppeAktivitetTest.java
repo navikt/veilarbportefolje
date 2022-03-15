@@ -19,8 +19,8 @@ import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetMapper;
 import no.nav.sbl.sql.SqlUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,8 +94,8 @@ public class GruppeAktivitetTest {
         GruppeAktivitetDTO gruppeAktivitet = getInsertDTO();
         gruppeAktivitetService.behandleKafkaMeldingPostgres(gruppeAktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
+        AvtaltAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         //Opensearch mapping

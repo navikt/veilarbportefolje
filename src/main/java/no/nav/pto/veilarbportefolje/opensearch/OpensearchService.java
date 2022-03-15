@@ -153,6 +153,9 @@ public class OpensearchService {
         if (filtervalg.harAktiviteterForenklet()) {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(filtervalg.aktiviteterForenklet);
         }
+        if(filtervalg.harAlleAktiviteterFilter()){
+            bruker.leggTilUtlopsdatoForAktiviteter(filtervalg.alleAktiviteter);
+        }
         if (filtervalg.harAktivitetFilter()) {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(filtervalg.aktiviteter);
         }

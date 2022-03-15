@@ -17,7 +17,7 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.AktoerDataOpensearchMapper;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktorIdEntity;
+import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;

@@ -64,8 +64,10 @@ public class Bruker {
     LocalDateTime forrigeAktivitetStart;
     LocalDateTime oppfolgingStartdato;
     LocalDateTime nesteUtlopsdatoAktivitet;
+    LocalDateTime nesteUtlopsdatoAlleAktiviteter;
     List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
+    Map<String, Timestamp> alleAktiviteter = new HashMap<>();
     LocalDateTime moteStartTid;
     LocalDateTime moteSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
@@ -147,7 +149,14 @@ public class Bruker {
         if (aktiviteterForenklet == null) {
             return;
         }
-        aktiviteterForenklet.forEach(navnPaaAktivitet -> setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet.toLowerCase())));
+        aktiviteterForenklet.forEach(navnPaaAktivitet -> nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(aktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAktivitet));
+    }
+
+    public void leggTilUtlopsdatoForAktiviteter(List<String> aktiviteterForenklet) {
+        if (aktiviteterForenklet == null) {
+            return;
+        }
+        aktiviteterForenklet.forEach(navnPaaAktivitet -> nesteUtlopsdatoAlleAktiviteter = nesteUtlopsdatoAktivitet(alleAktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAlleAktiviteter));
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(Map<String, AktivitetFiltervalg> aktiviteterAvansert) {
@@ -156,7 +165,7 @@ public class Bruker {
         }
         aktiviteterAvansert.forEach((navnPaaAktivitet, valg) -> {
             if (JA.equals(valg)) {
-                setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet.toLowerCase()));
+                nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(aktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAktivitet);
             }
         });
     }
@@ -202,15 +211,16 @@ public class Bruker {
         return false;
     }
 
-    private void setNesteUtlopsdatoAktivitetHvisNyest(Timestamp aktivitetUlopsdato) {
+    private LocalDateTime nesteUtlopsdatoAktivitet(Timestamp aktivitetUlopsdato, LocalDateTime comp) {
         if (aktivitetUlopsdato == null) {
-            return;
+            return null;
         }
-        if (nesteUtlopsdatoAktivitet == null) {
-            nesteUtlopsdatoAktivitet = aktivitetUlopsdato.toLocalDateTime();
-        } else if (nesteUtlopsdatoAktivitet.isAfter(aktivitetUlopsdato.toLocalDateTime())) {
-            nesteUtlopsdatoAktivitet = aktivitetUlopsdato.toLocalDateTime();
+        if (comp == null) {
+            return aktivitetUlopsdato.toLocalDateTime();
+        } else if (comp.isAfter(aktivitetUlopsdato.toLocalDateTime())) {
+            return aktivitetUlopsdato.toLocalDateTime();
         }
+        return comp;
     }
 
     public Bruker fraEssensiellInfo(Map<String, Object> row) {
