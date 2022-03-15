@@ -29,8 +29,13 @@ public class PostgresAktivitetMapper {
         if(aktiviteter == null){
             return entity;
         }
+        Set<String> aktiveAktiviteter = aktiviteter.stream()
+                .map(AktivitetEntityDto::getAktivitetsType)
+                .map(AktivitetsType::name)
+                .collect(Collectors.toSet());
         byggAktivitetStatusBrukerData(entity, aktiviteter);
-        return entity;
+
+        return entity.setAlleAktiviteter(aktiveAktiviteter);
     }
 
     public static AvtaltAktivitetEntity kalkulerAvtalteAktivitetInformasjon(List<AktivitetEntityDto> avtalteAktivteter) {

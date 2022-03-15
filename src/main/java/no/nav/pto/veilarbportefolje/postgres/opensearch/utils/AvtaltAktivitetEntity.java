@@ -10,8 +10,6 @@ import static java.util.Collections.emptySet;
 @Data
 @Accessors(chain = true)
 public class AvtaltAktivitetEntity extends AktivitetStatusData {
-    private String aktoerId;
-
     private String nyesteUtlopteAktivitet;
     private String aktivitetStart;
     private String nesteAktivitetStart;
