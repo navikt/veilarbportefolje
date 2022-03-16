@@ -117,7 +117,7 @@
         "type": "date"
       },
       "aktivitet_mote_startdato": {
-        "type": "date",
+        "type": "date"
       },
       "aktivitet_mote_utlopsdato": {
         "type": "date",
