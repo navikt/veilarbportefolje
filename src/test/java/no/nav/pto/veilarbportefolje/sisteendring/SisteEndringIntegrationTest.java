@@ -79,6 +79,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @BeforeEach
     public void resetMock() {
         jdbcTemplate.execute("truncate table aktoerid_to_personid");
+        jdbcTemplate.execute("truncate table siste_endring");
         jdbcTemplate.execute("truncate table oppfolging_data");
         jdbcTemplate.execute("truncate table oppfolgingsbruker");
         jdbcTemplate.execute("truncate table aktiviteter");

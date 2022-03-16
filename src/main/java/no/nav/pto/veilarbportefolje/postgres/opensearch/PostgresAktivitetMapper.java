@@ -76,7 +76,7 @@ public class PostgresAktivitetMapper {
         Timestamp gruppeaktivitetFremtidigUtlopsdato = null;
 
         for (AktivitetEntityDto aktivitet : aktiviter) {
-            if (aktivitet.getAktivitetsType().equals(mote) && !(aktivitet.getStart() == null || aktivitet.getUtlop().toLocalDateTime().toLocalDate().isBefore(idag))) {
+            if (aktivitet.getAktivitetsType().equals(mote) && !(aktivitet.getStart() == null || aktivitet.getStart().toLocalDateTime().toLocalDate().isBefore(idag))) {
                 moteFremtidigStartdato = nesteFremITiden(moteFremtidigStartdato, aktivitet.getStart());
             }
             if (aktivitet.getUtlop() == null || idag.isAfter(aktivitet.getUtlop().toLocalDateTime().toLocalDate())) {
