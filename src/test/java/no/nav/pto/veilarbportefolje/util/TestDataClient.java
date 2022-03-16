@@ -86,6 +86,12 @@ public class TestDataClient {
         setupBruker(aktoerId, fnr, navKontor, veilederId, startDato);
     }
 
+    public void setupBruker(AktorId aktoerId, Fnr fnr, NavKontor navKontor) {
+        final VeilederId veilederId = TestDataUtils.randomVeilederId();
+        setupBrukerOracle(aktoerId, fnr, navKontor, veilederId, ZonedDateTime.now());
+        setupBruker(aktoerId, fnr, navKontor, veilederId, ZonedDateTime.now());
+    }
+
     public boolean hentOppfolgingFlaggFraDatabase(AktorId aktoerId) {
         return oppfolgingRepositoryV2.erUnderOppfolging(aktoerId);
     }

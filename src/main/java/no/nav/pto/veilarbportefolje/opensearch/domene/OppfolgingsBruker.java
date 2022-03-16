@@ -82,6 +82,7 @@ public class OppfolgingsBruker {
     String arbeidsliste_tittel_sortering;
     int arbeidsliste_tittel_lengde;
     String oppfolging_startdato;
+    Set<String> alleAktiviteter = emptySet();
     Set<String> aktiviteter = emptySet();
     Set<String> tiltak = emptySet();
     boolean har_veileder_fra_enhet;

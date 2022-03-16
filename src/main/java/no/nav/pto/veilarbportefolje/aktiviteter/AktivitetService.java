@@ -28,17 +28,8 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         sisteEndringService.behandleAktivitet(aktivitetData);
 
-        //ORACLE
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
-        boolean bleProsessert = aktivitetDAO.tryLagreAktivitetData(aktivitetData);
-        if (bleProsessert && aktivitetData.isAvtalt()) {
-            // TODO: ved fjerning av oracle lagring. Dra ut oppdatering av mapping aktorId -> PersonId
-            utledAktivitetstatuserForAktoerid(aktorId);
-        }
-
-        //POSTGRES
-        aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-        //OPENSEARCH
+        boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
         if (bleProsessert) {
             opensearchIndexer.indekser(aktorId);
         }

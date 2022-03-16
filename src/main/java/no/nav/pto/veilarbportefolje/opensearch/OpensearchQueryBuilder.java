@@ -309,6 +309,11 @@ public class OpensearchQueryBuilder {
                         .gte(toIsoUTC(localDate.atStartOfDay()))
                         .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
                 break;
+            case ALLE_MOTER_IDAG:
+                queryBuilder = rangeQuery("alle_aktiviteter_mote_startdato")
+                        .gte(toIsoUTC(localDate.atStartOfDay()))
+                        .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
+                break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
                 queryBuilder = byggErSykmeldtMedArbeidsgiverFilter(erVedtakstottePilotPa);
                 break;

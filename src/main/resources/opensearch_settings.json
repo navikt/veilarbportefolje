@@ -92,8 +92,32 @@
         },
         "analyzer": "fnr_sok"
       },
+      "alle_aktiviteter_mote_startdato": {
+        "type": "date"
+      },
+      "alle_aktiviteter_mote_utlopsdato": {
+        "type": "date"
+      },
+      "alle_aktiviteter_stilling_utlopsdato": {
+        "type": "date"
+      },
+      "alle_aktiviteter_egen_utlopsdato": {
+        "type": "date"
+      },
+      "alle_aktiviteter_behandling_utlopsdato": {
+        "type": "date"
+      },
+      "alle_aktiviteter_ijobb_utlopsdato": {
+        "type": "date"
+      },
+      "alle_aktiviteter_sokeavtale_utlopsdato": {
+        "type": "date"
+      },
       "aktivitet_utlopsdatoer": {
         "type": "date"
+      },
+      "aktivitet_mote_startdato": {
+        "type": "date",
       },
       "aktivitet_mote_utlopsdato": {
         "type": "date",
