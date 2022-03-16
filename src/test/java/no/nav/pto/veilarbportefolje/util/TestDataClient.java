@@ -86,10 +86,10 @@ public class TestDataClient {
         setupBruker(aktoerId, fnr, navKontor, veilederId, startDato);
     }
 
-    public void setupBruker(AktorId aktoerId, Fnr fnr, NavKontor navKontor) {
+    public void setupBruker(AktorId aktoerId, Fnr fnr, String navKontor) {
         final VeilederId veilederId = TestDataUtils.randomVeilederId();
-        setupBrukerOracle(aktoerId, fnr, navKontor, veilederId, ZonedDateTime.now());
-        setupBruker(aktoerId, fnr, navKontor, veilederId, ZonedDateTime.now());
+        setupBrukerOracle(aktoerId, fnr, NavKontor.of(navKontor), veilederId, ZonedDateTime.now());
+        setupBruker(aktoerId, fnr, NavKontor.of(navKontor), veilederId, ZonedDateTime.now());
     }
 
     public boolean hentOppfolgingFlaggFraDatabase(AktorId aktoerId) {

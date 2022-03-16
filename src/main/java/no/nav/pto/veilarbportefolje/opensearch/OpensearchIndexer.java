@@ -208,8 +208,13 @@ public class OpensearchIndexer {
         List<List<AktorId>> brukerePartition = Lists.partition(alleBrukere, (alleBrukere.size() / getNumberOfThreads()) + 1);
         ExecutorService executor = Executors.newFixedThreadPool(getNumberOfThreads());
         executor.execute(() ->
-                brukerePartition.parallelStream().forEach(bolk ->
-                        partition(bolk, BATCH_SIZE).forEach(this::indekserBolk)
+                brukerePartition.parallelStream().forEach(bolk -> {
+                            try {
+                                partition(bolk, BATCH_SIZE).forEach(this::indekserBolk);
+                            } catch (Exception e) {
+                                log.error("error under hovedindekering", e);
+                            }
+                        }
                 )
         );
 
@@ -235,7 +240,7 @@ public class OpensearchIndexer {
 
     private int getNumberOfThreads() {
         if (isDevelopment().orElse(false)) {
-            return 2;
+            return 1;
         }
         return 8;
     }

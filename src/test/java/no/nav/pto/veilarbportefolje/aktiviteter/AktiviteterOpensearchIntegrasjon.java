@@ -35,7 +35,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     @Test
     public void lasteroppeikkelagreteaktiviteteter() {
         NavKontor navKontor = randomNavKontor();
-        testDataClient.setupBruker(aktoer, fodselsnummer, navKontor);
+        testDataClient.setupBruker(aktoer, fodselsnummer, navKontor.getValue());
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
                 .setAktorId(aktoer.get())
