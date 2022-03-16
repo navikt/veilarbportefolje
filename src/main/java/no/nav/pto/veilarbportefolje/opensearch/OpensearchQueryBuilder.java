@@ -292,6 +292,9 @@ public class OpensearchQueryBuilder {
             case I_AVTALT_AKTIVITET:
                 queryBuilder = existsQuery("aktiviteter");
                 break;
+            case I_AKTIVITET:
+                queryBuilder = existsQuery("alleAktiviteter");
+                break;
             case IKKE_I_AVTALT_AKTIVITET:
                 queryBuilder = boolQuery().mustNot(existsQuery("aktiviteter"));
                 break;
@@ -483,6 +486,7 @@ public class OpensearchQueryBuilder {
                                 "statustall",
                                 erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
                                 mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
+                                mustExistFilter(filtrereVeilederOgEnhet, "iAktivitet", "alleAktiviteter"),
                                 ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
                                 inaktiveBrukere(filtrereVeilederOgEnhet),
                                 mustBeTrueFilter(filtrereVeilederOgEnhet, "minArbeidsliste", "arbeidsliste_aktiv"),
