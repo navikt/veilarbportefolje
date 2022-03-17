@@ -3,10 +3,24 @@ package no.nav.pto.veilarbportefolje.opensearch;
 import lombok.SneakyThrows;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
+import no.nav.pto.veilarbportefolje.domene.Bruker;
+import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
+import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
+import no.nav.pto.veilarbportefolje.domene.Facet;
+import no.nav.pto.veilarbportefolje.domene.FacetResults;
+import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.Kjonn;
+import no.nav.pto.veilarbportefolje.domene.Rettighetsgruppe;
+import no.nav.pto.veilarbportefolje.domene.StatusTall;
+import no.nav.pto.veilarbportefolje.domene.YtelseFilter;
+import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
@@ -21,24 +35,31 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
-import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
+import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AVTALT_AKTIVITET;
+import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.TRENGER_VURDERING;
+import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.UFORDELTE_BRUKERE;
+import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.UNDER_VURDERING;
+import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.UTLOPTE_AKTIVITETER;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggArbeidslisteQuery;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 class OpensearchServiceIntegrationTest extends EndToEndTest {
-    private static final String TEST_ENHET = "0000";
-    private static final String TEST_VEILEDER_0 = "Z000000";
-    private static final String TEST_VEILEDER_1 = "Z000001";
-    private static final String LITE_PRIVILEGERT_VEILEDER = "Z000002";
+    private static String TEST_ENHET = randomNavKontor().getValue();
+    private static final String TEST_VEILEDER_0 = randomVeilederId().getValue();
+    private static final String TEST_VEILEDER_1 = randomVeilederId().getValue();
+    private static final String LITE_PRIVILEGERT_VEILEDER = randomVeilederId().getValue();
 
-    private OpensearchService opensearchService;
-    private OpensearchIndexer opensearchIndexer;
-    private VeilarbVeilederClient veilarbVeilederClientMock;
+    private final OpensearchService opensearchService;
+    private final OpensearchIndexer opensearchIndexer;
+    private final VeilarbVeilederClient veilarbVeilederClientMock;
 
 
     @Autowired
@@ -47,7 +68,12 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         this.opensearchIndexer = opensearchIndexer;
         this.veilarbVeilederClientMock = veilarbVeilederClientMock;
     }
-    
+
+    @BeforeEach
+    void byttenhet(){
+        TEST_ENHET = randomNavKontor().getValue();
+    }
+
     @Test
     void skal_kun_hente_ut_brukere_under_oppfolging() {
         List<OppfolgingsBruker> brukere = List.of(
@@ -267,13 +293,13 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         skrivBrukereTilTestindeks(liste);
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
-        List<Bruker> brukereMedArbeidsliste = opensearchService.hentBrukereMedArbeidsliste(TEST_VEILEDER_0, TEST_ENHET);
-        assertThat(brukereMedArbeidsliste.size()).isEqualTo(1);
+        SearchSourceBuilder request = byggArbeidslisteQuery(TEST_ENHET, TEST_VEILEDER_0);
+        OpensearchResponse response = opensearchService.search(request, indexName.getValue(), OpensearchResponse.class);
+        assertThat(response.hits().getTotal().getValue()).isEqualTo(1);
     }
 
     @Test
     void skal_hente_riktige_statustall_for_veileder() {
-
         var testBruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
@@ -289,7 +315,6 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setKvalifiseringsgruppekode("BATT")
                 .setAktiviteter(Set.of("egen"))
                 .setArbeidsliste_aktiv(true)
-                .setNy_for_enhet(true)
                 .setNy_for_veileder(true)
                 .setTrenger_vurdering(true)
                 .setVenterpasvarfranav("2018-05-09T22:00:00Z")
@@ -305,7 +330,15 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(testBruker1, testBruker2, inaktivBruker);
         skrivBrukereTilTestindeks(liste);
 
-        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                "asc",
+                "ikke_satt",
+                new Filtervalg().setFerdigfilterListe(List.of()),
+                null,
+                null
+        ).getAntall() == liste.size());
 
         var statustall = opensearchService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET);
         assertThat(statustall.erSykmeldtMedArbeidsgiver).isEqualTo(0);
@@ -313,7 +346,6 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(statustall.ikkeIavtaltAktivitet).isEqualTo(2);
         assertThat(statustall.inaktiveBrukere).isEqualTo(1);
         assertThat(statustall.minArbeidsliste).isEqualTo(1);
-        assertThat(statustall.nyeBrukere).isEqualTo(1);
         assertThat(statustall.nyeBrukereForVeileder).isEqualTo(1);
         assertThat(statustall.trengerVurdering).isEqualTo(1);
         assertThat(statustall.venterPaSvarFraNAV).isEqualTo(1);
@@ -465,13 +497,12 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_hente_brukere_som_trenger_vurdering_og_er_ny_for_enhet() {
-
+        when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
         var nyForEnhet = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_enhet(true)
+                .setVeileder_id(LITE_PRIVILEGERT_VEILEDER)
                 .setTrenger_vurdering(true);
 
         var ikkeNyForEnhet = new OppfolgingsBruker()
@@ -479,23 +510,30 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_enhet(true)
-                .setTrenger_vurdering(false);
+                .setTrenger_vurdering(true);
 
 
         var liste = List.of(nyForEnhet, ikkeNyForEnhet);
         skrivBrukereTilTestindeks(liste);
 
-        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                "asc",
+                "ikke_satt",
+                new Filtervalg().setFerdigfilterListe(List.of(TRENGER_VURDERING)),
+                null,
+                null
+        ).getAntall() == liste.size());
 
         List<Brukerstatus> ferdigFiltere = List.of(
-                NYE_BRUKERE,
+                UFORDELTE_BRUKERE,
                 TRENGER_VURDERING
         );
 
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
-                Optional.of(TEST_VEILEDER_0),
+                Optional.empty(),
                 "asc",
                 "ikke_satt",
                 new Filtervalg().setFerdigfilterListe(ferdigFiltere),
@@ -525,7 +563,15 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(brukerVeilederHarTilgangTil, brukerVeilederIkkeHarTilgangTil);
         skrivBrukereTilTestindeks(liste);
 
-        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                "asc",
+                "ikke_satt",
+                new Filtervalg(),
+                null,
+                null
+        ).getAntall() == 1);
 
 
         var response = opensearchService.hentBrukere(
@@ -551,15 +597,13 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(LITE_PRIVILEGERT_VEILEDER)
-                .setNy_for_enhet(false);
+                .setVeileder_id(LITE_PRIVILEGERT_VEILEDER);
 
         var brukerMedFordeltStatus = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_enhet(false);
+                .setVeileder_id(TEST_VEILEDER_0);
 
         var liste = List.of(brukerMedUfordeltStatus, brukerMedFordeltStatus);
         skrivBrukereTilTestindeks(liste);

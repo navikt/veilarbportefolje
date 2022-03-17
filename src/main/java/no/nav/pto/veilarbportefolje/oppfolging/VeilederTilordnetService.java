@@ -26,6 +26,10 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         final AktorId aktoerId = dto.getAktorId();
         final VeilederId veilederId = dto.getVeilederId();
 
+        tilordneVeileder(aktoerId, veilederId);
+    }
+
+    public void tilordneVeileder(AktorId aktoerId, VeilederId veilederId) {
         oppfolgingRepository.settVeileder(aktoerId, veilederId);
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
 
@@ -50,7 +54,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
     }
 
     private VeilederId hentVeileder(AktorId aktoerId) {
-        return VeilederId.of(oppfolgingRepository.hentOppfolgingData(aktoerId)
+        return VeilederId.of(oppfolgingRepositoryV2.hentOppfolgingData(aktoerId)
                 .map(BrukerOppdatertInformasjon::getVeileder)
                 .orElse(null));
     }

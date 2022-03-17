@@ -273,6 +273,32 @@ function handleforceShardAssignmentForm(e) {
     }
 }
 
+const migrerCvForm = document.getElementById('migrerCv');
+migrerCvForm.addEventListener('submit', handleMigrerCv)
+
+function handleMigrerCv(e) {
+    e.preventDefault();
+    if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/cv/migrer`,
+            {method: 'PUT', credentials: 'same-origin'},
+            'migrerCvResponse'
+        );
+    }
+}
+
+const cvDiffForm = document.getElementById('cvDiff');
+cvDiffForm.addEventListener('submit', handleCvDiff)
+
+function handleCvDiff(e) {
+    e.preventDefault();
+    fetchData(
+        `/veilarbportefolje/api/admin/cv/diff`,
+        {method: 'PUT', credentials: 'same-origin'},
+        'migrerCvResponse'
+    );
+}
+
 const testForm = document.getElementById('testPostgresForm')
 testForm.addEventListener('submit', handleTest);
 
@@ -285,7 +311,6 @@ function handleTest(e) {
         )
     }
 }
-
 
 const testHentPostgresOracleForm = document.getElementById('testHentPostgresOracleForm')
 const testInputHentAktoerId = document.getElementById('testInputHentAktoerId');

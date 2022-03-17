@@ -12,10 +12,6 @@ public class OppfolgingUtils {
     private static List<String> INNSATSGRUPPEKODER =  asList( "IKVAL", "BFORM", "BATT", "VARIG");
     private static List<String> OPPFOLGINGKODER = asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG");
 
-    public static boolean isNyForEnhet(String veileder) {
-        return veileder == null || veileder.isEmpty();
-    }
-
 
     //TODO BRUK PROFILERINGSRESULTAT
     public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode) {

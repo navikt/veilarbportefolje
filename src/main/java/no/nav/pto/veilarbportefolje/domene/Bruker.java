@@ -77,7 +77,7 @@ public class Bruker {
     LocalDateTime sisteEndringTidspunkt;
     String sisteEndringAktivitetId;
 
-    public static Bruker of(OppfolgingsBruker bruker, boolean erVedtakstottePilotPa) {
+    public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String kvalifiseringsgruppekode = bruker.getKvalifiseringsgruppekode();
@@ -88,9 +88,9 @@ public class Bruker {
         boolean trengerVurdering = bruker.isTrenger_vurdering();
 
         return new Bruker()
+                .setNyForEnhet(ufordelt)
                 .setFnr(bruker.getFnr())
                 .setAktoerid(bruker.getAktoer_id())
-                .setNyForEnhet(bruker.isNy_for_enhet())
                 .setNyForVeileder(bruker.isNy_for_veileder())
                 .setTrengerVurdering(trengerVurdering)
                 .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode)) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej

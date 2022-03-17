@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.Statust
 @Accessors(chain = true)
 public class StatusTall {
     public long totalt;
-    public long nyeBrukere;
     public long ufordelteBrukere;
     public long trengerVurdering;
     public long nyeBrukereForVeileder;
@@ -22,8 +21,6 @@ public class StatusTall {
     public long erSykmeldtMedArbeidsgiver;
     public long moterMedNAVIdag;
     public long underVurdering;
-    public long permitterteEtterNiendeMars;
-    public long ikkePermitterteEtterNiendeMars;
     public long minArbeidslisteBla;
     public long minArbeidslisteLilla;
     public long minArbeidslisteGronn;
@@ -34,7 +31,6 @@ public class StatusTall {
 
     public StatusTall(StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
         this.totalt = buckets.getTotalt().getDoc_count();
-        this.nyeBrukere = buckets.getNyeBrukere().getDoc_count();
         this.ufordelteBrukere = buckets.getUfordelteBrukere().getDoc_count();
         this.trengerVurdering = buckets.getTrengerVurdering().getDoc_count();
         this.nyeBrukereForVeileder = buckets.getNyeBrukereForVeileder().getDoc_count();
@@ -47,8 +43,6 @@ public class StatusTall {
         this.minArbeidsliste = buckets.getMinArbeidsliste().getDoc_count();
         this.erSykmeldtMedArbeidsgiver = buckets.getErSykmeldtMedArbeidsgiver().getDoc_count();
         this.moterMedNAVIdag = buckets.getMoterMedNAVIdag().getDoc_count();
-        this.permitterteEtterNiendeMars = buckets.getPermitterteEtterNiendeMars().getDoc_count();
-        this.ikkePermitterteEtterNiendeMars = buckets.getIkkePermitterteEtterNiendeMars().getDoc_count();
         this.minArbeidslisteBla = buckets.getMinArbeidslisteBla().getDoc_count();
         this.minArbeidslisteLilla = buckets.getMinArbeidslisteLilla().getDoc_count();
         this.minArbeidslisteGronn = buckets.getMinArbeidslisteGronn().getDoc_count();

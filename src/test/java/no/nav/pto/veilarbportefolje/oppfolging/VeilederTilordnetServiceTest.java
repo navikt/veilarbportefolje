@@ -38,7 +38,6 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
 
 
         assertThat(tilordnetVeileder).isEqualTo(nyVeileder);
-        assertThat(bruker.isNy_for_enhet()).isFalse();
         assertThat(bruker.isNy_for_veileder()).isTrue();
     }
 
@@ -56,7 +55,6 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
 
 
         assertThat(tilordnetVeileder.getValue()).isNull();
-        assertThat(bruker.isNy_for_enhet()).isFalse();
         assertThat(bruker.isNy_for_veileder()).isTrue();
     }
 
