@@ -4,11 +4,9 @@ import io.vavr.control.Try;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -64,14 +62,14 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private Long aktivitetVersion = 1L;
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplate, OpensearchService opensearchService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer) {
+    public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplate, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer) {
         this.jdbcTemplate = jdbcTemplate;
         BrukerService brukerService = mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
         unleashService = Mockito.mock(UnleashService.class);
         this.oppfolgingRepositoryMock = mock(OppfolgingRepository.class);
-        this.aktivitetService = new AktivitetService(aktivitetDAO, aktiviteterRepositoryV2, persistentOppdatering, brukerService, sisteEndringService, opensearchIndexer);
+        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, brukerService, sisteEndringService, opensearchIndexer);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.opensearchService = opensearchService;
         this.malService = malService;

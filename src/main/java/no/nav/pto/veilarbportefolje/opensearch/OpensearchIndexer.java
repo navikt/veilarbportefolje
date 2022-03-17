@@ -52,7 +52,6 @@ public class OpensearchIndexer {
     private void indekserBruker(OppfolgingsBruker bruker) {
         if (erUnderOppfolging(bruker)) {
             leggTilSisteEndring(bruker);
-
             postgresOpensearchMapper.flettInnPostgresData(List.of(bruker), false);
             syncronIndekseringsRequest(bruker);
         } else {
@@ -185,7 +184,6 @@ public class OpensearchIndexer {
                     .filter(bruker -> bruker.getAktoer_id() != null)
                     .toList();
             leggTilSisteEndring(brukere);
-
             postgresOpensearchMapper.flettInnPostgresData(brukere, true);
         });
     }

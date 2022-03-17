@@ -16,11 +16,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnDatoerEtterDagensDato;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnForrigeAktivitetStartDatoer;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnNyesteUtlopteAktivAktivitet;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.statusToIsoUtcString;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType.mote;
-import static no.nav.pto.veilarbportefolje.database.BrukerDataService.finnDatoerEtterDagensDato;
-import static no.nav.pto.veilarbportefolje.database.BrukerDataService.finnForrigeAktivitetStartDatoer;
-import static no.nav.pto.veilarbportefolje.database.BrukerDataService.finnNyesteUtlopteAktivAktivitet;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 public class PostgresAktivitetMapper {
@@ -96,24 +96,15 @@ public class PostgresAktivitetMapper {
         }
         aktivitetStatusData
                 .setAktivitetMoteStartdato(toIsoUTC(moteFremtidigStartdato))
-                .setAktivitetEgenUtlopsdato(Optional.ofNullable(toIsoUTC(egenFremtidigUtlopsdato))
-                        .orElse(getFarInTheFutureDate()))
-                .setAktivitetStillingUtlopsdato(Optional.ofNullable(toIsoUTC(stillingFremtidigUtlopsdato))
-                        .orElse(getFarInTheFutureDate()))
-                .setAktivitetMoteUtlopsdato(Optional.ofNullable(toIsoUTC(moteFremtidigUtlopsdato))
-                        .orElse(getFarInTheFutureDate()))
-                .setAktivitetBehandlingUtlopsdato(Optional.ofNullable(toIsoUTC(behandlingFremtidigUtlopsdato))
-                        .orElse(getFarInTheFutureDate()))
-                .setAktivitetIjobbUtlopsdato(Optional.ofNullable(toIsoUTC(ijobbFremtidigUtlopsdato))
-                        .orElse(getFarInTheFutureDate()))
-                .setAktivitetSokeavtaleUtlopsdato(Optional.ofNullable(toIsoUTC(sokeavtaleFremtidigUtlopsdato))
-                        .orElse(getFarInTheFutureDate()))
-                .setAktivitetTiltakUtlopsdato(Optional.ofNullable(toIsoUTC(tiltakFremtidigUtlopsdato))
-                        .orElse(getFarInTheFutureDate()))
-                .setAktivitetUtdanningaktivitetUtlopsdato(Optional.ofNullable(toIsoUTC(utdanningaktivitetFremtidigUtlopsdato))
-                        .orElse(getFarInTheFutureDate()))
-                .setAktivitetGruppeaktivitetUtlopsdato(Optional.ofNullable(toIsoUTC(gruppeaktivitetFremtidigUtlopsdato))
-                        .orElse(getFarInTheFutureDate()));
+                .setAktivitetEgenUtlopsdato(statusToIsoUtcString(egenFremtidigUtlopsdato))
+                .setAktivitetStillingUtlopsdato(statusToIsoUtcString(stillingFremtidigUtlopsdato))
+                .setAktivitetMoteUtlopsdato(statusToIsoUtcString(moteFremtidigUtlopsdato))
+                .setAktivitetBehandlingUtlopsdato(statusToIsoUtcString(behandlingFremtidigUtlopsdato))
+                .setAktivitetIjobbUtlopsdato(statusToIsoUtcString(ijobbFremtidigUtlopsdato))
+                .setAktivitetSokeavtaleUtlopsdato(statusToIsoUtcString(sokeavtaleFremtidigUtlopsdato))
+                .setAktivitetTiltakUtlopsdato(statusToIsoUtcString(tiltakFremtidigUtlopsdato))
+                .setAktivitetUtdanningaktivitetUtlopsdato(statusToIsoUtcString(utdanningaktivitetFremtidigUtlopsdato))
+                .setAktivitetGruppeaktivitetUtlopsdato(statusToIsoUtcString(gruppeaktivitetFremtidigUtlopsdato));
     }
 
     private static void byggAktivitetBrukerData(AvtaltAktivitetEntity avtaltAktivitetEntity, List<AktivitetEntityDto> alleAktiviter) {

@@ -49,7 +49,6 @@ public class AdminController {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
-    private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
     private final YtelsesServicePostgres ytelsesServicePostgres;
     private final OppfolgingRepository oppfolgingRepository;
@@ -133,23 +132,6 @@ public class AdminController {
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereUnderOppfolging);
         return "Indeksering fullfort";
-    }
-
-
-    @PutMapping("/brukerAktiviteter")
-    public String syncBrukerAktiviteter(@RequestBody String fnr) {
-        authorizeAdmin();
-        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
-        brukerAktiviteterService.syncAktivitetOgBrukerData(AktorId.of(aktorId));
-        opensearchIndexer.indekser(AktorId.of(aktorId));
-        return "Aktiviteter er naa i sync";
-    }
-
-    @PutMapping("/brukerAktiviteter/allUsers")
-    public String syncBrukerAktiviteterForAlle() {
-        authorizeAdmin();
-        brukerAktiviteterService.syncAktivitetOgBrukerData();
-        return "Aktiviteter er nå i sync";
     }
 
     @PutMapping("/ytelser/allUsers")

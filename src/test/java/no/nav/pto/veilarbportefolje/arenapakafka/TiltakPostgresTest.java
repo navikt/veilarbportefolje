@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class TiltakPostgresTest {
-    private final JdbcTemplate db;
+    private final JdbcTemplate jdbcTemplatePostgres;
     private final OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final AktivitetOpensearchService aktivitetOpensearchService;
@@ -44,17 +44,17 @@ public class TiltakPostgresTest {
 
     @Autowired
     public TiltakPostgresTest(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService) {
-        this.db = jdbcTemplatePostgres;
-        this.oppfolgingsbrukerRepositoryV2 = new OppfolgingsbrukerRepositoryV2(db);
+        this.jdbcTemplatePostgres = jdbcTemplatePostgres;
+        this.oppfolgingsbrukerRepositoryV2 = new OppfolgingsbrukerRepositoryV2(this.jdbcTemplatePostgres);
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.tiltakRepositoryV2 = tiltakRepositoryV2;
     }
 
     @BeforeEach
     public void reset() {
-        db.update("TRUNCATE " + PostgresTable.BRUKERTILTAK.TABLE_NAME + " CASCADE");
-        db.update("TRUNCATE " + PostgresTable.TILTAKKODEVERK.TABLE_NAME + " CASCADE");
-        db.update("TRUNCATE " + PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME + " CASCADE");
+        jdbcTemplatePostgres.update("TRUNCATE " + PostgresTable.BRUKERTILTAK.TABLE_NAME + " CASCADE");
+        jdbcTemplatePostgres.update("TRUNCATE " + PostgresTable.TILTAKKODEVERK.TABLE_NAME + " CASCADE");
+        jdbcTemplatePostgres.update("TRUNCATE " + PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME + " CASCADE");
     }
 
     @Test
