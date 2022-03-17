@@ -188,6 +188,12 @@ public class OpensearchQueryBuilder {
                         .sortMode(MIN);
                 searchSourceBuilder.sort(builder);
             }
+            case "iaktivitet" -> {
+                FieldSortBuilder builder = new FieldSortBuilder("alle_aktiviteter_utlopsdatoer")
+                        .order(order)
+                        .sortMode(MIN);
+                searchSourceBuilder.sort(builder);
+            }
             case "fodselsnummer" -> searchSourceBuilder.sort("fnr.raw", order);
             case "utlopteaktiviteter" -> searchSourceBuilder.sort("nyesteutlopteaktivitet", order);
             case "arbeidslistefrist" -> searchSourceBuilder.sort("arbeidsliste_frist", order);
