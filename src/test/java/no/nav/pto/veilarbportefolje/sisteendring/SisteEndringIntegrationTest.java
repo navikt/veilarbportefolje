@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
@@ -50,6 +51,7 @@ import static org.mockito.Mockito.mock;
 public class SisteEndringIntegrationTest extends EndToEndTest {
     private final MalService malService;
     private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplatePostgres;
     private final AktivitetService aktivitetService;
     private final OpensearchService opensearchService;
     private final SistLestService sistLestService;
@@ -62,8 +64,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private Long aktivitetVersion = 1L;
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplate, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer) {
+    public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplate, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer) {
         this.jdbcTemplate = jdbcTemplate;
+        this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         BrukerService brukerService = mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
@@ -81,7 +84,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         jdbcTemplate.execute("truncate table siste_endring");
         jdbcTemplate.execute("truncate table oppfolging_data");
         jdbcTemplate.execute("truncate table oppfolgingsbruker");
-        jdbcTemplate.execute("truncate table aktiviteter");
+        jdbcTemplatePostgres.execute("truncate table aktiviteter");
+        jdbcTemplatePostgres.execute("truncate table oppfolging_data");
         Mockito.when(oppfolgingRepositoryMock.erUnderoppfolging(any())).thenReturn(true);
     }
 
@@ -104,7 +108,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(endring_mal).isEqualTo(endretTidZonedDateTime.toString());
     }
 
-    //@Test
+    @Test
     public void sisteendring_populering_aktiviteter() {
         final AktorId aktoerId = randomAktorId();
         testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.get());
@@ -141,7 +145,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(endring_fullfort_ijobb_2).isEqualTo(endretTidNyZonedDateTime.toString());
     }
 
-    //@Test
+    @Test
     public void sisteendring_filtrering() {
         final AktorId aktoerId = randomAktorId();
         testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.get());
@@ -167,7 +171,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     getFiltervalg(FULLFORT_IJOBB),
                     null,
                     null);
-            System.out.println(brukereMedAntall.getAntall());
             return brukereMedAntall.getAntall() == 1;
         });
         verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
@@ -428,10 +431,10 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     private void send_aktvitet_melding(AktorId aktoerId, ZonedDateTime endretDato, KafkaAktivitetMelding.EndringsType endringsType,
                                        KafkaAktivitetMelding.AktivitetStatus status, KafkaAktivitetMelding.AktivitetTypeData typeData) {
-        KafkaAktivitetMelding melding = new KafkaAktivitetMelding().setAktivitetId("144136")
+        KafkaAktivitetMelding melding = new KafkaAktivitetMelding().setAktivitetId("1")
                 .setAktorId(aktoerId.get()).setFraDato(ZonedDateTime.now().minusDays(5)).setEndretDato(endretDato)
                 .setAktivitetType(typeData).setAktivitetStatus(status).setEndringsType(endringsType).setLagtInnAv(KafkaAktivitetMelding.InnsenderData.BRUKER)
-                .setAvtalt(true).setHistorisk(false).setVersion(aktivitetVersion++);
+                .setAvtalt(true).setHistorisk(false).setVersion(++aktivitetVersion);
         aktivitetService.behandleKafkaMeldingLogikk(melding);
     }
 

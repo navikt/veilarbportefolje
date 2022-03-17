@@ -92,26 +92,36 @@
         },
         "analyzer": "fnr_sok"
       },
-      "alle_aktiviteter_mote_startdato": {
+      "alle_aktivitet_utlopsdatoer": {
         "type": "date"
+      },
+      "alle_aktiviteter_mote_startdato": {
+        "type": "date",
+        "copy_to": "alle_aktivitet_utlopsdatoer"
       },
       "alle_aktiviteter_mote_utlopsdato": {
-        "type": "date"
+        "type": "date",
+        "copy_to": "alle_aktivitet_utlopsdatoer"
       },
       "alle_aktiviteter_stilling_utlopsdato": {
-        "type": "date"
+        "type": "date",
+        "copy_to": "alle_aktivitet_utlopsdatoer"
       },
       "alle_aktiviteter_egen_utlopsdato": {
-        "type": "date"
+        "type": "date",
+        "copy_to": "alle_aktivitet_utlopsdatoer"
       },
       "alle_aktiviteter_behandling_utlopsdato": {
-        "type": "date"
+        "type": "date",
+        "copy_to": "alle_aktivitet_utlopsdatoer"
       },
       "alle_aktiviteter_ijobb_utlopsdato": {
-        "type": "date"
+        "type": "date",
+        "copy_to": "alle_aktivitet_utlopsdatoer"
       },
       "alle_aktiviteter_sokeavtale_utlopsdato": {
-        "type": "date"
+        "type": "date",
+        "copy_to": "alle_aktivitet_utlopsdatoer"
       },
       "aktivitet_utlopsdatoer": {
         "type": "date"

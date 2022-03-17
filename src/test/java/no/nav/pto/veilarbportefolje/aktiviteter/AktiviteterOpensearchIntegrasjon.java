@@ -76,7 +76,6 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setVersion(1L)
                 .setAvtalt(false));
-        System.out.println("yo");
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
                     BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                             navKontor.getValue(),
