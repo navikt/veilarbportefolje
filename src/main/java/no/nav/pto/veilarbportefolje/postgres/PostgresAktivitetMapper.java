@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.postgres.opensearch;
 
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntityDto;
+import no.nav.pto.veilarbportefolje.aktiviteter.opensearch.AktivitetEntityDto;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetStatusData;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.IkkeAvtaltAktivitetEntity;

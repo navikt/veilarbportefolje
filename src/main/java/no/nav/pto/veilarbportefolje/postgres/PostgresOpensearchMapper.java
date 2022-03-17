@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntityDto;
+import no.nav.pto.veilarbportefolje.aktiviteter.opensearch.AktivitetEntityDto;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.IkkeAvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktorIdEntity;
