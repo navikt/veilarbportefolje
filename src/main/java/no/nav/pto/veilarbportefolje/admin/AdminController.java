@@ -10,6 +10,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
+import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -47,13 +48,35 @@ public class AdminController {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
-    private final BrukerAktiviteterService brukerAktiviteterService;
     private final YtelsesService ytelsesService;
     private final OppfolgingRepository oppfolgingRepository;
     private final OpensearchAdminService opensearchAdminService;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final BrukerRepository brukerRepository;
+    private final CVService cvService;
+
+    @PutMapping("/cv/migrer")
+    public String migrerCv() {
+        authorizeAdmin();
+        cvService.migrerCVInfo();
+        return "Ferdig!";
+    }
+
+    @PutMapping("/cv/diff")
+    public String sjekkDCdiff() {
+        authorizeAdmin();
+        List<AktorId> antallCv= cvService.brukereSomMåFåNyCvEksistererVerdiIPostgres();
+        List<AktorId> antallhjemmel = cvService.brukereSomMåFåNyHarSettCVHjemmelVerdiIPostgres();
+        if(antallCv.size() < 10){
+            log.info("Brukere som må få ny CV eksisterer verdi: {}", antallCv);
+        }
+        if(antallhjemmel.size() < 10){
+            log.info("Brukere som må få ny CV hjemmel verdi: {}", antallhjemmel);
+        }
+
+        return "Antall som må oppdatere hjemmel: "+antallhjemmel.size()+", antall CV eksisterer: "+ antallCv.size();
+    }
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -107,23 +130,6 @@ public class AdminController {
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereUnderOppfolging);
         return "Indeksering fullfort";
-    }
-
-
-    @PutMapping("/brukerAktiviteter")
-    public String syncBrukerAktiviteter(@RequestBody String fnr) {
-        authorizeAdmin();
-        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
-        brukerAktiviteterService.syncAktivitetOgBrukerData(AktorId.of(aktorId));
-        opensearchIndexer.indekser(AktorId.of(aktorId));
-        return "Aktiviteter er naa i sync";
-    }
-
-    @PutMapping("/brukerAktiviteter/allUsers")
-    public String syncBrukerAktiviteterForAlle() {
-        authorizeAdmin();
-        brukerAktiviteterService.syncAktivitetOgBrukerData();
-        return "Aktiviteter er nå i sync";
     }
 
     @PutMapping("/ytelser/allUsers")

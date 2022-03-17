@@ -94,6 +94,6 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return tiltakService.hentEnhettiltakPostgres(EnhetId.of(enhet));
+        return tiltakService.hentEnhettiltak(EnhetId.of(enhet));
     }
 }

@@ -5,15 +5,12 @@ import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV1;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
@@ -24,9 +21,7 @@ import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerDataRepository;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
@@ -95,14 +90,12 @@ import static org.mockito.Mockito.when;
         BrukerService.class,
         RegistreringService.class,
         AktivitetService.class,
-        PersistentOppdatering.class,
         OppfolgingAvsluttetService.class,
         OpensearchService.class,
         OpensearchIndexer.class,
         OpensearchIndexerV2.class,
         OpensearchAdminService.class,
         HovedIndekserer.class,
-        AktivitetDAO.class,
         AktiviteterRepositoryV2.class,
         BrukerRepository.class,
         OppfolgingRepository.class,
@@ -129,11 +122,8 @@ import static org.mockito.Mockito.when;
         ArbeidslisteRepositoryV2.class,
         UtdanningsAktivitetService.class,
         ArenaHendelseRepository.class,
-        GruppeAktivitetRepository.class,
         GruppeAktivitetRepositoryV2.class,
-        TiltakRepositoryV1.class,
         TiltakRepositoryV2.class,
-        BrukerDataService.class,
         BrukerDataRepository.class,
         PostgresOpensearchMapper.class,
         AktoerDataOpensearchMapper.class,
@@ -145,7 +135,7 @@ import static org.mockito.Mockito.when;
 public class ApplicationConfigTest {
 
     private static final OpenSearchContainer OPENSEARCH_CONTAINER;
-    private static final String OPENSEARCH_VERSION = "1.2.3";
+    private static final String OPENSEARCH_VERSION = "1.2.4";
     private static final String OPENSEARCH_TEST_PASSWORD = "test";
     private static final String OPENSEARCH_TEST_USERNAME = "opensearch";
 
@@ -156,8 +146,8 @@ public class ApplicationConfigTest {
 
 
     @Bean
-    public TestDataClient dbTestClient(JdbcTemplate jdbcTemplateOracle, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, RegistreringRepositoryV2 registreringRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
-        return new TestDataClient(jdbcTemplateOracle, jdbcTemplatePostgres, registreringRepositoryV2, oppfolgingsbrukerRepositoryV2, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2);
+    public TestDataClient dbTestClient(JdbcTemplate jdbcTemplate, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, RegistreringRepositoryV2 registreringRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
+        return new TestDataClient(jdbcTemplate, jdbcTemplatePostgres, registreringRepositoryV2, oppfolgingsbrukerRepositoryV2, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2);
     }
 
     @Bean

@@ -8,9 +8,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.*;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.CV_EKSISTERE;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.SISTE_MELDING_MOTTATT;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
 
 @Repository
@@ -55,4 +60,17 @@ public class CvRepository {
                 .execute();
     }
 
+    public List<AktorId> hentAlleBrukereSomHarSettHjemmel() {
+        return  SqlUtils.select(jdbcTemplate, TABLE_NAME, rs -> AktorId.of(rs.getString(AKTOERID)))
+                .column(AKTOERID)
+                .where(WhereClause.equals(HAR_DELT_CV, "J"))
+                .executeToList();
+    }
+
+    public List<AktorId> hentAlleBrukereSomHarCV() {
+        return  SqlUtils.select(jdbcTemplate, TABLE_NAME, rs -> AktorId.of(rs.getString(AKTOERID)))
+                .column(AKTOERID)
+                .where(WhereClause.equals(CV_EKSISTERE, "J"))
+                .executeToList();
+    }
 }

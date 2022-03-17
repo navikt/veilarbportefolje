@@ -148,37 +148,6 @@ function handleOppdaterBrukere(e) {
 }
 
 
-const oppdaterbrukerAktiviteterForm = document.getElementById('oppdaterbrukerAktiviteter');
-oppdaterbrukerAktiviteterForm.addEventListener('submit', handleOppdaterBrukerAktiviteter)
-const fnrInputOppdaterAktiviteter = document.getElementById('fnroppdaterbrukerAktiviteter');
-
-function handleOppdaterBrukerAktiviteter(e) {
-    e.preventDefault();
-
-    const fnr = fnrInputOppdaterAktiviteter.value;
-    if (fnr && fnr.length > 0) {
-        fetchData(
-            `/veilarbportefolje/api/admin/brukerAktiviteter`,
-            {method: 'PUT', credentials: 'same-origin', body: fnr},
-            'oppdaterbrukerAktiviteterResponse'
-        );
-    }
-}
-
-const oppdaterbrukerAktiviteterForAlleForm = document.getElementById('oppdaterallebrukerAktiviteter');
-oppdaterbrukerAktiviteterForAlleForm.addEventListener('submit', handleOppdaterBrukerAktiviteterForAlle)
-
-function handleOppdaterBrukerAktiviteterForAlle(e) {
-    e.preventDefault();
-    if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
-        fetchData(
-            `/veilarbportefolje/api/admin/brukerAktiviteter/allUsers`,
-            {method: 'PUT', credentials: 'same-origin'},
-            'oppdaterallebrukerAktiviteterResponse'
-        );
-    }
-}
-
 const oppdaterYtelserForAlleForm = document.getElementById('oppdateralleYtelser');
 oppdaterYtelserForAlleForm.addEventListener('submit', handleOppdaterYtelserForAlle)
 
@@ -304,6 +273,32 @@ function handleforceShardAssignmentForm(e) {
     }
 }
 
+const migrerCvForm = document.getElementById('migrerCv');
+migrerCvForm.addEventListener('submit', handleMigrerCv)
+
+function handleMigrerCv(e) {
+    e.preventDefault();
+    if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/cv/migrer`,
+            {method: 'PUT', credentials: 'same-origin'},
+            'migrerCvResponse'
+        );
+    }
+}
+
+const cvDiffForm = document.getElementById('cvDiff');
+cvDiffForm.addEventListener('submit', handleCvDiff)
+
+function handleCvDiff(e) {
+    e.preventDefault();
+    fetchData(
+        `/veilarbportefolje/api/admin/cv/diff`,
+        {method: 'PUT', credentials: 'same-origin'},
+        'migrerCvResponse'
+    );
+}
+
 const testForm = document.getElementById('testPostgresForm')
 testForm.addEventListener('submit', handleTest);
 
@@ -316,7 +311,6 @@ function handleTest(e) {
         )
     }
 }
-
 
 const testHentPostgresOracleForm = document.getElementById('testHentPostgresOracleForm')
 const testInputHentAktoerId = document.getElementById('testInputHentAktoerId');

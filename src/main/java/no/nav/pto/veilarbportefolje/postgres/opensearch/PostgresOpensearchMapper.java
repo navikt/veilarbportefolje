@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvCvdataPaPostgres;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvOppfolgingsdataPaPostgres;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -72,6 +75,18 @@ public class PostgresOpensearchMapper {
         if (medDiffLogging) {
             loggDiff(dataPaAktorId, bruker);
         }
+        if (brukAvOppfolgingsdataPaPostgres(unleashService)) {
+            bruker.setOppfolging(dataPaAktorId.getOppfolging());
+            bruker.setNy_for_veileder(dataPaAktorId.getNyForVeileder());
+            bruker.setManuell_bruker(dataPaAktorId.getManuellBruker() ? "MANUELL" : null);
+            bruker.setVeileder_id(dataPaAktorId.getVeileder());
+            bruker.setOppfolging_startdato(dataPaAktorId.getOppfolgingStartdato());
+        }
+        if(brukAvCvdataPaPostgres(unleashService)){
+            bruker.setCv_eksistere(dataPaAktorId.getCvEksistere());
+            bruker.setHar_delt_cv(dataPaAktorId.getHarDeltCv());
+        }
+
         bruker.setBrukers_situasjon(dataPaAktorId.getBrukersSituasjon());
         bruker.setProfilering_resultat(dataPaAktorId.getProfileringResultat());
         bruker.setUtdanning(dataPaAktorId.getUtdanning());

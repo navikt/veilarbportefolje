@@ -43,7 +43,7 @@ public class ManuellStatusService extends KafkaCommonConsumerService<ManuellStat
     }
 
     private boolean hentManuellStatus(AktorId aktoerId) {
-        return oppfolgingRepository.hentOppfolgingData(aktoerId)
+        return oppfolgingRepositoryV2.hentOppfolgingData(aktoerId)
                 .map(BrukerOppdatertInformasjon::getManuell)
                 .orElse(false);
     }
