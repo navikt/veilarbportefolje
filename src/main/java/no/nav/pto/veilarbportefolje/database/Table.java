@@ -91,19 +91,6 @@ public class Table {
         public static final String ER_SETT = "ER_SETT";
     }
 
-    public static final class AKTIVITETER {
-        public static final String TABLE_NAME = "AKTIVITETER";
-        public static final String AKTIVITETID = "AKTIVITETID";
-        public static final String AKTOERID = "AKTOERID";
-        public static final String AKTIVITETTYPE = "AKTIVITETTYPE";
-        public static final String AVTALT = "AVTALT";
-        public static final String FRADATO = "FRADATO";
-        public static final String TILDATO = "TILDATO";
-        public static final String OPPDATERTDATO = "OPPDATERTDATO";
-        public static final String STATUS = "STATUS";
-        public static final String VERSION = "VERSION";
-    }
-
     public static final class VEDTAK {
         public static final String TABLE_NAME = "VEDTAKSTATUS_DATA";
         public static final String VEDTAKID = "VEDTAKID";
@@ -144,18 +131,6 @@ public class Table {
         public static final String TILTAKSKODE = "TILTAKSKODE";
         public static final String TILDATO = "TILDATO";
         public static final String FRADATO = "FRADATO";
-    }
-
-    public static final class GRUPPE_AKTIVITER {
-        public static final String TABLE_NAME = "GRUPPE_AKTIVITER";
-        public static final String MOTEPLAN_ID = "MOTEPLAN_ID";
-        public static final String VEILEDNINGDELTAKER_ID = "VEILEDNINGDELTAKER_ID";
-
-        public static final String AKTOERID = "AKTOERID";
-        public static final String MOTEPLAN_STARTDATO = "MOTEPLAN_STARTDATO";
-        public static final String MOTEPLAN_SLUTTDATO = "MOTEPLAN_SLUTTDATO";
-        public static final String HENDELSE_ID = "HENDELSE_ID";
-        public static final String AKTIV = "AKTIV";
     }
 
     public static final class HOVEDINDEKSERING {

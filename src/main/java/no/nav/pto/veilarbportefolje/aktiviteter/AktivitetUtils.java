@@ -1,177 +1,42 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
-import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraKafka;
 
 @Slf4j
 public class AktivitetUtils {
-    public static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(AktoerAktiviteter aktoerAktiviteter,
-                                                                           BrukerService brukerService) {
-        AktorId aktoerId = AktorId.of(aktoerAktiviteter.getAktoerid());
-
-        Try<PersonId> personid = brukerService.hentPersonidFraAktoerid(aktoerId)
-                .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerId.toString(), e));
-
-        return personid
-                .map(personId -> konverterTilBrukerOppdatering(aktoerAktiviteter.getAktiviteter(), aktoerId, personid.get()))
-                .getOrNull();
-    }
-
-
-    private static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(List<AktivitetDTO> aktiviteter,
-                                                                            AktorId aktoerId,
-                                                                            PersonId personId) {
-
-        Set<AktivitetStatus> aktiveAktiviteter = lagAktivitetSet(aktiviteter, LocalDate.now(), aktoerId, personId);
-        Optional<AktivitetDTO> nyesteUtlopteAktivitet = Optional.ofNullable(finnNyesteUtlopteAktivAktivitet(aktiviteter, LocalDate.now()));
-
-        List<AktivitetDTO> aktiveAktivitetDTOList = aktiviteter
-                .stream()
-                .filter(AktivitetUtils::harIkkeStatusFullfort)
-                .filter(aktivitet -> Objects.nonNull(aktivitet.getFraDato()))
-                .collect(toList());
-
-        Set<LocalDate> startDatoAktiviteter = finnStartDatoerEtterDagensDato(aktiveAktivitetDTOList);
-
-        Iterator<LocalDate> iterator = startDatoAktiviteter.iterator();
-        Optional<LocalDate> aktivitetStart = Try.of(() -> Optional.of(iterator.next())).getOrElse(Optional::empty);
-        Optional<LocalDate> nesteAktivitetStart = Try.of(() -> Optional.of(iterator.next())).getOrElse(Optional::empty);
-
-        Optional<LocalDate> forrigeAktivtetStart = finnForrigeAktivitetStartDatoer(aktiveAktivitetDTOList);
-
-
-        return new AktivitetBrukerOppdatering(personId.toString(), aktoerId.toString())
-                .setAktiviteter(aktiveAktiviteter)
-                .setNyesteUtlopteAktivitet(nyesteUtlopteAktivitet.map(AktivitetDTO::getTilDato).orElse(null))
-                .setAktivitetStart(aktivitetStart.map(date -> Timestamp.valueOf(date.atStartOfDay())).orElse(null))
-                .setNesteAktivitetStart(nesteAktivitetStart.map(date -> Timestamp.valueOf(date.atStartOfDay())).orElse(null))
-                .setForrigeAktivitetStart(forrigeAktivtetStart.map(date -> Timestamp.valueOf(date.atStartOfDay())).orElse(null));
-    }
-
-
-    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktorId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO) {
-        AktoerAktiviteter aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktoerId);
-
-        return konverterTilBrukerOppdatering(aktiviteter, brukerService);
-    }
-
-    public static boolean erAktivitetIPeriode(AktivitetDTO aktivitet, LocalDate today) {
-        if (aktivitet.getTilDato() == null) {
-            return true; // Aktivitet er aktiv dersom tildato ikke er satt
-        }
-        LocalDate tilDato = aktivitet.getTilDato().toLocalDateTime().toLocalDate();
-
-        return today.isBefore(tilDato.plusDays(1));
-    }
-
-    public static AktivitetDTO finnNyesteUtlopteAktivAktivitet(List<AktivitetDTO> aktiviteter, LocalDate today) {
+    public static Timestamp finnNyesteUtlopteAktivAktivitet(List<Timestamp> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()
-                .filter(AktivitetUtils::harIkkeStatusFullfort)
-                .filter(aktivitet -> Objects.nonNull(aktivitet.getTilDato()))
-                .filter(aktivitet -> aktivitet.getTilDato().toLocalDateTime().toLocalDate().isBefore(today))
-                .sorted(Comparator.comparing(AktivitetDTO::getTilDato).reversed())
-                .findFirst()
+                .filter(aktivitet -> aktivitet.toLocalDateTime().toLocalDate().isBefore(today))
+                .max(Comparator.naturalOrder())
                 .orElse(null);
     }
 
-    private static Set<LocalDate> finnStartDatoerEtterDagensDato(List<AktivitetDTO> aktiviteter) {
+    public static Timestamp finnForrigeAktivitetStartDatoer(List<Timestamp> startDatoer, LocalDate today) {
+        return startDatoer
+                .stream()
+                .filter(aktivitet -> aktivitet.toLocalDateTime().toLocalDate().isBefore(today))
+                .max(Comparator.naturalOrder())
+                .orElse(null);
+    }
+
+    public static List<Timestamp> finnDatoerEtterDagensDato(List<Timestamp> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()
-                .map(aktivitet -> aktivitet.getFraDato().toLocalDateTime().toLocalDate())
-                .filter(data -> !data.isBefore(LocalDate.now()))
+                .filter(aktivitet -> !aktivitet.toLocalDateTime().toLocalDate().isBefore(today))
                 .sorted()
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+                .collect(Collectors.toList());
     }
 
-    private static Optional<LocalDate> finnForrigeAktivitetStartDatoer(List<AktivitetDTO> aktiveAktivitetDTOList) {
-        return aktiveAktivitetDTOList
-                .stream()
-                .map(aktivitet -> aktivitet.getFraDato().toLocalDateTime().toLocalDate())
-                .filter(data -> data.isBefore(LocalDate.now()))
-                .sorted(Comparator.reverseOrder())
-                .findFirst();
-    }
-
-    public static Set<AktivitetStatus> lagAktivitetSet(List<AktivitetDTO> aktiviteter, LocalDate today, AktorId aktoerId, PersonId personId) {
-        Set<AktivitetStatus> aktiveAktiviteter = new HashSet<>();
-
-        aktivitetTyperFraKafka.stream().map(Objects::toString)
-                .forEach(aktivitetstype -> {
-
-                    List<AktivitetDTO> aktiviteterMedAktivtStatus = aktiviteter
-                            .stream()
-                            .filter(aktivitet -> aktivitetstype.equals(aktivitet.getAktivitetType()))
-                            .filter(AktivitetUtils::harIkkeStatusFullfort)
-                            .collect(toList());
-
-                    Timestamp datoForNesteUtlop = aktiviteterMedAktivtStatus
-                            .stream()
-                            .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
-                            .map(AktivitetDTO::getTilDato)
-                            .filter(Objects::nonNull)
-                            .sorted()
-                            .findFirst()
-                            .orElse(null);
-
-                    Timestamp datoForNesteStart = aktiviteterMedAktivtStatus
-                            .stream()
-                            .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
-                            .map(AktivitetDTO::getFraDato)
-                            .filter(Objects::nonNull)
-                            .sorted()
-                            .findFirst()
-                            .orElse(null);
-
-
-                    boolean aktivitetErIkkeFullfort = !aktiviteterMedAktivtStatus.isEmpty();
-
-                    aktiveAktiviteter.add(
-                            new AktivitetStatus()
-                                    .setPersonid(personId)
-                                    .setAktoerid(aktoerId)
-                                    .setAktivitetType(aktivitetstype)
-                                    .setAktiv(aktivitetErIkkeFullfort)
-                                    .setNesteStart(datoForNesteStart)
-                                    .setNesteUtlop(datoForNesteUtlop));
-
-                });
-
-        return aktiveAktiviteter;
-    }
-
-    public static String statusToIsoUtcString(AktivitetStatus status) {
-        return Optional.ofNullable(status).map(AktivitetStatus::getNesteUtlop).map(DateUtils::toIsoUTC).orElse(DateUtils.getFarInTheFutureDate());
-    }
-
-    public static String startDatoToIsoUtcString(AktivitetStatus status) {
-        return Optional.ofNullable(status).map(AktivitetStatus::getNesteStart).map(DateUtils::toIsoUTC).orElse(null);
-    }
-
-    public static boolean harIkkeStatusFullfort(AktivitetDTO aktivitetDTO) {
-        return harIkkeStatusFullfort(aktivitetDTO.getStatus());
-    }
-
-    public static boolean harIkkeStatusFullfort(String status) {
-        return !AktivitetIkkeAktivStatuser.contains(status);
+    public static String statusToIsoUtcString(Timestamp utlopsdato) {
+        return Optional.ofNullable(utlopsdato).map(DateUtils::toIsoUTC).orElse(DateUtils.getFarInTheFutureDate());
     }
 }
