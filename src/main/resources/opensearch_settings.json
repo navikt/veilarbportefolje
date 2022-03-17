@@ -155,15 +155,15 @@
       },
       "aktivitet_tiltak_utlopsdato": {
         "type": "date",
-        "copy_to": "aktivitet_utlopsdatoer"
+        "copy_to": ["aktivitet_utlopsdatoer", "alle_aktiviteter_utlopsdatoer"]
       },
       "aktivitet_utdanningaktivitet_utlopsdato": {
         "type": "date",
-        "copy_to": "aktivitet_utlopsdatoer"
+        "copy_to": ["aktivitet_utlopsdatoer", "alle_aktiviteter_utlopsdatoer"]
       },
       "aktivitet_gruppeaktivitet_utlopsdato": {
         "type": "date",
-        "copy_to": "aktivitet_utlopsdatoer"
+        "copy_to": ["aktivitet_utlopsdatoer", "alle_aktiviteter_utlopsdatoer"]
       }
     }
   }

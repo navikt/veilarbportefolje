@@ -70,6 +70,8 @@ public class PostgresOpensearchMapper {
         bruker.setAlle_aktiviteter_ijobb_utlopsdato(aktivitetData.getAktivitetIjobbUtlopsdato());
         bruker.setAlle_aktiviteter_sokeavtale_utlopsdato(aktivitetData.getAktivitetSokeavtaleUtlopsdato());
         bruker.setAlleAktiviteter(aktivitetData.getAlleAktiviteter());
+        // NOTE: tiltak, gruppeaktiviteter, og utdanningsaktiviteter blir håndtert av copy_to feltet i opensearch
+        // Dette gjøres da disse aktivitetene ikke kan være satt til "ikke avtalt"
     }
 
     private void flettInnAvtaltAktivitetData(AvtaltAktivitetEntity aktivitetData, OppfolgingsBruker bruker) {
