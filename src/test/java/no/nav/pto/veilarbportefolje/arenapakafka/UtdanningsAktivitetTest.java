@@ -9,10 +9,10 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AvtaltAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntityDto;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetMapper;
+import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
+import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
+import no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

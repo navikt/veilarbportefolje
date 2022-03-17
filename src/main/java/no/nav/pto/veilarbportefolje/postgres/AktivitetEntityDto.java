@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.aktiviteter.opensearch;
+package no.nav.pto.veilarbportefolje.postgres;
 
 import lombok.Data;
 import lombok.SneakyThrows;

@@ -1,13 +1,12 @@
-package no.nav.pto.veilarbportefolje.postgres.opensearch;
+package no.nav.pto.veilarbportefolje.postgres;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.aktiviteter.opensearch.AktivitetEntityDto;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AvtaltAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.IkkeAvtaltAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktorIdEntity;
+import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.utils.IkkeAvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +19,8 @@ import java.util.stream.Stream;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvCvdataPaPostgres;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvOppfolgingsdataPaPostgres;
-import static no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
-import static no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
 
 @Slf4j
 @Service

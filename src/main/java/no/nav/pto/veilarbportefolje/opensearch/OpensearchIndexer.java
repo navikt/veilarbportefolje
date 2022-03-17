@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import org.opensearch.action.ActionListener;
 import org.opensearch.action.bulk.BulkRequest;

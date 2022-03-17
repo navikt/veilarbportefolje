@@ -1,10 +1,9 @@
-package no.nav.pto.veilarbportefolje.postgres.opensearch;
+package no.nav.pto.veilarbportefolje.postgres;
 
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
-import no.nav.pto.veilarbportefolje.aktiviteter.opensearch.AktivitetEntityDto;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetStatusData;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AvtaltAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.IkkeAvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetStatusData;
+import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.utils.IkkeAvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.sql.Timestamp;
