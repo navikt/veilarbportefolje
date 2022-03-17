@@ -14,12 +14,8 @@ import java.time.LocalTime;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.AKTIV;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.HENDELSE_ID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.MOTEPLAN_ID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.MOTEPLAN_SLUTTDATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.MOTEPLAN_STARTDATO;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.VEILEDNINGDELTAKER_ID;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -39,13 +35,15 @@ public class GruppeAktivitetRepositoryV2 {
         LocalDateTime fraDato = Optional.ofNullable(getLocalDateTimeOrNull(aktivitet.getAktivitetperiodeFra(), false))
                 .orElse(LocalDateTime.of(tilDato.toLocalDate(), LocalTime.MIDNIGHT));
 
-        db.update("INSERT INTO " + TABLE_NAME +
-                        " (" + MOTEPLAN_ID + ", " + VEILEDNINGDELTAKER_ID + ", " + AKTOERID + ", " + MOTEPLAN_STARTDATO + ", " + MOTEPLAN_SLUTTDATO + ", " + HENDELSE_ID + ", " + AKTIV + ") " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?) " +
-                        "ON CONFLICT (" + MOTEPLAN_ID + ", " + VEILEDNINGDELTAKER_ID + ") " +
-                        "DO UPDATE SET (" + AKTOERID + ", " + MOTEPLAN_STARTDATO + ", " + MOTEPLAN_SLUTTDATO + ", " + HENDELSE_ID + ", " + AKTIV + ") = (?, ?, ?, ?, ?)",
+        db.update("""
+                        INSERT INTO gruppe_aktiviter
+                        (MOTEPLAN_ID, VEILEDNINGDELTAKER_ID, AKTOERID, MOTEPLAN_STARTDATO, MOTEPLAN_SLUTTDATO, HENDELSE_ID, AKTIV)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT (MOTEPLAN_ID, VEILEDNINGDELTAKER_ID)
+                        DO UPDATE SET (AKTOERID, MOTEPLAN_STARTDATO, MOTEPLAN_SLUTTDATO, HENDELSE_ID, AKTIV)
+                        = (excluded.aktoerid, excluded.moteplan_startdato, excluded.moteplan_sluttdato, excluded.hendelse_id, excluded.aktiv)
+                        """,
                 aktivitet.getMoteplanId(), aktivitet.getVeiledningdeltakerId(),
-                aktorId.get(), fraDato, tilDato, aktivitet.getHendelseId(), aktiv,
                 aktorId.get(), fraDato, tilDato, aktivitet.getHendelseId(), aktiv
         );
     }

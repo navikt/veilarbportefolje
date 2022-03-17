@@ -162,7 +162,6 @@ public class OpensearchIndexerV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("veileder_id", veilederId.toString())
-                .field("ny_for_enhet", false)
                 .field("ny_for_veileder", true)
                 .endObject();
 
