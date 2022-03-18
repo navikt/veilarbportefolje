@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -29,11 +30,14 @@ public class OppfolgingStartetService extends KafkaCommonConsumerService<Oppfolg
     @Override
     public void behandleKafkaMeldingLogikk(OppfolgingStartetDTO dto) {
         mapAktoerTilPersonId(dto.getAktorId());
+        startOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
+    }
 
-        oppfolgingRepository.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
-        oppfolgingRepositoryV2.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
-        opensearchIndexer.indekser(dto.getAktorId());
-        log.info("Bruker {} har startet oppfølging: {}", dto.getAktorId(), dto.getOppfolgingStartet());
+    public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate) {
+        oppfolgingRepository.settUnderOppfolging(aktorId, oppfolgingStartetDate);
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
+        opensearchIndexer.indekser(aktorId);
+        log.info("Bruker {} har startet oppfølging: {}", aktorId, oppfolgingStartetDate);
     }
 
     private void mapAktoerTilPersonId(AktorId aktorId) {
