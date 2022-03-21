@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvCvdataPaPostgres;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvOppfolgingsdataPaPostgres;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
@@ -104,10 +103,8 @@ public class PostgresOpensearchMapper {
             bruker.setVeileder_id(dataPaAktorId.getVeileder());
             bruker.setOppfolging_startdato(dataPaAktorId.getOppfolgingStartdato());
         }
-        if (brukAvCvdataPaPostgres(unleashService)) {
-            bruker.setCv_eksistere(dataPaAktorId.getCvEksistere());
-            bruker.setHar_delt_cv(dataPaAktorId.getHarDeltCv());
-        }
+        bruker.setCv_eksistere(dataPaAktorId.getCvEksistere());
+        bruker.setHar_delt_cv(dataPaAktorId.getHarDeltCv());
 
         bruker.setBrukers_situasjon(dataPaAktorId.getBrukersSituasjon());
         bruker.setProfilering_resultat(dataPaAktorId.getProfileringResultat());

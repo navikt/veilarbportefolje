@@ -21,7 +21,6 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepository
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
-import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerDataRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -108,7 +107,6 @@ import static org.mockito.Mockito.when;
         DialogService.class,
         DialogRepository.class,
         DialogRepositoryV2.class,
-        CvRepository.class,
         CVRepositoryV2.class,
         CVService.class,
         RegistreringRepositoryV2.class,
