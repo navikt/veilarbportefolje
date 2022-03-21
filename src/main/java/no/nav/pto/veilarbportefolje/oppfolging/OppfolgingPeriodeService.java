@@ -17,7 +17,12 @@ public class OppfolgingPeriodeService extends KafkaCommonConsumerService<SisteOp
     @Override
     protected void behandleKafkaMeldingLogikk(SisteOppfolgingsperiodeV1 sisteOppfolgingsperiod) {
         if (sisteOppfolgingsperiod == null || sisteOppfolgingsperiod.getAktorId().isEmpty() || sisteOppfolgingsperiod.getStartDato() == null) {
-            log.warn("Ugyldig data for siste oppfolging periode");
+            log.warn("Ugyldig data for siste oppfolging periode på bruker: " + sisteOppfolgingsperiod.getAktorId());
+            return;
+        }
+
+        if (sisteOppfolgingsperiod.getStartDato() != null && sisteOppfolgingsperiod.getSluttDato() != null && sisteOppfolgingsperiod.getStartDato().isAfter(sisteOppfolgingsperiod.getSluttDato())) {
+            log.warn("Ugyldig start/slutt dato for siste oppfolging periode på bruker: " + sisteOppfolgingsperiod.getAktorId());
             return;
         }
 
