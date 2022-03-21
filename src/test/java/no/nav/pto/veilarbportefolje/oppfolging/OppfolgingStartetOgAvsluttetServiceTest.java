@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
+import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.junit.jupiter.api.Test;
@@ -24,10 +25,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -37,27 +37,30 @@ import static org.mockito.Mockito.when;
 class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final OppfolgingStartetService oppfolgingStartetService;
+    private final OppfolgingPeriodeService oppfolgingPeriodeService;
     private final OppfolgingRepository oppfolgingRepository;
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepository oppfolgingRepository, OppfolgingRepositoryV2 oppfolgingRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, OpensearchIndexer opensearchIndexer) {
+    public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepository oppfolgingRepository, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.oppfolgingRepository = oppfolgingRepository;
         this.jdbcTemplate = jdbcTemplate;
         AktorClient aktorClient = mock(AktorClient.class);
         BrukerRepository brukerRepository = mock(BrukerRepository.class);
         Mockito.when(aktorClient.hentFnr(any())).thenReturn(Fnr.of("-1"));
+        when(brukerRepository.hentMappedePersonIder(any())).thenReturn(List.of(PersonId.of("0000")));
         when(brukerRepository.retrievePersonidFromFnr(Fnr.of("-1"))).thenReturn(Optional.of(PersonId.of("0000")));
-        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, oppfolgingRepositoryV2, opensearchIndexer, brukerRepository, aktorClient);
+        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, mock(OppfolgingRepositoryV2.class), mock(OpensearchIndexer.class), brukerRepository, aktorClient);
+        this.oppfolgingPeriodeService = new OppfolgingPeriodeService(this.oppfolgingStartetService, this.oppfolgingAvsluttetService);
     }
 
     @Test
     void skal_sette_bruker_under_oppfølging_i_databasen() {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
-        OppfolgingStartetDTO melding = new OppfolgingStartetDTO(aktoerId, ZonedDateTime.parse("2020-12-01T00:00:00+02:00"));
+        SisteOppfolgingsperiodeV1 melding = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktoerId.get(), ZonedDateTime.parse("2020-12-01T00:00:00+02:00"), null);
 
-        oppfolgingStartetService.behandleKafkaMeldingLogikk(melding);
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(melding);
 
         final BrukerOppdatertInformasjon info = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
         assertThat(info.getOppfolging()).isTrue();
@@ -75,9 +78,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
                 ZonedDateTime.parse("2020-12-01T00:00:00+02:00")
         );
 
-        OppfolgingAvsluttetDTO melding = new OppfolgingAvsluttetDTO(aktoerId, ZonedDateTime.parse("2020-12-01T00:00:01+02:00"));
+        SisteOppfolgingsperiodeV1 melding = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktoerId.get(), ZonedDateTime.parse("2020-11-01T00:00:01+02:00"), ZonedDateTime.parse("2020-12-01T00:00:01+02:00"));
 
-        oppfolgingAvsluttetService.behandleKafkaMeldingLogikk(melding);
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(melding);
         String arbeidsliste = SqlUtils
                 .select(jdbcTemplate, Table.ARBEIDSLISTE.TABLE_NAME, rs -> rs.getString(Table.ARBEIDSLISTE.AKTOERID))
                 .column(Table.ARBEIDSLISTE.AKTOERID)
@@ -106,25 +109,16 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         assertThat(bruker).isNotPresent();
     }
 
-    @Test
-    void skal_ikke_avslutte_bruker_som_ikke_finnes() {
-        final AktorId aktoerId = randomAktorId();
-
-        OppfolgingAvsluttetDTO oppfolgingAvsluttePayload = new OppfolgingAvsluttetDTO(aktoerId, ZonedDateTime.parse("2020-01-01T00:00:00+02:00"));
-
-        oppfolgingAvsluttetService.behandleKafkaMeldingLogikk(oppfolgingAvsluttePayload);
-    }
-
     private Optional<BrukerOppdatertInformasjon> startOgAvsluttBruker(String startDato, String sluttDato) {
         final AktorId aktoerId = randomAktorId();
 
-        final OppfolgingStartetDTO oppfolgingStartetPayload = new OppfolgingStartetDTO(aktoerId, ZonedDateTime.parse(startDato));
+        SisteOppfolgingsperiodeV1 oppfolgingStartetPayload = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktoerId.get(), ZonedDateTime.parse(startDato), null);
 
-        oppfolgingStartetService.behandleKafkaMeldingLogikk(oppfolgingStartetPayload);
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(oppfolgingStartetPayload);
 
-        OppfolgingAvsluttetDTO oppfolgingAvsluttePayload = new OppfolgingAvsluttetDTO(aktoerId, ZonedDateTime.parse(sluttDato));
+        SisteOppfolgingsperiodeV1 oppfolgingAvsluttePayload = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktoerId.get(), ZonedDateTime.parse(startDato), ZonedDateTime.parse(sluttDato));
 
-        oppfolgingAvsluttetService.behandleKafkaMeldingLogikk(oppfolgingAvsluttePayload);
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(oppfolgingAvsluttePayload);
 
         return oppfolgingRepository.hentOppfolgingData(aktoerId);
     }
