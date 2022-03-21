@@ -20,7 +20,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 class CvServiceTest extends EndToEndTest {
 
     @Autowired
-    private CvRepository cvRepository;
+    private CVRepositoryV2 cvRepository;
 
     @Autowired
     private CVService cvService;
