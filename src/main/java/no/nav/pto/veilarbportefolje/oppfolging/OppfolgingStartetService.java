@@ -6,11 +6,11 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -19,21 +19,19 @@ import java.util.NoSuchElementException;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class OppfolgingStartetService extends KafkaCommonConsumerService<OppfolgingStartetDTO> {
+public class OppfolgingStartetService {
     private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchIndexer opensearchIndexer;
     private final BrukerRepository brukerRepository;
     private final AktorClient aktorClient;
 
-    @Override
-    public void behandleKafkaMeldingLogikk(OppfolgingStartetDTO dto) {
-        mapAktoerTilPersonId(dto.getAktorId());
-
-        oppfolgingRepository.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
-        oppfolgingRepositoryV2.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
-        opensearchIndexer.indekser(dto.getAktorId());
-        log.info("Bruker {} har startet oppfølging: {}", dto.getAktorId(), dto.getOppfolgingStartet());
+    public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate) {
+        mapAktoerTilPersonId(aktorId);
+        oppfolgingRepository.settUnderOppfolging(aktorId, oppfolgingStartetDate);
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
+        opensearchIndexer.indekser(aktorId);
+        log.info("Bruker {} har startet oppfølging: {}", aktorId, oppfolgingStartetDate);
     }
 
     private void mapAktoerTilPersonId(AktorId aktorId) {
