@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
-import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.ALLE_MOTER_IDAG;
+import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -46,43 +46,13 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setVersion(1L)
                 .setAvtalt(false));
-        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
-                .setAktivitetId("1")
-                .setAktorId(aktoer.get())
-                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.IJOBB)
-                .setFraDato(ZonedDateTime.now())
-                .setTilDato(ZonedDateTime.now())
-                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
-                .setVersion(1L)
-                .setAvtalt(false));
-        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
-                .setAktivitetId("3")
-                .setAktorId(aktoer.get())
-                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.BEHANDLING)
-                .setFraDato(ZonedDateTime.now())
-                .setTilDato(ZonedDateTime.now())
-                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
-                .setVersion(1L)
-                .setAvtalt(false));
-        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
-                .setAktivitetId("4")
-                .setAktorId(aktoer.get())
-                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.SOKEAVTALE)
-                .setFraDato(ZonedDateTime.now())
-                .setTilDato(ZonedDateTime.now())
-                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
-                .setVersion(1L)
-                .setAvtalt(false));
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
                     BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
                             "asc",
                             "ikke_satt",
-                            new Filtervalg().setFerdigfilterListe(List.of(ALLE_MOTER_IDAG)),
+                            new Filtervalg().setFerdigfilterListe(List.of(I_AKTIVITET)),
                             null,
                             null);
 

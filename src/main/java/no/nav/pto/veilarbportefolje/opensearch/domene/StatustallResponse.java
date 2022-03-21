@@ -33,7 +33,6 @@ public class StatustallResponse {
                 Bucket minArbeidsliste;
                 Bucket erSykmeldtMedArbeidsgiver;
                 Bucket moterMedNAVIdag;
-                Bucket alleMoterMedNAVIdag;
                 Bucket underVurdering;
                 Bucket minArbeidslisteBla;
                 Bucket minArbeidslisteLilla;
