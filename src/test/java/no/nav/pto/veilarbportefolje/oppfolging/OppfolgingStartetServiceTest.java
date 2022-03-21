@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,8 +36,9 @@ class OppfolgingStartetServiceTest extends EndToEndTest {
         BrukerRepository brukerRepository = mock(BrukerRepository.class);
         AktorClient aktorClient = mock(AktorClient.class);
         when(aktorClient.hentFnr(any())).thenReturn(Fnr.of("-1"));
+        when(brukerRepository.hentMappedePersonIder(any())).thenReturn(List.of(PersonId.of("0000")));
         when(brukerRepository.retrievePersonidFromFnr(Fnr.of("-1"))).thenReturn(Optional.of(PersonId.of("0000")));
-        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, mock(OppfolgingRepositoryV2.class), mock(OpensearchIndexer.class));
+        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, mock(OppfolgingRepositoryV2.class), mock(OpensearchIndexer.class), brukerRepository, mock(AktorClient.class));
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.oppfolgingPeriodeService = new OppfolgingPeriodeService(this.oppfolgingStartetService, this.oppfolgingAvsluttetService);
     }

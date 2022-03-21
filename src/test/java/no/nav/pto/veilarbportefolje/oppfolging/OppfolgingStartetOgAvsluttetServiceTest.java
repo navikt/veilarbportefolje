@@ -42,15 +42,16 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepository oppfolgingRepository, OppfolgingRepositoryV2 oppfolgingRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, OpensearchIndexer opensearchIndexer, OppfolgingPeriodeService oppfolgingPeriodeService) {
+    public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepository oppfolgingRepository, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.oppfolgingRepository = oppfolgingRepository;
         this.jdbcTemplate = jdbcTemplate;
         AktorClient aktorClient = mock(AktorClient.class);
         BrukerRepository brukerRepository = mock(BrukerRepository.class);
         Mockito.when(aktorClient.hentFnr(any())).thenReturn(Fnr.of("-1"));
+        when(brukerRepository.hentMappedePersonIder(any())).thenReturn(List.of(PersonId.of("0000")));
         when(brukerRepository.retrievePersonidFromFnr(Fnr.of("-1"))).thenReturn(Optional.of(PersonId.of("0000")));
-        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, oppfolgingRepositoryV2, opensearchIndexer);
+        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, mock(OppfolgingRepositoryV2.class), mock(OpensearchIndexer.class), brukerRepository, aktorClient);
         this.oppfolgingPeriodeService = new OppfolgingPeriodeService(this.oppfolgingStartetService, this.oppfolgingAvsluttetService);
     }
 
