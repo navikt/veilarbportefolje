@@ -1,16 +1,13 @@
 package no.nav.pto.veilarbportefolje.arenapakafka;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
@@ -27,12 +24,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.LocalDate;
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaAktivitetIntegrasjonsTest.insertBruker;
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService.mapTilKafkaAktivitetMelding;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.FAR_IN_THE_FUTURE_DATE;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -40,18 +34,14 @@ import static org.mockito.Mockito.mock;
 public class UtdanningsAktivitetTest {
     private final UtdanningsAktivitetService utdanningsAktivitetService;
     private final AktivitetOpensearchService aktivitetOpensearchService;
-    private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktivitetService aktivitetService;
     private final JdbcTemplate jbPostgres;
-    private final JdbcTemplate jbOracle;
     private final AktorId aktorId = AktorId.of("1000123");
     private final Fnr fnr = Fnr.of("12345678912");
 
     @Autowired
-    public UtdanningsAktivitetTest(AktivitetService aktivitetService, AktivitetOpensearchService aktivitetOpensearchService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jbPostgres, JdbcTemplate jbOracle) {
+    public UtdanningsAktivitetTest(AktivitetService aktivitetService, AktivitetOpensearchService aktivitetOpensearchService, @Qualifier("PostgresJdbc") JdbcTemplate jbPostgres) {
         this.aktivitetOpensearchService = aktivitetOpensearchService;
-        this.aktiviteterRepositoryV2 = aktiviteterRepositoryV2;
-        this.jbOracle = jbOracle;
         this.jbPostgres = jbPostgres;
         this.aktivitetService = aktivitetService;
 
@@ -63,13 +53,6 @@ public class UtdanningsAktivitetTest {
 
     @BeforeEach
     public void reset() {
-        jbOracle.execute("truncate table " + Table.OPPFOLGINGSBRUKER.TABLE_NAME);
-        jbOracle.execute("truncate table " + Table.OPPFOLGING_DATA.TABLE_NAME);
-        jbOracle.execute("truncate table " + Table.AKTOERID_TO_PERSONID.TABLE_NAME);
-        jbOracle.execute("truncate table " + Table.AKTIVITETER.TABLE_NAME);
-        jbOracle.execute("truncate table BRUKERSTATUS_AKTIVITETER");
-        insertBruker(jbOracle, fnr, randomPersonId(), aktorId, randomVeilederId(), EnhetId.of("0000"));
-
         jbPostgres.execute("truncate table aktiviteter");
     }
 
@@ -163,7 +146,7 @@ public class UtdanningsAktivitetTest {
 
         List<AktivitetEntity> pre_aktiviteter = aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId)).get(aktorId);
-        aktivitetService.deaktiverUtgatteUtdanningsAktivteterPostgres();
+        aktivitetService.deaktiverUtgatteUtdanningsAktivteter();
         List<AktivitetEntity> post_aktiviteter = aktivitetOpensearchService
                 .hentAktivitetData(List.of(aktorId)).get(aktorId);
         assertThat(pre_aktiviteter.size()).isEqualTo(3);

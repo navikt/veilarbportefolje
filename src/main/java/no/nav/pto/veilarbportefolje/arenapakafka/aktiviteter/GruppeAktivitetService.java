@@ -5,15 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetInnhold;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHendelseBasertPaOperasjon;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erUtgatt;
@@ -26,11 +22,9 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGo
 @Transactional
 @RequiredArgsConstructor
 public class GruppeAktivitetService {
-    private final GruppeAktivitetRepository gruppeAktivitetRepository;
     private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
-    private final AktorClient aktorClient;
-    private final BrukerDataService brukerDataService;
     private final OpensearchIndexer opensearchIndexer;
+    private final AktorClient aktorClient;
 
     public void behandleKafkaRecord(ConsumerRecord<String, GruppeAktivitetDTO> kafkaMelding) {
         GruppeAktivitetDTO melding = kafkaMelding.value();
@@ -41,55 +35,27 @@ public class GruppeAktivitetService {
                 kafkaMelding.partition(),
                 kafkaMelding.topic()
         );
-        Optional<AktorId> aktorId = behandleKafkaMeldingOracle(melding);
-        behandleKafkaMeldingPostgres(melding);
-
-        aktorId.ifPresent(opensearchIndexer::indekser);
+        behandleKafkaMelding(melding);
     }
 
-    public Optional<AktorId> behandleKafkaMeldingOracle(GruppeAktivitetDTO kafkaMelding) {
-        GruppeAktivitetInnhold innhold = getInnhold(kafkaMelding);
-        if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
-            return Optional.empty();
-        }
-
-        AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
-        PersonId personId = PersonId.of(String.valueOf(innhold.getPersonId()));
-        boolean aktiv = !(skalSlettesGoldenGate(kafkaMelding) || skalSletteGruppeAktivitet(innhold));
-        gruppeAktivitetRepository.upsertGruppeAktivitet(innhold, aktorId, aktiv);
-        gruppeAktivitetRepository.utledOgLagreGruppeaktiviteter(aktorId, personId);
-        brukerDataService.oppdaterAktivitetBrukerData(aktorId, personId);
-
-        return Optional.of(aktorId);
-    }
-
-
-    public void behandleKafkaMeldingPostgres(GruppeAktivitetDTO kafkaMelding) {
-        GruppeAktivitetInnhold innhold = getInnhold(kafkaMelding);
-        if (innhold == null || erGammelMeldingV2(kafkaMelding, innhold)) {
+    public void behandleKafkaMelding(GruppeAktivitetDTO melding) {
+        GruppeAktivitetInnhold innhold = getInnhold(melding);
+        if (innhold == null || erGammelMelding(melding, innhold)) {
             return;
         }
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
-        boolean aktiv = !(skalSlettesGoldenGate(kafkaMelding) || skalSletteGruppeAktivitet(innhold));
+        boolean aktiv = !(skalSlettesGoldenGate(melding) || skalSletteGruppeAktivitet(innhold));
         gruppeAktivitetRepositoryV2.upsertGruppeAktivitet(innhold, aktorId, aktiv);
-    }
 
+        opensearchIndexer.indekser(aktorId);
+    }
 
     private boolean skalSletteGruppeAktivitet(GruppeAktivitetInnhold gruppeInnhold) {
         return gruppeInnhold.getAktivitetperiodeTil() == null || erUtgatt(gruppeInnhold.getAktivitetperiodeTil(), true);
     }
 
     private boolean erGammelMelding(GruppeAktivitetDTO kafkaMelding, GruppeAktivitetInnhold innhold){
-        Long hendelseIDB = gruppeAktivitetRepository.retrieveHendelse(innhold).orElse(-1L);
-        if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), skalSlettesGoldenGate(kafkaMelding))) {
-            log.info("Fikk tilsendt gammel gruppe-aktivtet-melding pa Oracle");
-            return true;
-        }
-        return false;
-    }
-
-    private boolean erGammelMeldingV2(GruppeAktivitetDTO kafkaMelding, GruppeAktivitetInnhold innhold){
         Long hendelseIDB = gruppeAktivitetRepositoryV2.retrieveHendelse(innhold).orElse(-1L);
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), skalSlettesGoldenGate(kafkaMelding))) {
             log.info("Fikk tilsendt gammel gruppe-aktivtet-melding pa Posrgres");

@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.pto.veilarbportefolje.util.TestUtil;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import org.springframework.context.annotation.Bean;
@@ -14,7 +13,6 @@ import javax.sql.DataSource;
 
 @Configuration
 @Import({
-        AktivitetDAO.class,
         BrukerRepository.class,
         OppfolgingRepository.class
 })
