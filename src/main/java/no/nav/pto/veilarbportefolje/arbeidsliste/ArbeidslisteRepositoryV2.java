@@ -33,7 +33,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
+public class ArbeidslisteRepositoryV2 {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
     @Qualifier("PostgresJdbcReadOnly")
