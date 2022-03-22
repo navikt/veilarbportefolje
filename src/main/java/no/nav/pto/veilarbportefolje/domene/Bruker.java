@@ -70,6 +70,8 @@ public class Bruker {
     Map<String, Timestamp> alleAktiviteter = new HashMap<>();
     LocalDateTime moteStartTid;
     LocalDateTime moteSluttTid;
+    LocalDateTime alleMoterStartTid;
+    LocalDateTime alleMoterSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
     String vedtakStatus;
     String ansvarligVeilederForVedtak;
@@ -129,6 +131,8 @@ public class Bruker {
                 .setManuellBrukerStatus(bruker.getManuell_bruker())
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
                 .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))
+                .setAlleMoterStartTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_startdato()))
+                .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
                 .setVedtakStatus(bruker.getVedtak_status())
                 .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
                 .setAnsvarligVeilederForVedtak(bruker.getAnsvarlig_veileder_for_vedtak())
