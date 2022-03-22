@@ -27,10 +27,10 @@ public class OppfolgingPeriodeService extends KafkaCommonConsumerService<SisteOp
         }
 
         if (sisteOppfolgingsperiod.getSluttDato() == null) {
-            log.info("Start oppfolging for: " + sisteOppfolgingsperiod.getAktorId());
+            log.info("Starting oppfolging for: " + sisteOppfolgingsperiod.getAktorId());
             oppfolgingStartetService.startOppfolging(AktorId.of(sisteOppfolgingsperiod.getAktorId()), sisteOppfolgingsperiod.getStartDato());
         } else {
-            log.info("Avslutt oppfolging for: " + sisteOppfolgingsperiod.getAktorId());
+            log.info("Avslutting oppfolging for: " + sisteOppfolgingsperiod.getAktorId());
             oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(sisteOppfolgingsperiod.getAktorId()));
         }
     }
