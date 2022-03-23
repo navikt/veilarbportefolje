@@ -297,16 +297,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(SisteOppfolgingsperiodeV1.class),
                                         oppfolgingPeriodeService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, String>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.NOM_SKJERMING.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.stringDeserializer(),
-                                        skjermingService::behandleKafkaRecord
                                 )
                 );
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
@@ -339,6 +329,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
                                         malService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, String>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.NOM_SKJERMING.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.stringDeserializer(),
+                                        skjermingService::behandleKafkaRecord
                                 )
                 );
 
