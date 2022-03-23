@@ -8,7 +8,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 @Data
 @Accessors(chain = true)
 public abstract class AktivitetStatusData {
-    private String aktivitetMoteStartdato = getFarInTheFutureDate();;
+    private String aktivitetMoteStartdato = getFarInTheFutureDate();
     private String aktivitetMoteUtlopsdato = getFarInTheFutureDate();
     private String aktivitetStillingUtlopsdato = getFarInTheFutureDate();
     private String aktivitetEgenUtlopsdato = getFarInTheFutureDate();

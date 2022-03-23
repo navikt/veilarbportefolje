@@ -56,7 +56,7 @@ public class OppfolgingsBruker {
     String neste_aktivitet_start;
     String forrige_aktivitet_start;
     String manuell_bruker;
-    String aktivitet_mote_startdato;
+    String aktivitet_mote_startdato = getFarInTheFutureDate();
     String aktivitet_mote_utlopsdato = getFarInTheFutureDate();
     String aktivitet_stilling_utlopsdato = getFarInTheFutureDate();
     String aktivitet_egen_utlopsdato = getFarInTheFutureDate();
@@ -67,7 +67,7 @@ public class OppfolgingsBruker {
     String aktivitet_utdanningaktivitet_utlopsdato = getFarInTheFutureDate();
     String aktivitet_gruppeaktivitet_utlopsdato = getFarInTheFutureDate();
 
-    String alle_aktiviteter_mote_startdato = getFarInTheFutureDate();;
+    String alle_aktiviteter_mote_startdato = getFarInTheFutureDate();
     String alle_aktiviteter_mote_utlopsdato = getFarInTheFutureDate();
     String alle_aktiviteter_stilling_utlopsdato = getFarInTheFutureDate();
     String alle_aktiviteter_egen_utlopsdato = getFarInTheFutureDate();
