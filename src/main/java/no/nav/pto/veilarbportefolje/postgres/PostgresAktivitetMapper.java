@@ -20,7 +20,6 @@ import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnForrig
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnNyesteUtlopteAktivAktivitet;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.statusToIsoUtcString;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType.mote;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 public class PostgresAktivitetMapper {
     public static IkkeAvtaltAktivitetEntity kalkulerGenerellAktivitetInformasjon(List<AktivitetEntityDto> aktiviteter){
@@ -94,7 +93,7 @@ public class PostgresAktivitetMapper {
             }
         }
         aktivitetStatusData
-                .setAktivitetMoteStartdato(toIsoUTC(moteFremtidigStartdato))
+                .setAktivitetMoteStartdato(statusToIsoUtcString(moteFremtidigStartdato))
                 .setAktivitetEgenUtlopsdato(statusToIsoUtcString(egenFremtidigUtlopsdato))
                 .setAktivitetStillingUtlopsdato(statusToIsoUtcString(stillingFremtidigUtlopsdato))
                 .setAktivitetMoteUtlopsdato(statusToIsoUtcString(moteFremtidigUtlopsdato))
