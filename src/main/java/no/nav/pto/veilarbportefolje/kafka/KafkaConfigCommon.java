@@ -95,7 +95,8 @@ public class KafkaConfigCommon {
         AAP_TOPIC("teamarenanais.aapen-arena-aapvedtakendret-v1-" + requireKafkaTopicPostfix()),
         DAGPENGE_TOPIC("teamarenanais.aapen-arena-dagpengevedtakendret-v1-" + requireKafkaTopicPostfix()),
         TILTAKSPENGER_TOPIC("teamarenanais.aapen-arena-tiltakspengevedtakendret-v1-" + requireKafkaTopicPostfix()),
-        NOM_SKJERMING("nom.skjermede-personer-status-v1");
+        NOM_SKJERMING_STATUS("nom.skjermede-personer-status-v1"),
+        NOM_SKJERMEDE_PERSONER("nom.skjermede-personer-v1");
 
         @Getter
         final String topicName;
@@ -297,6 +298,26 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(SisteOppfolgingsperiodeV1.class),
                                         oppfolgingPeriodeService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, String>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.NOM_SKJERMING_STATUS.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.stringDeserializer(),
+                                        skjermingService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, String>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.NOM_SKJERMEDE_PERSONER.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.stringDeserializer(),
+                                        skjermingService::behandleKafkaRecord
                                 )
                 );
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
@@ -329,16 +350,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
                                         malService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, String>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.NOM_SKJERMING.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.stringDeserializer(),
-                                        skjermingService::behandleKafkaRecord
                                 )
                 );
 
