@@ -33,7 +33,7 @@ public class OpensearchQueryBuilderTest {
 
     @Test
     public void skal_sortere_etternavn_paa_etternavn_feltet() {
-        var searchSourceBuilder = sorterQueryParametere("asc", "etternavn", new SearchSourceBuilder(), new Filtervalg());
+        var searchSourceBuilder = sorterQueryParametere("asc", "etternavn", new SearchSourceBuilder(), new Filtervalg(), false);
         var fieldName = searchSourceBuilder.sorts().get(0).toString();
         assertThat(fieldName).contains("etternavn");
     }

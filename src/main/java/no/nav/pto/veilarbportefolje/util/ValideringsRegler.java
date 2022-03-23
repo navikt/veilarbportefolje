@@ -46,6 +46,7 @@ public class ValideringsRegler {
             "iavtaltaktivitet",
             "aaprettighetsperiode",
             "moterMedNAVIdag",
+            "motestatus",
             "oppfolging_startdato",
             "veileder_id",
             "vedtakstatus",

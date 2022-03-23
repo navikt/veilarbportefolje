@@ -76,10 +76,10 @@ public class OpensearchService {
         }
 
         List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
+        boolean inkluderIkkeAvtalteAktiviteter = brukIkkeAvtalteMoter(unleashService);
 
         if (filtervalg.harAktiveFilter()) {
             boolean erVedtakstottePilotPa = erVedtakstottePilotPa(EnhetId.of(enhetId));
-            boolean inkluderIkkeAvtalteAktiviteter = brukIkkeAvtalteMoter(unleashService);
             filtervalg.ferdigfilterListe.forEach(
                     filter -> boolQuery.filter(leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet, erVedtakstottePilotPa, inkluderIkkeAvtalteAktiviteter))
             );
@@ -95,7 +95,7 @@ public class OpensearchService {
             sorterPaaNyForEnhet(searchSourceBuilder, veiledereMedTilgangTilEnhet);
         }
 
-        sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
+        sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg, inkluderIkkeAvtalteAktiviteter);
 
         OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();

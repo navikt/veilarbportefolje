@@ -172,7 +172,7 @@ public class OpensearchQueryBuilder {
                 ).collect(toList());
     }
 
-    static SearchSourceBuilder sorterQueryParametere(String sortOrder, String sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg) {
+    static SearchSourceBuilder sorterQueryParametere(String sortOrder, String sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg, boolean brukAvIkkeAvtalteAktiviteter) {
         SortOrder order = "ascending".equals(sortOrder) ? SortOrder.ASC : SortOrder.DESC;
 
         if ("ikke_satt".equals(sortField)) {
@@ -182,7 +182,14 @@ public class OpensearchQueryBuilder {
 
         switch (sortField) {
             case "valgteaktiviteter" -> sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
-            case "moterMedNAVIdag" -> searchSourceBuilder.sort("aktivitet_mote_startdato", order);
+            case "moterMedNAVIdag" -> {
+                if (brukAvIkkeAvtalteAktiviteter) {
+                    searchSourceBuilder.sort("alle_aktiviteter_mote_startdato", order);
+                } else {
+                    searchSourceBuilder.sort("aktivitet_mote_startdato", order);
+                }
+            }
+            case "motestatus" -> searchSourceBuilder.sort("aktivitet_mote_startdato", order);
             case "iavtaltaktivitet" -> {
                 FieldSortBuilder builder = new FieldSortBuilder("aktivitet_utlopsdatoer")
                         .order(order)
