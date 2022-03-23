@@ -117,7 +117,7 @@ public class KafkaConfigCommon {
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
                              MalService malService, OppfolgingsbrukerService oppfolgingsbrukerService, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
-                             YtelsesService ytelsesService, OppfolgingPeriodeService oppfolgingPeriodeService, SkjermingService skjermingService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
+                             YtelsesService ytelsesService, OppfolgingPeriodeService oppfolgingPeriodeService, SkjermingStatusService skjermingStatusService, SkjermingPersonerService skjermingPersonerService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
                              UnleashService unleashService) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
@@ -307,17 +307,17 @@ public class KafkaConfigCommon {
                                         Topic.NOM_SKJERMING_STATUS.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.stringDeserializer(),
-                                        skjermingService::behandleKafkaRecord
+                                        skjermingStatusService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, String>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, SkjermingDTO>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.NOM_SKJERMEDE_PERSONER.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.stringDeserializer(),
-                                        skjermingService::behandleKafkaRecord
+                                        Deserializers.jsonDeserializer(SkjermingDTO.class),
+                                        skjermingPersonerService::behandleKafkaRecord
                                 )
                 );
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =

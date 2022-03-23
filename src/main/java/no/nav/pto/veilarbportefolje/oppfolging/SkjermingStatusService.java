@@ -10,14 +10,12 @@ import java.util.Base64;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SkjermingService extends KafkaCommonConsumerService<String> {
+public class SkjermingStatusService extends KafkaCommonConsumerService<String> {
 
     private static final Base64.Decoder decoder = Base64.getDecoder();
 
     @Override
-    protected void behandleKafkaMeldingLogikk(String payload) {
-        log.info("Skjerming kafka message: " + payload);
-        String ident = new String(decoder.decode(payload));
-        log.info("Skjerming for: " + ident);
+    protected void behandleKafkaMeldingLogikk(String erSkjermed) {
+        log.info("Skjerming status message: " + erSkjermed);
     }
 }
