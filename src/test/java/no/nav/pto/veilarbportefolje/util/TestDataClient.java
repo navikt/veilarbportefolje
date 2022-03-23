@@ -27,7 +27,6 @@ import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.NAV_KONTO
 import static no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER.FODSELSNR;
 
 public class TestDataClient {
-
     private final JdbcTemplate jdbcTemplateOracle;
     private final JdbcTemplate jdbcTemplatePostgres;
     private final RegistreringRepositoryV2 registreringRepositoryV2;
@@ -104,7 +103,7 @@ public class TestDataClient {
                 new OppfolgingsbrukerEntity(aktoerId.get(), fnr.get(), null, null,
                         null, null, navKontor.getValue(), null, null,
                         null, null, null, true, false,
-                        false, null, null));
+                        false, null, ZonedDateTime.now()));
 
         opensearchTestClient.createUserInOpensearch(aktoerId);
     }

@@ -4,6 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
+import no.nav.pto.veilarbportefolje.domene.Moteplan;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,8 +24,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
-import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapAktivitetTilEntity;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETTYPE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.FRADATO;
@@ -29,7 +31,10 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.ST
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TILDATO;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.VERSION;
+import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
+import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapAktivitetTilEntity;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @Slf4j
@@ -107,6 +112,39 @@ public class AktiviteterRepositoryV2 {
     public void setTilFullfort(String aktivitetid) {
         log.info("Setter status flagget til aktivitet: {}, til verdien fullfort", aktivitetid);
         db.update("UPDATE aktiviteter SET status = 'fullfort' WHERE aktivitetid = ?", aktivitetid);
+    }
+
+    public List<Moteplan> hentFremtidigeMoter(VeilederId veilederIdent, EnhetId enhet) {
+        List<Moteplan> result = new ArrayList<>();
+        var params = new MapSqlParameterSource();
+        params.addValue("veilederIdent", veilederIdent.getValue());
+        params.addValue("enhet", enhet.get());
+        return namedDb.query("""
+                        SELECT op.fodsels_dato, op.fornavn, op.etternavn, a.fradato, a.avtalt
+                         from oppfolgingsbruker_arena op
+                        left join oppfolging_data od on od.aktoerid = op.aktoerid
+                        right join aktiviteter a on a.aktoerid = op.aktoerid
+
+                        where op.nav_kontor = :enhet::varchar
+                        AND od.veilederid = :veilederIdent::varchar
+                        AND a.aktivitettype = 'mote'
+                        AND date_trunc('day', tildato) >= date_trunc('day', current_timestamp)
+                        """,
+                params, (ResultSet rs) -> {
+                    while (rs.next()) {
+                        result.add(mapTilMoteplan(rs));
+                    }
+                    return result;
+                });
+    }
+
+    @SneakyThrows
+    private Moteplan mapTilMoteplan(ResultSet rs) {
+        return new Moteplan(
+                new Motedeltaker(rs.getString("fornavn"), rs.getString("etternavn"),
+                        rs.getString("fodsels_dato")),
+                toIsoUTC(rs.getTimestamp("fradato")), rs.getBoolean("avtalt")
+        );
     }
 
     private boolean erNyVersjonAvAktivitet(KafkaAktivitetMelding aktivitet) {

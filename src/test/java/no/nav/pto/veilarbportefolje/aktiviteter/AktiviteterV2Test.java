@@ -131,9 +131,8 @@ public class AktiviteterV2Test {
         Assertions.assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo(toIsoUTC(tilDato));
 
         Assertions.assertThat(postgresAktivitet.getAktivitetMoteUtlopsdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
-        Assertions.assertThat(postgresAktivitet.getAktivitetMoteStartdato()).isNull();
+        Assertions.assertThat(postgresAktivitet.getAktivitetMoteStartdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
     }
-
 
     @Test
     public void skal_kunne_ha_flere_typer_aktiviteter_V2() {

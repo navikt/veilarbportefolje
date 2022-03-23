@@ -1,10 +1,13 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.Test;
@@ -18,6 +21,7 @@ import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
@@ -59,6 +63,49 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                     assertThat(responseBrukere.getAntall()).isEqualTo(1);
                 }
         );
+    }
 
+    @Test
+    public void hentMoteplan() {
+        NavKontor navKontor = randomNavKontor();
+        VeilederId veileder = randomVeilederId();
+        VeilederId annenVeileder = randomVeilederId();
+        testDataClient.setupBruker(aktoer, navKontor, veileder, ZonedDateTime.now());
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("1")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.now())
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setVersion(1L)
+                .setAvtalt(false));
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
+                .setFraDato(ZonedDateTime.now().plusDays(2))
+                .setTilDato(ZonedDateTime.now().plusDays(2))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setVersion(1L)
+                .setAvtalt(true));
+        // Møte satt tilbake i tid
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("3")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
+                .setFraDato(ZonedDateTime.now().minusDays(2))
+                .setTilDato(ZonedDateTime.now().minusDays(2))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setVersion(1L)
+                .setAvtalt(true));
+        List<Moteplan> moteplaner = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()));
+        List<Moteplan> ingenMotePlaner = aktivitetService.hentMoteplan(annenVeileder, EnhetId.of(navKontor.getValue()));
+
+        assertThat(moteplaner.size()).isEqualTo(2);
+        assertThat(ingenMotePlaner.size()).isEqualTo(0);
     }
 }

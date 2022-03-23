@@ -3,6 +3,9 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.domene.Moteplan;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -58,5 +61,9 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
                     aktiviteterRepositoryV2.setTilFullfort(aktivitetDTO.getAktivitetID());
                 }
         );
+    }
+
+    public List<Moteplan> hentMoteplan(VeilederId veilederIdent, EnhetId enhet) {
+        return aktiviteterRepositoryV2.hentFremtidigeMoter(veilederIdent, enhet);
     }
 }
