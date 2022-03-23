@@ -6,7 +6,6 @@ import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.opensearch.index.query.BoolQueryBuilder;
@@ -49,8 +48,7 @@ import static org.opensearch.search.sort.SortMode.MIN;
 @Slf4j
 public class OpensearchQueryBuilder {
 
-    static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg, UnleashService unleashService) {
-
+    static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg) {
         if (!filtervalg.alder.isEmpty()) {
             BoolQueryBuilder subQuery = boolQuery();
             filtervalg.alder.forEach(alder -> byggAlderQuery(alder, subQuery));

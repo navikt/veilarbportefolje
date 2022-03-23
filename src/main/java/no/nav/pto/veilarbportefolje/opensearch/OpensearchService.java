@@ -84,7 +84,7 @@ public class OpensearchService {
                     filter -> boolQuery.filter(leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet, erVedtakstottePilotPa, inkluderIkkeAvtalteAktiviteter))
             );
 
-            leggTilManuelleFilter(boolQuery, filtervalg, unleashService);
+            leggTilManuelleFilter(boolQuery, filtervalg);
         }
 
         searchSourceBuilder.query(boolQuery);
