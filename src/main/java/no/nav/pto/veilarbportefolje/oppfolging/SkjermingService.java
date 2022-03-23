@@ -16,6 +16,7 @@ public class SkjermingService extends KafkaCommonConsumerService<String> {
 
     @Override
     protected void behandleKafkaMeldingLogikk(String payload) {
+        log.info("Skjerming kafka message: " + payload);
         String ident = new String(decoder.decode(payload));
         log.info("Skjerming for: " + ident);
     }
