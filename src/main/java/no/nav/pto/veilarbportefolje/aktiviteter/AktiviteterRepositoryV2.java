@@ -117,6 +117,7 @@ public class AktiviteterRepositoryV2 {
     public List<Moteplan> hentFremtidigeMoter(VeilederId veilederIdent, EnhetId enhet) {
         List<Moteplan> result = new ArrayList<>();
         var params = new MapSqlParameterSource();
+        params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
         params.addValue("veilederIdent", veilederIdent.getValue());
         params.addValue("enhet", enhet.get());
         return namedDb.query("""
@@ -129,6 +130,8 @@ public class AktiviteterRepositoryV2 {
                         AND od.veilederid = :veilederIdent::varchar
                         AND a.aktivitettype = 'mote'
                         AND date_trunc('day', tildato) >= date_trunc('day', current_timestamp)
+                        AND NOT status = ANY (:ikkestatuser::varchar[])
+                        ORDER BY a.fradato
                         """,
                 params, (ResultSet rs) -> {
                     while (rs.next()) {
