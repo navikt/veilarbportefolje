@@ -121,7 +121,7 @@ public class AktiviteterRepositoryV2 {
         params.addValue("veilederIdent", veilederIdent.getValue());
         params.addValue("enhet", enhet.get());
         return namedDb.query("""
-                        SELECT op.fodsels_dato, op.fornavn, op.etternavn, a.fradato, a.avtalt
+                        SELECT op.fodselsnr, op.fornavn, op.etternavn, a.fradato, a.avtalt
                          from oppfolgingsbruker_arena op
                         left join oppfolging_data od on od.aktoerid = op.aktoerid
                         right join aktiviteter a on a.aktoerid = op.aktoerid
@@ -145,7 +145,7 @@ public class AktiviteterRepositoryV2 {
     private Moteplan mapTilMoteplan(ResultSet rs) {
         return new Moteplan(
                 new Motedeltaker(rs.getString("fornavn"), rs.getString("etternavn"),
-                        rs.getString("fodsels_dato")),
+                        rs.getString("fodselsnr")),
                 toIsoUTC(rs.getTimestamp("fradato")), rs.getBoolean("avtalt")
         );
     }
