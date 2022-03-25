@@ -9,6 +9,6 @@ import static java.util.Collections.emptySet;
 
 @Data
 @Accessors(chain = true)
-public class IkkeAvtaltAktivitetEntity extends AktivitetStatusData {
+public class AktivitetEntity extends AktivitetStatusData {
     private Set<String> alleAktiviteter = emptySet();
 }

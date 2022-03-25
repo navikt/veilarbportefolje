@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.postgres;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetStatusData;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.utils.IkkeAvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.sql.Timestamp;
@@ -16,7 +16,7 @@ import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType.mote;
 
 public class PostgresAktivitetMapper {
     public static AktivitetEntity kalkulerGenerellAktivitetInformasjon(List<AktivitetEntityDto> aktiviteter) {
-        IkkeAvtaltAktivitetEntity entity = new IkkeAvtaltAktivitetEntity();
+        AktivitetEntity entity = new AktivitetEntity();
         if (aktiviteter == null) {
             return entity;
         }

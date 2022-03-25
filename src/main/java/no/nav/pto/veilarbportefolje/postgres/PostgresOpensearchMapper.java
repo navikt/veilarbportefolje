@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.utils.IkkeAvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
@@ -43,19 +43,18 @@ public class PostgresOpensearchMapper {
                     List<AktivitetEntityDto> ikkeAvtalteAktiviteter = ikkeAvtalteAktiviterMap.get(aktorId) != null ? ikkeAvtalteAktiviterMap.get(aktorId) : new ArrayList<>();
 
                     AvtaltAktivitetEntity avtaltAktivitetData = kalkulerAvtalteAktivitetInformasjon(avtalteAktiviteter);
-                    AktivitetEntity alleAktiviteter = kalkulerGenerellAktivitetInformasjon(
+                    AktivitetEntity alleAktiviteterData = kalkulerGenerellAktivitetInformasjon(
                             Stream.concat(avtalteAktiviteter.stream(), ikkeAvtalteAktiviteter.stream()).toList()
                     );
-
                     flettInnAvtaltAktivitetData(avtaltAktivitetData, bruker);
-                    flettInnIkkeAvtaltAktivitetData(ikkeAvtaltAktivitetData, bruker);
+                    flettInnAktivitetData(alleAktiviteterData, bruker);
                 }
         );
 
         return brukere;
     }
 
-    private void flettInnIkkeAvtaltAktivitetData(IkkeAvtaltAktivitetEntity aktivitetData, OppfolgingsBruker bruker) {
+    private void flettInnAktivitetData(AktivitetEntity aktivitetData, OppfolgingsBruker bruker) {
         bruker.setAlle_aktiviteter_mote_startdato(aktivitetData.getAktivitetMoteStartdato());
         bruker.setAlle_aktiviteter_mote_utlopsdato(aktivitetData.getAktivitetMoteUtlopsdato());
         bruker.setAlle_aktiviteter_stilling_utlopsdato(aktivitetData.getAktivitetStillingUtlopsdato());

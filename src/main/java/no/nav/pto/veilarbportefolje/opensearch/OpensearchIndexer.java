@@ -97,11 +97,6 @@ public class OpensearchIndexer {
         });
     }
 
-    public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {
-        this.skrivTilIndeks(indeksNavn, Collections.singletonList(oppfolgingsBruker));
-    }
-
-
     private void validateBatchSize(List<?> brukere) {
         if (brukere.size() > ORACLE_BATCH_SIZE_LIMIT) {
             throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", ORACLE_BATCH_SIZE_LIMIT));

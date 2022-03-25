@@ -76,7 +76,7 @@ public class AktiviteterRepositoryV2 {
         params.addValue("ids", aktoerIder);
         namedDb.query("""
                         SELECT aktoerid, tildato, fradato, aktivitettype FROM aktiviteter
-                        WHERE avtalt = :avtalt::boolean AND NOT status = ANY (:ikkestatuser::varchar[]) AND aktoerid = ANY (:ids::varchar[])
+                        WHERE avtalt = :avtalt::boolean AND NOT (status = ANY (:ikkestatuser::varchar[])) AND aktoerid = ANY (:ids::varchar[])
                         """,
                 params, (ResultSet rs) -> {
                     while (rs.next()) {
@@ -122,7 +122,7 @@ public class AktiviteterRepositoryV2 {
                         AND od.veilederid = :veilederIdent::varchar
                         AND a.aktivitettype = 'mote'
                         AND date_trunc('day', tildato) >= date_trunc('day', current_timestamp)
-                        AND NOT status = ANY (:ikkestatuser::varchar[])
+                        AND NOT (status = ANY (:ikkestatuser::varchar[]))
                         ORDER BY a.fradato
                         """,
                 params, (ResultSet rs) -> {
