@@ -3,13 +3,11 @@ package no.nav.pto.veilarbportefolje.postgres;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,15 +19,12 @@ public class AktivitetEntityDto {
     Timestamp utlop;
     Timestamp start;
 
-    public static void leggTilAktivitetPaResultat(AktorId aktoerId, AktivitetEntityDto aktivitet, HashMap<AktorId, List<AktivitetEntityDto>> result) {
-        Optional.ofNullable(result.get(aktoerId)).ifPresentOrElse(
-                liste -> liste.add(aktivitet),
-                () -> {
-                    ArrayList<AktivitetEntityDto> liste = new ArrayList<>();
-                    liste.add(aktivitet);
-                    result.put(aktoerId, liste);
-                }
-        );
+    public static List<AktivitetEntityDto> leggTilAktivitetPaResultat(AktivitetEntityDto aktivitet, List<AktivitetEntityDto> currentAktiviteter) {
+        if (currentAktiviteter == null) {
+            currentAktiviteter = new ArrayList<>();
+        }
+        currentAktiviteter.add(aktivitet);
+        return currentAktiviteter;
     }
 
     @SneakyThrows

@@ -10,11 +10,7 @@ import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvOppfolgingsdataPaPostgres;
@@ -47,7 +43,7 @@ public class PostgresOpensearchMapper {
                     List<AktivitetEntityDto> ikkeAvtalteAktiviteter = ikkeAvtalteAktiviterMap.get(aktorId) != null ? ikkeAvtalteAktiviterMap.get(aktorId) : new ArrayList<>();
 
                     AvtaltAktivitetEntity avtaltAktivitetData = kalkulerAvtalteAktivitetInformasjon(avtalteAktiviteter);
-                    IkkeAvtaltAktivitetEntity ikkeAvtaltAktivitetData = kalkulerGenerellAktivitetInformasjon(
+                    AktivitetEntity alleAktiviteter = kalkulerGenerellAktivitetInformasjon(
                             Stream.concat(avtalteAktiviteter.stream(), ikkeAvtalteAktiviteter.stream()).toList()
                     );
 

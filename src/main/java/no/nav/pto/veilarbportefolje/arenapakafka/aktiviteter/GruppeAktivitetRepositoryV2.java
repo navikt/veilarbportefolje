@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetInnhold;
+import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -19,13 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.*;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapGruppeAktivitetTilEntity;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.HENDELSE_ID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.MOTEPLAN_ID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.TABLE_NAME;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.VEILEDNINGDELTAKER_ID;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 
@@ -77,7 +74,8 @@ public class GruppeAktivitetRepositoryV2 {
                         AktorId aktoerId = AktorId.of(rs.getString("aktoerid"));
                         AktivitetEntityDto aktivitet = mapGruppeAktivitetTilEntity(rs);
 
-                        leggTilAktivitetPaResultat(aktoerId, aktivitet, result);
+                        List<AktivitetEntityDto> list = result.get(aktoerId);
+                        result.put(aktoerId, leggTilAktivitetPaResultat(aktivitet, list));
                     }
                     return result;
                 });

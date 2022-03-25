@@ -8,23 +8,16 @@ import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnDatoerEtterDagensDato;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnForrigeAktivitetStartDatoer;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnNyesteUtlopteAktivAktivitet;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.statusToIsoUtcString;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.*;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType.mote;
 
 public class PostgresAktivitetMapper {
-    public static IkkeAvtaltAktivitetEntity kalkulerGenerellAktivitetInformasjon(List<AktivitetEntityDto> aktiviteter){
+    public static AktivitetEntity kalkulerGenerellAktivitetInformasjon(List<AktivitetEntityDto> aktiviteter) {
         IkkeAvtaltAktivitetEntity entity = new IkkeAvtaltAktivitetEntity();
-        if(aktiviteter == null){
+        if (aktiviteter == null) {
             return entity;
         }
         Set<String> aktiveAktiviteter = aktiviteter.stream()
@@ -37,8 +30,8 @@ public class PostgresAktivitetMapper {
     }
 
     public static AvtaltAktivitetEntity kalkulerAvtalteAktivitetInformasjon(List<AktivitetEntityDto> avtalteAktivteter) {
-       AvtaltAktivitetEntity entity = new AvtaltAktivitetEntity();
-        if(avtalteAktivteter == null){
+        AvtaltAktivitetEntity entity = new AvtaltAktivitetEntity();
+        if (avtalteAktivteter == null) {
             return new AvtaltAktivitetEntity()
                     .setAktiviteter(new HashSet<>())
                     .setTiltak(new HashSet<>());
