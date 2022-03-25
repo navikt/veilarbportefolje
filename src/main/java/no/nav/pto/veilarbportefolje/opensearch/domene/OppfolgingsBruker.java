@@ -56,8 +56,8 @@ public class OppfolgingsBruker {
     String neste_aktivitet_start;
     String forrige_aktivitet_start;
     String manuell_bruker;
+    String aktivitet_mote_startdato = getFarInTheFutureDate();
     String aktivitet_mote_utlopsdato = getFarInTheFutureDate();
-    String aktivitet_mote_startdato;
     String aktivitet_stilling_utlopsdato = getFarInTheFutureDate();
     String aktivitet_egen_utlopsdato = getFarInTheFutureDate();
     String aktivitet_behandling_utlopsdato = getFarInTheFutureDate();
@@ -66,6 +66,14 @@ public class OppfolgingsBruker {
     String aktivitet_tiltak_utlopsdato = getFarInTheFutureDate();
     String aktivitet_utdanningaktivitet_utlopsdato = getFarInTheFutureDate();
     String aktivitet_gruppeaktivitet_utlopsdato = getFarInTheFutureDate();
+
+    String alle_aktiviteter_mote_startdato = getFarInTheFutureDate();
+    String alle_aktiviteter_mote_utlopsdato = getFarInTheFutureDate();
+    String alle_aktiviteter_stilling_utlopsdato = getFarInTheFutureDate();
+    String alle_aktiviteter_egen_utlopsdato = getFarInTheFutureDate();
+    String alle_aktiviteter_behandling_utlopsdato = getFarInTheFutureDate();
+    String alle_aktiviteter_ijobb_utlopsdato = getFarInTheFutureDate();
+    String alle_aktiviteter_sokeavtale_utlopsdato = getFarInTheFutureDate();
     boolean arbeidsliste_aktiv;
     String arbeidsliste_sist_endret_av_veilederid;
     String arbeidsliste_endringstidspunkt;
@@ -74,6 +82,7 @@ public class OppfolgingsBruker {
     String arbeidsliste_tittel_sortering;
     int arbeidsliste_tittel_lengde;
     String oppfolging_startdato;
+    Set<String> alleAktiviteter = emptySet();
     Set<String> aktiviteter = emptySet();
     Set<String> tiltak = emptySet();
     boolean har_veileder_fra_enhet;

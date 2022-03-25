@@ -4,20 +4,25 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetInnhold;
+import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.HENDELSE_ID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.MOTEPLAN_ID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.TABLE_NAME;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.VEILEDNINGDELTAKER_ID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.GRUPPE_AKTIVITER.*;
+import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
+import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapGruppeAktivitetTilEntity;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 
@@ -28,6 +33,8 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 public class GruppeAktivitetRepositoryV2 {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
+    @Qualifier("PostgresNamedJdbcReadOnly")
+    private final NamedParameterJdbcTemplate namedDb;
 
     public void upsertGruppeAktivitet(GruppeAktivitetInnhold aktivitet, AktorId aktorId, boolean aktiv) {
         // Fra dato kan ha verdien null, det tilsier at aktiviteten varer en hel dag
@@ -53,5 +60,24 @@ public class GruppeAktivitetRepositoryV2 {
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getLong(HENDELSE_ID), aktivitet.getMoteplanId(), aktivitet.getVeiledningdeltakerId()))
         );
+    }
+
+    public void leggTilGruppeAktiviteter(String aktoerIder, HashMap<AktorId, List<AktivitetEntityDto>> result) {
+        namedDb.query("""
+                        SELECT aktoerid, moteplan_startdato, moteplan_sluttdato FROM gruppe_aktiviter
+                        WHERE date_trunc('day', moteplan_sluttdato) > date_trunc('day',current_timestamp)
+                        AND aktiv = true AND aktoerid = ANY (:ids::varchar[])
+                        """,
+                new MapSqlParameterSource("ids", aktoerIder),
+                (ResultSet rs) -> {
+                    while (rs.next()) {
+                        AktorId aktoerId = AktorId.of(rs.getString("aktoerid"));
+                        AktivitetEntityDto aktivitet = mapGruppeAktivitetTilEntity(rs);
+
+                        List<AktivitetEntityDto> list = result.get(aktoerId);
+                        result.put(aktoerId, leggTilAktivitetPaResultat(aktivitet, list));
+                    }
+                    return result;
+                });
     }
 }

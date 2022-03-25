@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.postgres.opensearch;
+package no.nav.pto.veilarbportefolje.postgres.utils;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

@@ -72,11 +72,6 @@ public class SisteEndringService {
 
         if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIPostgres(sisteEndringDTO)) {
             sisteEndringRepositoryV2.upsert(sisteEndringDTO);
-            try {
-                opensearchIndexerV2.updateSisteEndring(sisteEndringDTO);
-            } catch (Exception e) {
-                log.error(String.format("Kunne ikke indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId()), e);
-            }
         }
     }
 

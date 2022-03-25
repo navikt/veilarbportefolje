@@ -1,50 +1,58 @@
-package no.nav.pto.veilarbportefolje.postgres.opensearch.utils;
+package no.nav.pto.veilarbportefolje.postgres;
 
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetStatusData;
+import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnDatoerEtterDagensDato;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnForrigeAktivitetStartDatoer;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnNyesteUtlopteAktivAktivitet;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.statusToIsoUtcString;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.*;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType.mote;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 public class PostgresAktivitetMapper {
-    public static PostgresAktivitetEntity build(List<AktivitetEntity> aktiveAktivteter) {
-        PostgresAktivitetEntity entity = new PostgresAktivitetEntity();
-        if(aktiveAktivteter == null){
-            return entity
+    public static AktivitetEntity kalkulerGenerellAktivitetInformasjon(List<AktivitetEntityDto> aktiviteter) {
+        AktivitetEntity entity = new AktivitetEntity();
+        if (aktiviteter == null) {
+            return entity;
+        }
+        Set<String> aktiveAktiviteter = aktiviteter.stream()
+                .map(AktivitetEntityDto::getAktivitetsType)
+                .map(AktivitetsType::name)
+                .collect(Collectors.toSet());
+        byggAktivitetStatusBrukerData(entity, aktiviteter);
+
+        return entity.setAlleAktiviteter(aktiveAktiviteter);
+    }
+
+    public static AvtaltAktivitetEntity kalkulerAvtalteAktivitetInformasjon(List<AktivitetEntityDto> avtalteAktivteter) {
+        AvtaltAktivitetEntity entity = new AvtaltAktivitetEntity();
+        if (avtalteAktivteter == null) {
+            return new AvtaltAktivitetEntity()
                     .setAktiviteter(new HashSet<>())
                     .setTiltak(new HashSet<>());
         }
-        Set<String> aktiveAktiviteter = aktiveAktivteter.stream()
-                .map(AktivitetEntity::getAktivitetsType)
+        Set<String> aktiveAktiviteter = avtalteAktivteter.stream()
+                .map(AktivitetEntityDto::getAktivitetsType)
                 .map(AktivitetsType::name)
                 .collect(Collectors.toSet());
-        Set<String> aktiveTiltak = aktiveAktivteter.stream()
-                .map(AktivitetEntity::getMuligTiltaksNavn)
+        Set<String> aktiveTiltak = avtalteAktivteter.stream()
+                .map(AktivitetEntityDto::getMuligTiltaksNavn)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        byggAktivitetStatusBrukerData(entity, aktiveAktivteter);
-        byggAktivitetBrukerData(entity, aktiveAktivteter);
+        byggAktivitetStatusBrukerData(entity, avtalteAktivteter);
+        byggAktivitetBrukerData(entity, avtalteAktivteter);
         return entity
                 .setAktiviteter(aktiveAktiviteter)
                 .setTiltak(aktiveTiltak);
     }
 
-    private static void byggAktivitetStatusBrukerData(PostgresAktivitetEntity postgresAktivitetEntity, List<AktivitetEntity> alleAktiviter) {
+    private static void byggAktivitetStatusBrukerData(AktivitetStatusData aktivitetStatusData, List<AktivitetEntityDto> aktiviter) {
         LocalDate idag = LocalDate.now();
 
         Timestamp moteFremtidigStartdato = null;
@@ -58,14 +66,14 @@ public class PostgresAktivitetMapper {
         Timestamp utdanningaktivitetFremtidigUtlopsdato = null;
         Timestamp gruppeaktivitetFremtidigUtlopsdato = null;
 
-        for (AktivitetEntity aktivitet : alleAktiviter) {
-            if (aktivitet.aktivitetsType.equals(mote) && !(aktivitet.getStart() == null || aktivitet.getUtlop().toLocalDateTime().toLocalDate().isBefore(idag))) {
+        for (AktivitetEntityDto aktivitet : aktiviter) {
+            if (aktivitet.getAktivitetsType().equals(mote) && !(aktivitet.getStart() == null || aktivitet.getStart().toLocalDateTime().toLocalDate().isBefore(idag))) {
                 moteFremtidigStartdato = nesteFremITiden(moteFremtidigStartdato, aktivitet.getStart());
             }
             if (aktivitet.getUtlop() == null || idag.isAfter(aktivitet.getUtlop().toLocalDateTime().toLocalDate())) {
                 continue;
             }
-            switch (aktivitet.aktivitetsType) {
+            switch (aktivitet.getAktivitetsType()) {
                 case egen -> egenFremtidigUtlopsdato = nesteFremITiden(egenFremtidigUtlopsdato, aktivitet.getUtlop());
                 case stilling -> stillingFremtidigUtlopsdato = nesteFremITiden(stillingFremtidigUtlopsdato, aktivitet.getUtlop());
                 case sokeavtale -> sokeavtaleFremtidigUtlopsdato = nesteFremITiden(sokeavtaleFremtidigUtlopsdato, aktivitet.getUtlop());
@@ -77,8 +85,8 @@ public class PostgresAktivitetMapper {
                 case mote -> moteFremtidigUtlopsdato = nesteFremITiden(moteFremtidigUtlopsdato, aktivitet.getUtlop());
             }
         }
-        postgresAktivitetEntity
-                .setAktivitetMoteStartdato(toIsoUTC(moteFremtidigStartdato))
+        aktivitetStatusData
+                .setAktivitetMoteStartdato(statusToIsoUtcString(moteFremtidigStartdato))
                 .setAktivitetEgenUtlopsdato(statusToIsoUtcString(egenFremtidigUtlopsdato))
                 .setAktivitetStillingUtlopsdato(statusToIsoUtcString(stillingFremtidigUtlopsdato))
                 .setAktivitetMoteUtlopsdato(statusToIsoUtcString(moteFremtidigUtlopsdato))
@@ -90,11 +98,11 @@ public class PostgresAktivitetMapper {
                 .setAktivitetGruppeaktivitetUtlopsdato(statusToIsoUtcString(gruppeaktivitetFremtidigUtlopsdato));
     }
 
-    private static void byggAktivitetBrukerData(PostgresAktivitetEntity postgresAktivitetEntity, List<AktivitetEntity> alleAktiviter) {
+    private static void byggAktivitetBrukerData(AvtaltAktivitetEntity avtaltAktivitetEntity, List<AktivitetEntityDto> alleAktiviter) {
         LocalDate idag = LocalDate.now();
 
-        List<Timestamp> startDatoer = alleAktiviter.stream().map(AktivitetEntity::getStart).filter(Objects::nonNull).toList();
-        List<Timestamp> sluttdatoer = alleAktiviter.stream().map(AktivitetEntity::getUtlop).filter(Objects::nonNull).toList();
+        List<Timestamp> startDatoer = alleAktiviter.stream().map(AktivitetEntityDto::getStart).filter(Objects::nonNull).toList();
+        List<Timestamp> sluttdatoer = alleAktiviter.stream().map(AktivitetEntityDto::getUtlop).filter(Objects::nonNull).toList();
 
         Optional<Timestamp> nyesteUtlopteDato = Optional.ofNullable(finnNyesteUtlopteAktivAktivitet(sluttdatoer, idag));
         Optional<Timestamp> forrigeAktivitetStart = Optional.ofNullable(finnForrigeAktivitetStartDatoer(startDatoer, idag));
@@ -103,7 +111,7 @@ public class PostgresAktivitetMapper {
         Optional<Timestamp> aktivitetStart = (startDatoerEtterDagensDato.isEmpty()) ? Optional.empty() : Optional.ofNullable(startDatoerEtterDagensDato.get(0));
         Optional<Timestamp> nesteAktivitetStart = (startDatoerEtterDagensDato.size() < 2) ? Optional.empty() : Optional.ofNullable(startDatoerEtterDagensDato.get(1));
 
-        postgresAktivitetEntity.setAktivitetStart(aktivitetStart.map(DateUtils::toIsoUTC).orElse(null))
+        avtaltAktivitetEntity.setAktivitetStart(aktivitetStart.map(DateUtils::toIsoUTC).orElse(null))
                 .setNesteAktivitetStart(nesteAktivitetStart.map(DateUtils::toIsoUTC).orElse(null))
                 .setNyesteUtlopteAktivitet(nyesteUtlopteDato.map(DateUtils::toIsoUTC).orElse(null))
                 .setForrigeAktivitetStart(forrigeAktivitetStart.map(DateUtils::toIsoUTC).orElse(null));
