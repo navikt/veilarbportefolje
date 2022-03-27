@@ -268,4 +268,12 @@ public class PostgresTable {
         public static final String KODE = "KODE";
         public static final String VERDI = "VERDI";
     }
+
+    public static final class NOM_SKJERMING {
+        public static final String TABLE_NAME = "NOM_SKJERMING";
+        public static final String FNR = "FODSELSNR";
+        public static final String ER_SKJERMET = "ER_SKJERMET";
+        public static final String SKJERMET_FRA = "SKJERMET_FRA";
+        public static final String SKJERMET_TIL = "SKJERMET_TIL";
+    }
 }
