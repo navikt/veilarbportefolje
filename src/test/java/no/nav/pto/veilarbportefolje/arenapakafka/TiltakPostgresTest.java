@@ -131,7 +131,6 @@ public class TiltakPostgresTest {
         assertThat(postgresAktivitet.getNesteAktivitetStart()).isNull();
 
         assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo(toIsoUTC(igarTid).substring(0, 10) + "T22:59:59Z");
-        assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isEqualTo(toIsoUTC(idagTid).substring(0, 10) + "T22:59:59Z");
     }
 
     @Test
