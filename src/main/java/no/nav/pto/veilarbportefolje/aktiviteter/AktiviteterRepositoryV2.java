@@ -17,10 +17,20 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETTYPE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.FRADATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.STATUS;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TILDATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.VERSION;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapAktivitetTilEntity;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -106,11 +116,15 @@ public class AktiviteterRepositoryV2 {
         db.update("UPDATE aktiviteter SET status = 'fullfort' WHERE aktivitetid = ?", aktivitetid);
     }
 
-    public List<Moteplan> hentFremtidigeMoter(VeilederId veilederIdent, EnhetId enhet) {
+    public List<Moteplan> hentFremtidigeMoter(VeilederId veilederIdent, EnhetId enhet, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
         List<Moteplan> result = new ArrayList<>();
         var params = new MapSqlParameterSource();
+        String skjermetDiskresjonskoder = hentSkjermeteDiskresjonskoder(tilgangTilKode6, tilgangTilKode7);
+
         params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
         params.addValue("veilederIdent", veilederIdent.getValue());
+        params.addValue("skjermetDiskresjonskoder", skjermetDiskresjonskoder);
+        params.addValue("tilgangTilEgenAnsatt", tilgangTilEgenAnsatt);
         params.addValue("enhet", enhet.get());
         return namedDb.query("""
                         SELECT op.fodselsnr, op.fornavn, op.etternavn, a.fradato, a.avtalt
@@ -123,6 +137,8 @@ public class AktiviteterRepositoryV2 {
                         AND a.aktivitettype = 'mote'
                         AND date_trunc('day', tildato) >= date_trunc('day', current_timestamp)
                         AND NOT (status = ANY (:ikkestatuser::varchar[]))
+                        AND (diskresjonskode IS NULL OR NOT (diskresjonskode = ANY (:skjermetDiskresjonskoder::varchar[])))
+                        AND ((:tilgangTilEgenAnsatt::boolean) OR NOT sperret_ansatt)
                         ORDER BY a.fradato
                         """,
                 params, (ResultSet rs) -> {
@@ -131,6 +147,19 @@ public class AktiviteterRepositoryV2 {
                     }
                     return result;
                 });
+    }
+
+    private String hentSkjermeteDiskresjonskoder(boolean tilgangTilKode6, boolean tilgangTilKode7) {
+        if (tilgangTilKode6 && tilgangTilKode7) {
+            return "{}";
+        }
+        if (tilgangTilKode6) {
+            return "{7}";
+        }
+        if (tilgangTilKode7) {
+            return "{6}";
+        }
+        return "{6,7}";
     }
 
     @SneakyThrows

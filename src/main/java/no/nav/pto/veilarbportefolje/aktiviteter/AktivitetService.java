@@ -63,7 +63,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         );
     }
 
-    public List<Moteplan> hentMoteplan(VeilederId veilederIdent, EnhetId enhet) {
-        return aktiviteterRepositoryV2.hentFremtidigeMoter(veilederIdent, enhet);
+    public List<Moteplan> hentMoteplan(VeilederId veilederIdent, EnhetId enhet, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
+        return aktiviteterRepositoryV2.hentFremtidigeMoter(veilederIdent, enhet, tilgangTilKode6, tilgangTilKode7, tilgangTilEgenAnsatt);
     }
 }

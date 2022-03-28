@@ -83,6 +83,21 @@ public class AuthService {
 
     }
 
+    public boolean harVeilederTilgangTilKode6(){
+        String veilederId = AuthUtils.getInnloggetVeilederIdent().toString();
+        return veilarbPep.harVeilederTilgangTilKode6(NavIdent.of(veilederId));
+    }
+
+    public boolean harVeilederTilgangTilKode7(){
+        String veilederId = AuthUtils.getInnloggetVeilederIdent().toString();
+        return veilarbPep.harVeilederTilgangTilKode7(NavIdent.of(veilederId));
+    }
+
+    public boolean harVeilederTilgangTilEgenAnsatt(){
+        String veilederId = AuthUtils.getInnloggetVeilederIdent().toString();
+        return veilarbPep.harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederId));
+    }
+
     @Data
     @Accessors(chain = true)
     class VeilederPaEnhet {

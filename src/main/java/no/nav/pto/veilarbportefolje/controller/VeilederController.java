@@ -103,8 +103,12 @@ public class VeilederController {
     public List<Moteplan> hentMoteplanForVeileder(@PathVariable("veilederident") VeilederId veilederIdent, @RequestParam("enhet") EnhetId enhet){
         ValideringsRegler.sjekkEnhet(enhet.get());
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
-        authService.tilgangTilEnhet(enhet.get());
 
-        return aktivitetService.hentMoteplan(veilederIdent, enhet);
+        authService.tilgangTilEnhet(enhet.get());
+        boolean tilgangTilKode6 = authService.harVeilederTilgangTilKode6();
+        boolean tilgangTilKode7 = authService.harVeilederTilgangTilKode7();
+        boolean tilgangTilEgenAnsatt = authService.harVeilederTilgangTilEgenAnsatt();
+
+        return aktivitetService.hentMoteplan(veilederIdent, enhet, tilgangTilKode6, tilgangTilKode7, tilgangTilEgenAnsatt);
     }
 }
