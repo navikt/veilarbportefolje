@@ -3,7 +3,10 @@ package no.nav.pto.veilarbportefolje.postgres.opensearch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
+import no.nav.pto.veilarbportefolje.oppfolging.response.SkjermingData;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -22,6 +25,7 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvOppfolging
 public class PostgresOpensearchMapper {
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final AktivitetOpensearchService aktivitetOpensearchService;
+    private final SkjermingService skjermingService;
     private final UnleashService unleashService;
 
     public List<OppfolgingsBruker> flettInnPostgresData(List<OppfolgingsBruker> brukere, boolean medDiffLogging) {
@@ -71,6 +75,7 @@ public class PostgresOpensearchMapper {
     }
 
     private void flettInnAktoerData(PostgresAktorIdEntity dataPaAktorId, OppfolgingsBruker bruker, boolean medDiffLogging) {
+        Optional<SkjermingData> skjermingData = skjermingService.hentSkjermingData(Fnr.of(bruker.getFnr()));
         if (medDiffLogging) {
             loggDiff(dataPaAktorId, bruker);
         }

@@ -22,10 +22,10 @@ public class SkjermingRepository {
 
     public Boolean settSkjermingPeriode(Fnr fnr, Timestamp skjermetFra, Timestamp skjermetTil) {
         try {
-            int updatedNum = db.update(String.format("INSERT INTO %s (%s, %s, %s) VALUES (?,?,?, ?)" +
+            int updatedNum = db.update(String.format("INSERT INTO %s (%s, %s, %s) VALUES (?,?,?)" +
                                     " ON CONFLICT (%s) DO UPDATE SET %s = EXCLUDED.%s, %s = EXCLUDED.%s",
                             TABLE_NAME, FNR, SKJERMET_FRA, SKJERMET_TIL, FNR, SKJERMET_FRA, SKJERMET_FRA, SKJERMET_TIL, SKJERMET_TIL),
-                    fnr, skjermetFra, skjermetTil);
+                    fnr.get(), skjermetFra, skjermetTil);
             return updatedNum > 0;
         } catch (Exception e) {
             log.error("Can't set skjerming " + e, e);
@@ -38,7 +38,7 @@ public class SkjermingRepository {
             int updatedNum = db.update(String.format("INSERT INTO %s (%s, %s) VALUES (?,?)" +
                                     " ON CONFLICT (%s) DO UPDATE SET %s = EXCLUDED.%s",
                             TABLE_NAME, FNR, ER_SKJERMET, FNR, ER_SKJERMET, ER_SKJERMET),
-                    fnr, erSkjermet);
+                    fnr.get(), erSkjermet);
             return updatedNum > 0;
         } catch (Exception e) {
             log.error("Can't set skjerming " + e, e);
@@ -48,8 +48,8 @@ public class SkjermingRepository {
 
     public Optional<SkjermingData> hentSkjermingData(Fnr fnr) {
         try {
-            return Optional.ofNullable(db.queryForObject(String.format("SELECT %s, %s, %s FROM %s WHERE %s = %s",
-                            ER_SKJERMET, SKJERMET_FRA, SKJERMET_TIL, TABLE_NAME, FNR, fnr),
+            return Optional.ofNullable(db.queryForObject(String.format("SELECT %s, %s, %s FROM %s WHERE %s = '%s'",
+                            ER_SKJERMET, SKJERMET_FRA, SKJERMET_TIL, TABLE_NAME, FNR, fnr.get()),
                     (rs, rowNum) -> new SkjermingData(fnr, rs.getBoolean(ER_SKJERMET), rs.getTimestamp(SKJERMET_FRA), rs.getTimestamp(SKJERMET_TIL))));
         } catch (Exception e) {
             log.error("Can't get skjerming data " + e, e);
