@@ -22,9 +22,10 @@ public class SkjermingRepository {
 
     public Boolean settSkjermingPeriode(Fnr fnr, Timestamp skjermetFra, Timestamp skjermetTil) {
         try {
-            int updatedNum = db.update(String.format("INSERT INTO %s (%s, %s, %s) VALUES (?,?,?)" +
-                                    " ON CONFLICT (%s) DO UPDATE SET %s = EXCLUDED.%s, %s = EXCLUDED.%s",
-                            TABLE_NAME, FNR, SKJERMET_FRA, SKJERMET_TIL, FNR, SKJERMET_FRA, SKJERMET_FRA, SKJERMET_TIL, SKJERMET_TIL),
+            int updatedNum = db.update("""
+                            INSERT INTO  NOM_SKJERMING(FODSELSNR, SKJERMET_FRA, SKJERMET_TIL) VALUES (?,?,?)
+                            ON CONFLICT (FODSELSNR) DO UPDATE SET SKJERMET_FRA = EXCLUDED.SKJERMET_FRA, SKJERMET_TIL = EXCLUDED.SKJERMET_TIL
+                            """,
                     fnr.get(), skjermetFra, skjermetTil);
             return updatedNum > 0;
         } catch (Exception e) {
@@ -35,9 +36,10 @@ public class SkjermingRepository {
 
     public Boolean settSkjerming(Fnr fnr, Boolean erSkjermet) {
         try {
-            int updatedNum = db.update(String.format("INSERT INTO %s (%s, %s) VALUES (?,?)" +
-                                    " ON CONFLICT (%s) DO UPDATE SET %s = EXCLUDED.%s",
-                            TABLE_NAME, FNR, ER_SKJERMET, FNR, ER_SKJERMET, ER_SKJERMET),
+            int updatedNum = db.update("""
+                            INSERT INTO NOM_SKJERMING (FODSELSNR, ER_SKJERMET) VALUES (?,?)
+                            ON CONFLICT (FODSELSNR) DO UPDATE SET ER_SKJERMET = EXCLUDED.ER_SKJERMET
+                            """,
                     fnr.get(), erSkjermet);
             return updatedNum > 0;
         } catch (Exception e) {
@@ -48,9 +50,11 @@ public class SkjermingRepository {
 
     public Optional<SkjermingData> hentSkjermingData(Fnr fnr) {
         try {
-            return Optional.ofNullable(db.queryForObject(String.format("SELECT %s, %s, %s FROM %s WHERE %s = '%s'",
-                            ER_SKJERMET, SKJERMET_FRA, SKJERMET_TIL, TABLE_NAME, FNR, fnr.get()),
-                    (rs, rowNum) -> new SkjermingData(fnr, rs.getBoolean(ER_SKJERMET), rs.getTimestamp(SKJERMET_FRA), rs.getTimestamp(SKJERMET_TIL))));
+            return Optional.ofNullable(db.queryForObject("""
+                            SELECT ER_SKJERMET, SKJERMET_FRA, SKJERMET_TIL FROM NOM_SKJERMING WHERE FODSELSNR = ?
+                            """,
+                    (rs, rowNum) -> new SkjermingData(fnr, rs.getBoolean(ER_SKJERMET), rs.getTimestamp(SKJERMET_FRA), rs.getTimestamp(SKJERMET_TIL)), fnr.get())
+            );
         } catch (Exception e) {
             log.error("Can't get skjerming data " + e, e);
             return Optional.empty();
