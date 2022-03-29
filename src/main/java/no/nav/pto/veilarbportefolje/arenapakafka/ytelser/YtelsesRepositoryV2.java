@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arenapakafka.ytelser;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -34,7 +33,6 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.
 @Repository
 @RequiredArgsConstructor
 public class YtelsesRepositoryV2 {
-    @NonNull
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 

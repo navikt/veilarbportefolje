@@ -118,9 +118,9 @@ public class AktiviteterRepositoryV2 {
 
     public List<Moteplan> hentFremtidigeMoter(VeilederId veilederIdent, EnhetId enhet, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
         List<Moteplan> result = new ArrayList<>();
-        var params = new MapSqlParameterSource();
         String skjermetDiskresjonskoder = hentSkjermeteDiskresjonskoder(tilgangTilKode6, tilgangTilKode7);
 
+        var params = new MapSqlParameterSource();
         params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
         params.addValue("veilederIdent", veilederIdent.getValue());
         params.addValue("skjermetDiskresjonskoder", skjermetDiskresjonskoder);
