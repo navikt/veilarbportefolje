@@ -69,7 +69,6 @@ public class AuthService {
 
         String diskresjonskode = bruker.getDiskresjonskode();
 
-
         if("6".equals(diskresjonskode) && !veilarbPep.harVeilederTilgangTilKode6(NavIdent.of(veilederIdent))) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }

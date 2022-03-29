@@ -7,11 +7,15 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.DISKRESJONSKODE;
@@ -41,6 +45,8 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 public class OppfolgingsbrukerRepositoryV2 {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
+    @Qualifier("PostgresNamedJdbcReadOnly")
+    private final NamedParameterJdbcTemplate dbNamed;
 
     public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerEntity oppfolgingsbruker) {
         if (oppfolgingsbruker == null || oppfolgingsbruker.aktoerid() == null) {
@@ -123,4 +129,35 @@ public class OppfolgingsbrukerRepositoryV2 {
                 rs.getBoolean(HAR_OPPFOLGINGSSAK), rs.getBoolean(SPERRET_ANSATT), rs.getBoolean(ER_DOED),
                 toZonedDateTime(rs.getTimestamp(DOED_FRA_DATO)), toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
+
+    public List<String> hentSkjermedeBrukere(List<String> fnrListe, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
+        String skjermetDiskresjonskoder = hentSkjermeteDiskresjonskoder(tilgangTilKode6, tilgangTilKode7);
+
+        var params = new MapSqlParameterSource();
+        params.addValue("fnrListe", fnrListe.stream().collect(Collectors.joining(",", "{", "}")));
+        params.addValue("skjermetDiskresjonskoder", skjermetDiskresjonskoder);
+        params.addValue("tilgangTilEgenAnsatt", tilgangTilEgenAnsatt);
+        return dbNamed.queryForList("""
+                SELECT fodselsnr from oppfolgingsbruker_arena
+                where fodselsnr = ANY (:fnrListe::varchar[])
+                AND (
+                    (diskresjonskode IS NOT NULL AND (diskresjonskode = ANY (:skjermetDiskresjonskoder::varchar[])))
+                    OR (sperret_ansatt AND NOT :tilgangTilEgenAnsatt::boolean)
+                )
+                """, params, String.class);
+    }
+
+    private String hentSkjermeteDiskresjonskoder(boolean tilgangTilKode6, boolean tilgangTilKode7) {
+        if (tilgangTilKode6 && tilgangTilKode7) {
+            return "{}";
+        }
+        if (tilgangTilKode6) {
+            return "{7}";
+        }
+        if (tilgangTilKode7) {
+            return "{6}";
+        }
+        return "{6,7}";
+    }
+
 }

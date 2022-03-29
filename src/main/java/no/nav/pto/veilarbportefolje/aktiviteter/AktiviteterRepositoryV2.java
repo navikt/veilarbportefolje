@@ -116,29 +116,23 @@ public class AktiviteterRepositoryV2 {
         db.update("UPDATE aktiviteter SET status = 'fullfort' WHERE aktivitetid = ?", aktivitetid);
     }
 
-    public List<Moteplan> hentFremtidigeMoter(VeilederId veilederIdent, EnhetId enhet, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
+    public List<Moteplan> hentFremtidigeMoter(VeilederId veilederIdent, EnhetId enhet) {
         List<Moteplan> result = new ArrayList<>();
-        String skjermetDiskresjonskoder = hentSkjermeteDiskresjonskoder(tilgangTilKode6, tilgangTilKode7);
 
         var params = new MapSqlParameterSource();
         params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
         params.addValue("veilederIdent", veilederIdent.getValue());
-        params.addValue("skjermetDiskresjonskoder", skjermetDiskresjonskoder);
-        params.addValue("tilgangTilEgenAnsatt", tilgangTilEgenAnsatt);
         params.addValue("enhet", enhet.get());
         return namedDb.query("""
                         SELECT op.fodselsnr, op.fornavn, op.etternavn, a.fradato, a.avtalt
                          from oppfolgingsbruker_arena op
                         left join oppfolging_data od on od.aktoerid = op.aktoerid
                         right join aktiviteter a on a.aktoerid = op.aktoerid
-
                         where op.nav_kontor = :enhet::varchar
                         AND od.veilederid = :veilederIdent::varchar
                         AND a.aktivitettype = 'mote'
                         AND date_trunc('day', tildato) >= date_trunc('day', current_timestamp)
                         AND NOT (status = ANY (:ikkestatuser::varchar[]))
-                        AND (diskresjonskode IS NULL OR NOT (diskresjonskode = ANY (:skjermetDiskresjonskoder::varchar[])))
-                        AND ((:tilgangTilEgenAnsatt::boolean) OR NOT sperret_ansatt)
                         ORDER BY a.fradato
                         """,
                 params, (ResultSet rs) -> {
@@ -147,19 +141,6 @@ public class AktiviteterRepositoryV2 {
                     }
                     return result;
                 });
-    }
-
-    private String hentSkjermeteDiskresjonskoder(boolean tilgangTilKode6, boolean tilgangTilKode7) {
-        if (tilgangTilKode6 && tilgangTilKode7) {
-            return "{}";
-        }
-        if (tilgangTilKode6) {
-            return "{7}";
-        }
-        if (tilgangTilKode7) {
-            return "{6}";
-        }
-        return "{6,7}";
     }
 
     @SneakyThrows

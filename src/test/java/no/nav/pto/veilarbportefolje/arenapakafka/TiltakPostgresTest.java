@@ -43,9 +43,9 @@ public class TiltakPostgresTest {
     private final PersonId personId = PersonId.of("123");
 
     @Autowired
-    public TiltakPostgresTest(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService) {
+    public TiltakPostgresTest(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
-        this.oppfolgingsbrukerRepositoryV2 = new OppfolgingsbrukerRepositoryV2(this.jdbcTemplatePostgres);
+        this.oppfolgingsbrukerRepositoryV2 = oppfolgingsbrukerRepositoryV2;
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.tiltakRepositoryV2 = tiltakRepositoryV2;
     }

@@ -24,7 +24,9 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AKTIVITET;
+import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -131,7 +133,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         VeilederId veileder = randomVeilederId();
 
         testDataClient.setupBruker(aktoer, navKontor, veileder, ZonedDateTime.now());
-        settSperretAnsatt(aktoer, navKontor);
+        settSperretAnsatt(aktoer, randomFnr(), navKontor);
 
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("1")
@@ -146,8 +148,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         List<Moteplan> medTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), false, false, true);
         List<Moteplan> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()),false, false, false);
 
-        assertThat(medTilgang.size()).isEqualTo(1);
-        assertThat(utenTilgang.size()).isEqualTo(0);
+        assertThat(medTilgang.stream().noneMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
+        assertThat(utenTilgang.stream().allMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
     }
 
 
@@ -160,8 +162,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
         testDataClient.setupBruker(aktoerKode6, navKontor, veileder, ZonedDateTime.now());
         testDataClient.setupBruker(aktoerKode7, navKontor, veileder, ZonedDateTime.now());
-        settDiskresjonskode(aktoerKode6, navKontor, "6");
-        settDiskresjonskode(aktoerKode7, navKontor, "7");
+        settDiskresjonskode(aktoerKode6, randomFnr(), navKontor,"6");
+        settDiskresjonskode(aktoerKode7, randomFnr(), navKontor, "7");
 
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("1")
@@ -188,25 +190,24 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         List<Moteplan> medTilgang_7 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()),false, true, false);
         List<Moteplan> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()),false, false, false);
 
-        assertThat(medTilgang_alt.size()).isEqualTo(2);
-        assertThat(medTilgang_6.size()).isEqualTo(1);
-        assertThat(medTilgang_7.size()).isEqualTo(1);
-
-        assertThat(utenTilgang.size()).isEqualTo(0);
+        assertThat(medTilgang_alt.stream().noneMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
+        assertThat(medTilgang_6.stream().filter(moteplan -> moteplan.deltaker().equals(skjermetDeltaker)).toList().size()).isEqualTo(1);
+        assertThat(medTilgang_7.stream().filter(moteplan -> moteplan.deltaker().equals(skjermetDeltaker)).toList().size()).isEqualTo(1);
+        assertThat(utenTilgang.stream().allMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
     }
 
-    private void settSperretAnsatt(AktorId aktoer, NavKontor navKontor){
+    private void settSperretAnsatt(AktorId aktoer, Fnr fnr, NavKontor navKontor){
         oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(aktoer.get(), fodselsnummer.get(), null, null,
-                        null, null, navKontor.getValue(), null, null,
+                new OppfolgingsbrukerEntity(aktoer.get(), fnr.get(), null, null,
+                        "test", "testson", navKontor.getValue(), null, null,
                         null, null, null, true, true,
                         false, null, ZonedDateTime.now()));
     }
 
-    private void settDiskresjonskode(AktorId aktoer, NavKontor navKontor, String kode){
+    private void settDiskresjonskode(AktorId aktoer, Fnr fnr, NavKontor navKontor, String kode){
         oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(aktoer.get(), fodselsnummer.get(), null, null,
-                        null, null, navKontor.getValue(), null, null,
+                new OppfolgingsbrukerEntity(aktoer.get(), fnr.get(), null, null,
+                        "test", "testson", navKontor.getValue(), null, null,
                         null, null, kode, true, false,
                         false, null, ZonedDateTime.now()));
     }
