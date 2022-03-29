@@ -8,16 +8,21 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.postgres.PostgresUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.*;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.isFarInTheFutureDate;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -240,69 +245,4 @@ public class Bruker {
         }
         return comp;
     }
-
-    public Bruker fraEssensiellInfo(Map<String, Object> row) {
-        String diskresjonskode = (String) row.get(DISKRESJONSKODE);
-        String formidlingsgruppekode = (String) row.get(FORMIDLINGSGRUPPEKODE);
-
-        return setNyForVeileder((boolean) row.get(NY_FOR_VEILEDER))
-                .setVeilederId((String) row.get(VEILEDERID))
-                .setDiskresjonskode((String) row.get(DISKRESJONSKODE))
-                .setFnr((String) row.get(FODSELSNR))
-                .setFornavn((String) row.get(FORNAVN))
-                .setEtternavn((String) row.get(ETTERNAVN))
-                .setDiskresjonskode(("7".equals(diskresjonskode) || "6".equals(diskresjonskode)) ? diskresjonskode : null)
-                .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
-                .setArbeidsliste(new Arbeidsliste(null, null, null, null, null, null));
-
-    }
-
-    public Bruker fraBrukerView(Map<String, Object> row, boolean erVedtakstottePilotPa) {
-        String diskresjonskode = (String) row.get(DISKRESJONSKODE);
-        String kvalifiseringsgruppekode = (String) row.get(KVALIFISERINGSGRUPPEKODE);
-        String formidlingsgruppekode = (String) row.get(FORMIDLINGSGRUPPEKODE);
-        String vedtakstatus = (String) row.get(VEDTAKSTATUS);
-        String sikkerhetstiltak = (String) row.get(SIKKERHETSTILTAK_TYPE_KODE);
-        String profileringResultat = (String) row.get(PROFILERING_RESULTAT);
-        boolean trengerVurdering = OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode);
-        boolean trengerRevurdering = OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus);
-        boolean erSykmeldtMedArbeidsgiver = OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode);
-        return setFnr((String) row.get(FODSELSNR))
-                .setNyForVeileder(PostgresUtils.safeBool((boolean) row.get(NY_FOR_VEILEDER)))
-                .setTrengerVurdering(trengerVurdering)
-                .setErSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej;
-                .setFornavn((String) row.get(FORNAVN))
-                .setEtternavn((String) row.get(ETTERNAVN))
-                .setVeilederId((String) row.get(VEILEDERID))
-                .setDiskresjonskode(("7".equals(diskresjonskode) || "6".equals(diskresjonskode)) ? diskresjonskode : null)
-                .setEgenAnsatt(PostgresUtils.safeBool((boolean) row.get(SPERRET_ANSATT)))
-                .setErDoed(PostgresUtils.safeBool((boolean) row.get(ER_DOED)))
-                .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak))
-                .setFodselsdato(toLocalDateTimeOrNull((java.sql.Date) row.get(FODSELS_DATO)))
-                .setKjonn((String) row.get(KJONN))
-                .setVenterPaSvarFraNAV(toLocalDateTimeOrNull((Timestamp) row.get(VENTER_PA_NAV)))
-                .setVenterPaSvarFraBruker(toLocalDateTimeOrNull((Timestamp) row.get(VENTER_PA_BRUKER)))
-                .setVedtakStatus(vedtakstatus)
-                .setVedtakStatusEndret(toLocalDateTimeOrNull((Timestamp) row.get(VEDTAKSTATUS_ENDRET_TIDSPUNKT)))
-                .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
-                .setAnsvarligVeilederForVedtak((String) row.get(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN))
-                .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
-                .setTrengerRevurdering(trengerRevurdering)
-                .setArbeidsliste(Arbeidsliste.of(row))
-                .setVurderingsBehov(trengerVurdering ? vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode, profileringResultat, erVedtakstottePilotPa) : null);
-        //TODO: utledd manuell
-    }
-
-    // TODO: sjekk om disse feltene er i bruk, de kan være nødvendige for statuser eller filtere
-    /*
-        public static final String MANUELL = "MANUELL";
-        public static final String ISERV_FRA_DATO = "ISERV_FRA_DATO";
-        public static final String FORMIDLINGSGRUPPEKODE = "FORMIDLINGSGRUPPEKODE";
-        public static final String KVALIFISERINGSGRUPPEKODE = "KVALIFISERINGSGRUPPEKODE";
-        public static final String RETTIGHETSGRUPPEKODE = "RETTIGHETSGRUPPEKODE";
-        public static final String HOVEDMAALKODE = "HOVEDMAALKODE";
-        public static final String SIKKERHETSTILTAK_TYPE_KODE = "SIKKERHETSTILTAK_TYPE_KODE";
-        public static final String HAR_OPPFOLGINGSSAK = "HAR_OPPFOLGINGSSAK";
-     */
-
 }
