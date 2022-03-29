@@ -75,7 +75,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
     private List<Moteplan> sensurerMoteplaner(List<Moteplan> moteplans, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
         List<Moteplan> sensurertListe = new ArrayList<>(moteplans.size());
-        List<String> skjermedeBrukere = oppfolgingsbrukerRepositoryV2.hentSkjermedeBrukere(
+        List<String> skjermedeBrukere = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(
                 moteplans.stream().map(Moteplan::deltaker).map(Motedeltaker::fnr).toList(),
                 tilgangTilKode6, tilgangTilKode7, tilgangTilEgenAnsatt);
 

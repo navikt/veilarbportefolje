@@ -76,9 +76,9 @@ public class OppfolginsbrukerRepositoryTestV2 {
         settSperretAnsatt(sperretAnsatt, sperretAnsattFnr, true);
         settSperretAnsatt(kontroll, kontrollFnr, false);
 
-        List<String> medTilgang = oppfolgingsbrukerRepositoryV2.hentSkjermedeBrukere(List.of(sperretAnsattFnr, kontrollFnr),
+        List<String> medTilgang = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(List.of(sperretAnsattFnr, kontrollFnr),
                 false, false, true);
-        List<String> utenTilgang = oppfolgingsbrukerRepositoryV2.hentSkjermedeBrukere(List.of(sperretAnsattFnr, kontrollFnr),
+        List<String> utenTilgang = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(List.of(sperretAnsattFnr, kontrollFnr),
                 false, false, false);
         assertThat(medTilgang.size()).isEqualTo(0);
         assertThat(utenTilgang.size()).isEqualTo(1);
@@ -97,13 +97,13 @@ public class OppfolginsbrukerRepositoryTestV2 {
         settDiskresjonskode(kode7, kode7Fnr, "7");
         settDiskresjonskode(kontroll, kontrollFnr, null);
 
-        List<String> medAlleTilgang = oppfolgingsbrukerRepositoryV2.hentSkjermedeBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
+        List<String> medAlleTilgang = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
                 true, true, false);
-        List<String> medKode6Tilgang = oppfolgingsbrukerRepositoryV2.hentSkjermedeBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
+        List<String> medKode6Tilgang = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
                 true, false, false);
-        List<String> medKode7Tilgang = oppfolgingsbrukerRepositoryV2.hentSkjermedeBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
+        List<String> medKode7Tilgang = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
                 false, true, false);
-        List<String> utenTilgang = oppfolgingsbrukerRepositoryV2.hentSkjermedeBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
+        List<String> utenTilgang = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
                 false, false, false);
 
         assertThat(medAlleTilgang.size()).isEqualTo(0);

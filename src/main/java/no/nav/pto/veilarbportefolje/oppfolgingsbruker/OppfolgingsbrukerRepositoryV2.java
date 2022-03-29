@@ -130,8 +130,8 @@ public class OppfolgingsbrukerRepositoryV2 {
                 toZonedDateTime(rs.getTimestamp(DOED_FRA_DATO)), toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
 
-    public List<String> hentSkjermedeBrukere(List<String> fnrListe, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
-        String skjermetDiskresjonskoder = hentSkjermeteDiskresjonskoder(tilgangTilKode6, tilgangTilKode7);
+    public List<String> hentBrukereSomSkalSensureres(List<String> fnrListe, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
+        String skjermetDiskresjonskoder = hentDiskresjonskoderSomSkalSensureres(tilgangTilKode6, tilgangTilKode7);
 
         var params = new MapSqlParameterSource();
         params.addValue("fnrListe", fnrListe.stream().collect(Collectors.joining(",", "{", "}")));
@@ -147,7 +147,7 @@ public class OppfolgingsbrukerRepositoryV2 {
                 """, params, String.class);
     }
 
-    private String hentSkjermeteDiskresjonskoder(boolean tilgangTilKode6, boolean tilgangTilKode7) {
+    private String hentDiskresjonskoderSomSkalSensureres(boolean tilgangTilKode6, boolean tilgangTilKode7) {
         if (tilgangTilKode6 && tilgangTilKode7) {
             return "{}";
         }
