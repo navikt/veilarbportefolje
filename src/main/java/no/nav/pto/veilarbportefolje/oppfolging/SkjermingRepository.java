@@ -60,4 +60,14 @@ public class SkjermingRepository {
             return Optional.empty();
         }
     }
+
+    public void deleteSkjermingData(Fnr fnr) {
+        try {
+            db.update("""
+                    DELETE FROM NOM_SKJERMING WHERE FODSELSNR = ?
+                    """, fnr.get());
+        } catch (Exception e) {
+            log.error("Can't delete skjerming data " + e, e);
+        }
+    }
 }

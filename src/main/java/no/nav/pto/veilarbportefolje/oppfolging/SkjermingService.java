@@ -40,13 +40,23 @@ public class SkjermingService {
         try {
             Boolean erSkjermet = Boolean.valueOf(kafkaMelding.value());
 
-            skjermingRepository.settSkjerming(Fnr.of(kafkaMelding.key()), erSkjermet);
+            if (erSkjermet) {
+                skjermingRepository.settSkjerming(Fnr.of(kafkaMelding.key()), erSkjermet);
+            } else {
+                skjermingRepository.deleteSkjermingData(Fnr.of(kafkaMelding.key()));
+            }
         } catch (Exception e) {
             log.error("Can't save skjerming status " + e, e);
         }
     }
 
     public Optional<SkjermingData> hentSkjermingData(Fnr fnr) {
-        return skjermingRepository.hentSkjermingData(fnr);
+        Optional<SkjermingData> skjermingData = skjermingRepository.hentSkjermingData(fnr);
+
+        if (skjermingData.isPresent() && !skjermingData.get().isEr_skjermet()) {
+            skjermingRepository.deleteSkjermingData(fnr);
+            return Optional.empty();
+        }
+        return skjermingData;
     }
 }

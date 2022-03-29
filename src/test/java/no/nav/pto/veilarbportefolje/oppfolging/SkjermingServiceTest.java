@@ -20,27 +20,30 @@ public class SkjermingServiceTest {
 
     @Test
     public void testSavingSkjermingStatus() {
-        ConsumerRecord consumerRecord = new ConsumerRecord("topic", 1, 2, "fnr123", "true");
+        Fnr fnr = Fnr.of("fnr123");
+        ConsumerRecord consumerRecord = new ConsumerRecord("topic", 1, 2, fnr.get(), "true");
         skjermingService.behandleSkjermingStatus(consumerRecord);
 
-        Mockito.verify(skjermingRepository, Mockito.times(1)).settSkjerming(Fnr.of("fnr123"), true);
+        Mockito.verify(skjermingRepository, Mockito.times(1)).settSkjerming(fnr, true);
 
-        consumerRecord = new ConsumerRecord("topic", 1, 2, "fnr123", "false");
+        consumerRecord = new ConsumerRecord("topic", 1, 2, fnr.get(), "false");
         skjermingService.behandleSkjermingStatus(consumerRecord);
 
-        Mockito.verify(skjermingRepository, Mockito.times(1)).settSkjerming(Fnr.of("fnr123"), false);
+        Mockito.verify(skjermingRepository, Mockito.times(1)).deleteSkjermingData(fnr);
     }
 
     @Test
     public void testSavingSkjermingPersoner() {
-        ConsumerRecord consumerRecord = new ConsumerRecord("topic", 1, 2, "fnr123", new SkjermingDTO(new Integer[]{2022, 02, 22, 13, 14, 00}, null));
+        Fnr fnr = Fnr.of("fnr123");
+
+        ConsumerRecord consumerRecord = new ConsumerRecord("topic", 1, 2, fnr.get(), new SkjermingDTO(new Integer[]{2022, 02, 22, 13, 14, 00}, null));
         skjermingService.behandleSkjermedePersoner(consumerRecord);
 
-        Mockito.verify(skjermingRepository, Mockito.times(1)).settSkjermingPeriode(Fnr.of("fnr123"), Timestamp.valueOf("2022-02-22 13:14:00"), null);
+        Mockito.verify(skjermingRepository, Mockito.times(1)).settSkjermingPeriode(fnr, Timestamp.valueOf("2022-02-22 13:14:00"), null);
 
-        consumerRecord = new ConsumerRecord("topic", 1, 2, "fnr123", new SkjermingDTO(new Integer[]{2022, 02, 22, 13, 14, 00}, new Integer[]{2022, 04, 22, 13, 14, 00}));
+        consumerRecord = new ConsumerRecord("topic", 1, 2, fnr.get(), new SkjermingDTO(new Integer[]{2022, 02, 22, 13, 14, 00}, new Integer[]{2022, 04, 22, 13, 14, 00}));
         skjermingService.behandleSkjermedePersoner(consumerRecord);
 
-        Mockito.verify(skjermingRepository, Mockito.times(1)).settSkjermingPeriode(Fnr.of("fnr123"), Timestamp.valueOf("2022-02-22 13:14:00"), Timestamp.valueOf("2022-04-22 13:14:00"));
+        Mockito.verify(skjermingRepository, Mockito.times(1)).settSkjermingPeriode(fnr, Timestamp.valueOf("2022-02-22 13:14:00"), Timestamp.valueOf("2022-04-22 13:14:00"));
     }
 }

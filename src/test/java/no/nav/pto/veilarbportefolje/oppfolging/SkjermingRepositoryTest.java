@@ -24,13 +24,15 @@ public class SkjermingRepositoryTest {
 
     @Test
     public void testSavingSkjermingStatus() {
-        skjermingRepository.settSkjerming(Fnr.of("fnr123"), true);
+        Fnr fnr = Fnr.of("fnr123");
+
+        skjermingRepository.settSkjerming(fnr, true);
         Optional<SkjermingData> skjermingDataOptional = skjermingRepository.hentSkjermingData(Fnr.of("fnr123"));
 
         Assertions.assertTrue(skjermingDataOptional.isPresent());
         Assertions.assertTrue(skjermingDataOptional.get().isEr_skjermet());
 
-        skjermingRepository.settSkjerming(Fnr.of("fnr123"), false);
+        skjermingRepository.settSkjerming(fnr, false);
         skjermingDataOptional = skjermingRepository.hentSkjermingData(Fnr.of("fnr123"));
         Assertions.assertTrue(skjermingDataOptional.isPresent());
         Assertions.assertFalse(skjermingDataOptional.get().isEr_skjermet());
@@ -38,18 +40,34 @@ public class SkjermingRepositoryTest {
 
     @Test
     public void testSavingSkjermingPeriode() {
-        skjermingRepository.settSkjermingPeriode(Fnr.of("fnr123"), Timestamp.valueOf("2022-02-21 13:14:00"), null);
-        Optional<SkjermingData> skjermingDataOptional = skjermingRepository.hentSkjermingData(Fnr.of("fnr123"));
+        Fnr fnr = Fnr.of("fnr123");
+
+        skjermingRepository.settSkjermingPeriode(fnr, Timestamp.valueOf("2022-02-21 13:14:00"), null);
+        Optional<SkjermingData> skjermingDataOptional = skjermingRepository.hentSkjermingData(fnr);
 
         Assertions.assertTrue(skjermingDataOptional.isPresent());
         Assertions.assertEquals(skjermingDataOptional.get().getSkjermet_fra(), Timestamp.valueOf("2022-02-21 13:14:00"));
         Assertions.assertNull(skjermingDataOptional.get().getSkjermet_til());
 
-        skjermingRepository.settSkjermingPeriode(Fnr.of("fnr123"), Timestamp.valueOf("2022-02-21 13:14:00"), Timestamp.valueOf("2022-04-21 13:14:00"));
-        skjermingDataOptional = skjermingRepository.hentSkjermingData(Fnr.of("fnr123"));
+        skjermingRepository.settSkjermingPeriode(fnr, Timestamp.valueOf("2022-02-21 13:14:00"), Timestamp.valueOf("2022-04-21 13:14:00"));
+        skjermingDataOptional = skjermingRepository.hentSkjermingData(fnr);
         Assertions.assertEquals(skjermingDataOptional.get().getSkjermet_fra(), Timestamp.valueOf("2022-02-21 13:14:00"));
         Assertions.assertEquals(skjermingDataOptional.get().getSkjermet_til(), Timestamp.valueOf("2022-04-21 13:14:00"));
 
+    }
+
+    @Test
+    public void testDeleteOfSkjermingData() {
+        Fnr fnr = Fnr.of("fnr123");
+
+        skjermingRepository.settSkjerming(fnr, true);
+        Optional<SkjermingData> skjermingDataOptional = skjermingRepository.hentSkjermingData(fnr);
+
+        Assertions.assertTrue(skjermingDataOptional.isPresent());
+
+        skjermingRepository.deleteSkjermingData(fnr);
+        skjermingDataOptional = skjermingRepository.hentSkjermingData(fnr);
+        Assertions.assertFalse(skjermingDataOptional.isPresent());
     }
 
 }
