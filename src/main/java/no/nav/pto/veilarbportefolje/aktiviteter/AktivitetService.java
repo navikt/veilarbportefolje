@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -82,12 +84,16 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         moteplans.forEach(plan -> {
             if (skjermedeFnrs.stream().anyMatch(skjermetFnr -> skjermetFnr.equals(plan.deltaker().fnr()))) {
-                sensurertListe.add(plan.getSkjermetMoteplan());
+                sensurertListe.add(skjermMoteplan(plan));
             } else {
                 sensurertListe.add(plan);
             }
         });
 
         return sensurertListe;
+    }
+
+    private static Moteplan skjermMoteplan(Moteplan moteplan){
+        return new Moteplan(skjermetDeltaker, moteplan.dato(), moteplan.avtaltMedNav());
     }
 }

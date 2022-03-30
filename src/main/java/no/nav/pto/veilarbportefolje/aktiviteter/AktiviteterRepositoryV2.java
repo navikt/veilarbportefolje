@@ -148,7 +148,8 @@ public class AktiviteterRepositoryV2 {
         return new Moteplan(
                 new Motedeltaker(rs.getString("fornavn"), rs.getString("etternavn"),
                         rs.getString("fodselsnr")),
-                toIsoUTC(rs.getTimestamp("fradato")), rs.getBoolean("avtalt")
+                toIsoUTC(rs.getTimestamp("fradato")),
+                rs.getBoolean("avtalt")
         );
     }
 
