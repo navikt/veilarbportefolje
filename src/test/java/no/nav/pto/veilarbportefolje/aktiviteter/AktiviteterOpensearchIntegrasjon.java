@@ -6,7 +6,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -25,7 +24,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
+import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AKTIVITET;
+import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
@@ -39,7 +40,6 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     private final AktorId aktoer = randomAktorId();
     private final Fnr fodselsnummer = Fnr.ofValidFnr("10108000399"); //TESTFAMILIE
     private final JdbcTemplate jdbcTemplatePostgres;
-    private final Motedeltaker skjermetDeltaker = new Motedeltaker("", "", null);
 
     @Autowired
     public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres) {
@@ -197,6 +197,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         assertThat(medTilgang_6.stream().filter(moteplan -> moteplan.deltaker().equals(skjermetDeltaker)).toList().size()).isEqualTo(1);
         assertThat(medTilgang_7.stream().filter(moteplan -> moteplan.deltaker().equals(skjermetDeltaker)).toList().size()).isEqualTo(1);
         assertThat(utenTilgang.stream().allMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
+        System.out.println(toJson(medTilgang_7));
     }
 
     private void settSperretAnsatt(AktorId aktoer, Fnr fnr, NavKontor navKontor) {
