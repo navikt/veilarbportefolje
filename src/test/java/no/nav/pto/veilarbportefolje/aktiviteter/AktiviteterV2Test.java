@@ -2,9 +2,9 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
+import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
+import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +50,8 @@ public class AktiviteterV2Test {
                 .setTilDato(tilDato);
         aktivitetService.behandleKafkaMeldingLogikk(aktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
+        AvtaltAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         //Opensearch mapping
@@ -87,8 +87,8 @@ public class AktiviteterV2Test {
 
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
+        AvtaltAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         //Opensearch mapping
@@ -121,8 +121,8 @@ public class AktiviteterV2Test {
 
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
+        AvtaltAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         //Opensearch mapping
@@ -131,9 +131,8 @@ public class AktiviteterV2Test {
         Assertions.assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo(toIsoUTC(tilDato));
 
         Assertions.assertThat(postgresAktivitet.getAktivitetMoteUtlopsdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
-        Assertions.assertThat(postgresAktivitet.getAktivitetMoteStartdato()).isNull();
+        Assertions.assertThat(postgresAktivitet.getAktivitetMoteStartdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
     }
-
 
     @Test
     public void skal_kunne_ha_flere_typer_aktiviteter_V2() {
@@ -168,8 +167,8 @@ public class AktiviteterV2Test {
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet1);
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet2);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
+        AvtaltAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         //Opensearch mapping

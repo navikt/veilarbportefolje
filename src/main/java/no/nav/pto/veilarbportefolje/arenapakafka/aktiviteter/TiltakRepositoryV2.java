@@ -9,16 +9,24 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
+import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
+import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
+import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapTiltakTilEntity;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
@@ -29,6 +37,8 @@ public class TiltakRepositoryV2 {
     private final JdbcTemplate db;
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate dbReadOnly;
+    @Qualifier("PostgresNamedJdbcReadOnly")
+    private final NamedParameterJdbcTemplate namedDb;
 
     public void upsert(TiltakInnhold innhold, AktorId aktorId) {
         LocalDateTime fraDato = getLocalDateTimeOrNull(innhold.getAktivitetperiodeFra(), false);
@@ -47,7 +57,7 @@ public class TiltakRepositoryV2 {
                         """,
                 innhold.getAktivitetid(),
                 String.valueOf(innhold.getPersonId()), aktorId.get(), innhold.getTiltakstype(), fraDato, tilDato
-                );
+        );
     }
 
     public void delete(String tiltakId) {
@@ -75,6 +85,24 @@ public class TiltakRepositoryV2 {
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, String.class, kode))
         );
+    }
+
+    public void leggTilTiltak(String aktoerIder, HashMap<AktorId, List<AktivitetEntityDto>> result) {
+        namedDb.query("""
+                        SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak
+                        WHERE aktoerid = ANY (:ids::varchar[])
+                        """,
+                new MapSqlParameterSource("ids", aktoerIder),
+                (ResultSet rs) -> {
+                    while (rs.next()) {
+                        AktorId aktoerId = AktorId.of(rs.getString("aktoerid"));
+                        AktivitetEntityDto aktivitet = mapTiltakTilEntity(rs);
+
+                        List<AktivitetEntityDto> list = result.get(aktoerId);
+                        result.put(aktoerId, leggTilAktivitetPaResultat(aktivitet, list));
+                    }
+                    return result;
+                });
     }
 
     private void upsertTiltakKodeVerk(TiltakInnhold innhold) {

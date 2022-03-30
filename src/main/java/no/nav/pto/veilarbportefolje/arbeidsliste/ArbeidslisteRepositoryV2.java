@@ -135,7 +135,7 @@ public class ArbeidslisteRepositoryV2 {
                 rs.getString(KOMMENTAR),
                 toZonedDateTime(rs.getTimestamp(FRIST)),
                 Arbeidsliste.Kategori.valueOf(rs.getString(KATEGORI))
-        );
+        ).setAktoerid(rs.getString(AKTOERID));
     }
 
     @SneakyThrows

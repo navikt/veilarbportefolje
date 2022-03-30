@@ -11,9 +11,9 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
+import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
+import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,8 +68,8 @@ public class GruppeAktivitetTest {
         GruppeAktivitetDTO gruppeAktivitet = getInsertDTO();
         gruppeAktivitetService.behandleKafkaMelding(gruppeAktivitet);
 
-        PostgresAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
+        AvtaltAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         //Opensearch mapping
@@ -85,14 +85,14 @@ public class GruppeAktivitetTest {
     public void skal_ut_av_aktivitet() {
         gruppeAktivitetService.behandleKafkaMelding(getInsertDTO());
 
-        PostgresAktivitetEntity aktiviteter_pre = PostgresAktivitetMapper.build(aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
+        AvtaltAktivitetEntity aktiviteter_pre = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(
+                aktivitetOpensearchService.hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
         gruppeAktivitetService.behandleKafkaMelding(getDeleteDTO());
 
-        PostgresAktivitetEntity aktiviteter_post = PostgresAktivitetMapper.build(aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
-                .get(aktorId));
+        AvtaltAktivitetEntity aktiviteter_post = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(
+                aktivitetOpensearchService.hentAvtaltAktivitetData(List.of(aktorId))
+                        .get(aktorId));
 
         Assertions.assertThat(aktiviteter_pre.getAktiviteter().size()).isEqualTo(1);
         Assertions.assertThat(aktiviteter_pre.getAktiviteter().contains(AktivitetsType.gruppeaktivitet.name())).isTrue();

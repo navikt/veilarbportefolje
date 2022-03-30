@@ -1,20 +1,21 @@
-package no.nav.pto.veilarbportefolje.postgres.opensearch;
+package no.nav.pto.veilarbportefolje.postgres;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
+import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Stream;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvOppfolgingsdataPaPostgres;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
 
 @Slf4j
 @Service
@@ -28,29 +29,45 @@ public class PostgresOpensearchMapper {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
 
         HashMap<AktorId, PostgresAktorIdEntity> aktorIdData = aktoerDataOpensearchMapper.hentAktoerData(aktoerIder);
-        Map<AktorId, List<AktivitetEntity>> aktiveAktiviter = aktivitetOpensearchService.hentAktivitetData(aktoerIder);
+        Map<AktorId, List<AktivitetEntityDto>> avtalteAktiviterMap = aktivitetOpensearchService.hentAvtaltAktivitetData(aktoerIder);
+        Map<AktorId, List<AktivitetEntityDto>> ikkeAvtalteAktiviterMap = aktivitetOpensearchService.hentIkkeAvtaltAktivitetData(aktoerIder);
 
         brukere.forEach(bruker -> {
-                    Optional.ofNullable(aktorIdData.get(AktorId.of(bruker.getAktoer_id())))
+                    AktorId aktorId = AktorId.of(bruker.getAktoer_id());
+                    Optional.ofNullable(aktorIdData.get(aktorId))
                             .ifPresentOrElse(
                                     postgresAktorIdData -> flettInnAktoerData(postgresAktorIdData, bruker, medDiffLogging),
                                     () -> log.warn("Fant ikke aktoer i aktoer basert postgres: {}", bruker.getAktoer_id())
                             );
-                    Optional.ofNullable(aktiveAktiviter.get(AktorId.of(bruker.getAktoer_id())))
-                            .ifPresentOrElse(
-                                    aktivitetsListe -> {
-                                        PostgresAktivitetEntity aktivitetData = PostgresAktivitetMapper.build(aktivitetsListe);
-                                        flettInnAktivitetData(aktivitetData, bruker);
-                                    },
-                                    () -> flettInnAktivitetData(new PostgresAktivitetEntity(), bruker)
-                            );
+                    List<AktivitetEntityDto> avtalteAktiviteter = avtalteAktiviterMap.get(aktorId) != null ? avtalteAktiviterMap.get(aktorId) : new ArrayList<>();
+                    List<AktivitetEntityDto> ikkeAvtalteAktiviteter = ikkeAvtalteAktiviterMap.get(aktorId) != null ? ikkeAvtalteAktiviterMap.get(aktorId) : new ArrayList<>();
+
+                    AvtaltAktivitetEntity avtaltAktivitetData = kalkulerAvtalteAktivitetInformasjon(avtalteAktiviteter);
+                    AktivitetEntity alleAktiviteterData = kalkulerGenerellAktivitetInformasjon(
+                            Stream.concat(avtalteAktiviteter.stream(), ikkeAvtalteAktiviteter.stream()).toList()
+                    );
+                    flettInnAvtaltAktivitetData(avtaltAktivitetData, bruker);
+                    flettInnAktivitetData(alleAktiviteterData, bruker);
                 }
         );
 
         return brukere;
     }
 
-    private void flettInnAktivitetData(PostgresAktivitetEntity aktivitetData, OppfolgingsBruker bruker) {
+    private void flettInnAktivitetData(AktivitetEntity aktivitetData, OppfolgingsBruker bruker) {
+        bruker.setAlle_aktiviteter_mote_startdato(aktivitetData.getAktivitetMoteStartdato());
+        bruker.setAlle_aktiviteter_mote_utlopsdato(aktivitetData.getAktivitetMoteUtlopsdato());
+        bruker.setAlle_aktiviteter_stilling_utlopsdato(aktivitetData.getAktivitetStillingUtlopsdato());
+        bruker.setAlle_aktiviteter_egen_utlopsdato(aktivitetData.getAktivitetEgenUtlopsdato());
+        bruker.setAlle_aktiviteter_behandling_utlopsdato(aktivitetData.getAktivitetBehandlingUtlopsdato());
+        bruker.setAlle_aktiviteter_ijobb_utlopsdato(aktivitetData.getAktivitetIjobbUtlopsdato());
+        bruker.setAlle_aktiviteter_sokeavtale_utlopsdato(aktivitetData.getAktivitetSokeavtaleUtlopsdato());
+        bruker.setAlleAktiviteter(aktivitetData.getAlleAktiviteter());
+        // NOTE: tiltak, gruppeaktiviteter, og utdanningsaktiviteter blir håndtert av copy_to feltet i opensearch
+        // Dette gjøres da disse aktivitetene ikke kan være satt til "ikke avtalt"
+    }
+
+    private void flettInnAvtaltAktivitetData(AvtaltAktivitetEntity aktivitetData, OppfolgingsBruker bruker) {
         bruker.setNyesteutlopteaktivitet(aktivitetData.getNyesteUtlopteAktivitet());
         bruker.setAktivitet_start(aktivitetData.getAktivitetStart());
         bruker.setNeste_aktivitet_start(aktivitetData.getNesteAktivitetStart());
@@ -81,7 +98,6 @@ public class PostgresOpensearchMapper {
             bruker.setVeileder_id(dataPaAktorId.getVeileder());
             bruker.setOppfolging_startdato(dataPaAktorId.getOppfolgingStartdato());
         }
-
         bruker.setCv_eksistere(dataPaAktorId.getCvEksistere());
         bruker.setHar_delt_cv(dataPaAktorId.getHarDeltCv());
 
