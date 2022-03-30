@@ -46,7 +46,20 @@ public class ArbeidslisteService {
     }
 
     public List<Arbeidsliste> getArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
-        return arbeidslisteRepositoryPostgres.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);
+      return fjernKommentarFraArbeidsliste(arbeidslisteRepositoryPostgres.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident));
+
+    }
+
+    private List<Arbeidsliste> fjernKommentarFraArbeidsliste(List<Arbeidsliste> arbeidslister) {
+       return arbeidslister.stream().map(arbeidsliste ->
+                new Arbeidsliste(
+                        arbeidsliste.sistEndretAv,
+                        arbeidsliste.endringstidspunkt,
+                        arbeidsliste.overskrift,
+                        "",
+                        arbeidsliste.frist,
+                        arbeidsliste.kategori).setAktoerid(arbeidsliste.aktoerid).setArbeidslisteAktiv(arbeidsliste.arbeidslisteAktiv))
+               .toList();
     }
 
     public Try<ArbeidslisteDTO> createArbeidsliste(ArbeidslisteDTO dto) {
