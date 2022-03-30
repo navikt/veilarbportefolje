@@ -58,7 +58,9 @@ public class ArbeidslisteService {
                         arbeidsliste.overskrift,
                         "",
                         arbeidsliste.frist,
-                        arbeidsliste.kategori).setAktoerid(arbeidsliste.aktoerid).setArbeidslisteAktiv(arbeidsliste.arbeidslisteAktiv))
+                        arbeidsliste.kategori)
+                        .setAktoerid(arbeidsliste.aktoerid)
+                        .setArbeidslisteAktiv(arbeidsliste.arbeidslisteAktiv))
                .toList();
     }
 
