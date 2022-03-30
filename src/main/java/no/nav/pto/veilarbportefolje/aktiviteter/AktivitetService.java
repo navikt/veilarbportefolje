@@ -75,8 +75,9 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
     private List<Moteplan> sensurerMoteplaner(List<Moteplan> moteplans, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
         List<Moteplan> sensurertListe = new ArrayList<>(moteplans.size());
-        List<String> skjermedeBrukere = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(
-                moteplans.stream().map(Moteplan::deltaker).map(Motedeltaker::fnr).toList(),
+
+        List<String> fnrs = moteplans.stream().map(Moteplan::deltaker).map(Motedeltaker::fnr).toList();
+        List<String> skjermedeBrukere = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(fnrs,
                 tilgangTilKode6, tilgangTilKode7, tilgangTilEgenAnsatt);
 
         moteplans.forEach(plan -> {
@@ -88,6 +89,5 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         });
 
         return sensurertListe;
-
     }
 }
