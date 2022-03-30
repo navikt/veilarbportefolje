@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
@@ -48,7 +49,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     }
 
     @BeforeEach
-    public void resetDb(){
+    public void resetDb() {
         jdbcTemplatePostgres.update("TRUNCATE aktiviteter CASCADE");
         jdbcTemplatePostgres.update("TRUNCATE oppfolgingsbruker_arena CASCADE");
         jdbcTemplatePostgres.update("TRUNCATE oppfolging_data CASCADE");
@@ -120,8 +121,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setVersion(1L)
                 .setAvtalt(true));
-        List<Moteplan> moteplaner = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), false, false, false);
-        List<Moteplan> ingenMotePlaner = aktivitetService.hentMoteplan(annenVeileder, EnhetId.of(navKontor.getValue()),false, false, false);
+        List<Moteplan> moteplaner = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new Skjermettilgang(false, false, false));
+        List<Moteplan> ingenMotePlaner = aktivitetService.hentMoteplan(annenVeileder, EnhetId.of(navKontor.getValue()), new Skjermettilgang(false, false, false));
 
         assertThat(moteplaner.size()).isEqualTo(2);
         assertThat(ingenMotePlaner.size()).isEqualTo(0);
@@ -145,8 +146,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setVersion(1L)
                 .setAvtalt(false));
-        List<Moteplan> medTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), false, false, true);
-        List<Moteplan> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()),false, false, false);
+        List<Moteplan> medTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new Skjermettilgang(false, false, true));
+        List<Moteplan> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new Skjermettilgang(false, false, false));
 
         assertThat(medTilgang.stream().noneMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
         assertThat(utenTilgang.stream().allMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
@@ -156,13 +157,14 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     @Test
     public void hentMoteplan_diskresjonsKode() {
         NavKontor navKontor = randomNavKontor();
-        VeilederId veileder = randomVeilederId();;
+        VeilederId veileder = randomVeilederId();
+
         AktorId aktoerKode6 = randomAktorId();
         AktorId aktoerKode7 = randomAktorId();
 
         testDataClient.setupBruker(aktoerKode6, navKontor, veileder, ZonedDateTime.now());
         testDataClient.setupBruker(aktoerKode7, navKontor, veileder, ZonedDateTime.now());
-        settDiskresjonskode(aktoerKode6, randomFnr(), navKontor,"6");
+        settDiskresjonskode(aktoerKode6, randomFnr(), navKontor, "6");
         settDiskresjonskode(aktoerKode7, randomFnr(), navKontor, "7");
 
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
@@ -185,10 +187,10 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setVersion(1L)
                 .setAvtalt(false));
-        List<Moteplan> medTilgang_alt = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), true, true, false);
-        List<Moteplan> medTilgang_6 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()),true, false, false);
-        List<Moteplan> medTilgang_7 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()),false, true, false);
-        List<Moteplan> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()),false, false, false);
+        List<Moteplan> medTilgang_alt = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new Skjermettilgang(true, true, false));
+        List<Moteplan> medTilgang_6 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new Skjermettilgang(true, false, false));
+        List<Moteplan> medTilgang_7 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new Skjermettilgang(false, true, false));
+        List<Moteplan> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new Skjermettilgang(false, false, false));
 
         assertThat(medTilgang_alt.stream().noneMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
         assertThat(medTilgang_6.stream().filter(moteplan -> moteplan.deltaker().equals(skjermetDeltaker)).toList().size()).isEqualTo(1);
@@ -196,7 +198,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         assertThat(utenTilgang.stream().allMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
     }
 
-    private void settSperretAnsatt(AktorId aktoer, Fnr fnr, NavKontor navKontor){
+    private void settSperretAnsatt(AktorId aktoer, Fnr fnr, NavKontor navKontor) {
         oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktoer.get(), fnr.get(), null, null,
                         "test", "testson", navKontor.getValue(), null, null,
@@ -204,7 +206,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                         false, null, ZonedDateTime.now()));
     }
 
-    private void settDiskresjonskode(AktorId aktoer, Fnr fnr, NavKontor navKontor, String kode){
+    private void settDiskresjonskode(AktorId aktoer, Fnr fnr, NavKontor navKontor, String kode) {
         oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktoer.get(), fnr.get(), null, null,
                         "test", "testson", navKontor.getValue(), null, null,

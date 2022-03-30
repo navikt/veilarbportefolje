@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -130,12 +131,12 @@ public class OppfolgingsbrukerRepositoryV2 {
                 toZonedDateTime(rs.getTimestamp(DOED_FRA_DATO)), toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
 
-    public List<String> hentBrukereSomSkalSensureres(List<String> fnrListe, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
+    public List<String> finnSkjulteBrukere(List<String> fnrListe, Skjermettilgang skjermettilgang) {
         var params = new MapSqlParameterSource();
         params.addValue("fnrListe", fnrListe.stream().collect(Collectors.joining(",", "{", "}")));
-        params.addValue("tilgangTilKode6", tilgangTilKode6);
-        params.addValue("tilgangTilKode7", tilgangTilKode7);
-        params.addValue("tilgangTilEgenAnsatt", tilgangTilEgenAnsatt);
+        params.addValue("tilgangTilKode6", skjermettilgang.tilgangTilKode6());
+        params.addValue("tilgangTilKode7", skjermettilgang.tilgangTilKode7());
+        params.addValue("tilgangTilEgenAnsatt", skjermettilgang.tilgangTilEgenAnsatt());
 
         return dbNamed.queryForList("""
                 SELECT fodselsnr from oppfolgingsbruker_arena

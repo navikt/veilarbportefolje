@@ -82,20 +82,15 @@ public class AuthService {
 
     }
 
-    public boolean harVeilederTilgangTilKode6(){
+    public Skjermettilgang hentVeilederTilgangTilSkjermet(){
         String veilederId = AuthUtils.getInnloggetVeilederIdent().toString();
-        return veilarbPep.harVeilederTilgangTilKode6(NavIdent.of(veilederId));
+        boolean tilgangTilKode6 = veilarbPep.harVeilederTilgangTilKode6(NavIdent.of(veilederId));
+        boolean tilgangTilKode7 = veilarbPep.harVeilederTilgangTilKode7(NavIdent.of(veilederId));
+        boolean tilgangEgenAnsatt = veilarbPep.harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederId));
+
+        return new Skjermettilgang(tilgangTilKode6, tilgangTilKode7, tilgangEgenAnsatt);
     }
 
-    public boolean harVeilederTilgangTilKode7(){
-        String veilederId = AuthUtils.getInnloggetVeilederIdent().toString();
-        return veilarbPep.harVeilederTilgangTilKode7(NavIdent.of(veilederId));
-    }
-
-    public boolean harVeilederTilgangTilEgenAnsatt(){
-        String veilederId = AuthUtils.getInnloggetVeilederIdent().toString();
-        return veilarbPep.harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederId));
-    }
 
     @Data
     @Accessors(chain = true)

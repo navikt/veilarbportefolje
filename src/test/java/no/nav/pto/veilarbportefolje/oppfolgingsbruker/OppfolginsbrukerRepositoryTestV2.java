@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,10 +77,10 @@ public class OppfolginsbrukerRepositoryTestV2 {
         settSperretAnsatt(sperretAnsatt, sperretAnsattFnr, true);
         settSperretAnsatt(kontroll, kontrollFnr, false);
 
-        List<String> medTilgang = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(List.of(sperretAnsattFnr, kontrollFnr),
-                false, false, true);
-        List<String> utenTilgang = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(List.of(sperretAnsattFnr, kontrollFnr),
-                false, false, false);
+        List<String> medTilgang = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(List.of(sperretAnsattFnr, kontrollFnr), new Skjermettilgang(
+                false, false, true));
+        List<String> utenTilgang = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(List.of(sperretAnsattFnr, kontrollFnr),
+                new Skjermettilgang(false, false, false));
         assertThat(medTilgang.size()).isEqualTo(0);
         assertThat(utenTilgang.size()).isEqualTo(1);
         assertThat(utenTilgang.stream().anyMatch(x -> x.equals(sperretAnsattFnr))).isTrue();
@@ -93,18 +94,19 @@ public class OppfolginsbrukerRepositoryTestV2 {
         String kode6Fnr = randomFnr().get();
         String kode7Fnr = randomFnr().get();
         String kontrollFnr = randomFnr().get();
+
         settDiskresjonskode(kode6, kode6Fnr, "6");
         settDiskresjonskode(kode7, kode7Fnr, "7");
         settDiskresjonskode(kontroll, kontrollFnr, null);
 
-        List<String> medAlleTilgang = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
-                true, true, false);
-        List<String> medKode6Tilgang = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
-                true, false, false);
-        List<String> medKode7Tilgang = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
-                false, true, false);
-        List<String> utenTilgang = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
-                false, false, false);
+        List<String> medAlleTilgang = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
+                new Skjermettilgang(true, true, false));
+        List<String> medKode6Tilgang = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
+                new Skjermettilgang(true, false, false));
+        List<String> medKode7Tilgang = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
+                new Skjermettilgang(false, true, false));
+        List<String> utenTilgang = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
+                new Skjermettilgang(false, false, false));
 
         assertThat(medAlleTilgang.size()).isEqualTo(0);
         assertThat(medKode6Tilgang.size()).isEqualTo(1);

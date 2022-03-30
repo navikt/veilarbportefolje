@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
+import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
@@ -105,10 +106,8 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
 
         authService.tilgangTilEnhet(enhet.get());
-        boolean tilgangTilKode6 = authService.harVeilederTilgangTilKode6();
-        boolean tilgangTilKode7 = authService.harVeilederTilgangTilKode7();
-        boolean tilgangTilEgenAnsatt = authService.harVeilederTilgangTilEgenAnsatt();
+        Skjermettilgang tilgangTilSkjermeteBrukere = authService.hentVeilederTilgangTilSkjermet();
 
-        return aktivitetService.hentMoteplan(veilederIdent, enhet, tilgangTilKode6, tilgangTilKode7, tilgangTilEgenAnsatt);
+        return aktivitetService.hentMoteplan(veilederIdent, enhet, tilgangTilSkjermeteBrukere);
     }
 }

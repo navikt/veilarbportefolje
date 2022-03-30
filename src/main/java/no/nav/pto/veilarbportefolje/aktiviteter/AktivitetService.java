@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -67,21 +68,20 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         );
     }
 
-    public List<Moteplan> hentMoteplan(VeilederId veilederIdent, EnhetId enhet, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
+    public List<Moteplan> hentMoteplan(VeilederId veilederIdent, EnhetId enhet, Skjermettilgang skjermettilgang) {
         List<Moteplan> moteplans = aktiviteterRepositoryV2.hentFremtidigeMoter(veilederIdent, enhet);
-        return sensurerMoteplaner(moteplans, tilgangTilKode6, tilgangTilKode7, tilgangTilEgenAnsatt);
 
+        return sensurerMoteplaner(moteplans, skjermettilgang);
     }
 
-    private List<Moteplan> sensurerMoteplaner(List<Moteplan> moteplans, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
-        List<Moteplan> sensurertListe = new ArrayList<>(moteplans.size());
+    private List<Moteplan> sensurerMoteplaner(List<Moteplan> moteplans, Skjermettilgang skjermettilgang) {
+        List<Moteplan> sensurertListe = new ArrayList<>();
 
         List<String> fnrs = moteplans.stream().map(Moteplan::deltaker).map(Motedeltaker::fnr).toList();
-        List<String> skjermedeBrukere = oppfolgingsbrukerRepositoryV2.hentBrukereSomSkalSensureres(fnrs,
-                tilgangTilKode6, tilgangTilKode7, tilgangTilEgenAnsatt);
+        List<String> skjermedeFnrs = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(fnrs, skjermettilgang);
 
         moteplans.forEach(plan -> {
-            if (skjermedeBrukere.stream().anyMatch(skjermetFnr -> skjermetFnr.equals(plan.deltaker().fnr()))) {
+            if (skjermedeFnrs.stream().anyMatch(skjermetFnr -> skjermetFnr.equals(plan.deltaker().fnr()))) {
                 sensurertListe.add(plan.getSkjermetMoteplan());
             } else {
                 sensurertListe.add(plan);
