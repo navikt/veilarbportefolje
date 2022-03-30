@@ -17,10 +17,20 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.AKTIVITETTYPE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.FRADATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.STATUS;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TILDATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.VERSION;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapAktivitetTilEntity;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -108,6 +118,7 @@ public class AktiviteterRepositoryV2 {
 
     public List<Moteplan> hentFremtidigeMoter(VeilederId veilederIdent, EnhetId enhet) {
         List<Moteplan> result = new ArrayList<>();
+
         var params = new MapSqlParameterSource();
         params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
         params.addValue("veilederIdent", veilederIdent.getValue());
@@ -117,7 +128,6 @@ public class AktiviteterRepositoryV2 {
                          from oppfolgingsbruker_arena op
                         left join oppfolging_data od on od.aktoerid = op.aktoerid
                         right join aktiviteter a on a.aktoerid = op.aktoerid
-
                         where op.nav_kontor = :enhet::varchar
                         AND od.veilederid = :veilederIdent::varchar
                         AND a.aktivitettype = 'mote'

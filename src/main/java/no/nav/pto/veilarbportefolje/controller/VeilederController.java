@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
+import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
@@ -103,8 +104,10 @@ public class VeilederController {
     public List<Moteplan> hentMoteplanForVeileder(@PathVariable("veilederident") VeilederId veilederIdent, @RequestParam("enhet") EnhetId enhet){
         ValideringsRegler.sjekkEnhet(enhet.get());
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
-        authService.tilgangTilEnhet(enhet.get());
 
-        return aktivitetService.hentMoteplan(veilederIdent, enhet);
+        authService.tilgangTilEnhet(enhet.get());
+        Skjermettilgang tilgangTilSkjermeteBrukere = authService.hentVeilederTilgangTilSkjermet();
+
+        return aktivitetService.hentMoteplan(veilederIdent, enhet, tilgangTilSkjermeteBrukere);
     }
 }
