@@ -30,6 +30,10 @@ public class SkjermingService {
                 skjermetTil = LocalDateTime.of(skjermingDTO.getSkjermetTil()[0], skjermingDTO.getSkjermetTil()[1], skjermingDTO.getSkjermetTil()[2], skjermingDTO.getSkjermetTil()[3], skjermingDTO.getSkjermetTil()[4], skjermingDTO.getSkjermetTil()[5]);
             }
 
+            if (skjermetFra == null && skjermetTil == null) {
+                throw new Exception("Possible illegal data about skjerming period, kafka message: " + kafkaMelding.value());
+            }
+
             skjermingRepository.settSkjermingPeriode(Fnr.of(kafkaMelding.key()), DateUtils.toTimestamp(skjermetFra), DateUtils.toTimestamp(skjermetTil));
         } catch (Exception e) {
             log.error("Can't save skjerming periode " + e, e);
