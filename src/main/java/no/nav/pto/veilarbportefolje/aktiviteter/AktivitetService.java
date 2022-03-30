@@ -81,7 +81,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         moteplans.forEach(plan -> {
             if (skjermedeBrukere.stream().anyMatch(skjermetFnr -> skjermetFnr.equals(plan.deltaker().fnr()))) {
-                sensurertListe.add(Moteplan.skjermMoteplan(plan));
+                sensurertListe.add(plan.getSkjermetMoteplan());
             } else {
                 sensurertListe.add(plan);
             }

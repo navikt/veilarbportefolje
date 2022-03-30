@@ -131,33 +131,19 @@ public class OppfolgingsbrukerRepositoryV2 {
     }
 
     public List<String> hentBrukereSomSkalSensureres(List<String> fnrListe, boolean tilgangTilKode6, boolean tilgangTilKode7, boolean tilgangTilEgenAnsatt) {
-        String skjermetDiskresjonskoder = hentDiskresjonskoderSomSkalSensureres(tilgangTilKode6, tilgangTilKode7);
-
         var params = new MapSqlParameterSource();
         params.addValue("fnrListe", fnrListe.stream().collect(Collectors.joining(",", "{", "}")));
-        params.addValue("skjermetDiskresjonskoder", skjermetDiskresjonskoder);
+        params.addValue("tilgangTilKode6", tilgangTilKode6);
+        params.addValue("tilgangTilKode7", tilgangTilKode7);
         params.addValue("tilgangTilEgenAnsatt", tilgangTilEgenAnsatt);
+
         return dbNamed.queryForList("""
                 SELECT fodselsnr from oppfolgingsbruker_arena
                 where fodselsnr = ANY (:fnrListe::varchar[])
                 AND (
-                    (diskresjonskode IS NOT NULL AND (diskresjonskode = ANY (:skjermetDiskresjonskoder::varchar[])))
+                    (diskresjonskode = '6' AND NOT :tilgangTilKode6::boolean)
+                    OR (diskresjonskode = '7' AND NOT :tilgangTilKode7::boolean)
                     OR (sperret_ansatt AND NOT :tilgangTilEgenAnsatt::boolean)
-                )
-                """, params, String.class);
+                )""", params, String.class);
     }
-
-    private String hentDiskresjonskoderSomSkalSensureres(boolean tilgangTilKode6, boolean tilgangTilKode7) {
-        if (tilgangTilKode6 && tilgangTilKode7) {
-            return "{}";
-        }
-        if (tilgangTilKode6) {
-            return "{7}";
-        }
-        if (tilgangTilKode7) {
-            return "{6}";
-        }
-        return "{6,7}";
-    }
-
 }
