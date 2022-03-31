@@ -9,7 +9,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -54,13 +57,24 @@ public class SkjermingService {
         }
     }
 
-    public Optional<SkjermingData> hentSkjermingData(Fnr fnr) {
-        Optional<SkjermingData> skjermingData = skjermingRepository.hentSkjermingData(fnr);
+    public Optional<SkjermingData> hentSkjermingData(String fnr) {
+        Optional<SkjermingData> skjermingData = skjermingRepository.hentSkjermingData(Fnr.of(fnr));
 
         if (skjermingData.isPresent() && !skjermingData.get().isEr_skjermet()) {
-            skjermingRepository.deleteSkjermingData(fnr);
+            skjermingRepository.deleteSkjermingData(Fnr.of(fnr));
             return Optional.empty();
         }
         return skjermingData;
+    }
+
+    public Optional<Set<Fnr>> hentSkjermetPersoner(List<String> fnr) {
+        List<Fnr> fnrs = fnr.stream().map(Fnr::of).collect(Collectors.toList());
+
+        Optional<Set<Fnr>> skjermetPersoner = skjermingRepository.hentSkjermetPersoner(fnrs);
+
+        if (skjermetPersoner.isEmpty()) {
+            throw new RuntimeException("Can't get skjermet personer");
+        }
+        return skjermetPersoner;
     }
 }

@@ -8,8 +8,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.NOM_SKJERMING.*;
 
@@ -59,6 +64,26 @@ public class SkjermingRepository {
             log.error("Can't get skjerming data " + e, e);
             return Optional.empty();
         }
+    }
+
+    public Optional<Set<Fnr>> hentSkjermetPersoner(List<Fnr> fnrs) {
+        String fnrsCondition = fnrs.stream().map(Fnr::toString).collect(Collectors.joining(",", "{", "}"));
+        try {
+            Set<Fnr> skjermetPersoner = new HashSet<>();
+            db.query("""
+                            SELECT FODSELSNR FROM NOM_SKJERMING WHERE ER_SKJERMET AND FODSELSNR = ANY (?::varchar[])
+                            """,
+                    ps -> ps.setString(1, fnrsCondition),
+                    (ResultSet rs) -> {
+                        skjermetPersoner.add(Fnr.of(rs.getString(FNR)));
+                    }
+            );
+            return Optional.of(skjermetPersoner);
+        } catch (Exception e) {
+            log.error("Can't get skjerming data " + e, e);
+            return Optional.empty();
+        }
+
     }
 
     public void deleteSkjermingData(Fnr fnr) {

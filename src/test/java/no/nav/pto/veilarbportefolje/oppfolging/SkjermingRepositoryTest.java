@@ -10,7 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class SkjermingRepositoryTest {
     private SkjermingRepository skjermingRepository;
@@ -68,6 +70,23 @@ public class SkjermingRepositoryTest {
         skjermingRepository.deleteSkjermingData(fnr);
         skjermingDataOptional = skjermingRepository.hentSkjermingData(fnr);
         Assertions.assertFalse(skjermingDataOptional.isPresent());
+    }
+
+    @Test
+    public void testHentingAvSkjermingData() {
+        Fnr fnr1 = Fnr.of("fnr123");
+        Fnr fnr2 = Fnr.of("fnr124");
+        Fnr fnr3 = Fnr.of("fnr125");
+
+        skjermingRepository.settSkjerming(fnr1, true);
+        skjermingRepository.settSkjerming(fnr2, true);
+        skjermingRepository.settSkjerming(fnr3, false);
+
+        Optional<Set<Fnr>> fnrSkjermingOptional = skjermingRepository.hentSkjermetPersoner(List.of(fnr1, fnr2, fnr3));
+        Assertions.assertTrue(fnrSkjermingOptional.isPresent());
+        Assertions.assertTrue(fnrSkjermingOptional.get().contains(fnr1));
+        Assertions.assertTrue(fnrSkjermingOptional.get().contains(fnr2));
+        Assertions.assertFalse(fnrSkjermingOptional.get().contains(fnr3));
     }
 
 }
