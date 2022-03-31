@@ -67,7 +67,7 @@ public class SkjermingService {
         return skjermingData;
     }
 
-    public Optional<Set<Fnr>> hentSkjermetPersoner(List<String> fnr) {
+    public Set<Fnr> hentSkjermetPersoner(List<String> fnr) {
         List<Fnr> fnrs = fnr.stream().map(Fnr::of).collect(Collectors.toList());
 
         Optional<Set<Fnr>> skjermetPersoner = skjermingRepository.hentSkjermetPersoner(fnrs);
@@ -75,6 +75,6 @@ public class SkjermingService {
         if (skjermetPersoner.isEmpty()) {
             throw new RuntimeException("Can't get skjermet personer");
         }
-        return skjermetPersoner;
+        return skjermetPersoner.get();
     }
 }

@@ -36,12 +36,12 @@ public class PostgresOpensearchMapper {
         HashMap<AktorId, PostgresAktorIdEntity> aktorIdData = aktoerDataOpensearchMapper.hentAktoerData(aktoerIder);
         Map<AktorId, List<AktivitetEntityDto>> avtalteAktiviterMap = aktivitetOpensearchService.hentAvtaltAktivitetData(aktoerIder);
         Map<AktorId, List<AktivitetEntityDto>> ikkeAvtalteAktiviterMap = aktivitetOpensearchService.hentIkkeAvtaltAktivitetData(aktoerIder);
-        Optional<Set<Fnr>> skjermetPersonerNOM_Optional = skjermingService.hentSkjermetPersoner(fnrs);
+        Set<Fnr> skjermetPersonerNOM = skjermingService.hentSkjermetPersoner(fnrs);
 
         brukere.forEach(bruker -> {
                     AktorId aktorId = AktorId.of(bruker.getAktoer_id());
-                    Boolean erSkjermet_NOM = skjermetPersonerNOM_Optional.isPresent() && skjermetPersonerNOM_Optional.get().contains(Fnr.of(bruker.getFnr()));
-                    
+                    Boolean erSkjermet_NOM = skjermetPersonerNOM.contains(Fnr.of(bruker.getFnr()));
+
                     Optional.ofNullable(aktorIdData.get(aktorId))
                             .ifPresentOrElse(
                                     postgresAktorIdData -> flettInnAktoerData(postgresAktorIdData, bruker, erSkjermet_NOM, medDiffLogging),

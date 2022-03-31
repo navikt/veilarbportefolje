@@ -115,7 +115,9 @@ import static org.mockito.Mockito.when;
         YtelsesRepository.class,
         YtelsesRepositoryV2.class,
         YtelsesStatusRepositoryV2.class,
-        OppfolgingPeriodeService.class
+        OppfolgingPeriodeService.class,
+        SkjermingService.class,
+        SkjermingRepository.class
 })
 public class ApplicationConfigTest {
 
