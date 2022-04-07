@@ -29,15 +29,13 @@ public class SkjermingRepositoryTest {
         Fnr fnr = Fnr.of("fnr123");
 
         skjermingRepository.settSkjerming(fnr, true);
-        Optional<SkjermingData> skjermingDataOptional = skjermingRepository.hentSkjermingData(Fnr.of("fnr123"));
+        Set<Fnr> skjermingDataOptional = skjermingRepository.hentSkjermetPersoner(List.of(fnr));
 
-        Assertions.assertTrue(skjermingDataOptional.isPresent());
-        Assertions.assertTrue(skjermingDataOptional.get().isEr_skjermet());
+        Assertions.assertTrue(skjermingDataOptional.contains(fnr));
 
         skjermingRepository.settSkjerming(fnr, false);
-        skjermingDataOptional = skjermingRepository.hentSkjermingData(Fnr.of("fnr123"));
-        Assertions.assertTrue(skjermingDataOptional.isPresent());
-        Assertions.assertFalse(skjermingDataOptional.get().isEr_skjermet());
+        skjermingDataOptional = skjermingRepository.hentSkjermetPersoner(List.of(fnr));
+        Assertions.assertFalse(skjermingDataOptional.contains(fnr));
     }
 
     @Test
@@ -63,13 +61,13 @@ public class SkjermingRepositoryTest {
         Fnr fnr = Fnr.of("fnr123");
 
         skjermingRepository.settSkjerming(fnr, true);
-        Optional<SkjermingData> skjermingDataOptional = skjermingRepository.hentSkjermingData(fnr);
+        Set<Fnr> skjermingDataOptional = skjermingRepository.hentSkjermetPersoner(List.of(fnr));
 
-        Assertions.assertTrue(skjermingDataOptional.isPresent());
+        Assertions.assertTrue(skjermingDataOptional.contains(fnr));
 
         skjermingRepository.deleteSkjermingData(fnr);
-        skjermingDataOptional = skjermingRepository.hentSkjermingData(fnr);
-        Assertions.assertFalse(skjermingDataOptional.isPresent());
+        skjermingDataOptional = skjermingRepository.hentSkjermetPersoner(List.of(fnr));
+        Assertions.assertFalse(skjermingDataOptional.contains(fnr));
     }
 
     @Test
@@ -82,11 +80,10 @@ public class SkjermingRepositoryTest {
         skjermingRepository.settSkjerming(fnr2, true);
         skjermingRepository.settSkjerming(fnr3, false);
 
-        Optional<Set<Fnr>> fnrSkjermingOptional = skjermingRepository.hentSkjermetPersoner(List.of(fnr1, fnr2, fnr3));
-        Assertions.assertTrue(fnrSkjermingOptional.isPresent());
-        Assertions.assertTrue(fnrSkjermingOptional.get().contains(fnr1));
-        Assertions.assertTrue(fnrSkjermingOptional.get().contains(fnr2));
-        Assertions.assertFalse(fnrSkjermingOptional.get().contains(fnr3));
+        Set<Fnr> fnrSkjermingOptional = skjermingRepository.hentSkjermetPersoner(List.of(fnr1, fnr2, fnr3));
+        Assertions.assertTrue(fnrSkjermingOptional.contains(fnr1));
+        Assertions.assertTrue(fnrSkjermingOptional.contains(fnr2));
+        Assertions.assertFalse(fnrSkjermingOptional.contains(fnr3));
     }
 
 }

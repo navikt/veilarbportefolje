@@ -4,6 +4,6 @@ import lombok.Value;
 
 @Value
 public class SkjermingDTO {
-    private Integer[] skjermetFra;
-    private Integer[] skjermetTil;
+    Integer[] skjermetFra;
+    Integer[] skjermetTil;
 }
