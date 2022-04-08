@@ -6,6 +6,8 @@ import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
 import no.nav.common.client.aktoroppslag.PdlAktorOppslagClient;
+import no.nav.common.client.pdl.PdlClient;
+import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
@@ -22,6 +24,7 @@ import java.net.http.HttpClient;
 import static no.nav.common.utils.NaisUtils.getCredentials;
 import static no.nav.common.utils.UrlUtils.createDevInternalIngressUrl;
 import static no.nav.common.utils.UrlUtils.createProdInternalIngressUrl;
+import static no.nav.common.utils.UrlUtils.createServiceUrl;
 
 
 @Configuration
@@ -65,6 +68,15 @@ public class ClientConfig {
     @Bean
     public HttpClient httpClient() {
         return HttpClient.newBuilder().build();
+    }
+
+    @Bean
+    public PdlClient pdlClient(SystemUserTokenProvider systemUserTokenProvider){
+        return new PdlClientImpl(
+                createServiceUrl("pdl-api", "default", false),
+                systemUserTokenProvider::getSystemUserToken,
+                systemUserTokenProvider::getSystemUserToken
+        );
     }
 
     private static boolean isProduction() {

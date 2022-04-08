@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -25,15 +26,20 @@ public class OppfolgingStartetService {
     private final OpensearchIndexer opensearchIndexer;
     private final BrukerRepository brukerRepository;
     private final AktorClient aktorClient;
+    private final PdlClient pdlClient;
 
     public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate) {
         mapAktoerTilPersonId(aktorId);
+
         oppfolgingRepository.settUnderOppfolging(aktorId, oppfolgingStartetDate);
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
         opensearchIndexer.indekser(aktorId);
         log.info("Bruker {} har startet oppfølging: {}", aktorId, oppfolgingStartetDate);
     }
 
+    private void mapAktoerTilFnr(AktorId aktorId){
+        pdlClient.
+    }
     private void mapAktoerTilPersonId(AktorId aktorId) {
         List<PersonId> mappedePersonIder = brukerRepository.hentMappedePersonIder(aktorId);
 
