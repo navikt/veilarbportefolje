@@ -346,6 +346,7 @@
 
     <profiles>
         <profile>
+            <id>github</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
