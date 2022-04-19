@@ -346,7 +346,6 @@
 
     <profiles>
         <profile>
-            <id>github</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
@@ -355,11 +354,6 @@
                 <repository>
                     <id>central</id>
                     <url>https://repo.maven.apache.org/maven2</url>
-                </repository>
-                <repository>
-                    <id>github</id>
-                    <name>github-package-registry-navikt</name>
-                    <url>https://maven.pkg.github.com/navikt/maven-release</url>
                 </repository>
                 <repository>
                     <id>confluent</id>
