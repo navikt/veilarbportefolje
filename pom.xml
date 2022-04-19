@@ -133,7 +133,7 @@
             <version>${veilarbregistrering.skjema.version}</version>
         </dependency>
         <dependency>
-            <groupId>no.nav.arbeid.pam</groupId>
+            <groupId>com.github.navikt</groupId>
             <artifactId>pam-cv-avro-cvmeldinger</artifactId>
             <version>51</version>
         </dependency>
