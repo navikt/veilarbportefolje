@@ -12,11 +12,16 @@ import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvOppfolgingsdataPaPostgres;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAv14APaPostgres;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
 
@@ -99,13 +104,12 @@ public class PostgresOpensearchMapper {
         if (medDiffLogging) {
             loggDiff(dataPaAktorId, bruker, erSkjermet_NOM);
         }
-        if (brukAvOppfolgingsdataPaPostgres(unleashService)) {
-            bruker.setOppfolging(dataPaAktorId.getOppfolging());
-            bruker.setNy_for_veileder(dataPaAktorId.getNyForVeileder());
-            bruker.setManuell_bruker(dataPaAktorId.getManuellBruker() ? "MANUELL" : null);
-            bruker.setVeileder_id(dataPaAktorId.getVeileder());
-            bruker.setOppfolging_startdato(dataPaAktorId.getOppfolgingStartdato());
-        }
+        bruker.setOppfolging(dataPaAktorId.getOppfolging());
+        bruker.setNy_for_veileder(dataPaAktorId.getNyForVeileder());
+        bruker.setManuell_bruker(dataPaAktorId.getManuellBruker() ? "MANUELL" : null);
+        bruker.setVeileder_id(dataPaAktorId.getVeileder());
+        bruker.setOppfolging_startdato(dataPaAktorId.getOppfolgingStartdato());
+
         bruker.setCv_eksistere(dataPaAktorId.getCvEksistere());
         bruker.setHar_delt_cv(dataPaAktorId.getHarDeltCv());
 
@@ -123,6 +127,12 @@ public class PostgresOpensearchMapper {
         bruker.setAapmaxtiduke(dataPaAktorId.getAapmaxtiduke());
         bruker.setAapunntakukerigjen(dataPaAktorId.getAapunntakukerigjen());
 
+        if(brukAv14APaPostgres(unleashService)){
+            bruker.setVedtak_status(dataPaAktorId.getVedtak14AStatus());
+            bruker.setVedtak_status_endret(dataPaAktorId.getVedtak14AStatusEndret());
+            bruker.setVedtak_status_endret(dataPaAktorId.getAnsvarligVeilederFor14AVedtak());
+        }
+
         if (dataPaAktorId.isArbeidslisteAktiv()) {
             bruker.setArbeidsliste_sist_endret_av_veilederid(dataPaAktorId.getArbeidslisteSistEndretAvVeilederid());
             bruker.setArbeidsliste_endringstidspunkt(dataPaAktorId.getArbeidslisteEndringstidspunkt());
@@ -134,6 +144,15 @@ public class PostgresOpensearchMapper {
     }
 
     private void loggDiff(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker, Boolean erSkjermet_NOM) {
+        if (isDifferent(bruker.getAnsvarlig_veileder_for_vedtak(), postgresAktorIdEntity.getAnsvarligVeilederFor14AVedtak())) {
+            log.info("postgres Opensearch: ansvarlig_veileder_for_vedtak feil bruker: {}", bruker.getAktoer_id());
+        }
+        if (isDifferent(bruker.getVedtak_status(), postgresAktorIdEntity.getVedtak14AStatus())) {
+            log.info("postgres Opensearch: getVedtak_status feil bruker: {}", bruker.getAktoer_id());
+        }
+        if (isDifferentDate(bruker.getVedtak_status_endret(), postgresAktorIdEntity.getVedtak14AStatusEndret())) {
+            log.info("postgres Opensearch: getVedtak_status_endret feil bruker: {}", bruker.getAktoer_id());
+        }
         if (bruker.isHar_delt_cv() != postgresAktorIdEntity.getHarDeltCv()) {
             log.info("postgres Opensearch: isHar_delt_cv feil bruker: {}", bruker.getAktoer_id());
         }
