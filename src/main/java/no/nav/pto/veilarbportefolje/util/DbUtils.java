@@ -11,9 +11,7 @@ import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
@@ -142,17 +140,6 @@ public class DbUtils {
         };
     }
 
-    public static Boolean parse0OR1(String value) {
-        if (value == null) {
-            return null;
-        }
-        return "1".equals(value);
-    }
-
-    public static String boolTo0OR1(boolean bool) {
-        return bool ? "1" : "0";
-    }
-
     public static String boolToJaNei(boolean bool) {
         return bool ? "J" : "N";
     }
@@ -160,13 +147,6 @@ public class DbUtils {
     public static String numberToString(BigDecimal bd) {
         return String.valueOf(bd.intValue());
     }
-
-    public static <S> Set<S> toSet(S s) {
-        Set<S> set = new HashSet<>();
-        set.add(s);
-        return set;
-    }
-
 
     public static <T> Predicate<T> not(Predicate<T> predicate) {
         return (T t) -> !predicate.test(t);
