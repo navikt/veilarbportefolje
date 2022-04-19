@@ -30,6 +30,8 @@ import no.nav.pto.veilarbportefolje.opensearch.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.AktoerDataOpensearchMapper;
@@ -117,7 +119,9 @@ import static org.mockito.Mockito.when;
         YtelsesStatusRepositoryV2.class,
         OppfolgingPeriodeService.class,
         SkjermingService.class,
-        SkjermingRepository.class
+        SkjermingRepository.class,
+        PdlService.class,
+        PdlRepository.class
 })
 public class ApplicationConfigTest {
 

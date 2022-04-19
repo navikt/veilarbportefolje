@@ -1,25 +1,80 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.OPPFOLGING;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class PdlRepository {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
-    public void upsertFodselsdag(AktorId aktorId, LocalDate fodselsdag){
+    @Transactional
+    public void upsertIdenter(List<PDLIdent> pdlIdenter) {
+        List<String> identer = pdlIdenter.stream().map(PDLIdent::getIdent).toList();
+        slettIdenter(identer);
 
+        String nyLokalIdent = db.queryForObject("SELECT nextval(PDL_BRUKER_SEQ)", String.class);
+        pdlIdenter.forEach(ident -> insertIdent(nyLokalIdent, ident));
     }
 
-    public void slettPdlData(AktorId aktorId){
-
+    @Transactional
+    public void slettLokalIdentlagringHvisIkkeUnderOppfolging(AktorId aktorId) {
+        String lokalIdent = hentLokalIdent(aktorId.get());
+        if (harIdentUnderOppfolging(lokalIdent)) {
+            log.info("""
+                            Sletter ikke identer lagret på aktorId: {}.
+                            Da en eller flere relaterte identer på lokalIdent: {} er under oppfolging.
+                            """,
+                    aktorId, lokalIdent);
+            return;
+        }
+        log.info("Sletter identer lagret på aktorId: {}, lokalIdent: {}.", aktorId, lokalIdent);
+        slettLagreteIdenter(lokalIdent);
     }
 
+    private void insertIdent(String lokalIdent, PDLIdent ident) {
+        db.update("""
+                        insert into pdl_identer (bruker_nr, ident, historisk, gruppe) VALUES (?, ?, ?, ?)
+                """, lokalIdent, ident.getIdent(), ident.getGruppe(), ident.getHistorisk());
+    }
+
+    private void slettIdenter(List<String> identer) {
+        String identerParam = identer.stream().collect(Collectors.joining(",", "{", "}"));
+        db.update("DELETE from pdl_identer where ident = ANY (?)", identerParam);
+    }
+
+    private void slettLagreteIdenter(String lokaleIdent) {
+        log.info("Sletter lokal ident: {}", lokaleIdent);
+        db.update("DELETE from pdl_identer where bruker_nr = ?", lokaleIdent);
+    }
+
+    private String hentLokalIdent(String lookUpIdent) {
+        return queryForObjectOrNull(() -> db.queryForObject("""
+                SELECT BRUKER_NR from PDL_IDENTER where IDENT = ?
+                """, (rs, row) -> rs.getString("BRUKER_NR"), lookUpIdent));
+    }
+
+    private boolean harIdentUnderOppfolging(String lookUpIdent) {
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject("""
+                        select bool_or(oppfolging) from oppfolging_data
+                        where aktoerid in (select ident from pdl_identer where bruker_nr = ?)
+                        """, (rs, row) -> rs.getBoolean(OPPFOLGING), lookUpIdent))
+        ).orElse(false);
+    }
 }

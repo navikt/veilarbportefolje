@@ -1,18 +1,18 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.utils.graphql.GraphqlRequest;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.utils.FileUtils;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlFodselsRespons;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonVariables;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentRespons;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentVariabel;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -21,40 +21,30 @@ public class PdlService {
     private final PdlRepository pdlRepository;
     private final PdlClient pdlClient;
 
-    private final String hentPersonQuery = FileUtils.getResourceFileAsString("graphql/hentPerson.gql");
+    private static final String hentIdenterQuery = FileUtils.getResourceFileAsString("graphql/hentIdenter.gql");
 
-    @SneakyThrows
-    public void lastInnPdlData(AktorId aktorId) {
-        hentHistoriskeIdenter(aktorId);
-        String fodselsdag = hentFodseldagFraPdl(aktorId);
-        pdlRepository.upsertFodselsdag(aktorId, LocalDate.parse(fodselsdag));
-    }
-
-    private String hentHistoriskeIdenter(AktorId aktorId) {
-        return null;
+    public void lastInnIdenter(AktorId aktorId) {
+        List<PDLIdent> idents = hentIdenterFraPdl(aktorId);
+        pdlRepository.upsertIdenter(idents);
     }
 
     public void slettPdlData(AktorId aktorId) {
-        pdlRepository.slettPdlData(aktorId);
+        pdlRepository.slettLokalIdentlagringHvisIkkeUnderOppfolging(aktorId);
     }
 
-    private String hentFodseldagFraPdl(AktorId aktorId) throws RuntimeException {
-        GraphqlRequest<PdlPersonVariables.HentFodselsdag> request = new GraphqlRequest<>(hentPersonQuery, new PdlPersonVariables.HentFodselsdag(aktorId.get()));
-        PdlFodselsRespons respons = pdlClient.request(request, PdlFodselsRespons.class);
+    private List<PDLIdent> hentIdenterFraPdl(AktorId aktorId) throws RuntimeException {
+        GraphqlRequest<PdlIdentVariabel> request = new GraphqlRequest<>(hentIdenterQuery, new PdlIdentVariabel(aktorId.get()));
+        PdlIdentRespons respons = pdlClient.request(request, PdlIdentRespons.class);
         if (hasErrors(respons)) {
-            throw new RuntimeException();
+            throw new RuntimeException("Kunne ikke hente identer fra PDL");
         }
 
         return respons.getData()
-                .getHentPerson()
-                .getFoedsel()
-                .stream()
-                .findFirst()
-                .map(PdlFodselsRespons.HentFodselsResponseData.HentPersonDataResponsData.Foedsel::getFoedselsdato)
-                .orElseThrow();
+                .getHentIdenter()
+                .getIdenter();
     }
 
-    public static <T> boolean hasErrors(GraphqlResponse<T> response) throws RuntimeException {
+    private static <T> boolean hasErrors(GraphqlResponse<T> response) throws RuntimeException {
         if (response == null || response.getErrors() == null) {
             return true;
         }

@@ -426,6 +426,49 @@ CREATE VIEW public.optimaliser_bruker AS
 
 
 --
+-- Name: pdl_bruker_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.pdl_bruker_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: pdl_identer; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pdl_identer (
+    bruker_nr bigint NOT NULL,
+    ident character varying(30) NOT NULL,
+    historisk boolean NOT NULL,
+    gruppe character varying(30) NOT NULL
+);
+
+
+--
+-- Name: pdl_identer_bruker_nr_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.pdl_identer_bruker_nr_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: pdl_identer_bruker_nr_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.pdl_identer_bruker_nr_seq OWNED BY public.pdl_identer.bruker_nr;
+
+
+--
 -- Name: scheduled_tasks; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -497,6 +540,13 @@ CREATE TABLE public.ytelsesvedtak (
     antallpermitteringsuker integer,
     antallukerigjenunntak integer
 );
+
+
+--
+-- Name: pdl_identer bruker_nr; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pdl_identer ALTER COLUMN bruker_nr SET DEFAULT nextval('public.pdl_identer_bruker_nr_seq'::regclass);
 
 
 --
@@ -625,6 +675,14 @@ ALTER TABLE ONLY public.oppfolging_data
 
 ALTER TABLE ONLY public.oppfolgingsbruker_arena
     ADD CONSTRAINT oppfolgingsbruker_arena_pkey PRIMARY KEY (aktoerid);
+
+
+--
+-- Name: pdl_identer pdl_identer_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pdl_identer
+    ADD CONSTRAINT pdl_identer_pkey PRIMARY KEY (bruker_nr, ident, gruppe);
 
 
 --
