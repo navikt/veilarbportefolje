@@ -195,7 +195,7 @@ class RegistreringServiceTest extends EndToEndTest {
 
         brukere.forEach(bruker -> {
                     populateOpensearch(EnhetId.of(enhet), VeilederId.of(null), bruker.getAktoer_id());
-                    indexer.skrivTilIndeks(indexName.getValue(), bruker);
+                    indexer.syncronIndekseringsRequest(bruker);
                 }
         );
 

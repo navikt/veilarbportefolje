@@ -395,6 +395,18 @@ CREATE TABLE public.lest_arena_hendelse_ytelse (
 
 
 --
+-- Name: nom_skjerming; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.nom_skjerming (
+    fodselsnr character varying(33) NOT NULL,
+    er_skjermet boolean DEFAULT false,
+    skjermet_fra timestamp without time zone,
+    skjermet_til timestamp without time zone
+);
+
+
+--
 -- Name: optimaliser_bruker; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -589,6 +601,14 @@ ALTER TABLE ONLY public.lest_arena_hendelse_aktivitet
 
 ALTER TABLE ONLY public.lest_arena_hendelse_ytelse
     ADD CONSTRAINT lest_arena_hendelse_ytelse_pkey PRIMARY KEY (vedtakid);
+
+
+--
+-- Name: nom_skjerming nom_skjerming_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.nom_skjerming
+    ADD CONSTRAINT nom_skjerming_pkey PRIMARY KEY (fodselsnr);
 
 
 --

@@ -9,10 +9,10 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresAktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.AktivitetEntity;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.utils.PostgresAktivitetMapper;
+import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
+import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
+import no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -60,8 +60,8 @@ public class UtdanningsAktivitetTest {
     @Test
     public void utdannningsaktivitet_skalInnKommeIAktivitet() {
         String utlopsdato = "2040-01-01";
-        PostgresAktivitetEntity pre_apostgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
+        AvtaltAktivitetEntity pre_apostgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         utdanningsAktivitetService.behandleKafkaMelding(
@@ -74,8 +74,8 @@ public class UtdanningsAktivitetTest {
                                 .setEndretDato(new ArenaDato("2021-01-01"))
                                 .setAktivitetid("UA-123456789")
                         ));
-        PostgresAktivitetEntity post_apostgresAktivitet = PostgresAktivitetMapper.build(aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId))
+        AvtaltAktivitetEntity post_apostgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
         assertThat(pre_apostgresAktivitet.getAktivitetUtdanningaktivitetUtlopsdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
@@ -98,8 +98,8 @@ public class UtdanningsAktivitetTest {
                                 .setAktivitetid("UA-1234")
                         ));
 
-        List<AktivitetEntity> aktiviteter = aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId)).get(aktorId);
+        List<AktivitetEntityDto> aktiviteter = aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId)).get(aktorId);
         assertThat(aktiviteter).isNull();
     }
 
@@ -144,11 +144,11 @@ public class UtdanningsAktivitetTest {
         );
 
 
-        List<AktivitetEntity> pre_aktiviteter = aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId)).get(aktorId);
+        List<AktivitetEntityDto> pre_aktiviteter = aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId)).get(aktorId);
         aktivitetService.deaktiverUtgatteUtdanningsAktivteter();
-        List<AktivitetEntity> post_aktiviteter = aktivitetOpensearchService
-                .hentAktivitetData(List.of(aktorId)).get(aktorId);
+        List<AktivitetEntityDto> post_aktiviteter = aktivitetOpensearchService
+                .hentAvtaltAktivitetData(List.of(aktorId)).get(aktorId);
         assertThat(pre_aktiviteter.size()).isEqualTo(3);
         assertThat(post_aktiviteter.size()).isEqualTo(1);
         assertThat(toIsoUTC(post_aktiviteter.get(0).getUtlop()).substring(0, 10))

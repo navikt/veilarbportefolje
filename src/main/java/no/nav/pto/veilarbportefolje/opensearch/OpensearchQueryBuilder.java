@@ -6,12 +6,12 @@ import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.opensearch.index.query.BoolQueryBuilder;
 import org.opensearch.index.query.QueryBuilder;
 import org.opensearch.index.query.QueryBuilders;
+import org.opensearch.index.query.RangeQueryBuilder;
 import org.opensearch.script.Script;
 import org.opensearch.search.aggregations.AggregationBuilders;
 import org.opensearch.search.aggregations.BucketOrder;
@@ -48,8 +48,7 @@ import static org.opensearch.search.sort.SortMode.MIN;
 @Slf4j
 public class OpensearchQueryBuilder {
 
-    static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg, UnleashService unleashService) {
-
+    static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg) {
         if (!filtervalg.alder.isEmpty()) {
             BoolQueryBuilder subQuery = boolQuery();
             filtervalg.alder.forEach(alder -> byggAlderQuery(alder, subQuery));
@@ -73,6 +72,7 @@ public class OpensearchQueryBuilder {
         byggManuellFilter(filtervalg.utdanningGodkjent, queryBuilder, "utdanning_godkjent");
         byggManuellFilter(filtervalg.arbeidslisteKategori, queryBuilder, "arbeidsliste_kategori");
         byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter");
+        byggManuellFilter(filtervalg.alleAktiviteter, queryBuilder, "alleAktiviteter");
 
         if (filtervalg.harYtelsefilter()) {
             BoolQueryBuilder subQuery = boolQuery();
@@ -170,7 +170,7 @@ public class OpensearchQueryBuilder {
                 ).collect(toList());
     }
 
-    static SearchSourceBuilder sorterQueryParametere(String sortOrder, String sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg) {
+    static SearchSourceBuilder sorterQueryParametere(String sortOrder, String sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg, boolean brukAvIkkeAvtalteAktiviteter) {
         SortOrder order = "ascending".equals(sortOrder) ? SortOrder.ASC : SortOrder.DESC;
 
         if ("ikke_satt".equals(sortField)) {
@@ -180,9 +180,22 @@ public class OpensearchQueryBuilder {
 
         switch (sortField) {
             case "valgteaktiviteter" -> sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
-            case "moterMedNAVIdag" -> searchSourceBuilder.sort("aktivitet_mote_startdato", order);
+            case "moterMedNAVIdag" -> {
+                if (brukAvIkkeAvtalteAktiviteter) {
+                    searchSourceBuilder.sort("alle_aktiviteter_mote_startdato", order);
+                } else {
+                    searchSourceBuilder.sort("aktivitet_mote_startdato", order);
+                }
+            }
+            case "motestatus" -> searchSourceBuilder.sort("aktivitet_mote_startdato", order);
             case "iavtaltaktivitet" -> {
                 FieldSortBuilder builder = new FieldSortBuilder("aktivitet_utlopsdatoer")
+                        .order(order)
+                        .sortMode(MIN);
+                searchSourceBuilder.sort(builder);
+            }
+            case "iaktivitet" -> {
+                FieldSortBuilder builder = new FieldSortBuilder("alle_aktiviteter_utlopsdatoer")
                         .order(order)
                         .sortMode(MIN);
                 searchSourceBuilder.sort(builder);
@@ -268,9 +281,7 @@ public class OpensearchQueryBuilder {
         return builder;
     }
 
-    static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet, boolean erVedtakstottePilotPa) {
-        LocalDate localDate = LocalDate.now();
-
+    static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet, boolean erVedtakstottePilotPa, boolean brukIkkeAvtalteAktiviteter) {
         QueryBuilder queryBuilder;
         switch (brukerStatus) {
             case UFORDELTE_BRUKERE:
@@ -291,6 +302,9 @@ public class OpensearchQueryBuilder {
             case I_AVTALT_AKTIVITET:
                 queryBuilder = existsQuery("aktiviteter");
                 break;
+            case I_AKTIVITET:
+                queryBuilder = existsQuery("alleAktiviteter");
+                break;
             case IKKE_I_AVTALT_AKTIVITET:
                 queryBuilder = boolQuery().mustNot(existsQuery("aktiviteter"));
                 break;
@@ -304,9 +318,7 @@ public class OpensearchQueryBuilder {
                 queryBuilder = matchQuery("ny_for_veileder", true);
                 break;
             case MOTER_IDAG:
-                queryBuilder = rangeQuery("aktivitet_mote_startdato")
-                        .gte(toIsoUTC(localDate.atStartOfDay()))
-                        .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
+                queryBuilder = byggMoteMedNavIdag(brukIkkeAvtalteAktiviteter);
                 break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
                 queryBuilder = byggErSykmeldtMedArbeidsgiverFilter(erVedtakstottePilotPa);
@@ -323,6 +335,14 @@ public class OpensearchQueryBuilder {
 
         }
         return queryBuilder;
+    }
+
+    private static RangeQueryBuilder byggMoteMedNavIdag(boolean inkluderIkkeAvtalte){
+        LocalDate localDate = LocalDate.now();
+        String moteFelt = inkluderIkkeAvtalte ? "alle_aktiviteter_mote_startdato" : "aktivitet_mote_startdato";
+        return rangeQuery(moteFelt)
+                .gte(toIsoUTC(localDate.atStartOfDay()))
+                .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
     }
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
@@ -436,40 +456,24 @@ public class OpensearchQueryBuilder {
                 );
     }
 
-    static SearchSourceBuilder byggStatusTallForEnhetQuery(String enhetId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+    static SearchSourceBuilder byggStatusTallForEnhetQuery(String enhetId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa, boolean inkluderIkkeAvtalteAktiviteter) {
         BoolQueryBuilder enhetQuery = boolQuery()
                 .must(termQuery("oppfolging", true))
                 .must(termQuery("enhet_id", enhetId));
 
-        return byggStatusTallQuery(enhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa);
+        return byggStatusTallQuery(enhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa, inkluderIkkeAvtalteAktiviteter);
     }
 
-    static SearchSourceBuilder byggStatusTallForVeilederQuery(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+    static SearchSourceBuilder byggStatusTallForVeilederQuery(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa, boolean inkluderIkkeAvtalteAktiviteter) {
         BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
                 .must(termQuery("oppfolging", true))
                 .must(termQuery("enhet_id", enhetId))
                 .must(termQuery("veileder_id", veilederId));
 
-        return byggStatusTallQuery(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa);
+        return byggStatusTallQuery(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa, inkluderIkkeAvtalteAktiviteter);
     }
 
-    static BoolQueryBuilder byggIkkePermittertFilter() {
-        return boolQuery()
-                .must(boolQuery()
-                        .should(boolQuery().mustNot(matchQuery("brukers_situasjon", "ER_PERMITTERT")))
-                        .should(boolQuery().mustNot(rangeQuery("oppfolging_startdato")
-                                .gte(toIsoUTC(LocalDate.of(2020, 3, 10).atStartOfDay())))));
-
-    }
-
-    static BoolQueryBuilder byggPermittertFilter() {
-        return boolQuery()
-                .must(matchQuery("brukers_situasjon", "ER_PERMITTERT"))
-                .must(rangeQuery("oppfolging_startdato")
-                        .gte(toIsoUTC(LocalDate.of(2020, 3, 10).atStartOfDay())));
-    }
-
-    private static SearchSourceBuilder byggStatusTallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+    private static SearchSourceBuilder byggStatusTallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa, boolean inkluderIkkeAvtalteAktiviteter) {
         return new SearchSourceBuilder()
                 .size(0)
                 .aggregation(
@@ -477,6 +481,7 @@ public class OpensearchQueryBuilder {
                                 "statustall",
                                 erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
                                 mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
+                                mustExistFilter(filtrereVeilederOgEnhet, "iAktivitet", "alleAktiviteter"),
                                 ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
                                 inaktiveBrukere(filtrereVeilederOgEnhet),
                                 mustBeTrueFilter(filtrereVeilederOgEnhet, "minArbeidsliste", "arbeidsliste_aktiv"),
@@ -487,7 +492,8 @@ public class OpensearchQueryBuilder {
                                 mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraBruker", "venterpasvarfrabruker"),
                                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
                                 mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
-                                moterMedNavIdag(filtrereVeilederOgEnhet),
+                                moterMedNavIdag(filtrereVeilederOgEnhet, inkluderIkkeAvtalteAktiviteter),
+                                alleMoterMedNavIdag(filtrereVeilederOgEnhet),
                                 mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status"),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteBla", "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
@@ -520,23 +526,24 @@ public class OpensearchQueryBuilder {
         return new FiltersAggregator.KeyedFilter("erSykmeldtMedArbeidsgiver", boolQueryBuilder);
     }
 
-    private static FiltersAggregator.KeyedFilter permitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        return new FiltersAggregator.KeyedFilter("permitterteEtterNiendeMars", byggPermittertFilter().must(filtrereVeilederOgEnhet));
-    }
-
-    private static FiltersAggregator.KeyedFilter ikkePermitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        return new FiltersAggregator.KeyedFilter("ikkePermitterteEtterNiendeMars", byggIkkePermittertFilter().must(filtrereVeilederOgEnhet));
-    }
-
-    private static FiltersAggregator.KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
+    private static FiltersAggregator.KeyedFilter alleMoterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
         LocalDate localDate = LocalDate.now();
+        return new FiltersAggregator.KeyedFilter(
+                "alleMoterMedNAVIdag",
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .must(rangeQuery("alle_aktiviteter_mote_startdato")
+                                .gte(toIsoUTC(localDate.atStartOfDay()))
+                                .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay())))
+        );
+    }
+
+    private static FiltersAggregator.KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet, boolean inkluderIkkeAvtalteAktiviteter) {
         return new FiltersAggregator.KeyedFilter(
                 "moterMedNAVIdag",
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
-                        .must(rangeQuery("aktivitet_mote_startdato")
-                                .gte(toIsoUTC(localDate.atStartOfDay()))
-                                .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay())))
+                        .must(byggMoteMedNavIdag(inkluderIkkeAvtalteAktiviteter))
         );
     }
 

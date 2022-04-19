@@ -4,7 +4,6 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.SneakyThrows;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 
 import javax.sql.DataSource;

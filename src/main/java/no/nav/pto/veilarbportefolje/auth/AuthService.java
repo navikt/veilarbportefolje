@@ -69,7 +69,6 @@ public class AuthService {
 
         String diskresjonskode = bruker.getDiskresjonskode();
 
-
         if("6".equals(diskresjonskode) && !veilarbPep.harVeilederTilgangTilKode6(NavIdent.of(veilederIdent))) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
@@ -82,6 +81,16 @@ public class AuthService {
         return bruker;
 
     }
+
+    public Skjermettilgang hentVeilederTilgangTilSkjermet(){
+        String veilederId = AuthUtils.getInnloggetVeilederIdent().toString();
+        boolean tilgangTilKode6 = veilarbPep.harVeilederTilgangTilKode6(NavIdent.of(veilederId));
+        boolean tilgangTilKode7 = veilarbPep.harVeilederTilgangTilKode7(NavIdent.of(veilederId));
+        boolean tilgangEgenAnsatt = veilarbPep.harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederId));
+
+        return new Skjermettilgang(tilgangTilKode6, tilgangTilKode7, tilgangEgenAnsatt);
+    }
+
 
     @Data
     @Accessors(chain = true)

@@ -5,13 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
+import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.Portefolje;
 import no.nav.pto.veilarbportefolje.domene.StatusTall;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -39,6 +42,7 @@ public class VeilederController {
     private final AuthService authService;
     private final MetricsClient metricsClient;
     private final ArbeidslisteService arbeidslisteService;
+    private final AktivitetService aktivitetService;
 
     @PostMapping("/{veilederident}/portefolje")
     public Portefolje hentPortefoljeForVeileder(
@@ -94,5 +98,16 @@ public class VeilederController {
         authService.tilgangTilEnhet(enhet.get());
 
         return arbeidslisteService.getArbeidslisteForVeilederPaEnhet(enhet, veilederIdent);
+    }
+
+    @GetMapping("{veilederident}/moteplan")
+    public List<Moteplan> hentMoteplanForVeileder(@PathVariable("veilederident") VeilederId veilederIdent, @RequestParam("enhet") EnhetId enhet){
+        ValideringsRegler.sjekkEnhet(enhet.get());
+        ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
+
+        authService.tilgangTilEnhet(enhet.get());
+        Skjermettilgang tilgangTilSkjermeteBrukere = authService.hentVeilederTilgangTilSkjermet();
+
+        return aktivitetService.hentMoteplan(veilederIdent, enhet, tilgangTilSkjermeteBrukere);
     }
 }

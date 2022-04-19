@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import org.opensearch.action.ActionListener;
 import org.opensearch.action.bulk.BulkRequest;
@@ -53,10 +53,17 @@ public class OpensearchIndexer {
         if (erUnderOppfolging(bruker)) {
             leggTilSisteEndring(bruker);
             postgresOpensearchMapper.flettInnPostgresData(List.of(bruker), false);
-            skrivTilIndeks(alias.getValue(), bruker);
+            syncronIndekseringsRequest(bruker);
         } else {
             opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
         }
+    }
+
+    @SneakyThrows
+    public void syncronIndekseringsRequest(OppfolgingsBruker bruker){
+        IndexRequest indexRequest = new IndexRequest(alias.getValue()).id(bruker.getAktoer_id());
+        indexRequest.source(toJson(bruker), XContentType.JSON);
+        restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
     }
 
     public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
@@ -88,14 +95,7 @@ public class OpensearchIndexer {
                 log.warn("Feil under asynkron indeksering av brukerere ", e);
             }
         });
-
-
     }
-
-    public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {
-        this.skrivTilIndeks(indeksNavn, Collections.singletonList(oppfolgingsBruker));
-    }
-
 
     private void validateBatchSize(List<?> brukere) {
         if (brukere.size() > ORACLE_BATCH_SIZE_LIMIT) {
@@ -136,8 +136,13 @@ public class OpensearchIndexer {
         List<List<AktorId>> brukerePartition = Lists.partition(alleBrukere, (alleBrukere.size() / getNumberOfThreads()) + 1);
         ExecutorService executor = Executors.newFixedThreadPool(getNumberOfThreads());
         executor.execute(() ->
-                brukerePartition.parallelStream().forEach(bolk ->
-                        partition(bolk, BATCH_SIZE).forEach(this::indekserBolk)
+                brukerePartition.parallelStream().forEach(bolk -> {
+                            try {
+                                partition(bolk, BATCH_SIZE).forEach(this::indekserBolk);
+                            } catch (Exception e) {
+                                log.error("error under hovedindeksering", e);
+                            }
+                        }
                 )
         );
 
@@ -163,7 +168,7 @@ public class OpensearchIndexer {
 
     private int getNumberOfThreads() {
         if (isDevelopment().orElse(false)) {
-            return 2;
+            return 1;
         }
         return 8;
     }

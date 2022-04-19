@@ -8,16 +8,21 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.postgres.PostgresUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.*;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.isFarInTheFutureDate;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -59,10 +64,14 @@ public class Bruker {
     LocalDateTime forrigeAktivitetStart;
     LocalDateTime oppfolgingStartdato;
     LocalDateTime nesteUtlopsdatoAktivitet;
+    LocalDateTime nesteUtlopsdatoAlleAktiviteter;
     List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
+    Map<String, Timestamp> alleAktiviteter = new HashMap<>();
     LocalDateTime moteStartTid;
     LocalDateTime moteSluttTid;
+    LocalDateTime alleMoterStartTid;
+    LocalDateTime alleMoterSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
     String vedtakStatus;
     String ansvarligVeilederForVedtak;
@@ -117,27 +126,42 @@ public class Bruker {
                 .setManuellBrukerStatus(bruker.getManuell_bruker())
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
                 .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))
+                .setAlleMoterStartTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_startdato()))
+                .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
                 .setVedtakStatus(bruker.getVedtak_status())
                 .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
                 .setAnsvarligVeilederForVedtak(bruker.getAnsvarlig_veileder_for_vedtak())
                 .setOppfolgingStartdato(oppfolgingStartDato)
                 .setTrengerRevurdering(trengerRevurdering(bruker, erVedtakstottePilotPa))
-                .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
-                .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
-                .addAktivitetUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAktivitet_sokeavtale_utlopsdato()))
-                .addAktivitetUtlopsdato("stilling", dateToTimestamp(bruker.getAktivitet_stilling_utlopsdato()))
-                .addAktivitetUtlopsdato("ijobb", dateToTimestamp(bruker.getAktivitet_ijobb_utlopsdato()))
-                .addAktivitetUtlopsdato("egen", dateToTimestamp(bruker.getAktivitet_egen_utlopsdato()))
-                .addAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp(bruker.getAktivitet_gruppeaktivitet_utlopsdato()))
-                .addAktivitetUtlopsdato("mote", dateToTimestamp(bruker.getAktivitet_mote_utlopsdato()))
-                .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()));
+                .addAvtaltAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAktivitet_sokeavtale_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("stilling", dateToTimestamp(bruker.getAktivitet_stilling_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("ijobb", dateToTimestamp(bruker.getAktivitet_ijobb_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("egen", dateToTimestamp(bruker.getAktivitet_egen_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp(bruker.getAktivitet_gruppeaktivitet_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("mote", dateToTimestamp(bruker.getAktivitet_mote_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()))
+                .addAlleAktiviteterUtlopsdato("behandling", dateToTimestamp(bruker.getAlle_aktiviteter_behandling_utlopsdato()))
+                .addAlleAktiviteterUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAlle_aktiviteter_sokeavtale_utlopsdato()))
+                .addAlleAktiviteterUtlopsdato("stilling", dateToTimestamp(bruker.getAlle_aktiviteter_stilling_utlopsdato()))
+                .addAlleAktiviteterUtlopsdato("ijobb", dateToTimestamp(bruker.getAlle_aktiviteter_ijobb_utlopsdato()))
+                .addAlleAktiviteterUtlopsdato("egen", dateToTimestamp(bruker.getAlle_aktiviteter_egen_utlopsdato()))
+                .addAlleAktiviteterUtlopsdato("mote", dateToTimestamp(bruker.getAlle_aktiviteter_mote_utlopsdato()));
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {
         if (aktiviteterForenklet == null) {
             return;
         }
-        aktiviteterForenklet.forEach(navnPaaAktivitet -> setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet.toLowerCase())));
+        aktiviteterForenklet.forEach(navnPaaAktivitet -> nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(aktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAktivitet));
+    }
+
+    public void leggTilUtlopsdatoForAktiviteter(List<String> aktiviteterForenklet) {
+        if (aktiviteterForenklet == null) {
+            return;
+        }
+        aktiviteterForenklet.forEach(navnPaaAktivitet -> nesteUtlopsdatoAlleAktiviteter = nesteUtlopsdatoAktivitet(alleAktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAlleAktiviteter));
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(Map<String, AktivitetFiltervalg> aktiviteterAvansert) {
@@ -146,7 +170,7 @@ public class Bruker {
         }
         aktiviteterAvansert.forEach((navnPaaAktivitet, valg) -> {
             if (JA.equals(valg)) {
-                setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet.toLowerCase()));
+                nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(aktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAktivitet);
             }
         });
     }
@@ -177,11 +201,19 @@ public class Bruker {
         return sisteEndringTidspunkt == null || (tidspunkt != null && tidspunkt.isAfter(sisteEndringTidspunkt));
     }
 
-    private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
+    private Bruker addAvtaltAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
         if (Objects.isNull(utlopsdato) || isFarInTheFutureDate(utlopsdato)) {
             return this;
         }
         aktiviteter.put(type, utlopsdato);
+        return this;
+    }
+
+    private Bruker addAlleAktiviteterUtlopsdato(String type, Timestamp utlopsdato) {
+        if (Objects.isNull(utlopsdato) || isFarInTheFutureDate(utlopsdato)) {
+            return this;
+        }
+        alleAktiviteter.put(type, utlopsdato);
         return this;
     }
 
@@ -192,79 +224,15 @@ public class Bruker {
         return false;
     }
 
-    private void setNesteUtlopsdatoAktivitetHvisNyest(Timestamp aktivitetUlopsdato) {
+    private LocalDateTime nesteUtlopsdatoAktivitet(Timestamp aktivitetUlopsdato, LocalDateTime comp) {
         if (aktivitetUlopsdato == null) {
-            return;
+            return null;
         }
-        if (nesteUtlopsdatoAktivitet == null) {
-            nesteUtlopsdatoAktivitet = aktivitetUlopsdato.toLocalDateTime();
-        } else if (nesteUtlopsdatoAktivitet.isAfter(aktivitetUlopsdato.toLocalDateTime())) {
-            nesteUtlopsdatoAktivitet = aktivitetUlopsdato.toLocalDateTime();
+        if (comp == null) {
+            return aktivitetUlopsdato.toLocalDateTime();
+        } else if (comp.isAfter(aktivitetUlopsdato.toLocalDateTime())) {
+            return aktivitetUlopsdato.toLocalDateTime();
         }
+        return comp;
     }
-
-    public Bruker fraEssensiellInfo(Map<String, Object> row) {
-        String diskresjonskode = (String) row.get(DISKRESJONSKODE);
-        String formidlingsgruppekode = (String) row.get(FORMIDLINGSGRUPPEKODE);
-
-        return setNyForVeileder((boolean) row.get(NY_FOR_VEILEDER))
-                .setVeilederId((String) row.get(VEILEDERID))
-                .setDiskresjonskode((String) row.get(DISKRESJONSKODE))
-                .setFnr((String) row.get(FODSELSNR))
-                .setFornavn((String) row.get(FORNAVN))
-                .setEtternavn((String) row.get(ETTERNAVN))
-                .setDiskresjonskode(("7".equals(diskresjonskode) || "6".equals(diskresjonskode)) ? diskresjonskode : null)
-                .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
-                .setArbeidsliste(new Arbeidsliste(null, null, null, null, null, null));
-
-    }
-
-    public Bruker fraBrukerView(Map<String, Object> row, boolean erVedtakstottePilotPa) {
-        String diskresjonskode = (String) row.get(DISKRESJONSKODE);
-        String kvalifiseringsgruppekode = (String) row.get(KVALIFISERINGSGRUPPEKODE);
-        String formidlingsgruppekode = (String) row.get(FORMIDLINGSGRUPPEKODE);
-        String vedtakstatus = (String) row.get(VEDTAKSTATUS);
-        String sikkerhetstiltak = (String) row.get(SIKKERHETSTILTAK_TYPE_KODE);
-        String profileringResultat = (String) row.get(PROFILERING_RESULTAT);
-        boolean trengerVurdering = OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode);
-        boolean trengerRevurdering = OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus);
-        boolean erSykmeldtMedArbeidsgiver = OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode);
-        return setFnr((String) row.get(FODSELSNR))
-                .setNyForVeileder(PostgresUtils.safeBool((boolean) row.get(NY_FOR_VEILEDER)))
-                .setTrengerVurdering(trengerVurdering)
-                .setErSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej;
-                .setFornavn((String) row.get(FORNAVN))
-                .setEtternavn((String) row.get(ETTERNAVN))
-                .setVeilederId((String) row.get(VEILEDERID))
-                .setDiskresjonskode(("7".equals(diskresjonskode) || "6".equals(diskresjonskode)) ? diskresjonskode : null)
-                .setEgenAnsatt(PostgresUtils.safeBool((boolean) row.get(SPERRET_ANSATT)))
-                .setErDoed(PostgresUtils.safeBool((boolean) row.get(ER_DOED)))
-                .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak))
-                .setFodselsdato(toLocalDateTimeOrNull((java.sql.Date) row.get(FODSELS_DATO)))
-                .setKjonn((String) row.get(KJONN))
-                .setVenterPaSvarFraNAV(toLocalDateTimeOrNull((Timestamp) row.get(VENTER_PA_NAV)))
-                .setVenterPaSvarFraBruker(toLocalDateTimeOrNull((Timestamp) row.get(VENTER_PA_BRUKER)))
-                .setVedtakStatus(vedtakstatus)
-                .setVedtakStatusEndret(toLocalDateTimeOrNull((Timestamp) row.get(VEDTAKSTATUS_ENDRET_TIDSPUNKT)))
-                .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
-                .setAnsvarligVeilederForVedtak((String) row.get(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN))
-                .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
-                .setTrengerRevurdering(trengerRevurdering)
-                .setArbeidsliste(Arbeidsliste.of(row))
-                .setVurderingsBehov(trengerVurdering ? vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode, profileringResultat, erVedtakstottePilotPa) : null);
-        //TODO: utledd manuell
-    }
-
-    // TODO: sjekk om disse feltene er i bruk, de kan være nødvendige for statuser eller filtere
-    /*
-        public static final String MANUELL = "MANUELL";
-        public static final String ISERV_FRA_DATO = "ISERV_FRA_DATO";
-        public static final String FORMIDLINGSGRUPPEKODE = "FORMIDLINGSGRUPPEKODE";
-        public static final String KVALIFISERINGSGRUPPEKODE = "KVALIFISERINGSGRUPPEKODE";
-        public static final String RETTIGHETSGRUPPEKODE = "RETTIGHETSGRUPPEKODE";
-        public static final String HOVEDMAALKODE = "HOVEDMAALKODE";
-        public static final String SIKKERHETSTILTAK_TYPE_KODE = "SIKKERHETSTILTAK_TYPE_KODE";
-        public static final String HAR_OPPFOLGINGSSAK = "HAR_OPPFOLGINGSSAK";
-     */
-
 }

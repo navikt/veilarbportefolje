@@ -8,9 +8,9 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,18 +24,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class YtelseRepositoryV2Test {
-    private final YtelsesRepositoryV2 ytelsesRepositoryV2;
     private final AktorId bruker1 = AktorId.of("1000123");
     private final AktorId bruker2 = AktorId.of("1000124");
     private final AktorId bruker3 = AktorId.of("1000125");
-    private final Fnr fnr = Fnr.of("12345678912");
     private final PersonId personId = PersonId.of("123");
-    @Qualifier("PostgresJdbc")
+    private final Fnr fnr = Fnr.of("12345678912");
+    private final YtelsesRepositoryV2 ytelsesRepositoryV2;
     private final JdbcTemplate jdbcTemplate;
 
-    public YtelseRepositoryV2Test() {
-        jdbcTemplate = SingletonPostgresContainer.init().createJdbcTemplate();
-        ytelsesRepositoryV2 = new YtelsesRepositoryV2(jdbcTemplate);
+    @Autowired
+    public YtelseRepositoryV2Test(YtelsesRepositoryV2 ytelsesRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
+        this.ytelsesRepositoryV2 = ytelsesRepositoryV2;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @AfterEach

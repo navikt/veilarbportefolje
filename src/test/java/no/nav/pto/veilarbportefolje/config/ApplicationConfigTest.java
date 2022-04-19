@@ -19,7 +19,6 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepository
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
-import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerDataRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
@@ -28,26 +27,14 @@ import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
-import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
-import no.nav.pto.veilarbportefolje.opensearch.IndexName;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.opensearch.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.AktoerDataOpensearchMapper;
-import no.nav.pto.veilarbportefolje.postgres.opensearch.PostgresOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
+import no.nav.pto.veilarbportefolje.postgres.AktoerDataOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -56,11 +43,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
-import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
-import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import no.nav.pto.veilarbportefolje.util.TestDataClient;
-import no.nav.pto.veilarbportefolje.util.TestUtil;
-import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
+import no.nav.pto.veilarbportefolje.util.*;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
 import org.opensearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -105,7 +88,6 @@ import static org.mockito.Mockito.when;
         DialogService.class,
         DialogRepository.class,
         DialogRepositoryV2.class,
-        CvRepository.class,
         CVRepositoryV2.class,
         CVService.class,
         RegistreringRepositoryV2.class,
@@ -130,12 +112,15 @@ import static org.mockito.Mockito.when;
         AktivitetOpensearchService.class,
         YtelsesService.class,
         YtelsesRepositoryV2.class,
-        YtelsesStatusRepositoryV2.class
+        YtelsesStatusRepositoryV2.class,
+        OppfolgingPeriodeService.class,
+        SkjermingService.class,
+        SkjermingRepository.class
 })
 public class ApplicationConfigTest {
 
     private static final OpenSearchContainer OPENSEARCH_CONTAINER;
-    private static final String OPENSEARCH_VERSION = "1.2.4";
+    private static final String OPENSEARCH_VERSION = "1.3.0";
     private static final String OPENSEARCH_TEST_PASSWORD = "test";
     private static final String OPENSEARCH_TEST_USERNAME = "opensearch";
 

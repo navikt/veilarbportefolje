@@ -42,6 +42,7 @@ public class Filtervalg {
     public List<String> arbeidslisteKategori = new ArrayList<>();
     public List<String> sisteEndringKategori = new ArrayList<>();
     public List<String> aktiviteterForenklet = new ArrayList<>();
+    public List<String> alleAktiviteter = new ArrayList<>();
     public String ulesteEndringer;
     public CVjobbprofil cvJobbprofil;
 
@@ -101,6 +102,10 @@ public class Filtervalg {
 
     public boolean harAktiviteterForenklet(){
         return !aktiviteterForenklet.isEmpty();
+    }
+
+    public boolean harAlleAktiviteterFilter() {
+        return !alleAktiviteter.isEmpty();
     }
 
     public boolean harNavnEllerFnrQuery() {
