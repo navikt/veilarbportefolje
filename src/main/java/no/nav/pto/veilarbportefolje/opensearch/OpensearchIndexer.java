@@ -140,7 +140,7 @@ public class OpensearchIndexer {
                             try {
                                 partition(bolk, BATCH_SIZE).forEach(this::indekserBolk);
                             } catch (Exception e) {
-                                log.error("error under hovedindekering", e);
+                                log.error("error under hovedindeksering", e);
                             }
                         }
                 )

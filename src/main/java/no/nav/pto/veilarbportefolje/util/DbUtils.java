@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvOppfolgingsdataPaPostgres;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAv14APaPostgres;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 @Slf4j
@@ -75,7 +75,6 @@ public class DbUtils {
         String fornavn = rs.getString("fornavn");
         String etternavn = rs.getString("etternavn");
         String vedtakstatus = rs.getString("VEDTAKSTATUS");
-        String ansvarligVeilederForVedtak = rs.getString("ANSVARLIG_VEILEDER_NAVN");
 
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setPerson_id(numberToString(rs.getBigDecimal("person_id")))
@@ -102,28 +101,15 @@ public class DbUtils {
                 .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")))
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp("venterpasvarfranav")))
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
-                .setVedtak_status(Optional.ofNullable(vedtakstatus).map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf).map(KafkaVedtakStatusEndring::vedtakStatusTilTekst).orElse(null))
-                .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
-                .setAnsvarlig_veileder_for_vedtak(ansvarligVeilederForVedtak)
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus))
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING")); // Oppfolging hentes fra Oracle helt til at alt er migrert
-        if (!brukAvOppfolgingsdataPaPostgres(unleashService)) {
+        if (!brukAv14APaPostgres(unleashService)) {
             bruker
-                    .setOppfolging_startdato(toIsoUTC(rs.getTimestamp("oppfolging_startdato")))
-                    .setNy_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
-                    .setVeileder_id(rs.getString("veilederident"))
-                    .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")));
+                    .setVedtak_status(Optional.ofNullable(vedtakstatus).map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf).map(KafkaVedtakStatusEndring::vedtakStatusTilTekst).orElse(null))
+                    .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
+                    .setAnsvarlig_veileder_for_vedtak(rs.getString("ANSVARLIG_VEILEDER_NAVN"));
         }
         return bruker;
-    }
-
-    public static String identifiserManuellEllerKRRBruker(String krrJaNei, String manuellJaNei) {
-        if ("J".equals(krrJaNei)) {
-            return "KRR";
-        } else if ("J".equals(manuellJaNei)) {
-            return "MANUELL";
-        }
-        return null;
     }
 
     public static boolean parseJaNei(Object janei, String name) {
