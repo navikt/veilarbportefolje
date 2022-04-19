@@ -128,9 +128,9 @@
         </dependency>
 
         <dependency>
-            <groupId>no.nav.arbeid</groupId>
+            <groupId>com.github.navikt</groupId>
             <artifactId>veilarbregistrering-skjema</artifactId>
-            <version>${veilarbregistrering.skjema.version}</version>
+            <version>9a956c35030697bf491cc42eb751591474781d28</version>
         </dependency>
         <dependency>
             <groupId>no.nav.arbeid.pam</groupId>
