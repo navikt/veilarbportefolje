@@ -1,12 +1,12 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import lombok.SneakyThrows;
-import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.pdl.PdlClientImpl;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentRespons;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,11 +24,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
+import static org.junit.Assert.assertTrue;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class PdlServiceTest {
-    private  PdlService pdlService;
-    private PdlClient pdlClient;
+    private final ObjectMapper mapper = new ObjectMapper();
+    private PdlService pdlService;
     private JdbcTemplate db;
 
     @Rule
@@ -36,34 +37,44 @@ public class PdlServiceTest {
 
     @Before
     public void setup() {
-        this.db =  SingletonPostgresContainer.init().createJdbcTemplate();
-        String apiUrl = "http://localhost:" + wireMockRule.port();
-        pdlClient = new PdlClientImpl(apiUrl, () -> "SYSTEM", () -> "SYSTEM");
+        this.db = SingletonPostgresContainer.init().createJdbcTemplate();
+        db.update("truncate pdl_identer");
 
-        this.pdlService = new PdlService(new PdlRepository(db), pdlClient);
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        this.pdlService = new PdlService(
+                new PdlRepository(db),
+                new PdlClientImpl(apiUrl, () -> "SYSTEM", () -> "SYSTEM")
+        );
     }
 
-
     @Test
+    @SneakyThrows
     public void lagreIdenterFraPdl() {
-        AktorId aktorId = randomAktorId();
+        String pdlResponsJson = readFileAsJsonString("/identer_pdl.json", getClass());
         givenThat(post(anyUrl())
                 .willReturn(aResponse()
                         .withStatus(200)
-                        .withBody(readFileAsJsonString("/identer_pdl.json", getClass())))
+                        .withBody(pdlResponsJson))
         );
 
+        var identerFrafil = mapper.readValue(pdlResponsJson, PdlIdentRespons.class)
+                .getData()
+                .getHentIdenter()
+                .getIdenter();
 
-
-        pdlService.lastInnIdenter(aktorId);
-        List<PDLIdent> pdlIdenter = db.queryForList("select * from pdl_identer where bruker_nr = (select bruker_nr from pdl_identer where ident = ?)", aktorId.get())
+        pdlService.lastInnIdenter(randomAktorId());
+        List<PDLIdent> identerFraPostgres = db.queryForList("select * from pdl_identer")
                 .stream()
-                .map(this::mapTilident)
+                .map(PdlServiceTest::mapTilident)
                 .toList();
+
+        identerFrafil.forEach(filIdent ->
+                assertTrue(identerFraPostgres.contains(filIdent))
+        );
     }
 
     @SneakyThrows
-    private PDLIdent mapTilident(Map<String, Object> rs) {
+    private static PDLIdent mapTilident(Map<String, Object> rs) {
         return new PDLIdent()
                 .setIdent((String) rs.get("ident"))
                 .setHistorisk((Boolean) rs.get("historisk"))
