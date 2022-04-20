@@ -2,14 +2,18 @@ package no.nav.pto.veilarbportefolje.database;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
-import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_DATA.*;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_DATA.AKTIVITET_START;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_DATA.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_DATA.FORRIGE_AKTIVITET_START;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_DATA.NESTE_AKTIVITET_START;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_DATA.NYESTEUTLOPTEAKTIVITET;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_DATA.PERSONID;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_DATA.TABLE_NAME;
 
 @Repository
 @RequiredArgsConstructor
@@ -22,21 +26,6 @@ public class BrukerDataRepository {
                 .set(NESTE_AKTIVITET_START, brukerdata.getNesteAktivitetStart())
                 .set(FORRIGE_AKTIVITET_START, brukerdata.getForrigeAktivitetStart())
                 .set(NYESTEUTLOPTEAKTIVITET, brukerdata.getNyesteUtlopteAktivitet())
-                .set(AKTOERID, brukerdata.getAktoerid())
-                .set(PERSONID, brukerdata.getPersonid())
-                .where(WhereClause.equals(PERSONID, brukerdata.getPersonid()))
-                .execute();
-    }
-
-    public void upsertYtelser(Brukerdata brukerdata) {
-        YtelseMapping ytelse = brukerdata.getYtelse();
-        SqlUtils.upsert(db, TABLE_NAME)
-                .set(YTELSE, ytelse != null ? ytelse.toString() : null)
-                .set(UTLOPSDATO, toTimestamp(brukerdata.getUtlopsdato()))
-                .set(DAGPUTLOPUKE, brukerdata.getDagputlopUke())
-                .set(PERMUTLOPUKE, brukerdata.getPermutlopUke())
-                .set(AAPMAXTIDUKE, brukerdata.getAapmaxtidUke())
-                .set(AAPUNNTAKDAGERIGJEN, brukerdata.getAapUnntakDagerIgjen())
                 .set(AKTOERID, brukerdata.getAktoerid())
                 .set(PERSONID, brukerdata.getPersonid())
                 .where(WhereClause.equals(PERSONID, brukerdata.getPersonid()))
