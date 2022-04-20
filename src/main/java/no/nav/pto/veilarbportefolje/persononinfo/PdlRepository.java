@@ -27,7 +27,7 @@ public class PdlRepository {
         List<String> identer = pdlIdenter.stream().map(PDLIdent::getIdent).toList();
         slettIdenter(identer);
 
-        String nyLokalIdent = db.queryForObject("SELECT nextval(PDL_BRUKER_SEQ)", String.class);
+        String nyLokalIdent = db.queryForObject("select nextval('pdl_bruker_seq')", String.class);
         pdlIdenter.forEach(ident -> insertIdent(nyLokalIdent, ident));
     }
 
@@ -49,23 +49,23 @@ public class PdlRepository {
     private void insertIdent(String lokalIdent, PDLIdent ident) {
         db.update("""
                         insert into pdl_identer (bruker_nr, ident, historisk, gruppe) VALUES (?, ?, ?, ?)
-                """, lokalIdent, ident.getIdent(), ident.getGruppe(), ident.getHistorisk());
+                """, lokalIdent, ident.getIdent(), ident.isHistorisk(), ident.getGruppe().name());
     }
 
     private void slettIdenter(List<String> identer) {
         String identerParam = identer.stream().collect(Collectors.joining(",", "{", "}"));
-        db.update("DELETE from pdl_identer where ident = ANY (?)", identerParam);
+        db.update("delete from pdl_identer where ident = any (?::varchar[])", identerParam);
     }
 
     private void slettLagreteIdenter(String lokaleIdent) {
         log.info("Sletter lokal ident: {}", lokaleIdent);
-        db.update("DELETE from pdl_identer where bruker_nr = ?", lokaleIdent);
+        db.update("delete from pdl_identer where bruker_nr = ?", lokaleIdent);
     }
 
     private String hentLokalIdent(String lookUpIdent) {
         return queryForObjectOrNull(() -> db.queryForObject("""
-                SELECT BRUKER_NR from PDL_IDENTER where IDENT = ?
-                """, (rs, row) -> rs.getString("BRUKER_NR"), lookUpIdent));
+                select bruker_nr from PDL_IDENTER where IDENT = ?
+                """, (rs, row) -> rs.getString("bruker_nr"), lookUpIdent));
     }
 
     private boolean harIdentUnderOppfolging(String lookUpIdent) {

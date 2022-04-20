@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class PDLIdent {
     private String ident;
-    private Boolean historisk;
+    private boolean historisk;
     private Gruppe gruppe;
 
     public enum Gruppe {

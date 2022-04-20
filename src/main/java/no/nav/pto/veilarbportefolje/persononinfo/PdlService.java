@@ -44,10 +44,7 @@ public class PdlService {
                 .getIdenter();
     }
 
-    private static <T> boolean hasErrors(GraphqlResponse<T> response) throws RuntimeException {
-        if (response == null || response.getErrors() == null) {
-            return true;
-        }
-        return !response.getErrors().isEmpty();
+    private static <T> boolean hasErrors(GraphqlResponse<T> response) {
+        return response == null || (response.getErrors() != null && !response.getErrors().isEmpty());
     }
 }
