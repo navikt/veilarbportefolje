@@ -47,9 +47,8 @@ public class PdlRepository {
     }
 
     private void insertIdent(String lokalIdent, PDLIdent ident) {
-        db.update("""
-                        insert into pdl_identer (bruker_nr, ident, historisk, gruppe) VALUES (?, ?, ?, ?)
-                """, lokalIdent, ident.getIdent(), ident.isHistorisk(), ident.getGruppe().name());
+        db.update("insert into pdl_identer (bruker_nr, ident, historisk, gruppe) VALUES (?, ?, ?, ?)",
+                lokalIdent, ident.getIdent(), ident.isHistorisk(), ident.getGruppe().name());
     }
 
     private void slettIdenter(List<String> identer) {
@@ -63,9 +62,8 @@ public class PdlRepository {
     }
 
     private String hentLokalIdent(String lookUpIdent) {
-        return queryForObjectOrNull(() -> db.queryForObject("""
-                select bruker_nr from PDL_IDENTER where IDENT = ?
-                """, (rs, row) -> rs.getString("bruker_nr"), lookUpIdent));
+        return queryForObjectOrNull(() -> db.queryForObject("select bruker_nr from PDL_IDENTER where IDENT = ?",
+                (rs, row) -> rs.getString("bruker_nr"), lookUpIdent));
     }
 
     private boolean harIdentUnderOppfolging(String lookUpIdent) {
