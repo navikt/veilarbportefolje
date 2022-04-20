@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.OPPFOLGING;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
@@ -72,9 +71,9 @@ public class PdlRepository {
     private boolean harIdentUnderOppfolging(String lookUpIdent) {
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject("""
-                        select bool_or(oppfolging) from oppfolging_data
+                        select bool_or(oppfolging) as harOppfolging from oppfolging_data
                         where aktoerid in (select ident from pdl_identer where bruker_nr = ?)
-                        """, (rs, row) -> rs.getBoolean(OPPFOLGING), lookUpIdent))
+                        """, (rs, row) -> rs.getBoolean("harOppfolging"), lookUpIdent))
         ).orElse(false);
     }
 }

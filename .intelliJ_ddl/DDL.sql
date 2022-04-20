@@ -450,25 +450,6 @@ CREATE TABLE public.pdl_identer (
 
 
 --
--- Name: pdl_identer_bruker_nr_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.pdl_identer_bruker_nr_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: pdl_identer_bruker_nr_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.pdl_identer_bruker_nr_seq OWNED BY public.pdl_identer.bruker_nr;
-
-
---
 -- Name: scheduled_tasks; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -540,13 +521,6 @@ CREATE TABLE public.ytelsesvedtak (
     antallpermitteringsuker integer,
     antallukerigjenunntak integer
 );
-
-
---
--- Name: pdl_identer bruker_nr; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.pdl_identer ALTER COLUMN bruker_nr SET DEFAULT nextval('public.pdl_identer_bruker_nr_seq'::regclass);
 
 
 --
