@@ -198,7 +198,7 @@ public class YtelsesService {
         Brukerdata ytelsesTilstand = new Brukerdata()
                 .setAktoerid(aktorId.get());
         if (ytelse == null) {
-            ytelsesStatusRepositoryV2.upsertYtelse(ytelsesTilstand);
+            ytelsesStatusRepositoryV2.slettYtelseStatus(aktorId);
             return;
         }
         ytelsesTilstand
@@ -217,6 +217,6 @@ public class YtelsesService {
                     .setAapUnntakDagerIgjen(ytelse.getAntallDagerIgjenUnntak());
         }
 
-        ytelsesStatusRepositoryV2.upsertYtelse(ytelsesTilstand);
+        ytelsesStatusRepositoryV2.upsertYtelseStatus(ytelsesTilstand);
     }
 }
