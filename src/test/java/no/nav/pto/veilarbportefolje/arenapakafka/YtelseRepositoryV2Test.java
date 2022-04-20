@@ -22,7 +22,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class YtelseRepositoryV2Test {
     private final AktorId bruker1 = AktorId.of("1000123");

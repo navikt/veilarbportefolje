@@ -15,16 +15,13 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseReposi
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
-import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
-import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesServicePostgres;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.database.BrukerDataRepository;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
@@ -132,14 +129,11 @@ import static org.mockito.Mockito.when;
         ArenaHendelseRepository.class,
         GruppeAktivitetRepositoryV2.class,
         TiltakRepositoryV2.class,
-        BrukerDataService.class,
         BrukerDataRepository.class,
         PostgresOpensearchMapper.class,
         AktoerDataOpensearchMapper.class,
         AktivitetOpensearchService.class,
         YtelsesService.class,
-        YtelsesServicePostgres.class,
-        YtelsesRepository.class,
         YtelsesRepositoryV2.class,
         YtelsesStatusRepositoryV2.class,
         OppfolgingPeriodeService.class,

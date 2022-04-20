@@ -239,8 +239,10 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
         </dependency>
-
-        <!--opensearch-->
+        <!--
+                                    Opensearch
+           NB: ved oppdatering av versjon så må også OPENSEARCH_VERSION oppdaters i test
+        -->
         <dependency>
             <groupId>org.opensearch</groupId>
             <artifactId>opensearch</artifactId>
