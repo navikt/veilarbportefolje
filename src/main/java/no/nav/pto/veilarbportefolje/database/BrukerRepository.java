@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.database;
 
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -11,12 +9,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGING_DATA;
 import no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO;
-import no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping;
-import no.nav.pto.veilarbportefolje.domene.AAPUnntakUkerIgjenFasettMapping;
-import no.nav.pto.veilarbportefolje.domene.Brukerdata;
-import no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping;
-import no.nav.pto.veilarbportefolje.domene.ManedFasettMapping;
-import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
@@ -24,33 +16,20 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.Table.AKTOERID_TO_PERSONID;
 import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.FODSELSNR;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.mapTilOppfolgingsBruker;
-import static no.nav.pto.veilarbportefolje.util.DbUtils.not;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
-import static no.nav.pto.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static no.nav.sbl.sql.SqlUtils.select;
 import static no.nav.sbl.sql.SqlUtils.update;
@@ -62,7 +41,6 @@ import static no.nav.sbl.sql.where.WhereClause.in;
 @RequiredArgsConstructor
 public class BrukerRepository {
     private final JdbcTemplate db;
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final UnleashService unleashService;
 
     public Optional<Integer> hentAntallBrukereUnderOppfolging() {
@@ -270,80 +248,12 @@ public class BrukerRepository {
         return Fnr.ofValidFnr(resultSet.getString("FODSELSNR"));
     }
 
-    public List<Brukerdata> retrieveBrukerdata(List<String> personIds) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("fnrs", personIds);
-        String sql = retrieveBrukerdataSQL();
-        return namedParameterJdbcTemplate.queryForList(sql, params)
-                .stream()
-                .map(data -> new Brukerdata()
-                        .setAktoerid((String) data.get("AKTOERID"))
-                        .setPersonid((String) data.get("PERSONID"))
-                        .setYtelse(ytelsemappingOrNull((String) data.get("YTELSE")))
-                        .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
-                        .setUtlopsFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
-                        .setDagputlopUke(intValue(data.get("DAGPUTLOPUKE")))
-                        .setDagputlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("DAGPUTLOPUKEFASETT")))
-                        .setPermutlopUke(intValue(data.get("PERMUTLOPUKE")))
-                        .setPermutlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("PERMUTLOPUKEFASETT")))
-                        .setAapmaxtidUke(intValue(data.get("AAPMAXTIDUKE")))
-                        .setAapmaxtidUkeFasett(aapMaxtidUkeFasettMappingOrNull((String) data.get("AAPMAXTIDUKEFASETT")))
-                        .setAapUnntakDagerIgjen(intValue(data.get("AAPUNNTAKDAGERIGJEN")))
-                        .setAapunntakUkerIgjenFasett(aapUnntakUkerIgjenFasettMappingOrNull((String) data.get("AAPUNNTAKUKERIGJENFASETT")))
-                        .setNyesteUtlopteAktivitet((Timestamp) data.get("NYESTEUTLOPTEAKTIVITET"))
-                        .setAktivitetStart((Timestamp) data.get("AKTIVITET_START"))
-                        .setNesteAktivitetStart((Timestamp) data.get("NESTE_AKTIVITET_START"))
-                        .setForrigeAktivitetStart((Timestamp) data.get("FORRIGE_AKTIVITET_START")))
-                .collect(toList());
-    }
-
-    public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
-        Map<String, Optional<String>> brukere = new HashMap<>(fnrs.size());
-
-        batchProcess(1000, fnrs, (fnrBatch) -> {
-            Map<String, Object> params = new HashMap<>();
-            params.put("fnrs", fnrBatch);
-            String sql = getPersonIdsFromFnrsSQL();
-            Map<String, Optional<String>> fnrPersonIdMap = namedParameterJdbcTemplate.queryForList(sql, params)
-                    .stream()
-                    .map((rs) -> Tuple.of(
-                            (String) rs.get("FODSELSNR"),
-                            rs.get("PERSON_ID").toString())
-                    )
-                    .collect(Collectors.toMap(Tuple2::_1, personData -> Optional.of(personData._2())));
-
-            brukere.putAll(fnrPersonIdMap);
-        });
-
-        fnrs.stream()
-                .filter(not(brukere::containsKey))
-                .forEach((ikkeFunnetBruker) -> brukere.put(ikkeFunnetBruker, empty()));
-
-        return brukere;
-    }
-
     public List<PersonId> hentMappedePersonIder(AktorId aktorId) {
         final String sql = "SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE GJELDENE = 1 AND AKTOERID = ?";
         return db.queryForList(sql, String.class, aktorId.get())
                 .stream()
                 .map(PersonId::of)
                 .toList();
-    }
-
-    public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
-        Map<Boolean, List<Brukerdata>> eksisterendeBrukere = brukerdata
-                .stream()
-                .collect(groupingBy((data) -> finnesIDb.contains(data.getPersonid())));
-
-        Brukerdata.batchUpdate(db, eksisterendeBrukere.getOrDefault(true, emptyList()));
-
-        eksisterendeBrukere
-                .getOrDefault(false, emptyList())
-                .forEach(this::upsertBrukerdata);
-    }
-
-    void upsertBrukerdata(Brukerdata brukerdata) {
-        brukerdata.toUpsertQuery(db).execute();
     }
 
     String retrieveSistIndeksertSQL() {
@@ -353,56 +263,4 @@ public class BrukerRepository {
     String updateSistIndeksertSQL() {
         return "UPDATE METADATA SET SIST_INDEKSERT = ?";
     }
-
-    private String getPersonIdsFromFnrsSQL() {
-        return
-                "SELECT " +
-                        "person_id, " +
-                        "fodselsnr " +
-                        "FROM " +
-                        "OPPFOLGINGSBRUKER " +
-                        "WHERE " +
-                        "fodselsnr in (:fnrs)";
-    }
-
-    private String retrieveBrukerdataSQL() {
-        return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
-    }
-
-    private static Integer intValue(Object value) {
-        if (value instanceof BigDecimal) {
-            return ((BigDecimal) value).intValue();
-        } else if (value instanceof Integer) {
-            return (Integer) value;
-        } else if (value instanceof String) {
-            return Integer.parseInt((String) value);
-        } else {
-            return null;
-        }
-    }
-
-    private static LocalDateTime toLocalDateTime(Timestamp timestamp) {
-        return timestamp != null ? timestamp.toLocalDateTime() : null;
-    }
-
-    private ManedFasettMapping manedmappingOrNull(String string) {
-        return string != null ? ManedFasettMapping.valueOf(string) : null;
-    }
-
-    private YtelseMapping ytelsemappingOrNull(String string) {
-        return string != null ? YtelseMapping.valueOf(string) : null;
-    }
-
-    private AAPMaxtidUkeFasettMapping aapMaxtidUkeFasettMappingOrNull(String string) {
-        return string != null ? AAPMaxtidUkeFasettMapping.valueOf(string) : null;
-    }
-
-    private AAPUnntakUkerIgjenFasettMapping aapUnntakUkerIgjenFasettMappingOrNull(String string) {
-        return string != null ? AAPUnntakUkerIgjenFasettMapping.valueOf(string) : null;
-    }
-
-    private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
-        return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
-    }
-
 }
