@@ -552,7 +552,7 @@ ALTER TABLE ONLY public.bruker_cv
 --
 
 ALTER TABLE ONLY public.bruker_identer
-    ADD CONSTRAINT bruker_identer_pkey PRIMARY KEY (person, ident);
+    ADD CONSTRAINT bruker_identer_pkey PRIMARY KEY (ident);
 
 
 --
