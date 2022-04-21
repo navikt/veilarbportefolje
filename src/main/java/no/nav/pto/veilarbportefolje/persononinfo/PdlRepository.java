@@ -27,7 +27,7 @@ public class PdlRepository {
         List<String> identer = pdlIdenter.stream().map(PDLIdent::getIdent).toList();
         slettIdenter(identer);
 
-        String nyLokalIdent = db.queryForObject("select nextval('pdl_bruker_seq')", String.class);
+        String nyLokalIdent = db.queryForObject("select nextval('PDL_PERSON_SEQ')", String.class);
         pdlIdenter.forEach(ident -> insertIdent(nyLokalIdent, ident));
     }
 
@@ -46,31 +46,31 @@ public class PdlRepository {
         slettLagreteIdenter(lokalIdent);
     }
 
+    public String hentLokalIdent(String lookUpIdent) {
+        return queryForObjectOrNull(() -> db.queryForObject("select person from bruker_identer where IDENT = ?",
+                (rs, row) -> rs.getString("person"), lookUpIdent));
+    }
+
     private void insertIdent(String lokalIdent, PDLIdent ident) {
-        db.update("insert into pdl_identer (bruker_nr, ident, historisk, gruppe) VALUES (?, ?, ?, ?)",
+        db.update("insert into bruker_identer (person, ident, historisk, gruppe) VALUES (?, ?, ?, ?)",
                 lokalIdent, ident.getIdent(), ident.isHistorisk(), ident.getGruppe().name());
     }
 
     private void slettIdenter(List<String> identer) {
         String identerParam = identer.stream().collect(Collectors.joining(",", "{", "}"));
-        db.update("delete from pdl_identer where ident = any (?::varchar[])", identerParam);
+        db.update("delete from bruker_identer where ident = any (?::varchar[])", identerParam);
     }
 
     private void slettLagreteIdenter(String lokaleIdent) {
         log.info("Sletter lokal ident: {}", lokaleIdent);
-        db.update("delete from pdl_identer where bruker_nr = ?", lokaleIdent);
-    }
-
-    private String hentLokalIdent(String lookUpIdent) {
-        return queryForObjectOrNull(() -> db.queryForObject("select bruker_nr from PDL_IDENTER where IDENT = ?",
-                (rs, row) -> rs.getString("bruker_nr"), lookUpIdent));
+        db.update("delete from bruker_identer where person = ?", lokaleIdent);
     }
 
     private boolean harIdentUnderOppfolging(String lookUpIdent) {
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject("""
                         select bool_or(oppfolging) as harOppfolging from oppfolging_data
-                        where aktoerid in (select ident from pdl_identer where bruker_nr = ?)
+                        where aktoerid in (select ident from bruker_identer where person = ?)
                         """, (rs, row) -> rs.getBoolean("harOppfolging"), lookUpIdent))
         ).orElse(false);
     }

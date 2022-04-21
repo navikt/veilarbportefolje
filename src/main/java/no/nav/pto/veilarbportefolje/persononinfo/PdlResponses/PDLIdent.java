@@ -10,6 +10,15 @@ public class PDLIdent {
     private boolean historisk;
     private Gruppe gruppe;
 
+    public PDLIdent(String ident, boolean historisk, Gruppe gruppe) {
+        this.ident = ident;
+        this.historisk = historisk;
+        this.gruppe = gruppe;
+    }
+
+    public PDLIdent(){
+    }
+
     public enum Gruppe {
         FOLKEREGISTERIDENT,
         NPID,

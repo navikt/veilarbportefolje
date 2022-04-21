@@ -49,6 +49,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentRespons;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
@@ -81,6 +82,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
 
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchUtils.createClient;
@@ -280,8 +282,16 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public PdlClient pdlClient(){
-        return mock(PdlClientImpl.class);
+    public PdlClient pdlClient() {
+        PdlClient pdlClient = mock(PdlClientImpl.class);
+        PdlIdentRespons pdlIdentRespons = new PdlIdentRespons();
+        pdlIdentRespons.setData(new PdlIdentRespons.HentIdenterResponseData()
+                .setHentIdenter(new PdlIdentRespons.HentIdenterResponseData.HentIdenterResponsData()
+                        .setIdenter(new ArrayList<>())
+                )
+        );
+        when(pdlClient.request(any(), any())).thenReturn(pdlIdentRespons);
+        return pdlClient;
     }
 
 }

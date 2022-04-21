@@ -39,7 +39,7 @@ public class PdlServiceTest {
     @BeforeEach
     public void setup() {
         WireMockServer server = new WireMockServer();
-        db.update("truncate pdl_identer");
+        db.update("truncate bruker_identer");
 
         server.stubFor(post(anyUrl())
                 .willReturn(aResponse()
@@ -63,7 +63,7 @@ public class PdlServiceTest {
                 .getIdenter();
 
         pdlService.lastInnIdenter(randomAktorId());
-        List<PDLIdent> identerFraPostgres = db.queryForList("select * from pdl_identer")
+        List<PDLIdent> identerFraPostgres = db.queryForList("select * from bruker_identer")
                 .stream()
                 .map(PdlServiceTest::mapTilident)
                 .toList();
@@ -74,7 +74,7 @@ public class PdlServiceTest {
     }
 
     @SneakyThrows
-    private static PDLIdent mapTilident(Map<String, Object> rs) {
+    public static PDLIdent mapTilident(Map<String, Object> rs) {
         return new PDLIdent()
                 .setIdent((String) rs.get("ident"))
                 .setHistorisk((Boolean) rs.get("historisk"))
