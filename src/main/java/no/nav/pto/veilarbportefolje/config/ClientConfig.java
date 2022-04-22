@@ -73,9 +73,13 @@ public class ClientConfig {
 
     @Bean
     public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient) {
+        String tokenScop = String.format("api://%s-fss.pdl.%s/.default",
+                isProduction() ? "prod" : "dev",
+                internalDevOrProdPdlIngress()
+        );
         return new PdlClientImpl(
-                createServiceUrl("pdl-api", "default", false),
-                () -> tokenClient.createMachineToMachineToken("api://dev-fss.pdl.pdl-api/.default"),
+                createServiceUrl("pdl-api", "pdl", false),
+                () -> tokenClient.createMachineToMachineToken(tokenScop),
                 () -> ""
         );
     }
