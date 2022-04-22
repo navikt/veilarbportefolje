@@ -115,7 +115,8 @@ import static org.mockito.Mockito.when;
         YtelsesStatusRepositoryV2.class,
         OppfolgingPeriodeService.class,
         SkjermingService.class,
-        SkjermingRepository.class
+        SkjermingRepository.class,
+        OpensearchCountService.class
 })
 public class ApplicationConfigTest {
 
@@ -136,8 +137,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public OpensearchTestClient opensearchTestClient(RestHighLevelClient restHighLevelClient, IndexName indexName) {
-        return new OpensearchTestClient(restHighLevelClient, indexName);
+    public OpensearchTestClient opensearchTestClient(RestHighLevelClient restHighLevelClient, OpensearchAdminService opensearchAdminService, OpensearchCountService opensearchCountService, IndexName indexName) {
+        return new OpensearchTestClient(restHighLevelClient, opensearchAdminService, opensearchCountService, indexName);
     }
 
     @Bean
