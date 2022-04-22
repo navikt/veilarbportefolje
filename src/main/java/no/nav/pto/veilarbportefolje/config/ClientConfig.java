@@ -11,6 +11,7 @@ import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
@@ -71,11 +72,11 @@ public class ClientConfig {
     }
 
     @Bean
-    public PdlClient pdlClient(SystemUserTokenProvider systemUserTokenProvider){
+    public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient) {
         return new PdlClientImpl(
                 createServiceUrl("pdl-api", "default", false),
-                systemUserTokenProvider::getSystemUserToken,
-                systemUserTokenProvider::getSystemUserToken
+                () -> tokenClient.createMachineToMachineToken("api://dev-fss.pdl.pdl-api/.default"),
+                () -> ""
         );
     }
 
