@@ -23,47 +23,48 @@ public class PdlRepository {
     private final JdbcTemplate db;
 
     @Transactional
-    public void upsertIdenter(List<PDLIdent> pdlIdenter) {
-        List<String> identer = pdlIdenter.stream().map(PDLIdent::getIdent).toList();
-        slettIdenter(identer);
+    public void upsertIdenter(List<PDLIdent> identer) {
+        List<String> personer = hentPersoner(identer);
+        personer.forEach(this::slettLagretePerson);
 
         String nyLokalIdent = db.queryForObject("select nextval('PDL_PERSON_SEQ')", String.class);
-        pdlIdenter.forEach(ident -> insertIdent(nyLokalIdent, ident));
+        identer.forEach(ident -> insertIdent(nyLokalIdent, ident));
     }
 
     @Transactional
     public void slettLokalIdentlagringHvisIkkeUnderOppfolging(AktorId aktorId) {
-        String lokalIdent = hentLokalIdent(aktorId.get());
+        String lokalIdent = hentPerson(aktorId.get());
         if (harIdentUnderOppfolging(lokalIdent)) {
-            log.info("""
-                            Sletter ikke identer lagret på aktorId: {}.
-                            Da en eller flere relaterte identer på lokalIdent: {} er under oppfolging.
+            log.warn("""
+                            Sletter ikke identer tilknyttet aktorId: {}.
+                            Da en eller flere relaterte identer på person: {} er under oppfolging.
                             """,
                     aktorId, lokalIdent);
             return;
         }
         log.info("Sletter identer lagret på aktorId: {}, lokalIdent: {}.", aktorId, lokalIdent);
-        slettLagreteIdenter(lokalIdent);
+        slettLagretePerson(lokalIdent);
     }
 
-    public String hentLokalIdent(String lookUpIdent) {
+    public String hentPerson(String lookUpIdent) {
         return queryForObjectOrNull(() -> db.queryForObject("select person from bruker_identer where IDENT = ?",
                 (rs, row) -> rs.getString("person"), lookUpIdent));
     }
 
-    private void insertIdent(String lokalIdent, PDLIdent ident) {
+    public List<String> hentPersoner(List<PDLIdent> identer) {
+        String identerParam = identer.stream().map(PDLIdent::getIdent).collect(Collectors.joining(",", "{", "}"));
+        return db.queryForList("select person from bruker_identer where ident = any (?::varchar[])", identerParam)
+                .stream().map(rs -> (String) rs.get("person")).toList();
+    }
+
+    private void insertIdent(String person, PDLIdent ident) {
         db.update("insert into bruker_identer (person, ident, historisk, gruppe) VALUES (?, ?, ?, ?)",
-                lokalIdent, ident.getIdent(), ident.isHistorisk(), ident.getGruppe().name());
+                person, ident.getIdent(), ident.isHistorisk(), ident.getGruppe().name());
     }
 
-    private void slettIdenter(List<String> identer) {
-        String identerParam = identer.stream().collect(Collectors.joining(",", "{", "}"));
-        db.update("delete from bruker_identer where ident = any (?::varchar[])", identerParam);
-    }
-
-    private void slettLagreteIdenter(String lokaleIdent) {
-        log.info("Sletter lokal ident: {}", lokaleIdent);
-        db.update("delete from bruker_identer where person = ?", lokaleIdent);
+    private void slettLagretePerson(String person) {
+        log.info("Sletter lokal ident: {}", person);
+        db.update("delete from bruker_identer where person = ?", person);
     }
 
     private boolean harIdentUnderOppfolging(String lookUpIdent) {

@@ -62,15 +62,13 @@ public class PdlServiceTest {
                 .getHentIdenter()
                 .getIdenter();
 
-        pdlService.lastInnIdenter(randomAktorId());
+        pdlService.hentOgLagreIdenter(randomAktorId());
         List<PDLIdent> identerFraPostgres = db.queryForList("select * from bruker_identer")
                 .stream()
                 .map(PdlServiceTest::mapTilident)
                 .toList();
 
-        identerFraFil.forEach(filIdent ->
-                assertThat(identerFraPostgres.contains(filIdent)).isTrue()
-        );
+        assertThat(identerFraPostgres).containsExactlyInAnyOrderElementsOf(identerFraFil);
     }
 
     @SneakyThrows

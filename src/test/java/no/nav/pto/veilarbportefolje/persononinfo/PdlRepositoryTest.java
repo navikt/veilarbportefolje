@@ -43,7 +43,7 @@ public class PdlRepositoryTest {
     }
 
     @Test
-    public void identOvergang_splitt() {
+    public void identSplitt_allePersonerMedTidligereIdenterSkalSlettes() {
         PDLIdent identIKonflikt = new PDLIdent("12345", true, AKTORID);
         List<PDLIdent> identerBrukerA = List.of(
                 identIKonflikt,
@@ -56,34 +56,24 @@ public class PdlRepositoryTest {
                 new PDLIdent("00001", false, FOLKEREGISTERIDENT)
         );
         pdlRepository.upsertIdenter(identerBrukerA);
-        String lokalIdentBrukerA = pdlRepository.hentLokalIdent(identIKonflikt.getIdent());
-
-        var brukerAPreBrukerB = db.queryForList("select * from bruker_identer where person = ?", lokalIdentBrukerA)
-                .stream()
-                .map(PdlServiceTest::mapTilident)
-                .toList();
+        String lokalIdentBrukerA = pdlRepository.hentPerson(identIKonflikt.getIdent());
+        var brukerAPreBrukerB = hentLokaleIdenter(lokalIdentBrukerA);
 
         pdlRepository.upsertIdenter(identerBrukerB);
 
-        String lokalIdentBrukerB = pdlRepository.hentLokalIdent(identIKonflikt.getIdent());
-        var brukerAPostBrukerB = db.queryForList("select * from bruker_identer where person = ?", lokalIdentBrukerA)
-                .stream()
-                .map(PdlServiceTest::mapTilident)
-                .toList();
-        var brukerB = db.queryForList("select * from bruker_identer where person = ?", lokalIdentBrukerB)
-                .stream()
-                .map(PdlServiceTest::mapTilident)
-                .toList();
+        String lokalIdentBrukerB = pdlRepository.hentPerson(identIKonflikt.getIdent());
+        var brukerAPostBrukerB = hentLokaleIdenter(lokalIdentBrukerA);
+        var brukerB = hentLokaleIdenter(lokalIdentBrukerB);
 
         assertThat(lokalIdentBrukerA).isNotEqualTo(lokalIdentBrukerB);
         assertThat(brukerAPreBrukerB).isEqualTo(identerBrukerA);
         assertThat(brukerAPostBrukerB).isNotEqualTo(identerBrukerA);
         assertThat(brukerB).isEqualTo(identerBrukerB);
-        assertThat(brukerAPostBrukerB.size()).isEqualTo(2);
+        assertThat(brukerAPostBrukerB.size()).isEqualTo(0);
     }
 
     @Test
-    public void oppfolgingAvsluttet_flereIdenterUnderOppfolging() {
+    public void oppfolgingAvsluttet_flereIdenterUnderOppfolging_lokalIdentLagringSkalIkkeSlettes() {
         AktorId historiskIdent = AktorId.of("12345");
         AktorId ident = AktorId.of("12346");
         List<PDLIdent> identer = List.of(
@@ -105,15 +95,12 @@ public class PdlRepositoryTest {
         pdlRepository.upsertIdenter(identer);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOpfolgingAvslutt);
 
-        var lokaleIdenter = db.queryForList("select * from bruker_identer where person = ?", pdlRepository.hentLokalIdent(historiskIdent.get()))
-                .stream()
-                .map(PdlServiceTest::mapTilident)
-                .toList();
+        var lokaleIdenter = hentLokaleIdenter(historiskIdent);
         assertThat(identer).isEqualTo(lokaleIdenter);
     }
 
     @Test
-    public void oppfolgingAvsluttet_ingenAndreIdenterUnderOppfolging() {
+    public void oppfolgingAvsluttet_ingenAndreIdenterUnderOppfolging_identLagringSkalSlettes() {
         AktorId ident = AktorId.of("12346");
         // Mock fix for oracle
         oracle.update("insert into OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR) values (1234, '01010100000')");
@@ -128,10 +115,19 @@ public class PdlRepositoryTest {
         // Mock PDL respons
         pdlRepository.upsertIdenter(identer);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingAvslutt);
-        var lokaleIdenter = db.queryForList("select * from bruker_identer where person = ?", pdlRepository.hentLokalIdent(ident.get()))
+        var lokaleIdenter = hentLokaleIdenter(ident);
+        assertThat(lokaleIdenter.size()).isEqualTo(0);
+    }
+
+    private List<PDLIdent> hentLokaleIdenter(AktorId ident){
+        return hentLokaleIdenter(pdlRepository.hentPerson(ident.get()));
+    }
+
+    private List<PDLIdent> hentLokaleIdenter(String ident){
+        return db.queryForList("select * from bruker_identer where person = ?", ident)
                 .stream()
                 .map(PdlServiceTest::mapTilident)
                 .toList();
-        assertThat(lokaleIdenter.size()).isEqualTo(0);
+
     }
 }

@@ -23,7 +23,7 @@ public class PdlService {
 
     private static final String hentIdenterQuery = FileUtils.getResourceFileAsString("graphql/hentIdenter.gql");
 
-    public void lastInnIdenter(AktorId aktorId) {
+    public void hentOgLagreIdenter(AktorId aktorId) {
         List<PDLIdent> idents = hentIdenterFraPdl(aktorId);
         pdlRepository.upsertIdenter(idents);
     }
