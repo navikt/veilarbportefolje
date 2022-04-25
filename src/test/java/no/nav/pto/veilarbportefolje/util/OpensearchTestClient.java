@@ -5,17 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.IndexName;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
-import org.opensearch.action.get.GetRequest;
 import org.opensearch.action.get.GetResponse;
 import org.opensearch.action.index.IndexRequest;
 import org.opensearch.action.index.IndexResponse;
 import org.opensearch.action.update.UpdateRequest;
-import org.opensearch.client.Request;
 import org.opensearch.client.RequestOptions;
-import org.opensearch.client.Response;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.common.xcontent.XContentBuilder;
 import org.opensearch.common.xcontent.XContentType;
@@ -34,11 +32,15 @@ import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 public class OpensearchTestClient {
 
     private final RestHighLevelClient restHighLevelClient;
+    private final OpensearchAdminService opensearchAdminService;
+    private final OpensearchCountService opensearchCountService;
     private final IndexName indexName;
 
     @Autowired
-    public OpensearchTestClient(RestHighLevelClient restHighLevelClient, IndexName indexName) {
+    public OpensearchTestClient(RestHighLevelClient restHighLevelClient, OpensearchAdminService opensearchAdminService, OpensearchCountService opensearchCountService, IndexName indexName) {
         this.restHighLevelClient = restHighLevelClient;
+        this.opensearchAdminService = opensearchAdminService;
+        this.opensearchCountService = opensearchCountService;
         this.indexName = indexName;
     }
 
@@ -50,10 +52,16 @@ public class OpensearchTestClient {
 
     @SneakyThrows
     public GetResponse fetchDocument(AktorId aktoerId) {
-        GetRequest getRequest = new GetRequest();
-        getRequest.index(indexName.getValue());
-        getRequest.id(aktoerId.toString());
-        return restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
+        return opensearchAdminService.fetchDocument(aktoerId, indexName);
+    }
+
+    public Optional<GetResponse> getDocument(AktorId aktoerId) {
+        try {
+            return Optional.of(opensearchAdminService.fetchDocument(aktoerId, indexName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
     }
 
     @SneakyThrows
@@ -67,10 +75,7 @@ public class OpensearchTestClient {
 
     @SneakyThrows
     public int countDocuments() {
-        Request request = new Request("GET", indexName.getValue() + "/_count");
-        Response response = restHighLevelClient.getLowLevelClient().performRequest(request);
-        String entity = EntityUtils.toString(response.getEntity());
-        return new JSONObject(entity).getInt("count");
+        return (int) opensearchCountService.getCount();
     }
 
     public void createUserInOpensearch(AktorId aktoerId) {
@@ -115,18 +120,6 @@ public class OpensearchTestClient {
 
         assertThat(getResponse).isPresent();
         assertThat(getResponse.get()).isNotNull();
-    }
-
-    public Optional<GetResponse> getDocument(AktorId aktoerId) {
-        GetRequest getRequest = new GetRequest();
-        getRequest.index(indexName.getValue());
-        getRequest.id(aktoerId.toString());
-        try {
-            return Optional.of(restHighLevelClient.get(getRequest, RequestOptions.DEFAULT));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return Optional.empty();
     }
 
     public static void pollOpensearchUntil(Supplier<Boolean> func) {

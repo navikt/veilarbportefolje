@@ -32,6 +32,7 @@ import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.IndexName;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
@@ -142,7 +143,8 @@ import static org.mockito.Mockito.when;
         SkjermingService.class,
         SkjermingRepository.class,
         PdlService.class,
-        PdlRepository.class
+        PdlRepository.class,
+        OpensearchCountService.class
 })
 public class ApplicationConfigTest {
 
@@ -163,8 +165,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public OpensearchTestClient opensearchTestClient(RestHighLevelClient restHighLevelClient, IndexName indexName) {
-        return new OpensearchTestClient(restHighLevelClient, indexName);
+    public OpensearchTestClient opensearchTestClient(RestHighLevelClient restHighLevelClient, OpensearchAdminService opensearchAdminService, OpensearchCountService opensearchCountService, IndexName indexName) {
+        return new OpensearchTestClient(restHighLevelClient, opensearchAdminService, opensearchCountService, indexName);
     }
 
     @Bean
