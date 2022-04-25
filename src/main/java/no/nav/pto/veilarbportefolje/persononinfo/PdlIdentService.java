@@ -1,0 +1,42 @@
+package no.nav.pto.veilarbportefolje.persononinfo;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.avro.Aktor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+import static no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent.typeTilGruppe;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class PdlIdentService extends KafkaCommonConsumerService<Aktor> {
+    private final PdlRepository pdlRepository;
+
+    @Override
+    public void behandleKafkaMeldingLogikk(Aktor melding) {
+        if (melding == null || melding.getIdentifikatorer().size() == 0) {
+            log.info("""
+                            Fikk tom endrings melding fra PDL.
+                            Dette er en tombstone som kan ignoreres hvis man sletter alle historiske identer lenket til nye identer.
+                    """);
+            return;
+        }
+        List<PDLIdent> pdlIdenter = mapTilPdlIdenter(melding);
+        if(pdlRepository.harIdentUnderOppfolging(pdlIdenter)){
+            log.info("Det oppsto en id endring på en bruker under oppfølging...");
+            pdlRepository.upsertIdenter(pdlIdenter);
+        }
+    }
+
+    private List<PDLIdent> mapTilPdlIdenter(Aktor melding) {
+        return melding.getIdentifikatorer()
+                .stream()
+                .map(id -> new PDLIdent(id.getIdnummer(), id.isGjeldende(), typeTilGruppe(id.getType())))
+                .toList();
+    }
+}

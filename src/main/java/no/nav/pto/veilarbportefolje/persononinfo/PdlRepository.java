@@ -57,14 +57,14 @@ public class PdlRepository {
                 .stream().map(rs -> (String) rs.get("person")).toList();
     }
 
-    private void insertIdent(String person, PDLIdent ident) {
-        db.update("insert into bruker_identer (person, ident, historisk, gruppe) VALUES (?, ?, ?, ?)",
-                person, ident.getIdent(), ident.isHistorisk(), ident.getGruppe().name());
-    }
-
-    private void slettLagretePerson(String person) {
-        log.info("Sletter lokal ident: {}", person);
-        db.update("delete from bruker_identer where person = ?", person);
+    public boolean harIdentUnderOppfolging(List<PDLIdent> identer) {
+        String identerParam = identer.stream().map(PDLIdent::getIdent).collect(Collectors.joining(",", "{", "}"));
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject("""
+                        select bool_or(oppfolging) as harOppfolging from oppfolging_data
+                        where aktoerid = any (?::varchar[])
+                        """, (rs, row) -> rs.getBoolean("harOppfolging"), identerParam))
+        ).orElse(false);
     }
 
     private boolean harIdentUnderOppfolging(String lookUpIdent) {
@@ -74,5 +74,15 @@ public class PdlRepository {
                         where aktoerid in (select ident from bruker_identer where person = ?)
                         """, (rs, row) -> rs.getBoolean("harOppfolging"), lookUpIdent))
         ).orElse(false);
+    }
+
+    private void insertIdent(String person, PDLIdent ident) {
+        db.update("insert into bruker_identer (person, ident, historisk, gruppe) VALUES (?, ?, ?, ?)",
+                person, ident.getIdent(), ident.isHistorisk(), ident.getGruppe().name());
+    }
+
+    private void slettLagretePerson(String person) {
+        log.info("Sletter lokal ident: {}", person);
+        db.update("delete from bruker_identer where person = ?", person);
     }
 }

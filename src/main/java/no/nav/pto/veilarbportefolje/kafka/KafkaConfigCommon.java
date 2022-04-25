@@ -31,13 +31,24 @@ import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.AivenAvroDeserializer;
+import no.nav.pto.veilarbportefolje.kafka.deserializers.OnpremAvroDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
-import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
+import no.nav.pto.veilarbportefolje.oppfolging.SkjermingDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentService;
+import no.nav.pto.veilarbportefolje.persononinfo.avro.Aktor;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -96,7 +107,8 @@ public class KafkaConfigCommon {
         DAGPENGE_TOPIC("teamarenanais.aapen-arena-dagpengevedtakendret-v1-" + requireKafkaTopicPostfix()),
         TILTAKSPENGER_TOPIC("teamarenanais.aapen-arena-tiltakspengevedtakendret-v1-" + requireKafkaTopicPostfix()),
         NOM_SKJERMING_STATUS("nom.skjermede-personer-status-v1"),
-        NOM_SKJERMEDE_PERSONER("nom.skjermede-personer-v1");
+        NOM_SKJERMEDE_PERSONER("nom.skjermede-personer-v1"),
+        PDL_IDENTER("aapen-person-pdl-aktor-v1");
 
         @Getter
         final String topicName;
@@ -118,7 +130,7 @@ public class KafkaConfigCommon {
                              MalService malService, OppfolgingsbrukerService oppfolgingsbrukerService, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
                              YtelsesService ytelsesService, OppfolgingPeriodeService oppfolgingPeriodeService, SkjermingService skjermingService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
-                             UnleashService unleashService) {
+                             UnleashService unleashService, PdlIdentService pdlIdentService) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
@@ -350,6 +362,17 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
                                         malService::behandleKafkaRecord
+                                ),
+
+                        new KafkaConsumerClientBuilder.TopicConfig<String, Aktor>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.PDL_IDENTER.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new OnpremAvroDeserializer<Aktor>().getDeserializer(),
+                                        pdlIdentService::behandleKafkaRecord
                                 )
                 );
 
