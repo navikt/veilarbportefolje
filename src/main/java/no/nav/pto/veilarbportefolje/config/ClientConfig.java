@@ -79,8 +79,7 @@ public class ClientConfig {
         );
         return new PdlClientImpl(
                 createServiceUrl("pdl-api", "pdl", false),
-                () -> tokenClient.createMachineToMachineToken(tokenScop),
-                () -> ""
+                () -> tokenClient.createMachineToMachineToken(tokenScop)
         );
     }
 
