@@ -48,6 +48,9 @@ spec:
   openSearch:
     access: admin
     instance: veilarbportefolje
+  azure:
+    application:
+      enabled: true
   resources:
     limits:
       cpu: "4"
