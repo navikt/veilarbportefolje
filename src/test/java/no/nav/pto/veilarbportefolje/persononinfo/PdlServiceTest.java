@@ -15,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
-import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
@@ -65,17 +64,9 @@ public class PdlServiceTest {
         pdlService.hentOgLagreIdenter(randomAktorId());
         List<PDLIdent> identerFraPostgres = db.queryForList("select * from bruker_identer")
                 .stream()
-                .map(PdlServiceTest::mapTilident)
+                .map(PdlRepository::mapTilident)
                 .toList();
 
         assertThat(identerFraPostgres).containsExactlyInAnyOrderElementsOf(identerFraFil);
-    }
-
-    @SneakyThrows
-    public static PDLIdent mapTilident(Map<String, Object> rs) {
-        return new PDLIdent()
-                .setIdent((String) rs.get("ident"))
-                .setHistorisk((Boolean) rs.get("historisk"))
-                .setGruppe(PDLIdent.Gruppe.valueOf((String) rs.get("gruppe")));
     }
 }

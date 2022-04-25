@@ -57,13 +57,13 @@ public class PdlRepositoryTest {
         );
         pdlRepository.upsertIdenter(identerBrukerA);
         String lokalIdentBrukerA = pdlRepository.hentPerson(identIKonflikt.getIdent());
-        var brukerAPreBrukerB = hentLokaleIdenter(lokalIdentBrukerA);
+        var brukerAPreBrukerB = pdlRepository.hentIdenter(lokalIdentBrukerA);
 
         pdlRepository.upsertIdenter(identerBrukerB);
 
         String lokalIdentBrukerB = pdlRepository.hentPerson(identIKonflikt.getIdent());
-        var brukerAPostBrukerB = hentLokaleIdenter(lokalIdentBrukerA);
-        var brukerB = hentLokaleIdenter(lokalIdentBrukerB);
+        var brukerAPostBrukerB = pdlRepository.hentIdenter(lokalIdentBrukerA);
+        var brukerB = pdlRepository.hentIdenter(lokalIdentBrukerB);
 
         assertThat(lokalIdentBrukerA).isNotEqualTo(lokalIdentBrukerB);
         assertThat(brukerAPreBrukerB).isEqualTo(identerBrukerA);
@@ -120,14 +120,6 @@ public class PdlRepositoryTest {
     }
 
     private List<PDLIdent> hentLokaleIdenter(AktorId ident){
-        return hentLokaleIdenter(pdlRepository.hentPerson(ident.get()));
-    }
-
-    private List<PDLIdent> hentLokaleIdenter(String ident){
-        return db.queryForList("select * from bruker_identer where person = ?", ident)
-                .stream()
-                .map(PdlServiceTest::mapTilident)
-                .toList();
-
+        return pdlRepository.hentIdenter(pdlRepository.hentPerson(ident.get()));
     }
 }

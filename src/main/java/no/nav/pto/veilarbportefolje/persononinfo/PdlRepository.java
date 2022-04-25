@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,7 +36,9 @@ public class PdlRepository {
     @Transactional
     public void slettLokalIdentlagringHvisIkkeUnderOppfolging(AktorId aktorId) {
         String lokalIdent = hentPerson(aktorId.get());
-        if (harIdentUnderOppfolging(lokalIdent)) {
+        List<PDLIdent> identer = hentIdenter(lokalIdent);
+
+        if (harIdentUnderOppfolging(identer)) {
             log.warn("""
                             Sletter ikke identer tilknyttet aktorId: {}.
                             Da en eller flere relaterte identer på person: {} er under oppfolging.
@@ -44,17 +48,6 @@ public class PdlRepository {
         }
         log.info("Sletter identer lagret på aktorId: {}, lokalIdent: {}.", aktorId, lokalIdent);
         slettLagretePerson(lokalIdent);
-    }
-
-    public String hentPerson(String lookUpIdent) {
-        return queryForObjectOrNull(() -> db.queryForObject("select person from bruker_identer where IDENT = ?",
-                (rs, row) -> rs.getString("person"), lookUpIdent));
-    }
-
-    public List<String> hentPersoner(List<PDLIdent> identer) {
-        String identerParam = identer.stream().map(PDLIdent::getIdent).collect(Collectors.joining(",", "{", "}"));
-        return db.queryForList("select person from bruker_identer where ident = any (?::varchar[])", identerParam)
-                .stream().map(rs -> (String) rs.get("person")).toList();
     }
 
     public boolean harIdentUnderOppfolging(List<PDLIdent> identer) {
@@ -67,13 +60,30 @@ public class PdlRepository {
         ).orElse(false);
     }
 
-    private boolean harIdentUnderOppfolging(String lookUpIdent) {
-        return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject("""
-                        select bool_or(oppfolging) as harOppfolging from oppfolging_data
-                        where aktoerid in (select ident from bruker_identer where person = ?)
-                        """, (rs, row) -> rs.getBoolean("harOppfolging"), lookUpIdent))
-        ).orElse(false);
+    public List<PDLIdent> hentIdenter(String ident){
+        return db.queryForList("select * from bruker_identer where person = ?", ident)
+                .stream()
+                .map(PdlRepository::mapTilident)
+                .toList();
+    }
+
+    @SneakyThrows
+    public static PDLIdent mapTilident(Map<String, Object> rs) {
+        return new PDLIdent()
+                .setIdent((String) rs.get("ident"))
+                .setHistorisk((Boolean) rs.get("historisk"))
+                .setGruppe(PDLIdent.Gruppe.valueOf((String) rs.get("gruppe")));
+    }
+
+    public String hentPerson(String lookUpIdent) {
+        return queryForObjectOrNull(() -> db.queryForObject("select person from bruker_identer where IDENT = ?",
+                (rs, row) -> rs.getString("person"), lookUpIdent));
+    }
+
+    private List<String> hentPersoner(List<PDLIdent> identer) {
+        String identerParam = identer.stream().map(PDLIdent::getIdent).collect(Collectors.joining(",", "{", "}"));
+        return db.queryForList("select person from bruker_identer where ident = any (?::varchar[])", identerParam)
+                .stream().map(rs -> (String) rs.get("person")).toList();
     }
 
     private void insertIdent(String person, PDLIdent ident) {
