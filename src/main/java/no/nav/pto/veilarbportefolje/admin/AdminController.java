@@ -19,9 +19,10 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.postgres.AktoerDataOpensearchMapper;
-import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,6 +53,7 @@ public class AdminController {
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final BrukerRepository brukerRepository;
+    private final PdlService pdlService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -166,6 +168,19 @@ public class AdminController {
     public String forceShardAssignment() {
         authorizeAdmin();
         return opensearchAdminService.forceShardAssignment();
+    }
+
+    @PostMapping("/pdl/hentAntallIkkeMappet")
+    public String hentIkkeMappeteIdenter() {
+        authorizeAdmin();
+        return "Det er : " + pdlService.hentIdenterSomIkkeErMappet() + " brukere som ikke er mappet";
+    }
+
+    @PostMapping("/pdl/lastInnIdenter")
+    public String lastInnManglendeIdenter() {
+        authorizeAdmin();
+        pdlService.mapManglendeIdenter();
+        return "Ferdig!";
     }
 
     @PostMapping("/test/postgresIndeksering")
