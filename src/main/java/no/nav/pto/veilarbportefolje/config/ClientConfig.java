@@ -75,7 +75,7 @@ public class ClientConfig {
     public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient) {
         String tokenScop = String.format("api://%s-fss.pdl.%s/.default",
                 isProduction() ? "prod" : "dev",
-                internalDevOrProdPdlIngress()
+                isProduction() ? "pdl-api" : "pdl-api-q1"
         );
         return new PdlClientImpl(
                 createServiceUrl("pdl-api", "pdl", false),
