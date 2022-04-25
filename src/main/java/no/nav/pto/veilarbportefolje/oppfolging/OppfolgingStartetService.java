@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +26,13 @@ public class OppfolgingStartetService {
     private final OpensearchIndexer opensearchIndexer;
     private final BrukerRepository brukerRepository;
     private final AktorClient aktorClient;
+    private final PdlService pdlService;
 
     public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate) {
         mapAktoerTilPersonId(aktorId);
+
+        pdlService.hentOgLagreIdenter(aktorId);
+
         oppfolgingRepository.settUnderOppfolging(aktorId, oppfolgingStartetDate);
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
         opensearchIndexer.indekser(aktorId);
