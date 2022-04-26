@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -12,6 +13,8 @@ import okhttp3.ResponseBody;
 import org.apache.commons.io.IOUtils;
 import org.opensearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.opensearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.opensearch.action.get.GetRequest;
+import org.opensearch.action.get.GetResponse;
 import org.opensearch.action.support.master.AcknowledgedResponse;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
@@ -23,6 +26,7 @@ import org.opensearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -221,6 +225,13 @@ public class OpensearchAdminService {
                 .build();
 
         return callAndGetBody(request);
+    }
+
+    public GetResponse fetchDocument(AktorId aktoerId, IndexName indexName) throws IOException {
+        GetRequest getRequest = new GetRequest();
+        getRequest.index(indexName.getValue());
+        getRequest.id(aktoerId.toString());
+        return restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
     }
 
     @SneakyThrows

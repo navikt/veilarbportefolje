@@ -282,6 +282,18 @@ CREATE VIEW public.bruker AS
 
 
 --
+-- Name: bruker_identer; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.bruker_identer (
+    person character varying(25) NOT NULL,
+    ident character varying(30) NOT NULL,
+    historisk boolean NOT NULL,
+    gruppe character varying(30) NOT NULL
+);
+
+
+--
 -- Name: brukertiltak; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -426,6 +438,18 @@ CREATE VIEW public.optimaliser_bruker AS
 
 
 --
+-- Name: pdl_person_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.pdl_person_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
 -- Name: scheduled_tasks; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -521,6 +545,14 @@ ALTER TABLE ONLY public.arbeidsliste
 
 ALTER TABLE ONLY public.bruker_cv
     ADD CONSTRAINT bruker_cv_pkey PRIMARY KEY (aktoerid);
+
+
+--
+-- Name: bruker_identer bruker_identer_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bruker_identer
+    ADD CONSTRAINT bruker_identer_pkey PRIMARY KEY (ident);
 
 
 --
