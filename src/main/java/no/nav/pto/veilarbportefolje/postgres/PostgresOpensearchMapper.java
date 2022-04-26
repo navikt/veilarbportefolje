@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -128,7 +129,11 @@ public class PostgresOpensearchMapper {
         bruker.setAapunntakukerigjen(dataPaAktorId.getAapunntakukerigjen());
 
         if(brukAv14APaPostgres(unleashService)) {
-            bruker.setVedtak_status(dataPaAktorId.getVedtak14AStatus());
+            bruker.setVedtak_status(Optional.ofNullable(dataPaAktorId.getVedtak14AStatus())
+                    .map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf)
+                    .map(KafkaVedtakStatusEndring::vedtakStatusTilTekst)
+                    .orElse(null)
+            );
             bruker.setVedtak_status_endret(dataPaAktorId.getVedtak14AStatusEndret());
             bruker.setAnsvarlig_veileder_for_vedtak(dataPaAktorId.getAnsvarligVeilederFor14AVedtak());
         }
