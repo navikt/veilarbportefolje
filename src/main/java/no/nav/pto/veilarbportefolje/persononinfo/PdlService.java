@@ -24,6 +24,8 @@ public class PdlService {
     private static final String hentIdenterQuery = FileUtils.getResourceFileAsString("graphql/hentIdenter.gql");
 
     public void hentOgLagreIdenter(AktorId aktorId) {
+        log.info("Oppdaterer ident mapping for aktor: {}", aktorId);
+
         List<PDLIdent> idents = hentIdenterFraPdl(aktorId);
         pdlRepository.upsertIdenter(idents);
     }
@@ -47,4 +49,21 @@ public class PdlService {
     private static <T> boolean hasErrors(GraphqlResponse<T> response) {
         return response == null || (response.getErrors() != null && !response.getErrors().isEmpty());
     }
+
+    public int hentIdenterSomIkkeErMappet() {
+        return pdlRepository.hentIdenterSomIkkeErMappet().size();
+    }
+
+    public void mapManglendeIdenter() {
+        List<AktorId> aktorIder = pdlRepository.hentIdenterSomIkkeErMappet();
+
+        aktorIder.forEach(aktorId -> {
+            try {
+                hentOgLagreIdenter(aktorId);
+            } catch (Exception e) {
+                log.info("feil under innlastning av ident", e);
+            }
+        });
+    }
+
 }

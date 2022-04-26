@@ -273,6 +273,30 @@ function handleforceShardAssignmentForm(e) {
     }
 }
 
+const lastInnIdenterForm = document.getElementById('lastInnIdenterForm');
+lastInnIdenterForm.addEventListener('submit', handlelastInnIdenterForm)
+function handlelastInnIdenterForm(e) {
+    e.preventDefault();
+    if (window.confirm('Er du sikker på at du vil laste inn manglende Identer?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/pdl/lastInnIdenter`,
+            {method: 'POST', credentials: 'same-origin'},
+            'lastInnIdenterRespons'
+        );
+    }
+}
+
+const antallIkkeMappetForm = document.getElementById('antallIkkeMappetForm');
+antallIkkeMappetForm.addEventListener('submit', handleantallIkkeMappetForm)
+function handleantallIkkeMappetForm(e) {
+    e.preventDefault();
+    fetchData(
+        `/veilarbportefolje/api/admin/pdl/hentAntallIkkeMappet`,
+        {method: 'POST', credentials: 'same-origin'},
+        'antallIkkeMappetRespons'
+    );
+}
+
 const testForm = document.getElementById('testPostgresForm')
 testForm.addEventListener('submit', handleTest);
 
