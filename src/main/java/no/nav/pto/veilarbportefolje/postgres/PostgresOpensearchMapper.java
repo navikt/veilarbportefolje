@@ -127,10 +127,10 @@ public class PostgresOpensearchMapper {
         bruker.setAapmaxtiduke(dataPaAktorId.getAapmaxtiduke());
         bruker.setAapunntakukerigjen(dataPaAktorId.getAapunntakukerigjen());
 
-        if(brukAv14APaPostgres(unleashService)){
+        if(brukAv14APaPostgres(unleashService)) {
             bruker.setVedtak_status(dataPaAktorId.getVedtak14AStatus());
             bruker.setVedtak_status_endret(dataPaAktorId.getVedtak14AStatusEndret());
-            bruker.setVedtak_status_endret(dataPaAktorId.getAnsvarligVeilederFor14AVedtak());
+            bruker.setAnsvarlig_veileder_for_vedtak(dataPaAktorId.getAnsvarligVeilederFor14AVedtak());
         }
 
         if (dataPaAktorId.isArbeidslisteAktiv()) {
