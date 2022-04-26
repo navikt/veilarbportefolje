@@ -153,21 +153,14 @@ public class PostgresOpensearchMapper {
         if (isDifferentDate(bruker.getVedtak_status_endret(), postgresAktorIdEntity.getVedtak14AStatusEndret())) {
             log.info("postgres Opensearch: getVedtak_status_endret feil bruker: {}", bruker.getAktoer_id());
         }
-        if (bruker.isHar_delt_cv() != postgresAktorIdEntity.getHarDeltCv()) {
-            log.info("postgres Opensearch: isHar_delt_cv feil bruker: {}", bruker.getAktoer_id());
-        }
-        if (bruker.isCv_eksistere() != postgresAktorIdEntity.getCvEksistere()) {
-            log.info("postgres Opensearch: isCv_eksistere feil bruker: {}", bruker.getAktoer_id());
-        }
         if (isDifferent(bruker.getVenterpasvarfrabruker(), postgresAktorIdEntity.getVenterpasvarfrabruker())) {
             log.info("postgres Opensearch: Venterpasvarfrabruker feil bruker: {}", bruker.getAktoer_id());
         }
         if (isDifferent(bruker.getVenterpasvarfranav(), postgresAktorIdEntity.getVenterpasvarfranav())) {
             log.info("postgres Opensearch: getVenterpasvarfranav feil bruker: {}", bruker.getAktoer_id());
         }
-
         if ((bruker.isEgen_ansatt() && !erSkjermet_NOM) || (!bruker.isEgen_ansatt() && erSkjermet_NOM)) {
-            log.info("Difference in skjerming, isEgen_ansatt: {}, NOM skjermet: {} ", bruker.isEgen_ansatt(), erSkjermet_NOM);
+            log.info("postgres Opensearch: Difference in skjerming, isEgen_ansatt: {}, NOM skjermet: {} , bruker: {}", bruker.isEgen_ansatt(), erSkjermet_NOM, bruker.getAktoer_id());
         }
     }
 
