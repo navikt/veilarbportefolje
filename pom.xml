@@ -23,7 +23,6 @@
         <veilarbregistrering.skjema.version>9a956c3</veilarbregistrering.skjema.version>
         <jaxb.version>2.3.1</jaxb.version>
         <testcontainers.version>1.16.0</testcontainers.version>
-        <avro.version>1.11.0</avro.version>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
