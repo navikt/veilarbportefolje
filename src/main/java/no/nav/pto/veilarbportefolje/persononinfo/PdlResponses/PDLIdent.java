@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.persononinfo.PdlResponses;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.pto.veilarbportefolje.persononinfo.avro.Aktor;
+import no.nav.person.pdl.aktor.v2.Type;
 
 @Data
 @Accessors(chain = true)
@@ -26,7 +26,7 @@ public class PDLIdent {
         AKTORID
     }
 
-    public static Gruppe typeTilGruppe(Aktor.Type type) {
+    public static Gruppe typeTilGruppe(Type type) {
         return switch (type) {
             case NPID -> Gruppe.NPID;
             case AKTORID -> Gruppe.AKTORID;
