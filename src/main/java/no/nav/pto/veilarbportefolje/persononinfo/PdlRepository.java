@@ -75,6 +75,15 @@ public class PdlRepository {
                 .setGruppe(PDLIdent.Gruppe.valueOf((String) rs.get("gruppe")));
     }
 
+    public List<AktorId> hentIdenterSomIkkeErMappet(){
+        return db.queryForList("""
+                        select aktoerid from oppfolging_data od
+                        left join bruker_identer bi
+                        on od.aktoerid = bi.ident where bi.ident is null
+                        """, String.class)
+                .stream().map(AktorId::new).toList();
+    }
+
     public String hentPerson(String lookUpIdent) {
         return queryForObjectOrNull(() -> db.queryForObject("select person from bruker_identer where IDENT = ?",
                 (rs, row) -> rs.getString("person"), lookUpIdent));
