@@ -43,7 +43,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class OppfolgingsbrukerRepositoryV2 {
+public class OppfolgingsbrukerRepository {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
     @Qualifier("PostgresNamedJdbcReadOnly")
@@ -61,6 +61,20 @@ public class OppfolgingsbrukerRepositoryV2 {
         }
         return upsert(oppfolgingsbruker);
     }
+
+    public int leggTilEllerEndreOppfolgingsbrukerV2(OppfolgingsbrukerEntity oppfolgingsbruker) {
+        if (oppfolgingsbruker == null || oppfolgingsbruker.aktoerid() == null) {
+            return 0;
+        }
+
+        Optional<ZonedDateTime> sistEndretDato = getEndretDato(oppfolgingsbruker.aktoerid());
+        if (oppfolgingsbruker.endret_dato() == null || (sistEndretDato.isPresent() && sistEndretDato.get().isAfter(oppfolgingsbruker.endret_dato()))) {
+            log.info("Oppdaterer ikke oppfolgingsbruker: {}", oppfolgingsbruker.aktoerid());
+            return 0;
+        }
+        return upsert(oppfolgingsbruker);
+    }
+
 
     public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(AktorId aktorId) {
         String sql = "SELECT * FROM OPPFOLGINGSBRUKER_ARENA WHERE AKTOERID = ?";
