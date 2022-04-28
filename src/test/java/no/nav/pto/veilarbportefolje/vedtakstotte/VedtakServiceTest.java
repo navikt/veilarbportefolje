@@ -2,21 +2,21 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
+import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Optional;
 
 import static no.nav.common.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class VedtakServiceTest {
 
-    private VedtakStatusRepository vedtakStatusRepository;
+    private VedtakStatusRepositoryV2 vedtakStatusRepository;
     private VedtakService vedtakService;
     private static final String AKTORID = "123456789";
     private static final long VEDTAKID = 1;
@@ -35,24 +35,23 @@ public class VedtakServiceTest {
 
     @Before
     public void setup() {
-        JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
-        this.vedtakStatusRepository = new VedtakStatusRepository(db);
+        JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
+        this.vedtakStatusRepository = new VedtakStatusRepositoryV2(db);
         OpensearchIndexer opensearchIndexer = mock(OpensearchIndexer.class);
-        VedtakStatusRepositoryV2 vedtakStatusRepositoryV2 = mock(VedtakStatusRepositoryV2.class);
-        this.vedtakService = new VedtakService(vedtakStatusRepository, vedtakStatusRepositoryV2, opensearchIndexer);
+        this.vedtakService = new VedtakService(vedtakStatusRepository, opensearchIndexer);
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
     }
 
     @Test
     public void skallSetteInUtkast() {
         vedtakService.behandleKafkaMeldingLogikk(vedtakStatusEndring);
-        List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
-        assertThat(endringer.get(0)).isEqualTo(vedtakStatusEndring);
-        assertThat(endringer.size()).isEqualTo(1);
+        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hent14aVedtak(AKTORID);
+        assertThat(endringer.isPresent()).isTrue();
+        assertThat(endringer.get()).isEqualTo(vedtakStatusEndring);
     }
 
     @Test
-    public void skallOppdatereUtkast() {
+    public void skallOppdatereUtkast_sendtutkast() {
         vedtakService.behandleKafkaMeldingLogikk(vedtakStatusEndring);
         LocalDateTime time = DateUtils.now().toLocalDateTime();
         KafkaVedtakStatusEndring kafkaVedtakSendtTilBeslutter = new KafkaVedtakStatusEndring()
@@ -65,13 +64,12 @@ public class VedtakServiceTest {
 
         vedtakService.behandleKafkaMeldingLogikk(kafkaVedtakSendtTilBeslutter);
 
-        List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
-        assertThat(endringer.get(0)).isEqualTo(kafkaVedtakSendtTilBeslutter);
-        assertThat(endringer.size()).isEqualTo(1);
+        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hent14aVedtak(AKTORID);
+        assertThat(endringer.isEmpty()).isTrue();
     }
 
     @Test
-    public void skallSletteGamleVedtak() {
+    public void skallSletteGamleVedtak_sendtutkast() {
         vedtakStatusRepository.upsertVedtak(new KafkaVedtakStatusEndring()
                 .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.VEDTAK_SENDT)
                 .setTimestamp(DateUtils.now().toLocalDateTime())
@@ -90,9 +88,8 @@ public class VedtakServiceTest {
 
         vedtakService.behandleKafkaMeldingLogikk(kafkaVedtakSendtTilBruker);
 
-        List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
-        assertThat(endringer.get(0)).isEqualTo(kafkaVedtakSendtTilBruker);
-        assertThat(endringer.size()).isEqualTo(1);
+        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hent14aVedtak(AKTORID);
+        assertThat(endringer.isEmpty()).isTrue();
     }
 
     @Test
