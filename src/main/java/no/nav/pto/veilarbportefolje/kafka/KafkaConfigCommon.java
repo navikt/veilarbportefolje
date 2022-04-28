@@ -38,15 +38,7 @@ import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
@@ -78,6 +70,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 @Configuration
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
+    public final static String CLIENT_ID_NOM_SKJERMING = "veilarbportefolje-consumer-nom-1";
     public static final String KAFKA_BROKERS = EnvironmentUtils.getRequiredProperty("KAFKA_BROKERS_URL");
     private static final Credentials serviceUserCredentials = getCredentials("service_user");
 
@@ -120,6 +113,7 @@ public class KafkaConfigCommon {
 
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final List<KafkaConsumerClient> consumerClientsOnPrem;
+    private final List<KafkaConsumerClient> consumerClientsNOMSkjerming;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
@@ -332,6 +326,7 @@ public class KafkaConfigCommon {
                                         skjermingService::behandleSkjermedePersoner
                                 )
                 );
+
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
                                 .withLogging()
@@ -376,12 +371,39 @@ public class KafkaConfigCommon {
                                 )
                 );
 
+        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsNOMSkjerming =
+                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, String>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.NOM_SKJERMING_STATUS.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.stringDeserializer(),
+                                        skjermingService::behandleSkjermingStatus
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, SkjermingDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.NOM_SKJERMEDE_PERSONER.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(SkjermingDTO.class),
+                                        skjermingService::behandleSkjermedePersoner
+                                )
+                );
+
         KafkaAivenUnleash kafkaAivenUnleash = new KafkaAivenUnleash(unleashService);
         KafkaOnpremUnleash kafkaOnpremUnleash = new KafkaOnpremUnleash(unleashService);
 
         Properties aivenConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_CONFIG);
         aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
         //aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        Properties nomSkjermingConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_NOM_SKJERMING);
+        nomSkjermingConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
+
 
         consumerClientAiven = topicConfigsAiven.stream()
                 .map(config ->
@@ -405,11 +427,20 @@ public class KafkaConfigCommon {
                                 .build())
                 .collect(Collectors.toList());
 
+        consumerClientsNOMSkjerming = topicConfigsNOMSkjerming.stream()
+                .map(config ->
+                        KafkaConsumerClientBuilder.builder()
+                                .withProperties(nomSkjermingConsumerProperties)
+                                .withTopicConfig(config)
+                                .withToggle(kafkaAivenUnleash)
+                                .build())
+                .collect(Collectors.toList());
+
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
-                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(Stream.concat(topicConfigsAiven.stream(), topicConfigsOnPrem.stream()).collect(Collectors.toList())))
+                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(Stream.concat(Stream.concat(topicConfigsAiven.stream(), topicConfigsOnPrem.stream()), topicConfigsNOMSkjerming.stream()).collect(Collectors.toList())))
                 .build();
     }
 
@@ -419,6 +450,7 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientsOnPrem.forEach(KafkaConsumerClient::start);
+        consumerClientsNOMSkjerming.forEach(KafkaConsumerClient::start);
     }
 
 

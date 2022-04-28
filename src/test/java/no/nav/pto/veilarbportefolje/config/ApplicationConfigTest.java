@@ -149,12 +149,11 @@ import static org.mockito.Mockito.when;
 public class ApplicationConfigTest {
 
     private static final OpenSearchContainer OPENSEARCH_CONTAINER;
-    private static final String OPENSEARCH_VERSION = "1.3.1";
     private static final String OPENSEARCH_TEST_PASSWORD = "test";
     private static final String OPENSEARCH_TEST_USERNAME = "opensearch";
 
     static {
-        OPENSEARCH_CONTAINER = new OpenSearchContainer(OPENSEARCH_VERSION);
+        OPENSEARCH_CONTAINER = new OpenSearchContainer();
         OPENSEARCH_CONTAINER.start();
     }
 

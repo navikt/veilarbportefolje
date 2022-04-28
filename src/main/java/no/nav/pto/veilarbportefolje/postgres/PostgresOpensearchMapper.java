@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAv14APaPostgres;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
 
@@ -128,15 +127,13 @@ public class PostgresOpensearchMapper {
         bruker.setAapmaxtiduke(dataPaAktorId.getAapmaxtiduke());
         bruker.setAapunntakukerigjen(dataPaAktorId.getAapunntakukerigjen());
 
-        if(brukAv14APaPostgres(unleashService)) {
-            bruker.setVedtak_status(Optional.ofNullable(dataPaAktorId.getVedtak14AStatus())
-                    .map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf)
-                    .map(KafkaVedtakStatusEndring::vedtakStatusTilTekst)
-                    .orElse(null)
-            );
-            bruker.setVedtak_status_endret(dataPaAktorId.getVedtak14AStatusEndret());
-            bruker.setAnsvarlig_veileder_for_vedtak(dataPaAktorId.getAnsvarligVeilederFor14AVedtak());
-        }
+        bruker.setVedtak_status(Optional.ofNullable(dataPaAktorId.getVedtak14AStatus())
+                .map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf)
+                .map(KafkaVedtakStatusEndring::vedtakStatusTilTekst)
+                .orElse(null)
+        );
+        bruker.setVedtak_status_endret(dataPaAktorId.getVedtak14AStatusEndret());
+        bruker.setAnsvarlig_veileder_for_vedtak(dataPaAktorId.getAnsvarligVeilederFor14AVedtak());
 
         if (dataPaAktorId.isArbeidslisteAktiv()) {
             bruker.setArbeidsliste_sist_endret_av_veilederid(dataPaAktorId.getArbeidslisteSistEndretAvVeilederid());
