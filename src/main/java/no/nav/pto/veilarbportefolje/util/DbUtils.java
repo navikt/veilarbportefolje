@@ -5,17 +5,14 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAv14APaPostgres;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 @Slf4j
@@ -103,12 +100,6 @@ public class DbUtils {
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus))
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING")); // Oppfolging hentes fra Oracle helt til at alt er migrert
-        if (!brukAv14APaPostgres(unleashService)) {
-            bruker
-                    .setVedtak_status(Optional.ofNullable(vedtakstatus).map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf).map(KafkaVedtakStatusEndring::vedtakStatusTilTekst).orElse(null))
-                    .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
-                    .setAnsvarlig_veileder_for_vedtak(rs.getString("ANSVARLIG_VEILEDER_NAVN"));
-        }
         return bruker;
     }
 
