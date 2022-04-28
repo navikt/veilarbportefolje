@@ -3,9 +3,8 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
-import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -18,16 +17,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.DISKRESJONSKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.DOED_FRA_DATO;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ENDRET_DATO;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ER_DOED;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ETTERNAVN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.FODSELSNR;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.FORMIDLINGSGRUPPEKODE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.FORNAVN;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.HAR_OPPFOLGINGSSAK;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.HOVEDMAALKODE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ISERV_FRA_DATO;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.KVALIFISERINGSGRUPPEKODE;
@@ -36,80 +32,71 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRU
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.SIKKERHETSTILTAK_TYPE_KODE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.SPERRET_ANSATT;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toSqlDateOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class OppfolgingsbrukerRepository {
+public class OppfolgingsbrukerRepositoryV2 {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate dbNamed;
 
     public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerEntity oppfolgingsbruker) {
-        if (oppfolgingsbruker == null || oppfolgingsbruker.aktoerid() == null) {
+        if (oppfolgingsbruker == null || oppfolgingsbruker.fodselsnr() == null) {
             return 0;
         }
 
-        Optional<ZonedDateTime> sistEndretDato = getEndretDato(oppfolgingsbruker.aktoerid());
+        Optional<ZonedDateTime> sistEndretDato = getEndretDato(Fnr.of(oppfolgingsbruker.fodselsnr()));
         if (oppfolgingsbruker.endret_dato() == null || (sistEndretDato.isPresent() && sistEndretDato.get().isAfter(oppfolgingsbruker.endret_dato()))) {
-            log.info("Oppdaterer ikke oppfolgingsbruker: {}", oppfolgingsbruker.aktoerid());
             return 0;
         }
         return upsert(oppfolgingsbruker);
     }
 
-    public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(AktorId aktorId) {
-        String sql = "SELECT * FROM OPPFOLGINGSBRUKER_ARENA WHERE AKTOERID = ?";
+    public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(Fnr fnr) {
+        String sql = "SELECT * FROM OPPFOLGINGSBRUKER_ARENA_V2 WHERE fodselsnr = ?";
         return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilOppfolgingsbruker, aktorId.get()))
+                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilOppfolgingsbruker, fnr.get()))
         );
     }
 
 
-    private Optional<ZonedDateTime> getEndretDato(String aktorId) {
-        String sql = "SELECT ENDRET_DATO FROM OPPFOLGINGSBRUKER_ARENA WHERE AKTOERID = ?";
+    private Optional<ZonedDateTime> getEndretDato(Fnr fnr) {
+        String sql = "SELECT ENDRET_DATO FROM OPPFOLGINGSBRUKER_ARENA_V2 WHERE fodselsnr = ?";
         return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilZonedDateTime, aktorId))
+                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilZonedDateTime, fnr.get()))
         );
     }
 
     private int upsert(OppfolgingsbrukerEntity oppfolgingsbruker) {
-        java.sql.Date fodselsDato = toSqlDateOrNull(FodselsnummerUtils.lagFodselsdato(oppfolgingsbruker.fodselsnr()));
-        String kjonn = FodselsnummerUtils.lagKjonn(oppfolgingsbruker.fodselsnr());
-
         return db.update("""
-                        INSERT INTO OPPFOLGINGSBRUKER_ARENA(
-                        aktoerid, fodselsnr, formidlingsgruppekode,
-                        iserv_fra_dato, etternavn, fornavn,
-                        nav_kontor, kvalifiseringsgruppekode, rettighetsgruppekode,
-                        hovedmaalkode, sikkerhetstiltak_type_kode, diskresjonskode,
-                        har_oppfolgingssak, sperret_ansatt, er_doed,
-                        doed_fra_dato, endret_dato , kjonn, fodsels_dato)
-                        VALUES(?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?)
-                        ON CONFLICT (AKTOERID) DO UPDATE SET(
+                        INSERT INTO OPPFOLGINGSBRUKER_ARENA_V2(
                         fodselsnr, formidlingsgruppekode, iserv_fra_dato,
                         etternavn, fornavn, nav_kontor,
-                        kvalifiseringsgruppekode, rettighetsgruppekode, hovedmaalkode,
-                        sikkerhetstiltak_type_kode, diskresjonskode, har_oppfolgingssak,
-                        sperret_ansatt, er_doed, doed_fra_dato,
-                        endret_dato, kjonn, fodsels_dato)
-                        = (excluded.fodselsnr, excluded.formidlingsgruppekode, excluded.iserv_fra_dato,
+                        kvalifiseringsgruppekode, rettighetsgruppekode,
+                        hovedmaalkode, sikkerhetstiltak_type_kode, diskresjonskode,
+                        sperret_ansatt, er_doed, endret_dato)
+                        VALUES(?,?,?, ?,?,?, ?,?, ?,?,?, ?,?,?)
+                        ON CONFLICT (fodselsnr) DO UPDATE SET(
+                        formidlingsgruppekode, iserv_fra_dato,
+                        etternavn, fornavn, nav_kontor,
+                        kvalifiseringsgruppekode, rettighetsgruppekode,
+                        hovedmaalkode, sikkerhetstiltak_type_kode, diskresjonskode,
+                        sperret_ansatt, er_doed, endret_dato)
+                        = (excluded.formidlingsgruppekode, excluded.iserv_fra_dato,
                         excluded.etternavn, excluded.fornavn, excluded.nav_kontor,
-                        excluded.kvalifiseringsgruppekode, excluded.rettighetsgruppekode,excluded.hovedmaalkode,
-                        excluded.sikkerhetstiltak_type_kode, excluded.diskresjonskode, excluded.har_oppfolgingssak,
-                        excluded.sperret_ansatt, excluded.er_doed, excluded.doed_fra_dato,
-                        excluded.endret_dato, excluded.kjonn, excluded.fodsels_dato)
+                        excluded.kvalifiseringsgruppekode, excluded.rettighetsgruppekode,
+                        excluded.hovedmaalkode, excluded.sikkerhetstiltak_type_kode, excluded.diskresjonskode,
+                        excluded.sperret_ansatt, excluded.er_doed, excluded.endret_dato)
                         """,
-                oppfolgingsbruker.aktoerid(), oppfolgingsbruker.fodselsnr(), oppfolgingsbruker.formidlingsgruppekode(),
-                toTimestamp(oppfolgingsbruker.iserv_fra_dato()), oppfolgingsbruker.etternavn(), oppfolgingsbruker.fornavn(),
-                oppfolgingsbruker.nav_kontor(), oppfolgingsbruker.kvalifiseringsgruppekode(), oppfolgingsbruker.rettighetsgruppekode(),
+                oppfolgingsbruker.fodselsnr(), oppfolgingsbruker.formidlingsgruppekode(), toTimestamp(oppfolgingsbruker.iserv_fra_dato()),
+                oppfolgingsbruker.etternavn(), oppfolgingsbruker.fornavn(), oppfolgingsbruker.nav_kontor(),
+                oppfolgingsbruker.kvalifiseringsgruppekode(), oppfolgingsbruker.rettighetsgruppekode(),
                 oppfolgingsbruker.hovedmaalkode(), oppfolgingsbruker.sikkerhetstiltak_type_kode(), oppfolgingsbruker.fr_kode(),
-                oppfolgingsbruker.har_oppfolgingssak(), oppfolgingsbruker.sperret_ansatt(), oppfolgingsbruker.er_doed(),
-                toTimestamp(oppfolgingsbruker.doed_fra_dato()), toTimestamp(oppfolgingsbruker.endret_dato()), kjonn, fodselsDato
+                oppfolgingsbruker.sperret_ansatt(), oppfolgingsbruker.er_doed(), toTimestamp(oppfolgingsbruker.endret_dato())
         );
     }
 
@@ -120,15 +107,15 @@ public class OppfolgingsbrukerRepository {
 
     @SneakyThrows
     private OppfolgingsbrukerEntity mapTilOppfolgingsbruker(ResultSet rs, int row) {
-        if (rs == null || rs.getString(AKTOERID) == null) {
+        if (rs == null || rs.getString(FODSELSNR) == null) {
             return null;
         }
-        return new OppfolgingsbrukerEntity(rs.getString(AKTOERID), rs.getString(FODSELSNR), rs.getString(FORMIDLINGSGRUPPEKODE),
+        return new OppfolgingsbrukerEntity(null, rs.getString(FODSELSNR), rs.getString(FORMIDLINGSGRUPPEKODE),
                 toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)), rs.getString(ETTERNAVN), rs.getString(FORNAVN),
                 rs.getString(NAV_KONTOR), rs.getString(KVALIFISERINGSGRUPPEKODE), rs.getString(RETTIGHETSGRUPPEKODE),
                 rs.getString(HOVEDMAALKODE), rs.getString(SIKKERHETSTILTAK_TYPE_KODE), rs.getString(DISKRESJONSKODE),
-                rs.getBoolean(HAR_OPPFOLGINGSSAK), rs.getBoolean(SPERRET_ANSATT), rs.getBoolean(ER_DOED),
-                toZonedDateTime(rs.getTimestamp(DOED_FRA_DATO)), toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
+                false, rs.getBoolean(SPERRET_ANSATT), rs.getBoolean(ER_DOED),
+                null, toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
 
     public List<String> finnSkjulteBrukere(List<String> fnrListe, Skjermettilgang skjermettilgang) {
@@ -139,7 +126,7 @@ public class OppfolgingsbrukerRepository {
         params.addValue("tilgangTilEgenAnsatt", skjermettilgang.tilgangTilEgenAnsatt());
 
         return dbNamed.queryForList("""
-                SELECT fodselsnr from oppfolgingsbruker_arena
+                SELECT fodselsnr from oppfolgingsbruker_arena_v2
                 where fodselsnr = ANY (:fnrListe::varchar[])
                 AND (
                     (diskresjonskode = '6' AND NOT :tilgangTilKode6::boolean)
