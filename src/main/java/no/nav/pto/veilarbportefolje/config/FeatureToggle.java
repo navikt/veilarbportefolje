@@ -16,15 +16,10 @@ public class FeatureToggle {
     public static final String KAFKA_AIVEN_CONSUMERS_STOP = "veilarbportefolje.kafka_aiven_consumers_stop";
     public static final String KAFKA_ONPREM_CONSUMERS_STOP = "veilarbportefolje.kafka_onprem_consumers_stop";
 
-    public static final String POSTGRES_14A = "veilarbportefolje.14a";
     public static final String IKKE_AVTALTE_MOTER = "veilarbportfolje.ikke_avtalte_aktiviteter";
 
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
-    }
-
-    public static boolean brukAv14APaPostgres(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.POSTGRES_14A);
     }
 
     public static boolean brukIkkeAvtalteMoter(UnleashService unleashService) {
