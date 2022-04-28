@@ -149,15 +149,6 @@ public class PostgresOpensearchMapper {
     }
 
     private void loggDiff(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker, Boolean erSkjermet_NOM) {
-        if (isDifferent(bruker.getAnsvarlig_veileder_for_vedtak(), postgresAktorIdEntity.getAnsvarligVeilederFor14AVedtak())) {
-            log.info("postgres Opensearch: ansvarlig_veileder_for_vedtak feil bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferent(bruker.getVedtak_status(), postgresAktorIdEntity.getVedtak14AStatus())) {
-            log.info("postgres Opensearch: getVedtak_status feil bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferentDate(bruker.getVedtak_status_endret(), postgresAktorIdEntity.getVedtak14AStatusEndret())) {
-            log.info("postgres Opensearch: getVedtak_status_endret feil bruker: {}", bruker.getAktoer_id());
-        }
         if (isDifferent(bruker.getVenterpasvarfrabruker(), postgresAktorIdEntity.getVenterpasvarfrabruker())) {
             log.info("postgres Opensearch: Venterpasvarfrabruker feil bruker: {}", bruker.getAktoer_id());
         }
