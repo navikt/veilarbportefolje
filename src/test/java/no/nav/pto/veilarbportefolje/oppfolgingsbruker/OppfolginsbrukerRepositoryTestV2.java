@@ -19,11 +19,11 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class OppfolginsbrukerRepositoryTestV2 {
     private JdbcTemplate db;
-    private OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepository;
+    private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final Fnr fnr = Fnr.of("0");
 
     @Autowired
-    public void OppfolginsbrukerRepositoryTestV2(@Qualifier("PostgresJdbc") JdbcTemplate db, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepository) {
+    public void OppfolginsbrukerRepositoryTestV2(@Qualifier("PostgresJdbc") JdbcTemplate db, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository) {
         this.db = db;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
     }

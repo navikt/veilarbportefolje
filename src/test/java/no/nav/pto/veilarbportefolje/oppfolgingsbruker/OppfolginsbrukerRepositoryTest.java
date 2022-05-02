@@ -20,13 +20,13 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class OppfolginsbrukerRepositoryTest {
     private JdbcTemplate db;
-    private OppfolgingsbrukerRepository oppfolgingsbrukerRepository;
+    private OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
     private final AktorId aktoerId = AktorId.of("0");
 
     @Autowired
-    public void OppfolginsbrukerRepositoryTestV2(@Qualifier("PostgresJdbc") JdbcTemplate db, OppfolgingsbrukerRepository oppfolgingsbrukerRepository) {
+    public void OppfolginsbrukerRepositoryTestV2(@Qualifier("PostgresJdbc") JdbcTemplate db, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2) {
         this.db = db;
-        this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
+        this.oppfolgingsbrukerRepositoryV2 = oppfolgingsbrukerRepositoryV2;
     }
 
     @BeforeEach
@@ -43,11 +43,11 @@ public class OppfolginsbrukerRepositoryTest {
                 "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
                 "1234", true, true, false, null, ZonedDateTime.now().minusDays(5));
 
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
-        assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(msg);
+        assertThat(oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);
 
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(old_msg);
-        assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(aktoerId).get()).isNotEqualTo(old_msg);
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(old_msg);
+        assertThat(oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isNotEqualTo(old_msg);
     }
 
 
@@ -60,11 +60,11 @@ public class OppfolginsbrukerRepositoryTest {
                 "Tester", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
                 "1234", false, true, true, ZonedDateTime.now(), ZonedDateTime.now());
 
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
-        assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(msg);
+        assertThat(oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);
 
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(new_msg);
-        assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(aktoerId).get()).isEqualTo(new_msg);
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(new_msg);
+        assertThat(oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(new_msg);
     }
 
 
@@ -77,9 +77,9 @@ public class OppfolginsbrukerRepositoryTest {
         settSperretAnsatt(sperretAnsatt, sperretAnsattFnr, true);
         settSperretAnsatt(kontroll, kontrollFnr, false);
 
-        List<String> medTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(sperretAnsattFnr, kontrollFnr), new Skjermettilgang(
+        List<String> medTilgang = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(List.of(sperretAnsattFnr, kontrollFnr), new Skjermettilgang(
                 false, false, true));
-        List<String> utenTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(sperretAnsattFnr, kontrollFnr),
+        List<String> utenTilgang = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(List.of(sperretAnsattFnr, kontrollFnr),
                 new Skjermettilgang(false, false, false));
         assertThat(medTilgang.size()).isEqualTo(0);
         assertThat(utenTilgang.size()).isEqualTo(1);
@@ -99,13 +99,13 @@ public class OppfolginsbrukerRepositoryTest {
         settDiskresjonskode(kode7, kode7Fnr, "7");
         settDiskresjonskode(kontroll, kontrollFnr, null);
 
-        List<String> medAlleTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
+        List<String> medAlleTilgang = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
                 new Skjermettilgang(true, true, false));
-        List<String> medKode6Tilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
+        List<String> medKode6Tilgang = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
                 new Skjermettilgang(true, false, false));
-        List<String> medKode7Tilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
+        List<String> medKode7Tilgang = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
                 new Skjermettilgang(false, true, false));
-        List<String> utenTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
+        List<String> utenTilgang = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr,kontrollFnr),
                 new Skjermettilgang(false, false, false));
 
         assertThat(medAlleTilgang.size()).isEqualTo(0);
@@ -120,7 +120,7 @@ public class OppfolginsbrukerRepositoryTest {
     }
 
     private void settSperretAnsatt(AktorId aktoer, String fnr, boolean sperret){
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktoer.get(), fnr, null, null,
                         null, null, "0000", null, null,
                         null, null, null, true, sperret,
@@ -128,7 +128,7 @@ public class OppfolginsbrukerRepositoryTest {
     }
 
     private void settDiskresjonskode(AktorId aktoer, String fnr, String kode){
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktoer.get(), fnr, null, null,
                         null, null, "0000", null, null,
                         null, null, kode, true, false,

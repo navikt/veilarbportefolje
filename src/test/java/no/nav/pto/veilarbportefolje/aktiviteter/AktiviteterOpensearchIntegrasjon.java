@@ -11,7 +11,7 @@ import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepository;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,16 +35,16 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     private final AktivitetService aktivitetService;
     private final OpensearchService opensearchService;
-    private final OppfolgingsbrukerRepository oppfolgingsbrukerRepository;
+    private final OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
     private final AktorId aktoer = randomAktorId();
     private final Fnr fodselsnummer = Fnr.ofValidFnr("10108000399"); //TESTFAMILIE
     private final JdbcTemplate jdbcTemplatePostgres;
 
     @Autowired
-    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepository oppfolgingsbrukerRepository, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres) {
+    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres) {
         this.aktivitetService = aktivitetService;
         this.opensearchService = opensearchService;
-        this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
+        this.oppfolgingsbrukerRepositoryV2 = oppfolgingsbrukerRepositoryV2;
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
     }
 
@@ -199,7 +199,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     }
 
     private void settSperretAnsatt(AktorId aktoer, Fnr fnr, NavKontor navKontor) {
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktoer.get(), fnr.get(), null, null,
                         "test", "testson", navKontor.getValue(), null, null,
                         null, null, null, true, true,
@@ -207,7 +207,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     }
 
     private void settDiskresjonskode(AktorId aktoer, Fnr fnr, NavKontor navKontor, String kode) {
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktoer.get(), fnr.get(), null, null,
                         "test", "testson", navKontor.getValue(), null, null,
                         null, null, kode, true, false,

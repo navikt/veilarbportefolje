@@ -12,7 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepository;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -30,16 +30,16 @@ public class TestDataClient {
     private final JdbcTemplate jdbcTemplateOracle;
     private final JdbcTemplate jdbcTemplatePostgres;
     private final RegistreringRepositoryV2 registreringRepositoryV2;
-    private final OppfolgingsbrukerRepository oppfolgingsbrukerRepository;
+    private final OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
     private final OpensearchTestClient opensearchTestClient;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
-    public TestDataClient(JdbcTemplate jdbcTemplateOracle, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, RegistreringRepositoryV2 registreringRepositoryV2, OppfolgingsbrukerRepository oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
+    public TestDataClient(JdbcTemplate jdbcTemplateOracle, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, RegistreringRepositoryV2 registreringRepositoryV2, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
         this.jdbcTemplateOracle = jdbcTemplateOracle;
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.registreringRepositoryV2 = registreringRepositoryV2;
-        this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
+        this.oppfolgingsbrukerRepositoryV2 = oppfolgingsbrukerRepositoryV2;
         this.arbeidslisteRepositoryV2 = arbeidslisteRepositoryV2;
         this.opensearchTestClient = opensearchTestClient;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
@@ -99,7 +99,7 @@ public class TestDataClient {
         oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato);
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
         registreringRepositoryV2.upsertBrukerRegistrering(new ArbeidssokerRegistrertEvent(aktoerId.get(), null, null, null, null, null));
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
+        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(aktoerId.get(), fnr.get(), null, null,
                         null, null, navKontor.getValue(), null, null,
                         null, null, null, true, false,

@@ -29,14 +29,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class OppfolgingsbrukerServiceTestV2 {
     private final JdbcTemplate db;
     private final OppfolgingsbrukerServiceV2 oppfolginsbrukerService;
-    private final OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
+    private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
     private final Fnr fnr = randomFnr();
 
     @Autowired
-    public OppfolgingsbrukerServiceTestV2(@Qualifier("PostgresJdbc") JdbcTemplate db, OppfolgingsbrukerServiceV2 oppfolginsbrukerService, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2) {
+    public OppfolgingsbrukerServiceTestV2(@Qualifier("PostgresJdbc") JdbcTemplate db, OppfolgingsbrukerServiceV2 oppfolginsbrukerService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3) {
         this.db = db;
         this.oppfolginsbrukerService = oppfolginsbrukerService;
-        this.oppfolgingsbrukerRepositoryV2 = oppfolgingsbrukerRepositoryV2;
+        this.oppfolgingsbrukerRepositoryV3 = oppfolgingsbrukerRepositoryV3;
     }
 
     @BeforeEach
@@ -59,7 +59,7 @@ public class OppfolgingsbrukerServiceTestV2 {
                 .diskresjonskode("6").sperretAnsatt(false).erDoed(true).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
-        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
         assertTrue(oppfolgingsBruker.isPresent());
         assertThat(oppfolgingsBruker.get()).isEqualTo(forventetResultat);
     }
@@ -78,7 +78,7 @@ public class OppfolgingsbrukerServiceTestV2 {
                 .diskresjonskode("6").harOppfolgingssak(true).sperretAnsatt(false).erDoed(true).doedFraDato(LocalDate.now()).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
-        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
         assertTrue(oppfolgingsBruker.isPresent());
         assertThat(oppfolgingsBruker.get()).isEqualTo(forventetResultat);
     }
@@ -92,7 +92,7 @@ public class OppfolgingsbrukerServiceTestV2 {
                 .diskresjonskode(null).harOppfolgingssak(false).sperretAnsatt(false).erDoed(false).doedFraDato(null).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
-        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV2.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
         assertTrue(oppfolgingsBruker.isPresent());
     }
 

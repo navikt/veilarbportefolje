@@ -10,7 +10,7 @@ import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepository;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 @RequiredArgsConstructor
 public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> {
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
-    private final OppfolgingsbrukerRepository oppfolgingsbrukerRepository;
+    private final OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
     private final BrukerService brukerService;
     private final SisteEndringService sisteEndringService;
     private final OpensearchIndexer opensearchIndexer;
@@ -80,7 +80,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         List<Moteplan> sensurertListe = new ArrayList<>();
 
         List<String> fnrs = moteplans.stream().map(Moteplan::deltaker).map(Motedeltaker::fnr).toList();
-        List<String> skjermedeFnrs = oppfolgingsbrukerRepository.finnSkjulteBrukere(fnrs, skjermettilgang);
+        List<String> skjermedeFnrs = oppfolgingsbrukerRepositoryV2.finnSkjulteBrukere(fnrs, skjermettilgang);
 
         moteplans.forEach(plan -> {
             if (skjermedeFnrs.stream().anyMatch(skjermetFnr -> skjermetFnr.equals(plan.deltaker().fnr()))) {

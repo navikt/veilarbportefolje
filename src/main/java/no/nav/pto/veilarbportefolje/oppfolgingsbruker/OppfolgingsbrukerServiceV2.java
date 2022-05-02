@@ -21,7 +21,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<EndringPaaOppfoelgingsBrukerV2> {
-    private final OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepository;
+    private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final AktorClient aktorClient;
 
     @Override
