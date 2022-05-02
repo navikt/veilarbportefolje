@@ -65,7 +65,7 @@ public class OppfolgingsbrukerRepositoryV2 {
 
 
     private Optional<ZonedDateTime> getEndretDato(Fnr fnr) {
-        String sql = "SELECT ENDRET_DATO FROM OPPFOLGINGSBRUKER_ARENA_V2 WHERE fodselsnr = ?";
+        String sql = "SELECT endret_dato FROM oppfolgingsbruker_arena_v2 WHERE fodselsnr = ?";
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilZonedDateTime, fnr.get()))
         );
@@ -73,7 +73,7 @@ public class OppfolgingsbrukerRepositoryV2 {
 
     private int upsert(OppfolgingsbrukerEntity oppfolgingsbruker) {
         return db.update("""
-                        INSERT INTO OPPFOLGINGSBRUKER_ARENA_V2(
+                        INSERT INTO oppfolgingsbruker_arena_v2(
                         fodselsnr, formidlingsgruppekode, iserv_fra_dato,
                         etternavn, fornavn, nav_kontor,
                         kvalifiseringsgruppekode, rettighetsgruppekode,

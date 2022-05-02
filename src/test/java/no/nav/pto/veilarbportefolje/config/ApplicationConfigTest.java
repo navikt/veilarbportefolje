@@ -49,6 +49,8 @@ import no.nav.pto.veilarbportefolje.oppfolging.SkjermingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepository;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentRespons;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
@@ -110,6 +112,8 @@ import static org.mockito.Mockito.when;
         OppfolgingRepository.class,
         OppfolgingRepositoryV2.class,
         OppfolgingsbrukerRepository.class,
+        OppfolgingsbrukerRepositoryV2.class,
+        OppfolgingsbrukerServiceV2.class,
         ManuellStatusService.class,
         DialogService.class,
         DialogRepository.class,
