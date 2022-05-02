@@ -48,7 +48,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerService;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerWrapperService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -128,10 +128,10 @@ public class KafkaConfigCommon {
                              ProfileringService profileringService, AktivitetService aktivitetService,
                              VedtakService vedtakService, DialogService dialogService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
-                             MalService malService, OppfolgingsbrukerService oppfolgingsbrukerService, TiltakService tiltakService,
+                             MalService malService, OppfolgingsbrukerWrapperService oppfolgingsbrukerWrapperService, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
                              YtelsesService ytelsesService, OppfolgingPeriodeService oppfolgingPeriodeService, SkjermingService skjermingService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
-                             UnleashService unleashService, PdlIdentService pdlIdentService, OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2) {
+                             UnleashService unleashService, PdlIdentService pdlIdentService) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
@@ -240,17 +240,7 @@ public class KafkaConfigCommon {
                                         Topic.ENDRING_PAA_OPPFOLGINGSBRUKER.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
-                                        oppfolgingsbrukerService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.ENDRING_PAA_OPPFOLGINGSBRUKER.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
-                                        oppfolgingsbrukerServiceV2::behandleKafkaRecord
+                                        oppfolgingsbrukerWrapperService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
                                 .withLogging()
