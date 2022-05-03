@@ -149,7 +149,7 @@ public class OppfolgingsbrukerRepositoryV3 {
         partition(brukereITabell, 1000).forEach(bolk -> {
             List<OppfolgingsbrukerEntity> oppfolgingsbrukerEntities = SqlUtils.select(db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, this::entityFromOracle)
                     .column("*")
-                    .where(in("FODSELSNR", brukereITabell))
+                    .where(in("FODSELSNR", bolk))
                     .executeToList()
                     .stream()
                     .filter(Objects::nonNull)
