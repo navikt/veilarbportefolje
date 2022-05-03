@@ -174,8 +174,8 @@ public class OppfolgingsbrukerRepositoryV3 {
         return new OppfolgingsbrukerEntity(null, rs.getString("FODSELSNR"), rs.getString("FORMIDLINGSGRUPPEKODE"),
                 toZonedDateTime(rs.getTimestamp("ISERV_FRA_DATO")), rs.getString("ETTERNAVN"), rs.getString("FORNAVN"),
                 rs.getString("NAV_KONTOR"), rs.getString("KVALIFISERINGSGRUPPEKODE"), rs.getString("RETTIGHETSGRUPPEKODE"),
-                rs.getString("HOVEDMAALKODE"), rs.getString("SIKKERHETSTILTAK_TYPE_KODE"), rs.getString("DISKRESJONSKODE"),
+                rs.getString("HOVEDMAALKODE"), rs.getString("SIKKERHETSTILTAK_TYPE_KODE"), rs.getString("FR_KODE"),
                 false, parseJaNei(rs.getString("SPERRET_ANSATT"), "SPERRET_ANSATT"), parseJaNei(rs.getString("ER_DOED"), "ER_DOED"),
-                null, toZonedDateTime(rs.getTimestamp("ENDRET_DATO")));
+                null, toZonedDateTime(rs.getTimestamp("TIDSSTEMPEL")));
     }
 }
