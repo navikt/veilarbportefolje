@@ -419,6 +419,28 @@ CREATE TABLE public.nom_skjerming (
 
 
 --
+-- Name: oppfolgingsbruker_arena_v2; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.oppfolgingsbruker_arena_v2 (
+    fodselsnr character varying(33) NOT NULL,
+    formidlingsgruppekode character varying(15),
+    iserv_fra_dato timestamp without time zone,
+    etternavn character varying(90),
+    fornavn character varying(90),
+    nav_kontor character varying(24),
+    kvalifiseringsgruppekode character varying(15),
+    rettighetsgruppekode character varying(15),
+    hovedmaalkode character varying(30),
+    sikkerhetstiltak_type_kode character varying(12),
+    diskresjonskode character varying(6),
+    sperret_ansatt boolean DEFAULT false,
+    er_doed boolean DEFAULT false,
+    endret_dato timestamp without time zone
+);
+
+
+--
 -- Name: optimaliser_bruker; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -657,6 +679,14 @@ ALTER TABLE ONLY public.oppfolging_data
 
 ALTER TABLE ONLY public.oppfolgingsbruker_arena
     ADD CONSTRAINT oppfolgingsbruker_arena_pkey PRIMARY KEY (aktoerid);
+
+
+--
+-- Name: oppfolgingsbruker_arena_v2 oppfolgingsbruker_arena_v2_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oppfolgingsbruker_arena_v2
+    ADD CONSTRAINT oppfolgingsbruker_arena_v2_pkey PRIMARY KEY (fodselsnr);
 
 
 --

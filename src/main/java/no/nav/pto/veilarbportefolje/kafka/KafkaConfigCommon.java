@@ -38,8 +38,16 @@ import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
-import no.nav.pto.veilarbportefolje.oppfolging.*;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerService;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
+import no.nav.pto.veilarbportefolje.oppfolging.SkjermingDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerWrapperService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -121,7 +129,7 @@ public class KafkaConfigCommon {
                              ProfileringService profileringService, AktivitetService aktivitetService,
                              VedtakService vedtakService, DialogService dialogService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
-                             MalService malService, OppfolgingsbrukerService oppfolgingsbrukerService, TiltakService tiltakService,
+                             MalService malService, OppfolgingsbrukerWrapperService oppfolgingsbrukerWrapperService, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
                              YtelsesService ytelsesService, OppfolgingPeriodeService oppfolgingPeriodeService, SkjermingService skjermingService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
                              UnleashService unleashService, PdlIdentService pdlIdentService) {
@@ -233,7 +241,7 @@ public class KafkaConfigCommon {
                                         Topic.ENDRING_PAA_OPPFOLGINGSBRUKER.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
-                                        oppfolgingsbrukerService::behandleKafkaRecord
+                                        oppfolgingsbrukerWrapperService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
                                 .withLogging()
