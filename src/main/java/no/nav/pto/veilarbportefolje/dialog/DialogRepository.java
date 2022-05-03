@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -42,6 +43,17 @@ public class DialogRepository {
                 this::mapToDialogData, aktoerId)
 
         ).onFailure(e -> {});
+    }
+
+    // henter dialoger som har ligget i over 120 dager (3 mai er den 120'ene dagen i året)
+    public List<String> hentBrukereMedGamleAktiveDialoger() {
+        return db.queryForList("""
+                SELECT d.AKTOERID FROM DIALOG d
+                RIGHT JOIN OPPFOLGING_DATA od on od.AKTOERID = d.AKTOERID
+                WHERE (d.VENTER_PA_NAV > od.STARTDATO OR d.VENTER_PA_BRUKER > od.STARTDATO)
+                AND od.OPPFOLGING='J'
+                AND (d.VENTER_PA_NAV < sysdate-120 OR d.VENTER_PA_BRUKER < sysdate-120)
+                """, String.class);
     }
 
     @SneakyThrows

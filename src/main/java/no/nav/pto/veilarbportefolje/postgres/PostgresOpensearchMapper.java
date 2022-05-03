@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukDialogPaPostgres;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
 
@@ -109,6 +110,11 @@ public class PostgresOpensearchMapper {
         bruker.setManuell_bruker(dataPaAktorId.getManuellBruker() ? "MANUELL" : null);
         bruker.setVeileder_id(dataPaAktorId.getVeileder());
         bruker.setOppfolging_startdato(dataPaAktorId.getOppfolgingStartdato());
+
+        if (brukDialogPaPostgres(unleashService)) {
+            bruker.setVenterpasvarfranav(dataPaAktorId.getVenterpasvarfranav());
+            bruker.setVenterpasvarfrabruker(dataPaAktorId.getVenterpasvarfrabruker());
+        }
 
         bruker.setCv_eksistere(dataPaAktorId.getCvEksistere());
         bruker.setHar_delt_cv(dataPaAktorId.getHarDeltCv());

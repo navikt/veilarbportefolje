@@ -12,11 +12,15 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.DISKRESJONSKODE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ENDRET_DATO;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ER_DOED;
@@ -34,11 +38,13 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRU
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
+import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
 
 @Slf4j
 @Repository
 @RequiredArgsConstructor
 public class OppfolgingsbrukerRepositoryV3 {
+    private final JdbcTemplate oracle_db;
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
     @Qualifier("PostgresNamedJdbcReadOnly")
@@ -133,5 +139,34 @@ public class OppfolgingsbrukerRepositoryV3 {
                     OR (diskresjonskode = '7' AND NOT :tilgangTilKode7::boolean)
                     OR (sperret_ansatt AND NOT :tilgangTilEgenAnsatt::boolean)
                 )""", params, String.class);
+    }
+
+    public String migrerOppfolgingsbrukere() {
+        AtomicInteger antallFeilet = new AtomicInteger();
+        var brukereITabell = oracle_db.queryForList("SELECT FODSELSNR FROM OPPFOLGINGSBRUKER", String.class);
+        partition(brukereITabell, 10_000).forEach(bolk -> {
+            List<OppfolgingsbrukerEntity> oppfolgingsbrukerEntities = oracle_db.queryForList("SELECT * FROM OPPFOLGINGSBRUKER WHERE FODSELSNR IN (?)", bolk)
+                    .stream()
+                    .map(this::entityFromOracle)
+                    .toList();
+            for (var entity : oppfolgingsbrukerEntities) {
+                try {
+                    leggTilEllerEndreOppfolgingsbruker(entity);
+                } catch (Exception e) {
+                    antallFeilet.addAndGet(1);
+                }
+            }
+            log.info("ferdig med en bolk");
+        });
+        return "Antall migreringer som feilet: "+ antallFeilet.get();
+    }
+
+    private OppfolgingsbrukerEntity entityFromOracle(Map<String, Object> rs) {
+        return new OppfolgingsbrukerEntity(null, (String) rs.get("FODSELSNR"),(String)  rs.get("FORMIDLINGSGRUPPEKODE"),
+                toZonedDateTime((Timestamp) rs.get("ISERV_FRA_DATO")), (String)  rs.get("ETTERNAVN"), (String) rs.get("FORNAVN"),
+                (String) rs.get("NAV_KONTOR"), (String) rs.get("KVALIFISERINGSGRUPPEKODE"), (String)  rs.get("RETTIGHETSGRUPPEKODE"),
+                (String) rs.get("HOVEDMAALKODE"), (String)  rs.get("SIKKERHETSTILTAK_TYPE_KODE"),(String)  rs.get("DISKRESJONSKODE"),
+                false, parseJaNei(rs.get("SPERRET_ANSATT"), "SPERRET_ANSATT"), parseJaNei(rs.get("ER_DOED"), "ER_DOED"),
+                null, toZonedDateTime((Timestamp)rs.get("ENDRET_DATO")));
     }
 }
