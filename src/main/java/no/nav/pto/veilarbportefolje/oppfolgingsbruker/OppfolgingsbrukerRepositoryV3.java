@@ -147,7 +147,7 @@ public class OppfolgingsbrukerRepositoryV3 {
         AtomicInteger antallFeilet = new AtomicInteger();
         var brukereITabell = oracle_db.queryForList("SELECT FODSELSNR FROM OPPFOLGINGSBRUKER", String.class);
         partition(brukereITabell, 1000).forEach(bolk -> {
-            List<OppfolgingsbrukerEntity> oppfolgingsbrukerEntities = SqlUtils.select(db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, this::entityFromOracle)
+            List<OppfolgingsbrukerEntity> oppfolgingsbrukerEntities = SqlUtils.select(oracle_db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, this::entityFromOracle)
                     .column("*")
                     .where(in("FODSELSNR", bolk))
                     .executeToList()
