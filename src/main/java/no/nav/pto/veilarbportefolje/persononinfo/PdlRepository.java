@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -60,7 +61,7 @@ public class PdlRepository {
         ).orElse(false);
     }
 
-    public List<PDLIdent> hentIdenter(String ident){
+    public List<PDLIdent> hentIdenter(String ident) {
         return db.queryForList("select * from bruker_identer where person = ?", ident)
                 .stream()
                 .map(PdlRepository::mapTilident)
@@ -75,7 +76,7 @@ public class PdlRepository {
                 .setGruppe(PDLIdent.Gruppe.valueOf((String) rs.get("gruppe")));
     }
 
-    public List<AktorId> hentIdenterSomIkkeErMappet(){
+    public List<AktorId> hentIdenterSomIkkeErMappet() {
         return db.queryForList("""
                         select aktoerid from oppfolging_data od
                         left join bruker_identer bi
@@ -93,6 +94,20 @@ public class PdlRepository {
         String identerParam = identer.stream().map(PDLIdent::getIdent).collect(Collectors.joining(",", "{", "}"));
         return db.queryForList("select person from bruker_identer where ident = any (?::varchar[])", identerParam)
                 .stream().map(rs -> (String) rs.get("person")).toList();
+    }
+
+    public Fnr hentFnr(AktorId aktorId) {
+        return queryForObjectOrNull(
+                () -> db.queryForObject("select fnr from aktive_identer where aktorid = ?",
+                        (rs, i) -> Fnr.of(rs.getString("fnr")), aktorId.get())
+        );
+    }
+
+    public AktorId hentAktorId(Fnr fnr) {
+        return queryForObjectOrNull(
+                () -> db.queryForObject("select aktorid from aktive_identer where aktorid = ?",
+                        (rs, i) -> AktorId.of(rs.getString("aktorid")), fnr.get())
+        );
     }
 
     private void insertIdent(String person, PDLIdent ident) {

@@ -60,7 +60,8 @@ public class ArbeidslisteRepositoryV2 {
         return dbReadOnly.queryForList("""
                                 SELECT a.* FROM arbeidsliste a
                                 INNER JOIN oppfolging_data o ON a.aktoerid = o.aktoerid
-                                LEFT JOIN oppfolgingsbruker_arena ob on a.aktoerid = ob.aktoerid
+                                LEFT JOIN aktive_identer ai on ai.aktorid = a.aktoerid
+                                LEFT JOIN oppfolgingsbruker_arena_v2 ob on ai.fnr = ob.fodselsnr
                                 WHERE ob.nav_kontor = ?
                                 AND o.veilederid = ?""",
                         enhet.get(),

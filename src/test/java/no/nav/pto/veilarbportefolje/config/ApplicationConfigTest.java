@@ -48,7 +48,6 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
 import no.nav.pto.veilarbportefolje.oppfolging.SkjermingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlRepository;
@@ -111,7 +110,6 @@ import static org.mockito.Mockito.when;
         BrukerRepository.class,
         OppfolgingRepository.class,
         OppfolgingRepositoryV2.class,
-        OppfolgingsbrukerRepositoryV2.class,
         OppfolgingsbrukerRepositoryV3.class,
         OppfolgingsbrukerServiceV2.class,
         ManuellStatusService.class,
@@ -163,12 +161,16 @@ public class ApplicationConfigTest {
 
 
     @Bean
-    public TestDataClient dbTestClient(JdbcTemplate jdbcTemplate, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, RegistreringRepositoryV2 registreringRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2) {
-        return new TestDataClient(jdbcTemplate, jdbcTemplatePostgres, registreringRepositoryV2, oppfolgingsbrukerRepositoryV2, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2);
+    public TestDataClient dbTestClient(JdbcTemplate jdbcTemplate, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres,
+                                       OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2,
+                                       RegistreringRepositoryV2 registreringRepositoryV2, OpensearchTestClient opensearchTestClient,
+                                       OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlRepository pdlRepository) {
+        return new TestDataClient(jdbcTemplate, jdbcTemplatePostgres, registreringRepositoryV2, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlRepository);
     }
 
     @Bean
-    public OpensearchTestClient opensearchTestClient(RestHighLevelClient restHighLevelClient, OpensearchAdminService opensearchAdminService, OpensearchCountService opensearchCountService, IndexName indexName) {
+    public OpensearchTestClient opensearchTestClient(RestHighLevelClient restHighLevelClient, OpensearchAdminService opensearchAdminService,
+                                                     OpensearchCountService opensearchCountService, IndexName indexName) {
         return new OpensearchTestClient(restHighLevelClient, opensearchAdminService, opensearchCountService, indexName);
     }
 

@@ -30,7 +30,8 @@ public class OppfolginsbrukerRepositoryTestV3 {
 
     @BeforeEach
     public void resetDb() {
-        db.execute("truncate oppfolgingsbruker_arena_v2 cascade ");
+        db.execute("truncate oppfolgingsbruker_arena_v2");
+        db.update("truncate bruker_identer");
     }
 
     @Test

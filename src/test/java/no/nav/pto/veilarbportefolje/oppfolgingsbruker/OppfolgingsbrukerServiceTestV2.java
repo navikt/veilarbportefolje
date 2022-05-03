@@ -42,6 +42,7 @@ public class OppfolgingsbrukerServiceTestV2 {
     @BeforeEach
     public void setup() {
         db.update("truncate oppfolgingsbruker_arena_v2");
+        db.update("truncate bruker_identer");
     }
 
 
