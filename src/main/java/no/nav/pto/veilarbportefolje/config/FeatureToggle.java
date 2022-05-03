@@ -18,8 +18,14 @@ public class FeatureToggle {
 
     public static final String IKKE_AVTALTE_MOTER = "veilarbportfolje.ikke_avtalte_aktiviteter";
 
+    public static final String DIALOG = "veilarbportefolje.dialogPostgres";
+
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
+    }
+
+    public static boolean brukDialogPaPostgres(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.DIALOG);
     }
 
     public static boolean brukIkkeAvtalteMoter(UnleashService unleashService) {

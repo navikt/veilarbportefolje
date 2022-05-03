@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.dialog;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,10 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.VENTER_PA_BRUKER;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.VENTER_PA_NAV;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -21,19 +23,17 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Repository
 @RequiredArgsConstructor
 public class DialogRepositoryV2 {
-    @NonNull
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
-    public int oppdaterDialogInfoForBruker(Dialogdata dialog) {
-        return db.update("INSERT INTO " + TABLE_NAME +
-                        " (" + AKTOERID + ", " + VENTER_PA_BRUKER + ", " + VENTER_PA_NAV + ") " +
-                        "VALUES (?, ?, ?) " +
-                        "ON CONFLICT (" + AKTOERID + ") " +
-                        "DO UPDATE SET (" + VENTER_PA_BRUKER + ", " + VENTER_PA_NAV + ") = (?, ?)",
-                dialog.getAktorId(),
-                toTimestamp(dialog.getTidspunktEldsteVentende()), toTimestamp(dialog.getTidspunktEldsteUbehandlede()),
-                toTimestamp(dialog.getTidspunktEldsteVentende()), toTimestamp(dialog.getTidspunktEldsteUbehandlede())
+    public void oppdaterDialogInfoForBruker(Dialogdata dialog) {
+        db.update("""
+                        INSERT INTO dialog (AKTOERID, VENTER_PA_BRUKER, VENTER_PA_NAV)
+                        VALUES (?, ?, ?) ON CONFLICT (AKTOERID)
+                        DO UPDATE SET (VENTER_PA_BRUKER, VENTER_PA_NAV)
+                        = (excluded.venter_pa_bruker, excluded.venter_pa_nav)
+                        """,
+                dialog.getAktorId(), toTimestamp(dialog.getTidspunktEldsteVentende()), toTimestamp(dialog.getTidspunktEldsteUbehandlede())
         );
 
     }

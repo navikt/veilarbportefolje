@@ -297,6 +297,34 @@ function handleantallIkkeMappetForm(e) {
     );
 }
 
+const migrerDialogForm = document.getElementById('migrerDialog');
+migrerDialogForm.addEventListener('submit', handlemigrerDialogForm);
+
+function handlemigrerDialogForm(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil migrere alle gamle dialoger over til postgres.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/migrer/dialog',
+            {method: 'POST', credentials: 'same-origin'},
+            'migrerDialogResponse'
+        );
+    }
+}
+
+const migrerArenaForm = document.getElementById('migrerArena');
+migrerArenaForm.addEventListener('submit', handlemigrerArenaForm);
+
+function handlemigrerArenaForm(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil migrere alle arena brukere over til postgres.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/migrer/arena',
+            {method: 'POST', credentials: 'same-origin'},
+            'migrerArenaResponse'
+        );
+    }
+}
+
 const testForm = document.getElementById('testPostgresForm')
 testForm.addEventListener('submit', handleTest);
 
