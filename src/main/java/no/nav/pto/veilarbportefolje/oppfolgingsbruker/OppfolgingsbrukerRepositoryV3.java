@@ -5,6 +5,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
+import no.nav.pto.veilarbportefolje.database.Table;
+import no.nav.sbl.sql.SqlUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -12,10 +14,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -39,6 +40,7 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
+import static no.nav.sbl.sql.where.WhereClause.in;
 
 @Slf4j
 @Repository
@@ -145,10 +147,14 @@ public class OppfolgingsbrukerRepositoryV3 {
         AtomicInteger antallFeilet = new AtomicInteger();
         var brukereITabell = oracle_db.queryForList("SELECT FODSELSNR FROM OPPFOLGINGSBRUKER", String.class);
         partition(brukereITabell, 10_000).forEach(bolk -> {
-            List<OppfolgingsbrukerEntity> oppfolgingsbrukerEntities = oracle_db.queryForList("SELECT * FROM OPPFOLGINGSBRUKER WHERE FODSELSNR IN (?)", bolk)
+            List<OppfolgingsbrukerEntity> oppfolgingsbrukerEntities = SqlUtils.select(db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, this::entityFromOracle)
+                    .column("*")
+                    .where(in("FODSELSNR", brukereITabell))
+                    .executeToList()
                     .stream()
-                    .map(this::entityFromOracle)
+                    .filter(Objects::nonNull)
                     .toList();
+
             for (var entity : oppfolgingsbrukerEntities) {
                 try {
                     leggTilEllerEndreOppfolgingsbruker(entity);
@@ -158,15 +164,18 @@ public class OppfolgingsbrukerRepositoryV3 {
             }
             log.info("ferdig med en bolk");
         });
-        return "Antall migreringer som feilet: "+ antallFeilet.get();
+
+        log.info("Migrering ferdig. Antall som feilet: {}", antallFeilet.get());
+        return "Antall migreringer som feilet: " + antallFeilet.get();
     }
 
-    private OppfolgingsbrukerEntity entityFromOracle(Map<String, Object> rs) {
-        return new OppfolgingsbrukerEntity(null, (String) rs.get("FODSELSNR"),(String)  rs.get("FORMIDLINGSGRUPPEKODE"),
-                toZonedDateTime((Timestamp) rs.get("ISERV_FRA_DATO")), (String)  rs.get("ETTERNAVN"), (String) rs.get("FORNAVN"),
-                (String) rs.get("NAV_KONTOR"), (String) rs.get("KVALIFISERINGSGRUPPEKODE"), (String)  rs.get("RETTIGHETSGRUPPEKODE"),
-                (String) rs.get("HOVEDMAALKODE"), (String)  rs.get("SIKKERHETSTILTAK_TYPE_KODE"),(String)  rs.get("DISKRESJONSKODE"),
-                false, parseJaNei(rs.get("SPERRET_ANSATT"), "SPERRET_ANSATT"), parseJaNei(rs.get("ER_DOED"), "ER_DOED"),
-                null, toZonedDateTime((Timestamp)rs.get("ENDRET_DATO")));
+    @SneakyThrows
+    private OppfolgingsbrukerEntity entityFromOracle(ResultSet rs) {
+        return new OppfolgingsbrukerEntity(null, rs.getString("FODSELSNR"), rs.getString("FORMIDLINGSGRUPPEKODE"),
+                toZonedDateTime(rs.getTimestamp("ISERV_FRA_DATO")), rs.getString("ETTERNAVN"), rs.getString("FORNAVN"),
+                rs.getString("NAV_KONTOR"), rs.getString("KVALIFISERINGSGRUPPEKODE"), rs.getString("RETTIGHETSGRUPPEKODE"),
+                rs.getString("HOVEDMAALKODE"), rs.getString("SIKKERHETSTILTAK_TYPE_KODE"), rs.getString("DISKRESJONSKODE"),
+                false, parseJaNei(rs.getString("SPERRET_ANSATT"), "SPERRET_ANSATT"), parseJaNei(rs.getString("ER_DOED"), "ER_DOED"),
+                null, toZonedDateTime(rs.getTimestamp("ENDRET_DATO")));
     }
 }
