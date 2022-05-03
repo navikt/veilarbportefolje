@@ -34,7 +34,6 @@ public class DbUtils {
     public static HikariConfig createDataSourceConfig(String dbUrl) {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(dbUrl);
-        config.setMaximumPoolSize(5);
         config.setMinimumIdle(1);
         return config;
     }
