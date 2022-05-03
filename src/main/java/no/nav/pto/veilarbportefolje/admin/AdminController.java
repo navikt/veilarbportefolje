@@ -20,7 +20,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerMigreringsRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.postgres.AktoerDataOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
@@ -56,7 +56,7 @@ public class AdminController {
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final BrukerRepository brukerRepository;
     private final DialogService dialogService;
-    private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
+    private final OppfolgingsbrukerMigreringsRepository oppfolgingsbrukerMigreringsRepository;
     private final PdlService pdlService;
 
     @PostMapping("/aktoerId")
@@ -196,7 +196,7 @@ public class AdminController {
     @PostMapping("/migrer/arena")
     public String migrerOppfolgingsbruker() {
         authorizeAdmin();
-        return oppfolgingsbrukerRepositoryV3.migrerOppfolgingsbrukere();
+        return oppfolgingsbrukerMigreringsRepository.migrerOppfolgingsbrukere();
     }
 
     @PostMapping("/test/postgresIndeksering")

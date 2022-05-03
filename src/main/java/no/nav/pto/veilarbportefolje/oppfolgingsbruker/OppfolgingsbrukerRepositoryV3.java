@@ -5,23 +5,19 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
-import no.nav.pto.veilarbportefolje.database.Table;
-import no.nav.sbl.sql.SqlUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.DISKRESJONSKODE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ENDRET_DATO;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ER_DOED;
@@ -39,25 +35,23 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRU
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
-import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
-import static no.nav.sbl.sql.where.WhereClause.in;
 
 @Slf4j
 @Repository
 @RequiredArgsConstructor
 public class OppfolgingsbrukerRepositoryV3 {
-    private final JdbcTemplate oracle_db;
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate dbNamed;
 
+    @Transactional
     public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerEntity oppfolgingsbruker) {
         if (oppfolgingsbruker == null || oppfolgingsbruker.fodselsnr() == null) {
             return 0;
         }
 
-        Optional<ZonedDateTime> sistEndretDato = getEndretDato(Fnr.of(oppfolgingsbruker.fodselsnr()));
+        Optional<ZonedDateTime> sistEndretDato = getEndretDatoForUpdate(Fnr.of(oppfolgingsbruker.fodselsnr()));
         if (oppfolgingsbruker.endret_dato() == null || (sistEndretDato.isPresent() && sistEndretDato.get().isAfter(oppfolgingsbruker.endret_dato()))) {
             return 0;
         }
@@ -72,8 +66,8 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
 
-    private Optional<ZonedDateTime> getEndretDato(Fnr fnr) {
-        String sql = "SELECT endret_dato FROM oppfolgingsbruker_arena_v2 WHERE fodselsnr = ?";
+    private Optional<ZonedDateTime> getEndretDatoForUpdate(Fnr fnr) {
+        String sql = "SELECT endret_dato FROM oppfolgingsbruker_arena_v2 WHERE fodselsnr = ? for update";
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilZonedDateTime, fnr.get()))
         );
@@ -141,41 +135,5 @@ public class OppfolgingsbrukerRepositoryV3 {
                     OR (diskresjonskode = '7' AND NOT :tilgangTilKode7::boolean)
                     OR (sperret_ansatt AND NOT :tilgangTilEgenAnsatt::boolean)
                 )""", params, String.class);
-    }
-
-    public String migrerOppfolgingsbrukere() {
-        AtomicInteger antallFeilet = new AtomicInteger();
-        var brukereITabell = oracle_db.queryForList("SELECT FODSELSNR FROM OPPFOLGINGSBRUKER", String.class);
-        partition(brukereITabell, 1000).forEach(bolk -> {
-            List<OppfolgingsbrukerEntity> oppfolgingsbrukerEntities = SqlUtils.select(oracle_db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, this::entityFromOracle)
-                    .column("*")
-                    .where(in("FODSELSNR", bolk))
-                    .executeToList()
-                    .stream()
-                    .filter(Objects::nonNull)
-                    .toList();
-
-            for (var entity : oppfolgingsbrukerEntities) {
-                try {
-                    leggTilEllerEndreOppfolgingsbruker(entity);
-                } catch (Exception e) {
-                    antallFeilet.addAndGet(1);
-                }
-            }
-            log.info("ferdig med en bolk");
-        });
-
-        log.info("Migrering ferdig. Antall som feilet: {}", antallFeilet.get());
-        return "Antall migreringer som feilet: " + antallFeilet.get();
-    }
-
-    @SneakyThrows
-    private OppfolgingsbrukerEntity entityFromOracle(ResultSet rs) {
-        return new OppfolgingsbrukerEntity(null, rs.getString("FODSELSNR"), rs.getString("FORMIDLINGSGRUPPEKODE"),
-                toZonedDateTime(rs.getTimestamp("ISERV_FRA_DATO")), rs.getString("ETTERNAVN"), rs.getString("FORNAVN"),
-                rs.getString("NAV_KONTOR"), rs.getString("KVALIFISERINGSGRUPPEKODE"), rs.getString("RETTIGHETSGRUPPEKODE"),
-                rs.getString("HOVEDMAALKODE"), rs.getString("SIKKERHETSTILTAK_TYPE_KODE"), rs.getString("FR_KODE"),
-                false, parseJaNei(rs.getString("SPERRET_ANSATT"), "SPERRET_ANSATT"), parseJaNei(rs.getString("ER_DOED"), "ER_DOED"),
-                null, toZonedDateTime(rs.getTimestamp("TIDSSTEMPEL")));
     }
 }
