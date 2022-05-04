@@ -90,7 +90,6 @@ public class DbUtils {
                 .setDiskresjonskode(rs.getString("fr_kode"))
                 .setEgen_ansatt(parseJaNei(rs.getString("sperret_ansatt"), "sperret_ansatt"))
                 .setEr_doed(parseJaNei(rs.getString("er_doed"), "er_doed"))
-                .setDoed_fra_dato(toIsoUTC(rs.getTimestamp("doed_fra_dato")))
                 .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr"))))
                 .setFodselsdato(FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr")))
                 .setKjonn(FodselsnummerUtils.lagKjonn(rs.getString("fodselsnr")))

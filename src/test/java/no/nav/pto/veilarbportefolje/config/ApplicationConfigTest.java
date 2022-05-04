@@ -60,6 +60,7 @@ import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
@@ -98,6 +99,7 @@ import static org.mockito.Mockito.when;
 @Import({
         ArbeidslisteService.class,
         BrukerService.class,
+        BrukerServiceV2.class,
         RegistreringService.class,
         AktivitetService.class,
         OppfolgingAvsluttetService.class,

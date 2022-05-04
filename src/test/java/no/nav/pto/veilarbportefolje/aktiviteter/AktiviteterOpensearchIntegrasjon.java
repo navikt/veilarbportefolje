@@ -204,18 +204,18 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     private void settSperretAnsatt(AktorId aktorId, NavKontor navKontor) {
         Fnr fnr = pdlRepository.hentFnr(aktorId);
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(null, fnr.get(), null, null,
+                new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         "test", "testson", navKontor.getValue(), null, null,
-                        null, null, null, true, true,
-                        false, null, ZonedDateTime.now()));
+                        null, null, null, true,
+                        false, ZonedDateTime.now()));
     }
 
     private void settDiskresjonskode(AktorId aktorId, NavKontor navKontor, String kode) {
         Fnr fnr = pdlRepository.hentFnr(aktorId);
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(null, fnr.get(), null, null,
+                new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         "test", "testson", navKontor.getValue(), null, null,
-                        null, null, kode, true, false,
-                        false, null, ZonedDateTime.now()));
+                        null, null, kode, false, false,
+                        ZonedDateTime.now()));
     }
 }

@@ -30,7 +30,6 @@ public class OppfolgingsBruker {
     boolean cv_eksistere;
     boolean egen_ansatt;
     boolean er_doed;
-    String doed_fra_dato;
     String veileder_id;
     int fodselsdag_i_mnd;
     String fodselsdato;

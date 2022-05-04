@@ -72,7 +72,6 @@ public class OpensearchIndexerV2 {
 
                 .field("egen_ansatt", oppfolgingsbruker.sperret_ansatt())
                 .field("er_doed", oppfolgingsbruker.er_doed())
-                .field("doed_fra_dato", toIsoUTC(oppfolgingsbruker.doed_fra_dato()))
                 .field("fodselsdato", FodselsnummerUtils.lagFodselsdato(oppfolgingsbruker.fodselsnr()))
                 .field("kjonn", FodselsnummerUtils.lagKjonn(oppfolgingsbruker.fodselsnr()))
                 .field("fodselsdag_i_mnd", Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(oppfolgingsbruker.fodselsnr())))
