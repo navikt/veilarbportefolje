@@ -51,32 +51,13 @@ public class OppfolgingsbrukerServiceTestV2 {
         LocalDate iserv_fra_dato = ZonedDateTime.now().minusDays(2).toLocalDate();
         ZonedDateTime endret_dato = DateUtils.now();
 
-        OppfolgingsbrukerEntity forventetResultat = new OppfolgingsbrukerEntity(null, fnr.get(), "RARBS", ZonedDateTime.of(iserv_fra_dato.atStartOfDay(), ZoneId.systemDefault()),
+        OppfolgingsbrukerEntity forventetResultat = new OppfolgingsbrukerEntity(fnr.get(), "RARBS", ZonedDateTime.of(iserv_fra_dato.atStartOfDay(), ZoneId.systemDefault()),
                 "Testerson", "Test", "007", "BKART", "AAP", "SKAFFEA", "FYUS",
-                "6", false, false, true, null, endret_dato);
+                "6", false, true, endret_dato);
 
         EndringPaaOppfoelgingsBrukerV2 kafkaMelding = EndringPaaOppfoelgingsBrukerV2.builder().fodselsnummer(fnr.get()).formidlingsgruppe(Formidlingsgruppe.RARBS).iservFraDato(iserv_fra_dato)
                 .etternavn("Testerson").fornavn("Test").oppfolgingsenhet("007").kvalifiseringsgruppe(Kvalifiseringsgruppe.BKART).rettighetsgruppe(Rettighetsgruppe.AAP).hovedmaal(Hovedmaal.SKAFFEA).sikkerhetstiltakType(SikkerhetstiltakType.FYUS)
                 .diskresjonskode("6").sperretAnsatt(false).erDoed(true).sistEndretDato(endret_dato)
-                .build();
-        oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
-        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
-        assertTrue(oppfolgingsBruker.isPresent());
-        assertThat(oppfolgingsBruker.get()).isEqualTo(forventetResultat);
-    }
-
-    @Test
-    public void skalIkkeLagreUbrukteFelter_doedFraDato_og_harOppfolgingssak() {
-        LocalDate iserv_fra_dato = ZonedDateTime.now().minusDays(2).toLocalDate();
-        ZonedDateTime endret_dato = DateUtils.now();
-
-        OppfolgingsbrukerEntity forventetResultat = new OppfolgingsbrukerEntity(null, fnr.get(), "RARBS", ZonedDateTime.of(iserv_fra_dato.atStartOfDay(), ZoneId.systemDefault()),
-                "Testerson", "Test", "007", "BKART", "AAP", "SKAFFEA", "FYUS",
-                "6", false, false, true, null, endret_dato);
-
-        EndringPaaOppfoelgingsBrukerV2 kafkaMelding = EndringPaaOppfoelgingsBrukerV2.builder().fodselsnummer(fnr.get()).formidlingsgruppe(Formidlingsgruppe.RARBS).iservFraDato(iserv_fra_dato)
-                .etternavn("Testerson").fornavn("Test").oppfolgingsenhet("007").kvalifiseringsgruppe(Kvalifiseringsgruppe.BKART).rettighetsgruppe(Rettighetsgruppe.AAP).hovedmaal(Hovedmaal.SKAFFEA).sikkerhetstiltakType(SikkerhetstiltakType.FYUS)
-                .diskresjonskode("6").harOppfolgingssak(true).sperretAnsatt(false).erDoed(true).doedFraDato(LocalDate.now()).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
         Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);

@@ -238,21 +238,6 @@ CREATE TABLE public.brukertiltak (
 
 
 --
--- Name: feilet_kafka_melding; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.feilet_kafka_melding (
-    id bigint NOT NULL,
-    topic character varying(100) NOT NULL,
-    key character varying(40) NOT NULL,
-    payload json NOT NULL,
-    message_type public.kafka_message_type NOT NULL,
-    message_offset bigint,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
-
---
 -- Name: flyway_schema_history; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -521,14 +506,6 @@ ALTER TABLE ONLY public.dialog
 
 
 --
--- Name: feilet_kafka_melding feilet_kafka_melding_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.feilet_kafka_melding
-    ADD CONSTRAINT feilet_kafka_melding_pkey PRIMARY KEY (id);
-
-
---
 -- Name: flyway_schema_history flyway_schema_history_pk; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -681,6 +658,13 @@ CREATE INDEX aktorid_ytelser_idx ON public.ytelsesvedtak USING btree (aktorid);
 --
 
 CREATE INDEX flyway_schema_history_s_idx ON public.flyway_schema_history USING btree (success);
+
+
+--
+-- Name: nav_kontor_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX nav_kontor_idx ON public.oppfolgingsbruker_arena_v2 USING btree (nav_kontor);
 
 
 --

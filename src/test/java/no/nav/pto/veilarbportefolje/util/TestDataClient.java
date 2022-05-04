@@ -118,10 +118,10 @@ public class TestDataClient {
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
         registreringRepositoryV2.upsertBrukerRegistrering(new ArbeidssokerRegistrertEvent(aktoerId.get(), null, null, null, null, null));
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(aktoerId.get(), fnr.get(), null, null,
+                new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         null, null, navKontor.getValue(), null, null,
-                        null, null, null, true, false,
-                        false, null, ZonedDateTime.now()));
+                        null, null, null, false,
+                        false, ZonedDateTime.now()));
 
         opensearchTestClient.createUserInOpensearch(aktoerId);
     }

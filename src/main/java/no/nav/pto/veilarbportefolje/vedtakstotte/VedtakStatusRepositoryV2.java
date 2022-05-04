@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.VEDTAKSTATUS.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.VEDTAKSTATUS.ANSVARLIG_VEILDERIDENT;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.VEDTAKSTATUS.ANSVARLIG_VEILDERNAVN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.VEDTAKSTATUS.ENDRET_TIDSPUNKT;
