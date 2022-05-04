@@ -14,11 +14,11 @@ public class AktorClient implements HealthCheck {
     }
 
     public Fnr hentFnr(AktorId aktorId) {
-            return aktorOppslagClient.hentFnr(aktorId);
+        return aktorOppslagClient.hentFnr(aktorId);
     }
 
     public AktorId hentAktorId(Fnr fnr) {
-            return aktorOppslagClient.hentAktorId(fnr);
+        return aktorOppslagClient.hentAktorId(fnr);
     }
 
     @Override

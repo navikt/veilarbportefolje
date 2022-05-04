@@ -186,6 +186,20 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
+    public void updateErSkjermet(AktorId aktorId, Boolean erSkjermet) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("egenAnsatt", erSkjermet)
+                .endObject();
+
+        update(
+                aktorId,
+                content,
+                format("Oppdatert er_skjermet %s for bruker: %s", erSkjermet, aktorId)
+        );
+    }
+
+    @SneakyThrows
     public void updateArbeidsliste(ArbeidslisteDTO arbeidslisteDTO) {
         log.info("Oppdater arbeidsliste for {} med frist {}", arbeidslisteDTO.getAktorId(), arbeidslisteDTO.getFrist());
         final String frist = toIsoUTC(arbeidslisteDTO.getFrist());
