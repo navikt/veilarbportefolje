@@ -6,3 +6,6 @@ where bi_a.gruppe = 'AKTORID'
   AND NOT bi_a.historisk
   and bi_f.gruppe = 'FOLKEREGISTERIDENT'
   AND NOT bi_f.historisk;
+
+
+CREATE INDEX nav_kontor_idx ON oppfolgingsbruker_arena_v2 (nav_kontor);
