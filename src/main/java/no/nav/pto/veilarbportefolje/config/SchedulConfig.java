@@ -5,8 +5,9 @@ import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
-import no.nav.pto.veilarbportefolje.database.BrukerAktiviteterService;
+import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
@@ -22,15 +23,18 @@ import static java.time.temporal.ChronoUnit.HOURS;
 @Slf4j
 @Configuration
 public class SchedulConfig {
-    private final BrukerAktiviteterService brukerAktiviteterService;
+    private final HovedIndekserer hovedIndekserer;
+    private final AktivitetService aktivitetService;
     private final YtelsesService ytelsesService;
     private final Scheduler scheduler;
 
     @Autowired
     public SchedulConfig(@Qualifier("Postgres") DataSource dataSource,
-                         BrukerAktiviteterService brukerAktiviteterService,
+                         HovedIndekserer hovedIndekserer,
+                         AktivitetService aktivitetService,
                          YtelsesService ytelsesService) {
-        this.brukerAktiviteterService = brukerAktiviteterService;
+        this.hovedIndekserer = hovedIndekserer;
+        this.aktivitetService = aktivitetService;
         this.ytelsesService = ytelsesService;
 
         List<RecurringTask<?>> jobber = nattligeJobber();
@@ -44,10 +48,13 @@ public class SchedulConfig {
 
     // Disse jobben må kjøre etter midnatt
     private List<RecurringTask<?>> nattligeJobber() {
-        return List.of(Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(1, 1)))
-                        .execute((instance, ctx) -> brukerAktiviteterService.syncAktivitetOgBrukerData()),
-                Tasks.recurring("indekserer_ytelse_endringer", Schedules.daily(LocalTime.of(2, 0)))
-                        .execute((instance, ctx) -> ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag())
+        return List.of(
+                Tasks.recurring("deaktiver_utgatte_utdannings_aktivteter", Schedules.daily(LocalTime.of(2, 1)))
+                        .execute((instance, ctx) -> aktivitetService.deaktiverUtgatteUtdanningsAktivteter()),
+                Tasks.recurring("indekserer_ytelse_endringer", Schedules.daily(LocalTime.of(2, 1)))
+                        .execute((instance, ctx) -> ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag()),
+                Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(2, 15)))
+                        .execute((instance, ctx) -> hovedIndekserer.hovedIndeksering())
         );
     }
 

@@ -19,6 +19,7 @@ public class FeatureToggle {
     public static final String IKKE_AVTALTE_MOTER = "veilarbportfolje.ikke_avtalte_aktiviteter";
 
     public static final String DIALOG = "veilarbportefolje.dialogPostgres";
+    public static final String NOM_SKJERMING = "veilarbportefolje.NOM_Skjerming";
 
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
@@ -28,11 +29,15 @@ public class FeatureToggle {
         return unleashService.isEnabled(FeatureToggle.DIALOG);
     }
 
+    public static boolean brukNOMSkjerming(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.NOM_SKJERMING);
+    }
+
     public static boolean brukIkkeAvtalteMoter(UnleashService unleashService) {
-        try{
+        try {
             String userId = AuthUtils.getInnloggetVeilederIdent().toString();
             return unleashService.isEnabled(FeatureToggle.IKKE_AVTALTE_MOTER, new UnleashContext(userId, null, null, resolveUnleashContextFromSubject().getProperties()));
-        } catch (ResponseStatusException exception){
+        } catch (ResponseStatusException exception) {
             // Dette er ok, ved feks. systemkall og under test
             return unleashService.isEnabled(FeatureToggle.IKKE_AVTALTE_MOTER);
         }
