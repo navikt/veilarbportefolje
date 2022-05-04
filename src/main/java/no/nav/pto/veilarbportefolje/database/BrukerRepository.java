@@ -67,6 +67,15 @@ public class BrukerRepository {
         ).map(AktorId::of);
     }
 
+    public Optional<AktorId> hentAktorIdFraView(PersonId personid) {
+        return Optional.ofNullable(
+                select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> rs.getString("AKTOERID"))
+                        .column("AKTOERID")
+                        .where(WhereClause.equals("PERSON_ID", personid.toString()))
+                        .execute()
+        ).map(AktorId::of);
+    }
+
     public Optional<OppfolgingsBruker> hentBrukerFraView(AktorId aktoerId) {
         final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs, unleashService))
                 .column("*")
