@@ -273,58 +273,6 @@ function handleforceShardAssignmentForm(e) {
     }
 }
 
-const lastInnIdenterForm = document.getElementById('lastInnIdenterForm');
-lastInnIdenterForm.addEventListener('submit', handlelastInnIdenterForm)
-function handlelastInnIdenterForm(e) {
-    e.preventDefault();
-    if (window.confirm('Er du sikker på at du vil laste inn manglende Identer?')) {
-        fetchData(
-            `/veilarbportefolje/api/admin/pdl/lastInnIdenter`,
-            {method: 'POST', credentials: 'same-origin'},
-            'lastInnIdenterRespons'
-        );
-    }
-}
-
-const antallIkkeMappetForm = document.getElementById('antallIkkeMappetForm');
-antallIkkeMappetForm.addEventListener('submit', handleantallIkkeMappetForm)
-function handleantallIkkeMappetForm(e) {
-    e.preventDefault();
-    fetchData(
-        `/veilarbportefolje/api/admin/pdl/hentAntallIkkeMappet`,
-        {method: 'POST', credentials: 'same-origin'},
-        'antallIkkeMappetRespons'
-    );
-}
-
-const migrerDialogForm = document.getElementById('migrerDialog');
-migrerDialogForm.addEventListener('submit', handlemigrerDialogForm);
-
-function handlemigrerDialogForm(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil migrere alle gamle dialoger over til postgres.')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/migrer/dialog',
-            {method: 'POST', credentials: 'same-origin'},
-            'migrerDialogResponse'
-        );
-    }
-}
-
-const migrerArenaForm = document.getElementById('migrerArena');
-migrerArenaForm.addEventListener('submit', handlemigrerArenaForm);
-
-function handlemigrerArenaForm(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil migrere alle arena brukere over til postgres.')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/migrer/arena',
-            {method: 'POST', credentials: 'same-origin'},
-            'migrerArenaResponse'
-        );
-    }
-}
-
 const testForm = document.getElementById('testPostgresForm')
 testForm.addEventListener('submit', handleTest);
 

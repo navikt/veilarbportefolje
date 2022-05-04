@@ -25,25 +25,6 @@ public class BrukerService {
     private final AktorClient aktorClient;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
-    public Optional<AktorId> hentAktorId(Fnr fnr) {
-        return brukerRepository.hentAktorIdFraView(fnr);
-    }
-
-    public Optional<AktorId> hentAktorId(PersonId personid) {
-        return brukerRepository.hentAktorIdFraView(personid);
-    }
-
-    public Optional<String> hentNavKontor(AktorId aktoerId) {
-        return brukerRepository
-                .hentNavKontorFraView(aktoerId)
-                .or(() -> hentFnrFraAktoerregister(aktoerId)
-                        .flatMap(brukerRepository::hentNavKontorFraDbLinkTilArena));
-    }
-
-    public Optional<String> hentNavKontorFraDbLinkTilArena(Fnr fnr) {
-        return brukerRepository.hentNavKontorFraDbLinkTilArena(fnr);
-    }
-
     public Try<PersonId> hentPersonidFraAktoerid(AktorId aktoerId) {
         return brukerRepository.retrievePersonid(aktoerId)
                 .map(personId -> personId == null ? getPersonIdFromFnr(aktoerId) : personId)
@@ -83,10 +64,6 @@ public class BrukerService {
 
     public Optional<VeilederId> hentVeilederForBruker(AktorId aktoerId) {
         return brukerRepository.hentVeilederForBruker(aktoerId);
-    }
-
-    private Optional<Fnr> hentFnrFraAktoerregister(AktorId aktoerId) {
-        return Optional.ofNullable(aktorClient.hentFnr(aktoerId));
     }
 
 }

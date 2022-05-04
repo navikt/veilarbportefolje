@@ -11,7 +11,6 @@ import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
@@ -20,8 +19,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerMigreringsRepository;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.postgres.AktoerDataOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
@@ -55,9 +52,6 @@ public class AdminController {
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final BrukerRepository brukerRepository;
-    private final DialogService dialogService;
-    private final OppfolgingsbrukerMigreringsRepository oppfolgingsbrukerMigreringsRepository;
-    private final PdlService pdlService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -172,31 +166,6 @@ public class AdminController {
     public String forceShardAssignment() {
         authorizeAdmin();
         return opensearchAdminService.forceShardAssignment();
-    }
-
-    @PostMapping("/pdl/hentAntallIkkeMappet")
-    public String hentIkkeMappeteIdenter() {
-        authorizeAdmin();
-        return "Det er : " + pdlService.hentIdenterSomIkkeErMappet() + " brukere som ikke er mappet";
-    }
-
-    @PostMapping("/pdl/lastInnIdenter")
-    public String lastInnManglendeIdenter() {
-        authorizeAdmin();
-        pdlService.mapManglendeIdenter();
-        return "Ferdig!";
-    }
-
-    @PostMapping("/migrer/dialog")
-    public String migrerDialg() {
-        authorizeAdmin();
-        return dialogService.migrerDialogData();
-    }
-
-    @PostMapping("/migrer/arena")
-    public String migrerOppfolgingsbruker() {
-        authorizeAdmin();
-        return oppfolgingsbrukerMigreringsRepository.migrerOppfolgingsbrukere();
     }
 
     @PostMapping("/test/postgresIndeksering")

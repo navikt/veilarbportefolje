@@ -9,13 +9,14 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
-import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
+import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper;
+import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,34 +28,40 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent.Gruppe.AKTORID;
+import static no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.FAR_IN_THE_FUTURE_DATE;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class TiltakPostgresTest {
     private final JdbcTemplate jdbcTemplatePostgres;
-    private final OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
+    private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final AktivitetOpensearchService aktivitetOpensearchService;
+    private final PdlRepository pdlRepository;
 
-    private final AktorId aktorId = AktorId.of("123");
-    private final Fnr fnr = Fnr.of("12345678912");
-    private final PersonId personId = PersonId.of("123");
+    private final AktorId aktorId = randomAktorId();
+    private final Fnr fnr = randomFnr();
 
     @Autowired
-    public TiltakPostgresTest(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2) {
+    public TiltakPostgresTest(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, PdlRepository pdlRepository) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
-        this.oppfolgingsbrukerRepositoryV2 = oppfolgingsbrukerRepositoryV2;
+        this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.tiltakRepositoryV2 = tiltakRepositoryV2;
+        this.pdlRepository = pdlRepository;
     }
 
     @BeforeEach
     public void reset() {
         jdbcTemplatePostgres.update("TRUNCATE " + PostgresTable.BRUKERTILTAK.TABLE_NAME + " CASCADE");
         jdbcTemplatePostgres.update("TRUNCATE " + PostgresTable.TILTAKKODEVERK.TABLE_NAME + " CASCADE");
-        jdbcTemplatePostgres.update("TRUNCATE " + PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME + " CASCADE");
+        jdbcTemplatePostgres.update("TRUNCATE oppfolgingsbruker_arena_v2 ");
+        jdbcTemplatePostgres.update("TRUNCATE bruker_identer ");
     }
 
     @Test
@@ -63,7 +70,6 @@ public class TiltakPostgresTest {
         String tiltaksNavn = "test";
         TiltakInnhold innhold = new TiltakInnhold()
                 .setFnr(fnr.get())
-                .setPersonId(personId.toInteger())
                 .setTiltaksnavn(tiltaksNavn)
                 .setTiltakstype(tiltaksType)
                 .setDeltakerStatus("GJENN")
@@ -104,14 +110,12 @@ public class TiltakPostgresTest {
 
         TiltakInnhold idag = new TiltakInnhold()
                 .setFnr(fnr.get())
-                .setPersonId(personId.toInteger())
                 .setTiltaksnavn(tiltaksNavn)
                 .setTiltakstype(tiltaksType)
                 .setAktivitetperiodeTil(new ArenaDato(idagTid.toString().substring(0, 10)))
                 .setAktivitetid("TA-123");
         TiltakInnhold igar = new TiltakInnhold()
                 .setFnr(fnr.get())
-                .setPersonId(personId.toInteger())
                 .setTiltaksnavn(tiltaksNavn)
                 .setTiltakstype(tiltaksType)
                 .setAktivitetperiodeTil(new ArenaDato(igarTid.toString().substring(0, 10)))
@@ -161,10 +165,14 @@ public class TiltakPostgresTest {
     @Test
     public void skal_lagre_tiltak_pa_enhet() {
         String navKontor = "0007";
-        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(aktorId.get(), null, null, null, "" +
+        pdlRepository.upsertIdenter(List.of(
+                        new PDLIdent(aktorId.get(), false, AKTORID),
+                        new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
+                ));
+        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
+                new OppfolgingsbrukerEntity(fnr.get(), null, null, "" +
                         "Tester", "Testerson", navKontor, null, null, null, null,
-                        "1234", true, true, false, null, ZonedDateTime.now()));
+                        "1234",  true, false, ZonedDateTime.now()));
         String tiltaksType1 = "T123";
         String tiltaksType2 = "T321";
         String tiltaksNavn1 = "test1";

@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -18,20 +19,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.DISKRESJONSKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ENDRET_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ER_DOED;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ETTERNAVN;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.FODSELSNR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.FORMIDLINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.FORNAVN;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.HOVEDMAALKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.ISERV_FRA_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.KVALIFISERINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.NAV_KONTOR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.RETTIGHETSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.SIKKERHETSTILTAK_TYPE_KODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.SPERRET_ANSATT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.DISKRESJONSKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ENDRET_DATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ER_DOED;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ETTERNAVN;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FORNAVN;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.SIKKERHETSTILTAK_TYPE_KODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.SPERRET_ANSATT;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -112,12 +113,11 @@ public class OppfolgingsbrukerRepositoryV3 {
         if (rs == null || rs.getString(FODSELSNR) == null) {
             return null;
         }
-        return new OppfolgingsbrukerEntity(null, rs.getString(FODSELSNR), rs.getString(FORMIDLINGSGRUPPEKODE),
+        return new OppfolgingsbrukerEntity(rs.getString(FODSELSNR), rs.getString(FORMIDLINGSGRUPPEKODE),
                 toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)), rs.getString(ETTERNAVN), rs.getString(FORNAVN),
                 rs.getString(NAV_KONTOR), rs.getString(KVALIFISERINGSGRUPPEKODE), rs.getString(RETTIGHETSGRUPPEKODE),
                 rs.getString(HOVEDMAALKODE), rs.getString(SIKKERHETSTILTAK_TYPE_KODE), rs.getString(DISKRESJONSKODE),
-                false, rs.getBoolean(SPERRET_ANSATT), rs.getBoolean(ER_DOED),
-                null, toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
+                rs.getBoolean(SPERRET_ANSATT), rs.getBoolean(ER_DOED), toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
 
     public List<String> finnSkjulteBrukere(List<String> fnrListe, Skjermettilgang skjermettilgang) {
@@ -135,5 +135,13 @@ public class OppfolgingsbrukerRepositoryV3 {
                     OR (diskresjonskode = '7' AND NOT :tilgangTilKode7::boolean)
                     OR (sperret_ansatt AND NOT :tilgangTilEgenAnsatt::boolean)
                 )""", params, String.class);
+    }
+
+    public Optional<NavKontor> hentNavKontor(Fnr fnr) {
+        return Optional.ofNullable(
+                queryForObjectOrNull(
+                        () -> db.queryForObject("select nav_kontor from oppfolgingsbruker_arena_v2 where fodselsnr = ?",
+                                (rs, i) -> NavKontor.navKontorOrNull(rs.getString("nav_kontor")), fnr.get())
+                ));
     }
 }

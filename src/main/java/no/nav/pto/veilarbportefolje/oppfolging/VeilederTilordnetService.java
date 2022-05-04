@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -54,8 +53,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
     }
 
     private VeilederId hentVeileder(AktorId aktoerId) {
-        return VeilederId.of(oppfolgingRepositoryV2.hentOppfolgingData(aktoerId)
-                .map(BrukerOppdatertInformasjon::getVeileder)
-                .orElse(null));
+        return oppfolgingRepositoryV2.hentVeilederForBruker(aktoerId)
+                .orElse(VeilederId.of(null));
     }
 }

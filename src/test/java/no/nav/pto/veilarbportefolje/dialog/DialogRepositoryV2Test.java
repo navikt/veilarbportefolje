@@ -1,10 +1,7 @@
 package no.nav.pto.veilarbportefolje.dialog;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,21 +9,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.ZonedDateTime;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DialogRepositoryV2Test {
-    private JdbcTemplate db;
     private DialogRepositoryV2 dialogRepositoryV2;
-    private final AktorId aktoerId = AktorId.of("0");
+    private final AktorId aktoerId = randomAktorId();
 
     @Before
     public void setup() {
-        db = SingletonPostgresContainer.init().createJdbcTemplate();
+        JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
         dialogRepositoryV2 = new DialogRepositoryV2(db);
-
-        SqlUtils.delete(db, PostgresTable.DIALOG.TABLE_NAME)
-                .where(WhereClause.equals(PostgresTable.OPPFOLGINGSBRUKER_ARENA.AKTOERID, aktoerId.get()))
-                .execute();
     }
 
 

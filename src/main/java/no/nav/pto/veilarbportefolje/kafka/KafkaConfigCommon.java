@@ -47,7 +47,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.SkjermingDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerWrapperService;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -129,7 +129,7 @@ public class KafkaConfigCommon {
                              ProfileringService profileringService, AktivitetService aktivitetService,
                              VedtakService vedtakService, DialogService dialogService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
-                             MalService malService, OppfolgingsbrukerWrapperService oppfolgingsbrukerWrapperService, TiltakService tiltakService,
+                             MalService malService, OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
                              YtelsesService ytelsesService, OppfolgingPeriodeService oppfolgingPeriodeService, SkjermingService skjermingService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
                              UnleashService unleashService, PdlIdentService pdlIdentService) {
@@ -241,7 +241,7 @@ public class KafkaConfigCommon {
                                         Topic.ENDRING_PAA_OPPFOLGINGSBRUKER.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
-                                        oppfolgingsbrukerWrapperService::behandleKafkaRecord
+                                        oppfolgingsbrukerServiceV2::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
                                 .withLogging()
