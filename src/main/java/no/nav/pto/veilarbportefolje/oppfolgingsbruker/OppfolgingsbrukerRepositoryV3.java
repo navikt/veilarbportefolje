@@ -141,7 +141,7 @@ public class OppfolgingsbrukerRepositoryV3 {
         return Optional.ofNullable(
                 queryForObjectOrNull(
                         () -> db.queryForObject("select nav_kontor from oppfolgingsbruker_arena_v2 where fodselsnr = ?",
-                                (rs, i) -> NavKontor.of(rs.getString("nav_kontor")), fnr.get())
+                                (rs, i) -> NavKontor.navKontorOrNull(rs.getString("nav_kontor")), fnr.get())
                 ));
     }
 }

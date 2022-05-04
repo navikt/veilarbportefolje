@@ -97,7 +97,7 @@ public class OppfolgingRepositoryV2 {
         return Optional.ofNullable(
                 queryForObjectOrNull(
                         () -> db.queryForObject("select veilederid from oppfolging_data where aktoerid = ?",
-                                (rs, i) -> VeilederId.of(rs.getString("veilederid")), aktoerId.get())
+                                (rs, i) -> VeilederId.veilederIdOrNull(rs.getString("veilederid")), aktoerId.get())
                 ));
     }
 }

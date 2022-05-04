@@ -90,14 +90,16 @@ public class PdlRepository {
     public Fnr hentFnr(AktorId aktorId) {
         return queryForObjectOrNull(
                 () -> db.queryForObject("select fnr from aktive_identer where aktorid = ?",
-                        (rs, i) -> Fnr.of(rs.getString("fnr")), aktorId.get())
-        );
+                        (rs, i) -> Optional.ofNullable(rs.getString("fnr")).map(Fnr::of).orElse(null),
+                        aktorId.get()
+                ));
     }
 
     public AktorId hentAktorId(Fnr fnr) {
         return queryForObjectOrNull(
                 () -> db.queryForObject("select aktorid from aktive_identer where aktorid = ?",
-                        (rs, i) -> AktorId.of(rs.getString("aktorid")), fnr.get())
+                        (rs, i) -> Optional.ofNullable(rs.getString("aktorid")).map(AktorId::of).orElse(null),
+                        fnr.get())
         );
     }
 
