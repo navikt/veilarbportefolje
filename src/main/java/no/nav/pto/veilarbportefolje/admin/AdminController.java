@@ -183,7 +183,7 @@ public class AdminController {
         OppfolgingsBruker fraOracle = brukerRepository.hentBrukerFraView(aktoerId).get();
 
         OppfolgingsBruker fraPostgres = brukerRepository.hentBrukerFraView(aktoerId).get();
-        postgresOpensearchMapper.flettInnPostgresData(List.of(fraPostgres), true);
+        postgresOpensearchMapper.flettInnPostgresData(List.of(fraPostgres));
 
         PostgresAktorIdEntity aktorIdData = aktoerDataOpensearchMapper.hentAktoerData(List.of(aktoerId)).get(aktoerId);
 

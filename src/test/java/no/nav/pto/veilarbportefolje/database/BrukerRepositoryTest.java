@@ -86,7 +86,7 @@ public class BrukerRepositoryTest {
                 .value(Table.AKTOERID_TO_PERSONID.GJELDENE, 1)
                 .execute();
 
-        final Optional<OppfolgingsBruker> bruker = brukerRepository.hentBrukerFraView(brukerRepository.hentAktorIdFraView(fnr).get());
+        final Optional<OppfolgingsBruker> bruker = brukerRepository.hentBrukerFraView(aktorId);
         assertThat(bruker).isPresent();
     }
 

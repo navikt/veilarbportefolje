@@ -58,24 +58,6 @@ public class BrukerRepository {
                 "OR (FORMIDLINGSGRUPPEKODE = 'IARBS' AND KVALIFISERINGSGRUPPEKODE IN ('BATT', 'BFORM', 'VARIG', 'IKVAL', 'VURDU', 'OPPFI'))";
     }
 
-    public Optional<AktorId> hentAktorIdFraView(Fnr fnr) {
-        return Optional.ofNullable(
-                select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> rs.getString("AKTOERID"))
-                        .column("AKTOERID")
-                        .where(WhereClause.equals("FODSELSNR", fnr.toString()))
-                        .execute()
-        ).map(AktorId::of);
-    }
-
-    public Optional<AktorId> hentAktorIdFraView(PersonId personid) {
-        return Optional.ofNullable(
-                select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> rs.getString("AKTOERID"))
-                        .column("AKTOERID")
-                        .where(WhereClause.equals("PERSON_ID", personid.toString()))
-                        .execute()
-        ).map(AktorId::of);
-    }
-
     public Optional<OppfolgingsBruker> hentBrukerFraView(AktorId aktoerId) {
         final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs, unleashService))
                 .column("*")
@@ -122,15 +104,6 @@ public class BrukerRepository {
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
         ).onFailure(e -> log.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
-    }
-
-    public Optional<String> hentNavKontorFraView(AktorId aktoerId) {
-        String navKontor = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, this::mapToEnhet)
-                .column(VW_PORTEFOLJE_INFO.NAV_KONTOR)
-                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
-                .execute();
-
-        return Optional.ofNullable(navKontor);
     }
 
     public Optional<String> hentNavKontorFraDbLinkTilArena(Fnr fnr) {
