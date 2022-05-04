@@ -34,11 +34,11 @@ public class SkjermingService {
         SkjermingDTO skjermingDTO = kafkaMelding.value();
         LocalDateTime skjermetFra = null;
         LocalDateTime skjermetTil = null;
-        if (skjermingDTO.getSkjermetFra() != null && skjermingDTO.getSkjermetFra().length >= 6) {
-            skjermetFra = LocalDateTime.of(skjermingDTO.getSkjermetFra()[0], skjermingDTO.getSkjermetFra()[1], skjermingDTO.getSkjermetFra()[2], skjermingDTO.getSkjermetFra()[3], skjermingDTO.getSkjermetFra()[4], skjermingDTO.getSkjermetFra()[5]);
+        if (skjermingDTO.getSkjermetFra() != null && skjermingDTO.getSkjermetFra().length >= 5) {
+            skjermetFra = LocalDateTime.of(skjermingDTO.getSkjermetFra()[0], skjermingDTO.getSkjermetFra()[1], skjermingDTO.getSkjermetFra()[2], skjermingDTO.getSkjermetFra()[3], skjermingDTO.getSkjermetFra()[4], 0);
         }
-        if (skjermingDTO.getSkjermetTil() != null && skjermingDTO.getSkjermetTil().length >= 6) {
-            skjermetTil = LocalDateTime.of(skjermingDTO.getSkjermetTil()[0], skjermingDTO.getSkjermetTil()[1], skjermingDTO.getSkjermetTil()[2], skjermingDTO.getSkjermetTil()[3], skjermingDTO.getSkjermetTil()[4], skjermingDTO.getSkjermetTil()[5]);
+        if (skjermingDTO.getSkjermetTil() != null && skjermingDTO.getSkjermetTil().length >= 5) {
+            skjermetTil = LocalDateTime.of(skjermingDTO.getSkjermetTil()[0], skjermingDTO.getSkjermetTil()[1], skjermingDTO.getSkjermetTil()[2], skjermingDTO.getSkjermetTil()[3], skjermingDTO.getSkjermetTil()[4], 0);
         }
 
         if (skjermetFra == null && skjermetTil == null) {
