@@ -13,16 +13,12 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukDialogPaPostgres;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
 
@@ -114,6 +110,10 @@ public class PostgresOpensearchMapper {
         if (brukDialogPaPostgres(unleashService)) {
             bruker.setVenterpasvarfranav(dataPaAktorId.getVenterpasvarfranav());
             bruker.setVenterpasvarfrabruker(dataPaAktorId.getVenterpasvarfrabruker());
+        }
+
+        if (brukNOMSkjerming(unleashService)) {
+            bruker.setEgen_ansatt(erSkjermet_NOM);
         }
 
         bruker.setCv_eksistere(dataPaAktorId.getCvEksistere());
