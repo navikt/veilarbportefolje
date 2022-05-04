@@ -16,16 +16,6 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
---
--- Name: kafka_message_type; Type: TYPE; Schema: public; Owner: -
---
-
-CREATE TYPE public.kafka_message_type AS ENUM (
-    'PRODUCED',
-    'CONSUMED'
-);
-
-
 SET default_tablespace = '';
 
 SET default_with_oids = false;
