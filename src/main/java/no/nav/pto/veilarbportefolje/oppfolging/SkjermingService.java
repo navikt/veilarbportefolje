@@ -3,7 +3,11 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
@@ -13,15 +17,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SkjermingService {
     private final SkjermingRepository skjermingRepository;
-
+    private final AktorClient aktorClient;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final UnleashService unleashService;
 
     @SneakyThrows
     public void behandleSkjermedePersoner(ConsumerRecord<String, SkjermingDTO> kafkaMelding) {
+        Fnr fnr = Fnr.of(kafkaMelding.key());
         SkjermingDTO skjermingDTO = kafkaMelding.value();
         LocalDateTime skjermetFra = null;
         LocalDateTime skjermetTil = null;
@@ -36,16 +45,31 @@ public class SkjermingService {
             throw new Exception("Possible illegal data about skjerming period, kafka message: " + kafkaMelding.value());
         }
 
-        skjermingRepository.settSkjermingPeriode(Fnr.of(kafkaMelding.key()), DateUtils.toTimestamp(skjermetFra), DateUtils.toTimestamp(skjermetTil));
+        skjermingRepository.settSkjermingPeriode(fnr, DateUtils.toTimestamp(skjermetFra), DateUtils.toTimestamp(skjermetTil));
+
+        if (brukNOMSkjerming(unleashService)) {
+            String aktorId = aktorClient.hentAktorId(fnr).get();
+
+            LocalDateTime now = LocalDateTime.now();
+            Boolean erSkjermet = skjermetFra.isBefore(now) && (skjermetTil == null || skjermetTil.isAfter(now));
+
+            opensearchIndexerV2.updateErSkjermet(AktorId.of(aktorId), erSkjermet);
+        }
     }
 
     public void behandleSkjermingStatus(ConsumerRecord<String, String> kafkaMelding) {
+        Fnr fnr = Fnr.of(kafkaMelding.key());
         Boolean erSkjermet = Boolean.valueOf(kafkaMelding.value());
 
         if (erSkjermet) {
-            skjermingRepository.settSkjerming(Fnr.of(kafkaMelding.key()), erSkjermet);
+            skjermingRepository.settSkjerming(fnr, erSkjermet);
         } else {
-            skjermingRepository.deleteSkjermingData(Fnr.of(kafkaMelding.key()));
+            skjermingRepository.deleteSkjermingData(fnr);
+        }
+
+        if (brukNOMSkjerming(unleashService)) {
+            String aktorId = aktorClient.hentAktorId(fnr).get();
+            opensearchIndexerV2.updateErSkjermet(AktorId.of(aktorId), erSkjermet);
         }
     }
 
