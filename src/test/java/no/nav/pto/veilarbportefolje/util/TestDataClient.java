@@ -30,6 +30,7 @@ import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.NAV_KONTO
 import static no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER.FODSELSNR;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
 
 public class TestDataClient {
     private final JdbcTemplate jdbcTemplateOracle;
@@ -91,6 +92,12 @@ public class TestDataClient {
         setupBruker(aktoerId, fnr, navKontor, veilederId, startDato);
         setupBrukerOracle(aktoerId, fnr, navKontor, veilederId, startDato);
         opensearchTestClient.oppdaterArbeidsliste(aktoerId, true);
+    }
+
+    public void setupBruker(AktorId aktoerId, ZonedDateTime startDato) {
+        final Fnr fnr = TestDataUtils.randomFnr();
+        setupBrukerOracle(aktoerId, fnr, randomNavKontor(), VeilederId.of(null), startDato);
+        setupBruker(aktoerId, fnr, randomNavKontor(), VeilederId.of(null), startDato);
     }
 
     public void setupBruker(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {

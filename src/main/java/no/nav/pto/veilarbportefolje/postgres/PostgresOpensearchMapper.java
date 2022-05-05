@@ -35,6 +35,7 @@ public class PostgresOpensearchMapper {
     private final SkjermingService skjermingService;
     private final UnleashService unleashService;
 
+    @Deprecated
     public List<OppfolgingsBruker> flettInnPostgresData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
         List<String> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).collect(Collectors.toList());
@@ -111,6 +112,7 @@ public class PostgresOpensearchMapper {
         bruker.setTiltak(aktivitetData.getTiltak());
     }
 
+    @Deprecated
     private void flettInnBrukerData(PostgresAktorIdEntity dataPaAktorId, OppfolgingsBruker bruker, boolean erSkjermet_NOM) {
         bruker.setOppfolging(dataPaAktorId.getOppfolging());
         bruker.setNy_for_veileder(dataPaAktorId.getNyForVeileder());
@@ -157,6 +159,12 @@ public class PostgresOpensearchMapper {
             bruker.setArbeidsliste_kategori(dataPaAktorId.getArbeidslisteKategori());
             bruker.setArbeidsliste_tittel_sortering(dataPaAktorId.getArbeidslisteTittelSortering());
             bruker.setArbeidsliste_tittel_lengde(dataPaAktorId.getArbeidslisteTittelLengde());
+        }
+    }
+
+    public void loggDiff(OppfolgingsBruker oppfolgingsBrukerOracle, OppfolgingsBruker oppfolgingsBrukerPostgres){
+        if(!oppfolgingsBrukerOracle.equals(oppfolgingsBrukerPostgres)){
+            log.info("fant en diff på bruker: {}", oppfolgingsBrukerOracle.getAktoer_id());
         }
     }
 }

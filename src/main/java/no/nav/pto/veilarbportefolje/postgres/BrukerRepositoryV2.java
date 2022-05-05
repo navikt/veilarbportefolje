@@ -98,7 +98,7 @@ public class BrukerRepositoryV2 {
                         inner join aktive_identer ai on ad.aktoerid = ai.aktorid
                         inner join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
                         left join nom_skjerming ns on ns.fodselsnr = ai.fnr
-                        where aktoerid = ANY (:ids::varchar[])
+                        where aktoerid = ANY (:aktorIds::varchar[])
                         """,
                 params, (ResultSet rs) -> {
                     while (rs.next()) {
@@ -155,8 +155,8 @@ public class BrukerRepositoryV2 {
                 .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)))
 
                 .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
-                .setFodselsdato(FodselsnummerUtils.lagFodselsdato(rs.getString(fnr)))
-                .setKjonn(FodselsnummerUtils.lagKjonn(rs.getString(fnr)));
+                .setFodselsdato(FodselsnummerUtils.lagFodselsdato(fnr))
+                .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
 
         if (brukNOMSkjerming(unleashService)) {
             bruker.setEgen_ansatt(rs.getBoolean(ER_SKJERMET));

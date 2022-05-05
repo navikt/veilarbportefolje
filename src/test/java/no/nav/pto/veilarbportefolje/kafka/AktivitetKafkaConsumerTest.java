@@ -1,20 +1,14 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.database.Table;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
-import no.nav.sbl.sql.SqlUtils;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -25,45 +19,23 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AktivitetKafkaConsumerTest extends EndToEndTest {
-
-    private final JdbcTemplate db;
-    private final OpensearchTestClient opensearchTestClient;
     private final AktivitetService aktivitetService;
 
     @Autowired
-    public AktivitetKafkaConsumerTest(JdbcTemplate db, OpensearchTestClient opensearchTestClient, AktivitetService aktivitetService) {
-        this.db = db;
-        this.opensearchTestClient = opensearchTestClient;
+    public AktivitetKafkaConsumerTest(AktivitetService aktivitetService) {
         this.aktivitetService = aktivitetService;
     }
 
     @Test
     void skal_oppdatere_aktivitet_i_opensearch() {
-        final AktorId aktoerId = AktorId.of("123456789");
-        final PersonId personId = PersonId.of("1234");
-        final Fnr fnr = Fnr.ofValidFnr("00000000000");
+        final AktorId aktoerId = randomAktorId();
+        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
 
         final String tilDato = (LocalDate.now().plusMonths(1)).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toString();
-
-        SqlUtils.insert(db, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
-                .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId.toString())
-                .value(Table.OPPFOLGINGSBRUKER.FODSELSNR, fnr.toString())
-                .execute();
-
-        SqlUtils.insert(db, Table.AKTOERID_TO_PERSONID.TABLE_NAME)
-                .value(Table.AKTOERID_TO_PERSONID.AKTOERID, aktoerId.toString())
-                .value(Table.AKTOERID_TO_PERSONID.PERSONID, personId.toString())
-                .value(Table.AKTOERID_TO_PERSONID.GJELDENE, true)
-                .execute();
-
-        SqlUtils.insert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
-                .value(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
-                .execute();
-
         createAktivitetDocument(aktoerId);
 
         KafkaAktivitetMelding melding = new KafkaAktivitetMelding()

@@ -20,8 +20,8 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.postgres.AktoerDataOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
-import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,6 +52,7 @@ public class AdminController {
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final BrukerRepository brukerRepository;
+    private final BrukerRepositoryV2 brukerRepositoryV2;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -181,13 +182,10 @@ public class AdminController {
         authorizeAdmin();
         AktorId aktoerId = AktorId.of(aktoerIdString);
         OppfolgingsBruker fraOracle = brukerRepository.hentBrukerFraView(aktoerId).get();
+        postgresOpensearchMapper.flettInnPostgresData(List.of(fraOracle));
+        var fraPostgres = brukerRepositoryV2.hentOppfolgingsBruker(aktoerId);
 
-        OppfolgingsBruker fraPostgres = brukerRepository.hentBrukerFraView(aktoerId).get();
-        postgresOpensearchMapper.flettInnPostgresData(List.of(fraPostgres));
-
-        PostgresAktorIdEntity aktorIdData = aktoerDataOpensearchMapper.hentAktoerData(List.of(aktoerId)).get(aktoerId);
-
-        return "{ \"oracle\":" + JsonUtils.toJson(fraOracle) + ", \"postgres\":" + JsonUtils.toJson(aktorIdData) + " }";
+        return "{ \"oracle/Postgres\":" + JsonUtils.toJson(fraOracle) + ", \"postgres\":" + JsonUtils.toJson(fraPostgres) + " }";
     }
 
     private void authorizeAdmin() {
