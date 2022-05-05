@@ -126,9 +126,9 @@ public class AktiviteterRepositoryV2 {
         return namedDb.query("""
                         SELECT op.fodselsnr, op.fornavn, op.etternavn, a.fradato, a.avtalt
                          from oppfolgingsbruker_arena_v2 op
-                        left join aktive_identer ai on op.fodselsnr = ai.fnr
-                        left join oppfolging_data od on od.aktoerid = ai.aktorid
-                        right join aktiviteter a on a.aktoerid = ai.aktorid
+                        inner join aktive_identer ai on op.fodselsnr = ai.fnr
+                        inner join oppfolging_data od on od.aktoerid = ai.aktorid
+                        inner join aktiviteter a on a.aktoerid = ai.aktorid
                         where op.nav_kontor = :enhet::varchar
                         AND od.veilederid = :veilederIdent::varchar
                         AND a.aktivitettype = 'mote'

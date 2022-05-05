@@ -48,12 +48,13 @@ public class SchedulConfig {
 
     // Disse jobben må kjøre etter midnatt
     private List<RecurringTask<?>> nattligeJobber() {
-        return List.of(Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(1, 1)))
-                        .execute((instance, ctx) -> hovedIndekserer.hovedIndeksering()),
-                Tasks.recurring("indekserer_ytelse_endringer", Schedules.daily(LocalTime.of(2, 0)))
+        return List.of(
+                Tasks.recurring("deaktiver_utgatte_utdannings_aktivteter", Schedules.daily(LocalTime.of(2, 1)))
+                        .execute((instance, ctx) -> aktivitetService.deaktiverUtgatteUtdanningsAktivteter()),
+                Tasks.recurring("indekserer_ytelse_endringer", Schedules.daily(LocalTime.of(2, 1)))
                         .execute((instance, ctx) -> ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag()),
-                Tasks.recurring("deaktiver_utgatte_utdannings_aktivteter", Schedules.daily(LocalTime.of(2, 0)))
-                        .execute((instance, ctx) -> aktivitetService.deaktiverUtgatteUtdanningsAktivteter())
+                Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(2, 15)))
+                        .execute((instance, ctx) -> hovedIndekserer.hovedIndeksering())
         );
     }
 

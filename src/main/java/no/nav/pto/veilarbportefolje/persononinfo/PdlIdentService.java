@@ -36,7 +36,7 @@ public class PdlIdentService extends KafkaCommonConsumerService<Aktor> {
     private List<PDLIdent> mapTilPdlIdenter(Aktor melding) {
         return melding.getIdentifikatorer()
                 .stream()
-                .map(id -> new PDLIdent(id.getIdnummer().toString(), id.getGjeldende(), typeTilGruppe(id.getType())))
+                .map(id -> new PDLIdent(id.getIdnummer().toString(), !id.getGjeldende(), typeTilGruppe(id.getType())))
                 .toList();
     }
 }
