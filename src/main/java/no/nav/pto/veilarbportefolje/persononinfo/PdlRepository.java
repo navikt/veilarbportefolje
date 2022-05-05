@@ -97,7 +97,7 @@ public class PdlRepository {
 
     public AktorId hentAktorId(Fnr fnr) {
         return queryForObjectOrNull(
-                () -> db.queryForObject("select aktorid from aktive_identer where aktorid = ?",
+                () -> db.queryForObject("select aktorid from aktive_identer where fnr = ?",
                         (rs, i) -> Optional.ofNullable(rs.getString("aktorid")).map(AktorId::of).orElse(null),
                         fnr.get())
         );
