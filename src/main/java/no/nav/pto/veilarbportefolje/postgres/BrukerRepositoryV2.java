@@ -125,19 +125,15 @@ public class BrukerRepositoryV2 {
                 .setUtdanning(rs.getString(UTDANNING))
                 .setUtdanning_bestatt(rs.getString(UTDANNING_BESTATT))
                 .setUtdanning_godkjent(rs.getString(UTDANNING_GODKJENT))
-
                 .setHar_delt_cv(rs.getBoolean(HAR_DELT_CV))
                 .setCv_eksistere(rs.getBoolean(CV_EKSISTERER))
-
                 .setOppfolging(rs.getBoolean(OPPFOLGING))
                 .setNy_for_veileder(rs.getBoolean(NY_FOR_VEILEDER))
                 .setVeileder_id(rs.getString(VEILEDERID))
                 .setManuell_bruker(rs.getBoolean(MANUELL) ? "MANUELL" : null)
                 .setOppfolging_startdato(toIsoUTC(rs.getTimestamp(STARTDATO)))
-
                 .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp(VENTER_PA_BRUKER)))
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp(VENTER_PA_NAV)))
-
                 .setVedtak_status(
                         Optional.ofNullable(vedtakstatus)
                                 .map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf)
@@ -146,14 +142,12 @@ public class BrukerRepositoryV2 {
                 )
                 .setVedtak_status_endret(toIsoUTC(rs.getTimestamp(VEDTAKSTATUS_ENDRET_TIDSPUNKT)))
                 .setAnsvarlig_veileder_for_vedtak(rs.getString(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN))
-
                 .setYtelse(rs.getString(YTELSE))
                 .setUtlopsdato(toIsoUTC(rs.getTimestamp(YTELSE_UTLOPSDATO)))
                 .setDagputlopuke(rs.getObject(DAGPUTLOPUKE, Integer.class))
                 .setPermutlopuke(rs.getObject(PERMUTLOPUKE, Integer.class))
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
                 .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)))
-
                 .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
                 .setFodselsdato(FodselsnummerUtils.lagFodselsdato(fnr))
                 .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
