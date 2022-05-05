@@ -78,7 +78,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 @Configuration
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
-    public final static String CLIENT_ID_NOM_SKJERMING = "veilarbportefolje-consumer-nom-1";
+    public final static String CLIENT_ID_REWIND = "veilarbportefolje-consumer-rewind";
     public static final String KAFKA_BROKERS = EnvironmentUtils.getRequiredProperty("KAFKA_BROKERS_URL");
     private static final Credentials serviceUserCredentials = getCredentials("service_user");
 
@@ -121,7 +121,7 @@ public class KafkaConfigCommon {
 
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final List<KafkaConsumerClient> consumerClientsOnPrem;
-    private final List<KafkaConsumerClient> consumerClientsNOMSkjerming;
+    private final List<KafkaConsumerClient> consumerClientsRewind;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
@@ -379,26 +379,17 @@ public class KafkaConfigCommon {
                                 )
                 );
 
-        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsNOMSkjerming =
-                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, String>()
+        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> rewindTopics =
+                List.of(
+                        new KafkaConsumerClientBuilder.TopicConfig<String, Aktor>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.NOM_SKJERMING_STATUS.topicName,
+                                        Topic.PDL_IDENTER.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.stringDeserializer(),
-                                        skjermingService::behandleSkjermingStatus
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, SkjermingDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.NOM_SKJERMEDE_PERSONER.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(SkjermingDTO.class),
-                                        skjermingService::behandleSkjermedePersoner
+                                        new OnpremAvroDeserializer<Aktor>().getDeserializer(),
+                                        pdlIdentService::behandleKafkaRecord
                                 )
                 );
 
@@ -408,10 +399,6 @@ public class KafkaConfigCommon {
         Properties aivenConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_CONFIG);
         aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
         //aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
-
-        Properties nomSkjermingConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_NOM_SKJERMING);
-        nomSkjermingConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
-
 
         consumerClientAiven = topicConfigsAiven.stream()
                 .map(config ->
@@ -435,12 +422,16 @@ public class KafkaConfigCommon {
                                 .build())
                 .collect(Collectors.toList());
 
-        consumerClientsNOMSkjerming = topicConfigsNOMSkjerming.stream()
+        consumerClientsRewind = rewindTopics.stream()
                 .map(config ->
                         KafkaConsumerClientBuilder.builder()
-                                .withProperties(nomSkjermingConsumerProperties)
+                                .withProperties(onPremDefaultConsumerProperties(
+                                        CLIENT_ID_REWIND,
+                                        KAFKA_BROKERS,
+                                        serviceUserCredentials)
+                                )
                                 .withTopicConfig(config)
-                                .withToggle(kafkaAivenUnleash)
+                                .withToggle(kafkaOnpremUnleash)
                                 .build())
                 .collect(Collectors.toList());
 
@@ -448,7 +439,7 @@ public class KafkaConfigCommon {
                 .builder()
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
-                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(Stream.concat(Stream.concat(topicConfigsAiven.stream(), topicConfigsOnPrem.stream()), topicConfigsNOMSkjerming.stream()).collect(Collectors.toList())))
+                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(Stream.concat(Stream.concat(topicConfigsAiven.stream(), topicConfigsOnPrem.stream()), rewindTopics.stream()).collect(Collectors.toList())))
                 .build();
     }
 
@@ -458,7 +449,7 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientsOnPrem.forEach(KafkaConsumerClient::start);
-        consumerClientsNOMSkjerming.forEach(KafkaConsumerClient::start);
+        consumerClientsRewind.forEach(KafkaConsumerClient::start);
     }
 
 
