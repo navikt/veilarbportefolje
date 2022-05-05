@@ -183,7 +183,7 @@ public class BrukerRepositoryV2 {
         return bruker
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
-                .setFullt_navn(String.format("%s, %s", fornavn, etternavn))
+                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
                 .setEnhet_id(rs.getString(NAV_KONTOR))
                 .setIserv_fra_dato(toIsoUTC(rs.getTimestamp(ISERV_FRA_DATO)))
                 .setRettighetsgruppekode(rs.getString(RETTIGHETSGRUPPEKODE))
