@@ -50,20 +50,4 @@ public class PdlService {
         return response == null || (response.getErrors() != null && !response.getErrors().isEmpty());
     }
 
-    public int hentIdenterSomIkkeErMappet() {
-        return pdlRepository.hentIdenterSomIkkeErMappet().size();
-    }
-
-    public void mapManglendeIdenter() {
-        List<AktorId> aktorIder = pdlRepository.hentIdenterSomIkkeErMappet();
-
-        aktorIder.forEach(aktorId -> {
-            try {
-                hentOgLagreIdenter(aktorId);
-            } catch (Exception e) {
-                log.info("feil under innlastning av ident", e);
-            }
-        });
-    }
-
 }

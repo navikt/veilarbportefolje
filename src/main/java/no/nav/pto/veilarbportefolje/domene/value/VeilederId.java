@@ -15,6 +15,13 @@ public final class VeilederId {
         return new VeilederId(veilederId);
     }
 
+    public static VeilederId veilederIdOrNull(String veilederId) {
+        if(veilederId == null){
+            return null;
+        }
+        return new VeilederId(veilederId);
+    }
+
     @JsonProperty("veilederId")
     public String getValue() {
         return veilederId;

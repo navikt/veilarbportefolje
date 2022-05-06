@@ -20,6 +20,7 @@ public class PDLIdent {
     public PDLIdent() {
     }
 
+    // NB: ved endringer må viewt 'aktive_identer' oppdateres
     public enum Gruppe {
         FOLKEREGISTERIDENT,
         NPID,
