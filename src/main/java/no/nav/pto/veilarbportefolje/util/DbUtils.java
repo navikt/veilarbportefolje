@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil;
 
 import javax.sql.DataSource;
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.function.Predicate;
 
@@ -74,7 +73,6 @@ public class DbUtils {
         String vedtakstatus = rs.getString("VEDTAKSTATUS");
 
         OppfolgingsBruker bruker = new OppfolgingsBruker()
-                .setPerson_id(numberToString(rs.getBigDecimal("person_id")))
                 .setAktoer_id(rs.getString("aktoerid"))
                 .setFnr(rs.getString("fodselsnr"))
                 .setFornavn(fornavn)
@@ -123,9 +121,6 @@ public class DbUtils {
         return bool ? "J" : "N";
     }
 
-    public static String numberToString(BigDecimal bd) {
-        return String.valueOf(bd.intValue());
-    }
 
     public static <T> Predicate<T> not(Predicate<T> predicate) {
         return (T t) -> !predicate.test(t);

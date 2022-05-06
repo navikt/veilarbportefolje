@@ -18,6 +18,10 @@ public class FeatureToggle {
 
     public static final String IKKE_AVTALTE_MOTER = "veilarbportfolje.ikke_avtalte_aktiviteter";
 
+    public static final String OPPFOLGINGS_BRUKER = "veilarbportefolje.oppfolgingsbruker_pa_postgres";
+    public static final String HENT_IDENTER_FRA_POSTGRES = "veilarbportefolje.identer_fra_postgres";
+
+
     public static final String DIALOG = "veilarbportefolje.dialogPostgres";
     public static final String NOM_SKJERMING = "veilarbportefolje.NOM_Skjerming";
 
@@ -31,6 +35,13 @@ public class FeatureToggle {
 
     public static boolean brukNOMSkjerming(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.NOM_SKJERMING);
+    }
+    public static boolean brukOppfolgingsbrukerPaPostgres(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.OPPFOLGINGS_BRUKER);
+    }
+
+    public static boolean hentIdenterFraPostgres(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.HENT_IDENTER_FRA_POSTGRES);
     }
 
     public static boolean brukIkkeAvtalteMoter(UnleashService unleashService) {

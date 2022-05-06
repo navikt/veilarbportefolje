@@ -51,6 +51,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 @Slf4j
 @Service
+@Deprecated
 @RequiredArgsConstructor
 public class AktoerDataOpensearchMapper {
     @Qualifier("PostgresNamedJdbcReadOnly")

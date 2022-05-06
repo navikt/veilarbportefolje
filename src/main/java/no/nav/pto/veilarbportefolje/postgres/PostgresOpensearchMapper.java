@@ -13,11 +13,15 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukDialogPaPostgres;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
@@ -31,14 +35,12 @@ public class PostgresOpensearchMapper {
     private final SkjermingService skjermingService;
     private final UnleashService unleashService;
 
-    public List<OppfolgingsBruker> flettInnPostgresData(List<OppfolgingsBruker> brukere, boolean medDiffLogging) {
+    @Deprecated
+    public List<OppfolgingsBruker> flettInnPostgresData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
         List<String> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).collect(Collectors.toList());
-
-        HashMap<AktorId, PostgresAktorIdEntity> aktorIdData = aktoerDataOpensearchMapper.hentAktoerData(aktoerIder);
-        Map<AktorId, List<AktivitetEntityDto>> avtalteAktiviterMap = aktivitetOpensearchService.hentAvtaltAktivitetData(aktoerIder);
-        Map<AktorId, List<AktivitetEntityDto>> ikkeAvtalteAktiviterMap = aktivitetOpensearchService.hentIkkeAvtaltAktivitetData(aktoerIder);
         Set<Fnr> skjermetPersonerNOM = skjermingService.hentSkjermetPersoner(fnrs);
+        HashMap<AktorId, PostgresAktorIdEntity> aktorIdData = aktoerDataOpensearchMapper.hentAktoerData(aktoerIder);
 
         brukere.forEach(bruker -> {
                     AktorId aktorId = AktorId.of(bruker.getAktoer_id());
@@ -46,9 +48,22 @@ public class PostgresOpensearchMapper {
 
                     Optional.ofNullable(aktorIdData.get(aktorId))
                             .ifPresentOrElse(
-                                    postgresAktorIdData -> flettInnBrukerData(postgresAktorIdData, bruker, erSkjermet_NOM, medDiffLogging),
+                                    postgresAktorIdData -> flettInnBrukerData(postgresAktorIdData, bruker, erSkjermet_NOM),
                                     () -> log.warn("Fant ikke aktoer i aktoer basert postgres: {}", bruker.getAktoer_id())
                             );
+                }
+        );
+        return brukere;
+    }
+
+    public List<OppfolgingsBruker> flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
+        List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
+        Map<AktorId, List<AktivitetEntityDto>> avtalteAktiviterMap = aktivitetOpensearchService.hentAvtaltAktivitetData(aktoerIder);
+        Map<AktorId, List<AktivitetEntityDto>> ikkeAvtalteAktiviterMap = aktivitetOpensearchService.hentIkkeAvtaltAktivitetData(aktoerIder);
+
+        brukere.forEach(bruker -> {
+                    AktorId aktorId = AktorId.of(bruker.getAktoer_id());
+
                     List<AktivitetEntityDto> avtalteAktiviteter = avtalteAktiviterMap.get(aktorId) != null ? avtalteAktiviterMap.get(aktorId) : new ArrayList<>();
                     List<AktivitetEntityDto> ikkeAvtalteAktiviteter = ikkeAvtalteAktiviterMap.get(aktorId) != null ? ikkeAvtalteAktiviterMap.get(aktorId) : new ArrayList<>();
 
@@ -97,20 +112,16 @@ public class PostgresOpensearchMapper {
         bruker.setTiltak(aktivitetData.getTiltak());
     }
 
-    private void flettInnBrukerData(PostgresAktorIdEntity dataPaAktorId, OppfolgingsBruker bruker, boolean erSkjermet_NOM, boolean medDiffLogging) {
-        if (medDiffLogging) {
-            loggDiff(dataPaAktorId, bruker, erSkjermet_NOM);
-        }
+    @Deprecated
+    private void flettInnBrukerData(PostgresAktorIdEntity dataPaAktorId, OppfolgingsBruker bruker, boolean erSkjermet_NOM) {
         bruker.setOppfolging(dataPaAktorId.getOppfolging());
         bruker.setNy_for_veileder(dataPaAktorId.getNyForVeileder());
         bruker.setManuell_bruker(dataPaAktorId.getManuellBruker() ? "MANUELL" : null);
         bruker.setVeileder_id(dataPaAktorId.getVeileder());
         bruker.setOppfolging_startdato(dataPaAktorId.getOppfolgingStartdato());
 
-        if (brukDialogPaPostgres(unleashService)) {
-            bruker.setVenterpasvarfranav(dataPaAktorId.getVenterpasvarfranav());
-            bruker.setVenterpasvarfrabruker(dataPaAktorId.getVenterpasvarfrabruker());
-        }
+        bruker.setVenterpasvarfranav(dataPaAktorId.getVenterpasvarfranav());
+        bruker.setVenterpasvarfrabruker(dataPaAktorId.getVenterpasvarfrabruker());
 
         if (brukNOMSkjerming(unleashService)) {
             bruker.setEgen_ansatt(erSkjermet_NOM);
@@ -151,34 +162,9 @@ public class PostgresOpensearchMapper {
         }
     }
 
-    private void loggDiff(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker, Boolean erSkjermet_NOM) {
-        if (isDifferent(bruker.getVenterpasvarfrabruker(), postgresAktorIdEntity.getVenterpasvarfrabruker())) {
-            log.info("postgres Opensearch: Venterpasvarfrabruker feil bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferent(bruker.getVenterpasvarfranav(), postgresAktorIdEntity.getVenterpasvarfranav())) {
-            log.info("postgres Opensearch: getVenterpasvarfranav feil bruker: {}", bruker.getAktoer_id());
-        }
-        if ((bruker.isEgen_ansatt() && !erSkjermet_NOM) || (!bruker.isEgen_ansatt() && erSkjermet_NOM)) {
-            log.info("postgres Opensearch: Difference in skjerming, isEgen_ansatt: {}, NOM skjermet: {} , bruker: {}", bruker.isEgen_ansatt(), erSkjermet_NOM, bruker.getAktoer_id());
+    public void loggDiff(OppfolgingsBruker oppfolgingsBrukerOracle, OppfolgingsBruker oppfolgingsBrukerPostgres){
+        if(!oppfolgingsBrukerOracle.equals(oppfolgingsBrukerPostgres)){
+            log.info("fant en diff på bruker: {}", oppfolgingsBrukerOracle.getAktoer_id());
         }
     }
-
-    private boolean isDifferent(Object o, Object other) {
-        if (o == null && other == null) {
-            return false;
-        } else if (o == null || other == null) {
-            return true;
-        }
-        return !o.equals(other);
-    }
-
-    private boolean isDifferentDate(String o, String other) {
-        if (o == null && other == null) {
-            return false;
-        } else if (o == null || other == null) {
-            return true;
-        }
-        return !o.substring(0, 10).equals(other.substring(0, 10));
-    }
-
 }
