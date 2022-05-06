@@ -33,9 +33,9 @@ public class OppfolgingRepositoryV2 {
 
     public int settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
         return db.update("""
-                        INSERT INTO oppfolging_data (AKTOERID, OPPFOLGING, STARTDATO) VALUES (?,?,?)
-                        ON CONFLICT (AKTOERID) DO UPDATE SET OPPFOLGING = EXCLUDED.OPPFOLGING, STARTDATO = EXCLUDED.STARTDATO
-                        """,aktoerId.get(), true, toTimestamp(startDato)
+                INSERT INTO oppfolging_data (AKTOERID, OPPFOLGING, STARTDATO) VALUES (?,?,?)
+                ON CONFLICT (AKTOERID) DO UPDATE SET OPPFOLGING = EXCLUDED.OPPFOLGING, STARTDATO = EXCLUDED.STARTDATO
+                """, aktoerId.get(), true, toTimestamp(startDato)
         );
     }
 
@@ -83,6 +83,19 @@ public class OppfolgingRepositoryV2 {
                 .setVeileder(rs.getString(VEILEDERID))
                 .setManuell(rs.getBoolean(MANUELL))
                 .setStartDato(rs.getTimestamp(STARTDATO));
+    }
+
+    public List<AktorId> hentAlleGyldigeBrukereUnderOppfolging() {
+        db.setFetchSize(10_000);
+        List<AktorId> alleIder = db.queryForList("""
+                select aktoerid from oppfolging_data od
+                 left join bruker_identer bi on bi.ident = od.aktoerid
+                 where oppfolging
+                 and not historisk
+                """, AktorId.class);
+        db.setFetchSize(-1);
+
+        return alleIder;
     }
 
     public List<AktorId> hentAlleBrukereUnderOppfolging() {
