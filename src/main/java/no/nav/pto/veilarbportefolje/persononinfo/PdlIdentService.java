@@ -4,18 +4,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.person.pdl.aktor.v2.Aktor;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent.typeTilGruppe;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.typeTilGruppe;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PdlIdentService extends KafkaCommonConsumerService<Aktor> {
-    private final PdlRepository pdlRepository;
+    private final PdlIdentRepository pdlIdentRepository;
 
     @Override
     public void behandleKafkaMeldingLogikk(Aktor melding) {
@@ -27,9 +27,9 @@ public class PdlIdentService extends KafkaCommonConsumerService<Aktor> {
             return;
         }
         List<PDLIdent> pdlIdenter = mapTilPdlIdenter(melding);
-        if(pdlRepository.harIdentUnderOppfolging(pdlIdenter)){
+        if(pdlIdentRepository.harIdentUnderOppfolging(pdlIdenter)){
             log.info("Det oppsto en id endring på en bruker under oppfølging...");
-            pdlRepository.upsertIdenter(pdlIdenter);
+            pdlIdentRepository.upsertIdenter(pdlIdenter);
         }
     }
 

@@ -31,7 +31,7 @@ public class OppfolgingStartetService {
     public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate) {
         mapAktoerTilPersonId(aktorId);
 
-        pdlService.hentOgLagreIdenter(aktorId);
+        pdlService.hentOgLagrePdlData(aktorId);
 
         oppfolgingRepository.settUnderOppfolging(aktorId, oppfolgingStartetDate);
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);

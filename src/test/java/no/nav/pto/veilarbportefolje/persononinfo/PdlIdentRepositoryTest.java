@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.persononinfo;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,22 +15,22 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent.Gruppe.AKTORID;
-import static no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class PdlRepositoryTest {
+public class PdlIdentRepositoryTest {
     private final JdbcTemplate db;
     private final JdbcTemplate oracle;
-    private final PdlRepository pdlRepository;
+    private final PdlIdentRepository pdlIdentRepository;
     private final OppfolgingPeriodeService oppfolgingPeriodeService;
 
     @Autowired
-    public PdlRepositoryTest(@Qualifier("PostgresJdbc") JdbcTemplate db, JdbcTemplate oracle, PdlRepository pdlRepository, OppfolgingPeriodeService oppfolgingPeriodeService) {
+    public PdlIdentRepositoryTest(@Qualifier("PostgresJdbc") JdbcTemplate db, JdbcTemplate oracle, PdlIdentRepository pdlIdentRepository, OppfolgingPeriodeService oppfolgingPeriodeService) {
         this.db = db;
         this.oracle = oracle;
-        this.pdlRepository = pdlRepository;
+        this.pdlIdentRepository = pdlIdentRepository;
         this.oppfolgingPeriodeService = oppfolgingPeriodeService;
     }
 
@@ -55,15 +55,15 @@ public class PdlRepositoryTest {
                 new PDLIdent("12347", false, AKTORID),
                 new PDLIdent("00001", false, FOLKEREGISTERIDENT)
         );
-        pdlRepository.upsertIdenter(identerBrukerA);
-        String lokalIdentBrukerA = pdlRepository.hentPerson(identIKonflikt.getIdent());
-        var brukerAPreBrukerB = pdlRepository.hentIdenter(lokalIdentBrukerA);
+        pdlIdentRepository.upsertIdenter(identerBrukerA);
+        String lokalIdentBrukerA = pdlIdentRepository.hentPerson(identIKonflikt.getIdent());
+        var brukerAPreBrukerB = pdlIdentRepository.hentIdenter(lokalIdentBrukerA);
 
-        pdlRepository.upsertIdenter(identerBrukerB);
+        pdlIdentRepository.upsertIdenter(identerBrukerB);
 
-        String lokalIdentBrukerB = pdlRepository.hentPerson(identIKonflikt.getIdent());
-        var brukerAPostBrukerB = pdlRepository.hentIdenter(lokalIdentBrukerA);
-        var brukerB = pdlRepository.hentIdenter(lokalIdentBrukerB);
+        String lokalIdentBrukerB = pdlIdentRepository.hentPerson(identIKonflikt.getIdent());
+        var brukerAPostBrukerB = pdlIdentRepository.hentIdenter(lokalIdentBrukerA);
+        var brukerB = pdlIdentRepository.hentIdenter(lokalIdentBrukerB);
 
         assertThat(lokalIdentBrukerA).isNotEqualTo(lokalIdentBrukerB);
         assertThat(brukerAPreBrukerB).isEqualTo(identerBrukerA);
@@ -92,7 +92,7 @@ public class PdlRepositoryTest {
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(historiskOpfolgingStart);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOpfolgingStart);
         // Mock PDL respons
-        pdlRepository.upsertIdenter(identer);
+        pdlIdentRepository.upsertIdenter(identer);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOpfolgingAvslutt);
 
         var lokaleIdenter = hentLokaleIdenter(historiskIdent);
@@ -113,13 +113,13 @@ public class PdlRepositoryTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingStart);
         // Mock PDL respons
-        pdlRepository.upsertIdenter(identer);
+        pdlIdentRepository.upsertIdenter(identer);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingAvslutt);
         var lokaleIdenter = hentLokaleIdenter(ident);
         assertThat(lokaleIdenter.size()).isEqualTo(0);
     }
 
     private List<PDLIdent> hentLokaleIdenter(AktorId ident){
-        return pdlRepository.hentIdenter(pdlRepository.hentPerson(ident.get()));
+        return pdlIdentRepository.hentIdenter(pdlIdentRepository.hentPerson(ident.get()));
     }
 }

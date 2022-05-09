@@ -2,10 +2,9 @@ package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.client.pdl.PdlClient;
-import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
@@ -50,10 +49,12 @@ import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
 import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlRepository;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentRespons;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.AktoerDataOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
@@ -86,9 +87,10 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
+import java.util.List;
 
 import static no.nav.common.utils.IdUtils.generateId;
+import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchUtils.createClient;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -149,7 +151,8 @@ import static org.mockito.Mockito.when;
         SkjermingService.class,
         SkjermingRepository.class,
         PdlService.class,
-        PdlRepository.class,
+        PdlIdentRepository.class,
+        PdlPersonRepository.class,
         OpensearchCountService.class
 })
 public class ApplicationConfigTest {
@@ -168,8 +171,8 @@ public class ApplicationConfigTest {
     public TestDataClient dbTestClient(JdbcTemplate jdbcTemplate, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres,
                                        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2,
                                        RegistreringRepositoryV2 registreringRepositoryV2, OpensearchTestClient opensearchTestClient,
-                                       OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlRepository pdlRepository) {
-        return new TestDataClient(jdbcTemplate, jdbcTemplatePostgres, registreringRepositoryV2, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlRepository);
+                                       OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository) {
+        return new TestDataClient(jdbcTemplate, jdbcTemplatePostgres, registreringRepositoryV2, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlIdentRepository);
     }
 
     @Bean
@@ -293,15 +296,14 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public PdlClient pdlClient() {
-        PdlClient pdlClient = mock(PdlClientImpl.class);
-        PdlIdentRespons pdlIdentRespons = new PdlIdentRespons();
-        pdlIdentRespons.setData(new PdlIdentRespons.HentIdenterResponseData()
-                .setHentIdenter(new PdlIdentRespons.HentIdenterResponseData.HentIdenterResponsData()
-                        .setIdenter(new ArrayList<>())
-                )
+    public PdlPortefoljeClient pdlClient() {
+        PdlPortefoljeClient pdlClient = mock(PdlPortefoljeClient.class);
+        when(pdlClient.hentIdenterFraPdl(any())).thenReturn(List.of());
+        when(pdlClient.hentBrukerDataFraPdl(any())).thenReturn(
+                new PDLPerson()
+                        .setFnr(Fnr.of("0"))
+                        .setKjonn(K)
         );
-        when(pdlClient.request(any(), any())).thenReturn(pdlIdentRespons);
         return pdlClient;
     }
 

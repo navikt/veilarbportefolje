@@ -13,8 +13,8 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlRepository;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -28,8 +28,8 @@ import java.util.List;
 import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE;
 import static no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER.FODSELSNR;
-import static no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent.Gruppe.AKTORID;
-import static no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
 
 public class TestDataClient {
@@ -40,9 +40,9 @@ public class TestDataClient {
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
     private final OpensearchTestClient opensearchTestClient;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-    private final PdlRepository pdlRepository;
+    private final PdlIdentRepository pdlIdentRepository;
 
-    public TestDataClient(JdbcTemplate jdbcTemplateOracle, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, RegistreringRepositoryV2 registreringRepositoryV2, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlRepository pdlRepository) {
+    public TestDataClient(JdbcTemplate jdbcTemplateOracle, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, RegistreringRepositoryV2 registreringRepositoryV2, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository) {
         this.jdbcTemplateOracle = jdbcTemplateOracle;
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.registreringRepositoryV2 = registreringRepositoryV2;
@@ -50,7 +50,7 @@ public class TestDataClient {
         this.arbeidslisteRepositoryV2 = arbeidslisteRepositoryV2;
         this.opensearchTestClient = opensearchTestClient;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
-        this.pdlRepository = pdlRepository;
+        this.pdlIdentRepository = pdlIdentRepository;
     }
 
     public void endreNavKontorForBruker(AktorId aktoerId, NavKontor navKontor) {
@@ -73,7 +73,7 @@ public class TestDataClient {
 
     public void setupBrukerMedArbeidsliste(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
         final Fnr fnr = TestDataUtils.randomFnr();
-        pdlRepository.upsertIdenter(List.of(
+        pdlIdentRepository.upsertIdenter(List.of(
                 new PDLIdent(aktoerId.get(), false, AKTORID),
                 new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
         ));
@@ -117,7 +117,7 @@ public class TestDataClient {
     }
 
     private void setupBruker(AktorId aktoerId, Fnr fnr, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
-        pdlRepository.upsertIdenter(List.of(
+        pdlIdentRepository.upsertIdenter(List.of(
                 new PDLIdent(aktoerId.get(), false, AKTORID),
                 new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
         ));

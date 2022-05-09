@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -21,7 +21,7 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class PdlRepository {
+public class PdlIdentRepository {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
@@ -64,7 +64,7 @@ public class PdlRepository {
     public List<PDLIdent> hentIdenter(String ident) {
         return db.queryForList("select * from bruker_identer where person = ?", ident)
                 .stream()
-                .map(PdlRepository::mapTilident)
+                .map(PdlIdentRepository::mapTilident)
                 .toList();
     }
 
