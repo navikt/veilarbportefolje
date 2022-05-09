@@ -34,7 +34,6 @@ import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukIkkeAvtalteMoter;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggPortefoljestorrelserQuery;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggStatusTallForEnhetQuery;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggStatusTallForVeilederQuery;
@@ -76,12 +75,11 @@ public class OpensearchService {
         }
 
         List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
-        boolean inkluderIkkeAvtalteAktiviteter = brukIkkeAvtalteMoter(unleashService);
 
         if (filtervalg.harAktiveFilter()) {
             boolean erVedtakstottePilotPa = erVedtakstottePilotPa(EnhetId.of(enhetId));
             filtervalg.ferdigfilterListe.forEach(
-                    filter -> boolQuery.filter(leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet, erVedtakstottePilotPa, inkluderIkkeAvtalteAktiviteter))
+                    filter -> boolQuery.filter(leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet, erVedtakstottePilotPa))
             );
 
             leggTilManuelleFilter(boolQuery, filtervalg);
@@ -95,7 +93,7 @@ public class OpensearchService {
             sorterPaaNyForEnhet(searchSourceBuilder, veiledereMedTilgangTilEnhet);
         }
 
-        sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg, inkluderIkkeAvtalteAktiviteter);
+        sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
         OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();
@@ -110,10 +108,9 @@ public class OpensearchService {
 
     public StatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
-        boolean inkluderIkkeAvtalteAktiviteter = brukIkkeAvtalteMoter(unleashService);
 
         SearchSourceBuilder request =
-                byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa, inkluderIkkeAvtalteAktiviteter);
+                byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
@@ -122,12 +119,11 @@ public class OpensearchService {
 
     public StatusTall hentStatusTallForEnhet(String enhetId) {
         List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
-        boolean inkluderIkkeAvtalteAktiviteter = brukIkkeAvtalteMoter(unleashService);
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
         SearchSourceBuilder request =
-                byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa, inkluderIkkeAvtalteAktiviteter);
+                byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
@@ -157,7 +153,7 @@ public class OpensearchService {
         if (filtervalg.harAktiviteterForenklet()) {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(filtervalg.aktiviteterForenklet);
         }
-        if(filtervalg.harAlleAktiviteterFilter()){
+        if (filtervalg.harAlleAktiviteterFilter()) {
             bruker.leggTilUtlopsdatoForAktiviteter(filtervalg.alleAktiviteter);
         }
         if (filtervalg.harAktivitetFilter()) {
