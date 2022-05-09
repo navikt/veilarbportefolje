@@ -1,10 +1,14 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -22,5 +26,10 @@ public class PdlPersonRepository {
                         """,
                 personData.getFnr().get(), personData.getFornavn(), personData.getEtternavn(), personData.getMellomnavn(),
                 personData.getKjonn().name(), personData.isErDoed(), personData.getFoedsel());
+    }
+
+    public void slettLagretBrukerData(List<PDLIdent> identer) {
+        String identerParam = identer.stream().map(PDLIdent::getIdent).collect(Collectors.joining(",", "{", "}"));
+        db.update("DELETE from bruker_data where fnr = any (?::varchar[])", identerParam);
     }
 }

@@ -240,8 +240,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public PlatformTransactionManager platformTransactionManager(DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
+    public PlatformTransactionManager platformTransactionManager(@Qualifier("Postgres") DataSource datasource) {
+        return new DataSourceTransactionManager(datasource);
     }
 
     @Bean
@@ -275,19 +275,24 @@ public class ApplicationConfigTest {
         return mock(SystemUserTokenProvider.class);
     }
 
+    @Bean("Postgres")
+    public DataSource dataSource() {
+        return SingletonPostgresContainer.init().createDataSource();
+    }
+
     @Bean(name = "PostgresJdbc")
-    public JdbcTemplate db() {
-        return SingletonPostgresContainer.init().createJdbcTemplate();
+    public JdbcTemplate db(@Qualifier("Postgres") DataSource datasource) {
+        return new JdbcTemplate(datasource);
     }
 
     @Bean("PostgresJdbcReadOnly")
-    public JdbcTemplate dbMockReadOnly() {
-        return db();
+    public JdbcTemplate dbMockReadOnly(@Qualifier("Postgres") DataSource datasource) {
+        return new JdbcTemplate(datasource);
     }
 
     @Bean(name = "PostgresNamedJdbcReadOnly")
-    public NamedParameterJdbcTemplate dbNamedMockReadOnly() {
-        return new NamedParameterJdbcTemplate(db());
+    public NamedParameterJdbcTemplate dbNamedMockReadOnly(@Qualifier("Postgres") DataSource datasource) {
+        return new NamedParameterJdbcTemplate(datasource);
     }
 
     @Bean

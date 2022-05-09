@@ -6,6 +6,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -37,7 +38,21 @@ public class PdlService {
         pdlPersonRepository.upsertPerson(personData);
     }
 
+    @Transactional
     public void slettPdlData(AktorId aktorId) {
-        pdlIdentRepository.slettLokalIdentlagringHvisIkkeUnderOppfolging(aktorId);
+        String lokalIdent = pdlIdentRepository.hentPerson(aktorId.get());
+        List<PDLIdent> identer = pdlIdentRepository.hentIdenter(lokalIdent);
+
+        if (pdlIdentRepository.harIdentUnderOppfolging(identer)) {
+            log.warn("""
+                            Sletter ikke identer tilknyttet aktorId: {}.
+                            Da en eller flere relaterte identer på person: {} er under oppfolging.
+                            """,
+                    aktorId, lokalIdent);
+            return;
+        }
+        log.info("Sletter identer og brukerdata for aktor: {}", aktorId);
+        pdlPersonRepository.slettLagretBrukerData(identer);
+        pdlIdentRepository.slettLagretePerson(lokalIdent);
     }
 }

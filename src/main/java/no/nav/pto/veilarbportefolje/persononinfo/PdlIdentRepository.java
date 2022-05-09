@@ -34,23 +34,6 @@ public class PdlIdentRepository {
         identer.forEach(ident -> insertIdent(nyLokalIdent, ident));
     }
 
-    @Transactional
-    public void slettLokalIdentlagringHvisIkkeUnderOppfolging(AktorId aktorId) {
-        String lokalIdent = hentPerson(aktorId.get());
-        List<PDLIdent> identer = hentIdenter(lokalIdent);
-
-        if (harIdentUnderOppfolging(identer)) {
-            log.warn("""
-                            Sletter ikke identer tilknyttet aktorId: {}.
-                            Da en eller flere relaterte identer på person: {} er under oppfolging.
-                            """,
-                    aktorId, lokalIdent);
-            return;
-        }
-        log.info("Sletter identer lagret på aktorId: {}, lokalIdent: {}.", aktorId, lokalIdent);
-        slettLagretePerson(lokalIdent);
-    }
-
     public boolean harIdentUnderOppfolging(List<PDLIdent> identer) {
         String identerParam = identer.stream().map(PDLIdent::getIdent).collect(Collectors.joining(",", "{", "}"));
         return Optional.ofNullable(
@@ -108,7 +91,7 @@ public class PdlIdentRepository {
                 person, ident.getIdent(), ident.isHistorisk(), ident.getGruppe().name());
     }
 
-    private void slettLagretePerson(String person) {
+    public void slettLagretePerson(String person) {
         log.info("Sletter lokal ident: {}", person);
         db.update("delete from bruker_identer where person = ?", person);
     }
