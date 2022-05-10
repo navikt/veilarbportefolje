@@ -80,7 +80,7 @@ public class BrukerRepositoryV2 {
     private final UnleashService unleashService;
 
     public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds) {
-        return  hentOppfolgingsBrukere(aktorIds, false);
+        return hentOppfolgingsBrukere(aktorIds, false);
     }
 
     public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds, boolean logdiff) {
@@ -90,15 +90,34 @@ public class BrukerRepositoryV2 {
                 "aktorIds",
                 aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"))
         );
-        return namedDb.query("""
-                        SELECT ad.*, ob.*, ns.er_skjermet, ai.fnr,
-                        bd.foedselsdato, bd.fornavn as fornavn_pdl, bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn
-                        from aktorid_indeksert_data ad
-                        inner join aktive_identer ai on ad.aktoerid = ai.aktorid
-                        left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
-                        left join nom_skjerming ns on ns.fodselsnr = ai.fnr
-                        left join bruker_data bd on bd.freg_ident = ai.fnr
-                        where aktoerid = ANY (:aktorIds::varchar[])
+        return namedDb.query(""" 
+                        select OD.AKTOERID, OD.OPPFOLGING,
+                               ob.*, ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
+                               bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
+                               OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  D.VENTER_PA_BRUKER,  D.VENTER_PA_NAV,
+                               V.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
+                               BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN, 
+                               YB.DAGPUTLOPUKE, YB.PERMUTLOPUKE, YB.UTLOPSDATO as YTELSE_UTLOPSDATO,
+                               V.ANSVARLIG_VEILDERNAVN          as VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN,
+                               V.ENDRET_TIDSPUNKT               as VEDTAKSTATUS_ENDRET_TIDSPUNKT,
+                               ARB.SIST_ENDRET_AV_VEILEDERIDENT as ARB_SIST_ENDRET_AV_VEILEDERIDENT,
+                               ARB.ENDRINGSTIDSPUNKT            as ARB_ENDRINGSTIDSPUNKT,
+                               ARB.OVERSKRIFT                   as ARB_OVERSKRIFT,
+                               ARB.FRIST                        as ARB_FRIST,
+                               ARB.KATEGORI                     as ARB_KATEGORI
+                        FROM OPPFOLGING_DATA OD
+                                inner join aktive_identer ai on OD.aktoerid = ai.aktorid
+                                 left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
+                                 left join nom_skjerming ns on ns.fodselsnr = ai.fnr
+                                 left join bruker_data bd on bd.freg_ident = ai.fnr
+                                 LEFT JOIN DIALOG D ON D.AKTOERID = ai.aktorid
+                                 LEFT JOIN VEDTAKSTATUS V on V.AKTOERID = ai.aktorid
+                                 LEFT JOIN ARBEIDSLISTE ARB on ARB.AKTOERID = ai.aktorid
+                                 LEFT JOIN BRUKER_PROFILERING BP ON BP.AKTOERID = ai.aktorid
+                                 LEFT JOIN BRUKER_CV CV on CV.AKTOERID = ai.aktorid
+                                 LEFT JOIN BRUKER_REGISTRERING BR on BR.AKTOERID = ai.aktorid
+                                 LEFT JOIN YTELSE_STATUS_FOR_BRUKER YB on YB.AKTOERID = ai.aktorid
+                                 where ai.aktorid = ANY (:aktorIds::varchar[])
                         """,
                 params, (ResultSet rs) -> {
                     while (rs.next()) {
@@ -110,7 +129,7 @@ public class BrukerRepositoryV2 {
 
     @SneakyThrows
     private OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean logDiff) {
-        if(logDiff){
+        if (logDiff) {
             logDiff(rs);
         }
         String formidlingsgruppekode = rs.getString(FORMIDLINGSGRUPPEKODE);
@@ -218,30 +237,30 @@ public class BrukerRepositoryV2 {
     }
 
     @SneakyThrows
-    private void logDiff(ResultSet rs){
+    private void logDiff(ResultSet rs) {
         Date foedsels_dato = rs.getDate("foedselsdato");
         String aktoerId = rs.getString(AKTOERID);
         String fnr = rs.getString(FODSELSNR);
-        if(foedsels_dato == null){
+        if (foedsels_dato == null) {
             log.info("Arena/PDL: Har ikke PDL data på aktoer: {}", aktoerId);
             return;
         }
-        if(isDifferent(rs.getString("fornavn_pdl"), rs.getString(FORNAVN))){
+        if (isDifferent(rs.getString("fornavn_pdl"), rs.getString(FORNAVN))) {
             log.info("Arena/PDL: fornavn feil bruker: {}", aktoerId);
         }
-        if(isDifferent(rs.getString("etternavn_pdl"), rs.getString(ETTERNAVN))){
+        if (isDifferent(rs.getString("etternavn_pdl"), rs.getString(ETTERNAVN))) {
             log.info("Arena/PDL: etternavn feil bruker: {}", aktoerId);
         }
-        if(isDifferent(rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED))){
+        if (isDifferent(rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED))) {
             log.info("Arena/PDL: er_doed_pdl feil bruker: {}, pdl: {}, arena: {}", aktoerId, rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED));
         }
-        if(isDifferent(rs.getString("kjoenn"), FodselsnummerUtils.lagKjonn(fnr))){
+        if (isDifferent(rs.getString("kjoenn"), FodselsnummerUtils.lagKjonn(fnr))) {
             log.info("Arena/PDL: kjønn feil bruker: {}", aktoerId);
         }
-        if(isDifferent(lagFodselsdato(foedsels_dato.toLocalDate()), lagFodselsdato(fnr))){
+        if (isDifferent(lagFodselsdato(foedsels_dato.toLocalDate()), lagFodselsdato(fnr))) {
             log.info("Arena/PDL: Fodselsdato feil bruker: {}", aktoerId);
         }
-        if(isDifferent(foedsels_dato.toLocalDate().getDayOfMonth(), Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))){
+        if (isDifferent(foedsels_dato.toLocalDate().getDayOfMonth(), Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))) {
             log.info("Arena/PDL: Fodselsdag_i_mnd feil bruker: {}", aktoerId);
         }
     }
