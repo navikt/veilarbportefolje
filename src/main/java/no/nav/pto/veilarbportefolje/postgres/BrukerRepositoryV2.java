@@ -144,7 +144,6 @@ public class BrukerRepositoryV2 {
                 .setOppfolging(rs.getBoolean(OPPFOLGING))
                 .setAktoer_id(rs.getString(AKTOERID))
                 .setOppfolging_startdato(toIsoUTC(rs.getTimestamp(STARTDATO)));
-        )
     }
     @SneakyThrows
     private OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean logDiff) {
