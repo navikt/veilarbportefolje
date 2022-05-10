@@ -91,6 +91,17 @@ public class BrukerRepositoryV2 {
                 aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"))
         );
         return namedDb.query(""" 
+                        select OD.AKTOERID, OD.OPPFOLGING, OD.startdato
+                        FROM OPPFOLGING_DATA OD
+                                inner join aktive_identer ai on OD.aktoerid = ai.aktorid
+                        """,
+                params, (ResultSet rs) -> {
+                    while (rs.next()) {
+                        result.add(mapTilOppfolgingsBrukerTest(rs, logdiff));
+                    }
+                    return result;
+                });
+                /*namedDb.query("""
                         select OD.AKTOERID, OD.OPPFOLGING,
                                ob.*, ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
@@ -124,9 +135,17 @@ public class BrukerRepositoryV2 {
                         result.add(mapTilOppfolgingsBruker(rs, logdiff));
                     }
                     return result;
-                });
+                });*/
     }
 
+    @SneakyThrows
+    private OppfolgingsBruker mapTilOppfolgingsBrukerTest(ResultSet rs, boolean logDiff) {
+        return new OppfolgingsBruker()
+                .setOppfolging(rs.getBoolean(OPPFOLGING))
+                .setAktoer_id(rs.getString(AKTOERID))
+                .setOppfolging_startdato(toIsoUTC(rs.getTimestamp(STARTDATO)));
+        )
+    }
     @SneakyThrows
     private OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean logDiff) {
         if (logDiff) {
