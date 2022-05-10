@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.AAPMAXTIDUKE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.AAPUNNTAKDAGERIGJEN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.AKTOERID;
@@ -67,6 +69,7 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.YTELSE_UTLOPSDATO;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.FodselsnummerUtils.lagFodselsdato;
 
 @Slf4j
 @Repository
@@ -90,14 +93,16 @@ public class BrukerRepositoryV2 {
 
         var params = new MapSqlParameterSource(
                 "aktorIds",
-                aktorIds.stream().map(AktorId::get) .collect(Collectors.joining(",", "{", "}"))
+                aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"))
         );
         return namedDb.query("""
-                        SELECT ad.*, ob.*, ns.er_skjermet, ai.fnr
+                        SELECT ad.*, ob.*, ns.er_skjermet, ai.fnr,
+                        bd.foedsels_dato, bd.fornavn as fornavn_pdl, bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn
                         from aktorid_indeksert_data ad
                         inner join aktive_identer ai on ad.aktoerid = ai.aktorid
                         inner join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
                         left join nom_skjerming ns on ns.fodselsnr = ai.fnr
+                        left join bruker_data bd on bd.fnr = ai.fnr
                         where aktoerid = ANY (:aktorIds::varchar[])
                         """,
                 params, (ResultSet rs) -> {
@@ -114,8 +119,6 @@ public class BrukerRepositoryV2 {
         String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
 
         String fnr = rs.getString(FODSELSNR);
-        String fornavn = rs.getString(FORNAVN);
-        String etternavn = rs.getString(ETTERNAVN);
         String vedtakstatus = rs.getString(VEDTAKSTATUS);
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setFnr(fnr)
@@ -147,10 +150,7 @@ public class BrukerRepositoryV2 {
                 .setDagputlopuke(rs.getObject(DAGPUTLOPUKE, Integer.class))
                 .setPermutlopuke(rs.getObject(PERMUTLOPUKE, Integer.class))
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
-                .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)))
-                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
-                .setFodselsdato(FodselsnummerUtils.lagFodselsdato(fnr))
-                .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
+                .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)));
 
         if (brukNOMSkjerming(unleashService)) {
             bruker.setEgen_ansatt(rs.getBoolean(ER_SKJERMET));
@@ -179,18 +179,42 @@ public class BrukerRepositoryV2 {
             bruker.setArbeidsliste_aktiv(false);
         }
 
+        Date foedsels_dato = rs.getDate("foedsels_dato");
+        if (brukPDLBrukerdata(unleashService) && foedsels_dato != null) {
+            String fornavn = rs.getString("fornavn_pdl");
+            String etternavn = rs.getString("etternavn_pdl");
+            bruker
+                    .setFornavn(fornavn)
+                    .setEtternavn(etternavn)
+                    .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
+                    .setEr_doed(rs.getBoolean("er_doed_pdl"))
+                    .setFodselsdag_i_mnd(foedsels_dato.toLocalDate().getDayOfMonth())
+                    .setFodselsdato(lagFodselsdato(foedsels_dato.toLocalDate()))
+                    .setKjonn(rs.getString("kjoenn"));
+        } else {
+            if(foedsels_dato == null){
+                log.info("Har ikke PDL data på aktoer: {}", rs.getString(AKTOERID));
+            }
+            String fornavn = rs.getString(FORNAVN);
+            String etternavn = rs.getString(ETTERNAVN);
+            bruker
+                    .setFornavn(fornavn)
+                    .setEtternavn(etternavn)
+                    .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
+                    .setEr_doed(rs.getBoolean(ER_DOED))
+                    .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
+                    .setFodselsdato(lagFodselsdato(fnr))
+                    .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
+        }
+
         // ARENA DB LENKE: skal fjernes på sikt
         return bruker
-                .setFornavn(fornavn)
-                .setEtternavn(etternavn)
-                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
                 .setEnhet_id(rs.getString(NAV_KONTOR))
                 .setIserv_fra_dato(toIsoUTC(rs.getTimestamp(ISERV_FRA_DATO)))
                 .setRettighetsgruppekode(rs.getString(RETTIGHETSGRUPPEKODE))
                 .setHovedmaalkode(rs.getString(HOVEDMAALKODE))
                 .setSikkerhetstiltak(rs.getString(SIKKERHETSTILTAK_TYPE_KODE))
                 .setDiskresjonskode(rs.getString(DISKRESJONSKODE))
-                .setEr_doed(rs.getBoolean(ER_DOED))
                 .setFormidlingsgruppekode(formidlingsgruppekode)
                 .setKvalifiseringsgruppekode(kvalifiseringsgruppekode)
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))

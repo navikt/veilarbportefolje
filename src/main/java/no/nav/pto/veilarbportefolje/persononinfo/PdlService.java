@@ -18,7 +18,6 @@ public class PdlService {
     private final PdlPersonRepository pdlPersonRepository;
     private final PdlPortefoljeClient pdlClient;
 
-
     public void hentOgLagrePdlData(AktorId aktorId){
         hentOgLagreIdenter(aktorId);
         hentOgLagreBrukerData(aktorId);

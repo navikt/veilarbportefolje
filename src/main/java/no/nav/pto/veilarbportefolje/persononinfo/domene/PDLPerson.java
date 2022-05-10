@@ -43,10 +43,10 @@ public class PDLPerson {
         var fodselsListe = response.getData().getHentPerson().getFoedsel();
         if (fodselsListe.size() > 1) {
             throw new IllegalStateException("Støtte for flere registrerte fødseler er ikke implentert");
-        } else if (fodselsListe.isEmpty()) {
-            throw new IllegalStateException("Støtte for ingen registrert fødsel er ikke implentert");
         }
-        return fodselsListe.get(0).getFoedselsdato();
+        return fodselsListe.stream().findFirst()
+                .orElseThrow(() -> new IllegalStateException("Støtte for ingen registrert fødsel er ikke implentert"))
+                .getFoedselsdato();
 
     }
 
@@ -54,16 +54,17 @@ public class PDLPerson {
         var kjonnListe = response.getData().getHentPerson().getKjoenn();
         if (kjonnListe.size() > 1) {
             throw new IllegalStateException("Støtte for flere kjønn er ikke implentert");
-        } else if (kjonnListe.isEmpty()) {
-            throw new IllegalStateException("Støtte for ingen kjønn er ikke implentert");
         }
-        var kjonn = kjonnListe.get(0).getKjoenn();
+        var kjonn = kjonnListe.stream().findFirst()
+                .orElseThrow(() -> new IllegalStateException("Støtte for ingen kjønn er ikke implentert"))
+                .getKjoenn();
+
         if ("KVINNE".equals(kjonn)) {
             return Kjonn.K;
         } else if ("MANN".equals(kjonn)) {
             return Kjonn.M;
         }
-        log.error("Ikke implementert støtte for kjønn:{} ", kjonn);
+        log.error("Ikke implementert støtte for kjønn: {} ", kjonn);
         throw new IllegalStateException("Fant kjønn som ikke er støttet");
     }
 
@@ -71,19 +72,18 @@ public class PDLPerson {
         var fnrListe = response.getData().getHentPerson().getFolkeregisteridentifikator();
         if (fnrListe.size() > 1) {
             throw new IllegalStateException("Flere enn en aktiv ident på bruker");
-        } else if (fnrListe.isEmpty()) {
-            throw new IllegalStateException("Ingen ident på bruker");
         }
-        return Fnr.of(fnrListe.get(0).getIdentifikasjonsnummer());
+        return Fnr.of(fnrListe.stream().findFirst()
+                .orElseThrow(() -> new IllegalStateException("Ingen ident på bruker"))
+                .getIdentifikasjonsnummer());
     }
 
     private static PdlPersonResponse.PdlPersonResponseData.Navn kontrollerResponseOgHentNavn(PdlPersonResponse response) {
         var navnListe = response.getData().getHentPerson().getFolkeregisteridentifikator();
         if (navnListe.size() > 1) {
             throw new IllegalStateException("Flere enn en aktivt navn på bruker");
-        } else if (navnListe.isEmpty()) {
-            throw new IllegalStateException("Ingen navn på bruker");
         }
-        return response.getData().getHentPerson().getNavn().get(0);
+        return response.getData().getHentPerson().getNavn().stream().findFirst()
+                .orElseThrow(() -> new IllegalStateException("Ingen navn på bruker"));
     }
 }

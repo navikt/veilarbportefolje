@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.database.Table;
+import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -14,7 +15,9 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -22,6 +25,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -41,8 +45,9 @@ public class TestDataClient {
     private final OpensearchTestClient opensearchTestClient;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final PdlIdentRepository pdlIdentRepository;
+    private final PdlPersonRepository pdlPersonRepository;
 
-    public TestDataClient(JdbcTemplate jdbcTemplateOracle, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, RegistreringRepositoryV2 registreringRepositoryV2, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository) {
+    public TestDataClient(JdbcTemplate jdbcTemplateOracle, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, RegistreringRepositoryV2 registreringRepositoryV2, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository) {
         this.jdbcTemplateOracle = jdbcTemplateOracle;
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.registreringRepositoryV2 = registreringRepositoryV2;
@@ -51,6 +56,7 @@ public class TestDataClient {
         this.opensearchTestClient = opensearchTestClient;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.pdlIdentRepository = pdlIdentRepository;
+        this.pdlPersonRepository = pdlPersonRepository;
     }
 
     public void endreNavKontorForBruker(AktorId aktoerId, NavKontor navKontor) {
@@ -121,6 +127,7 @@ public class TestDataClient {
                 new PDLIdent(aktoerId.get(), false, AKTORID),
                 new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
         ));
+        pdlPersonRepository.upsertPerson(new PDLPerson().setFnr(fnr).setFoedsel(LocalDate.now()).setKjonn(Kjonn.K));
         oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato);
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
         registreringRepositoryV2.upsertBrukerRegistrering(new ArbeidssokerRegistrertEvent(aktoerId.get(), null, null, null, null, null));

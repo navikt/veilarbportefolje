@@ -49,5 +49,4 @@ public class PdlPortefoljeClient {
     private static <T> boolean hasErrors(GraphqlResponse<T> response) {
         return response == null || (response.getErrors() != null && !response.getErrors().isEmpty());
     }
-
 }
