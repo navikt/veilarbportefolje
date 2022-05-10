@@ -173,8 +173,8 @@ public class AdminController {
         return opensearchAdminService.forceShardAssignment();
     }
 
-    @PostMapping("/test/postgresIndeksering")
-    public void lastInnPDLBrukerData() {
+    @PostMapping("/pdl/lastInnDataFraPdl")
+    public String lastInnPDLBrukerData() {
         authorizeAdmin();
         AtomicInteger antall = new AtomicInteger(0);
         List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
@@ -189,6 +189,7 @@ public class AdminController {
             }
         });
         log.info("pdl brukerdata: ferdig med innlastning");
+        return "ferdig";
     }
 
     @PostMapping("/test/postgresIndeksering")
