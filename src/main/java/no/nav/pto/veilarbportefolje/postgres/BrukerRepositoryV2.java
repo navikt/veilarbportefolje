@@ -94,6 +94,7 @@ public class BrukerRepositoryV2 {
                         select OD.AKTOERID, OD.OPPFOLGING, OD.startdato
                         FROM OPPFOLGING_DATA OD
                                 inner join aktive_identer ai on OD.aktoerid = ai.aktorid
+                        where ai.aktorid = ANY (:aktorIds::varchar[])
                         """,
                 params, (ResultSet rs) -> {
                     while (rs.next()) {
