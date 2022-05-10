@@ -79,11 +79,6 @@ public class BrukerRepositoryV2 {
     private final NamedParameterJdbcTemplate namedDb;
     private final UnleashService unleashService;
 
-    public OppfolgingsBruker hentOppfolgingsBruker(AktorId aktorId) {
-        return hentOppfolgingsBrukere(List.of(aktorId))
-                .stream().findAny().orElse(null);
-    }
-
     public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds) {
         return  hentOppfolgingsBrukere(aktorIds, false);
     }

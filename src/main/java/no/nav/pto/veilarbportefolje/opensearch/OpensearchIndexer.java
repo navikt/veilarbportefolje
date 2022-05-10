@@ -5,10 +5,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
+import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
+import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import org.opensearch.action.ActionListener;
@@ -45,17 +49,32 @@ public class OpensearchIndexer {
     private final RestHighLevelClient restHighLevelClient;
     private final BrukerRepository brukerRepository;
     private final BrukerRepositoryV2 brukerRepositoryV2;
+    private final BrukerServiceV2 brukerServiceV2;
     private final IndexName alias;
     private final UnleashService unleashService;
     private final SisteEndringRepository sisteEndringRepository;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
     public boolean indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;
         if (brukOppfolgingsbrukerPaPostgres(unleashService)) {
-            bruker = Optional.ofNullable(brukerRepositoryV2.hentOppfolgingsBruker(aktoerId));
-            log.info("debug: bruker er null: {}", bruker.isEmpty());
+            var brukerliste = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId));
+            bruker = brukerliste.stream().findAny();
+            log.info("debug: bruker er null: {}, brukerliste: {}", bruker.isEmpty(), brukerliste.size());
+            if(bruker.isEmpty()){
+                Optional<BrukerOppdatertInformasjon> oppdatertInformasjon = oppfolgingRepositoryV2.hentOppfolgingData(aktoerId);
+                boolean b = oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId);
+                if(oppdatertInformasjon.isPresent()){
+                    log.info("debug opp: {}, start: {}",oppdatertInformasjon.get().getOppfolging(), oppdatertInformasjon.get().getStartDato());
+                    log.info("debug aktiv ident: {}", b);
+                    Optional<Fnr> fnr = brukerServiceV2.hentFnr(aktoerId);
+                    log.info("debug her fnr: {}", fnr.isPresent());
+                }else{
+                    log.info("debug: ikke opp data");
+                }
+            }
         } else {
             bruker = brukerRepository.hentBrukerFraView(aktoerId);
         }
