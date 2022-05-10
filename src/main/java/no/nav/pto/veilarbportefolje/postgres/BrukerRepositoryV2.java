@@ -10,8 +10,7 @@ import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
@@ -75,8 +74,8 @@ import static no.nav.pto.veilarbportefolje.util.FodselsnummerUtils.lagFodselsdat
 @Repository
 @RequiredArgsConstructor
 public class BrukerRepositoryV2 {
-    @Qualifier("PostgresNamedJdbcReadOnly")
-    private final NamedParameterJdbcTemplate namedDb;
+    @Qualifier("PostgresJdbc")
+    private final JdbcTemplate db;
     private final UnleashService unleashService;
 
     public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds) {
@@ -86,29 +85,14 @@ public class BrukerRepositoryV2 {
     public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds, boolean logdiff) {
         List<OppfolgingsBruker> result = new ArrayList<>();
 
-        var params = new MapSqlParameterSource(
-                "aktorIds",
-                aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"))
-        );
-        return namedDb.query(""" 
-                        select OD.AKTOERID, OD.OPPFOLGING, OD.startdato
-                        FROM OPPFOLGING_DATA OD
-                                inner join aktive_identer ai on OD.aktoerid = ai.aktorid
-                        where ai.aktorid = ANY (:aktorIds::varchar[])
-                        """,
-                params, (ResultSet rs) -> {
-                    while (rs.next()) {
-                        result.add(mapTilOppfolgingsBrukerTest(rs, logdiff));
-                    }
-                    return result;
-                });
-                /*namedDb.query("""
-                        select OD.AKTOERID, OD.OPPFOLGING,
-                               ob.*, ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
+        var params = aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
+        return db.query("""
+                        select OD.AKTOERID, OD.OPPFOLGING, ob.*,
+                               ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  D.VENTER_PA_BRUKER,  D.VENTER_PA_NAV,
                                V.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
-                               BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN, 
+                               BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
                                YB.DAGPUTLOPUKE, YB.PERMUTLOPUKE, YB.UTLOPSDATO as YTELSE_UTLOPSDATO,
                                V.ANSVARLIG_VEILDERNAVN          as VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN,
                                V.ENDRET_TIDSPUNKT               as VEDTAKSTATUS_ENDRET_TIDSPUNKT,
@@ -129,23 +113,16 @@ public class BrukerRepositoryV2 {
                                  LEFT JOIN BRUKER_CV CV on CV.AKTOERID = ai.aktorid
                                  LEFT JOIN BRUKER_REGISTRERING BR on BR.AKTOERID = ai.aktorid
                                  LEFT JOIN YTELSE_STATUS_FOR_BRUKER YB on YB.AKTOERID = ai.aktorid
-                                 where ai.aktorid = ANY (:aktorIds::varchar[])
+                                 where ai.aktorid = ANY (?::varchar[])
                         """,
-                params, (ResultSet rs) -> {
+                (ResultSet rs) -> {
                     while (rs.next()) {
                         result.add(mapTilOppfolgingsBruker(rs, logdiff));
                     }
                     return result;
-                });*/
+                }, params);
     }
 
-    @SneakyThrows
-    private OppfolgingsBruker mapTilOppfolgingsBrukerTest(ResultSet rs, boolean logDiff) {
-        return new OppfolgingsBruker()
-                .setOppfolging(rs.getBoolean(OPPFOLGING))
-                .setAktoer_id(rs.getString(AKTOERID))
-                .setOppfolging_startdato(toIsoUTC(rs.getTimestamp(STARTDATO)));
-    }
     @SneakyThrows
     private OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean logDiff) {
         if (logDiff) {
