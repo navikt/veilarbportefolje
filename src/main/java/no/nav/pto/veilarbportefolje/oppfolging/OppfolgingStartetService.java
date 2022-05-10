@@ -29,14 +29,15 @@ public class OppfolgingStartetService {
     private final PdlService pdlService;
 
     public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate) {
-        mapAktoerTilPersonId(aktorId);
+        // NB: legg tilbake før prod!!!
+        //mapAktoerTilPersonId(aktorId);
 
         pdlService.hentOgLagrePdlData(aktorId);
 
         oppfolgingRepository.settUnderOppfolging(aktorId, oppfolgingStartetDate);
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
-        opensearchIndexer.indekser(aktorId);
-        log.info("Bruker {} har startet oppfølging: {}", aktorId, oppfolgingStartetDate);
+        boolean bleIndeksert = opensearchIndexer.indekser(aktorId);
+        log.info("Bruker {} har startet oppfølging: {}, ble indekserint: {}", aktorId, oppfolgingStartetDate, bleIndeksert);
     }
 
     private void mapAktoerTilPersonId(AktorId aktorId) {

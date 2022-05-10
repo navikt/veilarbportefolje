@@ -51,17 +51,18 @@ public class OpensearchIndexer {
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
-    public void indekser(AktorId aktoerId) {
+    public boolean indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;
         if (brukOppfolgingsbrukerPaPostgres(unleashService)) {
             bruker = Optional.ofNullable(brukerRepositoryV2.hentOppfolgingsBruker(aktoerId));
+            log.info("debug: bruker er null: {}", bruker.isEmpty());
         } else {
             bruker = brukerRepository.hentBrukerFraView(aktoerId);
         }
-        bruker.ifPresent(this::indekserBruker);
+        return bruker.map(this::indekserBruker).orElse(false);
     }
 
-    private void indekserBruker(OppfolgingsBruker bruker) {
+    private boolean indekserBruker(OppfolgingsBruker bruker) {
         if (erUnderOppfolging(bruker)) {
             if (!brukOppfolgingsbrukerPaPostgres(unleashService)) {
                 postgresOpensearchMapper.flettInnPostgresData(List.of(bruker));
@@ -69,9 +70,10 @@ public class OpensearchIndexer {
             postgresOpensearchMapper.flettInnAktivitetsData(List.of(bruker));
             leggTilSisteEndring(bruker);
             syncronIndekseringsRequest(bruker);
-        } else {
-            opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
+            return true;
         }
+        opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
+        return false;
     }
 
     @SneakyThrows

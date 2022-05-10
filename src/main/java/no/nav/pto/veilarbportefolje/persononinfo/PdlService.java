@@ -24,7 +24,7 @@ public class PdlService {
     }
 
     public void hentOgLagreBrukerData(AktorId aktorId) {
-        log.info("Oppdaterer ident mapping for aktor: {}", aktorId);
+        log.info("Oppdaterer pdl brukerdata for aktor: {}", aktorId);
 
         PDLPerson personData = pdlClient.hentBrukerDataFraPdl(aktorId);
         pdlPersonRepository.upsertPerson(personData);

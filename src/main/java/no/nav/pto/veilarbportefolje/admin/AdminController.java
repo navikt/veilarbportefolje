@@ -180,7 +180,7 @@ public class AdminController {
         List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
         brukereUnderOppfolging.forEach(bruker -> {
             if (antall.getAndAdd(1) % 100 == 0) {
-                log.info("pdl brukerdata: inlastning {}% ferdig", (antall.get() / brukereUnderOppfolging.size()) * 100.0);
+                log.info("pdl brukerdata: inlastning {}% ferdig", ((double) antall.get() / (double) brukereUnderOppfolging.size()) * 100.0);
             }
             try {
                 pdlService.hentOgLagreBrukerData(bruker);
