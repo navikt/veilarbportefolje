@@ -6,6 +6,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -13,6 +14,7 @@ import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static java.util.Optional.empty;
@@ -35,11 +37,14 @@ public class ArbeidslistaSorteringOpensearch extends EndToEndTest {
 
     @Test
     public void sisteendring_sortering() {
-        EnhetId enhetId = EnhetId.of("123");
+        NavKontor enhetId = NavKontor.of("123");
         VeilederId veilederId = new VeilederId("V1");
         final AktorId aktoerId_1 = randomAktorId();
         final AktorId aktoerId_2 = randomAktorId();
         final AktorId aktoerId_3 = randomAktorId();
+        testDataClient.setupBruker(aktoerId_1,enhetId, veilederId, ZonedDateTime.now());
+        testDataClient.setupBruker(aktoerId_2,enhetId, veilederId, ZonedDateTime.now());
+        testDataClient.setupBruker(aktoerId_3,enhetId, veilederId, ZonedDateTime.now());
         populateOpensearch(enhetId, veilederId, aktoerId_1.get(), aktoerId_2.get(), aktoerId_3.get());
         Arbeidsliste.Kategori arbeidsliste1_kategori = GRONN;
         Arbeidsliste.Kategori arbeidsliste2_kategori = BLA;
@@ -69,7 +74,7 @@ public class ArbeidslistaSorteringOpensearch extends EndToEndTest {
 
         pollOpensearchUntil(() -> {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
-                    enhetId.get(),
+                    enhetId.getValue(),
                     empty(),
                     "ascending",
                     "ikke_satt",
@@ -81,7 +86,7 @@ public class ArbeidslistaSorteringOpensearch extends EndToEndTest {
         });
 
         var sortertResponsAscending = opensearchService.hentBrukere(
-                enhetId.get(),
+                enhetId.getValue(),
                 empty(),
                 "ascending",
                 "arbeidsliste_overskrift",
@@ -90,7 +95,7 @@ public class ArbeidslistaSorteringOpensearch extends EndToEndTest {
                 null);
 
         var sortertResponsDescending = opensearchService.hentBrukere(
-                enhetId.get(),
+                enhetId.getValue(),
                 empty(),
                 "desc",
                 "arbeidsliste_overskrift",

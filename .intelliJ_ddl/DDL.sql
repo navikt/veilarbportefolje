@@ -218,13 +218,13 @@ CREATE VIEW public.aktorid_indeksert_data AS
 --
 
 CREATE TABLE public.bruker_data (
-    fnr character varying(30) NOT NULL,
+    freg_ident character varying(30) NOT NULL,
     fornavn character varying(90),
-    etternavn character varying(90),
     mellomnavn character varying(90),
-    kjoenn character varying(10),
+    etternavn character varying(90),
+    kjoenn character varying(5),
     er_doed boolean,
-    foedsels_dato date
+    foedselsdato date
 );
 
 
@@ -475,7 +475,7 @@ ALTER TABLE ONLY public.bruker_cv
 --
 
 ALTER TABLE ONLY public.bruker_data
-    ADD CONSTRAINT bruker_data_pkey PRIMARY KEY (fnr);
+    ADD CONSTRAINT bruker_data_pkey PRIMARY KEY (freg_ident);
 
 
 --

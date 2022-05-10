@@ -251,8 +251,8 @@ public class OpensearchIndexerV2 {
     }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
-        if (!oppfolgingRepositoryV2.erUnderOppfolging(aktoerId)) {
-            log.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging: {}, med info {}", aktoerId, logInfo);
+        if (!oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId)) {
+            log.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging, heler ikke for historiske identer: {}, med info {}", aktoerId, logInfo);
             return;
         }
         UpdateRequest updateRequest = new UpdateRequest();
@@ -266,9 +266,9 @@ public class OpensearchIndexerV2 {
             log.info("Oppdaterte dokument for bruker {} med info {}", aktoerId, logInfo);
         } catch (OpenSearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
-                log.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId.toString());
+                log.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId);
             } else {
-                final String message = format("Det skjedde en feil ved oppdatering av opensearch for bruker %s", aktoerId.toString());
+                final String message = format("Det skjedde en feil ved oppdatering av opensearch for bruker %s", aktoerId);
                 log.error(message, e);
             }
         }

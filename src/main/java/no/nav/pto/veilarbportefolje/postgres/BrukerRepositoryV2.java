@@ -97,12 +97,12 @@ public class BrukerRepositoryV2 {
         );
         return namedDb.query("""
                         SELECT ad.*, ob.*, ns.er_skjermet, ai.fnr,
-                        bd.foedsels_dato, bd.fornavn as fornavn_pdl, bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn
+                        bd.foedselsdato, bd.fornavn as fornavn_pdl, bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn
                         from aktorid_indeksert_data ad
                         inner join aktive_identer ai on ad.aktoerid = ai.aktorid
                         left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
                         left join nom_skjerming ns on ns.fodselsnr = ai.fnr
-                        left join bruker_data bd on bd.fnr = ai.fnr
+                        left join bruker_data bd on bd.freg_ident = ai.fnr
                         where aktoerid = ANY (:aktorIds::varchar[])
                         """,
                 params, (ResultSet rs) -> {
@@ -182,7 +182,7 @@ public class BrukerRepositoryV2 {
             bruker.setArbeidsliste_aktiv(false);
         }
 
-        Date foedsels_dato = rs.getDate("foedsels_dato");
+        Date foedsels_dato = rs.getDate("foedselsdato");
         if (brukPDLBrukerdata(unleashService) && foedsels_dato != null) {
             String fornavn = rs.getString("fornavn_pdl");
             String etternavn = rs.getString("etternavn_pdl");
@@ -224,7 +224,7 @@ public class BrukerRepositoryV2 {
 
     @SneakyThrows
     private void logDiff(ResultSet rs){
-        Date foedsels_dato = rs.getDate("foedsels_dato");
+        Date foedsels_dato = rs.getDate("foedselsdato");
         String aktoerId = rs.getString(AKTOERID);
         String fnr = rs.getString(FODSELSNR);
         if(foedsels_dato == null){

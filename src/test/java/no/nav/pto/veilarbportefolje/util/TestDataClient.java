@@ -118,8 +118,8 @@ public class TestDataClient {
         setupBruker(aktoerId, fnr, NavKontor.of(navKontor), veilederId, ZonedDateTime.now());
     }
 
-    public boolean hentOppfolgingFlaggFraDatabase(AktorId aktoerId) {
-        return oppfolgingRepositoryV2.erUnderOppfolging(aktoerId);
+    public boolean hentUnderOppfolgingOgAktivIdent(AktorId aktoerId) {
+        return oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId);
     }
 
     private void setupBruker(AktorId aktoerId, Fnr fnr, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
@@ -136,7 +136,6 @@ public class TestDataClient {
                         null, null, navKontor.getValue(), null, null,
                         null, null, null, false,
                         false, ZonedDateTime.now()));
-
         opensearchTestClient.createUserInOpensearch(aktoerId);
     }
 

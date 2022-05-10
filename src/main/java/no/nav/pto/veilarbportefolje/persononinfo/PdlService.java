@@ -23,18 +23,18 @@ public class PdlService {
         hentOgLagreBrukerData(aktorId);
     }
 
+    public void hentOgLagreBrukerData(AktorId aktorId) {
+        log.info("Oppdaterer ident mapping for aktor: {}", aktorId);
+
+        PDLPerson personData = pdlClient.hentBrukerDataFraPdl(aktorId);
+        pdlPersonRepository.upsertPerson(personData);
+    }
+
     private void hentOgLagreIdenter(AktorId aktorId) {
         log.info("Oppdaterer ident mapping for aktor: {}", aktorId);
 
         List<PDLIdent> idents = pdlClient.hentIdenterFraPdl(aktorId);
         pdlIdentRepository.upsertIdenter(idents);
-    }
-
-    private void hentOgLagreBrukerData(AktorId aktorId) {
-        log.info("Oppdaterer ident mapping for aktor: {}", aktorId);
-
-        PDLPerson personData = pdlClient.hentBrukerDataFraPdl(aktorId);
-        pdlPersonRepository.upsertPerson(personData);
     }
 
     @Transactional

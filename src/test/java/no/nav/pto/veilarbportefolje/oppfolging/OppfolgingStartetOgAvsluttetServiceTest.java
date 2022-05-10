@@ -93,7 +93,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         List<String> registrering = jdbcTemplate.query("select * from bruker_registrering where aktoerid = ?", (r, i) -> r.getString("aktoerid"), aktoerId.get());
 
         assertThat(registrering.size()).isEqualTo(0);
-        assertThat(testDataClient.hentOppfolgingFlaggFraDatabase(aktoerId)).isFalse();
+        assertThat(testDataClient.hentUnderOppfolgingOgAktivIdent(aktoerId)).isFalse();
         Map<String, Object> source = opensearchTestClient.fetchDocument(aktoerId).getSourceAsMap();
         assertThat(source).isNull();
     }
