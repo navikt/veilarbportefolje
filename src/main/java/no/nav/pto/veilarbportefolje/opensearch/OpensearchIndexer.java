@@ -195,14 +195,7 @@ public class OpensearchIndexer {
 
     public void dryrunAvPostgresTilOpensearchMapping(List<AktorId> brukereUnderOppfolging) {
         partition(brukereUnderOppfolging, BATCH_SIZE).forEach(bolk -> {
-            List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(bolk).stream()
-                    .filter(bruker -> bruker.getAktoer_id() != null)
-                    .toList();
-            postgresOpensearchMapper.flettInnPostgresData(brukere);
-            brukere.forEach( oracleBruker -> {
-                OppfolgingsBruker postgres = brukerRepositoryV2.hentOppfolgingsBruker(AktorId.of(oracleBruker.getAktoer_id()));
-                postgresOpensearchMapper.loggDiff(oracleBruker, postgres);
-            });
+            brukerRepositoryV2.hentOppfolgingsBrukere(bolk, true);
         });
     }
 }

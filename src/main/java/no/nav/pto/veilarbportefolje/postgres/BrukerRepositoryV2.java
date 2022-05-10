@@ -84,11 +84,11 @@ public class BrukerRepositoryV2 {
                 .stream().findAny().orElse(null);
     }
 
-    /*
-    NOTE: hvis oppfolgingsbruker_arena_v2 ikke lenger er kritisk
-    Bytt ut inner join med left join
-     */
     public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds) {
+        return  hentOppfolgingsBrukere(aktorIds, false);
+    }
+
+    public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds, boolean logdiff) {
         List<OppfolgingsBruker> result = new ArrayList<>();
 
         var params = new MapSqlParameterSource(
@@ -100,21 +100,24 @@ public class BrukerRepositoryV2 {
                         bd.foedsels_dato, bd.fornavn as fornavn_pdl, bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn
                         from aktorid_indeksert_data ad
                         inner join aktive_identer ai on ad.aktoerid = ai.aktorid
-                        inner join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
+                        left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
                         left join nom_skjerming ns on ns.fodselsnr = ai.fnr
                         left join bruker_data bd on bd.fnr = ai.fnr
                         where aktoerid = ANY (:aktorIds::varchar[])
                         """,
                 params, (ResultSet rs) -> {
                     while (rs.next()) {
-                        result.add(mapTilOppfolgingsBruker(rs));
+                        result.add(mapTilOppfolgingsBruker(rs, logdiff));
                     }
                     return result;
                 });
     }
 
     @SneakyThrows
-    private OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
+    private OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean logDiff) {
+        if(logDiff){
+            logDiff(rs);
+        }
         String formidlingsgruppekode = rs.getString(FORMIDLINGSGRUPPEKODE);
         String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
 
@@ -192,9 +195,6 @@ public class BrukerRepositoryV2 {
                     .setFodselsdato(lagFodselsdato(foedsels_dato.toLocalDate()))
                     .setKjonn(rs.getString("kjoenn"));
         } else {
-            if(foedsels_dato == null){
-                log.info("Har ikke PDL data på aktoer: {}", rs.getString(AKTOERID));
-            }
             String fornavn = rs.getString(FORNAVN);
             String etternavn = rs.getString(ETTERNAVN);
             bruker
@@ -220,5 +220,43 @@ public class BrukerRepositoryV2 {
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus));
+    }
+
+    @SneakyThrows
+    private void logDiff(ResultSet rs){
+        Date foedsels_dato = rs.getDate("foedsels_dato");
+        String aktoerId = rs.getString(AKTOERID);
+        String fnr = rs.getString(FODSELSNR);
+        if(foedsels_dato == null){
+            log.info("Arena/PDL: Har ikke PDL data på aktoer: {}", aktoerId);
+            return;
+        }
+        if(isDifferent(rs.getString("fornavn_pdl"), rs.getString(FORNAVN))){
+            log.info("Arena/PDL: fornavn feil bruker: {}", aktoerId);
+        }
+        if(isDifferent(rs.getString("etternavn_pdl"), rs.getString(ETTERNAVN))){
+            log.info("Arena/PDL: etternavn feil bruker: {}", aktoerId);
+        }
+        if(isDifferent(rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED))){
+            log.info("Arena/PDL: er_doed_pdl feil bruker: {}, pdl: {}, arena: {}", aktoerId, rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED));
+        }
+        if(isDifferent(rs.getString("kjoenn"), FodselsnummerUtils.lagKjonn(fnr))){
+            log.info("Arena/PDL: kjønn feil bruker: {}", aktoerId);
+        }
+        if(isDifferent(lagFodselsdato(foedsels_dato.toLocalDate()), lagFodselsdato(fnr))){
+            log.info("Arena/PDL: Fodselsdato feil bruker: {}", aktoerId);
+        }
+        if(isDifferent(foedsels_dato.toLocalDate().getDayOfMonth(), Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))){
+            log.info("Arena/PDL: Fodselsdag_i_mnd feil bruker: {}", aktoerId);
+        }
+    }
+
+    private boolean isDifferent(Object o, Object other) {
+        if (o == null && other == null) {
+            return false;
+        } else if (o == null || other == null) {
+            return true;
+        }
+        return !o.equals(other);
     }
 }

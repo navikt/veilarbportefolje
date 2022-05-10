@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
-import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -15,7 +14,6 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
@@ -186,17 +184,6 @@ public class AdminController {
         List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
         opensearchIndexer.dryrunAvPostgresTilOpensearchMapping(brukereUnderOppfolging);
         log.info("ferdig med dryrun");
-    }
-
-    @PutMapping("/test/hentFraOracleOgPostgres")
-    public String testHentIndeksertPostgresOgOracleBruker(@RequestBody String aktoerIdString) {
-        authorizeAdmin();
-        AktorId aktoerId = AktorId.of(aktoerIdString);
-        OppfolgingsBruker fraOracle = brukerRepository.hentBrukerFraView(aktoerId).get();
-        postgresOpensearchMapper.flettInnPostgresData(List.of(fraOracle));
-        var fraPostgres = brukerRepositoryV2.hentOppfolgingsBruker(aktoerId);
-
-        return "{ \"oracle/Postgres\":" + JsonUtils.toJson(fraOracle) + ", \"postgres\":" + JsonUtils.toJson(fraPostgres) + " }";
     }
 
     private void authorizeAdmin() {

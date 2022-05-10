@@ -286,22 +286,6 @@ function handleTest(e) {
     }
 }
 
-const testHentPostgresOracleForm = document.getElementById('testHentPostgresOracleForm')
-const testInputHentAktoerId = document.getElementById('testInputHentAktoerId');
-testHentPostgresOracleForm.addEventListener('submit', handleHentPostgresOracleTest);
-
-function handleHentPostgresOracleTest(e) {
-    e.preventDefault()
-    const aktoerId = testInputHentAktoerId.value;
-    if (aktoerId && aktoerId.length > 0) {
-        fetchData(
-            '/veilarbportefolje/api/admin/test/hentFraOracleOgPostgres',
-            {method: 'PUT', credentials: 'same-origin', body: aktoerId},
-            'hentTestRes'
-        )
-    }
-}
-
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);
