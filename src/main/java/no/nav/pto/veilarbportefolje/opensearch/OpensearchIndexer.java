@@ -67,15 +67,14 @@ public class OpensearchIndexer {
             log.info("debug: bruker er tom?: {}", bruker.isEmpty());
             if(bruker.isEmpty()){
                 Optional<BrukerOppdatertInformasjon> oppdatertInformasjon = oppfolgingRepositoryV2.hentOppfolgingData(aktoerId);
-                OppfolgingsBruker aktoerData = postgresOpensearchMapper.flettInnPostgresData(List.of(new OppfolgingsBruker().setAktoer_id(aktoerId.get()))).get(0);
+                Optional<Fnr> fnr = brukerServiceV2.hentFnr(aktoerId);
+                OppfolgingsBruker aktoerData = postgresOpensearchMapper.flettInnPostgresData(List.of(new OppfolgingsBruker().setAktoer_id(aktoerId.get()).setFnr(fnr.get().toString()))).get(0);
                 log.info("aktoerData: {}", aktoerData.getOppfolging_startdato());
                 boolean aktivIdent = oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId);
                 if(oppdatertInformasjon.isPresent()){
 
                     log.info("debug opp: {}, start: {}",oppdatertInformasjon.get().getOppfolging(), oppdatertInformasjon.get().getStartDato());
                     log.info("debug aktiv ident: {}", aktivIdent);
-                    Optional<Fnr> fnr = brukerServiceV2.hentFnr(aktoerId);
-                    log.info("debug her fnr: {}", fnr.isPresent());
                     Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr.get());
                     log.info("Har opp.bruker: {}",oppfolgingsBruker.isPresent());
                     oppfolgingsBruker.ifPresent(oppfolgingsbruker -> log.info("Har opp.bruker: endret: {}", oppfolgingsbruker.endret_dato()));
