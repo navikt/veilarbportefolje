@@ -10,6 +10,8 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
@@ -56,21 +58,31 @@ public class OpensearchIndexer {
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
 
     public boolean indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;
         if (brukOppfolgingsbrukerPaPostgres(unleashService)) {
-            var brukerliste = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId));
-            bruker = brukerliste.stream().findAny();
-            log.info("debug: bruker er null: {}, brukerliste: {}", bruker.isEmpty(), brukerliste.size());
+            bruker = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
+            log.info("debug: bruker er tom?: {}", bruker.isEmpty());
             if(bruker.isEmpty()){
                 Optional<BrukerOppdatertInformasjon> oppdatertInformasjon = oppfolgingRepositoryV2.hentOppfolgingData(aktoerId);
-                boolean b = oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId);
+                OppfolgingsBruker aktoerData = postgresOpensearchMapper.flettInnPostgresData(List.of(new OppfolgingsBruker().setAktoer_id(aktoerId.get()))).get(0);
+                log.info("aktoerData: {}", aktoerData.getOppfolging_startdato());
+                boolean aktivIdent = oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId);
                 if(oppdatertInformasjon.isPresent()){
+
                     log.info("debug opp: {}, start: {}",oppdatertInformasjon.get().getOppfolging(), oppdatertInformasjon.get().getStartDato());
-                    log.info("debug aktiv ident: {}", b);
+                    log.info("debug aktiv ident: {}", aktivIdent);
                     Optional<Fnr> fnr = brukerServiceV2.hentFnr(aktoerId);
                     log.info("debug her fnr: {}", fnr.isPresent());
+                    Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr.get());
+                    log.info("Har opp.bruker: {}",oppfolgingsBruker.isPresent());
+                    oppfolgingsBruker.ifPresent(oppfolgingsbruker -> log.info("Har opp.bruker: endret: {}", oppfolgingsbruker.endret_dato()));
+
+
+                    Optional<OppfolgingsBruker> dobbeltSjekk = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
+                    log.info("debug: bruker er tom? v2: {}", dobbeltSjekk.isEmpty());
                 }else{
                     log.info("debug: ikke opp data");
                 }
