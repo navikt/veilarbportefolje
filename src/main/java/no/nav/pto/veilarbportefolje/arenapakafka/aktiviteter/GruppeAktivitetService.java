@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHendelseBasertPaOperasjon;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erUtgatt;
@@ -19,7 +18,6 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGo
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class GruppeAktivitetService {
     private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;

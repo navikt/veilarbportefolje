@@ -74,7 +74,7 @@ import static no.nav.pto.veilarbportefolje.util.FodselsnummerUtils.lagFodselsdat
 @Repository
 @RequiredArgsConstructor
 public class BrukerRepositoryV2 {
-    @Qualifier("PostgresJdbc")
+    @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate db;
     private final UnleashService unleashService;
 

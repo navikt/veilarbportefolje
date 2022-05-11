@@ -5,16 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.postgres.AktoerDataOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
-import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
-import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import org.opensearch.action.ActionListener;
@@ -51,48 +45,23 @@ public class OpensearchIndexer {
     private final RestHighLevelClient restHighLevelClient;
     private final BrukerRepository brukerRepository;
     private final BrukerRepositoryV2 brukerRepositoryV2;
-    private final BrukerServiceV2 brukerServiceV2;
     private final IndexName alias;
     private final UnleashService unleashService;
     private final SisteEndringRepository sisteEndringRepository;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
-    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
 
-    public boolean indekser(AktorId aktoerId) {
+    public void indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;
         if (brukOppfolgingsbrukerPaPostgres(unleashService)) {
             bruker = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
-            log.info("debug: bruker er tom?: {}", bruker.isEmpty());
-            if(bruker.isEmpty()){
-                Optional<BrukerOppdatertInformasjon> oppdatertInformasjon = oppfolgingRepositoryV2.hentOppfolgingData(aktoerId);
-                Optional<Fnr> fnr = brukerServiceV2.hentFnr(aktoerId);
-                var aktoerData = aktoerDataOpensearchMapper.hentAktoerData(List.of(aktoerId));
-                log.info("debug: aktoerData: {}", aktoerData.size());
-                PostgresAktorIdEntity postgresAktorIdEntity = aktoerData.get(aktoerId);
-                if(postgresAktorIdEntity != null){
-                    log.info("debug: view start {}", postgresAktorIdEntity.getOppfolgingStartdato());
-                }
-                boolean aktivIdent = oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId);
-                if(oppdatertInformasjon.isPresent()){
-
-                    log.info("debug opp: {}, start: {}",oppdatertInformasjon.get().getOppfolging(), oppdatertInformasjon.get().getStartDato());
-                    log.info("debug aktiv ident: {}", aktivIdent);
-
-                    Optional<OppfolgingsBruker> dobbeltSjekk = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
-                    log.info("debug: bruker er tom? v2: {}", dobbeltSjekk.isEmpty());
-                }else{
-                    log.info("debug: ikke opp data");
-                }
-            }
         } else {
             bruker = brukerRepository.hentBrukerFraView(aktoerId);
         }
-        return bruker.map(this::indekserBruker).orElse(false);
+        bruker.ifPresent(this::indekserBruker);
     }
 
-    private boolean indekserBruker(OppfolgingsBruker bruker) {
+    private void indekserBruker(OppfolgingsBruker bruker) {
         if (erUnderOppfolging(bruker)) {
             if (!brukOppfolgingsbrukerPaPostgres(unleashService)) {
                 postgresOpensearchMapper.flettInnPostgresData(List.of(bruker));
@@ -100,10 +69,8 @@ public class OpensearchIndexer {
             postgresOpensearchMapper.flettInnAktivitetsData(List.of(bruker));
             leggTilSisteEndring(bruker);
             syncronIndekseringsRequest(bruker);
-            return true;
         }
         opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
-        return false;
     }
 
     @SneakyThrows

@@ -52,7 +52,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         Mockito.when(aktorClient.hentFnr(any())).thenReturn(Fnr.of("-1"));
         when(brukerRepository.hentMappedePersonIder(any())).thenReturn(List.of(PersonId.of("0000")));
         when(brukerRepository.retrievePersonidFromFnr(Fnr.of("-1"))).thenReturn(Optional.of(PersonId.of("0000")));
-        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, mock(OppfolgingRepositoryV2.class), mock(OpensearchIndexer.class), brukerRepository, aktorClient, mock(PdlService.class));
+        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, mock(OppfolgingRepositoryV2.class), mock(OpensearchIndexer.class), mock(PdlService.class));
         this.oppfolgingPeriodeService = new OppfolgingPeriodeService(this.oppfolgingStartetService, this.oppfolgingAvsluttetService);
     }
 
