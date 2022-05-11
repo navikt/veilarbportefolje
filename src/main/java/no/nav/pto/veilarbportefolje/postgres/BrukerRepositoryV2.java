@@ -118,7 +118,10 @@ public class BrukerRepositoryV2 {
                         """,
                 (ResultSet rs) -> {
                     while (rs.next()) {
-                        result.add(mapTilOppfolgingsBruker(rs, logdiff));
+                        OppfolgingsBruker bruker = mapTilOppfolgingsBruker(rs, logdiff);
+                        if (bruker.getFnr() != null) {
+                            result.add(bruker);
+                        }
                     }
                     return result;
                 }, params);
@@ -202,8 +205,8 @@ public class BrukerRepositoryV2 {
             log.info("Fant ikke brukerdat på aktor: {}, bruker arena som backup", bruker.getAktoer_id());
             flettInnDataFraArena(rs, bruker);
         } else {
-            log.error("Fant ikke brukerdat på aktor: {}, antar derfor at bruker er skjermet", bruker.getAktoer_id());
-            bruker.setFnr("");
+            log.error("Fant ikke brukerdat på aktor: {}, filterer derfor vekk bruker", bruker.getAktoer_id());
+            bruker.setFnr(null);
         }
 
         // ARENA DB LENKE: skal fjernes på sikt
