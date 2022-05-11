@@ -69,8 +69,9 @@ public class OpensearchIndexer {
             postgresOpensearchMapper.flettInnAktivitetsData(List.of(bruker));
             leggTilSisteEndring(bruker);
             syncronIndekseringsRequest(bruker);
+        } else {
+            opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
         }
-        opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
     }
 
     @SneakyThrows
