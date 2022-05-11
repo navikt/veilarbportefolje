@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBackup;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.AAPMAXTIDUKE;
@@ -193,28 +194,16 @@ public class BrukerRepositoryV2 {
         }
 
         Date foedsels_dato = rs.getDate("foedselsdato");
-        if (brukPDLBrukerdata(unleashService) && foedsels_dato != null) {
-            String fornavn = rs.getString("fornavn_pdl");
-            String etternavn = rs.getString("etternavn_pdl");
-            bruker
-                    .setFornavn(fornavn)
-                    .setEtternavn(etternavn)
-                    .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
-                    .setEr_doed(rs.getBoolean("er_doed_pdl"))
-                    .setFodselsdag_i_mnd(foedsels_dato.toLocalDate().getDayOfMonth())
-                    .setFodselsdato(lagFodselsdato(foedsels_dato.toLocalDate()))
-                    .setKjonn(rs.getString("kjoenn"));
+        if (!brukPDLBrukerdata(unleashService)) {
+            flettInnDataFraArena(rs, bruker);
+        } else if (brukPDLBrukerdata(unleashService) && foedsels_dato != null) {
+            flettInnDataFraPDL(rs, bruker);
+        } else if (brukArenaSomBackup(unleashService)) {
+            log.info("Fant ikke brukerdat på aktor: {}, bruker arena som backup", bruker.getAktoer_id());
+            flettInnDataFraArena(rs, bruker);
         } else {
-            String fornavn = rs.getString(FORNAVN);
-            String etternavn = rs.getString(ETTERNAVN);
-            bruker
-                    .setFornavn(fornavn)
-                    .setEtternavn(etternavn)
-                    .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
-                    .setEr_doed(rs.getBoolean(ER_DOED))
-                    .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
-                    .setFodselsdato(lagFodselsdato(fnr))
-                    .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
+            log.error("Fant ikke brukerdat på aktor: {}, antar derfor at bruker er skjermet", bruker.getAktoer_id());
+            bruker.setFnr("");
         }
 
         // ARENA DB LENKE: skal fjernes på sikt
@@ -230,6 +219,36 @@ public class BrukerRepositoryV2 {
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus));
+    }
+
+    @SneakyThrows
+    private void flettInnDataFraPDL(ResultSet rs, OppfolgingsBruker bruker) {
+        Date foedsels_dato = rs.getDate("foedselsdato");
+        String fornavn = rs.getString("fornavn_pdl");
+        String etternavn = rs.getString("etternavn_pdl");
+        bruker
+                .setFornavn(fornavn)
+                .setEtternavn(etternavn)
+                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
+                .setEr_doed(rs.getBoolean("er_doed_pdl"))
+                .setFodselsdag_i_mnd(foedsels_dato.toLocalDate().getDayOfMonth())
+                .setFodselsdato(lagFodselsdato(foedsels_dato.toLocalDate()))
+                .setKjonn(rs.getString("kjoenn"));
+    }
+
+    @SneakyThrows
+    private void flettInnDataFraArena(ResultSet rs, OppfolgingsBruker bruker) {
+        String fnr = rs.getString(FODSELSNR);
+        String fornavn = rs.getString(FORNAVN);
+        String etternavn = rs.getString(ETTERNAVN);
+        bruker
+                .setFornavn(fornavn)
+                .setEtternavn(etternavn)
+                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
+                .setEr_doed(rs.getBoolean(ER_DOED))
+                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
+                .setFodselsdato(lagFodselsdato(fnr))
+                .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
     }
 
     @SneakyThrows
