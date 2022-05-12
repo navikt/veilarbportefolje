@@ -133,24 +133,6 @@ public class OpensearchIndexer {
 
         validateBatchSize(brukere);
         sisteEndringRepository.setAlleSisteEndringTidspunkter(brukere);
-
-        if (loggDiffSisteEndringer(unleashService)) {
-            Map<AktorId, Map<String, Endring>> sisteEndringerDataPostgres = postgresOpensearchMapper.hentPostgresSisteEndringerData(brukere);
-
-            brukere.forEach(bruker -> {
-                String sisteEndringerPostgresValues = sisteEndringerDataPostgres.get(bruker).keySet().stream().sorted()
-                        .map(key -> key + "=" + sisteEndringerDataPostgres.get(bruker).get(key))
-                        .collect(Collectors.joining(", ", "{", "}"));
-
-                String sisteEndringerOracleValues = bruker.getSiste_endringer().keySet().stream().sorted()
-                        .map(key -> key + "=" + bruker.getSiste_endringer().get(key))
-                        .collect(Collectors.joining(", ", "{", "}"));
-
-                if (!sisteEndringerPostgresValues.equals(sisteEndringerOracleValues)) {
-                    log.warn(String.format("OpenSearch siste endringer diff for aktorId %s, postgres: %s, oracle: %s ", bruker.getAktoer_id(), sisteEndringerPostgresValues, sisteEndringerOracleValues));
-                }
-            });
-        }
     }
 
 
@@ -221,6 +203,25 @@ public class OpensearchIndexer {
                     .filter(bruker -> bruker.getAktoer_id() != null)
                     .toList();
             postgresOpensearchMapper.flettInnPostgresData(brukere);
+            sisteEndringRepository.setAlleSisteEndringTidspunkter(brukere);
+
+            if (loggDiffSisteEndringer(unleashService)) {
+                Map<AktorId, Map<String, Endring>> sisteEndringerDataPostgres = postgresOpensearchMapper.hentPostgresSisteEndringerData(brukere);
+
+                brukere.forEach(bruker -> {
+                    String sisteEndringerPostgresValues = sisteEndringerDataPostgres.get(bruker).keySet().stream().sorted()
+                            .map(key -> key + "=" + sisteEndringerDataPostgres.get(bruker).get(key))
+                            .collect(Collectors.joining(", ", "{", "}"));
+
+                    String sisteEndringerOracleValues = bruker.getSiste_endringer().keySet().stream().sorted()
+                            .map(key -> key + "=" + bruker.getSiste_endringer().get(key))
+                            .collect(Collectors.joining(", ", "{", "}"));
+
+                    if (!sisteEndringerPostgresValues.equals(sisteEndringerOracleValues)) {
+                        log.warn(String.format("OpenSearch siste endringer diff for aktorId %s, postgres: %s, oracle: %s ", bruker.getAktoer_id(), sisteEndringerPostgresValues, sisteEndringerOracleValues));
+                    }
+                });
+            }
             brukere.forEach(oracleBruker -> {
                 OppfolgingsBruker postgres = brukerRepositoryV2.hentOppfolgingsBruker(AktorId.of(oracleBruker.getAktoer_id()));
                 postgresOpensearchMapper.loggDiff(oracleBruker, postgres);

@@ -30,9 +30,13 @@ public class SisteEndringRepositoryV2 {
     @NonNull
     private final JdbcTemplate db;
 
+    @Qualifier("PostgresJdbcReadOnly")
+    private final JdbcTemplate dbReadOnly;
+
     @Autowired
-    public SisteEndringRepositoryV2(@Qualifier("PostgresJdbc") JdbcTemplate db) {
+    public SisteEndringRepositoryV2(@Qualifier("PostgresJdbc") JdbcTemplate db, @Qualifier("PostgresJdbcReadOnly") JdbcTemplate dbReadOnly) {
         this.db = db;
+        this.dbReadOnly = dbReadOnly;
     }
 
     public int upsert(SisteEndringDTO sisteEndringDTO) {
@@ -82,7 +86,7 @@ public class SisteEndringRepositoryV2 {
     }
 
     public Timestamp getSisteEndringTidspunkt(AktorId aktoerId, SisteEndringsKategori kategori) {
-        return queryForObjectOrNull(() -> db.queryForObject("""
+        return queryForObjectOrNull(() -> dbReadOnly.queryForObject("""
                         SELECT SISTE_ENDRING_TIDSPUNKT FROM SISTE_ENDRING
                         WHERE aktoerid = ? AND siste_endring_kategori = ?""",
                 Timestamp.class, aktoerId.get(), kategori.name())
@@ -118,21 +122,17 @@ public class SisteEndringRepositoryV2 {
                 " FROM " + TABLE_NAME +
                 " WHERE " +
                 AKTOERID + "= ?");
-        return db.query(sql, this::mapResultatTilKategoriOgEndring, aktoerId.get());
+        return dbReadOnly.query(sql, this::mapResultatTilKategoriOgEndring, aktoerId.get());
     }
 
     public Map<AktorId, Map<String, Endring>> getSisteEndringer(List<AktorId> aktoerIder) {
         String aktoerIderStr = aktoerIder.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
 
-        String sql = String.format("SELECT " +
-                SISTE_ENDRING_KATEGORI + ", " +
-                SISTE_ENDRING_TIDSPUNKT + ", " +
-                ER_SETT + ", " +
-                AKTIVITETID +
-                " FROM " + TABLE_NAME +
-                " WHERE " +
-                AKTOERID + " = ANY (?::varchar[])");
-        return db.query(sql,
+        String sql = """
+                SELECT SISTE_ENDRING_KATEGORI, SISTE_ENDRING_TIDSPUNKT, ER_SETT, AKTIVITETID
+                FROM SISTE_ENDRING WHERE AKTOERID = ANY (?::varchar[])
+                """;
+        return dbReadOnly.query(sql,
                 ps -> ps.setString(1, aktoerIderStr),
                 (ResultSet rs) -> {
                     HashMap<AktorId, Map<String, Endring>> results = new HashMap<>();
