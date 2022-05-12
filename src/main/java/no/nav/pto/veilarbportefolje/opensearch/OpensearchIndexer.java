@@ -209,8 +209,8 @@ public class OpensearchIndexer {
                 Map<AktorId, Map<String, Endring>> sisteEndringerDataPostgres = postgresOpensearchMapper.hentPostgresSisteEndringerData(brukere);
 
                 brukere.forEach(bruker -> {
-                    String sisteEndringerPostgresValues = sisteEndringerDataPostgres.get(bruker).keySet().stream().sorted()
-                            .map(key -> key + "=" + sisteEndringerDataPostgres.get(bruker).get(key))
+                    String sisteEndringerPostgresValues = sisteEndringerDataPostgres.get(AktorId.of(bruker.getAktoer_id())).keySet().stream().sorted()
+                            .map(key -> key + "=" + sisteEndringerDataPostgres.get(AktorId.of(bruker.getAktoer_id())).get(key))
                             .collect(Collectors.joining(", ", "{", "}"));
 
                     String sisteEndringerOracleValues = bruker.getSiste_endringer().keySet().stream().sorted()

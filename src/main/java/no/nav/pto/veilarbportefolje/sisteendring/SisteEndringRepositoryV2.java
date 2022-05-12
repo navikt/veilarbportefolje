@@ -1,12 +1,11 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -19,25 +18,24 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.*;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.AKTIVITETID;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.ER_SETT;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.SISTE_ENDRING_KATEGORI;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.SISTE_ENDRING_TIDSPUNKT;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class SisteEndringRepositoryV2 {
-    @NonNull
+    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate dbReadOnly;
-
-    @Autowired
-    public SisteEndringRepositoryV2(@Qualifier("PostgresJdbc") JdbcTemplate db, @Qualifier("PostgresJdbcReadOnly") JdbcTemplate dbReadOnly) {
-        this.db = db;
-        this.dbReadOnly = dbReadOnly;
-    }
 
     public int upsert(SisteEndringDTO sisteEndringDTO) {
         return db.update(
