@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -102,5 +103,9 @@ public class SisteEndringService {
             return true;
         }
         return toZonedDateTime(databaseVerdi).compareTo(sisteEndringDTO.getTidspunkt()) < 0;
+    }
+
+    public Map<AktorId, Map<String, Endring>> hentSisteEndringerFraPostgres(List<AktorId> aktorerId) {
+        return sisteEndringRepositoryV2.getSisteEndringer(aktorerId);
     }
 }

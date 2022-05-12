@@ -16,13 +16,10 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.AKTIVITETID;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.ER_SETT;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.SISTE_ENDRING_KATEGORI;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.SISTE_ENDRING_TIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
@@ -88,7 +85,7 @@ public class SisteEndringRepositoryV2 {
         return queryForObjectOrNull(() -> db.queryForObject("""
                         SELECT SISTE_ENDRING_TIDSPUNKT FROM SISTE_ENDRING
                         WHERE aktoerid = ? AND siste_endring_kategori = ?""",
-                        Timestamp.class, aktoerId.get(), kategori.name())
+                Timestamp.class, aktoerId.get(), kategori.name())
         );
     }
 
@@ -122,6 +119,28 @@ public class SisteEndringRepositoryV2 {
                 " WHERE " +
                 AKTOERID + "= ?");
         return db.query(sql, this::mapResultatTilKategoriOgEndring, aktoerId.get());
+    }
+
+    public Map<AktorId, Map<String, Endring>> getSisteEndringer(List<AktorId> aktoerIder) {
+        String aktoerIderStr = aktoerIder.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
+
+        String sql = String.format("SELECT " +
+                SISTE_ENDRING_KATEGORI + ", " +
+                SISTE_ENDRING_TIDSPUNKT + ", " +
+                ER_SETT + ", " +
+                AKTIVITETID +
+                " FROM " + TABLE_NAME +
+                " WHERE " +
+                AKTOERID + " = ANY (?::varchar[])");
+        return db.query(sql,
+                ps -> ps.setString(1, aktoerIderStr),
+                (ResultSet rs) -> {
+                    HashMap<AktorId, Map<String, Endring>> results = new HashMap<>();
+                    while (rs.next()) {
+                        results.put(AktorId.of(rs.getString(AKTOERID)), mapResultatTilKategoriOgEndring(rs));
+                    }
+                    return results;
+                });
     }
 
     @SneakyThrows

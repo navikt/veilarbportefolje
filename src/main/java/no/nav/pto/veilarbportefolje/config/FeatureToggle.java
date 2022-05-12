@@ -25,6 +25,8 @@ public class FeatureToggle {
     public static final String DIALOG = "veilarbportefolje.dialogPostgres";
     public static final String NOM_SKJERMING = "veilarbportefolje.NOM_Skjerming";
 
+    public static final String LOG_DIFF_SISTE_ENDRINGER = "veilarbportefolje.logg_diff_siste_endringer";
+
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
@@ -36,8 +38,13 @@ public class FeatureToggle {
     public static boolean brukNOMSkjerming(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.NOM_SKJERMING);
     }
+
     public static boolean brukOppfolgingsbrukerPaPostgres(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.OPPFOLGINGS_BRUKER);
+    }
+
+    public static boolean loggDiffSisteEndringer(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.LOG_DIFF_SISTE_ENDRINGER);
     }
 
     public static boolean hentIdenterFraPostgres(UnleashService unleashService) {
