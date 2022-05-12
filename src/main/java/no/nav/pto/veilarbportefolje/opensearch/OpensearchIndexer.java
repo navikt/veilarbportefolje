@@ -222,10 +222,6 @@ public class OpensearchIndexer {
                     }
                 });
             }
-            brukere.forEach(oracleBruker -> {
-                OppfolgingsBruker postgres = brukerRepositoryV2.hentOppfolgingsBruker(AktorId.of(oracleBruker.getAktoer_id()));
-                postgresOpensearchMapper.loggDiff(oracleBruker, postgres);
-            });
         });
     }
 }

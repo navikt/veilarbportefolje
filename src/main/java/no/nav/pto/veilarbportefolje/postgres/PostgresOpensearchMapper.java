@@ -164,10 +164,4 @@ public class PostgresOpensearchMapper {
             bruker.setArbeidsliste_tittel_lengde(dataPaAktorId.getArbeidslisteTittelLengde());
         }
     }
-
-    public void loggDiff(OppfolgingsBruker oppfolgingsBrukerOracle, OppfolgingsBruker oppfolgingsBrukerPostgres) {
-        if (!oppfolgingsBrukerOracle.equals(oppfolgingsBrukerPostgres)) {
-            log.info("fant en diff på bruker: {}", oppfolgingsBrukerOracle.getAktoer_id());
-        }
-    }
 }
