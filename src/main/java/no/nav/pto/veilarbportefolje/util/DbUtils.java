@@ -12,7 +12,6 @@ import java.sql.ResultSet;
 import java.util.function.Predicate;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukDialogPaPostgres;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 @Slf4j
@@ -96,11 +95,6 @@ public class DbUtils {
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus))
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING")); // Oppfolging hentes fra Oracle helt til at alt er migrert
-        if (!brukDialogPaPostgres(unleashService)) {
-            bruker
-                    .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")))
-                    .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp("venterpasvarfranav")));
-        }
         return bruker;
     }
 
