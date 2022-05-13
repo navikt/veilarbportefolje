@@ -78,6 +78,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 @Configuration
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
+    public final static String CLIENT_ID_REWIND = "veilarbportefolje-consumer-rewind";
     public static final String KAFKA_BROKERS = EnvironmentUtils.getRequiredProperty("KAFKA_BROKERS_URL");
     private static final Credentials serviceUserCredentials = getCredentials("service_user");
 
@@ -120,6 +121,7 @@ public class KafkaConfigCommon {
 
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final List<KafkaConsumerClient> consumerClientsOnPrem;
+    private final List<KafkaConsumerClient> consumerClientsRewind;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
@@ -377,6 +379,20 @@ public class KafkaConfigCommon {
                                 )
                 );
 
+        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> rewindTopics =
+                List.of(
+                        new KafkaConsumerClientBuilder.TopicConfig<String, Aktor>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.PDL_IDENTER.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new OnpremAvroDeserializer<Aktor>().getDeserializer(),
+                                        pdlIdentService::behandleKafkaRecord
+                                )
+                );
+
         KafkaAivenUnleash kafkaAivenUnleash = new KafkaAivenUnleash(unleashService);
         KafkaOnpremUnleash kafkaOnpremUnleash = new KafkaOnpremUnleash(unleashService);
 
@@ -406,11 +422,24 @@ public class KafkaConfigCommon {
                                 .build())
                 .collect(Collectors.toList());
 
+        consumerClientsRewind = rewindTopics.stream()
+                .map(config ->
+                        KafkaConsumerClientBuilder.builder()
+                                .withProperties(onPremDefaultConsumerProperties(
+                                        CLIENT_ID_REWIND,
+                                        KAFKA_BROKERS,
+                                        serviceUserCredentials)
+                                )
+                                .withTopicConfig(config)
+                                .withToggle(kafkaOnpremUnleash)
+                                .build())
+                .collect(Collectors.toList());
+
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
-                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(Stream.concat(topicConfigsAiven.stream(), topicConfigsOnPrem.stream()).collect(Collectors.toList())))
+                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(Stream.concat(Stream.concat(topicConfigsAiven.stream(), topicConfigsOnPrem.stream()), rewindTopics.stream()).collect(Collectors.toList())))
                 .build();
     }
 
@@ -420,6 +449,7 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientsOnPrem.forEach(KafkaConsumerClient::start);
+        consumerClientsRewind.forEach(KafkaConsumerClient::start);
     }
 
 
