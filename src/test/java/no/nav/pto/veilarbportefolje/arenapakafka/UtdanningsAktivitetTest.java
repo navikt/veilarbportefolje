@@ -54,6 +54,7 @@ public class UtdanningsAktivitetTest {
     @BeforeEach
     public void reset() {
         jbPostgres.execute("truncate table aktiviteter");
+        jbPostgres.execute("truncate table lest_arena_hendelse_aktivitet");
     }
 
 

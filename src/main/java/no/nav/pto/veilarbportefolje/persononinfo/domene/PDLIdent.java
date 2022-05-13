@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.persononinfo.PdlResponses;
+package no.nav.pto.veilarbportefolje.persononinfo.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

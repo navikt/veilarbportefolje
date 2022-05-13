@@ -5,9 +5,9 @@ import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
@@ -42,8 +42,7 @@ class RegistreringServiceTest extends EndToEndTest {
     @Test
     void utdanning_full_integration() {
         final AktorId aktoerId = randomAktorId();
-        populateOpensearch(EnhetId.of("0000"), VeilederId.of(null), aktoerId.get());
-        opensearchTestClient.createUserInOpensearch(aktoerId);
+        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
 
         ArbeidssokerRegistrertEvent kafkaMessage = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(aktoerId.toString())
@@ -194,7 +193,7 @@ class RegistreringServiceTest extends EndToEndTest {
         );
 
         brukere.forEach(bruker -> {
-                    populateOpensearch(EnhetId.of(enhet), VeilederId.of(null), bruker.getAktoer_id());
+                    populateOpensearch(NavKontor.of(enhet), VeilederId.of(null), bruker.getAktoer_id());
                     indexer.syncronIndekseringsRequest(bruker);
                 }
         );
