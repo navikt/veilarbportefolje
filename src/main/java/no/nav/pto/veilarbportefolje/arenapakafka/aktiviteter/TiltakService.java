@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +26,6 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGo
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class TiltakService {
     private static final LocalDate LANSERING_AV_OVERSIKTEN = LocalDate.of(2017, 12, 4);

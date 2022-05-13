@@ -6,8 +6,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.cv.dto.Ressurs;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -15,9 +13,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
-import java.util.concurrent.ExecutionException;
 
 import static java.util.Arrays.stream;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
@@ -28,11 +26,7 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
     private CVService cvService;
 
     @Autowired
-    private OppfolgingRepository oppfolgingRepository;
-
-    @Autowired
-    private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-
+    private JdbcTemplate oracle;
 
     private final AktorId aktoerId1 = AktorId.of("11111111111");
     private final AktorId aktoerId2 = AktorId.of("22222222222");
@@ -40,16 +34,16 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
 
     @BeforeEach
     void set_under_oppfolging(){
-        oppfolgingRepository.settUnderOppfolging(aktoerId1, ZonedDateTime.now());
-        oppfolgingRepository.settUnderOppfolging(aktoerId2, ZonedDateTime.now());
-        oppfolgingRepository.settUnderOppfolging(aktoerId3, ZonedDateTime.now());
-        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId1, ZonedDateTime.now());
-        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId2, ZonedDateTime.now());
-        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId3, ZonedDateTime.now());
+        oracle.update("truncate TABLE OPPFOLGING_DATA");
+        oracle.update("truncate TABLE OPPFOLGINGSBRUKER");
+        oracle.update("truncate TABLE AKTOERID_TO_PERSONID");
+        testDataClient.setupBruker(aktoerId1, ZonedDateTime.now());
+        testDataClient.setupBruker(aktoerId2, ZonedDateTime.now());
+        testDataClient.setupBruker(aktoerId3, ZonedDateTime.now());
     }
 
     @Test
-    void testCVHjemmel() throws ExecutionException, InterruptedException {
+    void testCVHjemmel() {
         createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
         assertHarDeltCVAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
 
@@ -59,7 +53,7 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
     }
 
     @Test
-    void testCVEksistere() throws ExecutionException, InterruptedException {
+    void testCVEksistere() {
         createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
         assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
 
@@ -132,7 +126,7 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
         opensearchTestClient.createDocument(aktoerId, document);
     }
 
-    private void populateCVHjemmelKafkaTopic(AktorId... aktoerIds) throws ExecutionException, InterruptedException {
+    private void populateCVHjemmelKafkaTopic(AktorId... aktoerIds) {
         for (AktorId aktoerId : aktoerIds) {
             CVMelding cvMelding = new CVMelding();
             cvMelding.setAktoerId(aktoerId);
@@ -142,7 +136,7 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
         }
     }
 
-    private void populateCVEksistereKafkaTopic(AktorId... aktoerIds) throws ExecutionException, InterruptedException {
+    private void populateCVEksistereKafkaTopic(AktorId... aktoerIds) {
         for (AktorId aktoerId : aktoerIds) {
             Melding cvMelding = new Melding();
             cvMelding.setAktoerId(aktoerId.toString());

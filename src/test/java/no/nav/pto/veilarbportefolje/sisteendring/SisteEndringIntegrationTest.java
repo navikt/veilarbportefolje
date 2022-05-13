@@ -2,13 +2,13 @@ package no.nav.pto.veilarbportefolje.sisteendring;
 
 import io.vavr.control.Try;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
@@ -58,7 +58,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final SistLestService sistLestService;
     private final OppfolgingRepository oppfolgingRepositoryMock;
     private final VeilederId veilederId = VeilederId.of("Z123456");
-    private final EnhetId testEnhet = EnhetId.of("0000");
+    private final NavKontor testEnhet = NavKontor.of("0000");
     private final Fnr fodselsnummer1 = Fnr.ofValidFnr("10108000000"); //TESTFAMILIE
     private final Fnr fodselsnummer2 = Fnr.ofValidFnr("11108000000"); //TESTFAMILIE
     private final Fnr fodselsnummer3 = Fnr.ofValidFnr("12108000000"); //TESTFAMILIE
@@ -93,7 +93,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void sisteendring_populering_mal() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.get());
+        testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.getValue());
         populateOpensearch(testEnhet, veilederId, aktoerId.get());
         String endretTid = "2020-05-28T07:47:42.480Z";
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse(endretTid);
@@ -112,7 +112,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void sisteendring_populering_aktiviteter() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.get());
+        testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.getValue());
         populateOpensearch(testEnhet,veilederId, aktoerId.get());
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse("2020-05-28T07:47:42.480Z");
         ZonedDateTime endretTidZonedDateTime_NY_IJOBB = ZonedDateTime.parse("2028-05-28T07:47:42.480Z");
@@ -149,7 +149,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void sisteendring_filtrering() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.get());
+        testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.getValue());
         ZonedDateTime zonedDateTime = ZonedDateTime.parse("2019-05-28T09:47:42.48+02:00");
         ZonedDateTime zonedDateTime_NY_IJOBB = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00");
 
@@ -165,7 +165,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
-                    testEnhet.get(),
+                    testEnhet.getValue(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -177,7 +177,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
 
             var responseBrukere = opensearchService.hentBrukere(
-                    testEnhet.get(),
+                    testEnhet.getValue(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -198,7 +198,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         populateOpensearch(testEnhet, veilederId, aktoerId.toString());
         pollOpensearchUntil(() -> {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
-                    testEnhet.get(),
+                    testEnhet.getValue(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -210,7 +210,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         });
 
         var responseBrukere = opensearchService.hentBrukere(
-                testEnhet.get(),
+                testEnhet.getValue(),
                 empty(),
                 "asc",
                 "ikke_satt",
@@ -224,7 +224,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     //@Test
     public void sisteendring_ulestfilter() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.get());
+        testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.getValue());
         ZonedDateTime endretTid_FULLFORT_IJOBB = ZonedDateTime.parse("2019-05-28T09:47:42.48+02:00");
         ZonedDateTime endretTid_NY_IJOBB = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00");
 
@@ -233,7 +233,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         populateOpensearch(testEnhet, veilederId, aktoerId.toString());
         pollOpensearchUntil(() -> {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
-                    testEnhet.get(),
+                    testEnhet.getValue(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -255,7 +255,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
-                    testEnhet.get(),
+                    testEnhet.getValue(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -269,7 +269,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
-                    testEnhet.get(),
+                    testEnhet.getValue(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -280,7 +280,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         });
 
         var responseBrukere1 = opensearchService.hentBrukere(
-                testEnhet.get(),
+                testEnhet.getValue(),
                 empty(),
                 "asc",
                 "ikke_satt",
@@ -291,7 +291,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseBrukere1.getAntall()).isEqualTo(1);
 
         var responseBrukere2 = opensearchService.hentBrukere(
-                testEnhet.get(),
+                testEnhet.getValue(),
                 empty(),
                 "asc",
                 "ikke_satt",
@@ -307,9 +307,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         final AktorId aktoerId_1 = randomAktorId();
         final AktorId aktoerId_2 = randomAktorId();
         final AktorId aktoerId_3 = randomAktorId();
-        testDataClient.setupBruker(aktoerId_1, fodselsnummer1, testEnhet.get());
-        testDataClient.setupBruker(aktoerId_2, fodselsnummer2, testEnhet.get());
-        testDataClient.setupBruker(aktoerId_3, fodselsnummer3, testEnhet.get());
+        testDataClient.setupBruker(aktoerId_1, fodselsnummer1, testEnhet.getValue());
+        testDataClient.setupBruker(aktoerId_2, fodselsnummer2, testEnhet.getValue());
+        testDataClient.setupBruker(aktoerId_3, fodselsnummer3, testEnhet.getValue());
 
         ZonedDateTime endret_Tid_IJOBB_bruker_1_i_2024 = ZonedDateTime.parse("2024-05-28T09:47:42.480Z");
         ZonedDateTime endret_Tid_IJOBB_bruker_2_i_2025 = ZonedDateTime.parse("2025-05-28T09:47:42.480Z");
@@ -321,7 +321,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         populateOpensearch(testEnhet, veilederId, aktoerId_1.get(), aktoerId_2.get(), aktoerId_3.get());
         pollOpensearchUntil(() -> {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
-                    testEnhet.get(),
+                    testEnhet.getValue(),
                     empty(),
                     "asc",
                     "ikke_satt",
@@ -354,7 +354,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
-                    testEnhet.get(),
+                    testEnhet.getValue(),
                     empty(),
                     "ascending",
                     "ikke_satt",
@@ -367,7 +367,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
-                    testEnhet.get(),
+                    testEnhet.getValue(),
                     empty(),
                     "ascending",
                     "ikke_satt",
@@ -379,7 +379,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         });
 
         var responseSortertFULLFORT_IJOBB = opensearchService.hentBrukere(
-                testEnhet.get(),
+                testEnhet.getValue(),
                 empty(),
                 "descending",
                 "siste_endring_tidspunkt",
@@ -392,7 +392,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertFULLFORT_IJOBB.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_IJOBB_bruker_1_i_2024.getYear());
 
         var responseSortertFULLFORT_EGEN = opensearchService.hentBrukere(
-                testEnhet.get(),
+                testEnhet.getValue(),
                 empty(),
                 "ascending",
                 "siste_endring_tidspunkt",
@@ -406,7 +406,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(2).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_1_i_2021.getYear());
 
         var responseSortertTomRes1 = opensearchService.hentBrukere(
-                testEnhet.get(),
+                testEnhet.getValue(),
                 empty(),
                 "descending",
                 "siste_endring_tidspunkt",
@@ -420,7 +420,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     public void sisteendring_filterPaFlereEndringerSkalKasteError() {
         IllegalStateException exception = assertThrows(IllegalStateException.class,
                 () -> opensearchService.hentBrukere(
-                        testEnhet.get(),
+                        testEnhet.getValue(),
                         empty(),
                         "descending",
                         "siste_endring_tidspunkt",

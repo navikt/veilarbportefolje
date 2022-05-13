@@ -214,6 +214,21 @@ CREATE VIEW public.aktorid_indeksert_data AS
 
 
 --
+-- Name: bruker_data; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.bruker_data (
+    freg_ident character varying(30) NOT NULL,
+    fornavn character varying(90),
+    mellomnavn character varying(90),
+    etternavn character varying(90),
+    kjoenn character varying(5),
+    er_doed boolean,
+    foedselsdato date
+);
+
+
+--
 -- Name: brukertiltak; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -453,6 +468,14 @@ ALTER TABLE ONLY public.arbeidsliste
 
 ALTER TABLE ONLY public.bruker_cv
     ADD CONSTRAINT bruker_cv_pkey PRIMARY KEY (aktoerid);
+
+
+--
+-- Name: bruker_data bruker_data_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bruker_data
+    ADD CONSTRAINT bruker_data_pkey PRIMARY KEY (freg_ident);
 
 
 --

@@ -10,13 +10,11 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetInn
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class UtdanningsAktivitetService {
     private final AktivitetService aktivitetService;

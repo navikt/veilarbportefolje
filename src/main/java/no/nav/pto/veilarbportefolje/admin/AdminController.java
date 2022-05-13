@@ -4,25 +4,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
-import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
-import no.nav.pto.veilarbportefolje.postgres.AktoerDataOpensearchMapper;
-import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
-import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.hentIdenterFraPostgres;
 
@@ -54,10 +50,7 @@ public class AdminController {
     private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchAdminService opensearchAdminService;
-    private final PostgresOpensearchMapper postgresOpensearchMapper;
-    private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
-    private final BrukerRepository brukerRepository;
-    private final BrukerRepositoryV2 brukerRepositoryV2;
+    private final PdlService pdlService;
     private final UnleashService unleashService;
 
     @PostMapping("/aktoerId")
@@ -180,23 +173,31 @@ public class AdminController {
         return opensearchAdminService.forceShardAssignment();
     }
 
+    @PostMapping("/pdl/lastInnDataFraPdl")
+    public String lastInnPDLBrukerData() {
+        authorizeAdmin();
+        AtomicInteger antall = new AtomicInteger(0);
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
+        brukereUnderOppfolging.forEach(bruker -> {
+            if (antall.getAndAdd(1) % 100 == 0) {
+                log.info("pdl brukerdata: inlastning {}% ferdig", ((double) antall.get() / (double) brukereUnderOppfolging.size()) * 100.0);
+            }
+            try {
+                pdlService.hentOgLagreBrukerData(bruker);
+            } catch (Exception e) {
+                log.info("pdl brukerdata: feil under innlastning av pdl data på bruker: {}", bruker, e);
+            }
+        });
+        log.info("pdl brukerdata: ferdig med innlastning");
+        return "ferdig";
+    }
+
     @PostMapping("/test/postgresIndeksering")
     public void testHentUnderOppfolging() {
         authorizeAdmin();
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
         opensearchIndexer.dryrunAvPostgresTilOpensearchMapping(brukereUnderOppfolging);
         log.info("ferdig med dryrun");
-    }
-
-    @PutMapping("/test/hentFraOracleOgPostgres")
-    public String testHentIndeksertPostgresOgOracleBruker(@RequestBody String aktoerIdString) {
-        authorizeAdmin();
-        AktorId aktoerId = AktorId.of(aktoerIdString);
-        OppfolgingsBruker fraOracle = brukerRepository.hentBrukerFraView(aktoerId).get();
-        postgresOpensearchMapper.flettInnPostgresData(List.of(fraOracle));
-        var fraPostgres = brukerRepositoryV2.hentOppfolgingsBruker(aktoerId);
-
-        return "{ \"oracle/Postgres\":" + JsonUtils.toJson(fraOracle) + ", \"postgres\":" + JsonUtils.toJson(fraPostgres) + " }";
     }
 
     private void authorizeAdmin() {
