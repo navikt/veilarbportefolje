@@ -11,8 +11,8 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlRepository;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper;
@@ -28,8 +28,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent.Gruppe.AKTORID;
-import static no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.FAR_IN_THE_FUTURE_DATE;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
@@ -42,18 +42,18 @@ public class TiltakPostgresTest {
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final AktivitetOpensearchService aktivitetOpensearchService;
-    private final PdlRepository pdlRepository;
+    private final PdlIdentRepository pdlIdentRepository;
 
     private final AktorId aktorId = randomAktorId();
     private final Fnr fnr = randomFnr();
 
     @Autowired
-    public TiltakPostgresTest(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, PdlRepository pdlRepository) {
+    public TiltakPostgresTest(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, PdlIdentRepository pdlIdentRepository) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.tiltakRepositoryV2 = tiltakRepositoryV2;
-        this.pdlRepository = pdlRepository;
+        this.pdlIdentRepository = pdlIdentRepository;
     }
 
     @BeforeEach
@@ -165,7 +165,7 @@ public class TiltakPostgresTest {
     @Test
     public void skal_lagre_tiltak_pa_enhet() {
         String navKontor = "0007";
-        pdlRepository.upsertIdenter(List.of(
+        pdlIdentRepository.upsertIdenter(List.of(
                         new PDLIdent(aktorId.get(), false, AKTORID),
                         new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
                 ));

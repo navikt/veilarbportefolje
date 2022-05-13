@@ -58,7 +58,7 @@ public class OpensearchIndexer {
     public void indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;
         if (brukOppfolgingsbrukerPaPostgres(unleashService)) {
-            bruker = Optional.ofNullable(brukerRepositoryV2.hentOppfolgingsBruker(aktoerId));
+            bruker = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
         } else {
             bruker = brukerRepository.hentBrukerFraView(aktoerId);
         }
@@ -199,10 +199,7 @@ public class OpensearchIndexer {
 
     public void dryrunAvPostgresTilOpensearchMapping(List<AktorId> brukereUnderOppfolging) {
         partition(brukereUnderOppfolging, BATCH_SIZE).forEach(bolk -> {
-            List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(bolk).stream()
-                    .filter(bruker -> bruker.getAktoer_id() != null)
-                    .toList();
-            postgresOpensearchMapper.flettInnPostgresData(brukere);
+            List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(bolk, true);
             sisteEndringRepository.setAlleSisteEndringTidspunkter(brukere);
 
             if (loggDiffSisteEndringer(unleashService)) {
@@ -222,6 +219,7 @@ public class OpensearchIndexer {
                     }
                 });
             }
+
         });
     }
 }

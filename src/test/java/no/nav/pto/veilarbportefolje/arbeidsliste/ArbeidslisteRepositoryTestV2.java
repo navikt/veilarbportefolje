@@ -7,7 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

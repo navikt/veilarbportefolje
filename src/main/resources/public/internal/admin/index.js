@@ -273,6 +273,20 @@ function handleforceShardAssignmentForm(e) {
     }
 }
 
+const lastInnDataFraPdlForm = document.getElementById('lastInnDataFraPdlForm')
+lastInnDataFraPdlForm.addEventListener('submit', handleLastInnDataFraPdl);
+
+function handleLastInnDataFraPdl(e) {
+    e.preventDefault()
+    if (window.confirm('Er du sikker på at du vil starte Innlastningen?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/pdl/lastInnDataFraPdl',
+            {method: 'POST', credentials: 'same-origin'},
+        'lastInnDataFraPdlRespons'
+        )
+    }
+}
+
 const testForm = document.getElementById('testPostgresForm')
 testForm.addEventListener('submit', handleTest);
 
@@ -282,22 +296,6 @@ function handleTest(e) {
         fetchData(
             '/veilarbportefolje/api/admin/test/postgresIndeksering',
             {method: 'POST', credentials: 'same-origin'}
-        )
-    }
-}
-
-const testHentPostgresOracleForm = document.getElementById('testHentPostgresOracleForm')
-const testInputHentAktoerId = document.getElementById('testInputHentAktoerId');
-testHentPostgresOracleForm.addEventListener('submit', handleHentPostgresOracleTest);
-
-function handleHentPostgresOracleTest(e) {
-    e.preventDefault()
-    const aktoerId = testInputHentAktoerId.value;
-    if (aktoerId && aktoerId.length > 0) {
-        fetchData(
-            '/veilarbportefolje/api/admin/test/hentFraOracleOgPostgres',
-            {method: 'PUT', credentials: 'same-origin', body: aktoerId},
-            'hentTestRes'
         )
     }
 }

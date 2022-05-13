@@ -12,7 +12,6 @@ import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -31,7 +30,6 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse.
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class YtelsesService {
     private final AktorClient aktorClient;

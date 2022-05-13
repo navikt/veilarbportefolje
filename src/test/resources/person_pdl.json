@@ -1,0 +1,29 @@
+{
+  "data": {
+    "hentPerson": {
+      "navn": [
+        {
+          "fornavn": "TRIVIELL",
+          "mellomnavn": "LAT",
+          "etternavn": "SKILPADDE"
+        }
+      ],
+      "foedsel": [
+        {
+          "foedselsdato": "1987-07-30"
+        }
+      ],
+      "folkeregisteridentifikator": [
+        {
+          "identifikasjonsnummer": "01010100000"
+        }
+      ],
+      "kjoenn": [
+        {
+          "kjoenn": "KVINNE"
+        }
+      ],
+      "doedsfall": []
+    }
+  }
+}

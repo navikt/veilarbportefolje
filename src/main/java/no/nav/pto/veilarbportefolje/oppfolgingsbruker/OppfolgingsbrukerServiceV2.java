@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
@@ -20,6 +22,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukOppfolgingsbrukerPaPostgres;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -27,7 +31,9 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final BrukerServiceV2 brukerServiceV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OpensearchIndexer opensearchIndexer;
     private final VedtakStatusRepositoryV2 vedtakStatusRepositoryV2;
+    private final UnleashService unleashService;
 
     @Override
     public void behandleKafkaMeldingLogikk(EndringPaaOppfoelgingsBrukerV2 kafkaMelding) {
@@ -49,7 +55,11 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
         brukerServiceV2.hentAktorId(Fnr.of(kafkaMelding.getFodselsnummer()))
                 .ifPresent(id -> {
                     log.info("Fikk endring pa oppfolgingsbruker (V2): {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v2", id);
-                    oppdaterOpensearch(id, oppfolgingsbruker);
+                    if (brukOppfolgingsbrukerPaPostgres(unleashService)) {
+                        opensearchIndexer.indekser(id);
+                    } else {
+                        oppdaterOpensearch(id, oppfolgingsbruker);
+                    }
                 });
     }
 

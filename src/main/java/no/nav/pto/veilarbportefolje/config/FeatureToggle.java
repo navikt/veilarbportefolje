@@ -24,6 +24,8 @@ public class FeatureToggle {
 
     public static final String DIALOG = "veilarbportefolje.dialogPostgres";
     public static final String NOM_SKJERMING = "veilarbportefolje.NOM_Skjerming";
+    public static final String PDL_BRUKERDATA = "veilarbportefolje.Pdl_brukerdata";
+    public static final String PDL_BRUKERDATA_BACKUP = "veilarbportefolje.Pdl_brukerdata_backup";
 
     public static final String LOG_DIFF_SISTE_ENDRINGER = "veilarbportefolje.logg_diff_siste_endringer";
 
@@ -49,6 +51,14 @@ public class FeatureToggle {
 
     public static boolean hentIdenterFraPostgres(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.HENT_IDENTER_FRA_POSTGRES);
+    }
+
+    public static boolean brukPDLBrukerdata(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.PDL_BRUKERDATA);
+    }
+
+    public static boolean brukArenaSomBackup(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.PDL_BRUKERDATA_BACKUP);
     }
 
     public static boolean brukIkkeAvtalteMoter(UnleashService unleashService) {
