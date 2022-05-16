@@ -34,8 +34,18 @@ public class PdlIdentRepository {
         identer.forEach(ident -> insertIdent(nyLokalIdent, ident));
     }
 
-    public boolean harIdentUnderOppfolging(List<PDLIdent> identer) {
-        String identerParam = identer.stream().map(PDLIdent::getIdent).collect(Collectors.joining(",", "{", "}"));
+    public boolean harAktorIdUnderOppfolging(List<AktorId> identer) {
+        String identerParam = identer.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject("""
+                        select bool_or(oppfolging) as harOppfolging from oppfolging_data
+                        where aktoerid = any (?::varchar[])
+                        """, (rs, row) -> rs.getBoolean("harOppfolging"), identerParam))
+        ).orElse(false);
+    }
+
+    public boolean harFnrUnderOppfolging(List<Fnr> identer) {
+        String identerParam = identer.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject("""
                         select bool_or(oppfolging) as harOppfolging from oppfolging_data
@@ -83,6 +93,19 @@ public class PdlIdentRepository {
                 () -> db.queryForObject("select aktorid from aktive_identer where fnr = ?",
                         (rs, i) -> Optional.ofNullable(rs.getString("aktorid")).map(AktorId::of).orElse(null),
                         fnr.get())
+        );
+    }
+
+    public AktorId hentAktorId(List<Fnr> fnrs) {
+        return queryForObjectOrNull(
+                () -> db.queryForObject("""
+                                select ident from bruker_identer
+                                where ident = any (?::varchar[])
+                                and not historisk
+                                and gruppe = 'AKTORID'
+                                """,
+                        (rs, i) -> Optional.ofNullable(rs.getString("ident")).map(AktorId::of).orElse(null),
+                        fnrs.stream().map(Fnr::get).toList())
         );
     }
 
