@@ -65,9 +65,13 @@ public class OppfolgingRepositoryV2 {
         ));
     }
 
-    public boolean erUnderOppfolging(AktorId aktoerId) {
+    public boolean erUnderOppfolgingOgErAktivIdent(AktorId aktoerId) {
         return Optional.ofNullable(queryForObjectOrNull(() ->
-                db.queryForObject("SELECT oppfolging FROM oppfolging_data WHERE aktoerid = ?", (s, i) -> s.getBoolean(OPPFOLGING), aktoerId.get())
+                db.queryForObject("""
+                        select oppfolging from oppfolging_data od
+                        inner join aktive_identer ai on ai.aktorid = od.aktoerid
+                        WHERE aktoerid = ?
+                        """, (s, i) -> s.getBoolean(OPPFOLGING), aktoerId.get())
         )).orElse(false);
     }
 

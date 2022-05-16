@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
+import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
@@ -22,10 +23,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -33,6 +36,7 @@ import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukOppfolgingsbrukerPaPostgres;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.loggDiffSisteEndringer;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
 @Slf4j
@@ -54,7 +58,7 @@ public class OpensearchIndexer {
     public void indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;
         if (brukOppfolgingsbrukerPaPostgres(unleashService)) {
-            bruker = Optional.ofNullable(brukerRepositoryV2.hentOppfolgingsBruker(aktoerId));
+            bruker = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
         } else {
             bruker = brukerRepository.hentBrukerFraView(aktoerId);
         }
@@ -195,14 +199,27 @@ public class OpensearchIndexer {
 
     public void dryrunAvPostgresTilOpensearchMapping(List<AktorId> brukereUnderOppfolging) {
         partition(brukereUnderOppfolging, BATCH_SIZE).forEach(bolk -> {
-            List<OppfolgingsBruker> brukere = brukerRepository.hentBrukereFraView(bolk).stream()
-                    .filter(bruker -> bruker.getAktoer_id() != null)
-                    .toList();
-            postgresOpensearchMapper.flettInnPostgresData(brukere);
-            brukere.forEach( oracleBruker -> {
-                OppfolgingsBruker postgres = brukerRepositoryV2.hentOppfolgingsBruker(AktorId.of(oracleBruker.getAktoer_id()));
-                postgresOpensearchMapper.loggDiff(oracleBruker, postgres);
-            });
+            List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(bolk, true);
+            sisteEndringRepository.setAlleSisteEndringTidspunkter(brukere);
+
+            if (loggDiffSisteEndringer(unleashService)) {
+                Map<AktorId, Map<String, Endring>> sisteEndringerDataPostgres = postgresOpensearchMapper.hentPostgresSisteEndringerData(brukere);
+
+                brukere.forEach(bruker -> {
+                    String sisteEndringerPostgresValues = sisteEndringerDataPostgres.get(AktorId.of(bruker.getAktoer_id())).keySet().stream().sorted()
+                            .map(key -> key + "=" + sisteEndringerDataPostgres.get(AktorId.of(bruker.getAktoer_id())).get(key))
+                            .collect(Collectors.joining(", ", "{", "}"));
+
+                    String sisteEndringerOracleValues = bruker.getSiste_endringer().keySet().stream().sorted()
+                            .map(key -> key + "=" + bruker.getSiste_endringer().get(key))
+                            .collect(Collectors.joining(", ", "{", "}"));
+
+                    if (!sisteEndringerPostgresValues.equals(sisteEndringerOracleValues)) {
+                        log.warn(String.format("OpenSearch siste endringer diff for aktorId %s, postgres: %s, oracle: %s ", bruker.getAktoer_id(), sisteEndringerPostgresValues, sisteEndringerOracleValues));
+                    }
+                });
+            }
+
         });
     }
 }

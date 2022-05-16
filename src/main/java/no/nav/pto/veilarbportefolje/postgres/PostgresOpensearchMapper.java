@@ -4,21 +4,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,6 +30,7 @@ public class PostgresOpensearchMapper {
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final AktivitetOpensearchService aktivitetOpensearchService;
     private final SkjermingService skjermingService;
+    private final SisteEndringService sisteEndringService;
     private final UnleashService unleashService;
 
     @Deprecated
@@ -77,6 +75,11 @@ public class PostgresOpensearchMapper {
         );
 
         return brukere;
+    }
+
+    public Map<AktorId, Map<String, Endring>> hentPostgresSisteEndringerData(List<OppfolgingsBruker> brukere) {
+        List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
+        return sisteEndringService.hentSisteEndringerFraPostgres(aktoerIder);
     }
 
     private void flettInnAktivitetData(AktivitetEntity aktivitetData, OppfolgingsBruker bruker) {
@@ -159,12 +162,6 @@ public class PostgresOpensearchMapper {
             bruker.setArbeidsliste_kategori(dataPaAktorId.getArbeidslisteKategori());
             bruker.setArbeidsliste_tittel_sortering(dataPaAktorId.getArbeidslisteTittelSortering());
             bruker.setArbeidsliste_tittel_lengde(dataPaAktorId.getArbeidslisteTittelLengde());
-        }
-    }
-
-    public void loggDiff(OppfolgingsBruker oppfolgingsBrukerOracle, OppfolgingsBruker oppfolgingsBrukerPostgres){
-        if(!oppfolgingsBrukerOracle.equals(oppfolgingsBrukerPostgres)){
-            log.info("fant en diff på bruker: {}", oppfolgingsBrukerOracle.getAktoer_id());
         }
     }
 }

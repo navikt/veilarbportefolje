@@ -10,10 +10,10 @@ import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBackup;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.AAPMAXTIDUKE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.AAPUNNTAKDAGERIGJEN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.AKTOERID;
@@ -67,55 +69,73 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.YTELSE_UTLOPSDATO;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.FodselsnummerUtils.lagFodselsdato;
 
 @Slf4j
 @Repository
 @RequiredArgsConstructor
 public class BrukerRepositoryV2 {
-    @Qualifier("PostgresNamedJdbcReadOnly")
-    private final NamedParameterJdbcTemplate namedDb;
+    @Qualifier("PostgresJdbcReadOnly")
+    private final JdbcTemplate db;
     private final UnleashService unleashService;
 
-    public OppfolgingsBruker hentOppfolgingsBruker(AktorId aktorId) {
-        return hentOppfolgingsBrukere(List.of(aktorId))
-                .stream().findAny().orElse(null);
+    public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds) {
+        return hentOppfolgingsBrukere(aktorIds, false);
     }
 
-    /*
-    NOTE: hvis oppfolgingsbruker_arena_v2 ikke lenger er kritisk
-    Bytt ut inner join med left join
-     */
-    public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds) {
+    public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds, boolean logdiff) {
         List<OppfolgingsBruker> result = new ArrayList<>();
 
-        var params = new MapSqlParameterSource(
-                "aktorIds",
-                aktorIds.stream().map(AktorId::get) .collect(Collectors.joining(",", "{", "}"))
-        );
-        return namedDb.query("""
-                        SELECT ad.*, ob.*, ns.er_skjermet, ai.fnr
-                        from aktorid_indeksert_data ad
-                        inner join aktive_identer ai on ad.aktoerid = ai.aktorid
-                        inner join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
-                        left join nom_skjerming ns on ns.fodselsnr = ai.fnr
-                        where aktoerid = ANY (:aktorIds::varchar[])
+        var params = aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
+        return db.query("""
+                        select OD.AKTOERID, OD.OPPFOLGING, ob.*,
+                               ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
+                               bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
+                               OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  D.VENTER_PA_BRUKER,  D.VENTER_PA_NAV,
+                               V.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
+                               BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
+                               YB.DAGPUTLOPUKE, YB.PERMUTLOPUKE, YB.UTLOPSDATO as YTELSE_UTLOPSDATO,
+                               V.ANSVARLIG_VEILDERNAVN          as VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN,
+                               V.ENDRET_TIDSPUNKT               as VEDTAKSTATUS_ENDRET_TIDSPUNKT,
+                               ARB.SIST_ENDRET_AV_VEILEDERIDENT as ARB_SIST_ENDRET_AV_VEILEDERIDENT,
+                               ARB.ENDRINGSTIDSPUNKT            as ARB_ENDRINGSTIDSPUNKT,
+                               ARB.OVERSKRIFT                   as ARB_OVERSKRIFT,
+                               ARB.FRIST                        as ARB_FRIST,
+                               ARB.KATEGORI                     as ARB_KATEGORI
+                        FROM OPPFOLGING_DATA OD
+                                inner join aktive_identer ai on OD.aktoerid = ai.aktorid
+                                 left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
+                                 left join nom_skjerming ns on ns.fodselsnr = ai.fnr
+                                 left join bruker_data bd on bd.freg_ident = ai.fnr
+                                 LEFT JOIN DIALOG D ON D.AKTOERID = ai.aktorid
+                                 LEFT JOIN VEDTAKSTATUS V on V.AKTOERID = ai.aktorid
+                                 LEFT JOIN ARBEIDSLISTE ARB on ARB.AKTOERID = ai.aktorid
+                                 LEFT JOIN BRUKER_PROFILERING BP ON BP.AKTOERID = ai.aktorid
+                                 LEFT JOIN BRUKER_CV CV on CV.AKTOERID = ai.aktorid
+                                 LEFT JOIN BRUKER_REGISTRERING BR on BR.AKTOERID = ai.aktorid
+                                 LEFT JOIN YTELSE_STATUS_FOR_BRUKER YB on YB.AKTOERID = ai.aktorid
+                                 where ai.aktorid = ANY (?::varchar[])
                         """,
-                params, (ResultSet rs) -> {
+                (ResultSet rs) -> {
                     while (rs.next()) {
-                        result.add(mapTilOppfolgingsBruker(rs));
+                        OppfolgingsBruker bruker = mapTilOppfolgingsBruker(rs, logdiff);
+                        if (bruker.getFnr() != null) {
+                            result.add(bruker);
+                        }
                     }
                     return result;
-                });
+                }, params);
     }
 
     @SneakyThrows
-    private OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
+    private OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean logDiff) {
+        if (logDiff) {
+            logDiff(rs);
+        }
         String formidlingsgruppekode = rs.getString(FORMIDLINGSGRUPPEKODE);
         String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
 
         String fnr = rs.getString(FODSELSNR);
-        String fornavn = rs.getString(FORNAVN);
-        String etternavn = rs.getString(ETTERNAVN);
         String vedtakstatus = rs.getString(VEDTAKSTATUS);
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setFnr(fnr)
@@ -147,10 +167,7 @@ public class BrukerRepositoryV2 {
                 .setDagputlopuke(rs.getObject(DAGPUTLOPUKE, Integer.class))
                 .setPermutlopuke(rs.getObject(PERMUTLOPUKE, Integer.class))
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
-                .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)))
-                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
-                .setFodselsdato(FodselsnummerUtils.lagFodselsdato(fnr))
-                .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
+                .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)));
 
         if (brukNOMSkjerming(unleashService)) {
             bruker.setEgen_ansatt(rs.getBoolean(ER_SKJERMET));
@@ -179,22 +196,99 @@ public class BrukerRepositoryV2 {
             bruker.setArbeidsliste_aktiv(false);
         }
 
+        Date foedsels_dato = rs.getDate("foedselsdato");
+        if (!brukPDLBrukerdata(unleashService)) {
+            flettInnDataFraArena(rs, bruker);
+        } else if (brukPDLBrukerdata(unleashService) && foedsels_dato != null) {
+            flettInnDataFraPDL(rs, bruker);
+        } else if (brukArenaSomBackup(unleashService)) {
+            log.info("Fant ikke brukerdat på aktor: {}, bruker arena som backup", bruker.getAktoer_id());
+            flettInnDataFraArena(rs, bruker);
+        } else {
+            log.error("Fant ikke brukerdat på aktor: {}, filterer derfor vekk bruker", bruker.getAktoer_id());
+            bruker.setFnr(null);
+        }
+
         // ARENA DB LENKE: skal fjernes på sikt
         return bruker
-                .setFornavn(fornavn)
-                .setEtternavn(etternavn)
-                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
                 .setEnhet_id(rs.getString(NAV_KONTOR))
                 .setIserv_fra_dato(toIsoUTC(rs.getTimestamp(ISERV_FRA_DATO)))
                 .setRettighetsgruppekode(rs.getString(RETTIGHETSGRUPPEKODE))
                 .setHovedmaalkode(rs.getString(HOVEDMAALKODE))
                 .setSikkerhetstiltak(rs.getString(SIKKERHETSTILTAK_TYPE_KODE))
                 .setDiskresjonskode(rs.getString(DISKRESJONSKODE))
-                .setEr_doed(rs.getBoolean(ER_DOED))
                 .setFormidlingsgruppekode(formidlingsgruppekode)
                 .setKvalifiseringsgruppekode(kvalifiseringsgruppekode)
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus));
+    }
+
+    @SneakyThrows
+    private void flettInnDataFraPDL(ResultSet rs, OppfolgingsBruker bruker) {
+        Date foedsels_dato = rs.getDate("foedselsdato");
+        String fornavn = rs.getString("fornavn_pdl");
+        String etternavn = rs.getString("etternavn_pdl");
+        bruker
+                .setFornavn(fornavn)
+                .setEtternavn(etternavn)
+                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
+                .setEr_doed(rs.getBoolean("er_doed_pdl"))
+                .setFodselsdag_i_mnd(foedsels_dato.toLocalDate().getDayOfMonth())
+                .setFodselsdato(lagFodselsdato(foedsels_dato.toLocalDate()))
+                .setKjonn(rs.getString("kjoenn"));
+    }
+
+    @SneakyThrows
+    private void flettInnDataFraArena(ResultSet rs, OppfolgingsBruker bruker) {
+        String fnr = rs.getString(FODSELSNR);
+        String fornavn = rs.getString(FORNAVN);
+        String etternavn = rs.getString(ETTERNAVN);
+        bruker
+                .setFornavn(fornavn)
+                .setEtternavn(etternavn)
+                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
+                .setEr_doed(rs.getBoolean(ER_DOED))
+                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
+                .setFodselsdato(lagFodselsdato(fnr))
+                .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
+    }
+
+    @SneakyThrows
+    private void logDiff(ResultSet rs) {
+        Date foedsels_dato = rs.getDate("foedselsdato");
+        String aktoerId = rs.getString(AKTOERID);
+        String fnr = rs.getString(FODSELSNR);
+        if (foedsels_dato == null) {
+            log.info("Arena/PDL: Har ikke PDL data på aktoer: {}", aktoerId);
+            return;
+        }
+        if (isDifferent(rs.getString("fornavn_pdl"), rs.getString(FORNAVN))) {
+            log.info("Arena/PDL: fornavn feil bruker: {}", aktoerId);
+        }
+        if (isDifferent(rs.getString("etternavn_pdl"), rs.getString(ETTERNAVN))) {
+            log.info("Arena/PDL: etternavn feil bruker: {}", aktoerId);
+        }
+        if (isDifferent(rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED))) {
+            log.info("Arena/PDL: er_doed_pdl feil bruker: {}, pdl: {}, arena: {}", aktoerId, rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED));
+        }
+        if (isDifferent(rs.getString("kjoenn"), FodselsnummerUtils.lagKjonn(fnr))) {
+            log.info("Arena/PDL: kjønn feil bruker: {}", aktoerId);
+        }
+        if (isDifferent(lagFodselsdato(foedsels_dato.toLocalDate()), lagFodselsdato(fnr))) {
+            log.info("Arena/PDL: Fodselsdato feil bruker: {}", aktoerId);
+        }
+        if (isDifferent(foedsels_dato.toLocalDate().getDayOfMonth(), Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))) {
+            log.info("Arena/PDL: Fodselsdag_i_mnd feil bruker: {}", aktoerId);
+        }
+    }
+
+    private boolean isDifferent(Object o, Object other) {
+        if (o == null && other == null) {
+            return false;
+        } else if (o == null || other == null) {
+            return true;
+        }
+        return !o.equals(other);
     }
 }

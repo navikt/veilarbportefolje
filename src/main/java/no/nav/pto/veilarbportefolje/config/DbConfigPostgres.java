@@ -48,19 +48,12 @@ public class DbConfigPostgres implements DatabaseConfig{
         return new JdbcTemplate(dataSource);
     }
 
-    @Bean("PostgresNamedJdbc")
-    @Override
-    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(@Qualifier("Postgres")DataSource dataSource) {
-        return new NamedParameterJdbcTemplate(dataSource);
-    }
-
     @Bean(name="PostgresNamedJdbcReadOnly")
-    public NamedParameterJdbcTemplate namedParameterJdbcTemplateRead(@Qualifier("PostgresReadOnly") DataSource dataSource) {
+    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(@Qualifier("PostgresReadOnly") DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
     }
 
-    @Bean("PostgresTransactionManager")
-    @Override
+    @Bean
     public PlatformTransactionManager transactionManager(@Qualifier("Postgres") DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }

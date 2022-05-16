@@ -12,7 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,23 +39,23 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     private final AktorId aktoer = randomAktorId();
     private final Fnr fodselsnummer = Fnr.ofValidFnr("10108000399"); //TESTFAMILIE
     private final JdbcTemplate jdbcTemplatePostgres;
-    private final PdlRepository pdlRepository;
+    private final PdlIdentRepository pdlIdentRepository;
 
     @Autowired
-    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, PdlRepository pdlRepository) {
+    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
         this.aktivitetService = aktivitetService;
         this.opensearchService = opensearchService;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
-        this.pdlRepository = pdlRepository;
+        this.pdlIdentRepository = pdlIdentRepository;
     }
 
     @BeforeEach
     public void resetDb() {
-        jdbcTemplatePostgres.update("TRUNCATE aktiviteter CASCADE");
+        jdbcTemplatePostgres.update("TRUNCATE aktiviteter");
         jdbcTemplatePostgres.update("TRUNCATE oppfolgingsbruker_arena_v2");
         jdbcTemplatePostgres.update("TRUNCATE bruker_identer");
-        jdbcTemplatePostgres.update("TRUNCATE oppfolging_data CASCADE");
+        jdbcTemplatePostgres.update("TRUNCATE oppfolging_data");
     }
 
     @Test
@@ -202,7 +202,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     }
 
     private void settSperretAnsatt(AktorId aktorId, NavKontor navKontor) {
-        Fnr fnr = pdlRepository.hentFnr(aktorId);
+        Fnr fnr = pdlIdentRepository.hentFnr(aktorId);
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         "test", "testson", navKontor.getValue(), null, null,
@@ -211,7 +211,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     }
 
     private void settDiskresjonskode(AktorId aktorId, NavKontor navKontor, String kode) {
-        Fnr fnr = pdlRepository.hentFnr(aktorId);
+        Fnr fnr = pdlIdentRepository.hentFnr(aktorId);
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         "test", "testson", navKontor.getValue(), null, null,

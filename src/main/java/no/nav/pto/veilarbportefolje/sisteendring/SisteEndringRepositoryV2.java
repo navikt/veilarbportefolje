@@ -1,12 +1,11 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -16,9 +15,10 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.AKTIVITETID;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.ER_SETT;
 import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.SISTE_ENDRING_KATEGORI;
 import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.SISTE_ENDRING_TIDSPUNKT;
@@ -29,14 +29,13 @@ import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class SisteEndringRepositoryV2 {
-    @NonNull
+    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
-    @Autowired
-    public SisteEndringRepositoryV2(@Qualifier("PostgresJdbc") JdbcTemplate db) {
-        this.db = db;
-    }
+    @Qualifier("PostgresJdbcReadOnly")
+    private final JdbcTemplate dbReadOnly;
 
     public int upsert(SisteEndringDTO sisteEndringDTO) {
         return db.update(
@@ -85,10 +84,10 @@ public class SisteEndringRepositoryV2 {
     }
 
     public Timestamp getSisteEndringTidspunkt(AktorId aktoerId, SisteEndringsKategori kategori) {
-        return queryForObjectOrNull(() -> db.queryForObject("""
+        return queryForObjectOrNull(() -> dbReadOnly.queryForObject("""
                         SELECT SISTE_ENDRING_TIDSPUNKT FROM SISTE_ENDRING
                         WHERE aktoerid = ? AND siste_endring_kategori = ?""",
-                        Timestamp.class, aktoerId.get(), kategori.name())
+                Timestamp.class, aktoerId.get(), kategori.name())
         );
     }
 
@@ -121,7 +120,25 @@ public class SisteEndringRepositoryV2 {
                 " FROM " + TABLE_NAME +
                 " WHERE " +
                 AKTOERID + "= ?");
-        return db.query(sql, this::mapResultatTilKategoriOgEndring, aktoerId.get());
+        return dbReadOnly.query(sql, this::mapResultatTilKategoriOgEndring, aktoerId.get());
+    }
+
+    public Map<AktorId, Map<String, Endring>> getSisteEndringer(List<AktorId> aktoerIder) {
+        String aktoerIderStr = aktoerIder.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
+
+        String sql = """
+                SELECT SISTE_ENDRING_KATEGORI, SISTE_ENDRING_TIDSPUNKT, ER_SETT, AKTIVITETID
+                FROM SISTE_ENDRING WHERE AKTOERID = ANY (?::varchar[])
+                """;
+        return dbReadOnly.query(sql,
+                ps -> ps.setString(1, aktoerIderStr),
+                (ResultSet rs) -> {
+                    HashMap<AktorId, Map<String, Endring>> results = new HashMap<>();
+                    while (rs.next()) {
+                        results.put(AktorId.of(rs.getString(AKTOERID)), mapResultatTilKategoriOgEndring(rs));
+                    }
+                    return results;
+                });
     }
 
     @SneakyThrows

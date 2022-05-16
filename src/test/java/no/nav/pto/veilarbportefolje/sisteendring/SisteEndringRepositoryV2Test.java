@@ -29,7 +29,7 @@ public class SisteEndringRepositoryV2Test {
     @Before
     public void setup() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
-        this.sisteEndringRepository = new SisteEndringRepositoryV2(db);
+        this.sisteEndringRepository = new SisteEndringRepositoryV2(db, db);
         sisteEndringRepository.slettSisteEndringer(AKTORID);
     }
 

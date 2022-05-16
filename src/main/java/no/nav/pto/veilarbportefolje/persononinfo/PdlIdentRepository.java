@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -21,7 +21,7 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class PdlRepository {
+public class PdlIdentRepository {
     @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
@@ -32,23 +32,6 @@ public class PdlRepository {
 
         String nyLokalIdent = db.queryForObject("select nextval('PDL_PERSON_SEQ')", String.class);
         identer.forEach(ident -> insertIdent(nyLokalIdent, ident));
-    }
-
-    @Transactional
-    public void slettLokalIdentlagringHvisIkkeUnderOppfolging(AktorId aktorId) {
-        String lokalIdent = hentPerson(aktorId.get());
-        List<PDLIdent> identer = hentIdenter(lokalIdent);
-
-        if (harIdentUnderOppfolging(identer)) {
-            log.warn("""
-                            Sletter ikke identer tilknyttet aktorId: {}.
-                            Da en eller flere relaterte identer på person: {} er under oppfolging.
-                            """,
-                    aktorId, lokalIdent);
-            return;
-        }
-        log.info("Sletter identer lagret på aktorId: {}, lokalIdent: {}.", aktorId, lokalIdent);
-        slettLagretePerson(lokalIdent);
     }
 
     public boolean harIdentUnderOppfolging(List<PDLIdent> identer) {
@@ -64,7 +47,7 @@ public class PdlRepository {
     public List<PDLIdent> hentIdenter(String ident) {
         return db.queryForList("select * from bruker_identer where person = ?", ident)
                 .stream()
-                .map(PdlRepository::mapTilident)
+                .map(PdlIdentRepository::mapTilident)
                 .toList();
     }
 
@@ -108,7 +91,7 @@ public class PdlRepository {
                 person, ident.getIdent(), ident.isHistorisk(), ident.getGruppe().name());
     }
 
-    private void slettLagretePerson(String person) {
+    public void slettLagretePerson(String person) {
         log.info("Sletter lokal ident: {}", person);
         db.update("delete from bruker_identer where person = ?", person);
     }
