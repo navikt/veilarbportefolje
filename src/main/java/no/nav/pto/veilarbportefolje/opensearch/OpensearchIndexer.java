@@ -194,7 +194,7 @@ public class OpensearchIndexer {
         if (isDevelopment().orElse(false)) {
             return 1;
         }
-        return 8;
+        return 6;
     }
 
     public void dryrunAvPostgresTilOpensearchMapping(List<AktorId> brukereUnderOppfolging) {
