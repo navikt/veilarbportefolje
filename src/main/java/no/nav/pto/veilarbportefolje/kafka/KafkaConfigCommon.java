@@ -385,7 +385,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.PDL_BRUKERDATA.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(String.class),
+                                        Deserializers.stringDeserializer(),
                                         pdlBrukerdataKafkaService::behandleKafkaRecord
                                 )
                 );
