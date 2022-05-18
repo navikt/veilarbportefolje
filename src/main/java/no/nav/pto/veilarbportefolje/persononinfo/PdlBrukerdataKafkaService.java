@@ -62,6 +62,9 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
             return pdlDokument;
         } catch (JsonParseException e) {
             if (retries < 5) {
+                if(melding.charAt(0) == '{'){
+                    melding = melding.substring(1);
+                }
                 return tryToParsePdlDokument(melding.substring(melding.indexOf("{")), ++retries);
             }
             throw e;
