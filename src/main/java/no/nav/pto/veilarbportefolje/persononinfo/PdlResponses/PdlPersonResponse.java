@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPersonResponseData> {
@@ -29,18 +28,20 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Kjoenn {
             private String kjoenn;
+            private Metadata metadata;
         }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Foedsel {
             private String foedselsdato;
+            private Metadata metadata;
         }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Doedsfall {
-            private LocalDate doedsdato;
+            private String doedsdato;
         }
 
         @Data
@@ -49,12 +50,20 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private String fornavn;
             private String mellomnavn;
             private String etternavn;
+            private Metadata metadata;
         }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Folkeregisteridentifikator {
             private String identifikasjonsnummer;
+            private Metadata metadata;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Metadata {
+            private boolean historisk;
         }
     }
 }

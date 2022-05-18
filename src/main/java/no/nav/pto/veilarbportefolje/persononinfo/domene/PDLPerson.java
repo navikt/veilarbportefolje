@@ -40,7 +40,8 @@ public class PDLPerson {
     }
 
     private static LocalDate kontrollerOgHentFodsel(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData  response) {
-        var fodselsListe = response.getFoedsel();
+        var fodselsListe = response.getFoedsel()
+                .stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
         if (fodselsListe.size() > 1) {
             throw new IllegalStateException("Støtte for flere registrerte fødseler er ikke implentert");
         }
@@ -51,7 +52,8 @@ public class PDLPerson {
     }
 
     private static Kjonn kontrollerResponseOgHentKjonn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData  response) {
-        var kjonnListe = response.getKjoenn();
+        var kjonnListe = response.getKjoenn()
+                .stream().filter(kjoenn -> !kjoenn.getMetadata().isHistorisk()).toList();
         if (kjonnListe.size() > 1) {
             throw new IllegalStateException("Støtte for flere kjønn er ikke implentert");
         }
@@ -69,7 +71,8 @@ public class PDLPerson {
     }
 
     private static Fnr kontrollerResponseOgHentFnr(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData  response) {
-        var fnrListe = response.getFolkeregisteridentifikator();
+        var fnrListe = response.getFolkeregisteridentifikator()
+                .stream().filter(fnr -> !fnr.getMetadata().isHistorisk()).toList();
         if (fnrListe.size() > 1) {
             throw new IllegalStateException("Flere enn en aktiv ident på bruker");
         }
@@ -79,7 +82,8 @@ public class PDLPerson {
     }
 
     private static PdlPersonResponse.PdlPersonResponseData.Navn kontrollerResponseOgHentNavn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
-        var navnListe = response.getFolkeregisteridentifikator();
+        var navnListe = response.getFolkeregisteridentifikator()
+                .stream().filter(navn -> !navn.getMetadata().isHistorisk()).toList();
         if (navnListe.size() > 1) {
             throw new IllegalStateException("Flere enn en aktivt navn på bruker");
         }

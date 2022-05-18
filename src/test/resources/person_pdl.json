@@ -4,23 +4,35 @@
       "navn": [
         {
           "fornavn": "TRIVIELL",
-          "mellomnavn": "LAT",
-          "etternavn": "SKILPADDE"
+          "mellomnavn": null,
+          "etternavn": "SKILPADDE",
+          "metadata": {
+            "historisk": false
+          }
         }
       ],
       "foedsel": [
         {
-          "foedselsdato": "1987-07-30"
-        }
-      ],
-      "folkeregisteridentifikator": [
-        {
-          "identifikasjonsnummer": "01010100000"
+          "foedselsdato": "1987-07-30",
+          "metadata": {
+            "historisk": false
+          }
         }
       ],
       "kjoenn": [
         {
-          "kjoenn": "KVINNE"
+          "kjoenn": "KVINNE",
+          "metadata": {
+            "historisk": false
+          }
+        }
+      ],
+      "folkeregisteridentifikator": [
+        {
+          "identifikasjonsnummer": "70078749472",
+          "metadata": {
+            "historisk": false
+          }
         }
       ],
       "doedsfall": []
