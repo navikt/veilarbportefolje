@@ -18,11 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.AKTIVITETID;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.ER_SETT;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.SISTE_ENDRING_KATEGORI;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.SISTE_ENDRING_TIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
@@ -127,7 +123,7 @@ public class SisteEndringRepositoryV2 {
         String aktoerIderStr = aktoerIder.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
 
         String sql = """
-                SELECT SISTE_ENDRING_KATEGORI, SISTE_ENDRING_TIDSPUNKT, ER_SETT, AKTIVITETID
+                SELECT AKTOERID, SISTE_ENDRING_KATEGORI, SISTE_ENDRING_TIDSPUNKT, ER_SETT, AKTIVITETID
                 FROM SISTE_ENDRING WHERE AKTOERID = ANY (?::varchar[])
                 """;
         return dbReadOnly.query(sql,
