@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
@@ -15,23 +17,26 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDokument> {
+public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String> {
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final PdlIdentRepository pdlIdentRepository;
     private final PdlPersonRepository pdlPersonRepository;
     private final OpensearchIndexer opensearchIndexer;
 
     @Override
-    public void behandleKafkaMeldingLogikk(PdlDokument melding) {
-        if (melding == null || melding.getHentPerson() == null || melding.getHentIdenter() == null) {
+    @SneakyThrows
+    public void behandleKafkaMeldingLogikk(String melding) {
+        PdlDokument pdlDokument = objectMapper.readValue(melding, PdlDokument.class);
+        if (pdlDokument == null || pdlDokument.getHentPerson() == null || pdlDokument.getHentIdenter() == null) {
             log.info("""
                             Fikk tom endrings melding fra PDL.
                             Dette er en tombstone som kan ignoreres hvis man sletter alle historiske identer lenket til nye identer.
                     """);
             return;
         }
-        PDLPerson person = PDLPerson.genererFraApiRespons(melding.getHentPerson());
-        List<AktorId> aktorIds = melding.getHentIdenter().getIdenter().stream()
-                .filter(x -> PDLIdent.Gruppe.AKTORID.equals(x.getGruppe()))
+        PDLPerson person = PDLPerson.genererFraApiRespons(pdlDokument.getHentPerson());
+        List<AktorId> aktorIds = pdlDokument.getHentIdenter().getIdenter().stream()
+                .filter(pdlIdent -> PDLIdent.Gruppe.AKTORID.equals(pdlIdent.getGruppe()))
                 .map(PDLIdent::getIdent)
                 .map(AktorId::new).toList();
 

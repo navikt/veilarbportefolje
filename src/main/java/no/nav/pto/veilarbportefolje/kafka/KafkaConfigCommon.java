@@ -378,14 +378,14 @@ public class KafkaConfigCommon {
                                         new OnpremAvroDeserializer<Aktor>().getDeserializer(),
                                         pdlIdentKafkaService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, PdlDokument>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, String>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.PDL_BRUKERDATA.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(PdlDokument.class),
+                                        Deserializers.jsonDeserializer(String.class),
                                         pdlBrukerdataKafkaService::behandleKafkaRecord
                                 )
                 );
