@@ -1,12 +1,12 @@
 package no.nav.pto.veilarbportefolje.persononinfo.PdlResponses;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
 
 import java.time.LocalDate;
 import java.util.List;
-
 
 public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPersonResponseData> {
     @Data
@@ -16,6 +16,7 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
 
         @Data
         @Accessors(chain = true)
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class HentPersonResponsData {
             private List<Folkeregisteridentifikator> folkeregisteridentifikator;
             private List<Navn> navn;
@@ -25,21 +26,25 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         }
 
         @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Kjoenn {
             private String kjoenn;
         }
 
         @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Foedsel {
             private LocalDate foedselsdato;
         }
 
         @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Doedsfall {
             private LocalDate doedsdato;
         }
 
         @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Navn {
             private String fornavn;
             private String mellomnavn;
@@ -47,6 +52,7 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         }
 
         @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Folkeregisteridentifikator {
             private String identifikasjonsnummer;
         }
