@@ -27,14 +27,14 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
     @Override
     @SneakyThrows
     public void behandleKafkaMeldingLogikk(String melding) {
-        PdlDokument pdlDokument = tryToParsePdlDokument(melding);
-        if (pdlDokument == null || pdlDokument.getHentPerson() == null || pdlDokument.getHentIdenter() == null) {
+        if (melding == null) {
             log.info("""
                             Fikk tom endrings melding fra PDL.
                             Dette er en tombstone som kan ignoreres hvis man sletter alle historiske identer lenket til nye identer.
                     """);
             return;
         }
+        PdlDokument pdlDokument = tryToParsePdlDokument(melding);
         List<AktorId> aktorIds = pdlDokument.getHentIdenter().getIdenter().stream()
                 .filter(pdlIdent -> PDLIdent.Gruppe.AKTORID.equals(pdlIdent.getGruppe()))
                 .map(PDLIdent::getIdent)
