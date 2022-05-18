@@ -58,7 +58,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
     private PdlDokument tryToParsePdlDokument(String melding, int retries) {
         try {
             var pdlDokument = objectMapper.readValue(melding, PdlDokument.class);
-            log.info("(debug) Fikk mappet PDL brukerdata etter: {} forsøk", retries);
+            log.info("(debug) Fikk mappet PDL brukerdata på forsøk nr: {}", retries);
             return pdlDokument;
         } catch (JsonParseException e) {
             if (retries < 5) {
