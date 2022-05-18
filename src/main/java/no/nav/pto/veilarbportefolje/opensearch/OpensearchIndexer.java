@@ -206,17 +206,20 @@ public class OpensearchIndexer {
                 Map<AktorId, Map<String, Endring>> sisteEndringerDataPostgres = postgresOpensearchMapper.hentPostgresSisteEndringerData(brukere);
 
                 brukere.forEach(bruker -> {
-                    String sisteEndringerPostgresValues = sisteEndringerDataPostgres.get(AktorId.of(bruker.getAktoer_id())).keySet().stream().sorted()
-                            .map(key -> key + "=" + sisteEndringerDataPostgres.get(AktorId.of(bruker.getAktoer_id())).get(key))
-                            .collect(Collectors.joining(", ", "{", "}"));
+                    if (sisteEndringerDataPostgres.get(AktorId.of(bruker.getAktoer_id())) != null && bruker.getSiste_endringer() != null) {
+                        String sisteEndringerPostgresValues = sisteEndringerDataPostgres.get(AktorId.of(bruker.getAktoer_id())).keySet().stream().sorted()
+                                .map(key -> key + "=" + sisteEndringerDataPostgres.get(AktorId.of(bruker.getAktoer_id())).get(key))
+                                .collect(Collectors.joining(", ", "{", "}"));
 
-                    String sisteEndringerOracleValues = bruker.getSiste_endringer().keySet().stream().sorted()
-                            .map(key -> key + "=" + bruker.getSiste_endringer().get(key))
-                            .collect(Collectors.joining(", ", "{", "}"));
+                        String sisteEndringerOracleValues = bruker.getSiste_endringer().keySet().stream().sorted()
+                                .map(key -> key + "=" + bruker.getSiste_endringer().get(key))
+                                .collect(Collectors.joining(", ", "{", "}"));
 
-                    if (!sisteEndringerPostgresValues.equals(sisteEndringerOracleValues)) {
-                        log.warn(String.format("OpenSearch siste endringer diff for aktorId %s, postgres: %s, oracle: %s ", bruker.getAktoer_id(), sisteEndringerPostgresValues, sisteEndringerOracleValues));
+                        if (!sisteEndringerPostgresValues.equals(sisteEndringerOracleValues)) {
+                            log.warn(String.format("OpenSearch siste endringer diff for aktorId %s, postgres: %s, oracle: %s ", bruker.getAktoer_id(), sisteEndringerPostgresValues, sisteEndringerOracleValues));
+                        }
                     }
+
                 });
             }
 
