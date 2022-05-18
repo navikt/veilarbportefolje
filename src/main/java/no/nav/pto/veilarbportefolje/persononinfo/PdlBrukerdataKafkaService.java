@@ -34,13 +34,13 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
                     """);
             return;
         }
-        PDLPerson person = PDLPerson.genererFraApiRespons(pdlDokument.getHentPerson());
         List<AktorId> aktorIds = pdlDokument.getHentIdenter().getIdenter().stream()
                 .filter(pdlIdent -> PDLIdent.Gruppe.AKTORID.equals(pdlIdent.getGruppe()))
                 .map(PDLIdent::getIdent)
                 .map(AktorId::new).toList();
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIds)) {
+            PDLPerson person = PDLPerson.genererFraApiRespons(pdlDokument.getHentPerson());
             AktorId aktorId = pdlIdentRepository.hentAktorId(person.getFnr());
 
             log.info("Det oppsto en brukerdata endring aktoer: {}", aktorId);
