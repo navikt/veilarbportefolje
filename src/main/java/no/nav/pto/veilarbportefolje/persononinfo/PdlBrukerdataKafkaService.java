@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -26,7 +27,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
     @Override
     @SneakyThrows
     public void behandleKafkaMeldingLogikk(String melding) {
-        PdlDokument pdlDokument = objectMapper.readValue(melding.substring(melding.indexOf("{")), PdlDokument.class);
+        PdlDokument pdlDokument = tryToParsePdlDokument(melding);
         if (pdlDokument == null || pdlDokument.getHentPerson() == null || pdlDokument.getHentIdenter() == null) {
             log.info("""
                             Fikk tom endrings melding fra PDL.
@@ -46,6 +47,23 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
             log.info("Det oppsto en brukerdata endring aktoer: {}", aktorId);
             pdlPersonRepository.upsertPerson(person);
             opensearchIndexer.indekser(aktorId);
+        }
+    }
+
+    private PdlDokument tryToParsePdlDokument(String melding) {
+        return tryToParsePdlDokument(melding, 5);
+    }
+
+    @SneakyThrows
+    private PdlDokument tryToParsePdlDokument(String melding, int retries) {
+        try {
+            log.info("(debug) Fikk mappet PDL brukerdata etter: {} forsøk", retries);
+            return objectMapper.readValue(melding, PdlDokument.class);
+        } catch (JsonParseException e) {
+            if (retries > 5) {
+                return tryToParsePdlDokument(melding.substring(melding.indexOf("{")), ++retries);
+            }
+            throw e;
         }
     }
 }
