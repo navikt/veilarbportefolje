@@ -51,7 +51,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
     }
 
     private PdlDokument tryToParsePdlDokument(String melding) {
-        return tryToParsePdlDokument(melding, 5);
+        return tryToParsePdlDokument(melding, 1);
     }
 
     @SneakyThrows
