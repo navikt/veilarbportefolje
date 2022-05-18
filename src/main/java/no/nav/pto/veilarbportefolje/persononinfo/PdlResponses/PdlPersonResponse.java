@@ -34,7 +34,7 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Foedsel {
-            private LocalDate foedselsdato;
+            private String foedselsdato;
         }
 
         @Data

@@ -45,9 +45,9 @@ public class PDLPerson {
             throw new IllegalStateException("Støtte for flere registrerte fødseler er ikke implentert");
         }
         return fodselsListe.stream().findFirst()
-                .orElseThrow(() -> new IllegalStateException("Støtte for ingen registrert fødsel er ikke implentert"))
-                .getFoedselsdato();
-
+                .map(PdlPersonResponse.PdlPersonResponseData.Foedsel::getFoedselsdato)
+                .map(LocalDate::parse)
+                .orElseThrow(() -> new IllegalStateException("Støtte for ingen registrert fødsel er ikke implentert"));
     }
 
     private static Kjonn kontrollerResponseOgHentKjonn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData  response) {
