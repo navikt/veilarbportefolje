@@ -12,11 +12,11 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
     @Data
     @Accessors(chain = true)
     public static class PdlPersonResponseData {
-        private hentPersonResponsData hentPerson;
+        private HentPersonResponsData hentPerson;
 
         @Data
         @Accessors(chain = true)
-        public static class hentPersonResponsData {
+        public static class HentPersonResponsData {
             private List<Folkeregisteridentifikator> folkeregisteridentifikator;
             private List<Navn> navn;
             private List<Foedsel> foedsel;

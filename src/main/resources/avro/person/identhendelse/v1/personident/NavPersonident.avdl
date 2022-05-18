@@ -1,7 +1,0 @@
-@namespace("no.nav.person.identhendelse.v1.personident")
-protocol NavPersonidentV1 {
-
-  record NavPersonident {
-    string identifikasjonsnummer;
-  }
-}

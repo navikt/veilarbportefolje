@@ -44,16 +44,6 @@ public class PdlIdentRepository {
         ).orElse(false);
     }
 
-    public boolean harFnrUnderOppfolging(List<Fnr> identer) {
-        String identerParam = identer.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
-        return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject("""
-                        select bool_or(oppfolging) as harOppfolging from oppfolging_data
-                        where aktoerid = any (?::varchar[])
-                        """, (rs, row) -> rs.getBoolean("harOppfolging"), identerParam))
-        ).orElse(false);
-    }
-
     public List<PDLIdent> hentIdenter(String ident) {
         return db.queryForList("select * from bruker_identer where person = ?", ident)
                 .stream()

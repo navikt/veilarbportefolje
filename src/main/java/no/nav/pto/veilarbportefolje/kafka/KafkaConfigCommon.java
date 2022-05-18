@@ -16,7 +16,6 @@ import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.person.pdl.aktor.v2.Aktor;
-import no.nav.person.pdl.leesah.Personhendelse;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
@@ -51,6 +50,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentKafkaService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -378,14 +378,14 @@ public class KafkaConfigCommon {
                                         new OnpremAvroDeserializer<Aktor>().getDeserializer(),
                                         pdlIdentKafkaService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, Personhendelse>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, PdlDokument>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.PDL_BRUKERDATA.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new OnpremAvroDeserializer<Personhendelse>().getDeserializer(),
+                                        Deserializers.jsonDeserializer(PdlDokument.class),
                                         pdlBrukerdataKafkaService::behandleKafkaRecord
                                 )
                 );

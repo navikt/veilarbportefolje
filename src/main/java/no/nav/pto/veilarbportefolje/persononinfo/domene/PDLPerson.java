@@ -21,7 +21,7 @@ public class PDLPerson {
     private boolean erDoed;
     private LocalDate foedsel;
 
-    public static PDLPerson genererFraApiRespons(PdlPersonResponse response) {
+    public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
         PDLPerson person = new PDLPerson();
         PdlPersonResponse.PdlPersonResponseData.Navn navn = kontrollerResponseOgHentNavn(response);
         person.setFornavn(navn.getFornavn());
@@ -35,12 +35,12 @@ public class PDLPerson {
         return person;
     }
 
-    private static boolean erDoed(PdlPersonResponse response) {
-        return !response.getData().getHentPerson().getDoedsfall().isEmpty();
+    private static boolean erDoed(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData  response) {
+        return !response.getDoedsfall().isEmpty();
     }
 
-    private static LocalDate kontrollerOgHentFodsel(PdlPersonResponse response) {
-        var fodselsListe = response.getData().getHentPerson().getFoedsel();
+    private static LocalDate kontrollerOgHentFodsel(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData  response) {
+        var fodselsListe = response.getFoedsel();
         if (fodselsListe.size() > 1) {
             throw new IllegalStateException("Støtte for flere registrerte fødseler er ikke implentert");
         }
@@ -50,8 +50,8 @@ public class PDLPerson {
 
     }
 
-    private static Kjonn kontrollerResponseOgHentKjonn(PdlPersonResponse response) {
-        var kjonnListe = response.getData().getHentPerson().getKjoenn();
+    private static Kjonn kontrollerResponseOgHentKjonn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData  response) {
+        var kjonnListe = response.getKjoenn();
         if (kjonnListe.size() > 1) {
             throw new IllegalStateException("Støtte for flere kjønn er ikke implentert");
         }
@@ -68,8 +68,8 @@ public class PDLPerson {
         throw new IllegalStateException("Fant kjønn som ikke er støttet");
     }
 
-    private static Fnr kontrollerResponseOgHentFnr(PdlPersonResponse response) {
-        var fnrListe = response.getData().getHentPerson().getFolkeregisteridentifikator();
+    private static Fnr kontrollerResponseOgHentFnr(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData  response) {
+        var fnrListe = response.getFolkeregisteridentifikator();
         if (fnrListe.size() > 1) {
             throw new IllegalStateException("Flere enn en aktiv ident på bruker");
         }
@@ -78,12 +78,12 @@ public class PDLPerson {
                 .getIdentifikasjonsnummer());
     }
 
-    private static PdlPersonResponse.PdlPersonResponseData.Navn kontrollerResponseOgHentNavn(PdlPersonResponse response) {
-        var navnListe = response.getData().getHentPerson().getFolkeregisteridentifikator();
+    private static PdlPersonResponse.PdlPersonResponseData.Navn kontrollerResponseOgHentNavn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
+        var navnListe = response.getFolkeregisteridentifikator();
         if (navnListe.size() > 1) {
             throw new IllegalStateException("Flere enn en aktivt navn på bruker");
         }
-        return response.getData().getHentPerson().getNavn().stream().findFirst()
+        return response.getNavn().stream().findFirst()
                 .orElseThrow(() -> new IllegalStateException("Ingen navn på bruker"));
     }
 }

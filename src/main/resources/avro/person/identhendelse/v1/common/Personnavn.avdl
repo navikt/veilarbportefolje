@@ -1,9 +1,0 @@
-@namespace("no.nav.person.identhendelse.v1.common")
-protocol PersonnavnV1 {
-
-  record Personnavn {
-    string fornavn;
-    union { null, string } mellomnavn = null;
-    string etternavn;
-  }
-}
