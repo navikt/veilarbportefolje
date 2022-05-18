@@ -26,7 +26,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
     @Override
     @SneakyThrows
     public void behandleKafkaMeldingLogikk(String melding) {
-        PdlDokument pdlDokument = objectMapper.readValue(melding, PdlDokument.class);
+        PdlDokument pdlDokument = objectMapper.readValue(melding.substring(melding.indexOf("{")), PdlDokument.class);
         if (pdlDokument == null || pdlDokument.getHentPerson() == null || pdlDokument.getHentIdenter() == null) {
             log.info("""
                             Fikk tom endrings melding fra PDL.
