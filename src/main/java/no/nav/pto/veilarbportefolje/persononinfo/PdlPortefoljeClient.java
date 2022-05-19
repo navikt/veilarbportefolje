@@ -31,7 +31,7 @@ public class PdlPortefoljeClient {
             throw new RuntimeException("Kunne ikke hente identer fra PDL");
         }
 
-        return genererFraApiRespons(respons.getData().getHentPerson());
+        return genererFraApiRespons(respons.getData().getHentPerson(), aktorId);
     }
 
     public List<PDLIdent> hentIdenterFraPdl(AktorId aktorId) throws RuntimeException {

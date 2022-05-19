@@ -41,10 +41,10 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
                 .map(AktorId::new).toList();
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIds)) {
-            PDLPerson person = PDLPerson.genererFraApiRespons(pdlDokument.getHentPerson());
-            AktorId aktorId = pdlIdentRepository.hentAktorId(person.getFnr());
-
+            AktorId aktorId = hentAktivAktoer(pdlDokument.getHentIdenter().getIdenter());
             log.info("Det oppsto en brukerdata endring aktoer: {}", aktorId);
+
+            PDLPerson person = PDLPerson.genererFraApiRespons(pdlDokument.getHentPerson(), aktorId);
             pdlPersonRepository.upsertPerson(person);
             opensearchIndexer.indekser(aktorId);
         }
@@ -62,12 +62,22 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
             return pdlDokument;
         } catch (JsonParseException e) {
             if (retries < 5) {
-                if(melding.charAt(0) == '{'){
+                if (melding.charAt(0) == '{') {
                     melding = melding.substring(1);
                 }
                 return tryToParsePdlDokument(melding.substring(melding.indexOf("{")), ++retries);
             }
             throw e;
         }
+    }
+
+    private AktorId hentAktivAktoer(List<PDLIdent> identer) {
+        return identer.stream()
+                .filter(pdlIdent -> PDLIdent.Gruppe.AKTORID.equals(pdlIdent.getGruppe()))
+                .filter(pdlIdent -> !pdlIdent.isHistorisk())
+                .map(PDLIdent::getIdent)
+                .map(AktorId::new)
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("Ingen aktiv ident på bruker"));
     }
 }
