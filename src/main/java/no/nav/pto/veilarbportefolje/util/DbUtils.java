@@ -22,17 +22,18 @@ public class DbUtils {
     }
 
     public static DataSource createDataSource(String dbUrl, boolean admin) {
-        HikariConfig config = createDataSourceConfig(dbUrl);
         if (admin) {
+            HikariConfig config = createDataSourceConfig(dbUrl, 2);
             return createVaultRefreshDataSource(config, DbRole.ADMIN);
         }
+        HikariConfig config = createDataSourceConfig(dbUrl, 3);
         return createVaultRefreshDataSource(config, DbRole.READONLY);
     }
 
-    public static HikariConfig createDataSourceConfig(String dbUrl) {
+    public static HikariConfig createDataSourceConfig(String dbUrl, int maximumPoolSize) {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(dbUrl);
-        config.setMaximumPoolSize(3);
+        config.setMaximumPoolSize(maximumPoolSize);
         config.setMinimumIdle(1);
         return config;
     }
