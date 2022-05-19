@@ -6,7 +6,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
@@ -23,12 +22,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -36,7 +33,7 @@ import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukOppfolgingsbrukerPaPostgres;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.loggDiffSisteEndringer;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukSisteEndringerPaPostgres;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
 @Slf4j
@@ -71,7 +68,13 @@ public class OpensearchIndexer {
                 postgresOpensearchMapper.flettInnPostgresData(List.of(bruker));
             }
             postgresOpensearchMapper.flettInnAktivitetsData(List.of(bruker));
-            leggTilSisteEndring(bruker);
+
+            if (brukSisteEndringerPaPostgres(unleashService)) {
+                postgresOpensearchMapper.flettInnSisteEndringerData(List.of(bruker));
+            } else {
+                leggTilSisteEndring(bruker);
+            }
+
             syncronIndekseringsRequest(bruker);
         } else {
             opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
@@ -186,7 +189,12 @@ public class OpensearchIndexer {
             postgresOpensearchMapper.flettInnPostgresData(brukere);
         }
         postgresOpensearchMapper.flettInnAktivitetsData(brukere);
-        leggTilSisteEndring(brukere);
+
+        if (brukSisteEndringerPaPostgres(unleashService)) {
+            postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
+        } else {
+            leggTilSisteEndring(brukere);
+        }
         this.skrivTilIndeks(index.getValue(), brukere);
     }
 
@@ -201,28 +209,6 @@ public class OpensearchIndexer {
         partition(brukereUnderOppfolging, BATCH_SIZE).forEach(bolk -> {
             List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(bolk, true);
             sisteEndringRepository.setAlleSisteEndringTidspunkter(brukere);
-
-            if (loggDiffSisteEndringer(unleashService)) {
-                Map<AktorId, Map<String, Endring>> sisteEndringerDataPostgres = postgresOpensearchMapper.hentPostgresSisteEndringerData(brukere);
-
-                brukere.forEach(bruker -> {
-                    if (sisteEndringerDataPostgres.get(AktorId.of(bruker.getAktoer_id())) != null && bruker.getSiste_endringer() != null) {
-                        String sisteEndringerPostgresValues = sisteEndringerDataPostgres.get(AktorId.of(bruker.getAktoer_id())).keySet().stream().sorted()
-                                .map(key -> key + "=" + sisteEndringerDataPostgres.get(AktorId.of(bruker.getAktoer_id())).get(key))
-                                .collect(Collectors.joining(", ", "{", "}"));
-
-                        String sisteEndringerOracleValues = bruker.getSiste_endringer().keySet().stream().sorted()
-                                .map(key -> key + "=" + bruker.getSiste_endringer().get(key))
-                                .collect(Collectors.joining(", ", "{", "}"));
-
-                        if (!sisteEndringerPostgresValues.equals(sisteEndringerOracleValues)) {
-                            log.warn(String.format("OpenSearch siste endringer diff for aktorId %s, postgres: %s, oracle: %s ", bruker.getAktoer_id(), sisteEndringerPostgresValues, sisteEndringerOracleValues));
-                        }
-                    }
-
-                });
-            }
-
         });
     }
 }

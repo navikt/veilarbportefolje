@@ -4,6 +4,7 @@ package no.nav.pto.veilarbportefolje.config;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 
 public class FeatureToggle {
+
     private FeatureToggle() {
     }
 
@@ -20,6 +21,8 @@ public class FeatureToggle {
 
     public static final String LOG_DIFF_SISTE_ENDRINGER = "veilarbportefolje.logg_diff_siste_endringer";
 
+    private static final String BRUK_SISTE_ENDRINGER_POSTGRES = "veilarbportefolje.bruk_siste_endringer_postgres";
+
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
@@ -34,6 +37,10 @@ public class FeatureToggle {
 
     public static boolean loggDiffSisteEndringer(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.LOG_DIFF_SISTE_ENDRINGER);
+    }
+
+    public static boolean brukSisteEndringerPaPostgres(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.BRUK_SISTE_ENDRINGER_POSTGRES);
     }
 
     public static boolean hentIdenterFraPostgres(UnleashService unleashService) {
