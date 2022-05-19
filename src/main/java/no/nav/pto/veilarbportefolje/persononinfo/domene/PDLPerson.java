@@ -87,12 +87,12 @@ public class PDLPerson {
     }
 
     private static PdlPersonResponse.PdlPersonResponseData.Navn kontrollerResponseOgHentNavn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response, AktorId aktorId) {
-        var navnListe = response.getFolkeregisteridentifikator()
+        var navnListe = response.getNavn()
                 .stream().filter(navn -> !navn.getMetadata().isHistorisk()).toList();
         if (navnListe.size() > 1) {
             throw new IllegalStateException("Flere enn en aktivt navn på aktorId: " + aktorId);
         }
-        return response.getNavn().stream().findFirst()
+        return navnListe.stream().findFirst()
                 .orElseThrow(() -> new IllegalStateException("Ingen navn på aktorId: " + aktorId));
     }
 }
