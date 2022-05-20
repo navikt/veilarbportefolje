@@ -17,7 +17,6 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -38,10 +37,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_EGEN;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_IJOBB;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.MAL;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_IJOBB;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -71,7 +67,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         BrukerService brukerService = mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
-        unleashService = Mockito.mock(UnleashService.class);
         this.oppfolgingRepositoryMock = mock(OppfolgingRepository.class);
         this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), brukerService, sisteEndringService, opensearchIndexer);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
@@ -113,7 +108,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     public void sisteendring_populering_aktiviteter() {
         final AktorId aktoerId = randomAktorId();
         testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.getValue());
-        populateOpensearch(testEnhet,veilederId, aktoerId.get());
+        populateOpensearch(testEnhet, veilederId, aktoerId.get());
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse("2020-05-28T07:47:42.480Z");
         ZonedDateTime endretTidZonedDateTime_NY_IJOBB = ZonedDateTime.parse("2028-05-28T07:47:42.480Z");
         ZonedDateTime endretTidNyZonedDateTime = ZonedDateTime.parse("2020-11-26T10:40:40.000Z");
@@ -189,7 +184,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt()).isEqualTo(zonedDateTime.toLocalDateTime());
 
         });
-}
+    }
 
 
     @Test

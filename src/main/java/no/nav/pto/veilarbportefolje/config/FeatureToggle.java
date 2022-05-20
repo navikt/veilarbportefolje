@@ -21,7 +21,7 @@ public class FeatureToggle {
 
     public static final String LOG_DIFF_SISTE_ENDRINGER = "veilarbportefolje.logg_diff_siste_endringer";
 
-    private static final String BRUK_SISTE_ENDRINGER_POSTGRES = "veilarbportefolje.bruk_siste_endringer_postgres";
+    public static final String BRUK_SISTE_ENDRINGER_POSTGRES = "veilarbportefolje.bruk_siste_endringer_postgres";
 
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
