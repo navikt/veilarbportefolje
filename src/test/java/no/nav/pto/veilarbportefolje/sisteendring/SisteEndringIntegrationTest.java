@@ -74,7 +74,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         jdbcTemplatePostgres.execute("truncate table siste_endring");
         jdbcTemplatePostgres.execute("truncate table oppfolging_data");
         jdbcTemplatePostgres.execute("truncate table aktiviteter");
-        jdbcTemplatePostgres.execute("truncate table oppfolging_data");
         Mockito.when(oppfolgingRepositoryMock.erUnderoppfolging(any())).thenReturn(true);
     }
 

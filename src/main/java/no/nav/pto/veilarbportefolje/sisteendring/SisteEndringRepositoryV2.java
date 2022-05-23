@@ -143,11 +143,7 @@ public class SisteEndringRepositoryV2 {
     private Map<String, Endring> mapResultatTilKategoriOgEndring(ResultSet rs) {
         HashMap<String, Endring> sisteEndringHashMap = new HashMap<>();
         while (rs.next()) {
-            sisteEndringHashMap.put(rs.getString(SISTE_ENDRING_KATEGORI),
-                    new Endring()
-                            .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
-                            .setEr_sett(boolToJaNei(rs.getBoolean(ER_SETT)))
-                            .setAktivtetId(rs.getString(AKTIVITETID)));
+            addSisteEndringer(sisteEndringHashMap, rs);
         }
         return sisteEndringHashMap;
     }
