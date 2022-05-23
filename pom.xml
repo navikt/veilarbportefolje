@@ -175,7 +175,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.22</version>
+            <version>1.18.24</version>
         </dependency>
         <dependency>
             <groupId>io.vavr</groupId>
@@ -292,7 +292,7 @@
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc-template</artifactId>
-            <version>4.33.0</version>
+            <version>4.34.0</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -315,7 +315,7 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.8.4</version>
+            <version>1.8.5</version>
         </dependency>
 
         <!--TEST-->
