@@ -30,10 +30,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
@@ -47,7 +44,6 @@ import static org.mockito.Mockito.mock;
 
 public class SisteEndringIntegrationTest extends EndToEndTest {
     private final MalService malService;
-    private final JdbcTemplate jdbcTemplate;
     private final JdbcTemplate jdbcTemplatePostgres;
     private final AktivitetService aktivitetService;
     private final OpensearchService opensearchService;
@@ -61,8 +57,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private Long aktivitetVersion = 1L;
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplate, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer) {
-        this.jdbcTemplate = jdbcTemplate;
+    public SisteEndringIntegrationTest(MalService malService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         BrukerService brukerService = mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
@@ -76,10 +71,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     @BeforeEach
     public void resetMock() {
-        jdbcTemplate.execute("truncate table aktoerid_to_personid");
-        jdbcTemplate.execute("truncate table siste_endring");
-        jdbcTemplate.execute("truncate table oppfolging_data");
-        jdbcTemplate.execute("truncate table oppfolgingsbruker");
+        jdbcTemplatePostgres.execute("truncate table siste_endring");
+        jdbcTemplatePostgres.execute("truncate table oppfolging_data");
         jdbcTemplatePostgres.execute("truncate table aktiviteter");
         jdbcTemplatePostgres.execute("truncate table oppfolging_data");
         Mockito.when(oppfolgingRepositoryMock.erUnderoppfolging(any())).thenReturn(true);
@@ -427,11 +420,16 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     private void send_aktvitet_melding(AktorId aktoerId, ZonedDateTime endretDato, KafkaAktivitetMelding.EndringsType endringsType,
                                        KafkaAktivitetMelding.AktivitetStatus status, KafkaAktivitetMelding.AktivitetTypeData typeData) {
-        KafkaAktivitetMelding melding = new KafkaAktivitetMelding().setAktivitetId("1")
+        KafkaAktivitetMelding melding = new KafkaAktivitetMelding().setAktivitetId(String.valueOf(getRandomPositiveInteger()))
                 .setAktorId(aktoerId.get()).setFraDato(ZonedDateTime.now().minusDays(5)).setEndretDato(endretDato)
                 .setAktivitetType(typeData).setAktivitetStatus(status).setEndringsType(endringsType).setLagtInnAv(KafkaAktivitetMelding.InnsenderData.BRUKER)
                 .setAvtalt(true).setHistorisk(false).setVersion(++aktivitetVersion);
         aktivitetService.behandleKafkaMeldingLogikk(melding);
+    }
+
+    private Integer getRandomPositiveInteger() {
+        Random random = new Random();
+        return random.nextInt();
     }
 
 

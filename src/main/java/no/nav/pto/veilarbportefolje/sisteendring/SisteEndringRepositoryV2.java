@@ -131,7 +131,9 @@ public class SisteEndringRepositoryV2 {
                 (ResultSet rs) -> {
                     HashMap<AktorId, Map<String, Endring>> results = new HashMap<>();
                     while (rs.next()) {
-                        results.put(AktorId.of(rs.getString(AKTOERID)), mapResultatTilKategoriOgEndring(rs));
+                        AktorId aktorId = AktorId.of(rs.getString(AKTOERID));
+                        Map<String, Endring> sisteEndringerForBruker = results.getOrDefault(aktorId, new HashMap<>());
+                        results.put(aktorId, addSisteEndringer(sisteEndringerForBruker, rs));
                     }
                     return results;
                 });
@@ -139,13 +141,27 @@ public class SisteEndringRepositoryV2 {
 
     @SneakyThrows
     private Map<String, Endring> mapResultatTilKategoriOgEndring(ResultSet rs) {
-        Map<String, Endring> sisteEndring = new HashMap<>();
+        HashMap<String, Endring> sisteEndringHashMap = new HashMap<>();
         while (rs.next()) {
-            sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI), new Endring()
-                    .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
-                    .setEr_sett(boolToJaNei(rs.getBoolean(ER_SETT)))
-                    .setAktivtetId(rs.getString(AKTIVITETID)));
+            sisteEndringHashMap.put(rs.getString(SISTE_ENDRING_KATEGORI),
+                    new Endring()
+                            .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
+                            .setEr_sett(boolToJaNei(rs.getBoolean(ER_SETT)))
+                            .setAktivtetId(rs.getString(AKTIVITETID)));
         }
-        return sisteEndring;
+        return sisteEndringHashMap;
     }
+
+    @SneakyThrows
+    private Map<String, Endring> addSisteEndringer(Map<String, Endring> sisteEndringHashMap, ResultSet rs) {
+        sisteEndringHashMap.put(rs.getString(SISTE_ENDRING_KATEGORI),
+                new Endring()
+                        .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
+                        .setEr_sett(boolToJaNei(rs.getBoolean(ER_SETT)))
+                        .setAktivtetId(rs.getString(AKTIVITETID)));
+
+        return sisteEndringHashMap;
+    }
+
+
 }

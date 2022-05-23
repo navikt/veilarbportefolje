@@ -81,7 +81,7 @@ public class PostgresOpensearchMapper {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
         Map<AktorId, Map<String, Endring>> sisteEndringerDataPostgres = sisteEndringService.hentSisteEndringerFraPostgres(aktoerIder);
         brukere.forEach(bruker -> {
-            bruker.setSiste_endringer(sisteEndringerDataPostgres.getOrDefault(bruker.getAktoer_id(), new HashMap<>()));
+            bruker.setSiste_endringer(sisteEndringerDataPostgres.getOrDefault(AktorId.of(bruker.getAktoer_id()), new HashMap<>()));
         });
     }
 

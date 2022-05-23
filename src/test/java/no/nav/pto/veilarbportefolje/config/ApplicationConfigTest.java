@@ -50,7 +50,6 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.*;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
-import org.mockito.Mockito;
 import org.opensearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -189,7 +188,6 @@ public class ApplicationConfigTest {
     public UnleashService unleashService() {
         final UnleashService mock = mock(UnleashService.class);
         when(mock.isEnabled(anyString())).thenReturn(true);
-        Mockito.when(mock.isEnabled(FeatureToggle.BRUK_SISTE_ENDRINGER_POSTGRES)).thenReturn(false);
         return mock;
     }
 
@@ -264,12 +262,12 @@ public class ApplicationConfigTest {
     }
 
     @Bean("PostgresJdbcReadOnly")
-    public JdbcTemplate dbMockReadOnly(@Qualifier("Postgres") DataSource datasource) {
+    public JdbcTemplate dbReadOnly(@Qualifier("Postgres") DataSource datasource) {
         return new JdbcTemplate(datasource);
     }
 
     @Bean(name = "PostgresNamedJdbcReadOnly")
-    public NamedParameterJdbcTemplate dbNamedMockReadOnly(@Qualifier("Postgres") DataSource datasource) {
+    public NamedParameterJdbcTemplate dbNamedReadOnly(@Qualifier("Postgres") DataSource datasource) {
         return new NamedParameterJdbcTemplate(datasource);
     }
 
