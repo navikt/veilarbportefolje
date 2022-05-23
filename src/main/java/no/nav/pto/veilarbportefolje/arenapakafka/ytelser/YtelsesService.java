@@ -6,14 +6,12 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
-import no.nav.pto.veilarbportefolje.database.BrukerDataService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.domene.Brukerdata;
+import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -27,18 +25,17 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHende
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getAktorId;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getInnhold;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGoldenGate;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse.AAP;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse.DAGPENGER;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class YtelsesService {
     private final AktorClient aktorClient;
-    private final BrukerService brukerService;
-    private final BrukerDataService brukerDataService;
-    private final YtelsesRepository ytelsesRepository;
-    private final YtelsesServicePostgres ytelsesServicePostgres;
+    private final YtelsesRepositoryV2 ytelsesRepositoryV2;
     private final ArenaHendelseRepository arenaHendelseRepository;
+    private final YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2;
     private final OpensearchIndexer opensearchIndexer;
 
     public void behandleKafkaRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding, TypeKafkaYtelse ytelse) {
@@ -50,44 +47,34 @@ public class YtelsesService {
                 kafkaMelding.partition(),
                 kafkaMelding.topic()
         );
+        behandleKafkaMelding(melding, ytelse);
+    }
 
-        YtelsesInnhold innhold = getInnhold(melding);
-        if (innhold == null || erGammelMelding(melding, innhold)) {
+    public void behandleKafkaMelding(YtelsesDTO kafkaMelding, TypeKafkaYtelse ytelse) {
+        YtelsesInnhold innhold = getInnhold(kafkaMelding);
+        if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
         }
 
-        behandleKafkaMeldingOracle(melding, ytelse);
-        behandleKafkaMeldingPostgres(melding, ytelse);
-
-        arenaHendelseRepository.upsertYtelsesHendelse(innhold.getVedtakId(), innhold.getHendelseId());
-    }
-
-    public void behandleKafkaMeldingPostgres(YtelsesDTO melding, TypeKafkaYtelse ytelse) {
-        ytelsesServicePostgres.behandleKafkaMeldingPostgres(melding, ytelse);
-    }
-
-    public void behandleKafkaMeldingOracle(YtelsesDTO kafkaMelding, TypeKafkaYtelse ytelse) {
-        YtelsesInnhold innhold = getInnhold(kafkaMelding);
-
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding)) {
-            log.info("Sletter ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
-            ytelsesRepository.slettYtelse(innhold.getVedtakId());
+            log.info("Postgres: Sletter ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
+            ytelsesRepositoryV2.slettYtelse(innhold.getVedtakId());
             oppdaterYtelsesInformasjonMedUnntaksLogikkForSletting(aktorId, innhold);
         } else {
-            log.info("Lagrer ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
-            ytelsesRepository.upsertYtelse(aktorId, ytelse, innhold);
-            oppdaterYtelsesInformasjonOracle(aktorId, PersonId.of(innhold.getPersonId()));
+            log.info("Postgres: Lagrer ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
+            ytelsesRepositoryV2.upsert(aktorId, ytelse, innhold);
+            oppdaterYtelsesInformasjon(aktorId);
         }
 
-
+        arenaHendelseRepository.upsertYtelsesHendelse(innhold.getVedtakId(), innhold.getHendelseId());
         opensearchIndexer.indekser(aktorId);
     }
 
-    public Optional<YtelseDAO> oppdaterYtelsesInformasjonOracle(AktorId aktorId, PersonId personId) {
-        Optional<YtelseDAO> lopendeYtelse = finnLopendeYtelseOracle(aktorId);
-        log.info("AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, lopendeYtelse.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
-        brukerDataService.oppdaterYtelserOracle(aktorId, personId, lopendeYtelse);
+    public Optional<YtelseDAO> oppdaterYtelsesInformasjon(AktorId aktorId) {
+        Optional<YtelseDAO> lopendeYtelse = finnLopendeYtelse(aktorId);
+        log.info("Postgres: AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, lopendeYtelse.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
+        oppdaterAktivYtelse(aktorId, lopendeYtelse.orElse(null));
 
         return lopendeYtelse;
     }
@@ -104,56 +91,55 @@ public class YtelsesService {
         Timestamp startDato = Timestamp.valueOf(innhold.getFraOgMedDato().getLocalDateTime());
         Timestamp utlopsDato = innhold.getTilOgMedDato() == null ? null : Timestamp.valueOf(innhold.getTilOgMedDato().getLocalDateTime());
 
-        boolean erLopendeVedtak = harLopendeStartDato(startDato, iDag) && harLopendeUtlopsDato(utlopsDato, iDag);
+        boolean erLopendeVedtak = harPassertStartdato(startDato, iDag) && harFremtidigUtlopsdato(utlopsDato, iDag);
 
         if (erLopendeVedtak) {
-            Optional<YtelseDAO> sisteYtelsePaSakId = finnSisteYtelsePaSakIdSomIkkeErUtloptOracle(aktorId, innhold.getSaksId());
+            Optional<YtelseDAO> sisteYtelsePaSakId = finnSisteYtelsePaSakIdSomIkkeErUtlopt(aktorId, innhold.getSaksId());
             if (sisteYtelsePaSakId.isPresent()) {
                 log.info("AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, sisteYtelsePaSakId.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
-                brukerDataService.oppdaterYtelserOracle(aktorId, PersonId.of(innhold.getPersonId()), sisteYtelsePaSakId);
+                oppdaterAktivYtelse(aktorId, sisteYtelsePaSakId.get());
 
                 return sisteYtelsePaSakId;
             }
         }
 
-        return oppdaterYtelsesInformasjonOracle(aktorId, PersonId.of(innhold.getPersonId()));
+        return oppdaterYtelsesInformasjon(aktorId);
     }
 
-    public Optional<YtelseDAO> finnLopendeYtelseOracle(AktorId aktorId) {
+    public Optional<YtelseDAO> finnLopendeYtelse(AktorId aktorId) {
         LocalDate iDag = LocalDate.now();
-        List<YtelseDAO> aktiveYtelser = ytelsesRepository.getYtelser(aktorId).stream()
+        List<YtelseDAO> aktiveOgFremtidigeYtelser = ytelsesRepositoryV2.getYtelser(aktorId).stream()
                 .filter(Objects::nonNull)
-                .filter(ytelse -> harLopendeUtlopsDato(ytelse.getUtlopsDato(), iDag))
+                .filter(ytelse -> harFremtidigUtlopsdato(ytelse.getUtlopsDato(), iDag))
                 .collect(Collectors.toList());
 
-        if (aktiveYtelser.isEmpty()) {
+        if (aktiveOgFremtidigeYtelser.isEmpty()) {
             return Optional.empty();
         }
 
-        YtelseDAO tidligsteYtelse = aktiveYtelser.stream()
+        YtelseDAO tidligsteYtelse = aktiveOgFremtidigeYtelser.stream()
                 .min(Comparator.comparing(YtelseDAO::getStartDato)).get();
 
-        if (!harLopendeStartDato(tidligsteYtelse.getStartDato(), iDag)) {
+        if (!harPassertStartdato(tidligsteYtelse.getStartDato(), iDag)) {
             return Optional.empty();
         }
-        if (TypeKafkaYtelse.DAGPENGER.equals(tidligsteYtelse.getType())) {
+        if (DAGPENGER.equals(tidligsteYtelse.getType())) {
             // Dagpenger skal aldri ha en utløpsdato
-            // Hvis det finnes en utløpsdato er det mest sannynlig et annet dagpenge vedtak som skal ta over for det løpende vedatekt, eller en bug
+            // Hvis det finnes en utløpsdato er det mest sannynlig et annet dagpengevedtak som skal ta over for det løpende vedtaket, eller en bug
             return Optional.of(tidligsteYtelse.setUtlopsDato(null));
         }
-
         if (tidligsteYtelse.getUtlopsDato() == null) {
             return Optional.of(tidligsteYtelse);
         }
-        return finnVedtakMedSisteUtlopsDatoPaSak(aktiveYtelser, tidligsteYtelse);
+        return finnVedtakMedSisteUtlopsDatoPaSak(aktiveOgFremtidigeYtelser, tidligsteYtelse);
     }
 
-    public Optional<YtelseDAO> finnSisteYtelsePaSakIdSomIkkeErUtloptOracle(AktorId aktorId, String sakID) {
+    public Optional<YtelseDAO> finnSisteYtelsePaSakIdSomIkkeErUtlopt(AktorId aktorId, String sakID) {
         LocalDate iDag = LocalDate.now();
-        List<YtelseDAO> aktiveYtelserPaSakID = ytelsesRepository.getYtelser(aktorId).stream()
+        List<YtelseDAO> aktiveYtelserPaSakID = ytelsesRepositoryV2.getYtelser(aktorId).stream()
                 .filter(Objects::nonNull)
                 .filter(ytelse -> sakID.equals(ytelse.getSaksId()))
-                .filter(ytelse -> harLopendeUtlopsDato(ytelse.getUtlopsDato(), iDag))
+                .filter(ytelse -> harFremtidigUtlopsdato(ytelse.getUtlopsDato(), iDag))
                 .collect(Collectors.toList());
 
         if (aktiveYtelserPaSakID.isEmpty()) {
@@ -166,24 +152,17 @@ public class YtelsesService {
         return Optional.of(ytelseMedSluttDatoEllerNull.orElse(aktiveYtelserPaSakID.get(0)));
     }
 
-    public void oppdaterBrukereMedYtelserSomStarterIDagOracle() {
-        List<AktorId> brukere = ytelsesRepository.hentBrukereMedYtelserSomStarterIDag();
-        log.info("Oppdaterer ytelser for: " + brukere.size() + " antall brukere");
+    public void oppdaterBrukereMedYtelserSomStarterIDag() {
+        List<AktorId> brukere = ytelsesRepositoryV2.hentBrukereMedYtelserSomStarterIDag();
+        log.info("(Postgres) Oppdaterer ytelser for: " + brukere.size() + " antall brukere");
 
         brukere.forEach(aktorId -> {
-            log.info("Oppdaterer ytelse for aktorId: " + aktorId);
-            PersonId personId = brukerService.hentPersonidFraAktoerid(aktorId).toJavaOptional().orElse(null);
-            if (personId == null) {
-                log.warn("Avbryter ytelse oppdatering pga. manglende personId for aktorId: " + aktorId);
-                return;
-            }
-            oppdaterYtelsesInformasjonOracle(aktorId, personId);
+            log.info("(Postgres) Oppdaterer ytelse for aktorId: " + aktorId);
+
+            oppdaterYtelsesInformasjon(aktorId);
         });
 
-        log.info("Oppdatering av ytelser fullført. Starter indeksering");
-        brukere.forEach(opensearchIndexer::indekser);
-
-        log.info("Oppdatering av ytelser fullført og indeksert");
+        log.info("(Postgres) Oppdatering av ytelser fullført");
     }
 
     private Optional<YtelseDAO> finnVedtakMedSisteUtlopsDatoPaSak(List<YtelseDAO> ytelser, YtelseDAO tidligsteYtelse) {
@@ -193,13 +172,13 @@ public class YtelsesService {
                 .max(Comparator.comparing(YtelseDAO::getUtlopsDato));
     }
 
-    private boolean harLopendeStartDato(Timestamp startDato, LocalDate iDag) {
-        // startDato er en 'fra og med' dato.
+    private boolean harPassertStartdato(Timestamp startDato, LocalDate iDag) {
+        // startDato er en "fra og med"-dato.
         return startDato.toLocalDateTime().toLocalDate().isBefore(iDag.plusDays(1));
     }
 
-    private boolean harLopendeUtlopsDato(Timestamp utlopsDato, LocalDate iDag) {
-        // Utløpsdato er en 'til og med' dato.
+    private boolean harFremtidigUtlopsdato(Timestamp utlopsDato, LocalDate iDag) {
+        // Utløpsdato er en "til og med"-dato.
         return utlopsDato == null || utlopsDato.toLocalDateTime().toLocalDate().isAfter(iDag.minusDays(1));
     }
 
@@ -211,5 +190,31 @@ public class YtelsesService {
             return true;
         }
         return false;
+    }
+
+    private void oppdaterAktivYtelse(AktorId aktorId, YtelseDAO ytelse) {
+        Brukerdata ytelsesTilstand = new Brukerdata()
+                .setAktoerid(aktorId.get());
+        if (ytelse == null) {
+            ytelsesStatusRepositoryV2.slettYtelseStatus(aktorId);
+            return;
+        }
+        ytelsesTilstand
+                .setUtlopsdato(Optional.ofNullable(ytelse.getUtlopsDato())
+                        .map(Timestamp::toLocalDateTime)
+                        .orElse(null))
+                .setYtelse(YtelseMapping.of(ytelse)
+                        .orElseThrow(() -> new RuntimeException("Feil i ytelses mapping! Pa vedtak: " + ytelse.getSaksId())));
+        if (ytelse.getType() == DAGPENGER) {
+            ytelsesTilstand
+                    .setDagputlopUke(ytelse.getAntallUkerIgjen())
+                    .setPermutlopUke(ytelse.getAntallUkerIgjenPermittert());
+        } else if (ytelse.getType() == AAP) {
+            ytelsesTilstand
+                    .setAapmaxtidUke(ytelse.getAntallUkerIgjen())
+                    .setAapUnntakDagerIgjen(ytelse.getAntallDagerIgjenUnntak());
+        }
+
+        ytelsesStatusRepositoryV2.upsertYtelseStatus(ytelsesTilstand);
     }
 }

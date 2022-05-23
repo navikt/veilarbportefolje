@@ -9,8 +9,9 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,14 +42,14 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 @RequestMapping("/api/arbeidsliste")
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
-    private final BrukerService brukerService;
+    private final BrukerServiceV2 brukerService;
     private final AktorClient aktorClient;
     private final AuthService authService;
 
     @Autowired
     public ArbeidsListeController(
             ArbeidslisteService arbeidslisteService,
-            BrukerService brukerService,
+            BrukerServiceV2 brukerService,
             AktorClient aktorClient, AuthService authService
     ) {
         this.arbeidslisteService = arbeidslisteService;
@@ -90,8 +91,8 @@ public class ArbeidsListeController {
         Fnr fnr = Fnr.ofValidFnr(fnrString);
         Try<AktorId> aktoerId = Try.of(()-> aktorClient.hentAktorId(fnr));
 
-        boolean harVeilederTilgang = brukerService.hentNavKontorFraDbLinkTilArena(fnr)
-                .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))
+        boolean harVeilederTilgang = brukerService.hentNavKontor(fnr)
+                .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet.getValue()))
                 .orElse(false);
 
         Arbeidsliste arbeidsliste = aktoerId
@@ -193,8 +194,8 @@ public class ArbeidsListeController {
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
-        String enhet = brukerService.hentNavKontorFraDbLinkTilArena(fnr).orElseThrow(() -> new IllegalArgumentException("Kunne ikke hente enhet for denne brukeren"));
-        authService.tilgangTilEnhet(enhet);
+        NavKontor enhet = brukerService.hentNavKontor(fnr).orElseThrow(() -> new IllegalArgumentException("Kunne ikke hente enhet for denne brukeren"));
+        authService.tilgangTilEnhet(enhet.getValue());
     }
 
     private ArbeidslisteDTO data(ArbeidslisteRequest body, Fnr fnr) {

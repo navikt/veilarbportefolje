@@ -3,8 +3,6 @@ package no.nav.pto.veilarbportefolje.cv;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.cv.dto.Ressurs;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.opensearch.action.get.GetResponse;
 import org.opensearch.action.index.IndexResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
 
@@ -26,28 +25,27 @@ class CvServiceTest extends EndToEndTest {
     private CVService cvService;
 
     @Autowired
-    private OppfolgingRepository oppfolgingRepository;
-
-    @Autowired
-    private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+    private JdbcTemplate oracle;
 
     private final AktorId aktoerId = AktorId.of("00000000000");
 
     @BeforeEach
     void set_under_oppfolging(){
-        oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
-        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, ZonedDateTime.now());
+        oracle.update("truncate TABLE OPPFOLGING_DATA");
+        oracle.update("truncate TABLE OPPFOLGINGSBRUKER");
+        oracle.update("truncate TABLE AKTOERID_TO_PERSONID");
     }
 
     @Test
     void skal_hente_fnr_fra_aktoertjenesten_om_fnr_mangler_i_melding() {
+        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("har_delt_cv", false)
                 .toString();
 
         IndexResponse indexResponse = opensearchTestClient.createDocument(aktoerId, document);
-        assertThat(indexResponse.status().getStatus()).isEqualTo(201);
+        assertThat(indexResponse.status().getStatus()).isEqualTo(200);
 
         CVMelding cvMelding = new CVMelding();
         cvMelding.setAktoerId(aktoerId);
@@ -64,13 +62,14 @@ class CvServiceTest extends EndToEndTest {
 
     @Test
     void skal_oppdatere_dokumentet_i_db_og_opensearch() {
+        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("har_delt_cv", false)
                 .toString();
 
         IndexResponse indexResponse = opensearchTestClient.createDocument(aktoerId, document);
-        assertThat(indexResponse.status().getStatus()).isEqualTo(201);
+        assertThat(indexResponse.status().getStatus()).isEqualTo(200);
 
         CVMelding cvMelding = new CVMelding();
         cvMelding.setAktoerId(aktoerId);
@@ -90,13 +89,14 @@ class CvServiceTest extends EndToEndTest {
 
     @Test
     void skal_ikke_behandle_meldinger_som_har_meldingstype_arbeidsgiver_generell() {
+        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("har_delt_cv", false)
                 .toString();
 
         IndexResponse indexResponse = opensearchTestClient.createDocument(aktoerId, document);
-        assertThat(indexResponse.status().getStatus()).isEqualTo(201);
+        assertThat(indexResponse.status().getStatus()).isEqualTo(200);
 
         CVMelding cvMelding = new CVMelding();
         cvMelding.setAktoerId(aktoerId);
@@ -113,13 +113,14 @@ class CvServiceTest extends EndToEndTest {
 
     @Test
     void skal_ikke_behandle_meldinger_som_har_meldingstype_cv_generell() {
+        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("har_delt_cv", false)
                 .toString();
 
         IndexResponse indexResponse = opensearchTestClient.createDocument(aktoerId, document);
-        assertThat(indexResponse.status().getStatus()).isEqualTo(201);
+        assertThat(indexResponse.status().getStatus()).isEqualTo(200);
 
         CVMelding cvMelding = new CVMelding();
         cvMelding.setAktoerId(aktoerId);

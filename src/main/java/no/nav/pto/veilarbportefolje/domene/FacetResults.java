@@ -13,9 +13,6 @@ import static java.util.stream.Collectors.toList;
 public class FacetResults {
     private List<Facet> facetResults;
 
-    public FacetResults() {
-    }
-
     public FacetResults(List<Bucket> buckets) {
         this.facetResults =
                 buckets.stream()

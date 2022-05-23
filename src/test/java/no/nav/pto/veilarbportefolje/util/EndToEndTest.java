@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.util;
 
 import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.IndexName;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
@@ -67,14 +67,14 @@ public abstract class EndToEndTest {
         opensearchAdminService.slettIndex(indexName.getValue());
     }
 
-    public void populateOpensearch(EnhetId enhetId, VeilederId veilederId, String... aktoerIder) {
+    public void populateOpensearch(NavKontor enhetId, VeilederId veilederId, String... aktoerIder) {
         List<OppfolgingsBruker> brukere = new ArrayList<>();
         for (String aktoerId : aktoerIder) {
             oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(aktoerId), ZonedDateTime.now());
             brukere.add(new OppfolgingsBruker()
                     .setAktoer_id(aktoerId)
                     .setOppfolging(true)
-                    .setEnhet_id(enhetId.get())
+                    .setEnhet_id(enhetId.getValue())
                     .setVeileder_id(veilederId.getValue())
             );
         }

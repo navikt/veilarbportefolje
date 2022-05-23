@@ -33,9 +33,9 @@ public class OppfolgingRepositoryV2 {
 
     public int settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
         return db.update("""
-                        INSERT INTO oppfolging_data (AKTOERID, OPPFOLGING, STARTDATO) VALUES (?,?,?)
-                        ON CONFLICT (AKTOERID) DO UPDATE SET OPPFOLGING = EXCLUDED.OPPFOLGING, STARTDATO = EXCLUDED.STARTDATO
-                        """,aktoerId.get(), true, toTimestamp(startDato)
+                INSERT INTO oppfolging_data (AKTOERID, OPPFOLGING, STARTDATO) VALUES (?,?,?)
+                ON CONFLICT (AKTOERID) DO UPDATE SET OPPFOLGING = EXCLUDED.OPPFOLGING, STARTDATO = EXCLUDED.STARTDATO
+                """, aktoerId.get(), true, toTimestamp(startDato)
         );
     }
 
@@ -65,9 +65,13 @@ public class OppfolgingRepositoryV2 {
         ));
     }
 
-    public boolean erUnderOppfolging(AktorId aktoerId) {
+    public boolean erUnderOppfolgingOgErAktivIdent(AktorId aktoerId) {
         return Optional.ofNullable(queryForObjectOrNull(() ->
-                db.queryForObject("SELECT oppfolging FROM oppfolging_data WHERE aktoerid = ?", (s, i) -> s.getBoolean(OPPFOLGING), aktoerId.get())
+                db.queryForObject("""
+                        select oppfolging from oppfolging_data od
+                        inner join aktive_identer ai on ai.aktorid = od.aktoerid
+                        WHERE aktoerid = ?
+                        """, (s, i) -> s.getBoolean(OPPFOLGING), aktoerId.get())
         )).orElse(false);
     }
 
@@ -85,11 +89,32 @@ public class OppfolgingRepositoryV2 {
                 .setStartDato(rs.getTimestamp(STARTDATO));
     }
 
+    public List<AktorId> hentAlleGyldigeBrukereUnderOppfolging() {
+        db.setFetchSize(10_000);
+        List<AktorId> alleIder = db.queryForList("""
+                select aktoerid from oppfolging_data od
+                 left join bruker_identer bi on bi.ident = od.aktoerid
+                 where oppfolging
+                 and not historisk
+                """, AktorId.class);
+        db.setFetchSize(-1);
+
+        return alleIder;
+    }
+
     public List<AktorId> hentAlleBrukereUnderOppfolging() {
         db.setFetchSize(10_000);
         List<AktorId> alleIder = db.queryForList("SELECT aktoerid FROM oppfolging_data WHERE oppfolging", AktorId.class);
         db.setFetchSize(-1);
 
         return alleIder;
+    }
+
+    public Optional<VeilederId> hentVeilederForBruker(AktorId aktoerId) {
+        return Optional.ofNullable(
+                queryForObjectOrNull(
+                        () -> db.queryForObject("select veilederid from oppfolging_data where aktoerid = ?",
+                                (rs, i) -> VeilederId.veilederIdOrNull(rs.getString("veilederid")), aktoerId.get())
+                ));
     }
 }

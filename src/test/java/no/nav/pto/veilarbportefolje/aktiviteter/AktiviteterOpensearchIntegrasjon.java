@@ -11,7 +11,8 @@ import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,6 @@ import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -35,24 +35,27 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     private final AktivitetService aktivitetService;
     private final OpensearchService opensearchService;
-    private final OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2;
+    private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final AktorId aktoer = randomAktorId();
     private final Fnr fodselsnummer = Fnr.ofValidFnr("10108000399"); //TESTFAMILIE
     private final JdbcTemplate jdbcTemplatePostgres;
+    private final PdlIdentRepository pdlIdentRepository;
 
     @Autowired
-    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV2 oppfolgingsbrukerRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres) {
+    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
         this.aktivitetService = aktivitetService;
         this.opensearchService = opensearchService;
-        this.oppfolgingsbrukerRepositoryV2 = oppfolgingsbrukerRepositoryV2;
+        this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
+        this.pdlIdentRepository = pdlIdentRepository;
     }
 
     @BeforeEach
     public void resetDb() {
-        jdbcTemplatePostgres.update("TRUNCATE aktiviteter CASCADE");
-        jdbcTemplatePostgres.update("TRUNCATE oppfolgingsbruker_arena CASCADE");
-        jdbcTemplatePostgres.update("TRUNCATE oppfolging_data CASCADE");
+        jdbcTemplatePostgres.update("TRUNCATE aktiviteter");
+        jdbcTemplatePostgres.update("TRUNCATE oppfolgingsbruker_arena_v2");
+        jdbcTemplatePostgres.update("TRUNCATE bruker_identer");
+        jdbcTemplatePostgres.update("TRUNCATE oppfolging_data");
     }
 
     @Test
@@ -134,7 +137,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         VeilederId veileder = randomVeilederId();
 
         testDataClient.setupBruker(aktoer, navKontor, veileder, ZonedDateTime.now());
-        settSperretAnsatt(aktoer, randomFnr(), navKontor);
+        settSperretAnsatt(aktoer, navKontor);
 
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("1")
@@ -164,8 +167,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
         testDataClient.setupBruker(aktoerKode6, navKontor, veileder, ZonedDateTime.now());
         testDataClient.setupBruker(aktoerKode7, navKontor, veileder, ZonedDateTime.now());
-        settDiskresjonskode(aktoerKode6, randomFnr(), navKontor, "6");
-        settDiskresjonskode(aktoerKode7, randomFnr(), navKontor, "7");
+        settDiskresjonskode(aktoerKode6, navKontor, "6");
+        settDiskresjonskode(aktoerKode7, navKontor, "7");
 
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("1")
@@ -198,19 +201,21 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         assertThat(utenTilgang.stream().allMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
     }
 
-    private void settSperretAnsatt(AktorId aktoer, Fnr fnr, NavKontor navKontor) {
-        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(aktoer.get(), fnr.get(), null, null,
+    private void settSperretAnsatt(AktorId aktorId, NavKontor navKontor) {
+        Fnr fnr = pdlIdentRepository.hentFnr(aktorId);
+        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
+                new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         "test", "testson", navKontor.getValue(), null, null,
-                        null, null, null, true, true,
-                        false, null, ZonedDateTime.now()));
+                        null, null, null, true,
+                        false, ZonedDateTime.now()));
     }
 
-    private void settDiskresjonskode(AktorId aktoer, Fnr fnr, NavKontor navKontor, String kode) {
-        oppfolgingsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(aktoer.get(), fnr.get(), null, null,
+    private void settDiskresjonskode(AktorId aktorId, NavKontor navKontor, String kode) {
+        Fnr fnr = pdlIdentRepository.hentFnr(aktorId);
+        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
+                new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         "test", "testson", navKontor.getValue(), null, null,
-                        null, null, kode, true, false,
-                        false, null, ZonedDateTime.now()));
+                        null, null, kode, false, false,
+                        ZonedDateTime.now()));
     }
 }

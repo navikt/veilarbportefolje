@@ -6,9 +6,12 @@ import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
 import no.nav.common.client.aktoroppslag.PdlAktorOppslagClient;
+import no.nav.common.client.pdl.PdlClient;
+import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
@@ -22,6 +25,7 @@ import java.net.http.HttpClient;
 import static no.nav.common.utils.NaisUtils.getCredentials;
 import static no.nav.common.utils.UrlUtils.createDevInternalIngressUrl;
 import static no.nav.common.utils.UrlUtils.createProdInternalIngressUrl;
+import static no.nav.common.utils.UrlUtils.createServiceUrl;
 
 
 @Configuration
@@ -65,6 +69,17 @@ public class ClientConfig {
     @Bean
     public HttpClient httpClient() {
         return HttpClient.newBuilder().build();
+    }
+
+    @Bean
+    public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient) {
+        String tokenScop = String.format("api://%s-fss.pdl.pdl-api/.default",
+                isProduction() ? "prod" : "dev"
+        );
+        return new PdlClientImpl(
+                createServiceUrl("pdl-api", "pdl", false),
+                () -> tokenClient.createMachineToMachineToken(tokenScop)
+        );
     }
 
     private static boolean isProduction() {

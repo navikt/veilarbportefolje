@@ -10,9 +10,10 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,7 @@ public class ArbeidslisteService {
 
     private final AktorClient aktorClient;
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryPostgres;
-    private final BrukerService brukerService;
+    private final BrukerServiceV2 brukerServiceV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final MetricsClient metricsClient;
 
@@ -74,8 +75,8 @@ public class ArbeidslisteService {
         }
         dto.setAktorId(aktoerId.get());
 
-        String navKontorForBruker = brukerService.hentNavKontorFraDbLinkTilArena(dto.getFnr()).orElseThrow();
-        dto.setNavKontorForArbeidsliste(navKontorForBruker);
+        NavKontor navKontorForBruker = brukerServiceV2.hentNavKontor(dto.getFnr()).orElseThrow();
+        dto.setNavKontorForArbeidsliste(navKontorForBruker.getValue());
         return arbeidslisteRepositoryPostgres.insertArbeidsliste(dto)
                 .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
@@ -99,7 +100,7 @@ public class ArbeidslisteService {
     }
 
     public int slettArbeidsliste(Fnr fnr) {
-        Optional<AktorId> aktoerId = brukerService.hentAktorId(fnr);
+        Optional<AktorId> aktoerId = brukerServiceV2.hentAktorId(fnr);
         if (aktoerId.isPresent()) {
             return slettArbeidsliste(aktoerId.get());
         }
@@ -146,7 +147,7 @@ public class ArbeidslisteService {
     }
 
     public Boolean erVeilederForBruker(AktorId aktoerId, VeilederId veilederId) {
-        return brukerService
+        return brukerServiceV2
                 .hentVeilederForBruker(aktoerId)
                 .map(currentVeileder -> currentVeileder.equals(veilederId))
                 .orElse(false);
@@ -160,7 +161,7 @@ public class ArbeidslisteService {
             return false;
         }
 
-        final Optional<String> navKontorForBruker = brukerService.hentNavKontor(aktoerId);
+        final Optional<String> navKontorForBruker = brukerServiceV2.hentNavKontor(aktoerId).map(NavKontor::getValue);
         if (navKontorForBruker.isEmpty()) {
             log.error("Kunne ikke hente NAV-kontor fra db-link til arena for bruker {}", aktoerId.toString());
             return false;

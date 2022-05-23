@@ -16,19 +16,33 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
---
--- Name: kafka_message_type; Type: TYPE; Schema: public; Owner: -
---
-
-CREATE TYPE public.kafka_message_type AS ENUM (
-    'PRODUCED',
-    'CONSUMED'
-);
-
-
 SET default_tablespace = '';
 
 SET default_with_oids = false;
+
+--
+-- Name: bruker_identer; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.bruker_identer (
+    person character varying(25) NOT NULL,
+    ident character varying(30) NOT NULL,
+    historisk boolean NOT NULL,
+    gruppe character varying(30) NOT NULL
+);
+
+
+--
+-- Name: aktive_identer; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.aktive_identer AS
+ SELECT bi_a.ident AS aktorid,
+    bi_f.ident AS fnr
+   FROM (public.bruker_identer bi_a
+     JOIN public.bruker_identer bi_f ON (((bi_a.person)::text = (bi_f.person)::text)))
+  WHERE (((bi_a.gruppe)::text = 'AKTORID'::text) AND (NOT bi_a.historisk) AND ((bi_f.gruppe)::text = 'FOLKEREGISTERIDENT'::text) AND (NOT bi_f.historisk));
+
 
 --
 -- Name: aktiviteter; Type: TABLE; Schema: public; Owner: -
@@ -200,85 +214,18 @@ CREATE VIEW public.aktorid_indeksert_data AS
 
 
 --
--- Name: oppfolgingsbruker_arena; Type: TABLE; Schema: public; Owner: -
+-- Name: bruker_data; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.oppfolgingsbruker_arena (
-    aktoerid character varying(20) NOT NULL,
-    fodselsnr character varying(33),
-    formidlingsgruppekode character varying(15),
-    iserv_fra_dato timestamp without time zone,
-    etternavn character varying(90),
+CREATE TABLE public.bruker_data (
+    freg_ident character varying(30) NOT NULL,
     fornavn character varying(90),
-    nav_kontor character varying(24),
-    kvalifiseringsgruppekode character varying(15),
-    rettighetsgruppekode character varying(15),
-    hovedmaalkode character varying(30),
-    sikkerhetstiltak_type_kode character varying(12),
-    diskresjonskode character varying(6),
-    har_oppfolgingssak boolean DEFAULT false NOT NULL,
-    sperret_ansatt boolean DEFAULT false NOT NULL,
-    er_doed boolean DEFAULT false NOT NULL,
-    doed_fra_dato timestamp without time zone,
-    endret_dato timestamp without time zone,
-    fodsels_dato date,
-    kjonn character varying(1)
+    mellomnavn character varying(90),
+    etternavn character varying(90),
+    kjoenn character varying(5),
+    er_doed boolean,
+    foedselsdato date
 );
-
-
---
--- Name: bruker; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.bruker AS
- SELECT od.aktoerid,
-    od.oppfolging,
-    od.startdato,
-    od.ny_for_veileder,
-    od.veilederid,
-    od.manuell,
-    oba.kjonn,
-    oba.fodsels_dato,
-    oba.fodselsnr,
-    oba.fornavn,
-    oba.etternavn,
-    oba.nav_kontor,
-    oba.iserv_fra_dato,
-    oba.formidlingsgruppekode,
-    oba.kvalifiseringsgruppekode,
-    oba.rettighetsgruppekode,
-    oba.hovedmaalkode,
-    oba.sikkerhetstiltak_type_kode,
-    oba.diskresjonskode,
-    oba.har_oppfolgingssak,
-    oba.sperret_ansatt,
-    oba.er_doed,
-    d.venter_pa_bruker,
-    d.venter_pa_nav,
-    v.vedtakstatus,
-    bp.profilering_resultat,
-    cv.har_delt_cv,
-    cv.cv_eksisterer,
-    br.brukers_situasjon,
-    br.utdanning,
-    br.utdanning_bestatt,
-    br.utdanning_godkjent,
-    v.ansvarlig_veildernavn AS vedtakstatus_ansvarlig_veildernavn,
-    v.endret_tidspunkt AS vedtakstatus_endret_tidspunkt,
-    arb.sist_endret_av_veilederident AS arb_sist_endret_av_veilederident,
-    arb.endringstidspunkt AS arb_endringstidspunkt,
-    arb.overskrift AS arb_overskrift,
-    arb.kommentar AS arb_kommentar,
-    arb.frist AS arb_frist,
-    arb.kategori AS arb_kategori
-   FROM (((((((public.oppfolging_data od
-     LEFT JOIN public.oppfolgingsbruker_arena oba ON (((oba.aktoerid)::text = (od.aktoerid)::text)))
-     LEFT JOIN public.dialog d ON (((d.aktoerid)::text = (od.aktoerid)::text)))
-     LEFT JOIN public.vedtakstatus v ON (((v.aktoerid)::text = (od.aktoerid)::text)))
-     LEFT JOIN public.arbeidsliste arb ON (((arb.aktoerid)::text = (od.aktoerid)::text)))
-     LEFT JOIN public.bruker_profilering bp ON (((bp.aktoerid)::text = (od.aktoerid)::text)))
-     LEFT JOIN public.bruker_cv cv ON (((cv.aktoerid)::text = (od.aktoerid)::text)))
-     LEFT JOIN public.bruker_registrering br ON (((br.aktoerid)::text = (od.aktoerid)::text)));
 
 
 --
@@ -292,21 +239,6 @@ CREATE TABLE public.brukertiltak (
     tiltakskode character varying(10),
     tildato timestamp without time zone,
     fradato timestamp without time zone
-);
-
-
---
--- Name: feilet_kafka_melding; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.feilet_kafka_melding (
-    id bigint NOT NULL,
-    topic character varying(100) NOT NULL,
-    key character varying(40) NOT NULL,
-    payload json NOT NULL,
-    message_type public.kafka_message_type NOT NULL,
-    message_offset bigint,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -395,22 +327,49 @@ CREATE TABLE public.lest_arena_hendelse_ytelse (
 
 
 --
--- Name: optimaliser_bruker; Type: VIEW; Schema: public; Owner: -
+-- Name: nom_skjerming; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE VIEW public.optimaliser_bruker AS
- SELECT od.aktoerid,
-    od.oppfolging,
-    od.startdato,
-    od.ny_for_veileder,
-    od.veilederid,
-    oba.fodselsnr,
-    oba.fornavn,
-    oba.etternavn,
-    oba.nav_kontor,
-    oba.diskresjonskode
-   FROM (public.oppfolging_data od
-     LEFT JOIN public.oppfolgingsbruker_arena oba ON (((oba.aktoerid)::text = (od.aktoerid)::text)));
+CREATE TABLE public.nom_skjerming (
+    fodselsnr character varying(33) NOT NULL,
+    er_skjermet boolean DEFAULT false,
+    skjermet_fra timestamp without time zone,
+    skjermet_til timestamp without time zone
+);
+
+
+--
+-- Name: oppfolgingsbruker_arena_v2; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.oppfolgingsbruker_arena_v2 (
+    fodselsnr character varying(33) NOT NULL,
+    formidlingsgruppekode character varying(15),
+    iserv_fra_dato timestamp without time zone,
+    etternavn character varying(90),
+    fornavn character varying(90),
+    nav_kontor character varying(24),
+    kvalifiseringsgruppekode character varying(15),
+    rettighetsgruppekode character varying(15),
+    hovedmaalkode character varying(30),
+    sikkerhetstiltak_type_kode character varying(12),
+    diskresjonskode character varying(6),
+    sperret_ansatt boolean DEFAULT false,
+    er_doed boolean DEFAULT false,
+    endret_dato timestamp without time zone
+);
+
+
+--
+-- Name: pdl_person_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.pdl_person_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -512,6 +471,22 @@ ALTER TABLE ONLY public.bruker_cv
 
 
 --
+-- Name: bruker_data bruker_data_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bruker_data
+    ADD CONSTRAINT bruker_data_pkey PRIMARY KEY (freg_ident);
+
+
+--
+-- Name: bruker_identer bruker_identer_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bruker_identer
+    ADD CONSTRAINT bruker_identer_pkey PRIMARY KEY (ident);
+
+
+--
 -- Name: bruker_profilering bruker_profilering_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -541,14 +516,6 @@ ALTER TABLE ONLY public.brukertiltak
 
 ALTER TABLE ONLY public.dialog
     ADD CONSTRAINT dialog_pkey PRIMARY KEY (aktoerid);
-
-
---
--- Name: feilet_kafka_melding feilet_kafka_melding_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.feilet_kafka_melding
-    ADD CONSTRAINT feilet_kafka_melding_pkey PRIMARY KEY (id);
 
 
 --
@@ -592,6 +559,14 @@ ALTER TABLE ONLY public.lest_arena_hendelse_ytelse
 
 
 --
+-- Name: nom_skjerming nom_skjerming_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.nom_skjerming
+    ADD CONSTRAINT nom_skjerming_pkey PRIMARY KEY (fodselsnr);
+
+
+--
 -- Name: oppfolging_data oppfolging_data_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -600,11 +575,11 @@ ALTER TABLE ONLY public.oppfolging_data
 
 
 --
--- Name: oppfolgingsbruker_arena oppfolgingsbruker_arena_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: oppfolgingsbruker_arena_v2 oppfolgingsbruker_arena_v2_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.oppfolgingsbruker_arena
-    ADD CONSTRAINT oppfolgingsbruker_arena_pkey PRIMARY KEY (aktoerid);
+ALTER TABLE ONLY public.oppfolgingsbruker_arena_v2
+    ADD CONSTRAINT oppfolgingsbruker_arena_v2_pkey PRIMARY KEY (fodselsnr);
 
 
 --
@@ -692,17 +667,17 @@ CREATE INDEX aktorid_ytelser_idx ON public.ytelsesvedtak USING btree (aktorid);
 
 
 --
--- Name: enhet_idx; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX enhet_idx ON public.oppfolgingsbruker_arena USING btree (nav_kontor);
-
-
---
 -- Name: flyway_schema_history_s_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX flyway_schema_history_s_idx ON public.flyway_schema_history USING btree (success);
+
+
+--
+-- Name: nav_kontor_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX nav_kontor_idx ON public.oppfolgingsbruker_arena_v2 USING btree (nav_kontor);
 
 
 --

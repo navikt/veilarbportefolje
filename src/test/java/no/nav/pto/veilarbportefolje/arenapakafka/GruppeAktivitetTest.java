@@ -57,7 +57,7 @@ public class GruppeAktivitetTest {
 
     @BeforeEach
     public void reset() {
-        jdbcTemplate.execute("truncate table oppfolgingsbruker_arena");
+        jdbcTemplate.execute("truncate table oppfolgingsbruker_arena_v2");
         jdbcTemplate.execute("truncate table gruppe_aktiviter");
         jdbcTemplate.execute("truncate table oppfolging_data");
     }

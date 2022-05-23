@@ -69,8 +69,9 @@ public class TiltakRepositoryV2 {
         final String hentTiltakPaEnhetSql = """
                 SELECT * FROM tiltakkodeverket WHERE
                 kode IN (SELECT DISTINCT tiltakskode FROM brukertiltak BT
-                INNER JOIN oppfolgingsbruker_arena OP ON BT.aktoerid = OP.aktoerid
-                WHERE OP.nav_kontor=?)
+                INNER JOIN aktive_identer ai on ai.aktorid = BT.aktoerid
+                INNER JOIN oppfolgingsbruker_arena_v2 OP ON OP.fodselsnr = ai.fnr
+                WHERE OP.nav_kontor = ?)
                 """;
 
         return new EnhetTiltak().setTiltak(

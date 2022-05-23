@@ -3,17 +3,23 @@ package no.nav.pto.veilarbportefolje.postgres;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
+import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
+import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvOppfolgingsdataPaPostgres;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
 
@@ -23,22 +29,39 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalk
 public class PostgresOpensearchMapper {
     private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
     private final AktivitetOpensearchService aktivitetOpensearchService;
+    private final SkjermingService skjermingService;
+    private final SisteEndringService sisteEndringService;
     private final UnleashService unleashService;
 
-    public List<OppfolgingsBruker> flettInnPostgresData(List<OppfolgingsBruker> brukere, boolean medDiffLogging) {
+    @Deprecated
+    public List<OppfolgingsBruker> flettInnPostgresData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
-
+        List<String> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).collect(Collectors.toList());
+        Set<Fnr> skjermetPersonerNOM = skjermingService.hentSkjermetPersoner(fnrs);
         HashMap<AktorId, PostgresAktorIdEntity> aktorIdData = aktoerDataOpensearchMapper.hentAktoerData(aktoerIder);
+
+        brukere.forEach(bruker -> {
+                    AktorId aktorId = AktorId.of(bruker.getAktoer_id());
+                    boolean erSkjermet_NOM = skjermetPersonerNOM.contains(Fnr.of(bruker.getFnr()));
+
+                    Optional.ofNullable(aktorIdData.get(aktorId))
+                            .ifPresentOrElse(
+                                    postgresAktorIdData -> flettInnBrukerData(postgresAktorIdData, bruker, erSkjermet_NOM),
+                                    () -> log.warn("Fant ikke aktoer i aktoer basert postgres: {}", bruker.getAktoer_id())
+                            );
+                }
+        );
+        return brukere;
+    }
+
+    public List<OppfolgingsBruker> flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
+        List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
         Map<AktorId, List<AktivitetEntityDto>> avtalteAktiviterMap = aktivitetOpensearchService.hentAvtaltAktivitetData(aktoerIder);
         Map<AktorId, List<AktivitetEntityDto>> ikkeAvtalteAktiviterMap = aktivitetOpensearchService.hentIkkeAvtaltAktivitetData(aktoerIder);
 
         brukere.forEach(bruker -> {
                     AktorId aktorId = AktorId.of(bruker.getAktoer_id());
-                    Optional.ofNullable(aktorIdData.get(aktorId))
-                            .ifPresentOrElse(
-                                    postgresAktorIdData -> flettInnAktoerData(postgresAktorIdData, bruker, medDiffLogging),
-                                    () -> log.warn("Fant ikke aktoer i aktoer basert postgres: {}", bruker.getAktoer_id())
-                            );
+
                     List<AktivitetEntityDto> avtalteAktiviteter = avtalteAktiviterMap.get(aktorId) != null ? avtalteAktiviterMap.get(aktorId) : new ArrayList<>();
                     List<AktivitetEntityDto> ikkeAvtalteAktiviteter = ikkeAvtalteAktiviterMap.get(aktorId) != null ? ikkeAvtalteAktiviterMap.get(aktorId) : new ArrayList<>();
 
@@ -52,6 +75,11 @@ public class PostgresOpensearchMapper {
         );
 
         return brukere;
+    }
+
+    public Map<AktorId, Map<String, Endring>> hentPostgresSisteEndringerData(List<OppfolgingsBruker> brukere) {
+        List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
+        return sisteEndringService.hentSisteEndringerFraPostgres(aktoerIder);
     }
 
     private void flettInnAktivitetData(AktivitetEntity aktivitetData, OppfolgingsBruker bruker) {
@@ -87,17 +115,21 @@ public class PostgresOpensearchMapper {
         bruker.setTiltak(aktivitetData.getTiltak());
     }
 
-    private void flettInnAktoerData(PostgresAktorIdEntity dataPaAktorId, OppfolgingsBruker bruker, boolean medDiffLogging) {
-        if (medDiffLogging) {
-            loggDiff(dataPaAktorId, bruker);
+    @Deprecated
+    private void flettInnBrukerData(PostgresAktorIdEntity dataPaAktorId, OppfolgingsBruker bruker, boolean erSkjermet_NOM) {
+        bruker.setOppfolging(dataPaAktorId.getOppfolging());
+        bruker.setNy_for_veileder(dataPaAktorId.getNyForVeileder());
+        bruker.setManuell_bruker(dataPaAktorId.getManuellBruker() ? "MANUELL" : null);
+        bruker.setVeileder_id(dataPaAktorId.getVeileder());
+        bruker.setOppfolging_startdato(dataPaAktorId.getOppfolgingStartdato());
+
+        bruker.setVenterpasvarfranav(dataPaAktorId.getVenterpasvarfranav());
+        bruker.setVenterpasvarfrabruker(dataPaAktorId.getVenterpasvarfrabruker());
+
+        if (brukNOMSkjerming(unleashService)) {
+            bruker.setEgen_ansatt(erSkjermet_NOM);
         }
-        if (brukAvOppfolgingsdataPaPostgres(unleashService)) {
-            bruker.setOppfolging(dataPaAktorId.getOppfolging());
-            bruker.setNy_for_veileder(dataPaAktorId.getNyForVeileder());
-            bruker.setManuell_bruker(dataPaAktorId.getManuellBruker() ? "MANUELL" : null);
-            bruker.setVeileder_id(dataPaAktorId.getVeileder());
-            bruker.setOppfolging_startdato(dataPaAktorId.getOppfolgingStartdato());
-        }
+
         bruker.setCv_eksistere(dataPaAktorId.getCvEksistere());
         bruker.setHar_delt_cv(dataPaAktorId.getHarDeltCv());
 
@@ -115,6 +147,14 @@ public class PostgresOpensearchMapper {
         bruker.setAapmaxtiduke(dataPaAktorId.getAapmaxtiduke());
         bruker.setAapunntakukerigjen(dataPaAktorId.getAapunntakukerigjen());
 
+        bruker.setVedtak_status(Optional.ofNullable(dataPaAktorId.getVedtak14AStatus())
+                .map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf)
+                .map(KafkaVedtakStatusEndring::vedtakStatusTilTekst)
+                .orElse(null)
+        );
+        bruker.setVedtak_status_endret(dataPaAktorId.getVedtak14AStatusEndret());
+        bruker.setAnsvarlig_veileder_for_vedtak(dataPaAktorId.getAnsvarligVeilederFor14AVedtak());
+
         if (dataPaAktorId.isArbeidslisteAktiv()) {
             bruker.setArbeidsliste_sist_endret_av_veilederid(dataPaAktorId.getArbeidslisteSistEndretAvVeilederid());
             bruker.setArbeidsliste_endringstidspunkt(dataPaAktorId.getArbeidslisteEndringstidspunkt());
@@ -124,75 +164,4 @@ public class PostgresOpensearchMapper {
             bruker.setArbeidsliste_tittel_lengde(dataPaAktorId.getArbeidslisteTittelLengde());
         }
     }
-
-    private void loggDiff(PostgresAktorIdEntity postgresAktorIdEntity, OppfolgingsBruker bruker) {
-        if (bruker.isHar_delt_cv() != postgresAktorIdEntity.getHarDeltCv()) {
-            log.info("postgres Opensearch: isHar_delt_cv feil bruker: {}", bruker.getAktoer_id());
-        }
-        if (bruker.isCv_eksistere() != postgresAktorIdEntity.getCvEksistere()) {
-            log.info("postgres Opensearch: isCv_eksistere feil bruker: {}", bruker.getAktoer_id());
-        }
-        if (bruker.isOppfolging() != postgresAktorIdEntity.getOppfolging()) {
-            log.info("postgres Opensearch: isOppfolging feil bruker: {}", bruker.getAktoer_id());
-        }
-        if (bruker.isNy_for_veileder() != postgresAktorIdEntity.getNyForVeileder()) {
-            log.info("postgres Opensearch: isNy_for_veileder feil bruker: {}", bruker.getAktoer_id());
-        }
-        if ((bruker.getManuell_bruker() != null && bruker.getManuell_bruker().equals("MANUELL")) != postgresAktorIdEntity.getManuellBruker()) {
-            log.info("postgres Opensearch: getManuell_bruker feil bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferent(bruker.getOppfolging_startdato(), postgresAktorIdEntity.getOppfolgingStartdato())) {
-            log.info("postgres Opensearch: getOppfolging_startdato feil bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferent(bruker.getVenterpasvarfrabruker(), postgresAktorIdEntity.getVenterpasvarfrabruker())) {
-            log.info("postgres Opensearch: Venterpasvarfrabruker feil bruker: {}", bruker.getAktoer_id());
-        }
-        if (isDifferent(bruker.getVenterpasvarfranav(), postgresAktorIdEntity.getVenterpasvarfranav())) {
-            log.info("postgres Opensearch: getVenterpasvarfranav feil bruker: {}", bruker.getAktoer_id());
-        }
-
-        // Arbeidslista
-        if (isDifferent(bruker.isArbeidsliste_aktiv(), postgresAktorIdEntity.isArbeidslisteAktiv())) {
-            log.info("postgres Opensearch: arbeidslisteAktiv feil på bruker {}", bruker.getAktoer_id());
-        }
-        if (bruker.isArbeidsliste_aktiv()) {
-            if (isDifferent(bruker.getArbeidsliste_sist_endret_av_veilederid(), postgresAktorIdEntity.getArbeidslisteSistEndretAvVeilederid())) {
-                log.info("postgres Opensearch: arbeidslisteSistEndretAvVeilederid feil på bruker {}", bruker.getAktoer_id());
-            }
-            if (isDifferentDate(bruker.getArbeidsliste_endringstidspunkt(), postgresAktorIdEntity.getArbeidslisteEndringstidspunkt())) {
-                log.info("postgres Opensearch: arbeidslisteEndringstidspunkt feil på bruker {}", bruker.getAktoer_id());
-            }
-            if (isDifferent(bruker.getArbeidsliste_frist(), postgresAktorIdEntity.getArbeidslisteFrist())) {
-                log.info("postgres Opensearch: arbeidslisteFrist feil på bruker {}", bruker.getAktoer_id());
-            }
-            if (isDifferent(bruker.getArbeidsliste_kategori(), postgresAktorIdEntity.getArbeidslisteKategori())) {
-                log.info("postgres Opensearch: arbeidslisteKategori feil på bruker {}", bruker.getAktoer_id());
-            }
-            if (isDifferent(bruker.getArbeidsliste_tittel_sortering(), postgresAktorIdEntity.getArbeidslisteTittelSortering())) {
-                log.info("postgres Opensearch: arbeidslisteTittelSortering feil på bruker {}", bruker.getAktoer_id());
-            }
-            if (isDifferent(bruker.getArbeidsliste_tittel_lengde(), postgresAktorIdEntity.getArbeidslisteTittelLengde())) {
-                log.info("postgres Opensearch: arbeidslisteTittelLengde feil på bruker {}", bruker.getAktoer_id());
-            }
-        }
-    }
-
-    private boolean isDifferent(Object o, Object other) {
-        if (o == null && other == null) {
-            return false;
-        } else if (o == null || other == null) {
-            return true;
-        }
-        return !o.equals(other);
-    }
-
-    private boolean isDifferentDate(String o, String other) {
-        if (o == null && other == null) {
-            return false;
-        } else if (o == null || other == null) {
-            return true;
-        }
-        return !o.substring(0, 10).equals(other.substring(0, 10));
-    }
-
 }

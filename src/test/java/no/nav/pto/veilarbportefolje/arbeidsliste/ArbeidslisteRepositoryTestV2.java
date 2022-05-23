@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static java.util.concurrent.ThreadLocalRandom.current;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
@@ -54,7 +56,8 @@ public class ArbeidslisteRepositoryTestV2 {
     public void setUp() {
         jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
         jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data");
-        jdbcTemplate.execute("TRUNCATE TABLE oppfolgingsbruker_arena");
+        jdbcTemplate.execute("TRUNCATE TABLE oppfolgingsbruker_arena_v2");
+        jdbcTemplate.execute("TRUNCATE TABLE bruker_identer");
     }
 
     @Test
@@ -208,7 +211,13 @@ public class ArbeidslisteRepositoryTestV2 {
     }
 
     private void insertOppfolgingsInformasjon(AktorId aktorId, VeilederId veilederId, EnhetId navKontor) {
-        jdbcTemplate.update("INSERT INTO oppfolgingsbruker_arena (aktoerid, nav_kontor) values (?,?)", aktorId.get(), navKontor.get());
+        int person = current().nextInt();
+        Fnr fnr = randomFnr();
+        jdbcTemplate.update("INSERT INTO bruker_identer (person, ident, gruppe, historisk) values (?,?,?, false)",
+                person, aktorId.get(), PDLIdent.Gruppe.AKTORID.name());
+        jdbcTemplate.update("INSERT INTO bruker_identer (person, ident, gruppe, historisk) values (?,?,?, false)",
+                person, fnr.get(), PDLIdent.Gruppe.FOLKEREGISTERIDENT.name());
+        jdbcTemplate.update("INSERT INTO oppfolgingsbruker_arena_v2 (fodselsnr, nav_kontor) values (?,?)", fnr.get(), navKontor.get());
         oppfolgingRepository.settUnderOppfolging(aktorId, ZonedDateTime.now());
         oppfolgingRepository.settVeileder(aktorId, veilederId);
     }

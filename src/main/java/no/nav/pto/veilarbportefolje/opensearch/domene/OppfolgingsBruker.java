@@ -12,7 +12,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 @Data
 @Accessors(chain = true)
 public class OppfolgingsBruker {
-    String person_id;
     String fnr;
     String aktoer_id;
     String fornavn;
@@ -30,22 +29,16 @@ public class OppfolgingsBruker {
     boolean cv_eksistere;
     boolean egen_ansatt;
     boolean er_doed;
-    String doed_fra_dato;
     String veileder_id;
     int fodselsdag_i_mnd;
     String fodselsdato;
     String kjonn;
     String ytelse;
     String utlopsdato;
-    String utlopsdatofasett;
     Integer dagputlopuke;
-    String dagputlopukefasett;
     Integer permutlopuke;
-    String permutlopukefasett;
     Integer aapmaxtiduke;
-    String aapmaxtidukefasett;
     Integer aapunntakukerigjen;
-    String aapunntakukerigjenfasett;
     boolean oppfolging;
     boolean ny_for_veileder;
     boolean trenger_vurdering;

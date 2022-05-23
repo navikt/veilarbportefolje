@@ -65,7 +65,7 @@ public class GruppeAktivitetRepositoryV2 {
     public void leggTilGruppeAktiviteter(String aktoerIder, HashMap<AktorId, List<AktivitetEntityDto>> result) {
         namedDb.query("""
                         SELECT aktoerid, moteplan_startdato, moteplan_sluttdato FROM gruppe_aktiviter
-                        WHERE date_trunc('day', moteplan_sluttdato) > date_trunc('day',current_timestamp)
+                        WHERE date_trunc('day', moteplan_sluttdato) >= date_trunc('day',current_timestamp)
                         AND aktiv = true AND aktoerid = ANY (:ids::varchar[])
                         """,
                 new MapSqlParameterSource("ids", aktoerIder),

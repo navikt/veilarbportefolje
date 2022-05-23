@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
@@ -51,7 +52,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         Mockito.when(aktorClient.hentFnr(any())).thenReturn(Fnr.of("-1"));
         when(brukerRepository.hentMappedePersonIder(any())).thenReturn(List.of(PersonId.of("0000")));
         when(brukerRepository.retrievePersonidFromFnr(Fnr.of("-1"))).thenReturn(Optional.of(PersonId.of("0000")));
-        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, mock(OppfolgingRepositoryV2.class), mock(OpensearchIndexer.class), brukerRepository, aktorClient);
+        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, mock(OppfolgingRepositoryV2.class), mock(OpensearchIndexer.class), mock(PdlService.class));
         this.oppfolgingPeriodeService = new OppfolgingPeriodeService(this.oppfolgingStartetService, this.oppfolgingAvsluttetService);
     }
 
@@ -92,7 +93,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         List<String> registrering = jdbcTemplate.query("select * from bruker_registrering where aktoerid = ?", (r, i) -> r.getString("aktoerid"), aktoerId.get());
 
         assertThat(registrering.size()).isEqualTo(0);
-        assertThat(testDataClient.hentOppfolgingFlaggFraDatabase(aktoerId)).isFalse();
+        assertThat(testDataClient.hentUnderOppfolgingOgAktivIdent(aktoerId)).isFalse();
         Map<String, Object> source = opensearchTestClient.fetchDocument(aktoerId).getSourceAsMap();
         assertThat(source).isNull();
     }
