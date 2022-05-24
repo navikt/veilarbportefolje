@@ -23,11 +23,10 @@ import static no.nav.pto.veilarbportefolje.util.DbUtils.getSqlAdminRole;
 @Configuration
 @RequiredArgsConstructor
 @EnableTransactionManagement
-public class DbConfigPostgres implements DatabaseConfig{
+public class DbConfigPostgres {
     private final EnvironmentProperties environmentProperties;
 
-    @Bean("Postgres")
-    @Override
+    @Bean
     public DataSource dataSource() {
         return createDataSource(environmentProperties.getDbUrl(), true);
     }
@@ -37,8 +36,7 @@ public class DbConfigPostgres implements DatabaseConfig{
         return createDataSource(environmentProperties.getDbUrl(), false);
     }
 
-    @Bean(name="PostgresJdbc")
-    @Override
+    @Bean
     public JdbcTemplate db(@Qualifier("Postgres") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
