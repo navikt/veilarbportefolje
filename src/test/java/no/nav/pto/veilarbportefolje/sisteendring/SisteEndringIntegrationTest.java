@@ -17,7 +17,6 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -31,17 +30,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_EGEN;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_IJOBB;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.MAL;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_IJOBB;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -51,7 +44,6 @@ import static org.mockito.Mockito.mock;
 
 public class SisteEndringIntegrationTest extends EndToEndTest {
     private final MalService malService;
-    private final JdbcTemplate jdbcTemplate;
     private final JdbcTemplate jdbcTemplatePostgres;
     private final AktivitetService aktivitetService;
     private final OpensearchService opensearchService;
@@ -65,13 +57,11 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private Long aktivitetVersion = 1L;
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplate, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer) {
-        this.jdbcTemplate = jdbcTemplate;
+    public SisteEndringIntegrationTest(MalService malService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         BrukerService brukerService = mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
-        unleashService = Mockito.mock(UnleashService.class);
         this.oppfolgingRepositoryMock = mock(OppfolgingRepository.class);
         this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), brukerService, sisteEndringService, opensearchIndexer);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
@@ -81,12 +71,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     @BeforeEach
     public void resetMock() {
-        jdbcTemplate.execute("truncate table aktoerid_to_personid");
-        jdbcTemplate.execute("truncate table siste_endring");
-        jdbcTemplate.execute("truncate table oppfolging_data");
-        jdbcTemplate.execute("truncate table oppfolgingsbruker");
-        jdbcTemplatePostgres.execute("truncate table aktiviteter");
+        jdbcTemplatePostgres.execute("truncate table siste_endring");
         jdbcTemplatePostgres.execute("truncate table oppfolging_data");
+        jdbcTemplatePostgres.execute("truncate table aktiviteter");
         Mockito.when(oppfolgingRepositoryMock.erUnderoppfolging(any())).thenReturn(true);
     }
 
@@ -113,7 +100,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     public void sisteendring_populering_aktiviteter() {
         final AktorId aktoerId = randomAktorId();
         testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.getValue());
-        populateOpensearch(testEnhet,veilederId, aktoerId.get());
+        populateOpensearch(testEnhet, veilederId, aktoerId.get());
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse("2020-05-28T07:47:42.480Z");
         ZonedDateTime endretTidZonedDateTime_NY_IJOBB = ZonedDateTime.parse("2028-05-28T07:47:42.480Z");
         ZonedDateTime endretTidNyZonedDateTime = ZonedDateTime.parse("2020-11-26T10:40:40.000Z");
@@ -189,7 +176,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt()).isEqualTo(zonedDateTime.toLocalDateTime());
 
         });
-}
+    }
 
 
     @Test
@@ -432,11 +419,16 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     private void send_aktvitet_melding(AktorId aktoerId, ZonedDateTime endretDato, KafkaAktivitetMelding.EndringsType endringsType,
                                        KafkaAktivitetMelding.AktivitetStatus status, KafkaAktivitetMelding.AktivitetTypeData typeData) {
-        KafkaAktivitetMelding melding = new KafkaAktivitetMelding().setAktivitetId("1")
+        KafkaAktivitetMelding melding = new KafkaAktivitetMelding().setAktivitetId(String.valueOf(getRandomPositiveInteger()))
                 .setAktorId(aktoerId.get()).setFraDato(ZonedDateTime.now().minusDays(5)).setEndretDato(endretDato)
                 .setAktivitetType(typeData).setAktivitetStatus(status).setEndringsType(endringsType).setLagtInnAv(KafkaAktivitetMelding.InnsenderData.BRUKER)
                 .setAvtalt(true).setHistorisk(false).setVersion(++aktivitetVersion);
         aktivitetService.behandleKafkaMeldingLogikk(melding);
+    }
+
+    private Integer getRandomPositiveInteger() {
+        Random random = new Random();
+        return random.nextInt();
     }
 
 
