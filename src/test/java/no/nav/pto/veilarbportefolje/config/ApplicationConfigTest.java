@@ -101,7 +101,6 @@ import static org.mockito.Mockito.when;
         CVRepositoryV2.class,
         CVService.class,
         RegistreringRepositoryV2.class,
-        PersonRepository.class,
         NyForVeilederService.class,
         VeilederTilordnetService.class,
         OppfolgingStartetService.class,
