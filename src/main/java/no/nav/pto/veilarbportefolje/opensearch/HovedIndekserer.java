@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvAliasIndeksering;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.hentIdenterFraPostgres;
 
 @Slf4j
 @Service
@@ -20,7 +18,6 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.hentIdenterFraPo
 public class HovedIndekserer {
     private final OpensearchIndexer opensearchIndexer;
     private final OpensearchAdminService opensearchAdminService;
-    private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final UnleashService unleashService;
 
@@ -28,11 +25,7 @@ public class HovedIndekserer {
     public void hovedIndeksering() {
         log.info("Starter jobb: hovedindeksering");
         List<AktorId> brukereSomMaOppdateres;
-        if (hentIdenterFraPostgres(unleashService)) {
-            brukereSomMaOppdateres = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
-        } else {
-            brukereSomMaOppdateres = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
-        }
+        brukereSomMaOppdateres = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
 
         if (brukAvAliasIndeksering(unleashService)) {
             aliasBasertHovedIndeksering(brukereSomMaOppdateres);

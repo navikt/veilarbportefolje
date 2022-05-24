@@ -10,9 +10,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.http.HttpHeaders;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -24,14 +22,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
-import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class OppfolgingServiceTest {
-
-    private OppfolgingRepository oppfolgingRepository;
     private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private OppfolgingService oppfolgingService;
     private SystemUserTokenProvider systemUserTokenProvider;
@@ -42,12 +37,9 @@ public class OppfolgingServiceTest {
     @Before
     public void setup() {
         systemUserTokenProvider = mock(SystemUserTokenProvider.class);
-        DataSource ds = setupInMemoryDatabase();
-        JdbcTemplate db = new JdbcTemplate(ds);
         oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(SingletonPostgresContainer.init().createJdbcTemplate());
-        oppfolgingRepository = new OppfolgingRepository(db);
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        oppfolgingService = new OppfolgingService(oppfolgingRepository, mock(OppfolgingAvsluttetService.class), systemUserTokenProvider, apiUrl, oppfolgingRepositoryV2, mock(AktorClient.class));
+        oppfolgingService = new OppfolgingService(mock(OppfolgingAvsluttetService.class), systemUserTokenProvider, apiUrl, oppfolgingRepositoryV2, mock(AktorClient.class));
 
     }
 
@@ -65,20 +57,13 @@ public class OppfolgingServiceTest {
                         .withBody(readFileAsJsonString("/veilarboppfolging_hentVeilarbinfo.json", getClass())))
         );
 
-        oppfolgingRepository.settUnderOppfolging(AktorId.of(AKTORID), startDato_portefolje);
-
-        Optional<BrukerOppdatertInformasjon> oppfolgingsDataV2_preSync = oppfolgingRepositoryV2.hentOppfolgingData(AktorId.of(AKTORID));
-
+        oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(AKTORID), startDato_portefolje);
         oppfolgingService.oppdaterBruker(AktorId.of(AKTORID));
 
-        Optional<BrukerOppdatertInformasjon> oppfolgingsData = oppfolgingRepository.hentOppfolgingData(AktorId.of(AKTORID));
         Optional<BrukerOppdatertInformasjon> oppfolgingsDataV2_postSync = oppfolgingRepositoryV2.hentOppfolgingData(AktorId.of(AKTORID));
         assertThat(oppfolgingsDataV2_postSync.get().getStartDato()).isEqualTo(toTimestamp(ZonedDateTime.parse("2021-04-27T10:40:02.110297+02:00")));
         assertThat(oppfolgingsDataV2_postSync.get().getManuell()).isTrue();
         assertThat(oppfolgingsDataV2_postSync.get().getNyForVeileder()).isTrue();
         assertThat(oppfolgingsDataV2_postSync.get().getVeileder()).isEqualTo("123");
-
-        assertThat(oppfolgingsDataV2_preSync.isEmpty()).isTrue();
-        assertThat(oppfolgingsData).isEqualTo(oppfolgingsDataV2_postSync);
     }
 }

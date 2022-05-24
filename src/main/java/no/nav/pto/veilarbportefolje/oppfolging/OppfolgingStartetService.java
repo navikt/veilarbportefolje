@@ -14,7 +14,6 @@ import java.time.ZonedDateTime;
 @Service
 @RequiredArgsConstructor
 public class OppfolgingStartetService {
-    private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchIndexer opensearchIndexer;
     private final PdlService pdlService;
@@ -22,7 +21,6 @@ public class OppfolgingStartetService {
     public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate) {
         pdlService.hentOgLagrePdlData(aktorId);
 
-        oppfolgingRepository.settUnderOppfolging(aktorId, oppfolgingStartetDate);
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
         opensearchIndexer.indekser(aktorId);
         log.info("Bruker {} har startet oppfølging: {}", aktorId, oppfolgingStartetDate);

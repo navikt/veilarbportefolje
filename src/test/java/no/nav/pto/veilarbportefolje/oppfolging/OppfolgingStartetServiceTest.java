@@ -21,31 +21,27 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class OppfolgingStartetServiceTest extends EndToEndTest {
-
-    private final OppfolgingStartetService oppfolgingStartetService;
-    private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
-    private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OppfolgingPeriodeService oppfolgingPeriodeService;
 
     @Autowired
-    public OppfolgingStartetServiceTest(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService) {
-        this.oppfolgingRepository = oppfolgingRepository;
+    public OppfolgingStartetServiceTest(OppfolgingRepositoryV2 oppfolgingRepositoryV2, OppfolgingAvsluttetService oppfolgingAvsluttetService) {
+        this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         AktorClient aktorClient = mock(AktorClient.class);
         when(aktorClient.hentFnr(any())).thenReturn(Fnr.of("-1"));
-        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, mock(OppfolgingRepositoryV2.class), mock(OpensearchIndexer.class), mock(PdlService.class));
-        this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
-        this.oppfolgingPeriodeService = new OppfolgingPeriodeService(this.oppfolgingStartetService, this.oppfolgingAvsluttetService);
+        OppfolgingStartetService oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepositoryV2, mock(OpensearchIndexer.class), mock(PdlService.class));
+        this.oppfolgingPeriodeService = new OppfolgingPeriodeService(oppfolgingStartetService, oppfolgingAvsluttetService);
     }
 
     @Test
-    void skal_sette_bruker_under_oppfølging_i_databasen() {
+    public void skal_sette_bruker_under_oppfølging_i_databasen() {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
 
         SisteOppfolgingsperiodeV1 payload = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktoerId.get(), ZonedDateTime.parse("2020-12-01T00:00:00+02:00"), null);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(payload);
 
-        final BrukerOppdatertInformasjon info = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
+        final BrukerOppdatertInformasjon info = oppfolgingRepositoryV2.hentOppfolgingData(aktoerId).orElseThrow();
         assertThat(info.getOppfolging()).isTrue();
         assertThat(info.getNyForVeileder()).isFalse();
     }

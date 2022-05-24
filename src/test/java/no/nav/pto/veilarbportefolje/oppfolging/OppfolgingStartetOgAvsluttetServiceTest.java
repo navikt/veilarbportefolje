@@ -35,21 +35,18 @@ import static org.mockito.Mockito.mock;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
-    private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
-    private final OppfolgingStartetService oppfolgingStartetService;
     private final OppfolgingPeriodeService oppfolgingPeriodeService;
-    private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepository oppfolgingRepository, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
-        this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
-        this.oppfolgingRepository = oppfolgingRepository;
+    public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepositoryV2 oppfolgingRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
+        this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.jdbcTemplate = jdbcTemplate;
         AktorClient aktorClient = mock(AktorClient.class);
         Mockito.when(aktorClient.hentFnr(any())).thenReturn(Fnr.of("-1"));
-        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, mock(OppfolgingRepositoryV2.class), mock(OpensearchIndexer.class), mock(PdlService.class));
-        this.oppfolgingPeriodeService = new OppfolgingPeriodeService(this.oppfolgingStartetService, this.oppfolgingAvsluttetService);
+        OppfolgingStartetService oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepositoryV2, mock(OpensearchIndexer.class), mock(PdlService.class));
+        this.oppfolgingPeriodeService = new OppfolgingPeriodeService(oppfolgingStartetService, oppfolgingAvsluttetService);
     }
 
     @Test
@@ -59,7 +56,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(melding);
 
-        final BrukerOppdatertInformasjon info = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
+        final BrukerOppdatertInformasjon info = oppfolgingRepositoryV2.hentOppfolgingData(aktoerId).orElseThrow();
         assertThat(info.getOppfolging()).isTrue();
         assertThat(info.getNyForVeileder()).isFalse();
     }
@@ -117,6 +114,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(oppfolgingAvsluttePayload);
 
-        return oppfolgingRepository.hentOppfolgingData(aktoerId);
+        return oppfolgingRepositoryV2.hentOppfolgingData(aktoerId);
     }
 }

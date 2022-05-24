@@ -13,9 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeilederDTO> {
-
     private final OppfolgingService oppfolgingService;
-    private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
@@ -23,7 +21,6 @@ public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeiled
     protected void behandleKafkaMeldingLogikk(NyForVeilederDTO dto) {
         AktorId aktorId = dto.getAktorId();
         final boolean brukerErNyForVeileder = dto.isNyForVeileder();
-        oppfolgingRepository.settNyForVeileder(aktorId, brukerErNyForVeileder);
         oppfolgingRepositoryV2.settNyForVeileder(aktorId, brukerErNyForVeileder);
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktorId, brukerErNyForVeileder);

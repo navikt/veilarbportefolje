@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
@@ -18,23 +19,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 class ManuellStatusServiceTest extends EndToEndTest {
-    private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepositoryV2 oppfolgingRepository;
     private final ManuellStatusService manuellStatusService;
     private final OpensearchTestClient opensearchTestClient;
-    private final JdbcTemplate oracle;
+    private final JdbcTemplate postgres;
 
     @Autowired
-    public ManuellStatusServiceTest(OppfolgingRepository oppfolgingRepository, ManuellStatusService manuellStatusService, OpensearchTestClient opensearchTestClient, JdbcTemplate oracle) {
-        this.oppfolgingRepository = oppfolgingRepository;
+    public ManuellStatusServiceTest(OppfolgingRepositoryV2 oppfolgingRepository, ManuellStatusService manuellStatusService,
+                                    OpensearchTestClient opensearchTestClient, @Qualifier("PostgresJdbc") JdbcTemplate postgres) {
         this.manuellStatusService = manuellStatusService;
         this.opensearchTestClient = opensearchTestClient;
-        this.oracle = oracle;
+        this.oppfolgingRepository = oppfolgingRepository;
+        this.postgres = postgres;
     }
     @BeforeEach
     public void reset(){
-        oracle.update("truncate TABLE OPPFOLGING_DATA");
-        oracle.update("truncate TABLE OPPFOLGINGSBRUKER");
-        oracle.update("truncate TABLE AKTOERID_TO_PERSONID");
+        postgres.update("truncate TABLE oppfolging_data");
+        postgres.update("truncate TABLE oppfolgingsbruker_arena_v2");
     }
 
     @Test
