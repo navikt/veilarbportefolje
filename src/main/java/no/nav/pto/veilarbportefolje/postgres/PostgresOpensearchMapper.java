@@ -77,9 +77,12 @@ public class PostgresOpensearchMapper {
         return brukere;
     }
 
-    public Map<AktorId, Map<String, Endring>> hentPostgresSisteEndringerData(List<OppfolgingsBruker> brukere) {
+    public void flettInnSisteEndringerData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
-        return sisteEndringService.hentSisteEndringerFraPostgres(aktoerIder);
+        Map<AktorId, Map<String, Endring>> sisteEndringerDataPostgres = sisteEndringService.hentSisteEndringerFraPostgres(aktoerIder);
+        brukere.forEach(bruker -> {
+            bruker.setSiste_endringer(sisteEndringerDataPostgres.getOrDefault(AktorId.of(bruker.getAktoer_id()), new HashMap<>()));
+        });
     }
 
     private void flettInnAktivitetData(AktivitetEntity aktivitetData, OppfolgingsBruker bruker) {

@@ -18,11 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.AKTIVITETID;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.ER_SETT;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.SISTE_ENDRING_KATEGORI;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.SISTE_ENDRING_TIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
@@ -127,7 +123,7 @@ public class SisteEndringRepositoryV2 {
         String aktoerIderStr = aktoerIder.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
 
         String sql = """
-                SELECT SISTE_ENDRING_KATEGORI, SISTE_ENDRING_TIDSPUNKT, ER_SETT, AKTIVITETID
+                SELECT AKTOERID, SISTE_ENDRING_KATEGORI, SISTE_ENDRING_TIDSPUNKT, ER_SETT, AKTIVITETID
                 FROM SISTE_ENDRING WHERE AKTOERID = ANY (?::varchar[])
                 """;
         return dbReadOnly.query(sql,
@@ -135,7 +131,9 @@ public class SisteEndringRepositoryV2 {
                 (ResultSet rs) -> {
                     HashMap<AktorId, Map<String, Endring>> results = new HashMap<>();
                     while (rs.next()) {
-                        results.put(AktorId.of(rs.getString(AKTOERID)), mapResultatTilKategoriOgEndring(rs));
+                        AktorId aktorId = AktorId.of(rs.getString(AKTOERID));
+                        Map<String, Endring> sisteEndringerForBruker = results.getOrDefault(aktorId, new HashMap<>());
+                        results.put(aktorId, addSisteEndringer(sisteEndringerForBruker, rs));
                     }
                     return results;
                 });
@@ -143,13 +141,23 @@ public class SisteEndringRepositoryV2 {
 
     @SneakyThrows
     private Map<String, Endring> mapResultatTilKategoriOgEndring(ResultSet rs) {
-        Map<String, Endring> sisteEndring = new HashMap<>();
+        HashMap<String, Endring> sisteEndringHashMap = new HashMap<>();
         while (rs.next()) {
-            sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI), new Endring()
-                    .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
-                    .setEr_sett(boolToJaNei(rs.getBoolean(ER_SETT)))
-                    .setAktivtetId(rs.getString(AKTIVITETID)));
+            addSisteEndringer(sisteEndringHashMap, rs);
         }
-        return sisteEndring;
+        return sisteEndringHashMap;
     }
+
+    @SneakyThrows
+    private Map<String, Endring> addSisteEndringer(Map<String, Endring> sisteEndringHashMap, ResultSet rs) {
+        sisteEndringHashMap.put(rs.getString(SISTE_ENDRING_KATEGORI),
+                new Endring()
+                        .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
+                        .setEr_sett(boolToJaNei(rs.getBoolean(ER_SETT)))
+                        .setAktivtetId(rs.getString(AKTIVITETID)));
+
+        return sisteEndringHashMap;
+    }
+
+
 }
