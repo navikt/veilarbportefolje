@@ -22,7 +22,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Repository
 @RequiredArgsConstructor
 public class DialogRepositoryV2 {
-
     private final JdbcTemplate db;
 
     public void oppdaterDialogInfoForBruker(Dialogdata dialog) {

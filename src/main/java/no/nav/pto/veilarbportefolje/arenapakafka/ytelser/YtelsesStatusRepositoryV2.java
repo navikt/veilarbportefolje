@@ -14,7 +14,6 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class YtelsesStatusRepositoryV2 {
-
     private final JdbcTemplate db;
 
     public void upsertYtelseStatus(Brukerdata brukerdata) {

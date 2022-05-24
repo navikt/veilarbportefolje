@@ -27,7 +27,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 @Repository
 @RequiredArgsConstructor
 public class OppfolgingRepositoryV2 {
-
     private final JdbcTemplate db;
 
     public int settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {

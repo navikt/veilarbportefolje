@@ -30,7 +30,6 @@ import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
 public class InternalController {
 
     private final SelfTestChecks selfTestChecks;
-
     private final JdbcTemplate db;
     private final MetricsClient metricsClient;
 

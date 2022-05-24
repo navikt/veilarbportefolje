@@ -23,7 +23,6 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 @Repository
 @RequiredArgsConstructor
 public class VedtakStatusRepositoryV2 {
-
     private final JdbcTemplate db;
 
     public void slettGamleVedtakOgUtkast(String aktorId) {

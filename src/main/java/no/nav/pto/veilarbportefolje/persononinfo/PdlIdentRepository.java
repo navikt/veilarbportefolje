@@ -21,7 +21,6 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 @Repository
 @RequiredArgsConstructor
 public class PdlIdentRepository {
-
     private final JdbcTemplate db;
 
     @Transactional

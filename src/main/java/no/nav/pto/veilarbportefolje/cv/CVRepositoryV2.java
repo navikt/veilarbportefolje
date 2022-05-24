@@ -20,7 +20,6 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 @Repository
 @RequiredArgsConstructor
 public class CVRepositoryV2 {
-
     private final JdbcTemplate db;
 
     public int upsertHarDeltCv(AktorId aktoerId, boolean harDeltCv) {

@@ -11,7 +11,6 @@ import java.util.List;
 @ConfigurationProperties(prefix = "app.env")
 public class EnvironmentProperties {
     private String veilarbVeilederUrl;
-    private String difiUrl;
     private String stsDiscoveryUrl;
     private String openAmDiscoveryUrl;
     private String openAmClientId;

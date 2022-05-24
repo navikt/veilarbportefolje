@@ -30,7 +30,6 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.
 @Repository
 @RequiredArgsConstructor
 public class YtelsesRepositoryV2 {
-
     private final JdbcTemplate db;
 
     public void upsert(AktorId aktorId, TypeKafkaYtelse type, YtelsesInnhold innhold) {
