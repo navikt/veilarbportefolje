@@ -19,7 +19,7 @@ public class KafkaStats {
     private final JdbcTemplate jdbcTemplate;
     private final PrometheusMeterRegistry registry;
 
-    @Scheduled(cron = "*/5 * * * * ?")
+    @Scheduled(fixedRate = 30000)
     public void reportStats() {
         List<Integer> retriesStats = getRetriesStats();
         Gauge.builder("veilarbportefolje_kafka_retries_messages_count", retriesStats, (rs) -> retriesStats.size()).description("Number of failed messages").register(this.registry);

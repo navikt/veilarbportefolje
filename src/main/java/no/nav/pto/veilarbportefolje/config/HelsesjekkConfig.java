@@ -7,6 +7,7 @@ import no.nav.common.health.selftest.SelfTestMeterBinder;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchHealthCheck;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,7 +23,7 @@ public class HelsesjekkConfig {
     @Bean
     public SelfTestChecks selfTestChecks(AktorClient aktorClient,
                                          Pep veilarbPep,
-                                         JdbcTemplate jdbcTemplate,
+                                         @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
                                          UnleashService unleashService,
                                          OpensearchHealthCheck opensearchHealthCheck) {
         List<SelfTestCheck> asyncSelftester = List.of(
