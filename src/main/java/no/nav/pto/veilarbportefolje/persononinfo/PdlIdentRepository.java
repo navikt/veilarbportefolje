@@ -32,8 +32,8 @@ public class PdlIdentRepository {
         identer.forEach(ident -> insertIdent(nyLokalIdent, ident));
     }
 
-    public boolean harIdentUnderOppfolging(List<PDLIdent> identer) {
-        String identerParam = identer.stream().map(PDLIdent::getIdent).collect(Collectors.joining(",", "{", "}"));
+    public boolean harAktorIdUnderOppfolging(List<AktorId> identer) {
+        String identerParam = identer.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject("""
                         select bool_or(oppfolging) as harOppfolging from oppfolging_data
