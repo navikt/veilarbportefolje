@@ -34,7 +34,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Repository
 @RequiredArgsConstructor
 public class ArbeidslisteRepositoryV2 {
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate dbReadOnly;

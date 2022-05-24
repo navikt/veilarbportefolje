@@ -8,7 +8,6 @@ import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -22,22 +21,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class PdlIdentRepositoryTest {
     private final JdbcTemplate db;
-    private final JdbcTemplate oracle;
     private final PdlIdentRepository pdlIdentRepository;
     private final OppfolgingPeriodeService oppfolgingPeriodeService;
 
     @Autowired
-    public PdlIdentRepositoryTest(@Qualifier("PostgresJdbc") JdbcTemplate db, JdbcTemplate oracle, PdlIdentRepository pdlIdentRepository, OppfolgingPeriodeService oppfolgingPeriodeService) {
+    public PdlIdentRepositoryTest(JdbcTemplate db, PdlIdentRepository pdlIdentRepository, OppfolgingPeriodeService oppfolgingPeriodeService) {
         this.db = db;
-        this.oracle = oracle;
         this.pdlIdentRepository = pdlIdentRepository;
         this.oppfolgingPeriodeService = oppfolgingPeriodeService;
     }
 
     @BeforeEach
     public void reset(){
-        oracle.execute("truncate table OPPFOLGINGSBRUKER");
-        oracle.execute("truncate table AKTOERID_TO_PERSONID");
         db.update("truncate oppfolging_data");
         db.update("truncate bruker_identer");
     }
@@ -83,11 +78,6 @@ public class PdlIdentRepositoryTest {
         var historiskOpfolgingStart = new SisteOppfolgingsperiodeV1(null, historiskIdent.get(), ZonedDateTime.now(), null);
         var nyOpfolgingStart = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), null);
         var nyOpfolgingAvslutt = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), ZonedDateTime.now());
-        // Mock fix for oracle
-        oracle.update("insert into OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR) values (1234, '01010100000')");
-        oracle.update("insert into OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR) values (1235, '01010200000')");
-        oracle.update("insert into AKTOERID_TO_PERSONID (AKTOERID, PERSONID, GJELDENE) values ("+historiskIdent.get()+", 1235, 1)");
-        oracle.update("insert into AKTOERID_TO_PERSONID (AKTOERID, PERSONID, GJELDENE) values ("+ident.get()+", 1234, 1)");
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(historiskOpfolgingStart);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOpfolgingStart);
@@ -102,9 +92,6 @@ public class PdlIdentRepositoryTest {
     @Test
     public void oppfolgingAvsluttet_ingenAndreIdenterUnderOppfolging_identLagringSkalSlettes() {
         AktorId ident = AktorId.of("12346");
-        // Mock fix for oracle
-        oracle.update("insert into OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR) values (1234, '01010100000')");
-        oracle.update("insert into AKTOERID_TO_PERSONID (AKTOERID, PERSONID, GJELDENE) values ("+ident.get()+", 1234, 1)");
         List<PDLIdent> identer = List.of(
                 new PDLIdent(ident.get(), false, AKTORID)
         );

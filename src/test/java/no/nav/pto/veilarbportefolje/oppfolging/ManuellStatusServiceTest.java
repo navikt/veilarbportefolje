@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
@@ -26,7 +25,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
 
     @Autowired
     public ManuellStatusServiceTest(OppfolgingRepositoryV2 oppfolgingRepository, ManuellStatusService manuellStatusService,
-                                    OpensearchTestClient opensearchTestClient, @Qualifier("PostgresJdbc") JdbcTemplate postgres) {
+                                    OpensearchTestClient opensearchTestClient,  JdbcTemplate postgres) {
         this.manuellStatusService = manuellStatusService;
         this.opensearchTestClient = opensearchTestClient;
         this.oppfolgingRepository = oppfolgingRepository;

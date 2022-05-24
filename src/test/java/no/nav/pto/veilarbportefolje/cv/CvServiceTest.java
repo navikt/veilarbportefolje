@@ -25,15 +25,15 @@ class CvServiceTest extends EndToEndTest {
     private CVService cvService;
 
     @Autowired
-    private JdbcTemplate oracle;
+    private JdbcTemplate postgres;
 
     private final AktorId aktoerId = AktorId.of("00000000000");
 
     @BeforeEach
     void set_under_oppfolging(){
-        oracle.update("truncate TABLE OPPFOLGING_DATA");
-        oracle.update("truncate TABLE OPPFOLGINGSBRUKER");
-        oracle.update("truncate TABLE AKTOERID_TO_PERSONID");
+        postgres.update("truncate TABLE OPPFOLGING_DATA");
+        postgres.update("truncate TABLE oppfolgingsbruker_arena_v2");
+        postgres.update("truncate TABLE bruker_cv");
     }
 
     @Test

@@ -1,12 +1,10 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
-import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import org.opensearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,7 +12,6 @@ import java.net.URL;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchUtils.createClient;
 
 @Configuration
-@Import({DatabaseConfig.class})
 public class OpensearchConfig {
     public static final String BRUKERINDEKS_ALIAS = "brukerindeks";
 

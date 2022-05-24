@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -33,7 +32,7 @@ public class YtelseRepositoryV2Test {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public YtelseRepositoryV2Test(YtelsesRepositoryV2 ytelsesRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
+    public YtelseRepositoryV2Test(YtelsesRepositoryV2 ytelsesRepositoryV2,  JdbcTemplate jdbcTemplate) {
         this.ytelsesRepositoryV2 = ytelsesRepositoryV2;
         this.jdbcTemplate = jdbcTemplate;
     }

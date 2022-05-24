@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -24,7 +23,7 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 @Repository
 @RequiredArgsConstructor
 public class VedtakStatusRepositoryV2 {
-    @Qualifier("PostgresJdbc")
+
     private final JdbcTemplate db;
 
     public void slettGamleVedtakOgUtkast(String aktorId) {

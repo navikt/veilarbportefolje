@@ -37,7 +37,7 @@ public class DbConfigPostgres {
     }
 
     @Bean
-    public JdbcTemplate db(@Qualifier("Postgres") DataSource dataSource) {
+    public JdbcTemplate db(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
@@ -52,7 +52,7 @@ public class DbConfigPostgres {
     }
 
     @Bean
-    public PlatformTransactionManager transactionManager(@Qualifier("Postgres") DataSource dataSource) {
+    public PlatformTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
 

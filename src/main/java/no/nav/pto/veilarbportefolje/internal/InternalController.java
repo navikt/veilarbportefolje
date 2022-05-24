@@ -9,7 +9,6 @@ import no.nav.common.health.selftest.SelftTestCheckResult;
 import no.nav.common.health.selftest.SelftestHtmlGenerator;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +30,7 @@ import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
 public class InternalController {
 
     private final SelfTestChecks selfTestChecks;
-    @Qualifier("PostgresJdbc")
+
     private final JdbcTemplate db;
     private final MetricsClient metricsClient;
 

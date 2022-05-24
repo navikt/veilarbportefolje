@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -31,7 +30,7 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.
 @Repository
 @RequiredArgsConstructor
 public class YtelsesRepositoryV2 {
-    @Qualifier("PostgresJdbc")
+
     private final JdbcTemplate db;
 
     public void upsert(AktorId aktorId, TypeKafkaYtelse type, YtelsesInnhold innhold) {

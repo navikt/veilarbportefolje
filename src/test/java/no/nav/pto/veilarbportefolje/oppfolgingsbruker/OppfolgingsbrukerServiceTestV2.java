@@ -12,7 +12,6 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -33,7 +32,7 @@ public class OppfolgingsbrukerServiceTestV2 {
     private final Fnr fnr = randomFnr();
 
     @Autowired
-    public OppfolgingsbrukerServiceTestV2(@Qualifier("PostgresJdbc") JdbcTemplate db, OppfolgingsbrukerServiceV2 oppfolginsbrukerService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3) {
+    public OppfolgingsbrukerServiceTestV2( JdbcTemplate db, OppfolgingsbrukerServiceV2 oppfolginsbrukerService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3) {
         this.db = db;
         this.oppfolginsbrukerService = oppfolginsbrukerService;
         this.oppfolgingsbrukerRepositoryV3 = oppfolgingsbrukerRepositoryV3;

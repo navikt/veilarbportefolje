@@ -33,7 +33,6 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 @Repository
 @RequiredArgsConstructor
 public class TiltakRepositoryV2 {
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate dbReadOnly;

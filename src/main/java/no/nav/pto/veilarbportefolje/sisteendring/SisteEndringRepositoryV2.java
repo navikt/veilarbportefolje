@@ -27,9 +27,7 @@ import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
 @Repository
 @RequiredArgsConstructor
 public class SisteEndringRepositoryV2 {
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
-
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate dbReadOnly;
 

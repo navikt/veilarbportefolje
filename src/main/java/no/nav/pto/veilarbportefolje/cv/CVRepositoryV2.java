@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.cv;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -21,7 +20,7 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 @Repository
 @RequiredArgsConstructor
 public class CVRepositoryV2 {
-    @Qualifier("PostgresJdbc")
+
     private final JdbcTemplate db;
 
     public int upsertHarDeltCv(AktorId aktoerId, boolean harDeltCv) {

@@ -21,7 +21,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -57,7 +56,7 @@ public class YtelserTest extends EndToEndTest {
     private final YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2;
 
     @Autowired
-    public YtelserTest(YtelsesRepositoryV2 ytelsesRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2, AktoerDataOpensearchMapper aktoerDataOpensearchMapper) {
+    public YtelserTest(YtelsesRepositoryV2 ytelsesRepositoryV2,  JdbcTemplate jdbcTemplatePostgres, YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2, AktoerDataOpensearchMapper aktoerDataOpensearchMapper) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.ytelsesStatusRepositoryV2 = ytelsesStatusRepositoryV2;
         this.aktoerDataOpensearchMapper = aktoerDataOpensearchMapper;
