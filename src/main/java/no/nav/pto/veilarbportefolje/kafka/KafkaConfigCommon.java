@@ -38,17 +38,10 @@ import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentKafkaService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -108,7 +101,8 @@ public class KafkaConfigCommon {
         TILTAKSPENGER_TOPIC("teamarenanais.aapen-arena-tiltakspengevedtakendret-v1-" + requireKafkaTopicPostfix()),
         NOM_SKJERMING_STATUS("nom.skjermede-personer-status-v1"),
         NOM_SKJERMEDE_PERSONER("nom.skjermede-personer-v1"),
-        PDL_IDENTER("aapen-person-pdl-aktor-v1");
+        PDL_IDENTER("aapen-person-pdl-aktor-v1"),
+        PDL_BRUKERDATA("aapen-person-pdl-dokument-v1");
 
         @Getter
         final String topicName;
@@ -129,8 +123,9 @@ public class KafkaConfigCommon {
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
                              MalService malService, OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
-                             YtelsesService ytelsesService, OppfolgingPeriodeService oppfolgingPeriodeService, SkjermingService skjermingService, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate,
-                             UnleashService unleashService, PdlIdentService pdlIdentService) {
+                             YtelsesService ytelsesService, OppfolgingPeriodeService oppfolgingPeriodeService, SkjermingService skjermingService,
+                             @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, UnleashService unleashService, PdlIdentKafkaService pdlIdentKafkaService,
+                             PdlBrukerdataKafkaService pdlBrukerdataKafkaService) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
@@ -364,7 +359,6 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
                                         malService::behandleKafkaRecord
                                 ),
-
                         new KafkaConsumerClientBuilder.TopicConfig<String, Aktor>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
@@ -373,7 +367,17 @@ public class KafkaConfigCommon {
                                         Topic.PDL_IDENTER.topicName,
                                         Deserializers.stringDeserializer(),
                                         new OnpremAvroDeserializer<Aktor>().getDeserializer(),
-                                        pdlIdentService::behandleKafkaRecord
+                                        pdlIdentKafkaService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, String>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.PDL_BRUKERDATA.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new OnpremAvroDeserializer<String>().getDeserializer(),
+                                        pdlBrukerdataKafkaService::behandleKafkaRecord
                                 )
                 );
 

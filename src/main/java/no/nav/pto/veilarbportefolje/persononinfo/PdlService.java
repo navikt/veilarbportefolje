@@ -18,7 +18,7 @@ public class PdlService {
     private final PdlPersonRepository pdlPersonRepository;
     private final PdlPortefoljeClient pdlClient;
 
-    public void hentOgLagrePdlData(AktorId aktorId){
+    public void hentOgLagrePdlData(AktorId aktorId) {
         hentOgLagreIdenter(aktorId);
         hentOgLagreBrukerData(aktorId);
     }
@@ -41,8 +41,12 @@ public class PdlService {
     public void slettPdlData(AktorId aktorId) {
         String lokalIdent = pdlIdentRepository.hentPerson(aktorId.get());
         List<PDLIdent> identer = pdlIdentRepository.hentIdenter(lokalIdent);
+        List<AktorId> aktorIds = identer.stream()
+                .filter(x -> PDLIdent.Gruppe.AKTORID.equals(x.getGruppe()))
+                .map(PDLIdent::getIdent)
+                .map(AktorId::new).toList();
 
-        if (pdlIdentRepository.harIdentUnderOppfolging(identer)) {
+        if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIds)) {
             log.warn("""
                             Sletter ikke identer tilknyttet aktorId: {}.
                             Da en eller flere relaterte identer på person: {} er under oppfolging.
