@@ -38,15 +38,7 @@ import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentKafkaService;
@@ -384,7 +376,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.PDL_BRUKERDATA.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.stringDeserializer(),
+                                        new OnpremAvroDeserializer<String>().getDeserializer(),
                                         pdlBrukerdataKafkaService::behandleKafkaRecord
                                 )
                 );

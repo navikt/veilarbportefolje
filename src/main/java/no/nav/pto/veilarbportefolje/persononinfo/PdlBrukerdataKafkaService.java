@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -26,15 +25,15 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
 
     @Override
     @SneakyThrows
-    public void behandleKafkaMeldingLogikk(String melding) {
-        if (melding == null) {
+    public void behandleKafkaMeldingLogikk(String pdlDokumentJson) {
+        if (pdlDokumentJson == null) {
             log.info("""
                             Fikk tom endrings melding fra PDL.
                             Dette er en tombstone som kan ignoreres hvis man sletter alle historiske identer lenket til nye identer.
                     """);
             return;
         }
-        PdlDokument pdlDokument = tryToParsePdlDokument(melding);
+        PdlDokument pdlDokument = objectMapper.readValue(pdlDokumentJson, PdlDokument.class);
         List<AktorId> aktorIds = pdlDokument.getHentIdenter().getIdenter().stream()
                 .filter(pdlIdent -> PDLIdent.Gruppe.AKTORID.equals(pdlIdent.getGruppe()))
                 .map(PDLIdent::getIdent)
@@ -50,26 +49,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
         }
     }
 
-    private PdlDokument tryToParsePdlDokument(String melding) {
-        return tryToParsePdlDokument(melding, 1);
-    }
-
-    @SneakyThrows
-    private PdlDokument tryToParsePdlDokument(String melding, int retries) {
-        try {
-            var pdlDokument = objectMapper.readValue(melding, PdlDokument.class);
-            log.info("(debug) Fikk mappet PDL brukerdata på forsøk nr: {}", retries);
-            return pdlDokument;
-        } catch (JsonParseException e) {
-            if (retries < 5) {
-                if (melding.charAt(0) == '{') {
-                    melding = melding.substring(1);
-                }
-                return tryToParsePdlDokument(melding.substring(melding.indexOf("{")), ++retries);
-            }
-            throw e;
-        }
-    }
 
     private AktorId hentAktivAktoer(List<PDLIdent> identer) {
         return identer.stream()
