@@ -86,19 +86,6 @@ public class PdlIdentRepository {
         );
     }
 
-    public AktorId hentAktorId(List<Fnr> fnrs) {
-        return queryForObjectOrNull(
-                () -> db.queryForObject("""
-                                select ident from bruker_identer
-                                where ident = any (?::varchar[])
-                                and not historisk
-                                and gruppe = 'AKTORID'
-                                """,
-                        (rs, i) -> Optional.ofNullable(rs.getString("ident")).map(AktorId::of).orElse(null),
-                        fnrs.stream().map(Fnr::get).toList())
-        );
-    }
-
     private void insertIdent(String person, PDLIdent ident) {
         db.update("insert into bruker_identer (person, ident, historisk, gruppe) VALUES (?, ?, ?, ?)",
                 person, ident.getIdent(), ident.isHistorisk(), ident.getGruppe().name());
