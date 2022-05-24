@@ -1,26 +1,25 @@
 package no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.LEST_ARENA_HENDELSE_AKTIVITETER.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.LEST_ARENA_HENDELSE_AKTIVITETER.AKTIVITETID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.LEST_ARENA_HENDELSE_AKTIVITETER.HENDELSE_ID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.LEST_ARENA_HENDELSE_AKTIVITETER.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class ArenaHendelseRepository {
+    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
-
-    @Autowired
-    public ArenaHendelseRepository(@Qualifier("PostgresJdbc") JdbcTemplate db) {
-        this.db = db;
-    }
 
     public int upsertAktivitetHendelse(String id, long hendelse) {
         log.info("Lagrer pa id: {}, ny hendelse: {}", id, hendelse);
