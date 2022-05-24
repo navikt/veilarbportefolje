@@ -59,7 +59,7 @@ public class DbConfigOracle implements DatabaseConfig {
 
     public static HealthCheckResult dbPinger(final JdbcTemplate db) {
         try {
-            db.queryForList("select count(1) from dual");
+            db.queryForList("select 1");
             return HealthCheckResult.healthy();
         } catch (Exception e) {
             return HealthCheckResult.unhealthy("Feil mot databasen", e);

@@ -1,11 +1,13 @@
 package no.nav.pto.veilarbportefolje.persononinfo.domene;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.person.pdl.aktor.v2.Type;
 
 @Data
 @Accessors(chain = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PDLIdent {
     private String ident;
     private boolean historisk;
