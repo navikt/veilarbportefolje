@@ -7,6 +7,7 @@ import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -27,6 +28,7 @@ public class DbConfigPostgres {
     private final EnvironmentProperties environmentProperties;
 
     @Bean
+    @Primary
     public DataSource dataSource() {
         return createDataSource(environmentProperties.getDbUrl(), true);
     }
@@ -37,6 +39,7 @@ public class DbConfigPostgres {
     }
 
     @Bean
+    @Primary
     public JdbcTemplate db(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
