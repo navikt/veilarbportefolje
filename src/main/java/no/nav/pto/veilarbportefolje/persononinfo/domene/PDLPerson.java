@@ -22,10 +22,6 @@ public class PDLPerson {
     private boolean erDoed;
     private LocalDate foedsel;
 
-    public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
-        return genererFraApiRespons(response, null);
-    }
-
     public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response, AktorId aktorId) {
         PDLPerson person = new PDLPerson();
         PdlPersonResponse.PdlPersonResponseData.Navn navn = kontrollerResponseOgHentNavn(response, aktorId);
