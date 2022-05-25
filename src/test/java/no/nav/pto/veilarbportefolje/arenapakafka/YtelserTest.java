@@ -14,8 +14,8 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.postgres.AktoerDataOpensearchMapper;
-import no.nav.pto.veilarbportefolje.postgres.utils.PostgresAktorIdEntity;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,14 +52,14 @@ public class YtelserTest extends EndToEndTest {
     private final PersonId personId = randomPersonId();
     private final Fnr fnr = randomFnr();
     private final AktorClient aktorClient;
-    private final AktoerDataOpensearchMapper aktoerDataOpensearchMapper;
+    private final BrukerRepositoryV2 brukerRepositoryV2;
     private final YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2;
 
     @Autowired
-    public YtelserTest(YtelsesRepositoryV2 ytelsesRepositoryV2,  JdbcTemplate jdbcTemplatePostgres, YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2, AktoerDataOpensearchMapper aktoerDataOpensearchMapper) {
+    public YtelserTest(YtelsesRepositoryV2 ytelsesRepositoryV2, JdbcTemplate jdbcTemplatePostgres, BrukerRepositoryV2 brukerRepositoryV2, YtelsesStatusRepositoryV2 ytelsesStatusRepositoryV2) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
+        this.brukerRepositoryV2 = brukerRepositoryV2;
         this.ytelsesStatusRepositoryV2 = ytelsesStatusRepositoryV2;
-        this.aktoerDataOpensearchMapper = aktoerDataOpensearchMapper;
         this.arenaHendelseRepository = mock(ArenaHendelseRepository.class);
         Mockito.when(arenaHendelseRepository.upsertYtelsesHendelse(anyString(), anyLong())).thenReturn(1);
         this.aktorClient = Mockito.mock(AktorClient.class);
@@ -93,8 +93,9 @@ public class YtelserTest extends EndToEndTest {
 
         ytelsesService.behandleKafkaMelding(dto, TypeKafkaYtelse.AAP);
 
-        PostgresAktorIdEntity aktoerData = aktoerDataOpensearchMapper.hentAktoerData(List.of(aktorId)).get(aktorId);
-        assertThat(aktoerData.getYtelse()).isEqualTo("AAP_MAXTID");
+        List<OppfolgingsBruker> oppfolgingsBrukerList = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
+        assertThat(oppfolgingsBrukerList.size()).isEqualTo(1);
+        assertThat(oppfolgingsBrukerList.get(0).getYtelse()).isEqualTo("AAP_MAXTID");
     }
 
     @Test

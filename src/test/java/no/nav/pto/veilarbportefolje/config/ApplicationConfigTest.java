@@ -51,7 +51,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.AktoerDataOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
@@ -126,7 +125,6 @@ import static org.mockito.Mockito.when;
         GruppeAktivitetRepositoryV2.class,
         TiltakRepositoryV2.class,
         PostgresOpensearchMapper.class,
-        AktoerDataOpensearchMapper.class,
         AktivitetOpensearchService.class,
         YtelsesService.class,
         YtelsesRepositoryV2.class,
