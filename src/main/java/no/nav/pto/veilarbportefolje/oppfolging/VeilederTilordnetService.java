@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class VeilederTilordnetService extends KafkaCommonConsumerService<VeilederTilordnetDTO> {
     private final OppfolgingService oppfolgingService;
-    private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final ArbeidslisteService arbeidslisteService;
     private final OpensearchIndexerV2 opensearchIndexerV2;
@@ -29,7 +28,6 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
     }
 
     public void tilordneVeileder(AktorId aktoerId, VeilederId veilederId) {
-        oppfolgingRepository.settVeileder(aktoerId, veilederId);
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId);

@@ -9,15 +9,14 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
+import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper;
+import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -40,7 +39,7 @@ public class UtdanningsAktivitetTest {
     private final Fnr fnr = Fnr.of("12345678912");
 
     @Autowired
-    public UtdanningsAktivitetTest(AktivitetService aktivitetService, AktivitetOpensearchService aktivitetOpensearchService, @Qualifier("PostgresJdbc") JdbcTemplate jbPostgres) {
+    public UtdanningsAktivitetTest(AktivitetService aktivitetService, AktivitetOpensearchService aktivitetOpensearchService,  JdbcTemplate jbPostgres) {
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.jbPostgres = jbPostgres;
         this.aktivitetService = aktivitetService;

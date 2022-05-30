@@ -17,7 +17,6 @@ import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
@@ -42,7 +41,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     private final PdlIdentRepository pdlIdentRepository;
 
     @Autowired
-    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
+    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository,  JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
         this.aktivitetService = aktivitetService;
         this.opensearchService = opensearchService;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;

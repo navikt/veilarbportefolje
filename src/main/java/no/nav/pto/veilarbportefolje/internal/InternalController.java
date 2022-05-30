@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.internal;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.health.selftest.SelfTestChecks;
@@ -8,7 +9,6 @@ import no.nav.common.health.selftest.SelftTestCheckResult;
 import no.nav.common.health.selftest.SelftestHtmlGenerator;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,19 +25,13 @@ import java.util.List;
 import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/internal")
 public class InternalController {
 
     private final SelfTestChecks selfTestChecks;
     private final JdbcTemplate db;
-    private MetricsClient metricsClient;
-
-    @Autowired
-    public InternalController(SelfTestChecks selfTestChecks, JdbcTemplate db, MetricsClient metricsClient) {
-        this.selfTestChecks = selfTestChecks;
-        this.metricsClient = metricsClient;
-        this.db = db;
-    }
+    private final MetricsClient metricsClient;
 
     @GetMapping("/isReady")
     public void isReady() {
@@ -65,16 +59,18 @@ public class InternalController {
                 .body(html);
     }
 
-    // Daglig kl 00:05
-    @Scheduled(cron = "5 0 0 * * ?")
+    // Kjører hvert minutt
+    @Scheduled(fixedRate = 60000)
     private void metrikkOppdatering() {
-        String sql =  "SELECT count(*) FROM AKTOERID_TO_PERSONID "
-                + "WHERE PERSONID IN "
-                + "(SELECT PERSONID FROM AKTOERID_TO_PERSONID GROUP BY PERSONID HAVING max(GJELDENE) = 0)";
-        var brukere = db.queryForObject(sql, Integer.class);
+        String alleBrukereUnderOppfolgingHarLokaltLagretIdent = """
+                select count(*) from oppfolging_data od
+                    left join bruker_identer bi on bi.ident = od.aktoerid
+                    where bi is null;
+                """;
+        var lokalIdent = db.queryForObject(alleBrukereUnderOppfolgingHarLokaltLagretIdent, Integer.class);
 
         Event event = new Event("portefolje.metrikker.usermapping");
-        event.addFieldToReport("brukere",brukere);
+        event.addFieldToReport("brukere", lokalIdent);
         metricsClient.report(event);
     }
 }

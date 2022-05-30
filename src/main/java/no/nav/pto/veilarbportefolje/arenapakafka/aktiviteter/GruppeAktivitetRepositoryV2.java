@@ -31,7 +31,6 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 @Transactional
 @RequiredArgsConstructor
 public class GruppeAktivitetRepositoryV2 {
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate namedDb;

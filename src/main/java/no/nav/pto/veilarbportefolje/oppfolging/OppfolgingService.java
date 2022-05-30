@@ -36,7 +36,6 @@ import static no.nav.common.utils.UrlUtils.joinPaths;
 public class OppfolgingService {
     private final String veilarboppfolgingUrl;
     private final OkHttpClient client;
-    private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final SystemUserTokenProvider systemUserTokenProvider;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
@@ -45,8 +44,7 @@ public class OppfolgingService {
     private static int antallBrukereSlettet;
 
     @Autowired
-    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient) {
-        this.oppfolgingRepository = oppfolgingRepository;
+    public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient) {
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
@@ -55,8 +53,7 @@ public class OppfolgingService {
         this.veilarboppfolgingUrl = UrlUtils.createServiceUrl("veilarboppfolging", "pto", true);
     }
 
-    public OppfolgingService(OppfolgingRepository oppfolgingRepository, OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient) {
-        this.oppfolgingRepository = oppfolgingRepository;
+    public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient) {
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
@@ -69,7 +66,7 @@ public class OppfolgingService {
         JobRunner.runAsync("OppfolgingSync",
                 () -> {
                     antallBrukereSlettet = 0;
-                    List<AktorId> oppfolgingsBruker = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
+                    List<AktorId> oppfolgingsBruker = oppfolgingRepositoryV2.hentAlleBrukereUnderOppfolging();
                     oppfolgingsBruker.forEach(this::oppdaterBruker);
 
                     log.info("OppfolgingsJobb: oppdaterte informasjon pa: {} brukere der av: {} ble slettet", oppfolgingsBruker.size(), antallBrukereSlettet);
@@ -84,25 +81,12 @@ public class OppfolgingService {
         try {
             Veilarbportefoljeinfo veialrbinfo = hentVeilarbData(bruker);
             if (veialrbinfo.isErUnderOppfolging()) {
-                Optional<BrukerOppdatertInformasjon> dbInfoOracle = oppfolgingRepository.hentOppfolgingData(bruker);
                 Optional<BrukerOppdatertInformasjon> dbInfoPostgres = oppfolgingRepositoryV2.hentOppfolgingData(bruker);
 
-                oppdaterStartDatoHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getStartDato).orElse(null), veialrbinfo.getStartDato(), false);
-
-                if (veialrbinfo.isErUnderOppfolging() && (dbInfoPostgres.isEmpty() || !dbInfoPostgres.get().getOppfolging())) {
-                    oppfolgingRepositoryV2.settUnderOppfolging(bruker, veialrbinfo.getStartDato());
-                } else {
-                    oppdaterStartDatoHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getStartDato).orElse(null), veialrbinfo.getStartDato(), true);
-                }
-
-                oppdaterManuellHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getManuell).orElse(false), veialrbinfo.isErManuell(), false);
-                oppdaterManuellHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getManuell).orElse(false), veialrbinfo.isErManuell(), true);
-
-                oppdaterNyForVeilederHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getNyForVeileder).orElse(false), veialrbinfo.isNyForVeileder(), false);
-                oppdaterNyForVeilederHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getNyForVeileder).orElse(false), veialrbinfo.isNyForVeileder(), true);
-
-                oppdaterVeilederHvisNodvendig(bruker, dbInfoOracle.map(BrukerOppdatertInformasjon::getVeileder).orElse(null), Optional.ofNullable(veialrbinfo.getVeilederId()).map(NavIdent::get).orElse(null), false);
-                oppdaterVeilederHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getVeileder).orElse(null), Optional.ofNullable(veialrbinfo.getVeilederId()).map(NavIdent::get).orElse(null), true);
+                oppdaterStartDatoHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getStartDato).orElse(null), veialrbinfo.getStartDato());
+                oppdaterManuellHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getManuell).orElse(false), veialrbinfo.isErManuell());
+                oppdaterNyForVeilederHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getNyForVeileder).orElse(false), veialrbinfo.isNyForVeileder());
+                oppdaterVeilederHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getVeileder).orElse(null), Optional.ofNullable(veialrbinfo.getVeilederId()).map(NavIdent::get).orElse(null));
             } else {
                 log.info("OppfolgingsJobb: bruker er ikke under oppfolging, aktoer: " + bruker);
                 oppfolgingAvsluttetService.avsluttOppfolging(bruker);
@@ -117,7 +101,7 @@ public class OppfolgingService {
         }
     }
 
-    private void oppdaterStartDatoHvisNodvendig(AktorId bruker, Timestamp startFraDb, ZonedDateTime korrektStartDato, boolean postgres) {
+    private void oppdaterStartDatoHvisNodvendig(AktorId bruker, Timestamp startFraDb, ZonedDateTime korrektStartDato) {
         if (korrektStartDato == null) {
             log.warn("OppfolgingsJobb: startdato fra veilarboppfolging var null pa bruker: {} ", bruker);
             return;
@@ -127,45 +111,31 @@ public class OppfolgingService {
         if (zonedDbVerdi != null && korrektStartDato.isEqual(zonedDbVerdi)) {
             return;
         }
-        if (postgres) {
-            log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker, zonedDbVerdi, korrektStartDato);
-            oppfolgingRepositoryV2.settStartdato(bruker, korrektStartDato);
-        } else {
-            log.info("(Oracle) OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker, zonedDbVerdi, korrektStartDato);
-            oppfolgingRepository.oppdaterStartdato(bruker, korrektStartDato);
-        }
+        log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker, zonedDbVerdi, korrektStartDato);
+        oppfolgingRepositoryV2.settStartdato(bruker, korrektStartDato);
     }
 
-    private void oppdaterManuellHvisNodvendig(AktorId bruker, boolean manuellDb, boolean korrektManuell, boolean postgres) {
+    private void oppdaterManuellHvisNodvendig(AktorId bruker, boolean manuellDb, boolean korrektManuell) {
         if (manuellDb == korrektManuell) {
             return;
         }
 
-        if (postgres) {
             log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte manuell fra: {}, til:{} ", bruker, manuellDb, korrektManuell);
             oppfolgingRepositoryV2.settManuellStatus(bruker, korrektManuell);
-        } else {
-            log.info("(Oracle) OppfolgingsJobb: aktoer: {} skal bytte manuell fra: {}, til:{} ", bruker, manuellDb, korrektManuell);
-            oppfolgingRepository.settManuellStatus(bruker, korrektManuell);
-        }
     }
 
 
-    private void oppdaterNyForVeilederHvisNodvendig(AktorId bruker, boolean nyForVeilederDb, boolean korrektNyForVeileder, boolean postgres) {
+    private void oppdaterNyForVeilederHvisNodvendig(AktorId bruker, boolean nyForVeilederDb, boolean korrektNyForVeileder) {
         if (nyForVeilederDb == korrektNyForVeileder) {
             return;
         }
 
-        if (postgres) {
             log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte nyForVeileder fra: {}, til:{} ", bruker, nyForVeilederDb, korrektNyForVeileder);
             oppfolgingRepositoryV2.settNyForVeileder(bruker, korrektNyForVeileder);
-        } else {
-            log.info("(Oracle) OppfolgingsJobb: aktoer: {} skal bytte nyForVeileder fra: {}, til:{} ", bruker, nyForVeilederDb, korrektNyForVeileder);
-            oppfolgingRepository.settNyForVeileder(bruker, korrektNyForVeileder);
-        }
+
     }
 
-    private void oppdaterVeilederHvisNodvendig(AktorId bruker, String veilederDb, String korrektVeileder, boolean postgres) {
+    private void oppdaterVeilederHvisNodvendig(AktorId bruker, String veilederDb, String korrektVeileder) {
         if (veilederDb == null) {
             if (korrektVeileder == null) {
                 return;
@@ -174,13 +144,9 @@ public class OppfolgingService {
             return;
         }
 
-        if (postgres) {
             log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
             oppfolgingRepositoryV2.settVeileder(bruker, VeilederId.of(korrektVeileder));
-        } else {
-            log.info("(Oracle) OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
-            oppfolgingRepository.settVeileder(bruker, VeilederId.of(korrektVeileder));
-        }
+
     }
 
     private Veilarbportefoljeinfo hentVeilarbData(AktorId aktoer) throws RuntimeException, IOException {

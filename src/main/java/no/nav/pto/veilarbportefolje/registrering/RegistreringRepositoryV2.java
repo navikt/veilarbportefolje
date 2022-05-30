@@ -9,7 +9,6 @@ import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -32,7 +31,6 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 @Repository
 @RequiredArgsConstructor
 public class RegistreringRepositoryV2 {
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
     public void upsertBrukerRegistrering(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {

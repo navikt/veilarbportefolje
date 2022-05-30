@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.common.abac.Pep;
+import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
@@ -13,7 +14,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.config.DbConfigOracle.dbPinger;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchHealthCheck.FORVENTET_MINIMUM_ANTALL_DOKUMENTER;
 
 @Configuration
@@ -22,7 +22,7 @@ public class HelsesjekkConfig {
     @Bean
     public SelfTestChecks selfTestChecks(AktorClient aktorClient,
                                          Pep veilarbPep,
-                                         JdbcTemplate jdbcTemplate,
+                                          JdbcTemplate jdbcTemplate,
                                          UnleashService unleashService,
                                          OpensearchHealthCheck opensearchHealthCheck) {
         List<SelfTestCheck> asyncSelftester = List.of(
@@ -38,5 +38,14 @@ public class HelsesjekkConfig {
     @Bean
     public SelfTestMeterBinder selfTestMeterBinder(SelfTestChecks selfTestChecks) {
         return new SelfTestMeterBinder(selfTestChecks);
+    }
+
+    public static HealthCheckResult dbPinger(JdbcTemplate db) {
+        try {
+            db.queryForList("SELECT 1");
+            return HealthCheckResult.healthy();
+        } catch (Exception e) {
+            return HealthCheckResult.unhealthy("Feil mot databasen", e);
+        }
     }
 }

@@ -2,31 +2,22 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.database.Table;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 
-@Component
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class KafkaStats {
     private final JdbcTemplate jdbcTemplate;
+    private final PrometheusMeterRegistry registry;
 
-    @Autowired
-    private PrometheusMeterRegistry registry;
-
-    public KafkaStats(JdbcTemplate jdbcTemplate, PrometheusMeterRegistry registry) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.registry = registry;
-    }
-
-    @Scheduled(cron = "*/5 * * * * ?")
+    @Scheduled(fixedRate = 30000)
     public void reportStats() {
         List<Integer> retriesStats = getRetriesStats();
         Gauge.builder("veilarbportefolje_kafka_retries_messages_count", retriesStats, (rs) -> retriesStats.size()).description("Number of failed messages").register(this.registry);
@@ -35,10 +26,9 @@ public class KafkaStats {
     }
 
     private List<Integer> getRetriesStats() {
-        return this.jdbcTemplate.queryForList("SELECT " + Table.KAFKA_CONSUMER_RECORD.RETRIES + " FROM " +
-                        Table.KAFKA_CONSUMER_RECORD.TABLE_NAME + " WHERE " + Table.KAFKA_CONSUMER_RECORD.RETRIES + " > 0 " +
-                        " AND " + Table.KAFKA_CONSUMER_RECORD.LAST_RETRY + " > '" +
-                        Timestamp.valueOf(LocalDateTime.now().minusHours(1)) + "'"
-                , Integer.class);
+        return this.jdbcTemplate.queryForList("""
+                        SELECT retries FROM KAFKA_CONSUMER_RECORD WHERE retries > 0
+                        AND LAST_RETRY > 'now'::timestamp - '1 hour'::interval;
+                """, Integer.class);
     }
 }

@@ -3,22 +3,16 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -28,32 +22,27 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
-    private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
-    private final OppfolgingStartetService oppfolgingStartetService;
     private final OppfolgingPeriodeService oppfolgingPeriodeService;
-    private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepository oppfolgingRepository, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
-        this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
-        this.oppfolgingRepository = oppfolgingRepository;
+    public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepositoryV2 oppfolgingRepositoryV2, JdbcTemplate jdbcTemplate) {
+        this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.jdbcTemplate = jdbcTemplate;
         AktorClient aktorClient = mock(AktorClient.class);
-        BrukerRepository brukerRepository = mock(BrukerRepository.class);
         Mockito.when(aktorClient.hentFnr(any())).thenReturn(Fnr.of("-1"));
-        when(brukerRepository.hentMappedePersonIder(any())).thenReturn(List.of(PersonId.of("0000")));
-        when(brukerRepository.retrievePersonidFromFnr(Fnr.of("-1"))).thenReturn(Optional.of(PersonId.of("0000")));
-        this.oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepository, mock(OppfolgingRepositoryV2.class), mock(OpensearchIndexer.class), mock(PdlService.class));
-        this.oppfolgingPeriodeService = new OppfolgingPeriodeService(this.oppfolgingStartetService, this.oppfolgingAvsluttetService);
+        OppfolgingStartetService oppfolgingStartetService = new OppfolgingStartetService(oppfolgingRepositoryV2, mock(OpensearchIndexer.class), mock(PdlService.class));
+        this.oppfolgingPeriodeService = new OppfolgingPeriodeService(oppfolgingStartetService, oppfolgingAvsluttetService);
     }
 
     @Test
@@ -63,7 +52,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(melding);
 
-        final BrukerOppdatertInformasjon info = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
+        final BrukerOppdatertInformasjon info = oppfolgingRepositoryV2.hentOppfolgingData(aktoerId).orElseThrow();
         assertThat(info.getOppfolging()).isTrue();
         assertThat(info.getNyForVeileder()).isFalse();
     }
@@ -82,16 +71,11 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         SisteOppfolgingsperiodeV1 melding = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktoerId.get(), ZonedDateTime.parse("2020-11-01T00:00:01+02:00"), ZonedDateTime.parse("2020-12-01T00:00:01+02:00"));
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(melding);
-        String arbeidsliste = SqlUtils
-                .select(jdbcTemplate, Table.ARBEIDSLISTE.TABLE_NAME, rs -> rs.getString(Table.ARBEIDSLISTE.AKTOERID))
-                .column(Table.ARBEIDSLISTE.AKTOERID)
-                .where(WhereClause.equals(Table.ARBEIDSLISTE.AKTOERID, aktoerId.get()))
-                .execute();
-
-        assertThat(arbeidsliste).isNull();
-
+        List<String> arbeidsliste = jdbcTemplate.queryForList("SELECT aktoerid from arbeidsliste where aktoerid= ?",
+                String.class, aktoerId.get());
         List<String> registrering = jdbcTemplate.query("select * from bruker_registrering where aktoerid = ?", (r, i) -> r.getString("aktoerid"), aktoerId.get());
 
+        assertThat(arbeidsliste.isEmpty()).isTrue();
         assertThat(registrering.size()).isEqualTo(0);
         assertThat(testDataClient.hentUnderOppfolgingOgAktivIdent(aktoerId)).isFalse();
         Map<String, Object> source = opensearchTestClient.fetchDocument(aktoerId).getSourceAsMap();
@@ -121,6 +105,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(oppfolgingAvsluttePayload);
 
-        return oppfolgingRepository.hentOppfolgingData(aktoerId);
+        return oppfolgingRepositoryV2.hentOppfolgingData(aktoerId);
     }
 }

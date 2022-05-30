@@ -14,11 +14,9 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,8 +29,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.hentIdenterFraPostgres;
 
 @Slf4j
 @RestController
@@ -47,11 +43,9 @@ public class AdminController {
     private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
     private final YtelsesService ytelsesService;
-    private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchAdminService opensearchAdminService;
     private final PdlService pdlService;
-    private final UnleashService unleashService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -103,11 +97,7 @@ public class AdminController {
     public String indekserAlleBrukere() {
         authorizeAdmin();
         List<AktorId> brukereUnderOppfolging;
-        if (hentIdenterFraPostgres(unleashService)) {
-            brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
-        } else {
-            brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
-        }
+        brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
         opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereUnderOppfolging);
         return "Indeksering fullfort";
     }
@@ -115,7 +105,7 @@ public class AdminController {
     @PutMapping("/ytelser/allUsers")
     public String syncYtelserForAlle() {
         authorizeAdmin();
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepository.hentAlleGyldigeBrukereUnderOppfolging();
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
         brukereUnderOppfolging.forEach(ytelsesService::oppdaterYtelsesInformasjon);
         return "Ytelser er nå i sync";
     }

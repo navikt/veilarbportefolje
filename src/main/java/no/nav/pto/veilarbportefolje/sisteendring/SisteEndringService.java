@@ -25,18 +25,16 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @RequiredArgsConstructor
 public class SisteEndringService {
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final SisteEndringRepository sisteEndringRepository;
     private final SisteEndringRepositoryV2 sisteEndringRepositoryV2;
 
     public void veilederHarSett(AktorId aktorId, ZonedDateTime time) {
         LocalDateTime veilederharsett = time.toLocalDateTime();
-        Map<String, Endring> sisteEndringer = sisteEndringRepository.getSisteEndringer(aktorId);
+        Map<String, Endring> sisteEndringer = sisteEndringRepositoryV2.getSisteEndringer(aktorId);
         sisteEndringer.forEach((kategori, endring) -> {
             if (endring.getEr_sett().equals("J")) {
                 return;
             }
             if (veilederharsett.isAfter(DateUtils.toLocalDateTimeOrNull(endring.getTidspunkt()))) {
-                sisteEndringRepository.oppdaterHarSett(aktorId, SisteEndringsKategori.valueOf(kategori), true);
                 sisteEndringRepositoryV2.oppdaterHarSett(aktorId, SisteEndringsKategori.valueOf(kategori), true);
                 opensearchIndexerV2.updateSisteEndring(aktorId, SisteEndringsKategori.valueOf(kategori));
             }
@@ -48,9 +46,8 @@ public class SisteEndringService {
             return;
         }
         SisteEndringDTO sisteEndringDTO = new SisteEndringDTO(melding);
-        if (hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
+        if (hendelseErNyereEnnIPostgres(sisteEndringDTO)) {
             try {
-                sisteEndringRepository.upsert(sisteEndringDTO);
                 sisteEndringRepositoryV2.upsert(sisteEndringDTO);
                 opensearchIndexerV2.updateSisteEndring(sisteEndringDTO);
             } catch (Exception e) {
@@ -67,30 +64,13 @@ public class SisteEndringService {
         }
 
         SisteEndringDTO sisteEndringDTO = new SisteEndringDTO(kafkaAktivitet);
-        if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
-            sisteEndringRepository.upsert(sisteEndringDTO);
-        }
-
         if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIPostgres(sisteEndringDTO)) {
             sisteEndringRepositoryV2.upsert(sisteEndringDTO);
         }
     }
 
     public void slettSisteEndringer(AktorId aktoerId) {
-        sisteEndringRepository.slettSisteEndringer(aktoerId);
         sisteEndringRepositoryV2.slettSisteEndringer(aktoerId);
-    }
-
-    private boolean hendelseErNyereEnnIDatabase(SisteEndringDTO sisteEndringDTO) {
-        if (sisteEndringDTO.getTidspunkt() == null) {
-            log.error("Endringstidspunkt var null for aktoerId: " + sisteEndringDTO.getAktoerId());
-            return false;
-        }
-        Timestamp databaseVerdi = sisteEndringRepository.getSisteEndringTidspunkt(sisteEndringDTO.getAktoerId(), sisteEndringDTO.getKategori());
-        if (databaseVerdi == null) {
-            return true;
-        }
-        return toZonedDateTime(databaseVerdi).compareTo(sisteEndringDTO.getTidspunkt()) < 0;
     }
 
     private boolean hendelseErNyereEnnIPostgres(SisteEndringDTO sisteEndringDTO) {

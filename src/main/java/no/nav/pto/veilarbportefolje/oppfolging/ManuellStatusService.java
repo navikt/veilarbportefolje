@@ -15,16 +15,13 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ManuellStatusService extends KafkaCommonConsumerService<ManuellStatusDTO> {
     private final OppfolgingService oppfolgingService;
-    private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
     public void behandleKafkaMeldingLogikk(ManuellStatusDTO dto) {
         final AktorId aktorId = AktorId.of(dto.getAktorId());
 
-        oppfolgingRepository.settManuellStatus(aktorId, dto.isErManuell());
         oppfolgingRepositoryV2.settManuellStatus(aktorId, dto.isErManuell());
-
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktorId, dto);
 
         String manuellStatus = dto.isErManuell() ? ManuellBrukerStatus.MANUELL.name() : null;

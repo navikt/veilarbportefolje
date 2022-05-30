@@ -7,6 +7,7 @@ import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -23,11 +24,11 @@ import static no.nav.pto.veilarbportefolje.util.DbUtils.getSqlAdminRole;
 @Configuration
 @RequiredArgsConstructor
 @EnableTransactionManagement
-public class DbConfigPostgres implements DatabaseConfig{
+public class DbConfigPostgres {
     private final EnvironmentProperties environmentProperties;
 
-    @Bean("Postgres")
-    @Override
+    @Bean
+    @Primary
     public DataSource dataSource() {
         return createDataSource(environmentProperties.getDbUrl(), true);
     }
@@ -37,9 +38,9 @@ public class DbConfigPostgres implements DatabaseConfig{
         return createDataSource(environmentProperties.getDbUrl(), false);
     }
 
-    @Bean(name="PostgresJdbc")
-    @Override
-    public JdbcTemplate db(@Qualifier("Postgres") DataSource dataSource) {
+    @Bean
+    @Primary
+    public JdbcTemplate db(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
@@ -54,7 +55,7 @@ public class DbConfigPostgres implements DatabaseConfig{
     }
 
     @Bean
-    public PlatformTransactionManager transactionManager(@Qualifier("Postgres") DataSource dataSource) {
+    public PlatformTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
 

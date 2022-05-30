@@ -8,16 +8,16 @@ import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.Optional;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.PROFILERING_RESULTAT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.PROFILERING_TIDSPUNKT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.AKTOERID;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -26,8 +26,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Repository
 @RequiredArgsConstructor
 public class ProfileringRepositoryV2 {
-    @NonNull
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
     public void upsertBrukerProfilering(ArbeidssokerProfilertEvent kafkaMelding) {

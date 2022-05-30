@@ -26,7 +26,7 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
     private CVService cvService;
 
     @Autowired
-    private JdbcTemplate oracle;
+    private JdbcTemplate postgres;
 
     private final AktorId aktoerId1 = AktorId.of("11111111111");
     private final AktorId aktoerId2 = AktorId.of("22222222222");
@@ -34,9 +34,9 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
 
     @BeforeEach
     void set_under_oppfolging(){
-        oracle.update("truncate TABLE OPPFOLGING_DATA");
-        oracle.update("truncate TABLE OPPFOLGINGSBRUKER");
-        oracle.update("truncate TABLE AKTOERID_TO_PERSONID");
+        postgres.update("truncate TABLE OPPFOLGING_DATA");
+        postgres.update("truncate TABLE oppfolgingsbruker_arena_v2");
+        postgres.update("truncate TABLE bruker_cv");
         testDataClient.setupBruker(aktoerId1, ZonedDateTime.now());
         testDataClient.setupBruker(aktoerId2, ZonedDateTime.now());
         testDataClient.setupBruker(aktoerId3, ZonedDateTime.now());
