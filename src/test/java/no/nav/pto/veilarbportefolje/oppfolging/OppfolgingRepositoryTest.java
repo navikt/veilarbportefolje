@@ -1,8 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.junit.Before;
@@ -11,10 +10,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
-import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository.safeToJaNei;
+import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 public class OppfolgingRepositoryTest {
 

@@ -4,12 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import org.opensearch.action.ActionListener;
 import org.opensearch.action.bulk.BulkRequest;
 import org.opensearch.action.bulk.BulkResponse;
@@ -19,7 +17,6 @@ import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.common.xcontent.XContentType;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,8 +24,6 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukOppfolgingsbrukerPaPostgres;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukSisteEndringerPaPostgres;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
 @Slf4j
@@ -39,36 +34,22 @@ public class OpensearchIndexer {
     public static final int ORACLE_BATCH_SIZE_LIMIT = 1000;
 
     private final RestHighLevelClient restHighLevelClient;
-    private final BrukerRepository brukerRepository;
     private final BrukerRepositoryV2 brukerRepositoryV2;
     private final IndexName alias;
     private final UnleashService unleashService;
-    private final SisteEndringRepository sisteEndringRepository;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
     public void indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;
-        if (brukOppfolgingsbrukerPaPostgres(unleashService)) {
-            bruker = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
-        } else {
-            bruker = brukerRepository.hentBrukerFraView(aktoerId);
-        }
+        bruker = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
         bruker.ifPresent(this::indekserBruker);
     }
 
     private void indekserBruker(OppfolgingsBruker bruker) {
         if (erUnderOppfolging(bruker)) {
-            if (!brukOppfolgingsbrukerPaPostgres(unleashService)) {
-                postgresOpensearchMapper.flettInnPostgresData(List.of(bruker));
-            }
             postgresOpensearchMapper.flettInnAktivitetsData(List.of(bruker));
-
-            if (brukSisteEndringerPaPostgres(unleashService)) {
-                postgresOpensearchMapper.flettInnSisteEndringerData(List.of(bruker));
-            } else {
-                leggTilSisteEndring(bruker);
-            }
+            postgresOpensearchMapper.flettInnSisteEndringerData(List.of(bruker));
 
             syncronIndekseringsRequest(bruker);
         } else {
@@ -120,20 +101,6 @@ public class OpensearchIndexer {
         }
     }
 
-    public void leggTilSisteEndring(OppfolgingsBruker bruker) {
-        leggTilSisteEndring(Collections.singletonList(bruker));
-    }
-
-    private void leggTilSisteEndring(List<OppfolgingsBruker> brukere) {
-        if (brukere == null || brukere.isEmpty()) {
-            throw new IllegalArgumentException();
-        }
-
-        validateBatchSize(brukere);
-        sisteEndringRepository.setAlleSisteEndringTidspunkter(brukere);
-    }
-
-
     @SneakyThrows
     public void oppdaterAlleBrukereIOpensearch(List<AktorId> brukere) {
         long tidsStempel0 = System.currentTimeMillis();
@@ -162,29 +129,16 @@ public class OpensearchIndexer {
     public void indekserBolk(List<AktorId> aktorIds) {
         validateBatchSize(aktorIds);
 
-        List<OppfolgingsBruker> brukere;
-        if (brukOppfolgingsbrukerPaPostgres(unleashService)) {
-            brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
-        } else {
-            brukere = brukerRepository.hentBrukereFraView(aktorIds).stream()
-                    .filter(bruker -> bruker.getAktoer_id() != null)
-                    .toList();
-            postgresOpensearchMapper.flettInnPostgresData(brukere);
-        }
+        List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
         postgresOpensearchMapper.flettInnAktivitetsData(brukere);
+        postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
 
-        if (brukSisteEndringerPaPostgres(unleashService)) {
-            postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
-        } else {
-            leggTilSisteEndring(brukere);
-        }
-        this.skrivTilIndeks(this.alias.getValue(), brukere);
+        this.skrivTilIndeks(alias.getValue(), brukere);
     }
 
     public void dryrunAvPostgresTilOpensearchMapping(List<AktorId> brukereUnderOppfolging) {
         partition(brukereUnderOppfolging, BATCH_SIZE).forEach(bolk -> {
             List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(bolk, true);
-            sisteEndringRepository.setAlleSisteEndringTidspunkter(brukere);
         });
     }
 }

@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
@@ -26,23 +25,16 @@ import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> {
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
-    private final BrukerService brukerService;
     private final SisteEndringService sisteEndringService;
     private final OpensearchIndexer opensearchIndexer;
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
-        mapAktoerIdTilPersonIdHvisNodvendig(aktorId); // Fanger opp om personId er endret, kan evt. løses ved å sende med personId på topic fra veilarbarena
-
         sisteEndringService.behandleAktivitet(aktivitetData);
         boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
         if (bleProsessert) {
             opensearchIndexer.indekser(aktorId);
         }
-    }
-
-    private void mapAktoerIdTilPersonIdHvisNodvendig(AktorId aktorId) {
-        brukerService.hentPersonidFraAktoerid(aktorId);
     }
 
     public void slettOgIndekserUtdanningsAktivitet(String aktivitetid, AktorId aktorId) {
