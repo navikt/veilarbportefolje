@@ -41,7 +41,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Repository
 @RequiredArgsConstructor
 public class OppfolgingsbrukerRepositoryV3 {
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate dbNamed;

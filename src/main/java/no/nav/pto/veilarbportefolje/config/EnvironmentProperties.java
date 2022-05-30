@@ -11,19 +11,12 @@ import java.util.List;
 @ConfigurationProperties(prefix = "app.env")
 public class EnvironmentProperties {
     private String veilarbVeilederUrl;
-    private String difiUrl;
-    private String aktorregisterUrl;
     private String stsDiscoveryUrl;
-    private String arenaLoependeYtelserUrl;
-    private String arenaPaagaaendeAktiviteterUrl;
-    private String arenaFilmottakSFTPUsername;
-    private String arenaFilmottakSFTPPassword;
     private String openAmDiscoveryUrl;
     private String openAmClientId;
     private String azureAdDiscoveryUrl;
     private String azureAdClientId;
     private String openAmRefreshUrl;
-    private String soapStsUrl;
     private String dbUrl;
     private List<String> admins;
     private String unleashUrl;

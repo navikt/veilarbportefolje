@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
@@ -11,12 +10,9 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -40,7 +36,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepositoryV2 oppfolgingRepositoryV2, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
+    public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepositoryV2 oppfolgingRepositoryV2, JdbcTemplate jdbcTemplate) {
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.jdbcTemplate = jdbcTemplate;
         AktorClient aktorClient = mock(AktorClient.class);
@@ -75,16 +71,11 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         SisteOppfolgingsperiodeV1 melding = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktoerId.get(), ZonedDateTime.parse("2020-11-01T00:00:01+02:00"), ZonedDateTime.parse("2020-12-01T00:00:01+02:00"));
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(melding);
-        String arbeidsliste = SqlUtils
-                .select(jdbcTemplate, Table.ARBEIDSLISTE.TABLE_NAME, rs -> rs.getString(Table.ARBEIDSLISTE.AKTOERID))
-                .column(Table.ARBEIDSLISTE.AKTOERID)
-                .where(WhereClause.equals(Table.ARBEIDSLISTE.AKTOERID, aktoerId.get()))
-                .execute();
-
-        assertThat(arbeidsliste).isNull();
-
+        List<String> arbeidsliste = jdbcTemplate.queryForList("SELECT aktoerid from arbeidsliste where aktoerid= ?",
+                String.class, aktoerId.get());
         List<String> registrering = jdbcTemplate.query("select * from bruker_registrering where aktoerid = ?", (r, i) -> r.getString("aktoerid"), aktoerId.get());
 
+        assertThat(arbeidsliste.isEmpty()).isTrue();
         assertThat(registrering.size()).isEqualTo(0);
         assertThat(testDataClient.hentUnderOppfolgingOgAktivIdent(aktoerId)).isFalse();
         Map<String, Object> source = opensearchTestClient.fetchDocument(aktoerId).getSourceAsMap();

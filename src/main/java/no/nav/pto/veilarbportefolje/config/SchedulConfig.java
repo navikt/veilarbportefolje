@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
@@ -29,7 +28,7 @@ public class SchedulConfig {
     private final Scheduler scheduler;
 
     @Autowired
-    public SchedulConfig(@Qualifier("Postgres") DataSource dataSource,
+    public SchedulConfig(DataSource dataSource,
                          HovedIndekserer hovedIndekserer,
                          AktivitetService aktivitetService,
                          YtelsesService ytelsesService) {

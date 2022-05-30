@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +14,6 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class YtelsesStatusRepositoryV2 {
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
     public void upsertYtelseStatus(Brukerdata brukerdata) {

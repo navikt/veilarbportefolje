@@ -6,7 +6,6 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -23,7 +22,7 @@ public class OppfolginsbrukerRepositoryTestV3 {
     private final Fnr fnr = Fnr.of("0");
 
     @Autowired
-    public void OppfolginsbrukerRepositoryTestV2(@Qualifier("PostgresJdbc") JdbcTemplate db, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository) {
+    public void OppfolginsbrukerRepositoryTestV2( JdbcTemplate db, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository) {
         this.db = db;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
     }

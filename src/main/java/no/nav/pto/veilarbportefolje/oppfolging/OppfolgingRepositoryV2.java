@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -28,7 +27,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 @Repository
 @RequiredArgsConstructor
 public class OppfolgingRepositoryV2 {
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
     public int settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {

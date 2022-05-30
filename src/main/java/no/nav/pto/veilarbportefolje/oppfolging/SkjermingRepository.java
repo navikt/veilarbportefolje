@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.oppfolging.response.SkjermingData;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,6 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.NOM_SKJERMING.
 @Service
 @RequiredArgsConstructor
 public class SkjermingRepository {
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
 
     public boolean settSkjermingPeriode(Fnr fnr, Timestamp skjermetFra, Timestamp skjermetTil) {

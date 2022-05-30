@@ -51,7 +51,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.AktoerDataOpensearchMapper;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
@@ -64,11 +63,9 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
-import no.nav.pto.veilarbportefolje.util.TestUtil;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
 import org.opensearch.client.RestHighLevelClient;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -128,7 +125,6 @@ import static org.mockito.Mockito.when;
         GruppeAktivitetRepositoryV2.class,
         TiltakRepositoryV2.class,
         PostgresOpensearchMapper.class,
-        AktoerDataOpensearchMapper.class,
         AktivitetOpensearchService.class,
         YtelsesService.class,
         YtelsesRepositoryV2.class,
@@ -154,11 +150,11 @@ public class ApplicationConfigTest {
 
 
     @Bean
-    public TestDataClient dbTestClient(JdbcTemplate jdbcTemplate, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplatePostgres,
+    public TestDataClient dbTestClient(JdbcTemplate jdbcTemplatePostgres,
                                        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2,
                                        RegistreringRepositoryV2 registreringRepositoryV2, OpensearchTestClient opensearchTestClient,
                                        OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository) {
-        return new TestDataClient(jdbcTemplate, jdbcTemplatePostgres, registreringRepositoryV2, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlIdentRepository, pdlPersonRepository);
+        return new TestDataClient(jdbcTemplatePostgres, registreringRepositoryV2, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlIdentRepository, pdlPersonRepository);
     }
 
     @Bean
@@ -207,30 +203,6 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    @Primary
-    public DataSource hsqldbDataSource() {
-        return TestUtil.setupInMemoryDatabase();
-    }
-
-
-    @Bean
-    @Primary
-    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
-
-    @Bean
-    @Primary
-    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(DataSource dataSource) {
-        return new NamedParameterJdbcTemplate(dataSource);
-    }
-
-    @Bean
-    public PlatformTransactionManager platformTransactionManager(@Qualifier("Postgres") DataSource datasource) {
-        return new DataSourceTransactionManager(datasource);
-    }
-
-    @Bean
     public RestHighLevelClient restHighLevelClient() {
         return createClient(opensearchClientConfig());
     }
@@ -261,24 +233,30 @@ public class ApplicationConfigTest {
         return mock(SystemUserTokenProvider.class);
     }
 
-    @Bean("Postgres")
+    @Bean
     public DataSource dataSource() {
         return SingletonPostgresContainer.init().createDataSource();
     }
 
-    @Bean(name = "PostgresJdbc")
-    public JdbcTemplate db(@Qualifier("Postgres") DataSource datasource) {
+    @Bean
+    @Primary
+    public JdbcTemplate db(DataSource datasource) {
         return new JdbcTemplate(datasource);
     }
 
     @Bean("PostgresJdbcReadOnly")
-    public JdbcTemplate dbReadOnly(@Qualifier("Postgres") DataSource datasource) {
+    public JdbcTemplate dbReadOnly(DataSource datasource) {
         return new JdbcTemplate(datasource);
     }
 
     @Bean(name = "PostgresNamedJdbcReadOnly")
-    public NamedParameterJdbcTemplate dbNamedReadOnly(@Qualifier("Postgres") DataSource datasource) {
+    public NamedParameterJdbcTemplate dbNamedReadOnly(DataSource datasource) {
         return new NamedParameterJdbcTemplate(datasource);
+    }
+
+    @Bean
+    public PlatformTransactionManager platformTransactionManager(DataSource datasource) {
+        return new DataSourceTransactionManager(datasource);
     }
 
     @Bean

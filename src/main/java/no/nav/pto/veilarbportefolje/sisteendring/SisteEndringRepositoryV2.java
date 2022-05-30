@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.Aktorid_indeksert_data.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ENDRING.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
@@ -27,56 +27,34 @@ import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
 @Repository
 @RequiredArgsConstructor
 public class SisteEndringRepositoryV2 {
-    @Qualifier("PostgresJdbc")
     private final JdbcTemplate db;
-
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate dbReadOnly;
 
     public int upsert(SisteEndringDTO sisteEndringDTO) {
-        return db.update(
-                "INSERT INTO " + TABLE_NAME +
-                        "(" +
-                        AKTOERID + "," +
-                        SISTE_ENDRING_KATEGORI + "," +
-                        SISTE_ENDRING_TIDSPUNKT + "," +
-                        AKTIVITETID + "," +
-                        ER_SETT +
-                        ") VALUES (?, ?, ?, ?, ?) " +
-                        "ON CONFLICT (" + AKTOERID + ", " + SISTE_ENDRING_KATEGORI + ") " +
-                        "DO UPDATE SET (" +
-                        SISTE_ENDRING_TIDSPUNKT + "," +
-                        AKTIVITETID + "," +
-                        ER_SETT + ") = (?, ?, ?)",
+        return db.update("""
+                        insert into siste_endring (aktoerid, siste_endring_kategori, siste_endring_tidspunkt, aktivitetid, er_sett)
+                        values (?, ?, ?, ?, false) on conflict (aktoerid, siste_endring_kategori)
+                        do update set (siste_endring_tidspunkt, aktivitetid, er_sett)
+                        = (excluded.siste_endring_tidspunkt, excluded.aktivitetid, excluded.er_sett)
+                        """,
                 sisteEndringDTO.getAktoerId().get(),
                 sisteEndringDTO.getKategori().name(),
                 Timestamp.from(sisteEndringDTO.getTidspunkt().toInstant()),
-                sisteEndringDTO.getAktivtetId(),
-                false,
-                Timestamp.from(sisteEndringDTO.getTidspunkt().toInstant()),
-                sisteEndringDTO.getAktivtetId(),
-                false
+                sisteEndringDTO.getAktivtetId()
         );
     }
 
-    public int oppdaterHarSett(AktorId aktorId, SisteEndringsKategori kategori, boolean erSett) {
-        return db.update(
-                "INSERT INTO " + TABLE_NAME +
-                        "(" +
-                        AKTOERID + "," +
-                        SISTE_ENDRING_KATEGORI + "," +
-                        ER_SETT +
-                        ") VALUES (?, ?, ?) " +
-                        "ON CONFLICT (" + AKTOERID + ", " + SISTE_ENDRING_KATEGORI + ") " +
-                        "DO UPDATE SET " +
-                        ER_SETT + " = (?)",
-                aktorId.get(),
-                kategori.name(),
-                erSett,
-                erSett
+    public void oppdaterHarSett(AktorId aktorId, SisteEndringsKategori kategori, boolean erSett) {
+        db.update(
+                """
+                        insert into siste_endring (aktoerid, siste_endring_kategori, er_sett)
+                        values (?, ?, ?)
+                        on conflict (aktoerid, siste_endring_kategori)
+                        do update set er_sett = excluded.er_sett
+                        """,
+                aktorId.get(), kategori.name(), erSett
         );
-
-
     }
 
     public Timestamp getSisteEndringTidspunkt(AktorId aktoerId, SisteEndringsKategori kategori) {
@@ -87,10 +65,8 @@ public class SisteEndringRepositoryV2 {
         );
     }
 
-    public int slettSisteEndringer(AktorId aktoerId) {
-        String sql = String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID);
-
-        return db.update(sql, aktoerId.get());
+    public void slettSisteEndringer(AktorId aktoerId) {
+        db.update("delete from siste_endring where aktoerid = ?", aktoerId.get());
     }
 
     public void setAlleSisteEndringTidspunkter(List<OppfolgingsBruker> oppfolgingsBrukere) {
@@ -108,15 +84,10 @@ public class SisteEndringRepositoryV2 {
     }
 
     public Map<String, Endring> getSisteEndringer(AktorId aktoerId) {
-        String sql = String.format("SELECT " +
-                SISTE_ENDRING_KATEGORI + ", " +
-                SISTE_ENDRING_TIDSPUNKT + ", " +
-                ER_SETT + ", " +
-                AKTIVITETID +
-                " FROM " + TABLE_NAME +
-                " WHERE " +
-                AKTOERID + "= ?");
-        return dbReadOnly.query(sql, this::mapResultatTilKategoriOgEndring, aktoerId.get());
+        return dbReadOnly.query( """
+                select siste_endring_kategori, siste_endring_tidspunkt, er_sett, aktivitetid from siste_endring
+                where aktoerid = ?""", this::mapResultatTilKategoriOgEndring,
+                aktoerId.get());
     }
 
     public Map<AktorId, Map<String, Endring>> getSisteEndringer(List<AktorId> aktoerIder) {
@@ -158,6 +129,4 @@ public class SisteEndringRepositoryV2 {
 
         return sisteEndringHashMap;
     }
-
-
 }

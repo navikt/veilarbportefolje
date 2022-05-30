@@ -12,14 +12,13 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper;
+import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -42,7 +41,7 @@ public class GruppeAktivitetTest {
     private final PersonId personId;
 
     @Autowired
-    public GruppeAktivitetTest(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService) {
+    public GruppeAktivitetTest( JdbcTemplate jdbcTemplate, GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService) {
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.jdbcTemplate = jdbcTemplate;
         this.personId = randomPersonId();
