@@ -64,7 +64,7 @@ public class HovedIndekserer {
 
     private boolean tryIndekserAlleBrukere(List<AktorId> brukere) {
         try {
-            return opensearchIndexer.indexerInParallel(brukere);
+            return opensearchIndexer.batchIndeksering(brukere);
         } catch (Exception e) {
             log.error("Hovedindeksering: feilet...", e);
             return false;

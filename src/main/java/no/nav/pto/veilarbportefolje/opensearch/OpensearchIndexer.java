@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
-import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -20,15 +19,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
-import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
 @Slf4j
@@ -111,7 +106,7 @@ public class OpensearchIndexer {
         long tidsStempel0 = System.currentTimeMillis();
         log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
-        boolean success = indexerInParallel(brukere);
+        boolean success = batchIndeksering(brukere);
         if (success) {
             long tid = System.currentTimeMillis() - tidsStempel0;
             log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
@@ -121,44 +116,24 @@ public class OpensearchIndexer {
     }
 
     @SneakyThrows
-    public boolean indexerInParallel(List<AktorId> alleBrukere) {
-        List<List<AktorId>> brukerePartition = Lists.partition(alleBrukere, (alleBrukere.size() / getNumberOfThreads()) + 1);
-        ExecutorService executor = Executors.newFixedThreadPool(getNumberOfThreads());
-        executor.execute(() ->
-                brukerePartition.parallelStream().forEach(bolk -> {
-                            try {
-                                partition(bolk, BATCH_SIZE).forEach(this::indekserBolk);
-                            } catch (Exception e) {
-                                log.error("error under hovedindeksering", e);
-                            }
-                        }
-                )
-        );
-
-        executor.shutdown();
-        return executor.awaitTermination(7, TimeUnit.HOURS);
+    public boolean batchIndeksering(List<AktorId> alleBrukere) {
+        try {
+            partition(alleBrukere, BATCH_SIZE).forEach(this::indekserBolk);
+        } catch (Exception e) {
+            log.error("error under hovedindeksering", e);
+            return false;
+        }
+        return true;
     }
 
     public void indekserBolk(List<AktorId> aktorIds) {
-        indekserBolk(aktorIds, this.alias);
-    }
-
-    public void indekserBolk(List<AktorId> aktorIds, IndexName index) {
         validateBatchSize(aktorIds);
 
-        List<OppfolgingsBruker> brukere;
-        brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
+        List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
         postgresOpensearchMapper.flettInnAktivitetsData(brukere);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
 
-        this.skrivTilIndeks(index.getValue(), brukere);
-    }
-
-    private int getNumberOfThreads() {
-        if (isDevelopment().orElse(false)) {
-            return 1;
-        }
-        return 6;
+        this.skrivTilIndeks(alias.getValue(), brukere);
     }
 
     public void dryrunAvPostgresTilOpensearchMapping(List<AktorId> brukereUnderOppfolging) {
