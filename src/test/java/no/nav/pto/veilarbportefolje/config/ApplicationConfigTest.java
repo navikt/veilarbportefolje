@@ -37,7 +37,6 @@ import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
@@ -106,7 +105,6 @@ import static org.mockito.Mockito.when;
         OpensearchAdminService.class,
         HovedIndekserer.class,
         AktiviteterRepositoryV2.class,
-        OppfolgingRepository.class,
         OppfolgingRepositoryV2.class,
         OppfolgingsbrukerRepositoryV3.class,
         OppfolgingsbrukerServiceV2.class,

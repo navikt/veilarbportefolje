@@ -13,7 +13,6 @@ import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
@@ -53,7 +52,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final AktivitetService aktivitetService;
     private final OpensearchService opensearchService;
     private final SistLestService sistLestService;
-    private final OppfolgingRepository oppfolgingRepositoryMock;
     private final VeilederId veilederId = VeilederId.of("Z123456");
     private final NavKontor testEnhet = NavKontor.of("0000");
     private final Fnr fodselsnummer1 = Fnr.ofValidFnr("10108000000"); //TESTFAMILIE
@@ -66,7 +64,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         BrukerServiceV2 brukerService = mock(BrukerServiceV2.class);
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
-        this.oppfolgingRepositoryMock = mock(OppfolgingRepository.class);
         this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.opensearchService = opensearchService;
@@ -78,7 +75,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         jdbcTemplatePostgres.execute("truncate table siste_endring");
         jdbcTemplatePostgres.execute("truncate table oppfolging_data");
         jdbcTemplatePostgres.execute("truncate table aktiviteter");
-        Mockito.when(oppfolgingRepositoryMock.erUnderoppfolging(any())).thenReturn(true);
     }
 
     @Test

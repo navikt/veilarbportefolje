@@ -19,7 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OppfolgingAvsluttetService {
     private final ArbeidslisteService arbeidslisteService;
-    private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final RegistreringService registreringService;
     private final CVRepositoryV2 cvRepositoryV2;
@@ -28,7 +27,6 @@ public class OppfolgingAvsluttetService {
     private final SisteEndringService sisteEndringService;
 
     public void avsluttOppfolging(AktorId aktoerId) {
-        oppfolgingRepository.slettOppfolgingData(aktoerId);
         oppfolgingRepositoryV2.slettOppfolgingData(aktoerId);
         registreringService.slettRegistering(aktoerId);
         arbeidslisteService.slettArbeidsliste(aktoerId);
