@@ -55,7 +55,7 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void updateOppfolgingsbruker(AktorId aktoerId, OppfolgingsbrukerEntity oppfolgingsbruker, String vedtakstatus) {
+    public void updateOppfolgingsbruker(AktorId aktoerId, OppfolgingsbrukerEntity oppfolgingsbruker, String utkast14aStatus) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("fnr", oppfolgingsbruker.fodselsnr())
@@ -76,7 +76,7 @@ public class OpensearchIndexerV2 {
                 .field("kjonn", FodselsnummerUtils.lagKjonn(oppfolgingsbruker.fodselsnr()))
                 .field("fodselsdag_i_mnd", Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(oppfolgingsbruker.fodselsnr())))
 
-                .field("trenger_revurdering", OppfolgingUtils.trengerRevurderingVedtakstotte(oppfolgingsbruker.formidlingsgruppekode(), oppfolgingsbruker.kvalifiseringsgruppekode(), vedtakstatus))
+                .field("trenger_revurdering", OppfolgingUtils.trengerRevurderingVedtakstotte(oppfolgingsbruker.formidlingsgruppekode(), oppfolgingsbruker.kvalifiseringsgruppekode(), utkast14aStatus))
                 .field("trenger_vurdering", OppfolgingUtils.trengerVurdering(oppfolgingsbruker.rettighetsgruppekode(), oppfolgingsbruker.kvalifiseringsgruppekode()))
                 .field("fullt_navn", String.format("%s, %s", oppfolgingsbruker.etternavn(), oppfolgingsbruker.fornavn()))
                 .endObject();

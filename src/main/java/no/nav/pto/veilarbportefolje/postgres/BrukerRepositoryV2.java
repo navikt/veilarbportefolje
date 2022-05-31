@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
-import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -94,7 +94,7 @@ public class BrukerRepositoryV2 {
         String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
 
         String fnr = rs.getString(FODSELSNR);
-        String vedtakstatus = rs.getString(VEDTAKSTATUS);
+        String vedtakstatus = rs.getString(UTKAST_14A_STATUS);
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setFnr(fnr)
                 .setAktoer_id(rs.getString(AKTOERID))
@@ -114,12 +114,18 @@ public class BrukerRepositoryV2 {
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp(VENTER_PA_NAV)))
                 .setVedtak_status(
                         Optional.ofNullable(vedtakstatus)
-                                .map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf)
-                                .map(KafkaVedtakStatusEndring::vedtakStatusTilTekst)
+                                .map(Kafka14aStatusendring.Status::valueOf)
+                                .map(Kafka14aStatusendring::statusTilTekst)
                                 .orElse(null)
                 )
-                .setVedtak_status_endret(toIsoUTC(rs.getTimestamp(VEDTAKSTATUS_ENDRET_TIDSPUNKT)))
-                .setAnsvarlig_veileder_for_vedtak(rs.getString(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN))
+                .setUtkast_14a_status(Optional.ofNullable(vedtakstatus)
+                        .map(Kafka14aStatusendring.Status::valueOf)
+                        .map(Kafka14aStatusendring::statusTilTekst)
+                        .orElse(null))
+                .setVedtak_status_endret(toIsoUTC(rs.getTimestamp(UTKAST_14A_ENDRET_TIDSPUNKT)))
+                .setUtkast_14a_status_endret(toIsoUTC(rs.getTimestamp(UTKAST_14A_ENDRET_TIDSPUNKT)))
+                .setAnsvarlig_veileder_for_vedtak(rs.getString(UTKAST_14A_ANSVARLIG_VEILDERNAVN))
+                .setUtkast_14a_ansvarlig_veileder(rs.getString(UTKAST_14A_ANSVARLIG_VEILDERNAVN))
                 .setYtelse(rs.getString(YTELSE))
                 .setUtlopsdato(toIsoUTC(rs.getTimestamp(YTELSE_UTLOPSDATO)))
                 .setDagputlopuke(rs.getObject(DAGPUTLOPUKE, Integer.class))

@@ -9,8 +9,8 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.enums.arena.Rettighetsgruppe;
@@ -32,7 +32,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
     private final BrukerServiceV2 brukerServiceV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OpensearchIndexer opensearchIndexer;
-    private final VedtakStatusRepositoryV2 vedtakStatusRepositoryV2;
+    private final Utkast14aStatusRepository utkast14aStatusRepository;
     private final UnleashService unleashService;
 
     @Override
@@ -64,11 +64,11 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
     }
 
     private void oppdaterOpensearch(AktorId aktorId, OppfolgingsbrukerEntity oppfolgingsbruker) {
-        String vedtak14aStatus = vedtakStatusRepositoryV2.hent14aVedtak(aktorId.get())
-                .map(KafkaVedtakStatusEndring::getVedtakStatusEndring)
-                .map(KafkaVedtakStatusEndring.VedtakStatusEndring::toString)
+        String utkast14aStatus = utkast14aStatusRepository.hentStatusEndringForBruker(aktorId.get())
+                .map(Kafka14aStatusendring::getVedtakStatusEndring)
+                .map(Kafka14aStatusendring.Status::toString)
                 .orElse(null);
-        opensearchIndexerV2.updateOppfolgingsbruker(aktorId, oppfolgingsbruker, vedtak14aStatus);
+        opensearchIndexerV2.updateOppfolgingsbruker(aktorId, oppfolgingsbruker, utkast14aStatus);
     }
 }
 
