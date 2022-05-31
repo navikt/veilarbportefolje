@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 public class PdlPersonRepository {
     private final JdbcTemplate db;
 
-    public void upsertPerson(PDLPerson personData) {
+    public void upsertPerson(Fnr fnr, PDLPerson personData) {
         db.update("""
                         INSERT INTO bruker_data (freg_ident, fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato)
                         values (?,?,?,?,?,?,?)
@@ -22,7 +23,7 @@ public class PdlPersonRepository {
                         do update set (fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato) =
                         (excluded.fornavn, excluded.etternavn, excluded.mellomnavn, excluded.kjoenn, excluded.er_doed, excluded.foedselsdato)
                         """,
-                personData.getFnr().get(), personData.getFornavn(), personData.getEtternavn(), personData.getMellomnavn(),
+                fnr.get(), personData.getFornavn(), personData.getEtternavn(), personData.getMellomnavn(),
                 personData.getKjonn().name(), personData.isErDoed(), personData.getFoedsel());
     }
 

@@ -5,14 +5,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukBrukerDataTopicForIdenter;
+import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivAktor;
+import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 
 @Slf4j
 @Service
@@ -22,6 +28,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
     private final PdlIdentRepository pdlIdentRepository;
     private final PdlPersonRepository pdlPersonRepository;
     private final OpensearchIndexer opensearchIndexer;
+    private final UnleashService unleashService;
 
     @Override
     @SneakyThrows
@@ -40,23 +47,16 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
                 .map(AktorId::new).toList();
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIds)) {
-            AktorId aktorId = hentAktivAktoer(pdlDokument.getHentIdenter().getIdenter());
+            AktorId aktorId = hentAktivAktor(pdlDokument.getHentIdenter().getIdenter());
+            Fnr fnr = hentAktivFnr(pdlDokument.getHentIdenter().getIdenter());
             log.info("Det oppsto en brukerdata endring aktoer: {}", aktorId);
 
-            PDLPerson person = PDLPerson.genererFraApiRespons(pdlDokument.getHentPerson(), aktorId);
-            pdlPersonRepository.upsertPerson(person);
+            PDLPerson person = PDLPerson.genererFraApiRespons(pdlDokument.getHentPerson());
+            if (brukBrukerDataTopicForIdenter(unleashService)) {
+                pdlIdentRepository.upsertIdenter(pdlDokument.getHentIdenter().getIdenter());
+            }
+            pdlPersonRepository.upsertPerson(fnr, person);
             opensearchIndexer.indekser(aktorId);
         }
-    }
-
-
-    private AktorId hentAktivAktoer(List<PDLIdent> identer) {
-        return identer.stream()
-                .filter(pdlIdent -> PDLIdent.Gruppe.AKTORID.equals(pdlIdent.getGruppe()))
-                .filter(pdlIdent -> !pdlIdent.isHistorisk())
-                .map(PDLIdent::getIdent)
-                .map(AktorId::new)
-                .findAny()
-                .orElseThrow(() -> new IllegalStateException("Ingen aktiv ident på bruker"));
     }
 }
