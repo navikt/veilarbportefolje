@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -96,10 +97,11 @@ public class AdminController {
     @PostMapping("/indeks/AlleBrukere")
     public String indekserAlleBrukere() {
         authorizeAdmin();
-        List<AktorId> brukereUnderOppfolging;
-        brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
-        opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereUnderOppfolging);
-        return "Indeksering fullfort";
+        return JobRunner.runAsync("Admin_hovedindeksering", () -> {
+                    List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
+                    opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereUnderOppfolging);
+                }
+        );
     }
 
     @PutMapping("/ytelser/allUsers")
