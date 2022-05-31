@@ -21,7 +21,6 @@ public class HovedIndekserer {
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final UnleashService unleashService;
 
-    @SneakyThrows
     public void hovedIndeksering() {
         log.info("Starter jobb: hovedindeksering");
         List<AktorId> brukereSomMaOppdateres;

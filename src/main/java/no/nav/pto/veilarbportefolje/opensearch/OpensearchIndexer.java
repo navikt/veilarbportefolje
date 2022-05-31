@@ -7,20 +7,18 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
-import org.opensearch.action.ActionListener;
 import org.opensearch.action.bulk.BulkRequest;
-import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.index.IndexRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.common.xcontent.XContentType;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
@@ -64,6 +62,7 @@ public class OpensearchIndexer {
 
     public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
         BulkRequest bulk = new BulkRequest();
+        List<String> aktoerIds = oppfolgingsBrukere.stream().map(OppfolgingsBruker::getAktoer_id).toList();
         oppfolgingsBrukere.stream()
                 .map(bruker -> {
                     IndexRequest indexRequest = new IndexRequest(indeksNavn).id(bruker.getAktoer_id());
@@ -71,26 +70,12 @@ public class OpensearchIndexer {
                 })
                 .forEach(bulk::add);
 
-        restHighLevelClient.bulkAsync(bulk, RequestOptions.DEFAULT, new ActionListener<>() {
-            @Override
-            public void onResponse(BulkResponse bulkItemResponses) {
-                if (bulkItemResponses.hasFailures()) {
-                    log.warn("Klart ikke å skrive til indeks: {}", bulkItemResponses.buildFailureMessage());
-                }
-
-                if (bulkItemResponses.getItems().length != oppfolgingsBrukere.size()) {
-                    log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
-                }
-
-                List<String> aktoerIds = oppfolgingsBrukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(toList());
-                log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                log.warn("Feil under asynkron indeksering av brukerere ", e);
-            }
-        });
+        try {
+            restHighLevelClient.bulk(bulk, RequestOptions.DEFAULT);
+            log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
+        } catch (IOException e) {
+            log.error(String.format("Klart ikke å skrive til indeks: %s", aktoerIds), e);
+        }
     }
 
     private void validateBatchSize(List<?> brukere) {
@@ -99,7 +84,6 @@ public class OpensearchIndexer {
         }
     }
 
-    @SneakyThrows
     public void oppdaterAlleBrukereIOpensearch(List<AktorId> brukere) {
         long tidsStempel0 = System.currentTimeMillis();
         log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
@@ -113,7 +97,6 @@ public class OpensearchIndexer {
         }
     }
 
-    @SneakyThrows
     public boolean batchIndeksering(List<AktorId> alleBrukere) {
         try {
             partition(alleBrukere, BATCH_SIZE).forEach(this::indekserBolk);
