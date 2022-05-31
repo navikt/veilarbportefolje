@@ -30,12 +30,12 @@ public class VedtakStatusRepositoryV2 {
             return;
         }
         log.info("Slettet vedtak og utkast pa bruker: {}", aktorId);
-        db.update("DELETE FROM VEDTAKSTATUS WHERE AKTOERID = ?", aktorId);
+        db.update("DELETE FROM UTKAST_14A_STATUS WHERE AKTOERID = ?", aktorId);
     }
 
     public int upsertVedtak(KafkaVedtakStatusEndring vedtakStatusEndring) {
         return db.update(""" 
-                        INSERT INTO VEDTAKSTATUS(
+                        INSERT INTO UTKAST_14A_STATUS(
                         AKTOERID, VEDTAKID, VEDTAKSTATUS,
                         INNSATSGRUPPE, HOVEDMAL, ANSVARLIG_VEILDERIDENT,
                         ANSVARLIG_VEILDERNAVN, ENDRET_TIDSPUNKT)
@@ -60,7 +60,7 @@ public class VedtakStatusRepositoryV2 {
             return 0;
         }
         return db.update("""
-                        UPDATE  VEDTAKSTATUS SET
+                        UPDATE UTKAST_14A_STATUS SET
                         (VEDTAKSTATUS, INNSATSGRUPPE, HOVEDMAL, ENDRET_TIDSPUNKT)
                         = (?, ?, ?, ?)
                         WHERE AKTOERID = ?
@@ -73,7 +73,7 @@ public class VedtakStatusRepositoryV2 {
     }
 
     public Optional<KafkaVedtakStatusEndring> hent14aVedtak(String aktorId) {
-        String sql = "SELECT * FROM VEDTAKSTATUS WHERE AKTOERID = ?";
+        String sql = "SELECT * FROM UTKAST_14A_STATUS WHERE AKTOERID = ?";
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, this::mapKafkaVedtakStatusEndring, aktorId))
         );
@@ -103,7 +103,7 @@ public class VedtakStatusRepositoryV2 {
             log.info("Oppdaterte IKKE vedtak: {} med ny ansvarlig veileder: {}, for bruker: {}", vedtakStatusEndring.getVedtakId(), vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId());
             return;
         }
-        String sql = "UPDATE VEDTAKSTATUS SET ANSVARLIG_VEILDERIDENT = ?, ANSVARLIG_VEILDERNAVN = ? WHERE AKTOERID= ?";
+        String sql = "UPDATE UTKAST_14A_STATUS SET ANSVARLIG_VEILDERIDENT = ?, ANSVARLIG_VEILDERNAVN = ? WHERE AKTOERID = ?";
         int rows = db.update(sql, vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getVeilederNavn(), vedtakStatusEndring.getAktorId());
         log.info("Oppdaterte vedtak: {} med ny ansvarlig veileder: {}, for bruker: {}. Rader: {}", vedtakStatusEndring.getVedtakId(), vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId(), rows);
     }

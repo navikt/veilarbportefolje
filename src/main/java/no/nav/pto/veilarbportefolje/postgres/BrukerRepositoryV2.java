@@ -24,49 +24,7 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konv
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBackup;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.AAPMAXTIDUKE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.AAPUNNTAKDAGERIGJEN;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.ARB_ENDRINGSTIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.ARB_FRIST;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.ARB_KATEGORI;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.ARB_OVERSKRIFT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.ARB_SIST_ENDRET_AV_VEILEDERIDENT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.BRUKERS_SITUASJON;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.CV_EKSISTERER;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.DAGPUTLOPUKE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.DISKRESJONSKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.ER_DOED;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.ER_SKJERMET;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.ETTERNAVN;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.FODSELSNR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.FORMIDLINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.FORNAVN;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.HAR_DELT_CV;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.HOVEDMAALKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.ISERV_FRA_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.KVALIFISERINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.MANUELL;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.NAV_KONTOR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.NY_FOR_VEILEDER;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.OPPFOLGING;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.PERMUTLOPUKE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.PROFILERING_RESULTAT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.RETTIGHETSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.SIKKERHETSTILTAK_TYPE_KODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.SPERRET_ANSATT_ARENA;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.STARTDATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.UTDANNING;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.UTDANNING_BESTATT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.UTDANNING_GODKJENT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.VEDTAKSTATUS;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.VEDTAKSTATUS_ENDRET_TIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.VEILEDERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.VENTER_PA_BRUKER;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.VENTER_PA_NAV;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.YTELSE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.YTELSE_UTLOPSDATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.FodselsnummerUtils.lagFodselsdato;
@@ -92,11 +50,11 @@ public class BrukerRepositoryV2 {
                                ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  D.VENTER_PA_BRUKER,  D.VENTER_PA_NAV,
-                               V.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
+                               U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
                                BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
                                YB.DAGPUTLOPUKE, YB.PERMUTLOPUKE, YB.UTLOPSDATO as YTELSE_UTLOPSDATO,
-                               V.ANSVARLIG_VEILDERNAVN          as VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN,
-                               V.ENDRET_TIDSPUNKT               as VEDTAKSTATUS_ENDRET_TIDSPUNKT,
+                               U.ANSVARLIG_VEILDERNAVN          as VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN,
+                               U.ENDRET_TIDSPUNKT               as VEDTAKSTATUS_ENDRET_TIDSPUNKT,
                                ARB.SIST_ENDRET_AV_VEILEDERIDENT as ARB_SIST_ENDRET_AV_VEILEDERIDENT,
                                ARB.ENDRINGSTIDSPUNKT            as ARB_ENDRINGSTIDSPUNKT,
                                ARB.OVERSKRIFT                   as ARB_OVERSKRIFT,
@@ -108,7 +66,7 @@ public class BrukerRepositoryV2 {
                                  left join nom_skjerming ns on ns.fodselsnr = ai.fnr
                                  left join bruker_data bd on bd.freg_ident = ai.fnr
                                  LEFT JOIN DIALOG D ON D.AKTOERID = ai.aktorid
-                                 LEFT JOIN VEDTAKSTATUS V on V.AKTOERID = ai.aktorid
+                                 LEFT JOIN UTKAST_14A_STATUS U on U.AKTOERID = ai.aktorid
                                  LEFT JOIN ARBEIDSLISTE ARB on ARB.AKTOERID = ai.aktorid
                                  LEFT JOIN BRUKER_PROFILERING BP ON BP.AKTOERID = ai.aktorid
                                  LEFT JOIN BRUKER_CV CV on CV.AKTOERID = ai.aktorid
