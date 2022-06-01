@@ -169,13 +169,13 @@ public class AdminController {
     public String lastInnPDLBrukerData() {
         authorizeAdmin();
         AtomicInteger antall = new AtomicInteger(0);
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleBrukereUnderOppfolging();
         brukereUnderOppfolging.forEach(bruker -> {
             if (antall.getAndAdd(1) % 100 == 0) {
                 log.info("pdl brukerdata: inlastning {}% ferdig", ((double) antall.get() / (double) brukereUnderOppfolging.size()) * 100.0);
             }
             try {
-                pdlService.hentOgLagreBrukerData(bruker);
+                pdlService.hentOgLagrePdlData(bruker);
             } catch (Exception e) {
                 log.info("pdl brukerdata: feil under innlastning av pdl data på bruker: {}", bruker, e);
             }

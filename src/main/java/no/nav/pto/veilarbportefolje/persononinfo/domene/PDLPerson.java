@@ -3,8 +3,6 @@ package no.nav.pto.veilarbportefolje.persononinfo.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 
@@ -14,7 +12,6 @@ import java.time.LocalDate;
 @Slf4j
 @Accessors(chain = true)
 public class PDLPerson {
-    private Fnr fnr;
     private String fornavn;
     private String etternavn;
     private String mellomnavn;
@@ -22,16 +19,15 @@ public class PDLPerson {
     private boolean erDoed;
     private LocalDate foedsel;
 
-    public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response, AktorId aktorId) {
+    public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
         PDLPerson person = new PDLPerson();
-        PdlPersonResponse.PdlPersonResponseData.Navn navn = kontrollerResponseOgHentNavn(response, aktorId);
+        PdlPersonResponse.PdlPersonResponseData.Navn navn = kontrollerResponseOgHentNavn(response);
         person.setFornavn(navn.getFornavn());
         person.setEtternavn(navn.getEtternavn());
         person.setMellomnavn(navn.getMellomnavn());
         person.setErDoed(erDoed(response));
-        person.setFoedsel(kontrollerOgHentFodsel(response, aktorId));
-        person.setKjonn(kontrollerResponseOgHentKjonn(response, aktorId));
-        person.setFnr(kontrollerResponseOgHentFnr(response, aktorId));
+        person.setFoedsel(kontrollerOgHentFodsel(response));
+        person.setKjonn(kontrollerResponseOgHentKjonn(response));
 
         return person;
     }
@@ -40,26 +36,26 @@ public class PDLPerson {
         return !response.getDoedsfall().isEmpty();
     }
 
-    private static LocalDate kontrollerOgHentFodsel(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response, AktorId aktorId) {
+    private static LocalDate kontrollerOgHentFodsel(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
         var fodselsListe = response.getFoedsel()
                 .stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
         if (fodselsListe.size() > 1) {
-            throw new IllegalStateException("Støtte for flere registrerte fødseler er ikke implentert, aktorId: " + aktorId);
+            throw new PdlPersonValideringException("Støtte for flere registrerte fødseler er ikke implentert");
         }
         return fodselsListe.stream().findFirst()
                 .map(PdlPersonResponse.PdlPersonResponseData.Foedsel::getFoedselsdato)
                 .map(LocalDate::parse)
-                .orElseThrow(() -> new IllegalStateException("Støtte for ingen registrert fødsel er ikke implentert, aktorId: " + aktorId));
+                .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen registrert fødsel er ikke implentert"));
     }
 
-    private static Kjonn kontrollerResponseOgHentKjonn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response, AktorId aktorId) {
+    private static Kjonn kontrollerResponseOgHentKjonn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
         var kjonnListe = response.getKjoenn()
                 .stream().filter(kjoenn -> !kjoenn.getMetadata().isHistorisk()).toList();
         if (kjonnListe.size() > 1) {
-            throw new IllegalStateException("Støtte for flere kjønn er ikke implentert, aktorId: " + aktorId);
+            throw new PdlPersonValideringException("Støtte for flere kjønn er ikke implentert");
         }
         var kjonn = kjonnListe.stream().findFirst()
-                .orElseThrow(() -> new IllegalStateException("Støtte for ingen kjønn er ikke implentert, aktorId: " + aktorId))
+                .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen kjønn er ikke implentert"))
                 .getKjoenn();
 
         if ("KVINNE".equals(kjonn)) {
@@ -68,27 +64,16 @@ public class PDLPerson {
             return Kjonn.M;
         }
         log.error("Ikke implementert støtte for kjønn: {} ", kjonn);
-        throw new IllegalStateException("Fant kjønn som ikke er støttet, på aktorId: " + aktorId);
+        throw new PdlPersonValideringException("Fant kjønn som ikke er støttet");
     }
 
-    private static Fnr kontrollerResponseOgHentFnr(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response, AktorId aktorId) {
-        var fnrListe = response.getFolkeregisteridentifikator()
-                .stream().filter(fnr -> !fnr.getMetadata().isHistorisk()).toList();
-        if (fnrListe.size() > 1) {
-            throw new IllegalStateException("Flere enn en aktiv ident på aktorId: "+ aktorId);
-        }
-        return Fnr.of(fnrListe.stream().findFirst()
-                .orElseThrow(() -> new IllegalStateException("Ingen ident på aktorId: "+ aktorId))
-                .getIdentifikasjonsnummer());
-    }
-
-    private static PdlPersonResponse.PdlPersonResponseData.Navn kontrollerResponseOgHentNavn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response, AktorId aktorId) {
+    private static PdlPersonResponse.PdlPersonResponseData.Navn kontrollerResponseOgHentNavn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
         var navnListe = response.getNavn()
                 .stream().filter(navn -> !navn.getMetadata().isHistorisk()).toList();
         if (navnListe.size() > 1) {
-            throw new IllegalStateException("Flere enn en aktivt navn på aktorId: " + aktorId);
+            throw new PdlPersonValideringException("Flere enn en aktivt navn");
         }
         return navnListe.stream().findFirst()
-                .orElseThrow(() -> new IllegalStateException("Ingen navn på aktorId: " + aktorId));
+                .orElseThrow(() -> new PdlPersonValideringException("Ingen navn på bruker"));
     }
 }

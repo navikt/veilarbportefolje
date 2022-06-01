@@ -97,7 +97,7 @@ public class TestDataClient {
                 new PDLIdent(aktoerId.get(), false, AKTORID),
                 new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
         ));
-        pdlPersonRepository.upsertPerson(new PDLPerson().setFnr(fnr).setFoedsel(LocalDate.now()).setKjonn(Kjonn.K));
+        pdlPersonRepository.upsertPerson(fnr, new PDLPerson().setFoedsel(LocalDate.now()).setKjonn(Kjonn.K));
         oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato);
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
         registreringRepositoryV2.upsertBrukerRegistrering(new ArbeidssokerRegistrertEvent(aktoerId.get(), null, null, null, null, null));

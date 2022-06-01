@@ -5,6 +5,7 @@ import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.utils.graphql.GraphqlRequest;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.FileUtils;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentVariabel;
@@ -24,14 +25,14 @@ public class PdlPortefoljeClient {
     private static final String hentIdenterQuery = FileUtils.getResourceFileAsString("graphql/hentIdenter.gql");
     private static final String hentPersonQuery = FileUtils.getResourceFileAsString("graphql/hentPerson.gql");
 
-    public PDLPerson hentBrukerDataFraPdl(AktorId aktorId) throws RuntimeException {
-        GraphqlRequest<PdlIdentVariabel> request = new GraphqlRequest<>(hentPersonQuery, new PdlIdentVariabel(aktorId.get()));
+    public PDLPerson hentBrukerDataFraPdl(Fnr fnr) throws RuntimeException {
+        GraphqlRequest<PdlIdentVariabel> request = new GraphqlRequest<>(hentPersonQuery, new PdlIdentVariabel(fnr.get()));
         PdlPersonResponse respons = pdlClient.request(request, PdlPersonResponse.class);
         if (hasErrors(respons)) {
             throw new RuntimeException("Kunne ikke hente identer fra PDL");
         }
 
-        return genererFraApiRespons(respons.getData().getHentPerson(), aktorId);
+        return genererFraApiRespons(respons.getData().getHentPerson());
     }
 
     public List<PDLIdent> hentIdenterFraPdl(AktorId aktorId) throws RuntimeException {
