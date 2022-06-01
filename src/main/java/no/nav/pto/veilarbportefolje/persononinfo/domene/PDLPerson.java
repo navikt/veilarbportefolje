@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 
 @Data
 @Slf4j
@@ -69,10 +70,10 @@ public class PDLPerson {
 
     private static PdlPersonResponse.PdlPersonResponseData.Navn kontrollerResponseOgHentNavn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
         var navnListe = response.getNavn()
-                .stream().filter(navn -> !navn.getMetadata().isHistorisk()).toList();
-        if (navnListe.size() > 1) {
-            throw new PdlPersonValideringException("Flere enn en aktivt navn");
-        }
+                .stream()
+                .filter(navn -> !navn.getMetadata().isHistorisk())
+                .sorted(Comparator.comparing(n -> n.getMetadata().getMaster()))
+                .toList();
         return navnListe.stream().findFirst()
                 .orElseThrow(() -> new PdlPersonValideringException("Ingen navn på bruker"));
     }

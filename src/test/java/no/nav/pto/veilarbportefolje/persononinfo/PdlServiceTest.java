@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import lombok.SneakyThrows;
 import no.nav.common.client.pdl.PdlClientImpl;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +19,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
+import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,10 +29,12 @@ public class PdlServiceTest {
     private final String pdlIdentResponsFraFil = readFileAsJsonString("/identer_pdl.json", getClass());
     private final String pdlPersonRespnsFraFil = readFileAsJsonString("/person_pdl.json", getClass());
     private final JdbcTemplate db;
+    private final PdlPersonRepository pdlPersonRepository;
     private PdlService pdlService;
 
     public PdlServiceTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
+        pdlPersonRepository = new PdlPersonRepository(db);
     }
 
     @BeforeEach
@@ -75,7 +80,10 @@ public class PdlServiceTest {
                 .stream()
                 .map(PdlIdentRepository::mapTilident)
                 .toList();
+        Fnr fnr = hentAktivFnr(identerFraFil);
+        PDLPerson pdlPerson = pdlPersonRepository.hentPerson(fnr);
 
         assertThat(identerFraPostgres).containsExactlyInAnyOrderElementsOf(identerFraFil);
+        assertThat(pdlPerson.getFornavn()).isEqualTo("TREIG");
     }
 }

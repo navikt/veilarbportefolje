@@ -14,12 +14,10 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PdlPersonValideringException;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukBrukerDataTopicForIdenter;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivAktor;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 
@@ -33,7 +31,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
     private final PdlPersonRepository pdlPersonRepository;
     private final OpensearchIndexer opensearchIndexer;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final UnleashService unleashService;
 
     @Override
     @SneakyThrows
@@ -55,9 +52,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
             log.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
 
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
-            if (brukBrukerDataTopicForIdenter(unleashService)) {
-                handterIdentEndring(pdlIdenter);
-            }
+            handterIdentEndring(pdlIdenter);
 
             oppdaterOpensearch(aktivAktorId, pdlIdenter);
         }
