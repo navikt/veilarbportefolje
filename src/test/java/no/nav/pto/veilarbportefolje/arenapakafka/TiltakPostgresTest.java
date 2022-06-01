@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -92,8 +93,10 @@ public class TiltakPostgresTest {
         assertThat(postgresAktivitet.getTiltak().contains("T123")).isTrue();
         assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.tiltak.name())).isTrue();
 
-        assertThat(postgresAktivitet.getNyesteUtlopteAktivitet()).isEqualTo("1990-01-01T22:59:59Z");
-        assertThat(postgresAktivitet.getForrigeAktivitetStart()).isEqualTo("1988-12-31T23:00:00Z");
+        assertThat(ZonedDateTime.parse(postgresAktivitet.getNyesteUtlopteAktivitet()).toLocalDate())
+                .isEqualTo(LocalDate.of(1990,1,1));
+        assertThat(ZonedDateTime.parse(postgresAktivitet.getForrigeAktivitetStart()).toLocalDate())
+                .isEqualTo(LocalDate.of(1988, 12, 31));
 
         assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
         assertThat(postgresAktivitet.getNesteAktivitetStart()).isNull();
