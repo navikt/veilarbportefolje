@@ -40,22 +40,22 @@ public class PDLPerson {
         var fodselsListe = response.getFoedsel()
                 .stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
         if (fodselsListe.size() > 1) {
-            throw new IllegalStateException("Støtte for flere registrerte fødseler er ikke implentert");
+            throw new PdlPersonValideringException("Støtte for flere registrerte fødseler er ikke implentert");
         }
         return fodselsListe.stream().findFirst()
                 .map(PdlPersonResponse.PdlPersonResponseData.Foedsel::getFoedselsdato)
                 .map(LocalDate::parse)
-                .orElseThrow(() -> new IllegalStateException("Støtte for ingen registrert fødsel er ikke implentert"));
+                .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen registrert fødsel er ikke implentert"));
     }
 
     private static Kjonn kontrollerResponseOgHentKjonn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
         var kjonnListe = response.getKjoenn()
                 .stream().filter(kjoenn -> !kjoenn.getMetadata().isHistorisk()).toList();
         if (kjonnListe.size() > 1) {
-            throw new IllegalStateException("Støtte for flere kjønn er ikke implentert");
+            throw new PdlPersonValideringException("Støtte for flere kjønn er ikke implentert");
         }
         var kjonn = kjonnListe.stream().findFirst()
-                .orElseThrow(() -> new IllegalStateException("Støtte for ingen kjønn er ikke implentert"))
+                .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen kjønn er ikke implentert"))
                 .getKjoenn();
 
         if ("KVINNE".equals(kjonn)) {
@@ -64,16 +64,16 @@ public class PDLPerson {
             return Kjonn.M;
         }
         log.error("Ikke implementert støtte for kjønn: {} ", kjonn);
-        throw new IllegalStateException("Fant kjønn som ikke er støttet");
+        throw new PdlPersonValideringException("Fant kjønn som ikke er støttet");
     }
 
     private static PdlPersonResponse.PdlPersonResponseData.Navn kontrollerResponseOgHentNavn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
         var navnListe = response.getNavn()
                 .stream().filter(navn -> !navn.getMetadata().isHistorisk()).toList();
         if (navnListe.size() > 1) {
-            throw new IllegalStateException("Flere enn en aktivt navn");
+            throw new PdlPersonValideringException("Flere enn en aktivt navn");
         }
         return navnListe.stream().findFirst()
-                .orElseThrow(() -> new IllegalStateException("Ingen navn på bruker"));
+                .orElseThrow(() -> new PdlPersonValideringException("Ingen navn på bruker"));
     }
 }

@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.persononinfo;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -27,8 +26,11 @@ public class PdlPersonRepository {
                 personData.getKjonn().name(), personData.isErDoed(), personData.getFoedsel());
     }
 
-    public void slettLagretBrukerData(List<PDLIdent> identer) {
-        String identerParam = identer.stream().map(PDLIdent::getIdent).collect(Collectors.joining(",", "{", "}"));
+    public void slettLagretBrukerData(List<Fnr> identer) {
+        if(identer.isEmpty()){
+            return;
+        }
+        String identerParam = identer.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
         db.update("DELETE from bruker_data where freg_ident = any (?::varchar[])", identerParam);
     }
 }

@@ -26,7 +26,7 @@ public class PdlService {
         hentOgLagreBrukerData(fnr);
     }
 
-    private void hentOgLagreBrukerData(Fnr fnr) {
+    public void hentOgLagreBrukerData(Fnr fnr) {
         PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnr);
         pdlPersonRepository.upsertPerson(fnr, personData);
     }
@@ -47,6 +47,10 @@ public class PdlService {
                 .filter(x -> PDLIdent.Gruppe.AKTORID.equals(x.getGruppe()))
                 .map(PDLIdent::getIdent)
                 .map(AktorId::new).toList();
+        List<Fnr> fnrs = identer.stream()
+                .filter(x -> PDLIdent.Gruppe.FOLKEREGISTERIDENT.equals(x.getGruppe()))
+                .map(PDLIdent::getIdent)
+                .map(Fnr::new).toList();
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIds)) {
             log.warn("""
@@ -57,7 +61,7 @@ public class PdlService {
             return;
         }
         log.info("Sletter identer og brukerdata for aktor: {}", aktorId);
-        pdlPersonRepository.slettLagretBrukerData(identer);
+        pdlPersonRepository.slettLagretBrukerData(fnrs);
         pdlIdentRepository.slettLagretePerson(lokalIdent);
     }
 
