@@ -20,12 +20,6 @@ query($ident: ID!) {
                 historisk
             }
         }
-        folkeregisteridentifikator {
-            identifikasjonsnummer
-      		metadata {
-                historisk
-            }
-        }
         doedsfall {
             doedsdato
         }

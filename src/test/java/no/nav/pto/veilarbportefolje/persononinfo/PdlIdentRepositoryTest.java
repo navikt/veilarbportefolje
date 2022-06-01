@@ -16,6 +16,7 @@ import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -73,7 +74,8 @@ public class PdlIdentRepositoryTest {
         AktorId ident = AktorId.of("12346");
         List<PDLIdent> identer = List.of(
                 new PDLIdent(historiskIdent.get(), true, AKTORID),
-                new PDLIdent(ident.get(), false, AKTORID)
+                new PDLIdent(ident.get(), false, AKTORID),
+                new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT)
         );
         var historiskOpfolgingStart = new SisteOppfolgingsperiodeV1(null, historiskIdent.get(), ZonedDateTime.now(), null);
         var nyOpfolgingStart = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), null);

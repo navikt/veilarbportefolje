@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.persononinfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import org.springframework.stereotype.Service;
@@ -19,22 +20,23 @@ public class PdlService {
     private final PdlPortefoljeClient pdlClient;
 
     public void hentOgLagrePdlData(AktorId aktorId) {
-        hentOgLagreIdenter(aktorId);
-        hentOgLagreBrukerData(aktorId);
-    }
-
-    public void hentOgLagreBrukerData(AktorId aktorId) {
+        List<PDLIdent> identer = hentOgLagreIdenter(aktorId);
+        Fnr fnr = hentAktivFnr(identer);
         log.info("Oppdaterer pdl brukerdata for aktor: {}", aktorId);
-
-        PDLPerson personData = pdlClient.hentBrukerDataFraPdl(aktorId);
-        pdlPersonRepository.upsertPerson(personData);
+        hentOgLagreBrukerData(fnr);
     }
 
-    private void hentOgLagreIdenter(AktorId aktorId) {
+    public void hentOgLagreBrukerData(Fnr fnr) {
+        PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnr);
+        pdlPersonRepository.upsertPerson(fnr, personData);
+    }
+
+    private List<PDLIdent> hentOgLagreIdenter(AktorId aktorId) {
         log.info("Oppdaterer ident mapping for aktor: {}", aktorId);
 
-        List<PDLIdent> idents = pdlClient.hentIdenterFraPdl(aktorId);
-        pdlIdentRepository.upsertIdenter(idents);
+        List<PDLIdent> identer = pdlClient.hentIdenterFraPdl(aktorId);
+        pdlIdentRepository.upsertIdenter(identer);
+        return identer;
     }
 
     @Transactional
@@ -45,6 +47,10 @@ public class PdlService {
                 .filter(x -> PDLIdent.Gruppe.AKTORID.equals(x.getGruppe()))
                 .map(PDLIdent::getIdent)
                 .map(AktorId::new).toList();
+        List<Fnr> fnrs = identer.stream()
+                .filter(x -> PDLIdent.Gruppe.FOLKEREGISTERIDENT.equals(x.getGruppe()))
+                .map(PDLIdent::getIdent)
+                .map(Fnr::new).toList();
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIds)) {
             log.warn("""
@@ -55,7 +61,27 @@ public class PdlService {
             return;
         }
         log.info("Sletter identer og brukerdata for aktor: {}", aktorId);
-        pdlPersonRepository.slettLagretBrukerData(identer);
+        pdlPersonRepository.slettLagretBrukerData(fnrs);
         pdlIdentRepository.slettLagretePerson(lokalIdent);
+    }
+
+    public static AktorId hentAktivAktor(List<PDLIdent> identer) {
+        return identer.stream()
+                .filter(pdlIdent -> PDLIdent.Gruppe.AKTORID.equals(pdlIdent.getGruppe()))
+                .filter(pdlIdent -> !pdlIdent.isHistorisk())
+                .map(PDLIdent::getIdent)
+                .map(AktorId::new)
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("Ingen aktiv aktør på bruker"));
+    }
+
+    public static Fnr hentAktivFnr(List<PDLIdent> identer) {
+        return identer.stream()
+                .filter(pdlIdent -> PDLIdent.Gruppe.FOLKEREGISTERIDENT.equals(pdlIdent.getGruppe()))
+                .filter(pdlIdent -> !pdlIdent.isHistorisk())
+                .map(PDLIdent::getIdent)
+                .map(Fnr::new)
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("Ingen aktiv fnr på bruker"));
     }
 }

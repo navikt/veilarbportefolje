@@ -4,7 +4,6 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
-import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
@@ -49,6 +48,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
@@ -82,6 +82,8 @@ import java.util.List;
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchUtils.createClient;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -267,12 +269,12 @@ public class ApplicationConfigTest {
     @Bean
     public PdlPortefoljeClient pdlClient() {
         PdlPortefoljeClient pdlClient = mock(PdlPortefoljeClient.class);
-        when(pdlClient.hentIdenterFraPdl(any())).thenReturn(List.of());
+        when(pdlClient.hentIdenterFraPdl(any())).thenReturn(List.of(
+                new PDLIdent(randomFnr().get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(randomAktorId().get(), false, PDLIdent.Gruppe.AKTORID)
+        ));
         when(pdlClient.hentBrukerDataFraPdl(any())).thenReturn(
-                new PDLPerson()
-                        .setFnr(Fnr.of("0"))
-                        .setKjonn(K)
-        );
+                new PDLPerson().setKjonn(K));
         return pdlClient;
     }
 
