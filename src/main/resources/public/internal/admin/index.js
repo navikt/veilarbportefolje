@@ -147,6 +147,19 @@ function handleOppdaterBrukere(e) {
     }
 }
 
+const oppdaterBrukereNyIndexForm = document.getElementById('oppdaterbrukereNyIndex');
+oppdaterBrukereNyIndexForm.addEventListener('submit', handleOppdaterBrukereNyIndex)
+
+function handleOppdaterBrukereNyIndex(e) {
+    e.preventDefault();
+    if (window.confirm('Denne operasjonen vil ta litt tid, er du sikker?')) {
+        fetchData(
+            `/veilarbportefolje/api/admin/indeks/AlleBrukereNyIndex`,
+            {method: 'POST', credentials: 'same-origin'},
+            'oppdaterbrukereNyIndexResponse'
+        );
+    }
+}
 
 const oppdaterYtelserForAlleForm = document.getElementById('oppdateralleYtelser');
 oppdaterYtelserForAlleForm.addEventListener('submit', handleOppdaterYtelserForAlle)

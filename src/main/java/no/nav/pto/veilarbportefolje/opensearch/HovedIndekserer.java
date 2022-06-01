@@ -33,8 +33,7 @@ public class HovedIndekserer {
         }
     }
 
-    @SneakyThrows
-    private void aliasBasertHovedIndeksering(List<AktorId> brukere) {
+    public void aliasBasertHovedIndeksering(List<AktorId> brukere) {
         long tidsStempel0 = System.currentTimeMillis();
         log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
@@ -44,7 +43,7 @@ public class HovedIndekserer {
 
         boolean success = tryIndekserAlleBrukere(brukere);
         if (success) {
-            opensearchAdminService.flyttAliasTilNyIndeks(gammelIndex, nyIndex);
+            opensearchAdminService.slettGammeltOgOppdaterNyttAlias(gammelIndex, nyIndex);
             opensearchAdminService.slettIndex(gammelIndex);
             long tid = System.currentTimeMillis() - tidsStempel0;
             log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
