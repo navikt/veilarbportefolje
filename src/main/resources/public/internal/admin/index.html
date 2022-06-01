@@ -42,7 +42,7 @@
     <div id="stoppAivenResponse"></div>
 </div>
 
-<h2>Oppdater bruker i Opensearch</h2>
+<h2>Oppdater bruker i OpenSearch</h2>
 
 <div>
     <form id="oppdaterbruker">
@@ -57,6 +57,20 @@
         <input type="submit" value="Oppdater alle brukere i Opensearch"/>
     </form>
     <div id="oppdaterbrukereResponse"></div>
+</div>
+
+<h2>Oppdater brukere på ny index i OpenSearch</h2>
+<p>
+    Denne operasjonen kan brukes dersom det er gjort endringer for hvordan indeksen opprettes (f.eks. endringer i
+    opensearch_settings.json). Operasjonen lager en ny index og indekserer alle brukere på denne. Når indekseringen er
+    ferdig, så slettes den gamle indeksen. Mens indekseringen pågår vil også alle andre endringer bli utført på den nye
+    indexen. Det betyr at disse endringene ikke bil bli synlige før indekseringen er ferdig.
+</p>
+<div>
+    <form id="oppdaterbrukereNyIndex">
+        <input type="submit" value="Oppdater brukere på ny index i OpenSearch"/>
+    </form>
+    <div id="oppdaterbrukereNyIndexResponse"></div>
 </div>
 
 <h2>Sync aktiviteter/Ytelser med kafka eller fil</h2>
