@@ -139,10 +139,10 @@ CREATE TABLE public.oppfolging_data (
 
 
 --
--- Name: vedtakstatus; Type: TABLE; Schema: public; Owner: -
+-- Name: utkast_14a_status; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.vedtakstatus (
+CREATE TABLE public.utkast_14a_status (
     aktoerid character varying(20) NOT NULL,
     vedtakid character varying(20) NOT NULL,
     vedtakstatus character varying(40),
@@ -205,7 +205,7 @@ CREATE VIEW public.aktorid_indeksert_data AS
     arb.kategori AS arb_kategori
    FROM (((((((public.oppfolging_data od
      LEFT JOIN public.dialog d ON (((d.aktoerid)::text = (od.aktoerid)::text)))
-     LEFT JOIN public.vedtakstatus v ON (((v.aktoerid)::text = (od.aktoerid)::text)))
+     LEFT JOIN public.utkast_14a_status v ON (((v.aktoerid)::text = (od.aktoerid)::text)))
      LEFT JOIN public.arbeidsliste arb ON (((arb.aktoerid)::text = (od.aktoerid)::text)))
      LEFT JOIN public.bruker_profilering bp ON (((bp.aktoerid)::text = (od.aktoerid)::text)))
      LEFT JOIN public.bruker_cv cv ON (((cv.aktoerid)::text = (od.aktoerid)::text)))
@@ -427,6 +427,22 @@ CREATE TABLE public.tiltakkodeverket (
 
 
 --
+-- Name: vedtakstatus; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.vedtakstatus AS
+ SELECT utkast_14a_status.aktoerid,
+    utkast_14a_status.vedtakid,
+    utkast_14a_status.vedtakstatus,
+    utkast_14a_status.innsatsgruppe,
+    utkast_14a_status.hovedmal,
+    utkast_14a_status.ansvarlig_veilderident,
+    utkast_14a_status.ansvarlig_veildernavn,
+    utkast_14a_status.endret_tidspunkt
+   FROM public.utkast_14a_status;
+
+
+--
 -- Name: ytelsesvedtak; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -615,10 +631,10 @@ ALTER TABLE ONLY public.tiltakkodeverket
 
 
 --
--- Name: vedtakstatus vedtakstatus_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: utkast_14a_status vedtakstatus_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.vedtakstatus
+ALTER TABLE ONLY public.utkast_14a_status
     ADD CONSTRAINT vedtakstatus_pkey PRIMARY KEY (aktoerid);
 
 

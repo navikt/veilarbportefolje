@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.persononinfo.domene;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.person.pdl.aktor.v2.Type;
 
 @Data
 @Accessors(chain = true)
@@ -27,13 +26,5 @@ public class PDLIdent {
         FOLKEREGISTERIDENT,
         NPID,
         AKTORID
-    }
-
-    public static Gruppe typeTilGruppe(Type type) {
-        return switch (type) {
-            case NPID -> Gruppe.NPID;
-            case AKTORID -> Gruppe.AKTORID;
-            case FOLKEREGISTERIDENT -> Gruppe.FOLKEREGISTERIDENT;
-        };
     }
 }

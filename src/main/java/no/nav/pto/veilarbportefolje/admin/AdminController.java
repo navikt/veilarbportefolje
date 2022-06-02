@@ -11,6 +11,7 @@ import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -39,6 +40,7 @@ public class AdminController {
     private final EnvironmentProperties environmentProperties;
     private final AktorClient aktorClient;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
+    private final HovedIndekserer hovedIndekserer;
     private final OpensearchIndexer opensearchIndexer;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OppfolgingService oppfolgingService;
@@ -100,6 +102,16 @@ public class AdminController {
         return JobRunner.runAsync("Admin_hovedindeksering", () -> {
                     List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
                     opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereUnderOppfolging);
+                }
+        );
+    }
+
+    @PostMapping("/indeks/AlleBrukereNyIndex")
+    public String indekserAlleBrukereNyIndex() {
+        authorizeAdmin();
+        return JobRunner.runAsync("Admin_hovedindeksering_ny_index", () -> {
+                    List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
+                    hovedIndekserer.aliasBasertHovedIndeksering(brukereUnderOppfolging);
                 }
         );
     }
@@ -169,7 +181,7 @@ public class AdminController {
     public String lastInnPDLBrukerData() {
         authorizeAdmin();
         AtomicInteger antall = new AtomicInteger(0);
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleBrukereUnderOppfolging();
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
         brukereUnderOppfolging.forEach(bruker -> {
             if (antall.getAndAdd(1) % 100 == 0) {
                 log.info("pdl brukerdata: inlastning {}% ferdig", ((double) antall.get() / (double) brukereUnderOppfolging.size()) * 100.0);

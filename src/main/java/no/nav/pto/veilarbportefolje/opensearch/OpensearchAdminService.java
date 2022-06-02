@@ -114,13 +114,14 @@ public class OpensearchAdminService {
     }
 
     @SneakyThrows
-    public void flyttAliasTilNyIndeks(String gammelIndeks, String nyIndeks) {
+    public void slettGammeltOgOppdaterNyttAlias(String gammelIndeks, String nyIndeks) {
         IndicesAliasesRequest.AliasActions removeAliasAction = new IndicesAliasesRequest.AliasActions(REMOVE)
                 .index(gammelIndeks)
                 .alias(BRUKERINDEKS_ALIAS);
 
         IndicesAliasesRequest.AliasActions addAliasAction = new IndicesAliasesRequest.AliasActions(ADD)
                 .index(nyIndeks)
+                // Setter writeIndex = null for senere å kunne lage ny index med writeIndex = true
                 .writeIndex(null)
                 .alias(BRUKERINDEKS_ALIAS);
 
@@ -180,6 +181,7 @@ public class OpensearchAdminService {
         IndicesAliasesRequest.AliasActions addAliasAction = new IndicesAliasesRequest.AliasActions(ADD)
                 .index(nyIndex)
                 .alias(BRUKERINDEKS_ALIAS)
+                // Kun en index kan ha writeIndex = true. Forventes at gammel index har writeIndex = null
                 .writeIndex(true)
                 .filter(hideAllUsers);
 

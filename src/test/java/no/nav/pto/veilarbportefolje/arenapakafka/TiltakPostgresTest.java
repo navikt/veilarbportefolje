@@ -17,16 +17,17 @@ import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
 
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
@@ -54,6 +55,11 @@ public class TiltakPostgresTest {
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.tiltakRepositoryV2 = tiltakRepositoryV2;
         this.pdlIdentRepository = pdlIdentRepository;
+    }
+
+    @BeforeAll
+    public static void beforeAll() {
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Oslo"));
     }
 
     @BeforeEach
@@ -93,11 +99,8 @@ public class TiltakPostgresTest {
         assertThat(postgresAktivitet.getTiltak().contains("T123")).isTrue();
         assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.tiltak.name())).isTrue();
 
-        assertThat(ZonedDateTime.parse(postgresAktivitet.getNyesteUtlopteAktivitet()).toLocalDate())
-                .isEqualTo(LocalDate.of(1990,1,1));
-        assertThat(ZonedDateTime.parse(postgresAktivitet.getForrigeAktivitetStart()).toLocalDate())
-                .isEqualTo(LocalDate.of(1988, 12, 31));
-
+        assertThat(postgresAktivitet.getNyesteUtlopteAktivitet().substring(0, 10)).isEqualTo("1990-01-01");
+        assertThat(postgresAktivitet.getForrigeAktivitetStart().substring(0, 10)).isEqualTo("1988-12-31");
         assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
         assertThat(postgresAktivitet.getNesteAktivitetStart()).isNull();
         assertThat(postgresAktivitet.getAktivitetStart()).isNull();
