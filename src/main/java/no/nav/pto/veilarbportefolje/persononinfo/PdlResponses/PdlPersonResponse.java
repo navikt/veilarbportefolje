@@ -69,11 +69,16 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         }
     }
 
-    // NB: java "ordinal" (deklarasjons posisjon) er tatt i bruk for kilde prioritering
     public enum PdlMaster {
-        PDL,
-        FREG,
-        UVIST;
+        PDL(1),
+        FREG(2),
+        UVIST(3);
+
+        public final int prioritet;
+
+        PdlMaster(int i) {
+            prioritet = i;
+        }
 
         @JsonCreator
         public static PdlMaster fromString(String string) {

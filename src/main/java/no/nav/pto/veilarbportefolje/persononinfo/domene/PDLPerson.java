@@ -37,7 +37,7 @@ public class PDLPerson {
         return response
                 .stream()
                 .filter(navn -> !navn.getMetadata().isHistorisk())
-                .min(Comparator.comparing(n -> n.getMetadata().getMaster().ordinal()))
+                .min(Comparator.comparing(n -> n.getMetadata().getMaster().prioritet))
                 .orElseThrow(() -> new PdlPersonValideringException("Ingen navn på bruker"));
     }
 
