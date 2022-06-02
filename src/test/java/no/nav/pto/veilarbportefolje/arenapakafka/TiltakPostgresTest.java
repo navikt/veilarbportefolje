@@ -93,11 +93,8 @@ public class TiltakPostgresTest {
         assertThat(postgresAktivitet.getTiltak().contains("T123")).isTrue();
         assertThat(postgresAktivitet.getAktiviteter().contains(AktivitetsType.tiltak.name())).isTrue();
 
-        assertThat(ZonedDateTime.parse(postgresAktivitet.getNyesteUtlopteAktivitet()).toLocalDate())
-                .isEqualTo(LocalDate.of(1990,1,1));
-        assertThat(ZonedDateTime.parse(postgresAktivitet.getForrigeAktivitetStart()).toLocalDate())
-                .isEqualTo(LocalDate.of(1988, 12, 31));
-
+        assertThat(postgresAktivitet.getNyesteUtlopteAktivitet().substring(0, 10)).isEqualTo("1990-01-01");
+        assertThat(postgresAktivitet.getForrigeAktivitetStart().substring(0, 10)).isEqualTo("1988-12-31");
         assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato()).isEqualTo(FAR_IN_THE_FUTURE_DATE);
         assertThat(postgresAktivitet.getNesteAktivitetStart()).isNull();
         assertThat(postgresAktivitet.getAktivitetStart()).isNull();
