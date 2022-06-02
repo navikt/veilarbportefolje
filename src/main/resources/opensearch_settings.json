@@ -65,7 +65,13 @@
       "vedtak_status": {
         "type": "keyword"
       },
+      "utkast_14a_status": {
+        "type": "keyword"
+      },
       "ansvarlig_veileder_for_vedtak": {
+        "type": "keyword"
+      },
+      "utkast_14a_ansvarlig_veileder": {
         "type": "keyword"
       },
       "arbeidsliste_tittel_sortering": {
