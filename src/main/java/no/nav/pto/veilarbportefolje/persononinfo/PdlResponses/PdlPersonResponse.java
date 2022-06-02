@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.persononinfo.PdlResponses;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -64,6 +65,23 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Metadata {
             private boolean historisk;
+            private PdlMaster master;
+        }
+    }
+
+    // NB: java "ordinal" (deklarasjons posisjon) er tatt i bruk for kilde prioritering
+    public enum PdlMaster {
+        PDL,
+        FREG,
+        UVIST;
+
+        @JsonCreator
+        public static PdlMaster fromString(String string) {
+            try {
+                return PdlMaster.valueOf(string);
+            } catch (IllegalArgumentException e) {
+                return UVIST;
+            }
         }
     }
 }

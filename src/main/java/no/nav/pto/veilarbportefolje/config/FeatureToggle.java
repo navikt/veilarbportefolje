@@ -18,8 +18,6 @@ public class FeatureToggle {
     public static final String PDL_BRUKERDATA = "veilarbportefolje.Pdl_brukerdata";
     public static final String PDL_BRUKERDATA_BACKUP = "veilarbportefolje.Pdl_brukerdata_backup";
 
-    public static final String PDL_BRUKERDATA_TOPIC_FOR_IDENTER = "veilarbportefolje.Pdl_brukerdata_topic_for_identer";
-
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
@@ -38,9 +36,5 @@ public class FeatureToggle {
 
     public static boolean brukArenaSomBackup(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.PDL_BRUKERDATA_BACKUP);
-    }
-
-    public static boolean brukBrukerDataTopicForIdenter(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.PDL_BRUKERDATA_TOPIC_FOR_IDENTER);
     }
 }

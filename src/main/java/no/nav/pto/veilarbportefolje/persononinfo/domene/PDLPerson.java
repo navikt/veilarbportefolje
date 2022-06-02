@@ -7,6 +7,8 @@ import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
 
 @Data
 @Slf4j
@@ -21,24 +23,30 @@ public class PDLPerson {
 
     public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
         PDLPerson person = new PDLPerson();
-        PdlPersonResponse.PdlPersonResponseData.Navn navn = kontrollerResponseOgHentNavn(response);
-        person.setFornavn(navn.getFornavn());
-        person.setEtternavn(navn.getEtternavn());
-        person.setMellomnavn(navn.getMellomnavn());
-        person.setErDoed(erDoed(response));
-        person.setFoedsel(kontrollerOgHentFodsel(response));
-        person.setKjonn(kontrollerResponseOgHentKjonn(response));
+        PdlPersonResponse.PdlPersonResponseData.Navn navn = kontrollerResponseOgHentNavn(response.getNavn());
 
-        return person;
+        return person.setFornavn(navn.getFornavn())
+                .setEtternavn(navn.getEtternavn())
+                .setMellomnavn(navn.getMellomnavn())
+                .setErDoed(erDoed(response.getDoedsfall()))
+                .setFoedsel(kontrollerOgHentFodsel(response.getFoedsel()))
+                .setKjonn(kontrollerResponseOgHentKjonn(response.getKjoenn()));
     }
 
-    private static boolean erDoed(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
-        return !response.getDoedsfall().isEmpty();
+    public static PdlPersonResponse.PdlPersonResponseData.Navn kontrollerResponseOgHentNavn(List<PdlPersonResponse.PdlPersonResponseData.Navn> response) {
+        return response
+                .stream()
+                .filter(navn -> !navn.getMetadata().isHistorisk())
+                .min(Comparator.comparing(n -> n.getMetadata().getMaster().ordinal()))
+                .orElseThrow(() -> new PdlPersonValideringException("Ingen navn på bruker"));
     }
 
-    private static LocalDate kontrollerOgHentFodsel(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
-        var fodselsListe = response.getFoedsel()
-                .stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
+    private static boolean erDoed(List<PdlPersonResponse.PdlPersonResponseData.Doedsfall> response) {
+        return !response.isEmpty();
+    }
+
+    private static LocalDate kontrollerOgHentFodsel(List<PdlPersonResponse.PdlPersonResponseData.Foedsel> response) {
+        var fodselsListe = response.stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
         if (fodselsListe.size() > 1) {
             throw new PdlPersonValideringException("Støtte for flere registrerte fødseler er ikke implentert");
         }
@@ -48,13 +56,12 @@ public class PDLPerson {
                 .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen registrert fødsel er ikke implentert"));
     }
 
-    private static Kjonn kontrollerResponseOgHentKjonn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
-        var kjonnListe = response.getKjoenn()
-                .stream().filter(kjoenn -> !kjoenn.getMetadata().isHistorisk()).toList();
+    private static Kjonn kontrollerResponseOgHentKjonn(List<PdlPersonResponse.PdlPersonResponseData.Kjoenn> response) {
+        var kjonnListe = response.stream().filter(kjoenn -> !kjoenn.getMetadata().isHistorisk()).toList();
         if (kjonnListe.size() > 1) {
             throw new PdlPersonValideringException("Støtte for flere kjønn er ikke implentert");
         }
-        var kjonn = kjonnListe.stream().findFirst()
+        var kjonn = kjonnListe.stream().findAny()
                 .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen kjønn er ikke implentert"))
                 .getKjoenn();
 
@@ -65,15 +72,5 @@ public class PDLPerson {
         }
         log.error("Ikke implementert støtte for kjønn: {} ", kjonn);
         throw new PdlPersonValideringException("Fant kjønn som ikke er støttet");
-    }
-
-    private static PdlPersonResponse.PdlPersonResponseData.Navn kontrollerResponseOgHentNavn(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
-        var navnListe = response.getNavn()
-                .stream().filter(navn -> !navn.getMetadata().isHistorisk()).toList();
-        if (navnListe.size() > 1) {
-            throw new PdlPersonValideringException("Flere enn en aktivt navn");
-        }
-        return navnListe.stream().findFirst()
-                .orElseThrow(() -> new PdlPersonValideringException("Ingen navn på bruker"));
     }
 }

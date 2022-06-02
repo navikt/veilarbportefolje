@@ -4,24 +4,29 @@ query($ident: ID!) {
             fornavn
             mellomnavn
             etternavn
-      		metadata {
-                historisk
+            metadata {
+                ...metadataDetails
             }
         }
         foedsel {
             foedselsdato
-      		metadata {
-                historisk
+            metadata {
+                ...metadataDetails
             }
         }
         kjoenn {
             kjoenn
-      		metadata {
-                historisk
+            metadata {
+                ...metadataDetails
             }
         }
         doedsfall {
             doedsdato
         }
     }
+}
+
+fragment metadataDetails on Metadata {
+    master
+    historisk
 }
