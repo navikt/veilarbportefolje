@@ -14,9 +14,9 @@ public class PostgresTable {
         public static final String MANUELL = "MANUELL";
         public static final String VENTER_PA_BRUKER = "VENTER_PA_BRUKER";
         public static final String VENTER_PA_NAV = "VENTER_PA_NAV";
-        public static final String VEDTAKSTATUS = "VEDTAKSTATUS";
-        public static final String VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN = "VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN";
-        public static final String VEDTAKSTATUS_ENDRET_TIDSPUNKT = "VEDTAKSTATUS_ENDRET_TIDSPUNKT";
+        public static final String UTKAST_14A_STATUS = "VEDTAKSTATUS";
+        public static final String UTKAST_14A_ANSVARLIG_VEILDERNAVN = "VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN";
+        public static final String UTKAST_14A_ENDRET_TIDSPUNKT = "VEDTAKSTATUS_ENDRET_TIDSPUNKT";
         public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
         public static final String HAR_DELT_CV = "HAR_DELT_CV";
         public static final String CV_EKSISTERER = "CV_EKSISTERER";
@@ -52,41 +52,6 @@ public class PostgresTable {
         public static final String ER_DOED = "ER_DOED";
 
         public static final String ER_SKJERMET = "ER_SKJERMET";
-    }
-    public static final class Aktorid_indeksert_data {
-        public static final String TABLE_NAME = "aktorid_indeksert_data";
-
-        public static final String AKTOERID = "AKTOERID";
-        public static final String OPPFOLGING = "OPPFOLGING";
-        public static final String STARTDATO = "STARTDATO";
-        public static final String NY_FOR_VEILEDER = "NY_FOR_VEILEDER";
-        public static final String VEILEDERID = "VEILEDERID";
-        public static final String MANUELL = "MANUELL";
-        public static final String VENTER_PA_BRUKER = "VENTER_PA_BRUKER";
-        public static final String VENTER_PA_NAV = "VENTER_PA_NAV";
-        public static final String VEDTAKSTATUS = "VEDTAKSTATUS";
-        public static final String VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN = "VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN";
-        public static final String VEDTAKSTATUS_ENDRET_TIDSPUNKT = "VEDTAKSTATUS_ENDRET_TIDSPUNKT";
-        public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
-        public static final String HAR_DELT_CV = "HAR_DELT_CV";
-        public static final String CV_EKSISTERER = "CV_EKSISTERER";
-
-        public static final String ARB_SIST_ENDRET_AV_VEILEDERIDENT = "ARB_SIST_ENDRET_AV_VEILEDERIDENT";
-        public static final String ARB_ENDRINGSTIDSPUNKT = "ARB_ENDRINGSTIDSPUNKT";
-        public static final String ARB_FRIST = "ARB_FRIST";
-        public static final String ARB_KATEGORI = "ARB_KATEGORI";
-        public static final String ARB_OVERSKRIFT = "ARB_OVERSKRIFT";
-        public static final String BRUKERS_SITUASJON = "BRUKERS_SITUASJON";
-        public static final String UTDANNING = "UTDANNING";
-        public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
-        public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
-
-        public static final String YTELSE = "YTELSE";
-        public static final String AAPMAXTIDUKE = "AAPMAXTIDUKE";
-        public static final String AAPUNNTAKDAGERIGJEN = "AAPUNNTAKDAGERIGJEN";
-        public static final String DAGPUTLOPUKE = "DAGPUTLOPUKE";
-        public static final String PERMUTLOPUKE = "PERMUTLOPUKE";
-        public static final String YTELSE_UTLOPSDATO = "YTELSE_UTLOPSDATO";
     }
 
     public static final class OPPFOLGING_DATA {
@@ -138,12 +103,12 @@ public class PostgresTable {
         public static final String NAV_KONTOR_FOR_ARBEIDSLISTE = "NAV_KONTOR_FOR_ARBEIDSLISTE";
     }
 
-    public static final class VEDTAKSTATUS {
-        public static final String TABLE_NAME = "VEDTAKSTATUS";
+    public static final class UTKAST_14A_STATUS {
+        public static final String TABLE_NAME = "UTKAST_14A_STATUS";
 
         public static final String AKTOERID = "AKTOERID";
-        public static final String VEDTAKID = "VEDTAKID";
-        public static final String VEDTAKSTATUS = "VEDTAKSTATUS";
+        public static final String ID = "VEDTAKID";
+        public static final String STATUS = "VEDTAKSTATUS";
         public static final String INNSATSGRUPPE = "INNSATSGRUPPE";
         public static final String HOVEDMAL = "HOVEDMAL";
         public static final String ANSVARLIG_VEILDERIDENT = "ANSVARLIG_VEILDERIDENT";

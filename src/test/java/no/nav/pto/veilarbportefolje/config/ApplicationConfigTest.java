@@ -64,7 +64,7 @@ import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
 import org.opensearch.client.RestHighLevelClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -226,8 +226,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public VedtakStatusRepositoryV2 vedtakStatusRepositoryV2() {
-        return mock(VedtakStatusRepositoryV2.class);
+    public Utkast14aStatusRepository vedtakStatusRepositoryV2() {
+        return mock(Utkast14aStatusRepository.class);
     }
 
     @Bean

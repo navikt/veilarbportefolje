@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 @Data
 @Accessors(chain = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class KafkaVedtakStatusEndring {
+public class Kafka14aStatusendring {
 
-    public enum VedtakStatusEndring {
+    public enum Status {
         UTKAST_OPPRETTET,
         UTKAST_SLETTET,
         VEDTAK_SENDT,
@@ -40,7 +40,7 @@ public class KafkaVedtakStatusEndring {
 
     long vedtakId;
     String aktorId;
-    VedtakStatusEndring vedtakStatusEndring;
+    Status vedtakStatusEndring;
     LocalDateTime timestamp;
     Innsatsgruppe innsatsgruppe;
     Hovedmal hovedmal;
@@ -48,8 +48,8 @@ public class KafkaVedtakStatusEndring {
     String veilederNavn;
 
     //DENNE TRENGER VI FOR ATT SORETINGREKKEFOLGEN SKA BLI RIKTIG
-    public static String vedtakStatusTilTekst(VedtakStatusEndring vedtakStatusEndring) {
-        return switch (vedtakStatusEndring) {
+    public static String statusTilTekst(Status status) {
+        return switch (status) {
             case UTKAST_OPPRETTET, BESLUTTER_PROSESS_AVBRUTT -> "Utkast";
             case BESLUTTER_PROSESS_STARTET -> "Trenger kvalitetssikring";
             case BLI_BESLUTTER, KLAR_TIL_BESLUTTER -> "Venter på tilbakemelding";
