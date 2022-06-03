@@ -9,6 +9,7 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
+import no.nav.common.kafka.consumer.feilhandtering.backoff.LinearBackoffStrategy;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
@@ -408,6 +409,7 @@ public class KafkaConfigCommon {
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(Stream.concat(topicConfigsAiven.stream(), topicConfigsOnPrem.stream()).collect(Collectors.toList())))
+                .withBackoffStrategy(new LinearBackoffStrategy(0, 2 * 60 * 60, 144))
                 .build();
     }
 
