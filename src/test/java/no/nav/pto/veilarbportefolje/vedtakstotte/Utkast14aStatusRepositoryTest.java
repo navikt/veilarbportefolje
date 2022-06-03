@@ -90,7 +90,7 @@ public class Utkast14aStatusRepositoryTest {
     public void skallOppdatereVedtak() {
         insertVedtakIDB();
 
-        LocalDateTime time = LocalDateTime.now();
+        LocalDateTime time = LocalDateTime.now().withNano(0);
         Kafka14aStatusendring vedtakStatusEndring = new Kafka14aStatusendring()
                 .setVedtakStatusEndring(Kafka14aStatusendring.Status.KLAR_TIL_BESLUTTER)
                 .setHovedmal(Kafka14aStatusendring.Hovedmal.SKAFFE_ARBEID)
@@ -113,7 +113,7 @@ public class Utkast14aStatusRepositoryTest {
 
 
     private void insertVedtakIDB() {
-        LocalDateTime time = LocalDateTime.now();
+        LocalDateTime time = LocalDateTime.now().withNano(0);
         Kafka14aStatusendring vedtakStatusEndring = new Kafka14aStatusendring()
                 .setVedtakStatusEndring(Kafka14aStatusendring.Status.UTKAST_OPPRETTET)
                 .setTimestamp(time)
