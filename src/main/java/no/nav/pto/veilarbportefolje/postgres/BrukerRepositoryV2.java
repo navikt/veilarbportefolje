@@ -94,7 +94,7 @@ public class BrukerRepositoryV2 {
         String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
 
         String fnr = rs.getString(FODSELSNR);
-        String vedtakstatus = rs.getString(UTKAST_14A_STATUS);
+        String utkast14aStatus = rs.getString(UTKAST_14A_STATUS);
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setFnr(fnr)
                 .setAktoer_id(rs.getString(AKTOERID))
@@ -113,12 +113,12 @@ public class BrukerRepositoryV2 {
                 .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp(VENTER_PA_BRUKER)))
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp(VENTER_PA_NAV)))
                 .setVedtak_status(
-                        Optional.ofNullable(vedtakstatus)
+                        Optional.ofNullable(utkast14aStatus)
                                 .map(Kafka14aStatusendring.Status::valueOf)
                                 .map(Kafka14aStatusendring::statusTilTekst)
                                 .orElse(null)
                 )
-                .setUtkast_14a_status(Optional.ofNullable(vedtakstatus)
+                .setUtkast_14a_status(Optional.ofNullable(utkast14aStatus)
                         .map(Kafka14aStatusendring.Status::valueOf)
                         .map(Kafka14aStatusendring::statusTilTekst)
                         .orElse(null))
@@ -185,7 +185,7 @@ public class BrukerRepositoryV2 {
                 .setKvalifiseringsgruppekode(kvalifiseringsgruppekode)
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
-                .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus));
+                .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, utkast14aStatus));
     }
 
     @SneakyThrows
