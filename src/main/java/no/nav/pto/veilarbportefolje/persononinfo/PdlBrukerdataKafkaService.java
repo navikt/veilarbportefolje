@@ -68,7 +68,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
             pdlPersonRepository.upsertPerson(aktivFnr, person);
         } catch (PdlPersonValideringException e) {
             if(isDevelopment().orElse(false)){
-                log.info("Ignorerer dårlig datakvalitet i dev, bruker: {}", aktivAktorId);
+                log.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivAktorId), e);
                 return;
             }
             log.warn(String.format("Fikk pdl validerings error på aktor: %s, prøver å laste inn data på REST", aktivAktorId), e);
