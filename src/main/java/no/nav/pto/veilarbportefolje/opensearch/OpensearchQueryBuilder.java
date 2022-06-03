@@ -201,6 +201,7 @@ public class OpensearchQueryBuilder {
             case "arbeidslistefrist" -> searchSourceBuilder.sort("arbeidsliste_frist", order);
             case "aaprettighetsperiode" -> sorterAapRettighetsPeriode(searchSourceBuilder, order);
             case "vedtakstatus" -> searchSourceBuilder.sort("vedtak_status", order);
+            case "utkast_14a_status" -> searchSourceBuilder.sort("utkast_14a_status", order);
             case "arbeidslistekategori" -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
             case "siste_endring_tidspunkt" -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
             case "arbeidsliste_overskrift" -> sorterArbeidslisteOverskrift(searchSourceBuilder, order);
