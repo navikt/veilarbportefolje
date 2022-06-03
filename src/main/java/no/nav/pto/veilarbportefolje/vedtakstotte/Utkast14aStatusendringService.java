@@ -33,7 +33,7 @@ public class Utkast14aStatusendringService extends KafkaCommonConsumerService<Ka
 
     private void opprettUtkast(Kafka14aStatusendring melding) {
         utkast14aStatusRepository.upsert(melding);
-        log.info("Opprettet/oppdatert vedtaksutkast med ID: {} for bruker: {}", melding.getVedtakId(), melding.aktorId);
+        log.info("Opprettet/oppdatert utkast 14a status med ID: {} for bruker: {}", melding.getVedtakId(), melding.aktorId);
     }
 
     private void oppdaterAnsvarligVeileder(Kafka14aStatusendring melding) {

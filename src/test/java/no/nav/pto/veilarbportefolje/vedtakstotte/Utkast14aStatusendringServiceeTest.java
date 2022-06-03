@@ -14,10 +14,10 @@ import static no.nav.common.json.JsonUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class VedtakServiceTest {
+public class Utkast14aStatusendringServiceeTest {
 
     private Utkast14aStatusRepository vedtakStatusRepository;
-    private Utkast14aStatusendringService vedtakService;
+    private Utkast14aStatusendringService utkast14aStatusendringService;
     private static final String AKTORID = "123456789";
     private static final long VEDTAKID = 1;
     private static final String VEILEDER_IDENT = "Z1234";
@@ -38,13 +38,13 @@ public class VedtakServiceTest {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
         this.vedtakStatusRepository = new Utkast14aStatusRepository(db);
         OpensearchIndexer opensearchIndexer = mock(OpensearchIndexer.class);
-        this.vedtakService = new Utkast14aStatusendringService(vedtakStatusRepository, opensearchIndexer);
+        this.utkast14aStatusendringService = new Utkast14aStatusendringService(vedtakStatusRepository, opensearchIndexer);
         vedtakStatusRepository.slettUtkastForBruker(AKTORID);
     }
 
     @Test
     public void skallSetteInUtkast() {
-        vedtakService.behandleKafkaMeldingLogikk(vedtakStatusEndring);
+        utkast14aStatusendringService.behandleKafkaMeldingLogikk(vedtakStatusEndring);
         Optional<Kafka14aStatusendring> endringer = vedtakStatusRepository.hentStatusEndringForBruker(AKTORID);
         assertThat(endringer.isPresent()).isTrue();
         assertThat(endringer.get()).isEqualTo(vedtakStatusEndring);
@@ -52,7 +52,7 @@ public class VedtakServiceTest {
 
     @Test
     public void skallOppdatereUtkast_sendtutkast() {
-        vedtakService.behandleKafkaMeldingLogikk(vedtakStatusEndring);
+        utkast14aStatusendringService.behandleKafkaMeldingLogikk(vedtakStatusEndring);
         LocalDateTime time = DateUtils.now().toLocalDateTime();
         Kafka14aStatusendring kafkaVedtakSendtTilBeslutter = new Kafka14aStatusendring()
                 .setVedtakStatusEndring(Kafka14aStatusendring.Status.VEDTAK_SENDT)
@@ -62,7 +62,7 @@ public class VedtakServiceTest {
                 .setHovedmal(Kafka14aStatusendring.Hovedmal.BEHOLDE_ARBEID)
                 .setInnsatsgruppe(Kafka14aStatusendring.Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS);
 
-        vedtakService.behandleKafkaMeldingLogikk(kafkaVedtakSendtTilBeslutter);
+        utkast14aStatusendringService.behandleKafkaMeldingLogikk(kafkaVedtakSendtTilBeslutter);
 
         Optional<Kafka14aStatusendring> endringer = vedtakStatusRepository.hentStatusEndringForBruker(AKTORID);
         assertThat(endringer.isEmpty()).isTrue();
@@ -86,7 +86,7 @@ public class VedtakServiceTest {
                 .setHovedmal(Kafka14aStatusendring.Hovedmal.SKAFFE_ARBEID)
                 .setInnsatsgruppe(Kafka14aStatusendring.Innsatsgruppe.VARIG_TILPASSET_INNSATS);
 
-        vedtakService.behandleKafkaMeldingLogikk(kafkaVedtakSendtTilBruker);
+        utkast14aStatusendringService.behandleKafkaMeldingLogikk(kafkaVedtakSendtTilBruker);
 
         Optional<Kafka14aStatusendring> endringer = vedtakStatusRepository.hentStatusEndringForBruker(AKTORID);
         assertThat(endringer.isEmpty()).isTrue();
