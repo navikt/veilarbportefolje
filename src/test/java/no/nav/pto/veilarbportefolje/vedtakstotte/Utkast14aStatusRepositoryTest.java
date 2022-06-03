@@ -35,7 +35,7 @@ public class Utkast14aStatusRepositoryTest {
 
     @Test
     public void skallOppretteVedtak() {
-        LocalDateTime time = LocalDateTime.now();
+        LocalDateTime time = LocalDateTime.now().withNano(0);
         Kafka14aStatusendring vedtakStatusEndring = new Kafka14aStatusendring()
                 .setVedtakStatusEndring(Kafka14aStatusendring.Status.KLAR_TIL_BESLUTTER)
                 .setHovedmal(Kafka14aStatusendring.Hovedmal.SKAFFE_ARBEID)
