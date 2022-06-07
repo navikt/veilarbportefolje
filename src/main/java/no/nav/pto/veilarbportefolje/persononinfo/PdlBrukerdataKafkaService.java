@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivAktor;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 
@@ -66,6 +67,10 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
             PDLPerson person = PDLPerson.genererFraApiRespons(personFraKafka);
             pdlPersonRepository.upsertPerson(aktivFnr, person);
         } catch (PdlPersonValideringException e) {
+            if(isDevelopment().orElse(false)){
+                log.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivAktorId), e);
+                return;
+            }
             log.warn(String.format("Fikk pdl validerings error på aktor: %s, prøver å laste inn data på REST", aktivAktorId), e);
             pdlService.hentOgLagreBrukerData(aktivFnr);
         }

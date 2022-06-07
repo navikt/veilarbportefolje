@@ -9,6 +9,7 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
+import no.nav.common.kafka.consumer.feilhandtering.backoff.LinearBackoffStrategy;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
@@ -53,8 +54,8 @@ import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
-import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusendringService;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.context.annotation.Configuration;
@@ -123,7 +124,7 @@ public class KafkaConfigCommon {
     public KafkaConfigCommon(CVService cvService,
                              SistLestService sistLestService, RegistreringService registreringService,
                              ProfileringService profileringService, AktivitetService aktivitetService,
-                             VedtakService vedtakService, DialogService dialogService, ManuellStatusService manuellStatusService,
+                             Utkast14aStatusendringService vedtakService, DialogService dialogService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
                              MalService malService, OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
@@ -249,14 +250,14 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(KafkaAktivitetMelding.class),
                                         aktivitetService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, KafkaVedtakStatusEndring>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, Kafka14aStatusendring>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.VEDTAK_STATUS_ENDRING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(KafkaVedtakStatusEndring.class),
+                                        Deserializers.jsonDeserializer(Kafka14aStatusendring.class),
                                         vedtakService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
@@ -408,6 +409,7 @@ public class KafkaConfigCommon {
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(Stream.concat(topicConfigsAiven.stream(), topicConfigsOnPrem.stream()).collect(Collectors.toList())))
+                .withBackoffStrategy(new LinearBackoffStrategy(0, 2 * 60 * 60, 144))
                 .build();
     }
 

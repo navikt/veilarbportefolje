@@ -25,11 +25,11 @@ public class OppfolgingUtils {
         return "IARBS".equals(formidlingsgruppekode) && !OPPFOLGINGKODER.contains(kvalifiseringsgruppekode);
     }
 
-    public static boolean trengerRevurderingVedtakstotte (String formidlingsgruppekode, String kvalifiseringsgruppekode, String vedtakStatus) {
+    public static boolean trengerRevurderingVedtakstotte (String formidlingsgruppekode, String kvalifiseringsgruppekode, String utkast14aStatus) {
         if ("ISERV".equals(formidlingsgruppekode)) {
             return false;
         }
-        return INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus != null;
+        return INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && utkast14aStatus != null;
     }
 
     public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode, String profileringsResultat, boolean erVedtakstottePilotPa) {
