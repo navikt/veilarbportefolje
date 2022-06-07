@@ -73,11 +73,8 @@ public class Bruker {
     LocalDateTime alleMoterStartTid;
     LocalDateTime alleMoterSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
-    String vedtakStatus; // TODO deprecated, bruk den under:
     String utkast14aStatus;
-    String ansvarligVeilederForVedtak; // TODO deprecated, bruk den under:
     String utkast14aAnsvarligVeileder;
-    LocalDateTime vedtakStatusEndret; // TODO deprecated, bruk den under:
     LocalDateTime utkast14aStatusEndret;
     boolean trengerRevurdering;
     String sisteEndringKategori;
@@ -131,11 +128,8 @@ public class Bruker {
                 .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))
                 .setAlleMoterStartTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_startdato()))
                 .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
-                .setVedtakStatus(bruker.getVedtak_status())
                 .setUtkast14aStatus(bruker.getUtkast_14a_status())
-                .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
                 .setUtkast14aStatusEndret(toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()))
-                .setAnsvarligVeilederForVedtak(bruker.getAnsvarlig_veileder_for_vedtak())
                 .setUtkast14aAnsvarligVeileder(bruker.getUtkast_14a_ansvarlig_veileder())
                 .setOppfolgingStartdato(oppfolgingStartDato)
                 .setTrengerRevurdering(trengerRevurdering(bruker, erVedtakstottePilotPa))

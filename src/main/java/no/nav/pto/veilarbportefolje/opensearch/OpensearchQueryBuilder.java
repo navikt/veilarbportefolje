@@ -200,7 +200,6 @@ public class OpensearchQueryBuilder {
             case "utlopteaktiviteter" -> searchSourceBuilder.sort("nyesteutlopteaktivitet", order);
             case "arbeidslistefrist" -> searchSourceBuilder.sort("arbeidsliste_frist", order);
             case "aaprettighetsperiode" -> sorterAapRettighetsPeriode(searchSourceBuilder, order);
-            case "vedtakstatus" -> searchSourceBuilder.sort("vedtak_status", order);
             case "utkast_14a_status" -> searchSourceBuilder.sort("utkast_14a_status", order);
             case "arbeidslistekategori" -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
             case "siste_endring_tidspunkt" -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
@@ -322,7 +321,7 @@ public class OpensearchQueryBuilder {
                 break;
             case UNDER_VURDERING:
                 if (erVedtakstottePilotPa) {
-                    queryBuilder = existsQuery("vedtak_status");
+                    queryBuilder = existsQuery("utkast_14a_status");
                 } else {
                     throw new IllegalStateException();
                 }
@@ -346,7 +345,7 @@ public class OpensearchQueryBuilder {
         if (erVedtakstottePilotPa) {
             return boolQuery()
                     .must(matchQuery("trenger_vurdering", true))
-                    .mustNot(existsQuery("vedtak_status"));
+                    .mustNot(existsQuery("utkast_14a_status"));
         }
 
         return matchQuery("trenger_vurdering", true);
@@ -357,7 +356,7 @@ public class OpensearchQueryBuilder {
         if (erVedtakstottePilotPa) {
             return boolQuery()
                     .must(matchQuery("er_sykmeldt_med_arbeidsgiver", true))
-                    .mustNot(existsQuery("vedtak_status"));
+                    .mustNot(existsQuery("utkast_14a_status"));
         }
 
         return matchQuery("er_sykmeldt_med_arbeidsgiver", true);
@@ -490,7 +489,7 @@ public class OpensearchQueryBuilder {
                                 mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
                                 moterMedNavIdag(filtrereVeilederOgEnhet),
                                 alleMoterMedNavIdag(filtrereVeilederOgEnhet),
-                                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status"),
+                                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "utkast_14a_status"),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteBla", "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
@@ -504,7 +503,7 @@ public class OpensearchQueryBuilder {
                 .must(termQuery("trenger_vurdering", true));
 
         if (vedtakstottePilotErPa) {
-            boolQueryBuilder.mustNot(existsQuery("vedtak_status"));
+            boolQueryBuilder.mustNot(existsQuery("utkast_14a_status"));
         }
 
         return new FiltersAggregator.KeyedFilter("trengerVurdering", boolQueryBuilder);
@@ -516,7 +515,7 @@ public class OpensearchQueryBuilder {
                 .must(termQuery("er_sykmeldt_med_arbeidsgiver", true));
 
         if (vedtakstottePilotErPa) {
-            boolQueryBuilder.mustNot(existsQuery("vedtak_status"));
+            boolQueryBuilder.mustNot(existsQuery("utkast_14a_status"));
         }
 
         return new FiltersAggregator.KeyedFilter("erSykmeldtMedArbeidsgiver", boolQueryBuilder);
