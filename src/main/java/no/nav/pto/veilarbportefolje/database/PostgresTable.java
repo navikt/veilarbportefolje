@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.database;
 
 public class PostgresTable {
     public static final class OpensearchData {
-        public static final String TABLE_NAME = "aktorid_indeksert_data";
 
         public static final String FODSELSNR = "FNR";
 
