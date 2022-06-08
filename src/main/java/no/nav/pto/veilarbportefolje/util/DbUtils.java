@@ -29,6 +29,7 @@ public class DbUtils {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(dbUrl);
         config.setMaximumPoolSize(maximumPoolSize);
+        config.setConnectionTimeout(600000); // 10min
         config.setMinimumIdle(1);
         return config;
     }
