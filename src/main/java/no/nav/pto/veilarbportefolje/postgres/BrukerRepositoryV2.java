@@ -5,6 +5,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
@@ -25,6 +27,7 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBack
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.FodselsnummerUtils.lagFodselsdato;
@@ -49,7 +52,7 @@ public class BrukerRepositoryV2 {
                         select OD.AKTOERID, OD.OPPFOLGING, ob.*,
                                ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
-                               OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  D.VENTER_PA_BRUKER,  D.VENTER_PA_NAV,
+                               OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
                                BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
                                YB.DAGPUTLOPUKE, YB.PERMUTLOPUKE, YB.UTLOPSDATO as YTELSE_UTLOPSDATO,
@@ -65,7 +68,7 @@ public class BrukerRepositoryV2 {
                                  left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
                                  left join nom_skjerming ns on ns.fodselsnr = ai.fnr
                                  left join bruker_data bd on bd.freg_ident = ai.fnr
-                                 LEFT JOIN DIALOG D ON D.AKTOERID = ai.aktorid
+                                 LEFT JOIN DIALOG DI ON DI.AKTOERID = ai.aktorid
                                  LEFT JOIN UTKAST_14A_STATUS U on U.AKTOERID = ai.aktorid
                                  LEFT JOIN ARBEIDSLISTE ARB on ARB.AKTOERID = ai.aktorid
                                  LEFT JOIN BRUKER_PROFILERING BP ON BP.AKTOERID = ai.aktorid
@@ -77,12 +80,63 @@ public class BrukerRepositoryV2 {
                 (ResultSet rs) -> {
                     while (rs.next()) {
                         OppfolgingsBruker bruker = mapTilOppfolgingsBruker(rs, logdiff);
-                        if (bruker.getFnr() != null) {
-                            result.add(bruker);
+                        if (bruker.getFnr() == null) {
+                            break; // NB: Dolly brukere kan ha kun aktoerId, dette vil også gjelde personer med kun NPID
                         }
+                        if (bruker.getEnhet_id() == null) {
+                            leggTilHistoriskArenaDataHvisTilgjengelig(bruker);
+                        }
+                        result.add(bruker);
                     }
                     return result;
                 }, params);
+    }
+
+    private void leggTilHistoriskArenaDataHvisTilgjengelig(OppfolgingsBruker bruker) {
+        OppfolgingsbrukerEntity historiskRadFraArena = queryForObjectOrNull(
+                () -> db.queryForObject("""
+                        select * from oppfolgingsbruker_arena_v2 ob
+                        where ob.fodselsnr in
+                            (select * from bruker_identer where person = (select person where ident = ?))
+                        order by ob.endret_dato desc
+                        limit 1
+                        """, OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbruker, bruker.getFnr())
+        );
+        if (historiskRadFraArena == null) {
+            return;
+        }
+        log.info("Bruker historisk ident i arena for aktor: {}", bruker.getAktoer_id());
+        if (!brukPDLBrukerdata(unleashService)) {
+            bruker.setFornavn(historiskRadFraArena.fornavn());
+            bruker.setEtternavn(historiskRadFraArena.etternavn());
+            bruker.setFullt_navn(String.format("%s, %s", historiskRadFraArena.etternavn(), historiskRadFraArena.fornavn()));
+            bruker.setEr_doed(historiskRadFraArena.er_doed());
+        }
+        if (!brukNOMSkjerming(unleashService)) {
+            bruker.setEgen_ansatt(historiskRadFraArena.sperret_ansatt());
+        }
+        bruker.setFnr(historiskRadFraArena.fodselsnr()); // NB: bruker vil få historisk ident i oversikten. Ny ident vil ikke være støttet av andre systemer
+        bruker.setFormidlingsgruppekode(historiskRadFraArena.formidlingsgruppekode());
+        bruker.setIserv_fra_dato(toIsoUTC(historiskRadFraArena.iserv_fra_dato()));
+        bruker.setEnhet_id(historiskRadFraArena.nav_kontor());
+        bruker.setKvalifiseringsgruppekode(historiskRadFraArena.kvalifiseringsgruppekode());
+        bruker.setRettighetsgruppekode(historiskRadFraArena.rettighetsgruppekode());
+        bruker.setHovedmaalkode(historiskRadFraArena.hovedmaalkode());
+        bruker.setSikkerhetstiltak(historiskRadFraArena.sikkerhetstiltak_type_kode());
+        bruker.setDiskresjonskode(historiskRadFraArena.fr_kode());
+        bruker.setTrenger_vurdering(OppfolgingUtils.trengerVurdering(
+                historiskRadFraArena.formidlingsgruppekode(),
+                historiskRadFraArena.kvalifiseringsgruppekode())
+        );
+        bruker.setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(
+                historiskRadFraArena.formidlingsgruppekode(),
+                historiskRadFraArena.kvalifiseringsgruppekode()));
+        bruker.setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(
+                historiskRadFraArena.formidlingsgruppekode(),
+                historiskRadFraArena.kvalifiseringsgruppekode(),
+                bruker.getUtkast_14a_status()
+        ));
+
     }
 
     @SneakyThrows
