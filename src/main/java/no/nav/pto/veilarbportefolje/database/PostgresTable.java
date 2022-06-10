@@ -4,6 +4,7 @@ public class PostgresTable {
     public static final class OpensearchData {
 
         public static final String FODSELSNR = "FNR";
+        public static final String FODSELSNR_ARENA = "fodselsnr";
 
         public static final String AKTOERID = "AKTOERID";
         public static final String OPPFOLGING = "OPPFOLGING";

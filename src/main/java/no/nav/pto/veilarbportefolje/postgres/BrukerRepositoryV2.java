@@ -5,8 +5,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
@@ -22,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBackup;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
@@ -83,7 +82,7 @@ public class BrukerRepositoryV2 {
                         if (bruker.getFnr() == null) {
                             break; // NB: Dolly brukere kan ha kun aktoerId, dette vil også gjelde personer med kun NPID
                         }
-                        if (bruker.getEnhet_id() == null) {
+                        if (rs.getString(FODSELSNR_ARENA) == null) {
                             leggTilHistoriskArenaDataHvisTilgjengelig(bruker);
                         }
                         result.add(bruker);
@@ -94,8 +93,8 @@ public class BrukerRepositoryV2 {
 
     private void leggTilHistoriskArenaDataHvisTilgjengelig(OppfolgingsBruker bruker) {
         long startTime = System.currentTimeMillis();
-        OppfolgingsbrukerEntity historiskRadFraArena = queryForObjectOrNull(
-                () -> db.queryForObject("""
+        OppfolgingsBruker brukerMedHistoriskData = queryForObjectOrNull(() ->
+                db.queryForObject("""
                         select * from oppfolgingsbruker_arena_v2 ob
                         where ob.fodselsnr in
                             (select ident from bruker_identer where person =
@@ -103,44 +102,13 @@ public class BrukerRepositoryV2 {
                             )
                         order by ob.endret_dato desc
                         limit 1
-                        """, OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbruker, bruker.getFnr())
+                        """, (rs, i) -> flettInnOppfolgingsbruker(bruker, bruker.getUtkast_14a_status(), rs), bruker.getFnr())
         );
         long endTime = System.currentTimeMillis();
         log.info("Ytelse, søkte opp historisk arena data på: {}ms", endTime - startTime);
-        if (historiskRadFraArena == null) {
-            return;
+        if (brukerMedHistoriskData != null && brukerMedHistoriskData.getEnhet_id() != null) {
+            log.info("Bruker historisk ident i arena for aktor: {}", bruker.getAktoer_id());
         }
-
-        log.info("Bruker historisk ident i arena for aktor: {}", bruker.getAktoer_id());
-        if (!brukPDLBrukerdata(unleashService)) {
-            bruker.setFornavn(historiskRadFraArena.fornavn());
-            bruker.setEtternavn(historiskRadFraArena.etternavn());
-            bruker.setFullt_navn(String.format("%s, %s", historiskRadFraArena.etternavn(), historiskRadFraArena.fornavn()));
-            bruker.setEr_doed(historiskRadFraArena.er_doed());
-        }
-        if (!brukNOMSkjerming(unleashService)) {
-            bruker.setEgen_ansatt(historiskRadFraArena.sperret_ansatt());
-        }
-        bruker.setFnr(historiskRadFraArena.fodselsnr()); // NB: bruker vil få historisk ident i oversikten. Ny ident vil ikke være støttet av andre systemer
-        bruker.setFormidlingsgruppekode(historiskRadFraArena.formidlingsgruppekode());
-        bruker.setIserv_fra_dato(toIsoUTC(historiskRadFraArena.iserv_fra_dato()));
-        bruker.setEnhet_id(historiskRadFraArena.nav_kontor());
-        bruker.setKvalifiseringsgruppekode(historiskRadFraArena.kvalifiseringsgruppekode());
-        bruker.setRettighetsgruppekode(historiskRadFraArena.rettighetsgruppekode());
-        bruker.setHovedmaalkode(historiskRadFraArena.hovedmaalkode());
-        bruker.setSikkerhetstiltak(historiskRadFraArena.sikkerhetstiltak_type_kode());
-        bruker.setDiskresjonskode(historiskRadFraArena.fr_kode());
-        bruker.setTrenger_vurdering(OppfolgingUtils.trengerVurdering(
-                historiskRadFraArena.formidlingsgruppekode(),
-                historiskRadFraArena.kvalifiseringsgruppekode())
-        );
-        bruker.setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(
-                historiskRadFraArena.formidlingsgruppekode(),
-                historiskRadFraArena.kvalifiseringsgruppekode()));
-        bruker.setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(
-                historiskRadFraArena.formidlingsgruppekode(),
-                historiskRadFraArena.kvalifiseringsgruppekode(),
-                bruker.getUtkast_14a_status()));
     }
 
     @SneakyThrows
@@ -148,8 +116,6 @@ public class BrukerRepositoryV2 {
         if (logDiff) {
             logDiff(rs);
         }
-        String formidlingsgruppekode = rs.getString(FORMIDLINGSGRUPPEKODE);
-        String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
 
         String fnr = rs.getString(FODSELSNR);
         String utkast14aStatus = rs.getString(UTKAST_14A_STATUS);
@@ -217,22 +183,33 @@ public class BrukerRepositoryV2 {
         } else {
             bruker.setArbeidsliste_aktiv(false);
         }
+        // ARENA DB LENKE: skal fjernes på sikt
+        flettInnOppfolgingsbruker(bruker, utkast14aStatus, rs);
 
         Date foedsels_dato = rs.getDate("foedselsdato");
-        if (!brukPDLBrukerdata(unleashService)) {
-            flettInnDataFraArena(rs, bruker);
-        } else if (brukPDLBrukerdata(unleashService) && foedsels_dato != null) {
+        if (brukPDLBrukerdata(unleashService) && foedsels_dato != null) {
             flettInnDataFraPDL(rs, bruker);
         } else if (brukArenaSomBackup(unleashService)) {
-            log.info("Fant ikke brukerdat på aktor: {}, bruker arena som backup", bruker.getAktoer_id());
-            flettInnDataFraArena(rs, bruker);
-        } else {
-            log.error("Fant ikke brukerdat på aktor: {}, filterer derfor vekk bruker", bruker.getAktoer_id());
-            bruker.setFnr(null);
+            log.info("Fant ikke brukerdata på aktor: {}, bruker arena som backup", bruker.getAktoer_id());
+            flettInnPersonDataFraArena(rs, bruker);
         }
 
-        // ARENA DB LENKE: skal fjernes på sikt
+        return bruker;
+    }
+
+    @SneakyThrows
+    private OppfolgingsBruker flettInnOppfolgingsbruker(OppfolgingsBruker bruker, String utkast14aStatus, ResultSet rs) {
+        String fnr = rs.getString(FODSELSNR_ARENA);
+        if (!brukPDLBrukerdata(unleashService) && isProduction().orElse(false)) {
+            flettInnPersonDataFraArena(rs, bruker);
+        }
+        if (!brukNOMSkjerming(unleashService)) {
+            bruker.setEgen_ansatt(rs.getBoolean(SPERRET_ANSATT_ARENA));
+        }
+        String formidlingsgruppekode = rs.getString(FORMIDLINGSGRUPPEKODE);
+        String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
         return bruker
+                .setFnr(fnr)
                 .setEnhet_id(rs.getString(NAV_KONTOR))
                 .setIserv_fra_dato(toIsoUTC(rs.getTimestamp(ISERV_FRA_DATO)))
                 .setRettighetsgruppekode(rs.getString(RETTIGHETSGRUPPEKODE))
@@ -244,6 +221,21 @@ public class BrukerRepositoryV2 {
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, utkast14aStatus));
+    }
+
+    @SneakyThrows
+    private void flettInnPersonDataFraArena(ResultSet rs, OppfolgingsBruker bruker) {
+        String fnr = rs.getString(FODSELSNR_ARENA);
+        String fornavn = rs.getString(FORNAVN);
+        String etternavn = rs.getString(ETTERNAVN);
+        bruker
+                .setFornavn(fornavn)
+                .setEtternavn(etternavn)
+                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
+                .setEr_doed(rs.getBoolean(ER_DOED))
+                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
+                .setFodselsdato(lagFodselsdato(fnr))
+                .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
     }
 
     @SneakyThrows
@@ -259,21 +251,6 @@ public class BrukerRepositoryV2 {
                 .setFodselsdag_i_mnd(foedsels_dato.toLocalDate().getDayOfMonth())
                 .setFodselsdato(lagFodselsdato(foedsels_dato.toLocalDate()))
                 .setKjonn(rs.getString("kjoenn"));
-    }
-
-    @SneakyThrows
-    private void flettInnDataFraArena(ResultSet rs, OppfolgingsBruker bruker) {
-        String fnr = rs.getString(FODSELSNR);
-        String fornavn = rs.getString(FORNAVN);
-        String etternavn = rs.getString(ETTERNAVN);
-        bruker
-                .setFornavn(fornavn)
-                .setEtternavn(etternavn)
-                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
-                .setEr_doed(rs.getBoolean(ER_DOED))
-                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
-                .setFodselsdato(lagFodselsdato(fnr))
-                .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
     }
 
     @SneakyThrows
