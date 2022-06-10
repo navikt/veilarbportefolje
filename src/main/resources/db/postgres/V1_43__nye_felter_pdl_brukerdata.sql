@@ -7,8 +7,8 @@ ALTER TABLE BRUKER_DATA
 ALTER TABLE BRUKER_DATA
     ADD folkeregisterpersonstatus VARCHAR(30);
 ALTER TABLE BRUKER_DATA
-    ADD talespraaktolk VARCHAR(40);
+    ADD talespraaktolk VARCHAR(20);
 ALTER TABLE BRUKER_DATA
-    ADD tegnspraaktolk VARCHAR(40);
+    ADD tegnspraaktolk VARCHAR(20);
 ALTER TABLE BRUKER_DATA
     ADD landgruppe VARCHAR(10);
