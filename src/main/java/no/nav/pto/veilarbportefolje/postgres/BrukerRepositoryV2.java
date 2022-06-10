@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBackup;
@@ -157,11 +158,6 @@ public class BrukerRepositoryV2 {
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
                 .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)));
 
-        if (brukNOMSkjerming(unleashService)) {
-            bruker.setEgen_ansatt(rs.getBoolean(ER_SKJERMET));
-        } else {
-            bruker.setEgen_ansatt(rs.getBoolean(SPERRET_ANSATT_ARENA));
-        }
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));
         if (arbeidslisteTidspunkt != null) {
             bruker.setArbeidsliste_aktiv(true)
@@ -183,6 +179,7 @@ public class BrukerRepositoryV2 {
         } else {
             bruker.setArbeidsliste_aktiv(false);
         }
+
         // ARENA DB LENKE: skal fjernes på sikt
         flettInnOppfolgingsbruker(bruker, utkast14aStatus, rs);
 
@@ -192,6 +189,8 @@ public class BrukerRepositoryV2 {
         } else if (brukArenaSomBackup(unleashService)) {
             log.info("Fant ikke brukerdata på aktor: {}, bruker arena som backup", bruker.getAktoer_id());
             flettInnPersonDataFraArena(rs, bruker);
+        } else if (isDevelopment().orElse(false)) {
+            bruker.setFnr(null); // Midlertidig forsikring for at brukere i q1 aldri har ekte data. Fjernes sammen med toggles, og bruk av inner join for brukerdata
         }
 
         return bruker;
@@ -200,6 +199,9 @@ public class BrukerRepositoryV2 {
     @SneakyThrows
     private OppfolgingsBruker flettInnOppfolgingsbruker(OppfolgingsBruker bruker, String utkast14aStatus, ResultSet rs) {
         String fnr = rs.getString(FODSELSNR_ARENA);
+        if(fnr == null){
+            return bruker;
+        }
         if (!brukPDLBrukerdata(unleashService) && isProduction().orElse(false)) {
             flettInnPersonDataFraArena(rs, bruker);
         }
