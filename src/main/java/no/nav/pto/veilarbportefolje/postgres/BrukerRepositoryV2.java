@@ -93,6 +93,7 @@ public class BrukerRepositoryV2 {
     }
 
     private void leggTilHistoriskArenaDataHvisTilgjengelig(OppfolgingsBruker bruker) {
+        long startTime = System.currentTimeMillis();
         OppfolgingsbrukerEntity historiskRadFraArena = queryForObjectOrNull(
                 () -> db.queryForObject("""
                         select * from oppfolgingsbruker_arena_v2 ob
@@ -104,6 +105,8 @@ public class BrukerRepositoryV2 {
                         limit 1
                         """, OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbruker, bruker.getFnr())
         );
+        long endTime = System.currentTimeMillis();
+        log.info("Ytelse, søkte opp historisk arena data på: {}ms", endTime - startTime);
         if (historiskRadFraArena == null) {
             return;
         }
