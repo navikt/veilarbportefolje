@@ -97,7 +97,9 @@ public class BrukerRepositoryV2 {
                 () -> db.queryForObject("""
                         select * from oppfolgingsbruker_arena_v2 ob
                         where ob.fodselsnr in
-                            (select * from bruker_identer where person = (select person where ident = ?))
+                            (select ident from bruker_identer where person =
+                                (select person from bruker_identer where ident = ?)
+                            )
                         order by ob.endret_dato desc
                         limit 1
                         """, OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbruker, bruker.getFnr())
@@ -105,6 +107,7 @@ public class BrukerRepositoryV2 {
         if (historiskRadFraArena == null) {
             return;
         }
+
         log.info("Bruker historisk ident i arena for aktor: {}", bruker.getAktoer_id());
         if (!brukPDLBrukerdata(unleashService)) {
             bruker.setFornavn(historiskRadFraArena.fornavn());
@@ -134,9 +137,7 @@ public class BrukerRepositoryV2 {
         bruker.setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(
                 historiskRadFraArena.formidlingsgruppekode(),
                 historiskRadFraArena.kvalifiseringsgruppekode(),
-                bruker.getUtkast_14a_status()
-        ));
-
+                bruker.getUtkast_14a_status()));
     }
 
     @SneakyThrows
