@@ -70,6 +70,7 @@ public class OpensearchIndexer {
                 })
                 .forEach(bulk::add);
 
+        log.info("Bulk request til OpenSearch...");
         try {
             restHighLevelClient.bulk(bulk, RequestOptions.DEFAULT);
             log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
