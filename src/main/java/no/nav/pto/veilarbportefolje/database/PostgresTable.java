@@ -229,4 +229,13 @@ public class PostgresTable {
         public static final String SISTE_ENDRING_TIDSPUNKT = "SISTE_ENDRING_TIDSPUNKT";
         public static final String ER_SETT = "ER_SETT";
     }
+
+    public static final class BRUKER_STATSBORGERSKAP {
+        public static final String TABLE_NAME = "BRUKER_STATSBORGERSKAP";
+        public static final String FNR = "FREG_IDENT";
+        public static final String STATSBORGERSKAP = "STATSBORGERSKAP";
+
+        public static final String GYLDIG_FRA = "GYLDIG_FRA";
+        public static final String GYLDIG_TIL = "GYLDIG_TIL";
+    }
 }
