@@ -15,9 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
@@ -34,7 +32,7 @@ public class PdlServiceTest {
 
     public PdlServiceTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
-        pdlPersonRepository = new PdlPersonRepository(db);
+        pdlPersonRepository = new PdlPersonRepository(db, db);
     }
 
     @BeforeEach
@@ -62,7 +60,7 @@ public class PdlServiceTest {
 
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
-                new PdlPersonRepository(db),
+                new PdlPersonRepository(db, db),
                 new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM"))
         );
     }

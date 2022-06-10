@@ -23,9 +23,7 @@ import java.util.stream.Collectors;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBackup;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.*;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
@@ -53,6 +51,9 @@ public class BrukerRepositoryV2 {
                                ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
+                               bd.foedeland, bd.innflyttingTilNorgeFraLand, bd.angittFlyttedato, bd.folkeregisterpersonstatus,
+                               bd.talespraaktolk, bd.tegnspraaktolk, bd.landgruppe,
+                               OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  D.VENTER_PA_BRUKER,  D.VENTER_PA_NAV,
                                U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
                                BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
                                YB.DAGPUTLOPUKE, YB.PERMUTLOPUKE, YB.UTLOPSDATO as YTELSE_UTLOPSDATO,
@@ -245,7 +246,14 @@ public class BrukerRepositoryV2 {
                 .setEr_doed(rs.getBoolean("er_doed_pdl"))
                 .setFodselsdag_i_mnd(foedsels_dato.toLocalDate().getDayOfMonth())
                 .setFodselsdato(lagFodselsdato(foedsels_dato.toLocalDate()))
-                .setKjonn(rs.getString("kjoenn"));
+                .setFodselland(rs.getString("foedeland"))
+                .setKjonn(rs.getString("kjoenn"))
+                .setInnflyttingTilNorgeFraLand(rs.getString("innflyttingTilNorgeFraLand"))
+                .setAngittFlyttedato(rs.getString("angittFlyttedato"))
+                .setFolkeregisterpersonstatus(rs.getString("folkeregisterpersonstatus"))
+                .setTalespraaktolk(rs.getString("talespraaktolk"))
+                .setTegnspraaktolk(rs.getString("tegnspraaktolk"))
+                .setLandgruppe(rs.getString("landgruppe"));
     }
 
     @SneakyThrows

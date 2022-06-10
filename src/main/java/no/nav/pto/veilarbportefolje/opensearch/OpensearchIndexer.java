@@ -46,6 +46,7 @@ public class OpensearchIndexer {
         if (erUnderOppfolging(bruker)) {
             postgresOpensearchMapper.flettInnAktivitetsData(List.of(bruker));
             postgresOpensearchMapper.flettInnSisteEndringerData(List.of(bruker));
+            postgresOpensearchMapper.flettInnStatsborgerskapData(List.of(bruker));
 
             syncronIndekseringsRequest(bruker);
         } else {

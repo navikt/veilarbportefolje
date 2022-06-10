@@ -20,7 +20,6 @@
             "historisk": false
           }
         },
-
         {
           "fornavn": "TREIG",
           "mellomnavn": null,
@@ -34,6 +33,7 @@
       "foedsel": [
         {
           "foedselsdato": "1987-07-30",
+          "foedeland": "FJI",
           "metadata": {
             "master": "FREG",
             "historisk": false
@@ -49,7 +49,38 @@
           }
         }
       ],
-      "doedsfall": []
+      "doedsfall": [],
+      "statsborgerskap": [
+        {
+          "land": "ARM",
+          "gyldigFraOgMed": "1987-07-30",
+          "gyldigTilOgMed": null,
+          "metadata": {
+            "master": "FREG",
+            "historisk": false
+          }
+        }
+      ],
+      "innflyttingTilNorge": [
+        {
+          "fraflyttingsland": "FJI",
+          "metadata": {
+            "master": "FREG",
+            "historisk": false
+          }
+        }
+      ],
+      "folkeregisterpersonstatus": [
+        {
+          "status": "midlertidig",
+          "metadata": {
+            "master": "FREG",
+            "historisk": false
+          }
+        }
+      ],
+      "bostedsadresse": [],
+      "tilrettelagtKommunikasjon": []
     }
   }
 }
