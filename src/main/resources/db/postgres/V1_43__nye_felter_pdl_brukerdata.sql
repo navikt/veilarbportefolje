@@ -1,0 +1,14 @@
+ALTER TABLE BRUKER_DATA
+    ADD foedeland VARCHAR(10);
+ALTER TABLE BRUKER_DATA
+    ADD innflyttingTilNorgeFraLand VARCHAR(10);
+ALTER TABLE BRUKER_DATA
+    ADD angittFlyttedato DATE;
+ALTER TABLE BRUKER_DATA
+    ADD folkeregisterpersonstatus VARCHAR(30);
+ALTER TABLE BRUKER_DATA
+    ADD talespraaktolk VARCHAR(20);
+ALTER TABLE BRUKER_DATA
+    ADD tegnspraaktolk VARCHAR(20);
+ALTER TABLE BRUKER_DATA
+    ADD landgruppe VARCHAR(10);
