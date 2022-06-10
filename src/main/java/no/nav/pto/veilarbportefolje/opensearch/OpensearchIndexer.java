@@ -110,9 +110,7 @@ public class OpensearchIndexer {
     public void indekserBolk(List<AktorId> aktorIds) {
         validateBatchSize(aktorIds);
 
-        log.info("debug: antall brukere før henting i postgres: {}", aktorIds.size());
         List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
-        log.info("debug: antall brukere til indeksering: {}", brukere.size());
         postgresOpensearchMapper.flettInnAktivitetsData(brukere);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
         if(brukere.isEmpty()){

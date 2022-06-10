@@ -48,7 +48,6 @@ public class UtdanningsAktivitetService {
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
             aktivitetService.upsertOgIndekserUtdanningsAktivitet(melding);
         }
-        log.debug("Ferdig behandlet aktivitet: {}, pa aktor: {}, hendelse: {}", innhold.getAktivitetid(), aktorId, innhold.getHendelseId());
         arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
     }
 

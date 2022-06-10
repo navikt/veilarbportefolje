@@ -81,7 +81,6 @@ public class BrukerRepositoryV2 {
                     while (rs.next()) {
                         OppfolgingsBruker bruker = mapTilOppfolgingsBruker(rs, logdiff);
                         if (bruker.getFnr() == null) {
-                            log.info("debug ignorerer bruker");
                             continue; // NB: Dolly brukere kan ha kun aktoerId, dette vil også gjelde personer med kun NPID
                         }
                         if (rs.getString(FODSELSNR_ARENA) == null) {
@@ -186,17 +185,12 @@ public class BrukerRepositoryV2 {
 
         Date foedsels_dato = rs.getDate("foedselsdato");
         if (brukPDLBrukerdata(unleashService) && foedsels_dato != null) {
-            log.info("debug: fletter inn pdl data på: {}", bruker.getAktoer_id());
             flettInnDataFraPDL(rs, bruker);
         } else if (brukArenaSomBackup(unleashService)) {
-            log.info("Fant ikke brukerdata på aktor: {}, bruker arena som backup", bruker.getAktoer_id());
             flettInnPersonDataFraArena(rs, bruker);
         } else if (isDevelopment().orElse(false)) {
-            log.info("debug: Ignorerer bruker i test miljøet: {}", bruker.getAktoer_id());
             bruker.setFnr(null); // Midlertidig forsikring for at brukere i q1 aldri har ekte data. Fjernes sammen med toggles, og bruk av inner join for brukerdata
         }
-        log.info("debug: returnerer bruker: {}, enhet: {}", bruker.getAktoer_id(), bruker.getEnhet_id());
-
         return bruker;
     }
 
