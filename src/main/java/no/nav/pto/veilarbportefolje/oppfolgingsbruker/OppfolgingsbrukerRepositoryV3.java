@@ -61,7 +61,7 @@ public class OppfolgingsbrukerRepositoryV3 {
     public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(Fnr fnr) {
         String sql = "SELECT * FROM OPPFOLGINGSBRUKER_ARENA_V2 WHERE fodselsnr = ?";
         return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilOppfolgingsbruker, fnr.get()))
+                queryForObjectOrNull(() -> db.queryForObject(sql, OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbruker, fnr.get()))
         );
     }
 
@@ -108,7 +108,7 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     @SneakyThrows
-    private OppfolgingsbrukerEntity mapTilOppfolgingsbruker(ResultSet rs, int row) {
+    public static OppfolgingsbrukerEntity mapTilOppfolgingsbruker(ResultSet rs, int row) {
         if (rs == null || rs.getString(FODSELSNR) == null) {
             return null;
         }

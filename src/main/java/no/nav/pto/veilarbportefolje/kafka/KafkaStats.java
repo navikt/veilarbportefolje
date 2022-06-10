@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class KafkaStats implements MeterBinder {
+    @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate jdbcTemplate;
 
     @Override
