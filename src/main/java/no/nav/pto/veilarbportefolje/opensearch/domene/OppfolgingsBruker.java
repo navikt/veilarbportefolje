@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.opensearch.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Statsborgerskap;
 
 import java.util.List;
 import java.util.Map;
@@ -101,5 +100,5 @@ public class OppfolgingsBruker {
     String talespraaktolk;
     String tegnspraaktolk;
     String landgruppe;
-    List<Statsborgerskap> statsborgerskap;
+    List<String> statsborgerskap;
 }

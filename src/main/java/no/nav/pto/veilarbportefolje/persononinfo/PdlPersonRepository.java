@@ -110,24 +110,20 @@ public class PdlPersonRepository {
         ), fnr.get());
     }
 
-    public Map<Fnr, List<Statsborgerskap>> hentStatsborgerskap(List<Fnr> fnrs) {
+    public Map<Fnr, List<String>> hentStatsborgerskap(List<Fnr> fnrs) {
         String fnrsStr = fnrs.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
 
         String sql = """
-                SELECT FREG_IDENT, STATSBORGERSKAP, GYLDIG_FRA, GYLDIG_TIL FROM BRUKER_STATSBORGERSKAP WHERE FREG_IDENT = ANY (?::varchar[])
+                SELECT FREG_IDENT, STATSBORGERSKAP FROM BRUKER_STATSBORGERSKAP WHERE (GYLDIG_TIL IS NULL OR GYLDIG_TIL > NOW()) AND FREG_IDENT = ANY (?::varchar[])
                 """;
         return dbReadOnly.query(sql,
                 ps -> ps.setString(1, fnrsStr),
                 (ResultSet rs) -> {
-                    HashMap<Fnr, List<Statsborgerskap>> results = new HashMap<>();
+                    HashMap<Fnr, List<String>> results = new HashMap<>();
                     while (rs.next()) {
                         Fnr fnr = Fnr.of(rs.getString(BRUKER_STATSBORGERSKAP.FNR));
-                        List<Statsborgerskap> statsborgerskapForBruker = results.getOrDefault(fnr, new ArrayList<>());
-                        statsborgerskapForBruker.add(new Statsborgerskap(
-                                rs.getString(BRUKER_STATSBORGERSKAP.STATSBORGERSKAP),
-                                toLocalDateOrNull(rs.getString(BRUKER_STATSBORGERSKAP.GYLDIG_FRA)),
-                                toLocalDateOrNull(rs.getString(BRUKER_STATSBORGERSKAP.GYLDIG_TIL))
-                        ));
+                        List<String> statsborgerskapForBruker = results.getOrDefault(fnr, new ArrayList<>());
+                        statsborgerskapForBruker.add(rs.getString(BRUKER_STATSBORGERSKAP.STATSBORGERSKAP));
                         results.put(fnr, statsborgerskapForBruker);
                     }
                     return results;

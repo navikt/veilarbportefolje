@@ -7,7 +7,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -98,7 +97,7 @@ public class PostgresOpensearchMapper {
     public void flettInnStatsborgerskapData(List<OppfolgingsBruker> brukere) {
         if (brukPDLBrukerdata(unleashService)) {
             List<Fnr> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).map(Fnr::of).collect(Collectors.toList());
-            Map<Fnr, List<Statsborgerskap>> statsborgerskaps = pdlService.hentStatsborgerskap(fnrs);
+            Map<Fnr, List<String>> statsborgerskaps = pdlService.hentStatsborgerskap(fnrs);
             brukere.forEach(bruker -> {
                 bruker.setStatsborgerskap(statsborgerskaps.getOrDefault(Fnr.of(bruker.getFnr()), Collections.emptyList()));
             });

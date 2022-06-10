@@ -6,7 +6,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Statsborgerskap;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,7 +86,7 @@ public class PdlService {
                 .orElseThrow(() -> new IllegalStateException("Ingen aktiv fnr på bruker"));
     }
 
-    public Map<Fnr, List<Statsborgerskap>> hentStatsborgerskap(List<Fnr> fnrs) {
+    public Map<Fnr, List<String>> hentStatsborgerskap(List<Fnr> fnrs) {
         return pdlPersonRepository.hentStatsborgerskap(fnrs);
     }
 }
