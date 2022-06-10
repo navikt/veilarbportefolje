@@ -56,11 +56,13 @@ public class BrukerMappingAlarm implements MeterBinder {
 
     private int antallBrukereSomIkkeLiggerIDatabaseLenkenFraArena() {
         String sql = """
-                select bi.person from bruker_identer bi
-                 left join oppfolging_data od on od.aktoerid = bi.ident
-                 left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = bi.ident
-                 group by bi.person
-                 having count(ob.*) = 0 and count(od.*) > 0;
+                select count(*) from
+                    (select bi.person from bruker_identer bi
+                        left join oppfolging_data od on od.aktoerid = bi.ident
+                        left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = bi.ident
+                        group by bi.person
+                        having count(ob.*) = 0 and count(od.*) > 0
+                    ) as personer;
                 """;
         return Optional.ofNullable(
                 queryForObjectOrNull(
