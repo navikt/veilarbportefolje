@@ -161,15 +161,48 @@
       },
       "aktivitet_tiltak_utlopsdato": {
         "type": "date",
-        "copy_to": ["aktivitet_utlopsdatoer", "alle_aktiviteter_utlopsdatoer"]
+        "copy_to": [
+          "aktivitet_utlopsdatoer",
+          "alle_aktiviteter_utlopsdatoer"
+        ]
       },
       "aktivitet_utdanningaktivitet_utlopsdato": {
         "type": "date",
-        "copy_to": ["aktivitet_utlopsdatoer", "alle_aktiviteter_utlopsdatoer"]
+        "copy_to": [
+          "aktivitet_utlopsdatoer",
+          "alle_aktiviteter_utlopsdatoer"
+        ]
       },
       "aktivitet_gruppeaktivitet_utlopsdato": {
         "type": "date",
-        "copy_to": ["aktivitet_utlopsdatoer", "alle_aktiviteter_utlopsdatoer"]
+        "copy_to": [
+          "aktivitet_utlopsdatoer",
+          "alle_aktiviteter_utlopsdatoer"
+        ]
+      },
+      "foedeland": {
+        "type": "keyword"
+      },
+      "innflyttingTilNorgeFraLand": {
+        "type": "keyword"
+      },
+      "angittFlyttedato": {
+        "type": "date"
+      },
+      "folkeregisterpersonstatus": {
+        "type": "keyword"
+      },
+      "talespraaktolk": {
+        "type": "keyword"
+      },
+      "tegnspraaktolk": {
+        "type": "keyword"
+      },
+      "landgruppe": {
+        "type": "keyword"
+      },
+      "statsborgerskap": {
+        "type": "keyword"
       }
     }
   }
