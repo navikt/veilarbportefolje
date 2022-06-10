@@ -53,7 +53,7 @@ public class BrukerRepositoryV2 {
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                bd.foedeland, bd.innflyttingTilNorgeFraLand, bd.angittFlyttedato, bd.folkeregisterpersonstatus,
                                bd.talespraaktolk, bd.tegnspraaktolk, bd.landgruppe,
-                               OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  D.VENTER_PA_BRUKER,  D.VENTER_PA_NAV,
+                               OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
                                BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
                                YB.DAGPUTLOPUKE, YB.PERMUTLOPUKE, YB.UTLOPSDATO as YTELSE_UTLOPSDATO,
@@ -190,7 +190,7 @@ public class BrukerRepositoryV2 {
     @SneakyThrows
     private OppfolgingsBruker flettInnOppfolgingsbruker(OppfolgingsBruker bruker, String utkast14aStatus, ResultSet rs) {
         String fnr = rs.getString(FODSELSNR_ARENA);
-        if(fnr == null){
+        if (fnr == null) {
             return bruker;
         }
         if (!brukPDLBrukerdata(unleashService) && isProduction().orElse(false)) {

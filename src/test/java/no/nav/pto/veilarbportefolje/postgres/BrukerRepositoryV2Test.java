@@ -44,12 +44,12 @@ public class BrukerRepositoryV2Test {
         this.brukerRepositoryV2 = new BrukerRepositoryV2(db, unleashService);
         this.pdlIdentRepository = new PdlIdentRepository(db);
         this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
-        this.pdlPersonRepository = new PdlPersonRepository(db);
+        this.pdlPersonRepository = new PdlPersonRepository(db, db);
         this.oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
     }
 
     @Test
-    public void skalBrukeIdentenSomEksistererIArena(){
+    public void skalBrukeIdentenSomEksistererIArena() {
         Fnr fnr_1 = Fnr.of("1");
         Fnr fnr_2 = Fnr.of("2");
         Fnr fnr_ny = Fnr.of("3");
@@ -66,19 +66,19 @@ public class BrukerRepositoryV2Test {
 
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_1.get(), null, null,
-                         "første Melding", null,"0000", null, null,
+                        "første Melding", null, "0000", null, null,
                         null, null, null, false, false,
                         ZonedDateTime.now().minusDays(1)));
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_2.get(), null, null,
-                        "andre Melding", null,"0000", null, null,
+                        "andre Melding", null, "0000", null, null,
                         null, null, null, false, false,
                         ZonedDateTime.now()));
         List<OppfolgingsBruker> oppfolgingsBrukers_pre_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
 
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_ny.get(), null, null,
-                        "første Melding", null,"0001", null, null,
+                        "første Melding", null, "0001", null, null,
                         null, null, null, false, false,
                         ZonedDateTime.now()));
         List<OppfolgingsBruker> oppfolgingsBrukers_post_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
@@ -91,7 +91,6 @@ public class BrukerRepositoryV2Test {
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.get(0).getFnr()).isEqualTo(fnr_ny.get());
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.get(0).getEnhet_id()).isEqualTo("0001");
     }
-
 
 
 }
