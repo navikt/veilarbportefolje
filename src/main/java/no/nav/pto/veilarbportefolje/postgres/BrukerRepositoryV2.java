@@ -81,6 +81,7 @@ public class BrukerRepositoryV2 {
                     while (rs.next()) {
                         OppfolgingsBruker bruker = mapTilOppfolgingsBruker(rs, logdiff);
                         if (bruker.getFnr() == null) {
+                            log.info("debug ignorerer bruker");
                             break; // NB: Dolly brukere kan ha kun aktoerId, dette vil også gjelde personer med kun NPID
                         }
                         if (rs.getString(FODSELSNR_ARENA) == null) {
