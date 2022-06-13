@@ -79,11 +79,8 @@ public class OppfolgingsBruker {
     Set<String> aktiviteter = emptySet();
     Set<String> tiltak = emptySet();
     boolean har_veileder_fra_enhet;
-    String vedtak_status; // TODO deprecated, bruk den under:
     String utkast_14a_status;
-    String vedtak_status_endret; // TODO deprecated, bruk den under:
     String utkast_14a_status_endret;
-    String ansvarlig_veileder_for_vedtak; // TODO deprecated, bruk den under:
     String utkast_14a_ansvarlig_veileder;
     boolean trenger_revurdering;
     boolean er_sykmeldt_med_arbeidsgiver;
