@@ -1027,8 +1027,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setVedtak_status("Utkast")
-                .setAnsvarlig_veileder_for_vedtak("BVeileder");
+                .setUtkast_14a_status("Utkast")
+                .setUtkast_14a_ansvarlig_veileder("BVeileder");
 
         var brukerMedVedtak1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -1037,8 +1037,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setVedtak_status("Venter på tilbakemelding")
-                .setAnsvarlig_veileder_for_vedtak("CVeileder");
+                .setUtkast_14a_status("Venter på tilbakemelding")
+                .setUtkast_14a_ansvarlig_veileder("CVeileder");
 
         var brukerMedVedtak2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -1047,8 +1047,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setVedtak_status("Venter på tilbakemelding")
-                .setAnsvarlig_veileder_for_vedtak("AVeileder");
+                .setUtkast_14a_status("Venter på tilbakemelding")
+                .setUtkast_14a_ansvarlig_veileder("AVeileder");
 
         var brukerMedVedtakUtenAnsvarligVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -1057,7 +1057,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setVedtak_status("Utkast");
+                .setUtkast_14a_status("Utkast");
 
         var brukerUtenVedtak = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -1081,7 +1081,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ansvarlig_veileder_for_vedtak",
+                "utkast_14a_ansvarlig_veileder",
                 filterValg,
                 null,
                 null
@@ -1093,10 +1093,10 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(userExistsInResponse(brukerMedVedtak2, response)).isTrue();
         assertThat(userExistsInResponse(brukerMedVedtakUtenAnsvarligVeileder, response)).isTrue();
 
-        assertThat(response.getBrukere().get(0).getAnsvarligVeilederForVedtak()).isEqualTo("AVeileder");
-        assertThat(response.getBrukere().get(1).getAnsvarligVeilederForVedtak()).isEqualTo("BVeileder");
-        assertThat(response.getBrukere().get(2).getAnsvarligVeilederForVedtak()).isEqualTo("CVeileder");
-        assertThat(response.getBrukere().get(3).getAnsvarligVeilederForVedtak()).isNull();
+        assertThat(response.getBrukere().get(0).getUtkast14aAnsvarligVeileder()).isEqualTo("AVeileder");
+        assertThat(response.getBrukere().get(1).getUtkast14aAnsvarligVeileder()).isEqualTo("BVeileder");
+        assertThat(response.getBrukere().get(2).getUtkast14aAnsvarligVeileder()).isEqualTo("CVeileder");
+        assertThat(response.getBrukere().get(3).getUtkast14aAnsvarligVeileder()).isNull();
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {

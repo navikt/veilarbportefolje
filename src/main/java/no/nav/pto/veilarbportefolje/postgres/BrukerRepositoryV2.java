@@ -20,11 +20,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
+import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBackup;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.FodselsnummerUtils.lagFodselsdato;
@@ -49,7 +52,7 @@ public class BrukerRepositoryV2 {
                         select OD.AKTOERID, OD.OPPFOLGING, ob.*,
                                ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
-                               OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  D.VENTER_PA_BRUKER,  D.VENTER_PA_NAV,
+                               OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
                                BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
                                YB.DAGPUTLOPUKE, YB.PERMUTLOPUKE, YB.UTLOPSDATO as YTELSE_UTLOPSDATO,
@@ -65,7 +68,7 @@ public class BrukerRepositoryV2 {
                                  left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
                                  left join nom_skjerming ns on ns.fodselsnr = ai.fnr
                                  left join bruker_data bd on bd.freg_ident = ai.fnr
-                                 LEFT JOIN DIALOG D ON D.AKTOERID = ai.aktorid
+                                 LEFT JOIN DIALOG DI ON DI.AKTOERID = ai.aktorid
                                  LEFT JOIN UTKAST_14A_STATUS U on U.AKTOERID = ai.aktorid
                                  LEFT JOIN ARBEIDSLISTE ARB on ARB.AKTOERID = ai.aktorid
                                  LEFT JOIN BRUKER_PROFILERING BP ON BP.AKTOERID = ai.aktorid
@@ -77,12 +80,36 @@ public class BrukerRepositoryV2 {
                 (ResultSet rs) -> {
                     while (rs.next()) {
                         OppfolgingsBruker bruker = mapTilOppfolgingsBruker(rs, logdiff);
-                        if (bruker.getFnr() != null) {
-                            result.add(bruker);
+                        if (bruker.getFnr() == null) {
+                            continue; // NB: Dolly brukere kan ha kun aktoerId, dette vil også gjelde personer med kun NPID
                         }
+                        if (rs.getString(FODSELSNR_ARENA) == null) {
+                            leggTilHistoriskArenaDataHvisTilgjengelig(bruker);
+                        }
+                        result.add(bruker);
                     }
                     return result;
                 }, params);
+    }
+
+    private void leggTilHistoriskArenaDataHvisTilgjengelig(OppfolgingsBruker bruker) {
+        long startTime = System.currentTimeMillis();
+        OppfolgingsBruker brukerMedHistoriskData = queryForObjectOrNull(() ->
+                db.queryForObject("""
+                        select * from oppfolgingsbruker_arena_v2 ob
+                        where ob.fodselsnr in
+                            (select ident from bruker_identer where person =
+                                (select person from bruker_identer where ident = ?)
+                            )
+                        order by ob.endret_dato desc
+                        limit 1
+                        """, (rs, i) -> flettInnOppfolgingsbruker(bruker, bruker.getUtkast_14a_status(), rs), bruker.getFnr())
+        );
+        long endTime = System.currentTimeMillis();
+        log.info("Ytelse, søkte opp historisk arena data på: {}ms", endTime - startTime);
+        if (brukerMedHistoriskData != null && brukerMedHistoriskData.getEnhet_id() != null) {
+            log.info("Bruker historisk ident i arena for aktor: {}", bruker.getAktoer_id());
+        }
     }
 
     @SneakyThrows
@@ -90,8 +117,6 @@ public class BrukerRepositoryV2 {
         if (logDiff) {
             logDiff(rs);
         }
-        String formidlingsgruppekode = rs.getString(FORMIDLINGSGRUPPEKODE);
-        String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
 
         String fnr = rs.getString(FODSELSNR);
         String utkast14aStatus = rs.getString(UTKAST_14A_STATUS);
@@ -112,19 +137,11 @@ public class BrukerRepositoryV2 {
                 .setOppfolging_startdato(toIsoUTC(rs.getTimestamp(STARTDATO)))
                 .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp(VENTER_PA_BRUKER)))
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp(VENTER_PA_NAV)))
-                .setVedtak_status(
-                        Optional.ofNullable(utkast14aStatus)
-                                .map(Kafka14aStatusendring.Status::valueOf)
-                                .map(Kafka14aStatusendring::statusTilTekst)
-                                .orElse(null)
-                )
                 .setUtkast_14a_status(Optional.ofNullable(utkast14aStatus)
                         .map(Kafka14aStatusendring.Status::valueOf)
                         .map(Kafka14aStatusendring::statusTilTekst)
                         .orElse(null))
-                .setVedtak_status_endret(toIsoUTC(rs.getTimestamp(UTKAST_14A_ENDRET_TIDSPUNKT)))
                 .setUtkast_14a_status_endret(toIsoUTC(rs.getTimestamp(UTKAST_14A_ENDRET_TIDSPUNKT)))
-                .setAnsvarlig_veileder_for_vedtak(rs.getString(UTKAST_14A_ANSVARLIG_VEILDERNAVN))
                 .setUtkast_14a_ansvarlig_veileder(rs.getString(UTKAST_14A_ANSVARLIG_VEILDERNAVN))
                 .setYtelse(rs.getString(YTELSE))
                 .setUtlopsdato(toIsoUTC(rs.getTimestamp(YTELSE_UTLOPSDATO)))
@@ -133,11 +150,6 @@ public class BrukerRepositoryV2 {
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
                 .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)));
 
-        if (brukNOMSkjerming(unleashService)) {
-            bruker.setEgen_ansatt(rs.getBoolean(ER_SKJERMET));
-        } else {
-            bruker.setEgen_ansatt(rs.getBoolean(SPERRET_ANSATT_ARENA));
-        }
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));
         if (arbeidslisteTidspunkt != null) {
             bruker.setArbeidsliste_aktiv(true)
@@ -160,21 +172,36 @@ public class BrukerRepositoryV2 {
             bruker.setArbeidsliste_aktiv(false);
         }
 
+        // ARENA DB LENKE: skal fjernes på sikt
+        flettInnOppfolgingsbruker(bruker, utkast14aStatus, rs);
+
         Date foedsels_dato = rs.getDate("foedselsdato");
-        if (!brukPDLBrukerdata(unleashService)) {
-            flettInnDataFraArena(rs, bruker);
-        } else if (brukPDLBrukerdata(unleashService) && foedsels_dato != null) {
+        if (brukPDLBrukerdata(unleashService) && foedsels_dato != null) {
             flettInnDataFraPDL(rs, bruker);
         } else if (brukArenaSomBackup(unleashService)) {
-            log.info("Fant ikke brukerdat på aktor: {}, bruker arena som backup", bruker.getAktoer_id());
-            flettInnDataFraArena(rs, bruker);
-        } else {
-            log.error("Fant ikke brukerdat på aktor: {}, filterer derfor vekk bruker", bruker.getAktoer_id());
-            bruker.setFnr(null);
+            flettInnPersonDataFraArena(rs, bruker);
+        } else if (isDevelopment().orElse(false)) {
+            bruker.setFnr(null); // Midlertidig forsikring for at brukere i q1 aldri har ekte data. Fjernes sammen med toggles, og bruk av inner join for brukerdata
         }
+        return bruker;
+    }
 
-        // ARENA DB LENKE: skal fjernes på sikt
+    @SneakyThrows
+    private OppfolgingsBruker flettInnOppfolgingsbruker(OppfolgingsBruker bruker, String utkast14aStatus, ResultSet rs) {
+        String fnr = rs.getString(FODSELSNR_ARENA);
+        if(fnr == null){
+            return bruker;
+        }
+        if (!brukPDLBrukerdata(unleashService) && isProduction().orElse(false)) {
+            flettInnPersonDataFraArena(rs, bruker);
+        }
+        if (!brukNOMSkjerming(unleashService)) {
+            bruker.setEgen_ansatt(rs.getBoolean(SPERRET_ANSATT_ARENA));
+        }
+        String formidlingsgruppekode = rs.getString(FORMIDLINGSGRUPPEKODE);
+        String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
         return bruker
+                .setFnr(fnr)
                 .setEnhet_id(rs.getString(NAV_KONTOR))
                 .setIserv_fra_dato(toIsoUTC(rs.getTimestamp(ISERV_FRA_DATO)))
                 .setRettighetsgruppekode(rs.getString(RETTIGHETSGRUPPEKODE))
@@ -186,6 +213,21 @@ public class BrukerRepositoryV2 {
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, utkast14aStatus));
+    }
+
+    @SneakyThrows
+    private void flettInnPersonDataFraArena(ResultSet rs, OppfolgingsBruker bruker) {
+        String fnr = rs.getString(FODSELSNR_ARENA);
+        String fornavn = rs.getString(FORNAVN);
+        String etternavn = rs.getString(ETTERNAVN);
+        bruker
+                .setFornavn(fornavn)
+                .setEtternavn(etternavn)
+                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
+                .setEr_doed(rs.getBoolean(ER_DOED))
+                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
+                .setFodselsdato(lagFodselsdato(fnr))
+                .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
     }
 
     @SneakyThrows
@@ -201,21 +243,6 @@ public class BrukerRepositoryV2 {
                 .setFodselsdag_i_mnd(foedsels_dato.toLocalDate().getDayOfMonth())
                 .setFodselsdato(lagFodselsdato(foedsels_dato.toLocalDate()))
                 .setKjonn(rs.getString("kjoenn"));
-    }
-
-    @SneakyThrows
-    private void flettInnDataFraArena(ResultSet rs, OppfolgingsBruker bruker) {
-        String fnr = rs.getString(FODSELSNR);
-        String fornavn = rs.getString(FORNAVN);
-        String etternavn = rs.getString(ETTERNAVN);
-        bruker
-                .setFornavn(fornavn)
-                .setEtternavn(etternavn)
-                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
-                .setEr_doed(rs.getBoolean(ER_DOED))
-                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
-                .setFodselsdato(lagFodselsdato(fnr))
-                .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
     }
 
     @SneakyThrows

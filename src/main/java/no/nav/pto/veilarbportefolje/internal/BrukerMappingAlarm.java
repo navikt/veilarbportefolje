@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -14,22 +15,23 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 @Component
 @RequiredArgsConstructor
 public class BrukerMappingAlarm implements MeterBinder {
+    @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate db;
 
     @Override
     public void bindTo(MeterRegistry meterRegistry) {
-        Gauge.builder("veilarbportefolje_ikke_mappet_bruker_ident", this::antalBrukereSomIkkeHarIdentIPDL)
+        Gauge.builder("veilarbportefolje_ikke_mappet_bruker_ident", this::antallBrukereSomIkkeHarIdentIPDL)
                 .description("Antall brukere under oppfølging som ikke har en ident lagret i tabellen: bruker_identer")
                 .register(meterRegistry);
-        Gauge.builder("veilarbportefolje_ikke_mappet_bruker_brukerdata", this::antalAktiveBrukereSomIkkeHarBrukerDataFraPDL)
+        Gauge.builder("veilarbportefolje_ikke_mappet_bruker_brukerdata", this::antallAktiveBrukereSomIkkeHarBrukerDataFraPDL)
                 .description("Antall brukere under oppfølging som ikke har en bruker data lagret i tabellen: bruker_data")
                 .register(meterRegistry);
-        Gauge.builder("veilarbportefolje_ikke_mappet_bruker_databaselenke", this::antalAktiveBrukereSomIkkeLiggerIDatabaseLenkenFraArena)
+        Gauge.builder("veilarbportefolje_ikke_mappet_bruker_databaselenke", this::antallBrukereSomIkkeLiggerIDatabaseLenkenFraArena)
                 .description("Antall brukere under oppfølging som ikke har en bruker data lagret i tabellen: oppfolgingsbruker_arena_v2")
                 .register(meterRegistry);
     }
 
-    private int antalBrukereSomIkkeHarIdentIPDL() {
+    private int antallBrukereSomIkkeHarIdentIPDL() {
         String sql = """
                 select count(*) from oppfolging_data od
                     left join bruker_identer bi on bi.ident = od.aktoerid
@@ -41,7 +43,7 @@ public class BrukerMappingAlarm implements MeterBinder {
         ).orElse(0);
     }
 
-    private int antalAktiveBrukereSomIkkeHarBrukerDataFraPDL() {
+    private int antallAktiveBrukereSomIkkeHarBrukerDataFraPDL() {
         String sql = """
                 select count(*) from oppfolging_data od
                     inner join aktive_identer ai on ai.aktorid = od.aktoerid
@@ -54,12 +56,15 @@ public class BrukerMappingAlarm implements MeterBinder {
         ).orElse(0);
     }
 
-    private int antalAktiveBrukereSomIkkeLiggerIDatabaseLenkenFraArena() {
+    private int antallBrukereSomIkkeLiggerIDatabaseLenkenFraArena() {
         String sql = """
-                select count(*) from oppfolging_data od
-                    inner join aktive_identer ai on ai.aktorid = od.aktoerid
-                    left join oppfolgingsbruker_arena_v2 oa on oa.fodselsnr = ai.fnr
-                    where oa is null;
+                select count(*) from
+                    (select bi.person from bruker_identer bi
+                        left join oppfolging_data od on od.aktoerid = bi.ident
+                        left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = bi.ident
+                        group by bi.person
+                        having count(ob.*) = 0 and count(od.*) > 0
+                    ) as personer;
                 """;
         return Optional.ofNullable(
                 queryForObjectOrNull(
