@@ -218,6 +218,9 @@ public class BrukerRepositoryV2 {
     @SneakyThrows
     private void flettInnPersonDataFraArena(ResultSet rs, OppfolgingsBruker bruker) {
         String fnr = rs.getString(FODSELSNR_ARENA);
+        if (fnr == null) {
+            return;
+        }
         String fornavn = rs.getString(FORNAVN);
         String etternavn = rs.getString(ETTERNAVN);
         bruker
