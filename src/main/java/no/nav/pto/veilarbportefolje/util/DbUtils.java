@@ -8,6 +8,7 @@ import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil;
 import javax.sql.DataSource;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
+import static org.postgresql.PGProperty.SOCKET_TIMEOUT;
 
 @Slf4j
 public class DbUtils {
@@ -22,6 +23,7 @@ public class DbUtils {
             return createVaultRefreshDataSource(config, DbRole.ADMIN);
         }
         HikariConfig config = createDataSourceConfig(dbUrl, 3);
+        config.addDataSourceProperty(SOCKET_TIMEOUT.getName(), "600"); // 10min
         return createVaultRefreshDataSource(config, DbRole.READONLY);
     }
 
