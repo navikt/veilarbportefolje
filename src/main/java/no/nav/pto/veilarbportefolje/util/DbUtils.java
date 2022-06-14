@@ -23,6 +23,7 @@ public class DbUtils {
             return createVaultRefreshDataSource(config, DbRole.ADMIN);
         }
         HikariConfig config = createDataSourceConfig(dbUrl, 3);
+        config.addDataSourceProperty(SOCKET_TIMEOUT.getName(), "600"); // 10min
         return createVaultRefreshDataSource(config, DbRole.READONLY);
     }
 
@@ -31,7 +32,6 @@ public class DbUtils {
         config.setJdbcUrl(dbUrl);
         config.setMaximumPoolSize(maximumPoolSize);
         config.setConnectionTimeout(600000); // 10min
-        config.addDataSourceProperty(SOCKET_TIMEOUT.getName(), "1800"); // 30min
         config.setMinimumIdle(1);
         return config;
     }
