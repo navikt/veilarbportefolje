@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
@@ -49,15 +48,16 @@ public class HovedIndekserer {
             log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
         } else {
             opensearchAdminService.slettIndex(nyIndex);
-            log.error("Hovedindeksering: ble ikke fullført");
+            throw new RuntimeException("Hovedindeksering: ble ikke fullført");
         }
     }
 
     private boolean tryIndekserAlleBrukere(List<AktorId> brukere) {
         try {
-            return opensearchIndexer.batchIndeksering(brukere);
+            opensearchIndexer.batchIndeksering(brukere);
+            return true;
         } catch (Exception e) {
-            log.error("Hovedindeksering: feilet...", e);
+            log.error("Hovedindeksering feilet", e);
             return false;
         }
     }

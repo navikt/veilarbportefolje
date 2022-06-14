@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import com.github.kagkarlsson.scheduler.Scheduler;
+import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
@@ -14,10 +15,12 @@ import org.springframework.context.annotation.Configuration;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalTime;
 import java.util.List;
 
 import static java.time.temporal.ChronoUnit.HOURS;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 @Slf4j
 @Configuration
@@ -53,6 +56,11 @@ public class SchedulConfig {
                 Tasks.recurring("indekserer_ytelse_endringer", Schedules.daily(LocalTime.of(2, 1)))
                         .execute((instance, ctx) -> ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag()),
                 Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(2, 15)))
+                        .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(3, (executionComplete, executionOperations) -> {
+                            log.error("Hovedindeksering har feilet {} ganger. Forsøker igjen om 5 min",
+                                    executionComplete.getExecution().consecutiveFailures);
+                            executionOperations.reschedule(executionComplete, Instant.now().plus(5, MINUTES));
+                        }))
                         .execute((instance, ctx) -> hovedIndekserer.hovedIndeksering())
         );
     }
