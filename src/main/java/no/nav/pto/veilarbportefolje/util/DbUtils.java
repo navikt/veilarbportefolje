@@ -31,7 +31,7 @@ public class DbUtils {
         config.setJdbcUrl(dbUrl);
         config.setMaximumPoolSize(maximumPoolSize);
         config.setConnectionTimeout(600000); // 10min
-        config.addDataSourceProperty(SOCKET_TIMEOUT.getName(), "600"); // 10min
+        config.addDataSourceProperty(SOCKET_TIMEOUT.getName(), "1800"); // 30min
         config.setMinimumIdle(1);
         return config;
     }
