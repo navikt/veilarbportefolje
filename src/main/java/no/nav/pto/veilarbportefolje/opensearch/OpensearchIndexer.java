@@ -60,6 +60,7 @@ public class OpensearchIndexer {
         restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
     }
 
+    @SneakyThrows
     public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
         BulkRequest bulk = new BulkRequest();
         List<String> aktoerIds = oppfolgingsBrukere.stream().map(OppfolgingsBruker::getAktoer_id).toList();
@@ -75,6 +76,7 @@ public class OpensearchIndexer {
             log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
         } catch (IOException e) {
             log.error(String.format("Klart ikke å skrive til indeks: %s", aktoerIds), e);
+            throw e;
         }
     }
 
@@ -88,23 +90,18 @@ public class OpensearchIndexer {
         long tidsStempel0 = System.currentTimeMillis();
         log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
-        boolean success = batchIndeksering(brukere);
-        if (success) {
-            long tid = System.currentTimeMillis() - tidsStempel0;
-            log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
-        } else {
-            log.error("Hovedindeksering: ble ikke fullført");
-        }
+        batchIndeksering(brukere);
+        long tid = System.currentTimeMillis() - tidsStempel0;
+        log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
     }
 
-    public boolean batchIndeksering(List<AktorId> alleBrukere) {
+    public void batchIndeksering(List<AktorId> alleBrukere) {
         try {
             partition(alleBrukere, BATCH_SIZE).forEach(this::indekserBolk);
         } catch (Exception e) {
-            log.error("error under hovedindeksering", e);
-            return false;
+            log.error("Hovedindeksering: ble ikke fullført", e);
+            throw e;
         }
-        return true;
     }
 
     public void indekserBolk(List<AktorId> aktorIds) {
