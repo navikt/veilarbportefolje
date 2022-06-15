@@ -14,6 +14,7 @@ spec:
     cpuThresholdPercentage: 50
   port: 8080
   ingresses:
+    - https://veilarbportefolje.prod-fss-pub.nais.io
     - https://veilarbportefolje.nais.adeo.no
     - https://app.adeo.no/veilarbportefolje
   webproxy: true
@@ -47,6 +48,12 @@ spec:
   azure:
     application:
       enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: veilarbportefoljeflatefs
+          namespace: obo
+          cluster: prod-gcp
   resources:
     limits:
       cpu: "4"
