@@ -27,7 +27,7 @@ public class VedtakstottePilotRequest {
     private final Function<DownstreamApi, Optional<String>> aadOboTokenProvider;
     private final String baseURL;
     private final OkHttpClient client;
-    private final Cache<EnhetId, Boolean > hentVedtakstotteCache;
+    private final Cache<EnhetId, Boolean> hentVedtakstotteCache;
 
     public VedtakstottePilotRequest(AuthService authService) {
         this.veilarbVedtakstotteApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbvedtaksstotte");

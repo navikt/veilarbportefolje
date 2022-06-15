@@ -49,8 +49,8 @@ public class ClientConfig {
     }
 
     @Bean
-    public VeilarbVeilederClient veilarbVeilederClient(EnvironmentProperties environmentProperties) {
-        return new VeilarbVeilederClient(environmentProperties);
+    public VeilarbVeilederClient veilarbVeilederClient(AuthService authService, EnvironmentProperties environmentProperties) {
+        return new VeilarbVeilederClient(authService, environmentProperties);
     }
 
     @Bean
