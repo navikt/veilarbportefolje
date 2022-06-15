@@ -23,16 +23,17 @@ import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.rest.client.RestUtils.throwIfNotSuccessful;
 
 public class VedtakstottePilotRequest {
-    private static final DownstreamApi veilarbVedtakstotteApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbvedtaksstotte");
+    private final DownstreamApi veilarbVedtakstotteApi;
     private final Function<DownstreamApi, Optional<String>> aadOboTokenProvider;
     private final String baseURL;
     private final OkHttpClient client;
     private final Cache<EnhetId, Boolean > hentVedtakstotteCache;
 
     public VedtakstottePilotRequest(AuthService authService) {
+        this.veilarbVedtakstotteApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbvedtaksstotte");
+        this.baseURL = UrlUtils.createServiceUrl("veilarbvedtaksstotte", "pto", true);
         this.aadOboTokenProvider =  authService::getAadOboTokenForTjeneste;
         this.client = no.nav.common.rest.client.RestClient.baseClient();
-        this.baseURL = UrlUtils.createServiceUrl("veilarbvedtaksstotte", "pto", true);
 
         this.hentVedtakstotteCache = Caffeine.newBuilder()
                 .expireAfterWrite(5, TimeUnit.MINUTES)
