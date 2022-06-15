@@ -58,7 +58,7 @@ public class SchedulConfig {
                 Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(2, 15)))
                         .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(3, (executionComplete, executionOperations) -> {
                             log.error("Hovedindeksering har feilet {} ganger. Forsøker igjen om 5 min",
-                                    executionComplete.getExecution().consecutiveFailures);
+                                    executionComplete.getExecution().consecutiveFailures + 1);
                             executionOperations.reschedule(executionComplete, Instant.now().plus(5, MINUTES));
                         }))
                         .execute((instance, ctx) -> hovedIndekserer.hovedIndeksering())
