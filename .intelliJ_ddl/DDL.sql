@@ -99,7 +99,14 @@ CREATE TABLE public.bruker_data (
     etternavn character varying(90),
     kjoenn character varying(5),
     er_doed boolean,
-    foedselsdato date
+    foedselsdato date,
+    foedeland character varying(10),
+    innflyttingtilnorgefraland character varying(10),
+    angittflyttedato date,
+    folkeregisterpersonstatus character varying(30),
+    talespraaktolk character varying(20),
+    tegnspraaktolk character varying(20),
+    landgruppe character varying(10)
 );
 
 
@@ -125,6 +132,18 @@ CREATE TABLE public.bruker_registrering (
     utdanning character varying(35),
     utdanning_bestatt character varying(15),
     utdanning_godkjent character varying(15)
+);
+
+
+--
+-- Name: bruker_statsborgerskap; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.bruker_statsborgerskap (
+    freg_ident character varying(30) NOT NULL,
+    statsborgerskap character varying(20),
+    gyldig_fra date,
+    gyldig_til date
 );
 
 
@@ -459,6 +478,14 @@ ALTER TABLE ONLY public.bruker_registrering
 
 
 --
+-- Name: bruker_statsborgerskap bruker_statsborgerskap_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bruker_statsborgerskap
+    ADD CONSTRAINT bruker_statsborgerskap_pkey PRIMARY KEY (freg_ident);
+
+
+--
 -- Name: brukertiltak brukertiltak_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -648,6 +675,14 @@ CREATE INDEX oppfolging_data_idx ON public.oppfolging_data USING btree (veileder
 --
 
 CREATE INDEX personid_brukertiltak_v2_idx ON public.brukertiltak USING btree (aktoerid);
+
+
+--
+-- Name: bruker_statsborgerskap fk_freg_ident; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bruker_statsborgerskap
+    ADD CONSTRAINT fk_freg_ident FOREIGN KEY (freg_ident) REFERENCES public.bruker_data(freg_ident) ON DELETE CASCADE;
 
 
 --
