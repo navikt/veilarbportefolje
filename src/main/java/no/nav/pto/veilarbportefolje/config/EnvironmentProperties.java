@@ -16,6 +16,7 @@ public class EnvironmentProperties {
     private String openAmClientId;
     private String naisAadDiscoveryUrl;
     private String naisAadClientId;
+    private String naisAadIssuer;
     private String openAmRefreshUrl;
     private String dbUrl;
     private List<String> admins;

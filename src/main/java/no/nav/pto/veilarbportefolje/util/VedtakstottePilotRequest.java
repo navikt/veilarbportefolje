@@ -4,29 +4,33 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.common.utils.UrlUtils;
+import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
+import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.HttpHeaders;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.rest.client.RestUtils.throwIfNotSuccessful;
 
 public class VedtakstottePilotRequest {
+    private static final DownstreamApi veilarbVedtakstotteApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbvedtaksstotte");
+    private final Function<DownstreamApi, Optional<String>> aadOboTokenProvider;
     private final String baseURL;
     private final OkHttpClient client;
-
-
     private final Cache<EnhetId, Boolean > hentVedtakstotteCache;
 
-    @Autowired
-    public VedtakstottePilotRequest() {
+    public VedtakstottePilotRequest(AuthService authService) {
+        this.aadOboTokenProvider =  authService::getAadOboTokenForTjeneste;
         this.client = no.nav.common.rest.client.RestClient.baseClient();
         this.baseURL = UrlUtils.createServiceUrl("veilarbvedtaksstotte", "pto", true);
 
@@ -47,7 +51,8 @@ public class VedtakstottePilotRequest {
         Request request = new Request.Builder()
                 .url(UrlUtils.joinPaths(baseURL, "/api/utrulling/erUtrullet?enhetId=" + enhetId.get()))
                 .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())
-                .header("Authorization", "Bearer " + AuthUtils.getInnloggetBrukerToken())
+                .header("Authorization", "Bearer " + aadOboTokenProvider.apply(veilarbVedtakstotteApi)
+                        .orElseGet(AuthUtils::getInnloggetBrukerToken))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
