@@ -54,7 +54,7 @@ public class VeilarbVeilederClient {
         String path = format("/enhet/%s/identer", enhet);
         log.info("(debug) Fikk prodsusert obo token: "+ aadOboTokenProvider.apply(veilarbbVeilederApi).isPresent());
         Request request = new Request.Builder()
-                .header(AUTHORIZATION, aadOboTokenProvider.apply(veilarbbVeilederApi)
+                .header(AUTHORIZATION, aadOboTokenProvider.apply(veilarbbVeilederApi).map(obo -> "Bearer " + obo)
                         .orElseGet(RestClientUtils::authHeaderMedSystemBruker))
                 .url(url + path)
                 .build();
