@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.auth.oidc.filter.AzureAdUserRoleResolver;
 import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.utils.ServiceUserTokenFinder;
@@ -13,7 +14,8 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
-import static no.nav.common.auth.Constants.*;
+import static no.nav.common.auth.Constants.OPEN_AM_ID_TOKEN_COOKIE_NAME;
+import static no.nav.common.auth.Constants.REFRESH_TOKEN_COOKIE_NAME;
 import static no.nav.common.auth.oidc.filter.OidcAuthenticator.fromConfigs;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
@@ -26,12 +28,11 @@ public class FilterConfig {
             "srvveilarboppfolging"
     );
 
-    public OidcAuthenticatorConfig azureAdAuthConfig(EnvironmentProperties environmentProperties) {
+    private OidcAuthenticatorConfig azureAdAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(environmentProperties.getAzureAdDiscoveryUrl())
-                .withClientId(environmentProperties.getAzureAdClientId())
-                .withIdTokenCookieName(AZURE_AD_ID_TOKEN_COOKIE_NAME)
-                .withUserRole(UserRole.INTERN);
+                .withDiscoveryUrl(properties.getNaisAadDiscoveryUrl())
+                .withClientId(properties.getNaisAadClientId())
+                .withUserRoleResolver(new AzureAdUserRoleResolver());
     }
 
     private OidcAuthenticatorConfig openAmStsAuthConfig(EnvironmentProperties properties) {
