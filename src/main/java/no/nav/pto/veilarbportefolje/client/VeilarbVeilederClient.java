@@ -52,7 +52,7 @@ public class VeilarbVeilederClient {
     @SneakyThrows
     private List<String> hentVeilederePaaEnhetQuery(EnhetId enhet) {
         String path = format("/enhet/%s/identer", enhet);
-
+        log.info("(debug) Fikk prodsusert obo token: "+ aadOboTokenProvider.apply(veilarbbVeilederApi).isPresent());
         Request request = new Request.Builder()
                 .header(AUTHORIZATION, aadOboTokenProvider.apply(veilarbbVeilederApi)
                         .orElseGet(RestClientUtils::authHeaderMedSystemBruker))
