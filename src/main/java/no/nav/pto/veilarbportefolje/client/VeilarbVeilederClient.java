@@ -16,9 +16,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 import static java.lang.String.format;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
@@ -27,16 +25,16 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Slf4j
 public class VeilarbVeilederClient {
     private final DownstreamApi veilarbbVeilederApi;
-    private final Function<DownstreamApi, Optional<String>> aadOboTokenProvider;
     private final String url;
     private final OkHttpClient client;
+    private final AuthService authService;
     private final Cache<EnhetId, List<String>> hentVeilederePaaEnhetCache;
 
     public VeilarbVeilederClient(AuthService authService, EnvironmentProperties environmentProperties) {
+        this.authService = authService;
         this.url = environmentProperties.getVeilarbVeilederUrl();
         this.client = RestClient.baseClient();
         this.veilarbbVeilederApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbveileder");
-        this.aadOboTokenProvider = authService::getAadOboTokenForTjeneste;
 
         hentVeilederePaaEnhetCache = Caffeine.newBuilder()
                 .expireAfterWrite(10, TimeUnit.MINUTES)
@@ -52,10 +50,8 @@ public class VeilarbVeilederClient {
     @SneakyThrows
     private List<String> hentVeilederePaaEnhetQuery(EnhetId enhet) {
         String path = format("/enhet/%s/identer", enhet);
-        log.info("(debug) Fikk prodsusert obo token: "+ aadOboTokenProvider.apply(veilarbbVeilederApi).isPresent());
         Request request = new Request.Builder()
-                .header(AUTHORIZATION, aadOboTokenProvider.apply(veilarbbVeilederApi).map(obo -> "Bearer " + obo)
-                        .orElseGet(RestClientUtils::authHeaderMedSystemBruker))
+                .header(AUTHORIZATION, "Bearer " + authService.getOboOrOpenAmToken(veilarbbVeilederApi))
                 .url(url + path)
                 .build();
 

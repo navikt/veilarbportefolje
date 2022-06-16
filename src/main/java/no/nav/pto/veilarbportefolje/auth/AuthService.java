@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.auth;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.nimbusds.jwt.JWTClaimsSet;
 import io.vavr.Tuple;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -19,11 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getContextAwareUserToken;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetBrukerToken;
 
 @Service
@@ -103,25 +102,9 @@ public class AuthService {
         return new Skjermettilgang(tilgangTilKode6, tilgangTilKode7, tilgangEgenAnsatt);
     }
 
-
-
-    public Optional<String> getAadOboTokenForTjeneste(DownstreamApi api) {
-        if (erAadOboToken()) {
-            String scope = "api://" + api.cluster() + "." + api.namespace() + "." + api.serviceName() + "/.default";
-            return Optional.of(aadOboTokenClient.exchangeOnBehalfOfToken(scope, getInnloggetBrukerToken()));
-        }
-        return Optional.empty();
+    public String getOboOrOpenAmToken(DownstreamApi receivingApp){
+        return getContextAwareUserToken(receivingApp, authContextHolder, aadOboTokenClient, environmentProperties);
     }
-
-    private boolean erAadOboToken() {
-        Optional<String> navIdentClaim = authContextHolder.getIdTokenClaims()
-                .flatMap((claims) -> authContextHolder.getStringClaim(claims, "NAVident"));
-        return authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).filter(environmentProperties.getNaisAadIssuer()::equals).isPresent()
-                && authContextHolder.getIdTokenClaims().map(x -> x.getClaim("oid")).isPresent()
-                && navIdentClaim.isPresent();
-    }
-
-
     @Data
     @Accessors(chain = true)
     class VeilederPaEnhet {
