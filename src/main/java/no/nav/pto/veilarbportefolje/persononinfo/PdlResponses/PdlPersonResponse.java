@@ -24,8 +24,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private List<Kjoenn> kjoenn;
             private List<Doedsfall> doedsfall;
             private List<Statsborgerskap> statsborgerskap;
-            private List<InnflyttingTilNorge> innflyttingTilNorge;
-            private List<Folkeregisterpersonstatus> folkeregisterpersonstatus;
             private List<Bostedsadresse> bostedsadresse;
             private List<TilrettelagtKommunikasjon> tilrettelagtKommunikasjon;
         }
@@ -76,12 +74,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private Metadata metadata;
         }
 
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Folkeregisterpersonstatus {
-            private String folkeregisterpersonstatus;
-            private Metadata metadata;
-        }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
