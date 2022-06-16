@@ -57,6 +57,9 @@ spec:
         - application: veilarbportefoljeflatefs
           namespace: obo
           cluster: prod-gcp
+        - application: veilarbpersonflate
+          namespace: poao
+          cluster: prod-gcp
   resources:
     limits:
       cpu: "4"
