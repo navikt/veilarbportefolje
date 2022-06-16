@@ -40,7 +40,7 @@ public class AuthUtils {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id is missing from subject"));
     }
 
-    public static String contextAwareUserTokenSupplier(
+    public static String getContextAwareUserToken(
             DownstreamApi receivingApp,
             AuthContextHolder authContextHolder,
             AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient,

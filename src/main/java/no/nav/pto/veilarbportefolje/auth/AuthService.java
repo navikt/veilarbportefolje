@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.contextAwareUserTokenSupplier;
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getContextAwareUserToken;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetBrukerToken;
 
 @Service
@@ -103,7 +103,7 @@ public class AuthService {
     }
 
     public String getOboOrOpenAmToken(DownstreamApi receivingApp){
-        return contextAwareUserTokenSupplier(receivingApp, authContextHolder, aadOboTokenClient, environmentProperties);
+        return getContextAwareUserToken(receivingApp, authContextHolder, aadOboTokenClient, environmentProperties);
     }
     @Data
     @Accessors(chain = true)
