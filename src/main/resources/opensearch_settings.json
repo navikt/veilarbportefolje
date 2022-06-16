@@ -183,15 +183,6 @@
       "foedeland": {
         "type": "keyword"
       },
-      "innflyttingTilNorgeFraLand": {
-        "type": "keyword"
-      },
-      "angittFlyttedato": {
-        "type": "date"
-      },
-      "folkeregisterpersonstatus": {
-        "type": "keyword"
-      },
       "talespraaktolk": {
         "type": "keyword"
       },
@@ -199,9 +190,6 @@
         "type": "keyword"
       },
       "landgruppe": {
-        "type": "keyword"
-      },
-      "statsborgerskap": {
         "type": "keyword"
       }
     }
