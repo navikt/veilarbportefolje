@@ -52,7 +52,6 @@ public class BrukerRepositoryV2 {
                         select OD.AKTOERID, OD.OPPFOLGING, ob.*,
                                ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
-                               OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                bd.foedeland, bd.innflyttingTilNorgeFraLand, bd.angittFlyttedato,
                                bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
