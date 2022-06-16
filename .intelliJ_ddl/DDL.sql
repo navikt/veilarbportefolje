@@ -103,10 +103,9 @@ CREATE TABLE public.bruker_data (
     foedeland character varying(10),
     innflyttingtilnorgefraland character varying(10),
     angittflyttedato date,
-    folkeregisterpersonstatus character varying(30),
     talespraaktolk character varying(20),
     tegnspraaktolk character varying(20),
-    landgruppe character varying(10)
+    tolkbehovsistoppdatert date
 );
 
 

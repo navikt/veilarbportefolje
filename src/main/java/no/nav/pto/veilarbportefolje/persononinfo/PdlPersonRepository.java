@@ -6,17 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_STATSBORGERSKAP;
 import no.nav.pto.veilarbportefolje.domene.Kjonn;
+import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Statsborgerskap;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -33,21 +30,19 @@ public class PdlPersonRepository {
     public void upsertPerson(Fnr fnr, PDLPerson personData) {
         db.update("""
                         INSERT INTO bruker_data (freg_ident, fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato, 
-                        foedeland,  innflyttingTilNorgeFraLand, angittFlyttedato, folkeregisterpersonstatus,
-                        talespraaktolk, tegnspraaktolk, landgruppe)
-                        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                        foedeland,  innflyttingTilNorgeFraLand, angittFlyttedato, talespraaktolk, tegnspraaktolk, tolkBehovSistOppdatert)
+                        values (?,?,?,?,?,?,?,?,?,?,?,?,?)
                         on conflict (freg_ident)
                         do update set (fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato, 
-                        foedeland, innflyttingTilNorgeFraLand, angittFlyttedato, folkeregisterpersonstatus, talespraaktolk, 
-                        tegnspraaktolk, landgruppe) =
+                        foedeland, innflyttingTilNorgeFraLand, angittFlyttedato, talespraaktolk, tegnspraaktolk, tolkBehovSistOppdatert) =
                         (excluded.fornavn, excluded.etternavn, excluded.mellomnavn, excluded.kjoenn, excluded.er_doed, excluded.foedselsdato, 
-                        excluded.foedeland, excluded.innflyttingTilNorgeFraLand, excluded.angittFlyttedato, excluded.folkeregisterpersonstatus,
-                        excluded.talespraaktolk, excluded.tegnspraaktolk, excluded.landgruppe)
+                        excluded.foedeland, excluded.innflyttingTilNorgeFraLand, excluded.angittFlyttedato,
+                        excluded.talespraaktolk, excluded.tegnspraaktolk, excluded.tolkBehovSistOppdatert)
                         """,
                 fnr.get(), personData.getFornavn(), personData.getEtternavn(), personData.getMellomnavn(),
                 personData.getKjonn().name(), personData.isErDoed(), personData.getFoedsel(), personData.getFoedeland(),
-                personData.getInnflyttingTilNorgeFraLand(), personData.getAngittFlyttedato(),
-                personData.getFolkeregisterpersonstatus(), personData.getTalespraaktolk(), personData.getTegnspraaktolk(), personData.getLandgruppe());
+                personData.getInnflyttingTilNorgeFraLand(), personData.getAngittFlyttedato(), personData.getTalespraaktolk(),
+                personData.getTegnspraaktolk(), personData.getTolkBehovSistOppdatert());
 
         updateStatsborgerskap(fnr, personData.getStatsborgerskap());
     }
@@ -56,11 +51,9 @@ public class PdlPersonRepository {
         deleteStatsborgerskapData(fnr);
 
         if (statsborgerskaps != null) {
-            statsborgerskaps.forEach(statsborgerskap -> {
-                db.update("""
-                        INSERT INTO BRUKER_STATSBORGERSKAP(FREG_IDENT, STATSBORGERSKAP, GYLDIG_FRA, GYLDIG_TIL) VALUES (?, ?, ?, ?)
-                        """, fnr.get(), statsborgerskap.getLand(), statsborgerskap.getGyldigFraOgMed(), statsborgerskap.getGyldigTilOgMed());
-            });
+            statsborgerskaps.forEach(statsborgerskap -> db.update("""
+                    INSERT INTO BRUKER_STATSBORGERSKAP(FREG_IDENT, STATSBORGERSKAP, GYLDIG_FRA, GYLDIG_TIL) VALUES (?, ?, ?, ?)
+                    """, fnr.get(), statsborgerskap.getStatsborgerskap(), statsborgerskap.getGyldigFra(), statsborgerskap.getGyldigTil()));
         }
     }
 
@@ -92,10 +85,9 @@ public class PdlPersonRepository {
                                 .setFoedeland(rs.getString("foedeland"))
                                 .setInnflyttingTilNorgeFraLand(rs.getString("innflyttingTilNorgeFraLand"))
                                 .setAngittFlyttedato(toLocalDateOrNull(rs.getString("angittFlyttedato")))
-                                .setFolkeregisterpersonstatus(rs.getString("folkeregisterpersonstatus"))
                                 .setTalespraaktolk(rs.getString("talespraaktolk"))
                                 .setTegnspraaktolk(rs.getString("tegnspraaktolk"))
-                                .setLandgruppe(rs.getString("landgruppe"))
+                                .setTolkBehovSistOppdatert(toLocalDateOrNull(rs.getString("tolkBehovSistOppdatert")))
                                 .setStatsborgerskap(statsborgerskaps)
                         , hentAktivFnr.get()));
     }
@@ -110,23 +102,48 @@ public class PdlPersonRepository {
         ), fnr.get());
     }
 
-    public Map<Fnr, List<String>> hentStatsborgerskap(List<Fnr> fnrs) {
+    public Map<Fnr, List<Statsborgerskap>> hentStatsborgerskap(List<Fnr> fnrs) {
         String fnrsStr = fnrs.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
 
         String sql = """
-                SELECT FREG_IDENT, STATSBORGERSKAP FROM BRUKER_STATSBORGERSKAP WHERE (GYLDIG_TIL IS NULL OR GYLDIG_TIL > NOW()) AND FREG_IDENT = ANY (?::varchar[])
+                SELECT FREG_IDENT, STATSBORGERSKAP, GYLDIG_FRA, GYLDIG_TIL  FROM BRUKER_STATSBORGERSKAP WHERE (GYLDIG_TIL IS NULL OR GYLDIG_TIL > NOW()) AND FREG_IDENT = ANY (?::varchar[])
                 """;
         return dbReadOnly.query(sql,
                 ps -> ps.setString(1, fnrsStr),
                 (ResultSet rs) -> {
-                    HashMap<Fnr, List<String>> results = new HashMap<>();
+                    HashMap<Fnr, List<Statsborgerskap>> results = new HashMap<>();
                     while (rs.next()) {
                         Fnr fnr = Fnr.of(rs.getString(BRUKER_STATSBORGERSKAP.FNR));
-                        List<String> statsborgerskapForBruker = results.getOrDefault(fnr, new ArrayList<>());
-                        statsborgerskapForBruker.add(rs.getString(BRUKER_STATSBORGERSKAP.STATSBORGERSKAP));
+                        List<Statsborgerskap> statsborgerskapForBruker = results.getOrDefault(fnr, new ArrayList<>());
+                        statsborgerskapForBruker.add(new Statsborgerskap(
+                                rs.getString(BRUKER_STATSBORGERSKAP.STATSBORGERSKAP),
+                                toLocalDateOrNull(rs.getString(BRUKER_STATSBORGERSKAP.GYLDIG_FRA)),
+                                toLocalDateOrNull(rs.getString(BRUKER_STATSBORGERSKAP.GYLDIG_TIL))));
                         results.put(fnr, statsborgerskapForBruker);
                     }
                     return results;
                 });
+    }
+
+    public List<String> hentFoedeland() {
+        return dbReadOnly.queryForList("""
+                    SELECT DISTINCT foedeland FROM bruker_data
+                """, String.class);
+    }
+
+    public Set<String> hentTolkSpraak() {
+        List<String> talespraakList = dbReadOnly.queryForList("""
+                    SELECT DISTINCT talespraaktolk FROM bruker_data
+                """, String.class);
+
+        List<String> tegnspraakList = dbReadOnly.queryForList("""
+                    SELECT DISTINCT tegnspraaktolk FROM bruker_data
+                """, String.class);
+
+        Set<String> uniqueEntries = new HashSet<>();
+        uniqueEntries.addAll(talespraakList);
+        uniqueEntries.addAll(tegnspraakList);
+
+        return uniqueEntries;
     }
 }

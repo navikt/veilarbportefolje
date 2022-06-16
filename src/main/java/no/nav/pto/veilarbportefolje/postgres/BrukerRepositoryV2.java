@@ -5,7 +5,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.persononinfo.Landgruppe;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
@@ -51,8 +53,8 @@ public class BrukerRepositoryV2 {
                                ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
-                               bd.foedeland, bd.innflyttingTilNorgeFraLand, bd.angittFlyttedato, bd.folkeregisterpersonstatus,
-                               bd.talespraaktolk, bd.tegnspraaktolk, bd.landgruppe,
+                               bd.foedeland, bd.innflyttingTilNorgeFraLand, bd.angittFlyttedato,
+                               bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
                                BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
@@ -239,6 +241,8 @@ public class BrukerRepositoryV2 {
         Date foedsels_dato = rs.getDate("foedselsdato");
         String fornavn = rs.getString("fornavn_pdl");
         String etternavn = rs.getString("etternavn_pdl");
+
+        String landGruppe = Landgruppe.getLandgruppe(rs.getString("foedeland"));
         bruker
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
@@ -246,14 +250,12 @@ public class BrukerRepositoryV2 {
                 .setEr_doed(rs.getBoolean("er_doed_pdl"))
                 .setFodselsdag_i_mnd(foedsels_dato.toLocalDate().getDayOfMonth())
                 .setFodselsdato(lagFodselsdato(foedsels_dato.toLocalDate()))
-                .setFodselland(rs.getString("foedeland"))
+                .setFoedeland(rs.getString("foedeland"))
                 .setKjonn(rs.getString("kjoenn"))
-                .setInnflyttingTilNorgeFraLand(rs.getString("innflyttingTilNorgeFraLand"))
-                .setAngittFlyttedato(rs.getString("angittFlyttedato"))
-                .setFolkeregisterpersonstatus(rs.getString("folkeregisterpersonstatus"))
                 .setTalespraaktolk(rs.getString("talespraaktolk"))
                 .setTegnspraaktolk(rs.getString("tegnspraaktolk"))
-                .setLandgruppe(rs.getString("landgruppe"));
+                .setTolkBehovSistOppdatert(DateUtils.toLocalDateOrNull(rs.getString("tolkBehovSistOppdatert")))
+                .setLandgruppe(landGruppe);
     }
 
     @SneakyThrows

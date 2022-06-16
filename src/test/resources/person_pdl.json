@@ -3,40 +3,32 @@
     "hentPerson": {
       "navn": [
         {
-          "fornavn": "TRIVIELL",
+          "fornavn": "Dogmatisk",
           "mellomnavn": null,
-          "etternavn": "SKILPADDE",
+          "etternavn": "Budeie",
           "metadata": {
             "master": "FREG",
-            "historisk": false
-          }
-        },
-        {
-          "fornavn": "RASK",
-          "mellomnavn": null,
-          "etternavn": "SKILPADDE",
-          "metadata": {
-            "master": "FREG_SVERGIE",
-            "historisk": false
-          }
-        },
-        {
-          "fornavn": "TREIG",
-          "mellomnavn": null,
-          "etternavn": "SKILPADDE",
-          "metadata": {
-            "master": "PDL",
-            "historisk": false
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:52"
+              }
+            ]
           }
         }
       ],
       "foedsel": [
         {
-          "foedselsdato": "1987-07-30",
-          "foedeland": "FJI",
+          "foedselsdato": "1991-12-30",
+          "foedeland": "UKR",
           "metadata": {
             "master": "FREG",
-            "historisk": false
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:52"
+              }
+            ]
           }
         }
       ],
@@ -44,43 +36,81 @@
         {
           "kjoenn": "KVINNE",
           "metadata": {
-            "master": "PDL",
-            "historisk": false
+            "master": "FREG",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:52"
+              }
+            ]
           }
         }
       ],
       "doedsfall": [],
       "statsborgerskap": [
         {
-          "land": "ARM",
-          "gyldigFraOgMed": "1987-07-30",
+          "land": "UKR",
+          "gyldigFraOgMed": "1991-12-30",
           "gyldigTilOgMed": null,
           "metadata": {
             "master": "FREG",
-            "historisk": false
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:53"
+              }
+            ]
           }
-        }
-      ],
-      "innflyttingTilNorge": [
+        },
         {
-          "fraflyttingsland": "FJI",
+          "land": "UKR",
+          "gyldigFraOgMed": "1993-09-08",
+          "gyldigTilOgMed": null,
           "metadata": {
             "master": "FREG",
-            "historisk": false
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:53"
+              }
+            ]
           }
         }
       ],
-      "folkeregisterpersonstatus": [
+      "innflyttingTilNorge": [],
+      "bostedsadresse": [
         {
-          "status": "midlertidig",
+          "angittFlyttedato": "2022-03-10",
           "metadata": {
             "master": "FREG",
-            "historisk": false
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:53"
+              }
+            ]
           }
         }
       ],
-      "bostedsadresse": [],
-      "tilrettelagtKommunikasjon": []
+      "tilrettelagtKommunikasjon": [
+        {
+          "talespraaktolk": {
+            "spraak": "UK"
+          },
+          "tegnspraaktolk": {
+            "spraak": ""
+          },
+          "metadata": {
+            "master": "PDL",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:53"
+              }
+            ]
+          }
+        }
+      ]
     }
   }
 }

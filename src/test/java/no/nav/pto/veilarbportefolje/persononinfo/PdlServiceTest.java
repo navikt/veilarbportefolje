@@ -82,6 +82,14 @@ public class PdlServiceTest {
         PDLPerson pdlPerson = pdlPersonRepository.hentPerson(fnr);
 
         assertThat(identerFraPostgres).containsExactlyInAnyOrderElementsOf(identerFraFil);
-        assertThat(pdlPerson.getFornavn()).isEqualTo("TREIG");
+        assertThat(pdlPerson.getFornavn()).isEqualTo("Dogmatisk");
+        assertThat(pdlPerson.getEtternavn()).isEqualTo("Budeie");
+        assertThat(pdlPerson.getFoedsel().toString()).isEqualTo("1991-12-30");
+        assertThat(pdlPerson.getFoedeland()).isEqualTo("UKR");
+        assertThat(pdlPerson.getStatsborgerskap().size() == 1);
+        assertThat(pdlPerson.getStatsborgerskap().stream().anyMatch(x -> x.getStatsborgerskap().equals("UKR")));
+        assertThat(pdlPerson.getStatsborgerskap().stream().anyMatch(x -> x.getGyldigFra().toString().equals("1991-12-30")));
+        assertThat(pdlPerson.getTalespraaktolk().equals("UK"));
+        assertThat(pdlPerson.getTolkBehovSistOppdatert().toString().equals("2022-06-02"));
     }
 }

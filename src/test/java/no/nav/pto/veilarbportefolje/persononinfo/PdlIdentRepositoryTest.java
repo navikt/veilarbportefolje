@@ -35,8 +35,7 @@ public class PdlIdentRepositoryTest {
     @BeforeEach
     public void reset() {
         db.update("truncate oppfolging_data");
-        db.update("truncate bruker_data");
-        db.update("truncate bruker_statsborgerskap");
+        db.update("truncate bruker_data CASCADE");
         db.update("truncate bruker_identer");
     }
 

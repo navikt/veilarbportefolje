@@ -4,13 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -86,7 +89,25 @@ public class PdlService {
                 .orElseThrow(() -> new IllegalStateException("Ingen aktiv fnr på bruker"));
     }
 
-    public Map<Fnr, List<String>> hentStatsborgerskap(List<Fnr> fnrs) {
+    public Map<Fnr, List<Statsborgerskap>> hentStatsborgerskap(List<Fnr> fnrs) {
         return pdlPersonRepository.hentStatsborgerskap(fnrs);
+    }
+
+    public Map<String, String> hentFoedeland() {
+        List<String> landCodes = pdlPersonRepository.hentFoedeland();
+        Map<String, String> codeToLand = new HashMap<>();
+
+        landCodes.stream()
+                .forEach(code -> {
+                    String foedelandFulltNavn = Landgruppe.getFoedelandFulltNavn(code);
+                    if (foedelandFulltNavn != null && !foedelandFulltNavn.isEmpty()) {
+                        codeToLand.put(code, foedelandFulltNavn);
+                    }
+                });
+        return codeToLand;
+    }
+
+    public Set<String> hentTolkSpraak() {
+        return pdlPersonRepository.hentTolkSpraak();
     }
 }

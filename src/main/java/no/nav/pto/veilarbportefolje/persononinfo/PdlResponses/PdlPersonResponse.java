@@ -116,6 +116,13 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         public static class Metadata {
             private boolean historisk;
             private PdlMaster master;
+            private List<Endringer> endringer;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Endringer {
+            private String registrert;
         }
     }
 

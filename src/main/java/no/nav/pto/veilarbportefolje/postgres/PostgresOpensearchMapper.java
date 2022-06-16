@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
@@ -97,9 +98,11 @@ public class PostgresOpensearchMapper {
     public void flettInnStatsborgerskapData(List<OppfolgingsBruker> brukere) {
         if (brukPDLBrukerdata(unleashService)) {
             List<Fnr> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).map(Fnr::of).collect(Collectors.toList());
-            Map<Fnr, List<String>> statsborgerskaps = pdlService.hentStatsborgerskap(fnrs);
+            Map<Fnr, List<Statsborgerskap>> statsborgerskaps = pdlService.hentStatsborgerskap(fnrs);
             brukere.forEach(bruker -> {
-                bruker.setStatsborgerskap(statsborgerskaps.getOrDefault(Fnr.of(bruker.getFnr()), Collections.emptyList()));
+                List<Statsborgerskap> statsborgerskapList = statsborgerskaps.getOrDefault(Fnr.of(bruker.getFnr()), Collections.emptyList());
+                bruker.setStatsborgerskap(statsborgerskapList.stream().map(Statsborgerskap::getStatsborgerskap).collect(Collectors.toList()));
+                bruker.setStatsborgerskapGyldigFra(statsborgerskapList.stream().map(Statsborgerskap::getGyldigFra).collect(Collectors.toList()));
             });
         }
     }

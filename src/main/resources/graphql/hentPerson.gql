@@ -38,12 +38,6 @@ query($ident: ID!) {
         ...metadataDetails
       }
     }
-    folkeregisterpersonstatus {
-      status
-      metadata {
-        ...metadataDetails
-      }
-    }
     bostedsadresse {
       angittFlyttedato
 
@@ -68,4 +62,7 @@ query($ident: ID!) {
 fragment metadataDetails on Metadata {
   master
   historisk
+  endringer {
+    registrert
+  }
 }

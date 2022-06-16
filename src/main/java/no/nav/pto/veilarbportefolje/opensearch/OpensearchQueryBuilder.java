@@ -35,11 +35,7 @@ import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
-import static org.opensearch.index.query.QueryBuilders.boolQuery;
-import static org.opensearch.index.query.QueryBuilders.existsQuery;
-import static org.opensearch.index.query.QueryBuilders.matchQuery;
-import static org.opensearch.index.query.QueryBuilders.rangeQuery;
-import static org.opensearch.index.query.QueryBuilders.termQuery;
+import static org.opensearch.index.query.QueryBuilders.*;
 import static org.opensearch.search.aggregations.AggregationBuilders.filter;
 import static org.opensearch.search.aggregations.AggregationBuilders.filters;
 import static org.opensearch.search.sort.ScriptSortBuilder.ScriptSortType.STRING;
@@ -119,6 +115,31 @@ public class OpensearchQueryBuilder {
                 queryBuilder.must(termQuery("fullt_navn", query));
             }
         }
+
+        if (filtervalg.harFoedelandFilter()) {
+            String query = filtervalg.getFoedeland().trim().toUpperCase();
+            queryBuilder.must(matchQuery("foedeland", query));
+        }
+        if (filtervalg.harLandgruppeFilter()) {
+            String query = filtervalg.getLandGruppe().trim();
+            queryBuilder.must(matchQuery("landgruppe", query));
+        }
+        if (filtervalg.harTalespraaktolkFilter()) {
+            queryBuilder
+                    .must(existsQuery("talespraaktolk"));
+        }
+        if (filtervalg.harTegnspraakFilter()) {
+            queryBuilder
+                    .must(existsQuery("tegnspraaktolk"));
+        }
+        if (filtervalg.harTolkbehovFilter()) {
+            String query = filtervalg.getTolkBehovSpraak().trim();
+            BoolQueryBuilder matchTolkSpraak = QueryBuilders.boolQuery()
+                    .should(QueryBuilders.matchQuery("talespraaktolk", query))
+                    .should(QueryBuilders.matchQuery("tegnspraaktolk", query));
+            queryBuilder.must(matchTolkSpraak);
+        }
+
 
     }
 

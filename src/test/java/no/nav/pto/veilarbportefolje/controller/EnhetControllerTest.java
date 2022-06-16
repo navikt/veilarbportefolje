@@ -25,6 +25,7 @@ import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,13 +38,7 @@ import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.util.Collections;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.isNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EnhetControllerTest {
@@ -62,7 +57,7 @@ public class EnhetControllerTest {
         authContextHolder = AuthContextHolderThreadLocal.instance();
 
         AuthService authService = new AuthService(pep, modiaPep, mock(AuthContextHolder.class), mock(AzureAdOnBehalfOfTokenClient.class), mock(EnvironmentProperties.class));
-        enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(MetricsClient.class), mock(UnleashService.class));
+        enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(MetricsClient.class), mock(PdlService.class), mock(UnleashService.class));
     }
 
     @Test

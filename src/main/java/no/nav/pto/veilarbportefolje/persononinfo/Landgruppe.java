@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -286,19 +285,40 @@ public class Landgruppe {
             {"ZWE", "Zimbabwe"}
     }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
-    public static Optional<Integer> getLandgruppe(String countryCode) {
+    public static String getLandgruppe(String countryCode) {
+        if (countryCode == null || countryCode.isEmpty()) {
+            return null;
+        }
+
         String ucCountryCode = countryCode.toUpperCase();
         if (landGruppe0.containsKey(ucCountryCode)) {
-            return Optional.of(0);
+            return "0";
         } else if (landGruppe1.containsKey(ucCountryCode)) {
-            return Optional.of(1);
+            return "1";
         } else if (landGruppe2.containsKey(ucCountryCode)) {
-            return Optional.of(2);
+            return "2";
         } else if (landGruppe3.containsKey(ucCountryCode)) {
-            return Optional.of(3);
+            return "3";
         }
-        return Optional.empty();
+        return "Optional.empty()";
     }
 
+    public static String getFoedelandFulltNavn(String countryCode) {
+        if (countryCode == null || countryCode.isEmpty()) {
+            return "";
+        }
+
+        String ucCountryCode = countryCode.toUpperCase();
+        if (landGruppe0.containsKey(ucCountryCode)) {
+            return landGruppe0.get(ucCountryCode);
+        } else if (landGruppe1.containsKey(ucCountryCode)) {
+            return landGruppe1.get(ucCountryCode);
+        } else if (landGruppe2.containsKey(ucCountryCode)) {
+            return landGruppe2.get(ucCountryCode);
+        } else if (landGruppe3.containsKey(ucCountryCode)) {
+            return landGruppe3.get(ucCountryCode);
+        }
+        return "";
+    }
 
 }

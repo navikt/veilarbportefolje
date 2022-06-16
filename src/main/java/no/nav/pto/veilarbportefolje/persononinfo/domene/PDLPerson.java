@@ -4,13 +4,13 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.Kjonn;
-import no.nav.pto.veilarbportefolje.persononinfo.Landgruppe;
+import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Data
@@ -27,10 +27,9 @@ public class PDLPerson {
     private List<Statsborgerskap> statsborgerskap;
     private String innflyttingTilNorgeFraLand;
     private LocalDate angittFlyttedato;
-    private String folkeregisterpersonstatus;
     private String talespraaktolk;
     private String tegnspraaktolk;
-    private String landgruppe;
+    private LocalDate tolkBehovSistOppdatert;
 
 
     public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
@@ -46,11 +45,11 @@ public class PDLPerson {
                 .setFoedeland(hentFoedselLand(response.getFoedsel()))
                 .setStatsborgerskap(hentStatsborgerskap(response.getStatsborgerskap()))
                 .setAngittFlyttedato(hentAngittFlyttedato(response.getBostedsadresse()))
-                .setFolkeregisterpersonstatus(hentFolkeregisterpersonstatus(response.getFolkeregisterpersonstatus()))
                 .setTalespraaktolk(hentTalespraaktolk(response.getTilrettelagtKommunikasjon()))
                 .setTegnspraaktolk(hentTegnspraaktolk(response.getTilrettelagtKommunikasjon()))
-                .setLandgruppe(hentLandKode(response.getFoedsel()));
+                .setTolkBehovSistOppdatert(hentTolkBehovSistOppdatert(response.getTilrettelagtKommunikasjon()));
     }
+
 
     public static PdlPersonResponse.PdlPersonResponseData.Navn kontrollerResponseOgHentNavn(List<PdlPersonResponse.PdlPersonResponseData.Navn> response) {
         return response
@@ -111,27 +110,6 @@ public class PDLPerson {
                 .orElse(null);
     }
 
-    private static String hentLandKode(List<PdlPersonResponse.PdlPersonResponseData.Foedsel> response) {
-        var fodselsListe = response.stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
-        if (fodselsListe.size() > 1) {
-            throw new PdlPersonValideringException("Støtte for flere registrerte foedselLand er ikke implentert");
-        }
-        return fodselsListe.stream().findFirst()
-                .map(PdlPersonResponse.PdlPersonResponseData.Foedsel::getFoedeland)
-                .map(Landgruppe::getLandgruppe)
-                .map(Optional::get)
-                .map(String::valueOf)
-                .orElse("");
-
-    }
-
-    private static String hentFolkeregisterpersonstatus(List<PdlPersonResponse.PdlPersonResponseData.Folkeregisterpersonstatus> folkeregisterpersonstatus) {
-        var folkeregisterStatus = folkeregisterpersonstatus.stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
-        return folkeregisterStatus.stream().findFirst()
-                .map(PdlPersonResponse.PdlPersonResponseData.Folkeregisterpersonstatus::getFolkeregisterpersonstatus)
-                .orElse("");
-    }
-
     private static String hentTalespraaktolk(List<PdlPersonResponse.PdlPersonResponseData.TilrettelagtKommunikasjon> tilrettelagtKommunikasjon) {
         var tilrettelagtKommunikasjonAktiv = tilrettelagtKommunikasjon.stream().filter(tilrettelagKomunikasjon -> !tilrettelagKomunikasjon.getMetadata().isHistorisk()).toList();
         return tilrettelagtKommunikasjonAktiv.stream().findFirst()
@@ -148,13 +126,23 @@ public class PDLPerson {
                 .orElse("");
     }
 
+    private static LocalDate hentTolkBehovSistOppdatert(List<PdlPersonResponse.PdlPersonResponseData.TilrettelagtKommunikasjon> tilrettelagtKommunikasjon) {
+        var tilrettelagtKommunikasjonAktiv = tilrettelagtKommunikasjon.stream().filter(tilrettelagKomunikasjon -> !tilrettelagKomunikasjon.getMetadata().isHistorisk()).toList();
+        return tilrettelagtKommunikasjonAktiv.stream().findFirst().get().getMetadata().getEndringer()
+                .stream()
+                .map(x -> DateUtils.toLocalDateOrNull(x.getRegistrert()))
+                .filter(x -> x != null)
+                .max(LocalDate::compareTo)
+                .get();
+    }
+
     private static List<Statsborgerskap> hentStatsborgerskap(List<PdlPersonResponse.PdlPersonResponseData.Statsborgerskap> statsborgerskaps) {
 
         var statsborgerskapsAktiv = statsborgerskaps.stream().filter(statsborgerskap -> !statsborgerskap.getMetadata().isHistorisk()).toList();
         return statsborgerskapsAktiv.stream().map(s -> {
             LocalDate gyldigFra = (s.getGyldigFraOgMed() != null) ? LocalDate.parse(s.getGyldigFraOgMed()) : null;
             LocalDate gyldigTil = (s.getGyldigTilOgMed() != null) ? LocalDate.parse(s.getGyldigTilOgMed()) : null;
-            return new Statsborgerskap(s.getLand(), gyldigFra, gyldigTil);
-        }).collect(Collectors.toList());
+            return new PDLStatsborgerskap(s.getLand(), gyldigFra, gyldigTil);
+        }).map(PDLStatsborgerskap::toStatsborgerskap).collect(Collectors.toList());
     }
 }
