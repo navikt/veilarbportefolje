@@ -1,0 +1,6 @@
+ALTER TABLE BRUKER_DATA
+    ADD COLUMN tolkBehovSistOppdatert DATE;
+ALTER TABLE BRUKER_DATA
+    DROP COLUMN landgruppe;
+ALTER TABLE BRUKER_DATA
+    DROP COLUMN folkeregisterpersonstatus;
