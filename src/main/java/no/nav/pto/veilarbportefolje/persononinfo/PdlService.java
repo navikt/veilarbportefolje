@@ -114,7 +114,12 @@ public class PdlService {
                 .stream()
                 .filter(x -> x != null && !x.isEmpty())
                 .sorted()
-                .forEach(x -> tolkSpraak.add(new TolkSpraak(x, x)));
+                .forEach(x -> {
+                    String spraak = SpraakKode.getSpraak(x);
+                    if (spraak != null && !spraak.isEmpty()) {
+                        tolkSpraak.add(new TolkSpraak(x, x));
+                    }
+                });
         return tolkSpraak;
     }
 }
