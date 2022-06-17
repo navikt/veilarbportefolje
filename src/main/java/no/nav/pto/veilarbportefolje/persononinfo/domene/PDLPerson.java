@@ -103,6 +103,9 @@ public class PDLPerson {
     }
 
     private static LocalDate hentAngittFlyttedato(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
+        if (response == null) {
+            return null;
+        }
         var bostedsadresses = response.stream().filter(bostedsadresse -> !bostedsadresse.getMetadata().isHistorisk()).toList();
         return bostedsadresses.stream().findFirst()
                 .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getAngittFlyttedato)
@@ -111,6 +114,9 @@ public class PDLPerson {
     }
 
     private static String hentTalespraaktolk(List<PdlPersonResponse.PdlPersonResponseData.TilrettelagtKommunikasjon> tilrettelagtKommunikasjon) {
+        if (tilrettelagtKommunikasjon == null) {
+            return null;
+        }
         var tilrettelagtKommunikasjonAktiv = tilrettelagtKommunikasjon.stream().filter(tilrettelagKomunikasjon -> !tilrettelagKomunikasjon.getMetadata().isHistorisk()).toList();
         return tilrettelagtKommunikasjonAktiv.stream().findFirst()
                 .map(PdlPersonResponse.PdlPersonResponseData.TilrettelagtKommunikasjon::getTalespraaktolk)
@@ -119,6 +125,9 @@ public class PDLPerson {
     }
 
     private static String hentTegnspraaktolk(List<PdlPersonResponse.PdlPersonResponseData.TilrettelagtKommunikasjon> tilrettelagtKommunikasjon) {
+        if (tilrettelagtKommunikasjon == null) {
+            return null;
+        }
         var tilrettelagtKommunikasjonAktiv = tilrettelagtKommunikasjon.stream().filter(tilrettelagKomunikasjon -> !tilrettelagKomunikasjon.getMetadata().isHistorisk()).toList();
         return tilrettelagtKommunikasjonAktiv.stream().findFirst()
                 .map(PdlPersonResponse.PdlPersonResponseData.TilrettelagtKommunikasjon::getTegnspraaktolk)
@@ -127,7 +136,14 @@ public class PDLPerson {
     }
 
     private static LocalDate hentTolkBehovSistOppdatert(List<PdlPersonResponse.PdlPersonResponseData.TilrettelagtKommunikasjon> tilrettelagtKommunikasjon) {
+        if (tilrettelagtKommunikasjon == null) {
+            return null;
+        }
         var tilrettelagtKommunikasjonAktiv = tilrettelagtKommunikasjon.stream().filter(tilrettelagKomunikasjon -> !tilrettelagKomunikasjon.getMetadata().isHistorisk()).toList();
+
+        if (tilrettelagtKommunikasjonAktiv == null || tilrettelagtKommunikasjonAktiv.isEmpty()) {
+            return null;
+        }
         return tilrettelagtKommunikasjonAktiv.stream().findFirst().get().getMetadata().getEndringer()
                 .stream()
                 .map(x -> DateUtils.toLocalDateOrNull(x.getRegistrert()))
@@ -137,7 +153,9 @@ public class PDLPerson {
     }
 
     private static List<Statsborgerskap> hentStatsborgerskap(List<PdlPersonResponse.PdlPersonResponseData.Statsborgerskap> statsborgerskaps) {
-
+        if (statsborgerskaps == null) {
+            return null;
+        }
         var statsborgerskapsAktiv = statsborgerskaps.stream().filter(statsborgerskap -> !statsborgerskap.getMetadata().isHistorisk()).toList();
         return statsborgerskapsAktiv.stream().map(s -> {
             LocalDate gyldigFra = (s.getGyldigFraOgMed() != null) ? LocalDate.parse(s.getGyldigFraOgMed()) : null;
