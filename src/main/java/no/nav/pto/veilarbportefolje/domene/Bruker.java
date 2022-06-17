@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
@@ -95,15 +96,13 @@ public class Bruker {
 
         List<Statsborgerskap> statsborgerskapList = new ArrayList<>();
         if (bruker.getStatsborgerskap() != null) {
-            for (int i = 0; i < bruker.getStatsborgerskap().size(); i++) {
-                LocalDate gyldigFra = null;
-                if (bruker.getStatsborgerskapGyldigFra() != null && bruker.getStatsborgerskapGyldigFra().size() >= i + 1) {
-                    gyldigFra = bruker.getStatsborgerskapGyldigFra().get(i);
-                }
-                statsborgerskapList.add(new Statsborgerskap(
-                        Landgruppe.getFoedelandFulltNavn(bruker.getStatsborgerskap().get(i)),
-                        gyldigFra, null));
-            }
+            statsborgerskapList = bruker.getStatsborgerskap()
+                    .stream()
+                    .map(statsborgerskap -> new Statsborgerskap(
+                            Landgruppe.getFoedelandFulltNavn(statsborgerskap.getStatsborgerskap()),
+                            statsborgerskap.getGyldigFra(),
+                            statsborgerskap.getGyldigTil()))
+                    .collect(Collectors.toList());
         }
 
         return new Bruker()

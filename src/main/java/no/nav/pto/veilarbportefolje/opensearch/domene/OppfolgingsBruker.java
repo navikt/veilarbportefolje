@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.opensearch.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -98,6 +99,5 @@ public class OppfolgingsBruker {
     String tegnspraaktolk;
     LocalDate tolkBehovSistOppdatert;
     String landgruppe;
-    List<String> statsborgerskap;
-    List<LocalDate> statsborgerskapGyldigFra;
+    List<Statsborgerskap> statsborgerskap;
 }
