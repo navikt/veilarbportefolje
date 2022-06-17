@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class SpraakKode {
-    private static Map<String, String> spraak = Stream.of(new String[][]{
+    private static Map<String, String> spraakCodeTilNavn = Stream.of(new String[][]{
             {"AB", "Abkhasisk"},
             {"AE", "Avestisk"},
             {"AF", "Afrikaans"},
@@ -208,6 +208,6 @@ public class SpraakKode {
             return null;
         }
 
-        return spraak.getOrDefault(spraakCode, "");
+        return spraakCodeTilNavn.getOrDefault(spraakCode, "");
     }
 }
