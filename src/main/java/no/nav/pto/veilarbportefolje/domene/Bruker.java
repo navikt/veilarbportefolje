@@ -96,9 +96,13 @@ public class Bruker {
         List<Statsborgerskap> statsborgerskapList = new ArrayList<>();
         if (bruker.getStatsborgerskap() != null) {
             for (int i = 0; i < bruker.getStatsborgerskap().size(); i++) {
+                LocalDate gyldigFra = null;
+                if (bruker.getStatsborgerskapGyldigFra() != null && bruker.getStatsborgerskapGyldigFra().size() >= i + 1) {
+                    gyldigFra = bruker.getStatsborgerskapGyldigFra().get(i);
+                }
                 statsborgerskapList.add(new Statsborgerskap(
                         Landgruppe.getFoedelandFulltNavn(bruker.getStatsborgerskap().get(i)),
-                        bruker.getStatsborgerskapGyldigFra().get(i), null));
+                        gyldigFra, null));
             }
         }
 
