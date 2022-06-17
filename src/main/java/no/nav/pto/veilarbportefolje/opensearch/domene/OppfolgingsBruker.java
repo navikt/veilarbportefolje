@@ -99,5 +99,5 @@ public class OppfolgingsBruker {
     String tegnspraaktolk;
     LocalDate tolkBehovSistOppdatert;
     String landgruppe;
-    List<Statsborgerskap> statsborgerskap;
+    List<Statsborgerskap> statsborgerskapList;
 }

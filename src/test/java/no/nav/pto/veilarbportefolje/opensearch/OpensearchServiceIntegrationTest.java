@@ -1213,7 +1213,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setFoedeland("SGP")
                 .setLandgruppe("3")
-                .setStatsborgerskap(List.of(new Statsborgerskap("SGP", LocalDate.now(), null), new Statsborgerskap("NOR", LocalDate.now(), null)));
+                .setStatsborgerskapList(List.of(new Statsborgerskap("SGP", LocalDate.now(), null), new Statsborgerskap("NOR", LocalDate.now(), null)));
 
         var brukerUkjentLandGruppe = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())

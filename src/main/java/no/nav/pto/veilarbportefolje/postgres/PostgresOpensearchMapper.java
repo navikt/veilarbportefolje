@@ -101,7 +101,7 @@ public class PostgresOpensearchMapper {
             Map<Fnr, List<Statsborgerskap>> statsborgerskaps = pdlService.hentStatsborgerskap(fnrs);
             brukere.forEach(bruker -> {
                 List<Statsborgerskap> statsborgerskapList = statsborgerskaps.getOrDefault(Fnr.of(bruker.getFnr()), Collections.emptyList());
-                bruker.setStatsborgerskap(statsborgerskapList);
+                bruker.setStatsborgerskapList(statsborgerskapList);
             });
         }
     }

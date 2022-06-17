@@ -95,8 +95,8 @@ public class Bruker {
         boolean trengerVurdering = bruker.isTrenger_vurdering();
 
         List<Statsborgerskap> statsborgerskapList = new ArrayList<>();
-        if (bruker.getStatsborgerskap() != null) {
-            statsborgerskapList = bruker.getStatsborgerskap()
+        if (bruker.getStatsborgerskapList() != null) {
+            statsborgerskapList = bruker.getStatsborgerskapList()
                     .stream()
                     .map(statsborgerskap -> new Statsborgerskap(
                             Landgruppe.getFoedelandFulltNavn(statsborgerskap.getStatsborgerskap()),
