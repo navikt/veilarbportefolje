@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -107,7 +107,10 @@ public class PdlService {
         return codeToLand;
     }
 
-    public Set<String> hentTolkSpraak() {
-        return pdlPersonRepository.hentTolkSpraak();
+    public List<String> hentTolkSpraak() {
+        return pdlPersonRepository.hentTolkSpraak()
+                .stream()
+                .filter(x -> x != null && !x.isEmpty())
+                .collect(Collectors.toList());
     }
 }

@@ -14,12 +14,11 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -90,17 +89,17 @@ public class EnhetController {
     }
 
     @GetMapping("/{enhet}/foedeland")
-    public Map<String, String> hentFoedeland(
+    public JSONObject hentFoedeland(
             @PathVariable("enhet")
             String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return pdlService.hentFoedeland();
+        return new JSONObject(pdlService.hentFoedeland());
     }
 
     @GetMapping("/{enhet}/tolkSpraak")
-    public Set<String> hentTolkSpraak(
+    public List<String> hentTolkSpraak(
             @PathVariable("enhet")
             String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
