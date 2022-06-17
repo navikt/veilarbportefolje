@@ -1231,7 +1231,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setLandGruppe(List.of("LANDGRUPPE_3"));
+                .setLandgruppe(List.of("LANDGRUPPE_3"));
 
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -1267,7 +1267,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setLandGruppe(List.of("LANDGRUPPE_UKJENT"));
+                .setLandgruppe(List.of("LANDGRUPPE_UKJENT"));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,

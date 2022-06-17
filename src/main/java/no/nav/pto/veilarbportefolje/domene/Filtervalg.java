@@ -41,7 +41,7 @@ public class Filtervalg {
     public List<String> alleAktiviteter = new ArrayList<>();
     public String ulesteEndringer;
     public CVjobbprofil cvJobbprofil;
-    public List<String> landGruppe;
+    public List<String> landgruppe;
     public List<String> foedeland;
     public Boolean talespraaktolk;
     public Boolean tegnspraaktolk;
@@ -139,7 +139,7 @@ public class Filtervalg {
     }
 
     public boolean harLandgruppeFilter() {
-        return landGruppe != null && !landGruppe.isEmpty();
+        return landgruppe != null && !landgruppe.isEmpty();
     }
 
     public boolean valider() {

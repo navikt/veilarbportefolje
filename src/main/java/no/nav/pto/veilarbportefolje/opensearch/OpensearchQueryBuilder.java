@@ -124,7 +124,7 @@ public class OpensearchQueryBuilder {
         }
         if (filtervalg.harLandgruppeFilter()) {
             BoolQueryBuilder subQuery = boolQuery();
-            filtervalg.getLandGruppe().forEach(
+            filtervalg.getLandgruppe().forEach(
                     landGruppe -> {
                         String landgruppeCode = landGruppe.replace("LANDGRUPPE_", "");
                         if (landgruppeCode.equals("UKJENT")) {
