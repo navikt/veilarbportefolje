@@ -1215,7 +1215,15 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setLandgruppe("3")
                 .setStatsborgerskap(List.of("SGP", "NOR"));
 
-        var liste = List.of(brukerFraLandGruppe1, brukerFraLandGruppe2, brukerFraLandGruppe3_1, brukerFraLandGruppe3_2);
+        var brukerUkjentLandGruppe = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET);
+
+        var liste = List.of(brukerFraLandGruppe1, brukerFraLandGruppe2, brukerFraLandGruppe3_1, brukerFraLandGruppe3_2, brukerUkjentLandGruppe);
 
         skrivBrukereTilTestindeks(liste);
 
@@ -1223,7 +1231,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setLandGruppe(List.of("3"));
+                .setLandGruppe(List.of("LANDGRUPPE_3"));
 
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -1259,7 +1267,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setFoedeland(List.of("NOR", "EST"));
+                .setLandGruppe(List.of("LANDGRUPPE_UKJENT"));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -1270,9 +1278,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null,
                 null
         );
-        assertThat(response.getAntall()).isEqualTo(2);
-        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Norge")).findFirst().isPresent());
-        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Estland")).findFirst().isPresent());
+        assertThat(response.getAntall()).isEqualTo(1);
+        assertThat(response.getBrukere().stream().noneMatch(x -> x.getFoedeland() != null));
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {

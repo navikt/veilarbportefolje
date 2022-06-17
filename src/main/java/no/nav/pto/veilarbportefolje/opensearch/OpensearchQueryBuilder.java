@@ -127,7 +127,11 @@ public class OpensearchQueryBuilder {
             filtervalg.getLandGruppe().forEach(
                     landGruppe -> {
                         String landgruppeCode = landGruppe.replace("LANDGRUPPE_", "");
-                        queryBuilder.must(subQuery.should(matchQuery("landgruppe", landgruppeCode)));
+                        if (landgruppeCode.equals("UKJENT")) {
+                            queryBuilder.must(subQuery.mustNot(existsQuery("landgruppe")));
+                        } else {
+                            queryBuilder.must(subQuery.should(matchQuery("landgruppe", landgruppeCode)));
+                        }
                     }
             );
         }
