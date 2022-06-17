@@ -125,7 +125,10 @@ public class OpensearchQueryBuilder {
         if (filtervalg.harLandgruppeFilter()) {
             BoolQueryBuilder subQuery = boolQuery();
             filtervalg.getLandGruppe().forEach(
-                    landGruppe -> queryBuilder.must(subQuery.should(matchQuery("landgruppe", landGruppe)))
+                    landGruppe -> {
+                        String landgruppeCode = landGruppe.replace("LANDGRUPPE_", "");
+                        queryBuilder.must(subQuery.should(matchQuery("landgruppe", landgruppeCode)));
+                    }
             );
         }
         if (filtervalg.harTalespraaktolkFilter()) {
