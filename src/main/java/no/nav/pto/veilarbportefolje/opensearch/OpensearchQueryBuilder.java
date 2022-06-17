@@ -236,6 +236,9 @@ public class OpensearchQueryBuilder {
             case "arbeidslistekategori" -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
             case "siste_endring_tidspunkt" -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
             case "arbeidsliste_overskrift" -> sorterArbeidslisteOverskrift(searchSourceBuilder, order);
+            case "fodeland" -> sorterFodeland(searchSourceBuilder, order);
+            case "statsborgerskap" -> sorterStatsborgerskap(searchSourceBuilder, order);
+            case "statsborgerskap_gyldig_fra" -> sorterStatsborgerskapGyldigFra(searchSourceBuilder, order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
@@ -270,6 +273,21 @@ public class OpensearchQueryBuilder {
         searchSourceBuilder.sort("arbeidsliste_tittel_sortering", order);
         searchSourceBuilder.sort("arbeidsliste_tittel_lengde", order);
     }
+
+    static void sorterFodeland(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        searchSourceBuilder.sort("foedeland", order);
+    }
+
+    //@TODO: implement
+    static void sorterStatsborgerskap(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        //searchSourceBuilder.sort("foedeland", order);
+    }
+
+    //@TODO: implement
+    static void sorterStatsborgerskapGyldigFra(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        //searchSourceBuilder.sort("foedeland", order);
+    }
+
 
     static SearchSourceBuilder sorterPaaNyForEnhet(SearchSourceBuilder builder, List<String> veilederePaaEnhet) {
         Script script = new Script(byggVeilederPaaEnhetScript(veilederePaaEnhet));
