@@ -15,7 +15,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
@@ -82,9 +81,7 @@ public class Bruker {
     String tegnspraaktolk;
     LocalDate tolkBehovSistOppdatert;
     String landgruppe;
-    List<String> statsborgerskap;
-    List<LocalDate> statsborgerskapGyldigFra;
-
+    List<Statsborgerskap> statsborgerskap;
 
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
@@ -96,9 +93,13 @@ public class Bruker {
         LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(bruker.getOppfolging_startdato());
         boolean trengerVurdering = bruker.isTrenger_vurdering();
 
-        List<String> statsborgerskapMedFulltNavn = null;
+        List<Statsborgerskap> statsborgerskapList = new ArrayList<>();
         if (bruker.getStatsborgerskap() != null) {
-            statsborgerskapMedFulltNavn = bruker.getStatsborgerskap().stream().map(Landgruppe::getFoedelandFulltNavn).collect(Collectors.toList());
+            for (int i = 0; i < bruker.getStatsborgerskap().size(); i++) {
+                statsborgerskapList.add(new Statsborgerskap(
+                        Landgruppe.getFoedelandFulltNavn(bruker.getStatsborgerskap().get(i)),
+                        bruker.getStatsborgerskapGyldigFra().get(i), null));
+            }
         }
 
         return new Bruker()
@@ -162,8 +163,7 @@ public class Bruker {
                 .setTegnspraaktolk(bruker.getTegnspraaktolk())
                 .setTalespraaktolk(bruker.getTalespraaktolk())
                 .setTolkBehovSistOppdatert(bruker.getTolkBehovSistOppdatert())
-                .setStatsborgerskap(statsborgerskapMedFulltNavn)
-                .setStatsborgerskapGyldigFra(bruker.getStatsborgerskapGyldigFra())
+                .setStatsborgerskap(statsborgerskapList)
                 .setLandgruppe(bruker.getLandgruppe());
     }
 

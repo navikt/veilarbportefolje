@@ -41,8 +41,8 @@ public class Filtervalg {
     public List<String> alleAktiviteter = new ArrayList<>();
     public String ulesteEndringer;
     public CVjobbprofil cvJobbprofil;
-    public String landGruppe;
-    public String foedeland;
+    public List<String> landGruppe;
+    public List<String> foedeland;
     public Boolean talespraaktolk;
     public Boolean tegnspraaktolk;
     public String tolkBehovSpraak;

@@ -1223,7 +1223,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setLandGruppe("3");
+                .setLandGruppe(List.of("3"));
 
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -1242,7 +1242,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setFoedeland("NOR");
+                .setFoedeland(List.of("NOR"));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -1255,6 +1255,24 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Norge")).findFirst().isPresent());
+
+
+        filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setFoedeland(List.of("NOR", "EST"));
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+        assertThat(response.getAntall()).isEqualTo(2);
+        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Norge")).findFirst().isPresent());
+        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Estland")).findFirst().isPresent());
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {

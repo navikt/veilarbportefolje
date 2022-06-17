@@ -127,13 +127,13 @@ public class PdlPersonRepository {
 
     public List<String> hentFoedeland() {
         return dbReadOnly.queryForList("""
-                    SELECT DISTINCT foedeland FROM bruker_data
+                    SELECT DISTINCT foedeland FROM bruker_data ORDER BY foedeland ASC 
                 """, String.class);
     }
 
     public Set<String> hentTolkSpraak() {
         List<String> talespraakList = dbReadOnly.queryForList("""
-                    SELECT DISTINCT talespraaktolk FROM bruker_data
+                    SELECT DISTINCT talespraaktolk FROM bruker_data 
                 """, String.class);
 
         List<String> tegnspraakList = dbReadOnly.queryForList("""

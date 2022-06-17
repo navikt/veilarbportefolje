@@ -4,13 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.Foedeland;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
+import no.nav.pto.veilarbportefolje.domene.TolkSpraak;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -92,26 +94,27 @@ public class PdlService {
         return pdlPersonRepository.hentStatsborgerskap(fnrs);
     }
 
-    public Map<String, String> hentFoedeland() {
+    public List<Foedeland> hentFoedeland() {
         List<String> landCodes = pdlPersonRepository.hentFoedeland();
-        Map<String, String> codeToLand = new HashMap<>();
+        List<Foedeland> codeToLand = new ArrayList<>();
 
         landCodes.stream()
                 .forEach(code -> {
                     String foedelandFulltNavn = Landgruppe.getFoedelandFulltNavn(code);
                     if (foedelandFulltNavn != null && !foedelandFulltNavn.isEmpty()) {
-                        codeToLand.put(code, foedelandFulltNavn);
+                        codeToLand.add(new Foedeland(code, foedelandFulltNavn));
                     }
                 });
         return codeToLand;
     }
 
-    public Map<String, String> hentTolkSpraak() {
-        Map<String, String> tolkSpraak = new HashMap<>();
+    public List<TolkSpraak> hentTolkSpraak() {
+        List<TolkSpraak> tolkSpraak = new ArrayList<>();
         pdlPersonRepository.hentTolkSpraak()
                 .stream()
                 .filter(x -> x != null && !x.isEmpty())
-                .forEach(x -> tolkSpraak.put(x, x));
+                .sorted()
+                .forEach(x -> tolkSpraak.add(new TolkSpraak(x, x)));
         return tolkSpraak;
     }
 }

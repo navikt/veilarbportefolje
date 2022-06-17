@@ -117,12 +117,16 @@ public class OpensearchQueryBuilder {
         }
 
         if (filtervalg.harFoedelandFilter()) {
-            String query = filtervalg.getFoedeland().trim().toUpperCase();
-            queryBuilder.must(matchQuery("foedeland", query));
+            BoolQueryBuilder subQuery = boolQuery();
+            filtervalg.getFoedeland().stream().forEach(
+                    foedeLand -> queryBuilder.must(subQuery.should(matchQuery("foedeland", foedeLand)))
+            );
         }
         if (filtervalg.harLandgruppeFilter()) {
-            String query = filtervalg.getLandGruppe().trim();
-            queryBuilder.must(matchQuery("landgruppe", query));
+            BoolQueryBuilder subQuery = boolQuery();
+            filtervalg.getLandGruppe().forEach(
+                    landGruppe -> queryBuilder.must(subQuery.should(matchQuery("landgruppe", landGruppe)))
+            );
         }
         if (filtervalg.harTalespraaktolkFilter()) {
             queryBuilder
