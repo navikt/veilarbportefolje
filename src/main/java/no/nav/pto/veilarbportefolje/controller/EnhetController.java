@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
@@ -14,7 +16,6 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -89,22 +90,24 @@ public class EnhetController {
     }
 
     @GetMapping("/{enhet}/foedeland")
-    public JSONObject hentFoedeland(
+    public String hentFoedeland(
             @PathVariable("enhet")
-            String enhet) {
+            String enhet) throws JsonProcessingException {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return new JSONObject(pdlService.hentFoedeland());
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(pdlService.hentFoedeland());
     }
 
     @GetMapping("/{enhet}/tolkSpraak")
-    public List<String> hentTolkSpraak(
+    public String hentTolkSpraak(
             @PathVariable("enhet")
-            String enhet) {
+            String enhet) throws JsonProcessingException {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return pdlService.hentTolkSpraak();
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(pdlService.hentTolkSpraak());
     }
 }
