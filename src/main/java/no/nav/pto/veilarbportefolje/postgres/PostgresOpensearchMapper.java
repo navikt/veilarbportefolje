@@ -113,7 +113,7 @@ public class PostgresOpensearchMapper {
         if (statsborgerskaps.isEmpty()) {
             return null;
         } else if (statsborgerskaps.size() == 1) {
-            return statsborgerskaps.get(0);
+            return getHovedStatsborgetskapMedFulltLandNavn(statsborgerskaps.get(0));
         } else {
             return getHovedStatsborgerskapFraList(statsborgerskaps);
         }
