@@ -174,7 +174,7 @@
           "alle_aktiviteter_utlopsdatoer"
         ]
       },
-      "foedeland": {
+      "foedelandFulltNavn": {
         "type": "keyword"
       },
       "talespraaktolk": {
@@ -185,6 +185,16 @@
       },
       "landgruppe": {
         "type": "keyword"
+      },
+      "hovedStatsborgerskap": {
+        "properties": {
+          "statsborgerskap": {
+            "type": "keyword"
+          },
+          "gyldigFra": {
+            "type": "date"
+          }
+        }
       }
     }
   }

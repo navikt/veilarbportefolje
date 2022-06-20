@@ -100,7 +100,7 @@ public class PdlService {
 
         landCodes.stream()
                 .forEach(code -> {
-                    String foedelandFulltNavn = Landgruppe.getFoedelandFulltNavn(code);
+                    String foedelandFulltNavn = Landgruppe.getLandFulltNavn(code);
                     if (foedelandFulltNavn != null && !foedelandFulltNavn.isEmpty()) {
                         codeToLand.add(new Foedeland(code, foedelandFulltNavn));
                     }

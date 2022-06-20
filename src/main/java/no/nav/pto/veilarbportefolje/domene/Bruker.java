@@ -8,14 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.persononinfo.Landgruppe;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
@@ -82,7 +80,9 @@ public class Bruker {
     String tegnspraaktolk;
     LocalDate tolkBehovSistOppdatert;
     String landgruppe;
-    List<Statsborgerskap> statsborgerskap;
+    Statsborgerskap hovedStatsborgerskap;
+    boolean harFlereStatsborgerskap;
+    String innflyttingTilNorgeFraLand;
 
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
@@ -93,17 +93,6 @@ public class Bruker {
         String diskresjonskode = bruker.getDiskresjonskode();
         LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(bruker.getOppfolging_startdato());
         boolean trengerVurdering = bruker.isTrenger_vurdering();
-
-        List<Statsborgerskap> statsborgerskapList = new ArrayList<>();
-        if (bruker.getStatsborgerskapList() != null) {
-            statsborgerskapList = bruker.getStatsborgerskapList()
-                    .stream()
-                    .map(statsborgerskap -> new Statsborgerskap(
-                            Landgruppe.getFoedelandFulltNavn(statsborgerskap.getStatsborgerskap()),
-                            statsborgerskap.getGyldigFra(),
-                            statsborgerskap.getGyldigTil()))
-                    .collect(Collectors.toList());
-        }
 
         return new Bruker()
                 .setNyForEnhet(ufordelt)
@@ -122,7 +111,7 @@ public class Bruker {
                 .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak)) //TODO: Hvorfor er dette en liste?
                 .setFodselsdagIMnd(bruker.getFodselsdag_i_mnd())
                 .setFodselsdato(toLocalDateTimeOrNull(bruker.getFodselsdato()))
-                .setFoedeland(Landgruppe.getFoedelandFulltNavn(bruker.getFoedeland()))
+                .setFoedeland(bruker.getFoedelandFulltNavn())
                 .setKjonn(bruker.getKjonn())
                 .setYtelse(YtelseMapping.of(bruker.getYtelse()))
                 .setUtlopsdato(toLocalDateTimeOrNull(bruker.getUtlopsdato()))
@@ -166,8 +155,10 @@ public class Bruker {
                 .setTegnspraaktolk(bruker.getTegnspraaktolk())
                 .setTalespraaktolk(bruker.getTalespraaktolk())
                 .setTolkBehovSistOppdatert(bruker.getTolkBehovSistOppdatert())
-                .setStatsborgerskap(statsborgerskapList)
-                .setLandgruppe(bruker.getLandgruppe());
+                .setHarFlereStatsborgerskap(bruker.isHarFlereStatsborgerskap())
+                .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
+                .setLandgruppe(bruker.getLandgruppe())
+                .setInnflyttingTilNorgeFraLand(bruker.getInnflyttingTilNorgeFraLand());
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {

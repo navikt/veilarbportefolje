@@ -242,6 +242,8 @@ public class BrukerRepositoryV2 {
         String etternavn = rs.getString("etternavn_pdl");
 
         String landGruppe = Landgruppe.getLandgruppe(rs.getString("foedeland"));
+        String foedelandFulltNavn = Landgruppe.getLandFulltNavn(rs.getString("foedeland"));
+        String innflyttingTilNorgeFraLandFullNavn = Landgruppe.getLandFulltNavn(rs.getString("innflyttingTilNorgeFraLand"));
         bruker
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
@@ -250,10 +252,12 @@ public class BrukerRepositoryV2 {
                 .setFodselsdag_i_mnd(foedsels_dato.toLocalDate().getDayOfMonth())
                 .setFodselsdato(lagFodselsdato(foedsels_dato.toLocalDate()))
                 .setFoedeland(rs.getString("foedeland"))
+                .setFoedelandFulltNavn(foedelandFulltNavn)
                 .setKjonn(rs.getString("kjoenn"))
                 .setTalespraaktolk(rs.getString("talespraaktolk"))
                 .setTegnspraaktolk(rs.getString("tegnspraaktolk"))
                 .setTolkBehovSistOppdatert(DateUtils.toLocalDateOrNull(rs.getString("tolkBehovSistOppdatert")))
+                .setInnflyttingTilNorgeFraLand(innflyttingTilNorgeFraLandFullNavn)
                 .setLandgruppe(landGruppe);
     }
 

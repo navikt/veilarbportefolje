@@ -275,17 +275,17 @@ public class OpensearchQueryBuilder {
     }
 
     static void sorterFodeland(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
-        searchSourceBuilder.sort(new FieldSortBuilder("foedeland").order(order));
+        searchSourceBuilder.sort(new FieldSortBuilder("foedelandFulltNavn").order(order));
     }
 
     //@TODO: implement
     static void sorterStatsborgerskap(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
-        //searchSourceBuilder.sort("foedeland", order);
+        searchSourceBuilder.sort("hovedStatsborgerskap.statsborgerskap", order);
     }
 
     //@TODO: implement
     static void sorterStatsborgerskapGyldigFra(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
-        //searchSourceBuilder.sort("foedeland", order);
+        searchSourceBuilder.sort("hovedStatsborgerskap.gyldigFra", order);
     }
 
 

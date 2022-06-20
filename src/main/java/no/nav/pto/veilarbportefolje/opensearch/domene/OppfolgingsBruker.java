@@ -5,7 +5,6 @@ import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,6 +35,7 @@ public class OppfolgingsBruker {
     int fodselsdag_i_mnd;
     String fodselsdato;
     String foedeland;
+    String foedelandFulltNavn;
     String kjonn;
     String ytelse;
     String utlopsdato;
@@ -99,5 +99,7 @@ public class OppfolgingsBruker {
     String tegnspraaktolk;
     LocalDate tolkBehovSistOppdatert;
     String landgruppe;
-    List<Statsborgerskap> statsborgerskapList;
+    String innflyttingTilNorgeFraLand;
+    boolean harFlereStatsborgerskap;
+    Statsborgerskap hovedStatsborgerskap;
 }

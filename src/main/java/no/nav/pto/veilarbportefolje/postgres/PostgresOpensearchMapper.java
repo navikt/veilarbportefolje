@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.persononinfo.Landgruppe;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
@@ -101,8 +102,39 @@ public class PostgresOpensearchMapper {
             Map<Fnr, List<Statsborgerskap>> statsborgerskaps = pdlService.hentStatsborgerskap(fnrs);
             brukere.forEach(bruker -> {
                 List<Statsborgerskap> statsborgerskapList = statsborgerskaps.getOrDefault(Fnr.of(bruker.getFnr()), Collections.emptyList());
-                bruker.setStatsborgerskapList(statsborgerskapList);
+                bruker.setHarFlereStatsborgerskap(statsborgerskapList.size() > 1);
+                bruker.setHovedStatsborgerskap(getHovedStatsborgerskap(statsborgerskapList));
             });
         }
+    }
+
+    private Statsborgerskap getHovedStatsborgerskap(List<Statsborgerskap> statsborgerskaps) {
+
+        if (statsborgerskaps.isEmpty()) {
+            return null;
+        } else if (statsborgerskaps.size() == 1) {
+            return statsborgerskaps.get(0);
+        } else {
+            return getHovedStatsborgerskapFraList(statsborgerskaps);
+        }
+    }
+
+    private Statsborgerskap getHovedStatsborgerskapFraList(List<Statsborgerskap> statsborgerskaps) {
+        Optional<Statsborgerskap> norskStatsborgerskap = statsborgerskaps.stream()
+                .filter(x -> x.getStatsborgerskap().equals("NOR"))
+                .findFirst();
+
+        if (norskStatsborgerskap.isPresent()) {
+            return getHovedStatsborgetskapMedFulltLandNavn(norskStatsborgerskap.get());
+        } else {
+            statsborgerskaps.sort(Comparator.comparing(Statsborgerskap::getGyldigFra));
+            return getHovedStatsborgetskapMedFulltLandNavn(statsborgerskaps.get(0));
+        }
+    }
+
+    private Statsborgerskap getHovedStatsborgetskapMedFulltLandNavn(Statsborgerskap statsborgerskap) {
+        return new Statsborgerskap(Landgruppe.getLandFulltNavn(statsborgerskap.getStatsborgerskap()),
+                statsborgerskap.getGyldigFra(),
+                statsborgerskap.getGyldigTil());
     }
 }

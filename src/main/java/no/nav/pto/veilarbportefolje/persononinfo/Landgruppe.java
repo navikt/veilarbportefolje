@@ -303,7 +303,7 @@ public class Landgruppe {
         return "Optional.empty()";
     }
 
-    public static String getFoedelandFulltNavn(String countryCode) {
+    public static String getLandFulltNavn(String countryCode) {
         if (countryCode == null || countryCode.isEmpty()) {
             return "";
         }
