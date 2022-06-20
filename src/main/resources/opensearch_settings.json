@@ -23,6 +23,13 @@
         },
         "fnr_sok": {
           "tokenizer": "fnr_sok_tokenizer"
+        },
+        "foedelandFulltNavn_sok": {
+          "tokenizer": "foedeland_tokenizer",
+          "filter": [
+            "lowercase",
+            "spesialtegnfolding"
+          ]
         }
       },
       "tokenizer": {
@@ -38,6 +45,11 @@
           "token_chars": [
             "digit"
           ]
+        },
+        "foedeland_tokenizer": {
+          "type": "ngram",
+          "min_gram": 2,
+          "max_gram": 10
         }
       }
     }
@@ -175,7 +187,8 @@
         ]
       },
       "foedelandFulltNavn": {
-        "type": "keyword"
+        "type": "keyword",
+        "analyzer": "foedelandFulltNavn_sok"
       },
       "talespraaktolk": {
         "type": "keyword"
