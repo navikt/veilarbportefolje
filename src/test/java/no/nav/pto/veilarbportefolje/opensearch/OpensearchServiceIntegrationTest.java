@@ -1250,8 +1250,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Aserbajdsjan")).findFirst().isPresent());
-        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Singapore")).findFirst().isPresent());
+        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland() != null).filter(x -> x.getFoedeland().equals("Aserbajdsjan")).findFirst().isPresent());
+        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland() != null).filter(x -> x.getFoedeland().equals("Singapore")).findFirst().isPresent());
 
 
         filterValg = new Filtervalg()
