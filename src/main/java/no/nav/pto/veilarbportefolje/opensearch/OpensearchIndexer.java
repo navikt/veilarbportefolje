@@ -27,7 +27,7 @@ import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOpp
 @Service
 @RequiredArgsConstructor
 public class OpensearchIndexer {
-    public static final int BATCH_SIZE = 1000;
+    public static final int BATCH_SIZE = 500;
     public static final int ORACLE_BATCH_SIZE_LIMIT = 1000;
 
     private final RestHighLevelClient restHighLevelClient;
