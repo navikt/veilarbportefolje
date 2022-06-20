@@ -1182,6 +1182,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
                 .setFoedeland("NOR")
+                .setFoedelandFulltNavn("Norge")
                 .setLandgruppe("1");
 
         var brukerFraLandGruppe2 = new OppfolgingsBruker()
@@ -1192,6 +1193,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
                 .setFoedeland("EST")
+                .setFoedelandFulltNavn("Estland")
                 .setLandgruppe("2")
                 .setHovedStatsborgerskap(new Statsborgerskap("Estland", LocalDate.now(), null));
         ;
@@ -1204,6 +1206,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
                 .setFoedeland("AZE")
+                .setFoedelandFulltNavn("Aserbajdsjan")
                 .setLandgruppe("3")
                 .setHovedStatsborgerskap(new Statsborgerskap("Norge", LocalDate.now(), null));
         ;
@@ -1216,6 +1219,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
                 .setFoedeland("SGP")
+                .setFoedelandFulltNavn("Singapore")
                 .setLandgruppe("3")
                 .setHovedStatsborgerskap(new Statsborgerskap("Singapore", LocalDate.now(), null));
 
@@ -1250,8 +1254,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland() != null).filter(x -> x.getFoedeland().equals("Aserbajdsjan")).findFirst().isPresent());
-        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland() != null).filter(x -> x.getFoedeland().equals("Singapore")).findFirst().isPresent());
+        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Aserbajdsjan")).findFirst().isPresent());
+        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Singapore")).findFirst().isPresent());
 
 
         filterValg = new Filtervalg()
