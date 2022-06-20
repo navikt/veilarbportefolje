@@ -275,7 +275,7 @@ public class OpensearchQueryBuilder {
     }
 
     static void sorterFodeland(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
-        searchSourceBuilder.sort("foedeland", order);
+        searchSourceBuilder.sort(new FieldSortBuilder("foedeland").order(order));
     }
 
     //@TODO: implement
