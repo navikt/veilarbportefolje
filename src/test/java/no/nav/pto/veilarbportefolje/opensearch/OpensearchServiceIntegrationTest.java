@@ -1280,6 +1280,27 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(response.getBrukere().stream().noneMatch(x -> x.getFoedeland() != null));
+
+
+        filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of());
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "fodeland",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(5);
+        assertThat(response.getBrukere().get(0).getFoedeland().equals("Aserbajdsjan"));
+        assertThat(response.getBrukere().get(1).getFoedeland().equals("Estland"));
+        assertThat(response.getBrukere().get(2).getFoedeland().equals("Norge"));
+        assertThat(response.getBrukere().get(3).getFoedeland().equals("Singapore"));
+        assertThat(response.getBrukere().get(4).getFoedeland().equals(""));
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
