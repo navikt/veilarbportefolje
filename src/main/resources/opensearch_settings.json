@@ -23,11 +23,14 @@
         },
         "fnr_sok": {
           "tokenizer": "fnr_sok_tokenizer"
-        },
-        "foedelandFulltNavn_sok": {
-          "tokenizer": "foedeland_tokenizer",
+        }
+      },
+      "normalizer": {
+        "foedeland_fullt_navn_normalizer": {
+          "type": "custom",
           "filter": [
             "lowercase",
+            "trim",
             "spesialtegnfolding"
           ]
         }
@@ -45,11 +48,6 @@
           "token_chars": [
             "digit"
           ]
-        },
-        "foedeland_tokenizer": {
-          "type": "ngram",
-          "min_gram": 2,
-          "max_gram": 10
         }
       }
     }
@@ -188,7 +186,7 @@
       },
       "foedelandFulltNavn": {
         "type": "keyword",
-        "analyzer": "foedelandFulltNavn_sok"
+        "normalizer": "foedeland_fullt_navn_normalizer"
       },
       "talespraaktolk": {
         "type": "keyword"
