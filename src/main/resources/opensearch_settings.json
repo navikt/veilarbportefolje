@@ -25,16 +25,6 @@
           "tokenizer": "fnr_sok_tokenizer"
         }
       },
-      "normalizer": {
-        "foedeland_fullt_navn_normalizer": {
-          "type": "custom",
-          "filter": [
-            "lowercase",
-            "trim",
-            "spesialtegnfolding"
-          ]
-        }
-      },
       "tokenizer": {
         "fullt_navn_sok_tokenizer": {
           "type": "ngram",
@@ -185,8 +175,7 @@
         ]
       },
       "foedelandFulltNavn": {
-        "type": "keyword",
-        "normalizer": "foedeland_fullt_navn_normalizer"
+        "type": "keyword"
       },
       "talespraaktolk": {
         "type": "keyword"

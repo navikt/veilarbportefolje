@@ -1327,7 +1327,6 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFoedelandFulltNavn("Aserbajdsjan")
                 .setLandgruppe("3")
                 .setHovedStatsborgerskap(new Statsborgerskap("Norge", LocalDate.now(), null));
-        ;
 
         var brukerFraLandGruppe3_2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -1340,6 +1339,17 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setLandgruppe("3")
                 .setHovedStatsborgerskap(new Statsborgerskap("Singapore", LocalDate.now(), null));
 
+        var brukerFraLandGruppe3_3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setFoedelandFulltNavn("Botswana")
+                .setLandgruppe("3")
+                .setHovedStatsborgerskap(new Statsborgerskap("Botswana", LocalDate.now(), null));
+
         var brukerUkjentLandGruppe = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
@@ -1349,7 +1359,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setHovedStatsborgerskap(new Statsborgerskap("Norge", LocalDate.now(), null));
 
-        var liste = List.of(brukerFraLandGruppe1, brukerFraLandGruppe2, brukerFraLandGruppe3_1, brukerFraLandGruppe3_2, brukerUkjentLandGruppe);
+        var liste = List.of(brukerFraLandGruppe1, brukerFraLandGruppe2, brukerFraLandGruppe3_1, brukerFraLandGruppe3_2, brukerFraLandGruppe3_3, brukerUkjentLandGruppe);
 
         skrivBrukereTilTestindeks(liste);
 
@@ -1369,13 +1379,31 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
 
-        assertThat(response.getAntall()).isEqualTo(5);
+        assertThat(response.getAntall()).isEqualTo(6);
         assertThat(response.getBrukere().get(0).getFoedeland().equals("Aserbajdsjan"));
-        assertThat(response.getBrukere().get(1).getFoedeland().equals("Estland"));
-        assertThat(response.getBrukere().get(2).getFoedeland().equals("Norge"));
-        assertThat(response.getBrukere().get(3).getFoedeland().equals("Singapore"));
-        assertThat(response.getBrukere().get(4).getFoedeland() == null);
+        assertThat(response.getBrukere().get(2).getFoedeland().equals("Botswana"));
+        assertThat(response.getBrukere().get(2).getFoedeland().equals("Estland"));
+        assertThat(response.getBrukere().get(3).getFoedeland().equals("Norge"));
+        assertThat(response.getBrukere().get(4).getFoedeland().equals("Singapore"));
+        assertThat(response.getBrukere().get(5).getFoedeland() == null);
 
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "descending",
+                "fodeland",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(6);
+        assertThat(response.getBrukere().get(0).getFoedeland().equals("Singapore"));
+        assertThat(response.getBrukere().get(1).getFoedeland().equals("Norge"));
+        assertThat(response.getBrukere().get(2).getFoedeland().equals("Estland"));
+        assertThat(response.getBrukere().get(3).getFoedeland().equals("Botswana"));
+        assertThat(response.getBrukere().get(4).getFoedeland().equals("Aserbajdsjan"));
+        assertThat(response.getBrukere().get(5).getFoedeland() == null);
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -1387,7 +1415,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
 
-        assertThat(response.getAntall()).isEqualTo(5);
+        assertThat(response.getAntall()).isEqualTo(6);
         assertThat(response.getBrukere().get(0).getHovedStatsborgerskap().getStatsborgerskap().equals("Estland"));
         assertThat(response.getBrukere().get(1).getHovedStatsborgerskap().getStatsborgerskap().equals("Norge"));
     }
