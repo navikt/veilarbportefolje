@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import io.vavr.Tuple;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -12,6 +13,8 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.poao_tilgang.client.Decision;
+import no.nav.poao_tilgang.client.TilgangClient;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,24 +25,31 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getContextAwareUserToken;
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetBrukerToken;
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.*;
 
+@Slf4j
 @Service
 public class AuthService {
 
     private final AuthContextHolder authContextHolder;
     private final AzureAdOnBehalfOfTokenClient aadOboTokenClient;
     private final EnvironmentProperties environmentProperties;
+    private final TilgangClient tilgangClient;
     private final ModiaPep modiaPep;
     private final Pep veilarbPep;
     private final Cache<VeilederPaEnhet, Boolean > harVeilederTilgangTilEnhetCache;
 
     @Autowired
-    public AuthService(Pep veilarbPep, ModiaPep modiaPep, AuthContextHolder authContextHolder, AzureAdOnBehalfOfTokenClient aadOboTokenClient, EnvironmentProperties environmentProperties) {
+    public AuthService(Pep veilarbPep,
+                       TilgangClient tilgangClient,
+                       ModiaPep modiaPep,
+                       AuthContextHolder authContextHolder,
+                       AzureAdOnBehalfOfTokenClient aadOboTokenClient,
+                       EnvironmentProperties environmentProperties) {
         this.authContextHolder = authContextHolder;
         this.aadOboTokenClient = aadOboTokenClient;
         this.environmentProperties = environmentProperties;
+        this.tilgangClient = tilgangClient;
         this.modiaPep =  modiaPep;
         this.veilarbPep = veilarbPep;
         this.harVeilederTilgangTilEnhetCache = Caffeine.newBuilder()
@@ -49,11 +59,23 @@ public class AuthService {
     }
 
     public void tilgangTilOppfolging() {
-        AuthUtils.test("oppfølgingsbruker", AuthUtils.getInnloggetVeilederIdent(), modiaPep.harVeilederTilgangTilModia(getInnloggetBrukerToken()));
+        boolean harTilgang = modiaPep.harVeilederTilgangTilModia(getInnloggetBrukerToken());
+
+        try {
+            Decision decisionPoaoTilgang = tilgangClient.harVeilederTilgangTilModia(getInnloggetVeilederIdent().getValue());
+            boolean harTilgangPoaoTilgang =  Decision.Type.PERMIT.equals(decisionPoaoTilgang.getType());
+            if (harTilgang != harTilgangPoaoTilgang) {
+                log.warn("Forskjellig resultat fra poao-tilgang og abac-modia");
+            }
+        } catch (Exception e) {
+            log.error("Kall til poao-tilgang feilet", e);
+        }
+
+        AuthUtils.test("oppfølgingsbruker", getInnloggetVeilederIdent(), harTilgang);
     }
 
     public void tilgangTilEnhet(String enhet) {
-        String veilederId = AuthUtils.getInnloggetVeilederIdent().toString();
+        String veilederId = getInnloggetVeilederIdent().toString();
         AuthUtils.test("tilgang til enhet", Tuple.of(enhet, veilederId), harVeilederTilgangTilEnhet(veilederId, enhet));
     }
 
@@ -67,7 +89,7 @@ public class AuthService {
     }
 
     public List<Bruker> sensurerBrukere(List<Bruker> brukere) {
-        String veilederIdent = AuthUtils.getInnloggetVeilederIdent().toString();
+        String veilederIdent = getInnloggetVeilederIdent().toString();
         return brukere.stream()
                 .map(bruker -> fjernKonfidensiellInfoDersomIkkeTilgang(bruker, veilederIdent))
                 .collect(toList());
@@ -94,7 +116,7 @@ public class AuthService {
     }
 
     public Skjermettilgang hentVeilederTilgangTilSkjermet(){
-        String veilederId = AuthUtils.getInnloggetVeilederIdent().toString();
+        String veilederId = getInnloggetVeilederIdent().toString();
         boolean tilgangTilKode6 = veilarbPep.harVeilederTilgangTilKode6(NavIdent.of(veilederId));
         boolean tilgangTilKode7 = veilarbPep.harVeilederTilgangTilKode7(NavIdent.of(veilederId));
         boolean tilgangEgenAnsatt = veilarbPep.harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederId));

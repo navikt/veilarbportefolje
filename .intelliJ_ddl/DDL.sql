@@ -103,10 +103,9 @@ CREATE TABLE public.bruker_data (
     foedeland character varying(10),
     innflyttingtilnorgefraland character varying(10),
     angittflyttedato date,
-    folkeregisterpersonstatus character varying(30),
     talespraaktolk character varying(20),
     tegnspraaktolk character varying(20),
-    landgruppe character varying(10)
+    tolkbehovsistoppdatert date
 );
 
 
@@ -475,14 +474,6 @@ ALTER TABLE ONLY public.bruker_profilering
 
 ALTER TABLE ONLY public.bruker_registrering
     ADD CONSTRAINT bruker_registrering_pkey PRIMARY KEY (aktoerid);
-
-
---
--- Name: bruker_statsborgerskap bruker_statsborgerskap_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.bruker_statsborgerskap
-    ADD CONSTRAINT bruker_statsborgerskap_pkey PRIMARY KEY (freg_ident);
 
 
 --

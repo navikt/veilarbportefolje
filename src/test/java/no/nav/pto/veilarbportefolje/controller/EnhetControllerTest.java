@@ -18,6 +18,7 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.poao_tilgang.client.TilgangClient;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.ModiaPep;
@@ -61,7 +62,7 @@ public class EnhetControllerTest {
         modiaPep = mock(ModiaPep.class);
         authContextHolder = AuthContextHolderThreadLocal.instance();
 
-        AuthService authService = new AuthService(pep, modiaPep, mock(AuthContextHolder.class), mock(AzureAdOnBehalfOfTokenClient.class), mock(EnvironmentProperties.class));
+        AuthService authService = new AuthService(pep, mock(TilgangClient.class), modiaPep, mock(AuthContextHolder.class), mock(AzureAdOnBehalfOfTokenClient.class), mock(EnvironmentProperties.class));
         enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(MetricsClient.class), mock(UnleashService.class));
     }
 

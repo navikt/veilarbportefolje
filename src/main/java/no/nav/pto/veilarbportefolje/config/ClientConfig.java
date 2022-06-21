@@ -10,10 +10,13 @@ import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.rest.client.RestClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
+import no.nav.poao_tilgang.client.TilgangClient;
+import no.nav.poao_tilgang.client.TilgangHttpClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -22,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.net.http.HttpClient;
+import java.util.concurrent.TimeUnit;
 
 import static no.nav.common.utils.NaisUtils.getCredentials;
 import static no.nav.common.utils.UrlUtils.createDevInternalIngressUrl;
@@ -74,12 +78,30 @@ public class ClientConfig {
 
     @Bean
     public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient) {
-        String tokenScop = String.format("api://%s-fss.pdl.pdl-api/.default",
+        String tokenScope = String.format("api://%s-fss.pdl.pdl-api/.default",
                 isProduction() ? "prod" : "dev"
         );
         return new PdlClientImpl(
                 createServiceUrl("pdl-api", "pdl", false),
-                () -> tokenClient.createMachineToMachineToken(tokenScop)
+                () -> tokenClient.createMachineToMachineToken(tokenScope)
+        );
+    }
+
+    @Bean
+    TilgangClient tilgangClient(AzureAdMachineToMachineTokenClient tokenClient) {
+        String url = isProduction() ?
+                createProdInternalIngressUrl("poao-tilgang") :
+                createDevInternalIngressUrl("poao-tilgang");
+
+        String tokenScope = String.format("api://%s-gcp.poao.poao-tilgang/.default", isProduction() ? "prod" : "dev");
+
+        return new TilgangHttpClient(
+                url,
+                () -> tokenClient.createMachineToMachineToken(tokenScope),
+                RestClient.baseClientBuilder()
+                        .connectTimeout(2, TimeUnit.SECONDS)
+                        .readTimeout(3, TimeUnit.SECONDS)
+                        .build()
         );
     }
 
