@@ -110,7 +110,7 @@ public class OpensearchIndexer {
         List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
         postgresOpensearchMapper.flettInnAktivitetsData(brukere);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
-        if(brukere.isEmpty()){
+        if (brukere.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
             return;
         }
