@@ -33,8 +33,9 @@ public class PdlIdentRepositoryTest {
     }
 
     @BeforeEach
-    public void reset(){
+    public void reset() {
         db.update("truncate oppfolging_data");
+        db.update("truncate bruker_data CASCADE");
         db.update("truncate bruker_identer");
     }
 
@@ -108,7 +109,7 @@ public class PdlIdentRepositoryTest {
         assertThat(lokaleIdenter.size()).isEqualTo(0);
     }
 
-    private List<PDLIdent> hentLokaleIdenter(AktorId ident){
+    private List<PDLIdent> hentLokaleIdenter(AktorId ident) {
         return pdlIdentRepository.hentIdenter(pdlIdentRepository.hentPerson(ident.get()));
     }
 }

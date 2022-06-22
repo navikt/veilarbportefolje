@@ -15,9 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
@@ -34,7 +32,7 @@ public class PdlServiceTest {
 
     public PdlServiceTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
-        pdlPersonRepository = new PdlPersonRepository(db);
+        pdlPersonRepository = new PdlPersonRepository(db, db);
     }
 
     @BeforeEach
@@ -62,7 +60,7 @@ public class PdlServiceTest {
 
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
-                new PdlPersonRepository(db),
+                new PdlPersonRepository(db, db),
                 new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM"))
         );
     }
@@ -84,6 +82,14 @@ public class PdlServiceTest {
         PDLPerson pdlPerson = pdlPersonRepository.hentPerson(fnr);
 
         assertThat(identerFraPostgres).containsExactlyInAnyOrderElementsOf(identerFraFil);
-        assertThat(pdlPerson.getFornavn()).isEqualTo("TREIG");
+        assertThat(pdlPerson.getFornavn()).isEqualTo("Dogmatisk");
+        assertThat(pdlPerson.getEtternavn()).isEqualTo("Budeie");
+        assertThat(pdlPerson.getFoedsel().toString()).isEqualTo("1991-12-30");
+        assertThat(pdlPerson.getFoedeland()).isEqualTo("UKR");
+        assertThat(pdlPerson.getStatsborgerskap().size() == 1);
+        assertThat(pdlPerson.getStatsborgerskap().stream().anyMatch(x -> x.getStatsborgerskap().equals("UKR")));
+        assertThat(pdlPerson.getStatsborgerskap().stream().anyMatch(x -> x.getGyldigFra().toString().equals("1991-12-30")));
+        assertThat(pdlPerson.getTalespraaktolk().equals("UK"));
+        assertThat(pdlPerson.getTolkBehovSistOppdatert().toString().equals("2022-06-02"));
     }
 }

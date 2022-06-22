@@ -23,6 +23,9 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private List<Foedsel> foedsel;
             private List<Kjoenn> kjoenn;
             private List<Doedsfall> doedsfall;
+            private List<Statsborgerskap> statsborgerskap;
+            private List<Bostedsadresse> bostedsadresse;
+            private List<TilrettelagtKommunikasjon> tilrettelagtKommunikasjon;
         }
 
         @Data
@@ -36,6 +39,7 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Foedsel {
             private String foedselsdato;
+            private String foedeland;
             private Metadata metadata;
         }
 
@@ -56,6 +60,31 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Statsborgerskap {
+            private String land;
+            private String gyldigFraOgMed;
+            private String gyldigTilOgMed;
+            private Metadata metadata;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class InnflyttingTilNorge {
+            private String fraflyttingsland;
+            private Metadata metadata;
+        }
+
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class TilrettelagtKommunikasjon {
+            private Spraak talespraaktolk;
+            private Spraak tegnspraaktolk;
+            private Metadata metadata;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Folkeregisteridentifikator {
             private String identifikasjonsnummer;
             private Metadata metadata;
@@ -63,9 +92,29 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Bostedsadresse {
+            private String angittFlyttedato;
+            private Metadata metadata;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Spraak {
+            private String spraak;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Metadata {
             private boolean historisk;
             private PdlMaster master;
+            private List<Endringer> endringer;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Endringer {
+            private String registrert;
         }
     }
 
