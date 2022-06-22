@@ -7,17 +7,15 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class Landgruppe {
 
     private static Landgruppe instance;
-    private List<String> landGruppe0 = new ArrayList<>();
-    private List<String> landGruppe1 = new ArrayList<>();
-    private List<String> landGruppe2 = new ArrayList<>();
-    private List<String> landGruppe3 = new ArrayList<>();
+    private Map<String, String> landGruppeMap = new HashMap<>();
 
     public static Landgruppe getInstance() {
         if (instance == null) {
@@ -27,10 +25,17 @@ public class Landgruppe {
     }
 
     private Landgruppe() {
-        landGruppe0.addAll(getLandgruppeFromFile(0));
-        landGruppe1.addAll(getLandgruppeFromFile(1));
-        landGruppe2.addAll(getLandgruppeFromFile(2));
-        landGruppe3.addAll(getLandgruppeFromFile(3));
+        List<String> landGruppe0 = getLandgruppeFromFile(0);
+        landGruppe0.forEach(x -> landGruppeMap.put(x, "0"));
+
+        List<String> landGruppe1 = getLandgruppeFromFile(1);
+        landGruppe1.forEach(x -> landGruppeMap.put(x, "1"));
+
+        List<String> landGruppe2 = getLandgruppeFromFile(2);
+        landGruppe2.forEach(x -> landGruppeMap.put(x, "2"));
+
+        List<String> landGruppe3 = getLandgruppeFromFile(3);
+        landGruppe3.forEach(x -> landGruppeMap.put(x, "3"));
     }
 
     public String getLandgruppeForLandKode(String countryCode) {
@@ -39,16 +44,7 @@ public class Landgruppe {
         }
 
         String ucCountryCode = countryCode.toUpperCase();
-        if (landGruppe0.contains(ucCountryCode)) {
-            return "0";
-        } else if (landGruppe1.contains(ucCountryCode)) {
-            return "1";
-        } else if (landGruppe2.contains(ucCountryCode)) {
-            return "2";
-        } else if (landGruppe3.contains(ucCountryCode)) {
-            return "3";
-        }
-        return null;
+        return landGruppeMap.getOrDefault(ucCountryCode, null);
     }
 
     @SneakyThrows
