@@ -14,6 +14,7 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
+import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
@@ -48,13 +49,13 @@ public class ClientConfig {
     }
 
     @Bean
-    public VeilarbVeilederClient veilarbVeilederClient(EnvironmentProperties environmentProperties) {
-        return new VeilarbVeilederClient(environmentProperties);
+    public VeilarbVeilederClient veilarbVeilederClient(AuthService authService, EnvironmentProperties environmentProperties) {
+        return new VeilarbVeilederClient(authService, environmentProperties);
     }
 
     @Bean
-    public VedtakstottePilotRequest vedtakstottePilotRequest() {
-        return new VedtakstottePilotRequest();
+    public VedtakstottePilotRequest vedtakstottePilotRequest(AuthService authService) {
+        return new VedtakstottePilotRequest(authService);
     }
 
     @Bean

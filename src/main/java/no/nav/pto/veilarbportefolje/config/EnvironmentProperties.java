@@ -14,8 +14,9 @@ public class EnvironmentProperties {
     private String stsDiscoveryUrl;
     private String openAmDiscoveryUrl;
     private String openAmClientId;
-    private String azureAdDiscoveryUrl;
-    private String azureAdClientId;
+    private String naisAadDiscoveryUrl;
+    private String naisAadClientId;
+    private String naisAadIssuer;
     private String openAmRefreshUrl;
     private String dbUrl;
     private List<String> admins;
