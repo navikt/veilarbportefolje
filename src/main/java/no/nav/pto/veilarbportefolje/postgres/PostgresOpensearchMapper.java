@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
+import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.persononinfo.Landgruppe;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
@@ -31,6 +31,8 @@ public class PostgresOpensearchMapper {
     private final SisteEndringService sisteEndringService;
     private final PdlService pdlService;
     private final UnleashService unleashService;
+
+    private final KodeverkService kodeverkService;
 
     public List<OppfolgingsBruker> flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -133,7 +135,7 @@ public class PostgresOpensearchMapper {
     }
 
     private Statsborgerskap getHovedStatsborgetskapMedFulltLandNavn(Statsborgerskap statsborgerskap) {
-        return new Statsborgerskap(Landgruppe.getLandFulltNavn(statsborgerskap.getStatsborgerskap()),
+        return new Statsborgerskap(kodeverkService.getBeskrivelseForLandkode(statsborgerskap.getStatsborgerskap()),
                 statsborgerskap.getGyldigFra(),
                 statsborgerskap.getGyldigTil());
     }

@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.postgres;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
@@ -40,8 +41,9 @@ public class BrukerRepositoryV2Test {
     public void setUp() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
         final UnleashService unleashService = mock(UnleashService.class);
+        final KodeverkService kodeverkService = mock(KodeverkService.class);
         when(unleashService.isEnabled(anyString())).thenReturn(true);
-        this.brukerRepositoryV2 = new BrukerRepositoryV2(db, unleashService);
+        this.brukerRepositoryV2 = new BrukerRepositoryV2(db, unleashService, kodeverkService);
         this.pdlIdentRepository = new PdlIdentRepository(db);
         this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
         this.pdlPersonRepository = new PdlPersonRepository(db, db);

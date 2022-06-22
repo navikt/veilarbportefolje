@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
@@ -11,8 +9,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -29,8 +26,7 @@ public class EnhetController {
     private final AuthService authService;
     private final TiltakService tiltakService;
     private final MetricsClient metricsClient;
-    private final PdlService pdlService;
-    private final UnleashService unleashService;
+    private final PersonOpprinnelseService personOpprinnelseService;
 
     @PostMapping("/{enhet}/portefolje")
     public Portefolje hentPortefoljeForEnhet(
@@ -90,24 +86,22 @@ public class EnhetController {
     }
 
     @GetMapping("/{enhet}/foedeland")
-    public String hentFoedeland(
+    public List<Foedeland> hentFoedeland(
             @PathVariable("enhet")
-            String enhet) throws JsonProcessingException {
+            String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.writeValueAsString(pdlService.hentFoedeland());
+        return personOpprinnelseService.hentFoedeland();
     }
 
     @GetMapping("/{enhet}/tolkSpraak")
-    public String hentTolkSpraak(
+    public List<TolkSpraak> hentTolkSpraak(
             @PathVariable("enhet")
-            String enhet) throws JsonProcessingException {
+            String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.writeValueAsString(pdlService.hentTolkSpraak());
+        return personOpprinnelseService.hentTolkSpraak();
     }
 }

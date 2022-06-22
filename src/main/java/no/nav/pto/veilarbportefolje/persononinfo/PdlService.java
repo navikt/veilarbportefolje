@@ -4,15 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.domene.Foedeland;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
-import no.nav.pto.veilarbportefolje.domene.TolkSpraak;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -93,33 +90,5 @@ public class PdlService {
     public Map<Fnr, List<Statsborgerskap>> hentStatsborgerskap(List<Fnr> fnrs) {
         return pdlPersonRepository.hentStatsborgerskap(fnrs);
     }
-
-    public List<Foedeland> hentFoedeland() {
-        List<String> landCodes = pdlPersonRepository.hentFoedeland();
-        List<Foedeland> codeToLand = new ArrayList<>();
-
-        landCodes.stream()
-                .forEach(code -> {
-                    String foedelandFulltNavn = Landgruppe.getLandFulltNavn(code);
-                    if (foedelandFulltNavn != null && !foedelandFulltNavn.isEmpty()) {
-                        codeToLand.add(new Foedeland(code, foedelandFulltNavn));
-                    }
-                });
-        return codeToLand;
-    }
-
-    public List<TolkSpraak> hentTolkSpraak() {
-        List<TolkSpraak> tolkSpraak = new ArrayList<>();
-        pdlPersonRepository.hentTolkSpraak()
-                .stream()
-                .filter(x -> x != null && !x.isEmpty())
-                .sorted()
-                .forEach(code -> {
-                    String spraak = SpraakKode.getSpraak(code);
-                    if (spraak != null && !spraak.isEmpty()) {
-                        tolkSpraak.add(new TolkSpraak(code, spraak));
-                    }
-                });
-        return tolkSpraak;
-    }
+    
 }

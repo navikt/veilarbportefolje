@@ -13,7 +13,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -123,27 +126,5 @@ public class PdlPersonRepository {
                     }
                     return results;
                 });
-    }
-
-    public List<String> hentFoedeland() {
-        return dbReadOnly.queryForList("""
-                    SELECT DISTINCT foedeland FROM bruker_data ORDER BY foedeland ASC 
-                """, String.class);
-    }
-
-    public Set<String> hentTolkSpraak() {
-        List<String> talespraakList = dbReadOnly.queryForList("""
-                    SELECT DISTINCT talespraaktolk FROM bruker_data 
-                """, String.class);
-
-        List<String> tegnspraakList = dbReadOnly.queryForList("""
-                    SELECT DISTINCT tegnspraaktolk FROM bruker_data
-                """, String.class);
-
-        Set<String> uniqueEntries = new HashSet<>();
-        uniqueEntries.addAll(talespraakList);
-        uniqueEntries.addAll(tegnspraakList);
-
-        return uniqueEntries;
     }
 }

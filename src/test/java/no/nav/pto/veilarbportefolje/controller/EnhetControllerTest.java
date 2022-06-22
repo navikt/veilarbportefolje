@@ -25,8 +25,7 @@ import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,7 +56,7 @@ public class EnhetControllerTest {
         authContextHolder = AuthContextHolderThreadLocal.instance();
 
         AuthService authService = new AuthService(pep, modiaPep, mock(AuthContextHolder.class), mock(AzureAdOnBehalfOfTokenClient.class), mock(EnvironmentProperties.class));
-        enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(MetricsClient.class), mock(PdlService.class), mock(UnleashService.class));
+        enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(MetricsClient.class), mock(PersonOpprinnelseService.class));
     }
 
     @Test

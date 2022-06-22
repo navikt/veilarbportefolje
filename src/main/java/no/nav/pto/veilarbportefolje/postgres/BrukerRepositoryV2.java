@@ -4,8 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.persononinfo.Landgruppe;
+import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
@@ -39,6 +40,8 @@ public class BrukerRepositoryV2 {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate db;
     private final UnleashService unleashService;
+
+    private final KodeverkService kodeverskService;
 
     public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds) {
         return hentOppfolgingsBrukere(aktorIds, false);
@@ -241,9 +244,9 @@ public class BrukerRepositoryV2 {
         String fornavn = rs.getString("fornavn_pdl");
         String etternavn = rs.getString("etternavn_pdl");
 
-        String landGruppe = Landgruppe.getLandgruppe(rs.getString("foedeland"));
-        String foedelandFulltNavn = Landgruppe.getLandFulltNavn(rs.getString("foedeland"));
-        String innflyttingTilNorgeFraLandFullNavn = Landgruppe.getLandFulltNavn(rs.getString("innflyttingTilNorgeFraLand"));
+        String landGruppe = Landgruppe.getInstance().getLandgruppeForLandKode(rs.getString("foedeland"));
+        String foedelandFulltNavn = kodeverskService.getBeskrivelseForLandkode(rs.getString("foedeland"));
+        String innflyttingTilNorgeFraLandFullNavn = kodeverskService.getBeskrivelseForLandkode(rs.getString("innflyttingTilNorgeFraLand"));
         bruker
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
