@@ -88,7 +88,7 @@ public class PdlService {
     }
 
     public Map<Fnr, List<Statsborgerskap>> hentStatsborgerskap(List<Fnr> fnrs) {
-        return pdlPersonRepository.hentStatsborgerskap(fnrs);
+        return pdlPersonRepository.hentGyldigeStatsborgerskapData(fnrs);
     }
-    
+
 }

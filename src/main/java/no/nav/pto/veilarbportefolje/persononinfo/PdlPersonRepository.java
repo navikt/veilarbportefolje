@@ -75,7 +75,7 @@ public class PdlPersonRepository {
 
     @SneakyThrows
     public PDLPerson hentPerson(Fnr hentAktivFnr) {
-        List<Statsborgerskap> statsborgerskaps = hentStatsborgerskap(hentAktivFnr);
+        List<Statsborgerskap> statsborgerskaps = hentGyldigeStatsborgerskapData(hentAktivFnr);
         return queryForObjectOrNull(() ->
                 dbReadOnly.queryForObject("select * from bruker_data where freg_ident = ?",
                         (rs, row) -> new PDLPerson()
@@ -95,7 +95,7 @@ public class PdlPersonRepository {
                         , hentAktivFnr.get()));
     }
 
-    private List<Statsborgerskap> hentStatsborgerskap(Fnr fnr) {
+    private List<Statsborgerskap> hentGyldigeStatsborgerskapData(Fnr fnr) {
         return dbReadOnly.query("""
                     SELECT STATSBORGERSKAP, GYLDIG_FRA, GYLDIG_TIL FROM BRUKER_STATSBORGERSKAP WHERE FREG_IDENT = ?
                 """, (rs, rowNum) -> new Statsborgerskap(
@@ -105,7 +105,7 @@ public class PdlPersonRepository {
         ), fnr.get());
     }
 
-    public Map<Fnr, List<Statsborgerskap>> hentStatsborgerskap(List<Fnr> fnrs) {
+    public Map<Fnr, List<Statsborgerskap>> hentGyldigeStatsborgerskapData(List<Fnr> fnrs) {
         String fnrsStr = fnrs.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
 
         String sql = """
