@@ -155,15 +155,46 @@
       },
       "aktivitet_tiltak_utlopsdato": {
         "type": "date",
-        "copy_to": ["aktivitet_utlopsdatoer", "alle_aktiviteter_utlopsdatoer"]
+        "copy_to": [
+          "aktivitet_utlopsdatoer",
+          "alle_aktiviteter_utlopsdatoer"
+        ]
       },
       "aktivitet_utdanningaktivitet_utlopsdato": {
         "type": "date",
-        "copy_to": ["aktivitet_utlopsdatoer", "alle_aktiviteter_utlopsdatoer"]
+        "copy_to": [
+          "aktivitet_utlopsdatoer",
+          "alle_aktiviteter_utlopsdatoer"
+        ]
       },
       "aktivitet_gruppeaktivitet_utlopsdato": {
         "type": "date",
-        "copy_to": ["aktivitet_utlopsdatoer", "alle_aktiviteter_utlopsdatoer"]
+        "copy_to": [
+          "aktivitet_utlopsdatoer",
+          "alle_aktiviteter_utlopsdatoer"
+        ]
+      },
+      "foedelandFulltNavn": {
+        "type": "keyword"
+      },
+      "talespraaktolk": {
+        "type": "keyword"
+      },
+      "tegnspraaktolk": {
+        "type": "keyword"
+      },
+      "landgruppe": {
+        "type": "keyword"
+      },
+      "hovedStatsborgerskap": {
+        "properties": {
+          "statsborgerskap": {
+            "type": "keyword"
+          },
+          "gyldigFra": {
+            "type": "date"
+          }
+        }
       }
     }
   }

@@ -27,7 +27,7 @@ import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOpp
 @Service
 @RequiredArgsConstructor
 public class OpensearchIndexer {
-    public static final int BATCH_SIZE = 500;
+    public static final int BATCH_SIZE = 1000;
     public static final int ORACLE_BATCH_SIZE_LIMIT = 1000;
 
     private final RestHighLevelClient restHighLevelClient;
@@ -71,7 +71,6 @@ public class OpensearchIndexer {
                 })
                 .forEach(bulk::add);
 
-        log.info("Bulk request til OpenSearch...");
         try {
             restHighLevelClient.bulk(bulk, RequestOptions.DEFAULT);
             log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
@@ -111,7 +110,7 @@ public class OpensearchIndexer {
         List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
         postgresOpensearchMapper.flettInnAktivitetsData(brukere);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
-        if(brukere.isEmpty()){
+        if (brukere.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
             return;
         }
