@@ -148,13 +148,6 @@ public class DateUtils {
         return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.systemDefault());
     }
 
-    public static LocalDate toLocalDateOrNull(String date) {
-        if (date == null) {
-            return null;
-        }
-        return getTimestampFromSimpleISODate(date).toLocalDateTime().toLocalDate();
-    }
-
     public static LocalDateTime toLocalDateTimeOrNull(Timestamp date) {
         if (date == null) {
             return null;
@@ -167,6 +160,13 @@ public class DateUtils {
             return null;
         }
         return date.toLocalDate().atStartOfDay();
+    }
+
+    public static LocalDate toLocalDateOrNull(String date) {
+        if (date == null) {
+            return null;
+        }
+        return getTimestampFromSimpleISODate(date).toLocalDateTime().toLocalDate();
     }
 
     public static String nowToStr() {
