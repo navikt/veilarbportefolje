@@ -2,7 +2,9 @@ package no.nav.pto.veilarbportefolje.opensearch.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,6 +34,8 @@ public class OppfolgingsBruker {
     String veileder_id;
     int fodselsdag_i_mnd;
     String fodselsdato;
+    String foedeland;
+    String foedelandFulltNavn;
     String kjonn;
     String ytelse;
     String utlopsdato;
@@ -90,4 +94,12 @@ public class OppfolgingsBruker {
     String utdanning_bestatt;
     String utdanning_godkjent;
     Map<String, Endring> siste_endringer;
+
+    String talespraaktolk;
+    String tegnspraaktolk;
+    LocalDate tolkBehovSistOppdatert;
+    String landgruppe;
+    String innflyttingTilNorgeFraLand;
+    boolean harFlereStatsborgerskap;
+    Statsborgerskap hovedStatsborgerskap;
 }

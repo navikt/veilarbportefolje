@@ -5,17 +5,8 @@ import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.domene.Bruker;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
-import no.nav.pto.veilarbportefolje.domene.FacetResults;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.StatusTall;
-import no.nav.pto.veilarbportefolje.opensearch.domene.Bucket;
-import no.nav.pto.veilarbportefolje.opensearch.domene.Hit;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljestorrelserResponse;
-import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse;
+import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.opensearch.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
@@ -34,16 +25,8 @@ import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggPortefoljestorrelserQuery;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggStatusTallForEnhetQuery;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggStatusTallForVeilederQuery;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.leggTilFerdigFilter;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.leggTilManuelleFilter;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.sorterPaaNyForEnhet;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.sorterQueryParametere;
-import static org.opensearch.index.query.QueryBuilders.boolQuery;
-import static org.opensearch.index.query.QueryBuilders.matchQuery;
-import static org.opensearch.index.query.QueryBuilders.termQuery;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.*;
+import static org.opensearch.index.query.QueryBuilders.*;
 
 @Service
 @RequiredArgsConstructor
@@ -162,6 +145,7 @@ public class OpensearchService {
         if (filtervalg.harSisteEndringFilter()) {
             bruker.kalkulerSisteEndring(oppfolgingsBruker.getSiste_endringer(), filtervalg.sisteEndringKategori);
         }
+
         return bruker;
     }
 

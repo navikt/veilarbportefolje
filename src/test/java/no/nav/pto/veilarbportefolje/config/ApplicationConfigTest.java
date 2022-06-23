@@ -23,26 +23,13 @@ import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
+import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
-import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
-import no.nav.pto.veilarbportefolje.opensearch.IndexName;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.opensearch.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingRepository;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
@@ -51,6 +38,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
+import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
@@ -138,7 +127,10 @@ import static org.mockito.Mockito.when;
         PdlService.class,
         PdlIdentRepository.class,
         PdlPersonRepository.class,
-        OpensearchCountService.class
+        OpensearchCountService.class,
+        KodeverkService.class,
+        PersonOpprinnelseService.class,
+        PersonOpprinnelseRepository.class
 })
 public class ApplicationConfigTest {
 
@@ -282,6 +274,11 @@ public class ApplicationConfigTest {
         when(pdlClient.hentBrukerDataFraPdl(any())).thenReturn(
                 new PDLPerson().setKjonn(K));
         return pdlClient;
+    }
+
+    @Bean
+    public KodeverkClient kodeverkClient() {
+        return mock(KodeverkClient.class);
     }
 
 }

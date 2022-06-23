@@ -1,32 +1,68 @@
 query($ident: ID!) {
-    hentPerson(ident: $ident) {
-        navn {
-            fornavn
-            mellomnavn
-            etternavn
-            metadata {
-                ...metadataDetails
-            }
-        }
-        foedsel {
-            foedselsdato
-            metadata {
-                ...metadataDetails
-            }
-        }
-        kjoenn {
-            kjoenn
-            metadata {
-                ...metadataDetails
-            }
-        }
-        doedsfall {
-            doedsdato
-        }
+  hentPerson(ident: $ident) {
+    navn {
+      fornavn
+      mellomnavn
+      etternavn
+      metadata {
+        ...metadataDetails
+      }
     }
+    foedsel {
+      foedselsdato
+      foedeland
+      metadata {
+        ...metadataDetails
+      }
+    }
+    kjoenn {
+      kjoenn
+      metadata {
+        ...metadataDetails
+      }
+    }
+    doedsfall {
+      doedsdato
+    }
+    statsborgerskap {
+      land
+      gyldigFraOgMed
+      gyldigTilOgMed
+      metadata {
+        ...metadataDetails
+      }
+    }
+    innflyttingTilNorge {
+      fraflyttingsland
+      metadata {
+        ...metadataDetails
+      }
+    }
+    bostedsadresse {
+      angittFlyttedato
+
+      metadata {
+        ...metadataDetails
+      }
+    }
+    tilrettelagtKommunikasjon {
+      talespraaktolk {
+        spraak
+      }
+      tegnspraaktolk {
+        spraak
+      }
+      metadata {
+        ...metadataDetails
+      }
+    }
+  }
 }
 
 fragment metadataDetails on Metadata {
-    master
-    historisk
+  master
+  historisk
+  endringer {
+    registrert
+  }
 }

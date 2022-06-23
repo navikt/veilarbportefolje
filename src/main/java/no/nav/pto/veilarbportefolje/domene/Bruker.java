@@ -11,18 +11,12 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.isFarInTheFutureDate;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -48,6 +42,7 @@ public class Bruker {
     String manuellBrukerStatus;
     int fodselsdagIMnd;
     LocalDateTime fodselsdato;
+    String foedeland;
     String kjonn;
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
@@ -81,6 +76,14 @@ public class Bruker {
     LocalDateTime sisteEndringTidspunkt;
     String sisteEndringAktivitetId;
 
+    String talespraaktolk;
+    String tegnspraaktolk;
+    LocalDate tolkBehovSistOppdatert;
+    String landgruppe;
+    Statsborgerskap hovedStatsborgerskap;
+    boolean harFlereStatsborgerskap;
+    String innflyttingTilNorgeFraLand;
+
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
@@ -108,6 +111,7 @@ public class Bruker {
                 .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak)) //TODO: Hvorfor er dette en liste?
                 .setFodselsdagIMnd(bruker.getFodselsdag_i_mnd())
                 .setFodselsdato(toLocalDateTimeOrNull(bruker.getFodselsdato()))
+                .setFoedeland(bruker.getFoedelandFulltNavn())
                 .setKjonn(bruker.getKjonn())
                 .setYtelse(YtelseMapping.of(bruker.getYtelse()))
                 .setUtlopsdato(toLocalDateTimeOrNull(bruker.getUtlopsdato()))
@@ -147,7 +151,14 @@ public class Bruker {
                 .addAlleAktiviteterUtlopsdato("stilling", dateToTimestamp(bruker.getAlle_aktiviteter_stilling_utlopsdato()))
                 .addAlleAktiviteterUtlopsdato("ijobb", dateToTimestamp(bruker.getAlle_aktiviteter_ijobb_utlopsdato()))
                 .addAlleAktiviteterUtlopsdato("egen", dateToTimestamp(bruker.getAlle_aktiviteter_egen_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("mote", dateToTimestamp(bruker.getAlle_aktiviteter_mote_utlopsdato()));
+                .addAlleAktiviteterUtlopsdato("mote", dateToTimestamp(bruker.getAlle_aktiviteter_mote_utlopsdato()))
+                .setTegnspraaktolk(bruker.getTegnspraaktolk())
+                .setTalespraaktolk(bruker.getTalespraaktolk())
+                .setTolkBehovSistOppdatert(bruker.getTolkBehovSistOppdatert())
+                .setHarFlereStatsborgerskap(bruker.isHarFlereStatsborgerskap())
+                .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
+                .setLandgruppe(bruker.getLandgruppe())
+                .setInnflyttingTilNorgeFraLand(bruker.getInnflyttingTilNorgeFraLand());
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {

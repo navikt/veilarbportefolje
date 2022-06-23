@@ -9,11 +9,7 @@ import no.nav.pto.veilarbportefolje.registrering.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BinaryOperator;
 
 @Data()
@@ -45,6 +41,11 @@ public class Filtervalg {
     public List<String> alleAktiviteter = new ArrayList<>();
     public String ulesteEndringer;
     public CVjobbprofil cvJobbprofil;
+    public List<String> landgruppe;
+    public List<String> foedeland;
+    public Boolean talespraaktolk;
+    public Boolean tegnspraaktolk;
+    public String tolkBehovSpraak;
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
@@ -69,7 +70,12 @@ public class Filtervalg {
                 harAktiviteterForenklet() ||
                 harCvFilter() ||
                 harManuellBrukerStatus() ||
-                harNavnEllerFnrQuery();
+                harNavnEllerFnrQuery() ||
+                harTolkbehovFilter() ||
+                harTegnspraakFilter() ||
+                harTalespraaktolkFilter() ||
+                harFoedelandFilter() ||
+                harLandgruppeFilter();
     }
 
     public boolean harCvFilter() {
@@ -100,7 +106,7 @@ public class Filtervalg {
         return manuellBrukerStatus != null && !manuellBrukerStatus.isEmpty();
     }
 
-    public boolean harAktiviteterForenklet(){
+    public boolean harAktiviteterForenklet() {
         return !aktiviteterForenklet.isEmpty();
     }
 
@@ -114,6 +120,26 @@ public class Filtervalg {
 
     public boolean harUlesteEndringerFilter() {
         return StringUtils.isNotBlank(ulesteEndringer);
+    }
+
+    public boolean harFoedelandFilter() {
+        return foedeland != null && !foedeland.isEmpty();
+    }
+
+    public boolean harTolkbehovFilter() {
+        return tolkBehovSpraak != null && !tolkBehovSpraak.isEmpty();
+    }
+
+    public boolean harTalespraaktolkFilter() {
+        return talespraaktolk != null && talespraaktolk;
+    }
+
+    public boolean harTegnspraakFilter() {
+        return tegnspraaktolk != null && tegnspraaktolk;
+    }
+
+    public boolean harLandgruppeFilter() {
+        return landgruppe != null && !landgruppe.isEmpty();
     }
 
     public boolean valider() {

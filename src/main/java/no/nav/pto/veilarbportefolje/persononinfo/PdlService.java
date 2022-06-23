@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -84,4 +86,9 @@ public class PdlService {
                 .findAny()
                 .orElseThrow(() -> new IllegalStateException("Ingen aktiv fnr på bruker"));
     }
+
+    public Map<Fnr, List<Statsborgerskap>> hentStatsborgerskap(List<Fnr> fnrs) {
+        return pdlPersonRepository.hentGyldigeStatsborgerskapData(fnrs);
+    }
+
 }
