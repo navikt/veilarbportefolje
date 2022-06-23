@@ -17,6 +17,7 @@ import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.TilgangClient;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,7 @@ public class AuthService {
     private final ModiaPep modiaPep;
     private final Pep veilarbPep;
     private final Cache<VeilederPaEnhet, Boolean > harVeilederTilgangTilEnhetCache;
+    private final UnleashService unleashService;
 
     @Autowired
     public AuthService(Pep veilarbPep,
@@ -45,7 +47,8 @@ public class AuthService {
                        ModiaPep modiaPep,
                        AuthContextHolder authContextHolder,
                        AzureAdOnBehalfOfTokenClient aadOboTokenClient,
-                       EnvironmentProperties environmentProperties) {
+                       EnvironmentProperties environmentProperties,
+                       UnleashService unleashService) {
         this.authContextHolder = authContextHolder;
         this.aadOboTokenClient = aadOboTokenClient;
         this.environmentProperties = environmentProperties;
@@ -56,19 +59,22 @@ public class AuthService {
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(6000)
                 .build();
+        this.unleashService = unleashService;
     }
 
     public void tilgangTilOppfolging() {
         boolean harTilgang = modiaPep.harVeilederTilgangTilModia(getInnloggetBrukerToken());
 
-        try {
-            Decision decisionPoaoTilgang = tilgangClient.harVeilederTilgangTilModia(getInnloggetVeilederIdent().getValue());
-            boolean harTilgangPoaoTilgang =  Decision.Type.PERMIT.equals(decisionPoaoTilgang.getType());
-            if (harTilgang != harTilgangPoaoTilgang) {
-                log.warn("Forskjellig resultat fra poao-tilgang og abac-modia");
+        if (unleashService.isEnabled("veilarbportefolje.poao-tilgang.sammenligne")) {
+            try {
+                Decision decisionPoaoTilgang = tilgangClient.harVeilederTilgangTilModia(getInnloggetVeilederIdent().getValue());
+                boolean harTilgangPoaoTilgang = Decision.Type.PERMIT.equals(decisionPoaoTilgang.getType());
+                if (harTilgang != harTilgangPoaoTilgang) {
+                    log.info("Forskjellig resultat fra poao-tilgang og abac-modia");
+                }
+            } catch (Exception e) {
+                log.error("Kall til poao-tilgang feilet", e);
             }
-        } catch (Exception e) {
-            log.error("Kall til poao-tilgang feilet", e);
         }
 
         AuthUtils.test("oppfølgingsbruker", getInnloggetVeilederIdent(), harTilgang);

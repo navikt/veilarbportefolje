@@ -285,7 +285,7 @@
         <dependency>
             <groupId>com.github.navikt.poao-tilgang</groupId>
             <artifactId>client</artifactId>
-            <version>44abb3d5c357ae0a9776bac1c6eafc8cf9971500</version>
+            <version>94a2e17508aea582760767b86da7196f5823488c</version>
         </dependency>
 
         <!-- Prometheus -->
