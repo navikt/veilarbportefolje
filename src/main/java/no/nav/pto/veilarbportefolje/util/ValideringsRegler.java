@@ -54,7 +54,10 @@ public class ValideringsRegler {
             "utkast_14a_status_endret",
             "arbeidslistekategori",
             "arbeidsliste_overskrift",
-            "siste_endring_tidspunkt"
+            "siste_endring_tidspunkt",
+            "fodeland",
+            "statsborgerskap",
+            "statsborgerskap_gyldig_fra"
     );
 
     public static void sjekkEnhet(String enhet) {

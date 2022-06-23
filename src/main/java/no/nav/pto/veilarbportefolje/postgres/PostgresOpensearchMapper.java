@@ -3,19 +3,23 @@ package no.nav.pto.veilarbportefolje.postgres;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
+import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
 
@@ -25,6 +29,10 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalk
 public class PostgresOpensearchMapper {
     private final AktivitetOpensearchService aktivitetOpensearchService;
     private final SisteEndringService sisteEndringService;
+    private final PdlService pdlService;
+    private final UnleashService unleashService;
+
+    private final KodeverkService kodeverkService;
 
     public List<OppfolgingsBruker> flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -88,5 +96,47 @@ public class PostgresOpensearchMapper {
 
         bruker.setAktiviteter(aktivitetData.getAktiviteter());
         bruker.setTiltak(aktivitetData.getTiltak());
+    }
+
+    public void flettInnStatsborgerskapData(List<OppfolgingsBruker> brukere) {
+        if (brukPDLBrukerdata(unleashService)) {
+            List<Fnr> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).map(Fnr::of).collect(Collectors.toList());
+            Map<Fnr, List<Statsborgerskap>> statsborgerskaps = pdlService.hentStatsborgerskap(fnrs);
+            brukere.forEach(bruker -> {
+                List<Statsborgerskap> statsborgerskapList = statsborgerskaps.getOrDefault(Fnr.of(bruker.getFnr()), Collections.emptyList());
+                bruker.setHarFlereStatsborgerskap(statsborgerskapList.size() > 1);
+                bruker.setHovedStatsborgerskap(getHovedStatsborgerskap(statsborgerskapList));
+            });
+        }
+    }
+
+    private Statsborgerskap getHovedStatsborgerskap(List<Statsborgerskap> statsborgerskaps) {
+
+        if (statsborgerskaps.isEmpty()) {
+            return null;
+        } else if (statsborgerskaps.size() == 1) {
+            return getHovedStatsborgetskapMedFulltLandNavn(statsborgerskaps.get(0));
+        } else {
+            return getHovedStatsborgerskapFraList(statsborgerskaps);
+        }
+    }
+
+    private Statsborgerskap getHovedStatsborgerskapFraList(List<Statsborgerskap> statsborgerskaps) {
+        Optional<Statsborgerskap> norskStatsborgerskap = statsborgerskaps.stream()
+                .filter(x -> x.getStatsborgerskap().equals("NOR"))
+                .findFirst();
+
+        if (norskStatsborgerskap.isPresent()) {
+            return getHovedStatsborgetskapMedFulltLandNavn(norskStatsborgerskap.get());
+        } else {
+            statsborgerskaps.sort(Comparator.comparing(Statsborgerskap::getGyldigFra));
+            return getHovedStatsborgetskapMedFulltLandNavn(statsborgerskaps.get(0));
+        }
+    }
+
+    private Statsborgerskap getHovedStatsborgetskapMedFulltLandNavn(Statsborgerskap statsborgerskap) {
+        return new Statsborgerskap(kodeverkService.getBeskrivelseForLandkode(statsborgerskap.getStatsborgerskap()),
+                statsborgerskap.getGyldigFra(),
+                statsborgerskap.getGyldigTil());
     }
 }

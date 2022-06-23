@@ -162,11 +162,11 @@ public class DateUtils {
         return date.toLocalDate().atStartOfDay();
     }
 
-    public static java.sql.Date toSqlDateOrNull(String date) {
+    public static LocalDate toLocalDateOrNull(String date) {
         if (date == null) {
             return null;
         }
-        return java.sql.Date.valueOf(ZonedDateTime.parse(date).toLocalDate());
+        return getTimestampFromSimpleISODate(date).toLocalDateTime().toLocalDate();
     }
 
     public static String nowToStr() {

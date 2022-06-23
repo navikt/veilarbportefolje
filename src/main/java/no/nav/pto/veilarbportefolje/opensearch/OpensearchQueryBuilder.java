@@ -35,11 +35,7 @@ import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
-import static org.opensearch.index.query.QueryBuilders.boolQuery;
-import static org.opensearch.index.query.QueryBuilders.existsQuery;
-import static org.opensearch.index.query.QueryBuilders.matchQuery;
-import static org.opensearch.index.query.QueryBuilders.rangeQuery;
-import static org.opensearch.index.query.QueryBuilders.termQuery;
+import static org.opensearch.index.query.QueryBuilders.*;
 import static org.opensearch.search.aggregations.AggregationBuilders.filter;
 import static org.opensearch.search.aggregations.AggregationBuilders.filters;
 import static org.opensearch.search.sort.ScriptSortBuilder.ScriptSortType.STRING;
@@ -119,6 +115,42 @@ public class OpensearchQueryBuilder {
                 queryBuilder.must(termQuery("fullt_navn", query));
             }
         }
+
+        if (filtervalg.harFoedelandFilter()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            filtervalg.getFoedeland().stream().forEach(
+                    foedeLand -> queryBuilder.must(subQuery.should(matchQuery("foedeland", foedeLand)))
+            );
+        }
+        if (filtervalg.harLandgruppeFilter()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            filtervalg.getLandgruppe().forEach(
+                    landGruppe -> {
+                        String landgruppeCode = landGruppe.replace("LANDGRUPPE_", "");
+                        if (landgruppeCode.equals("UKJENT")) {
+                            queryBuilder.must(subQuery.mustNot(existsQuery("landgruppe")));
+                        } else {
+                            queryBuilder.must(subQuery.should(matchQuery("landgruppe", landgruppeCode)));
+                        }
+                    }
+            );
+        }
+        if (filtervalg.harTalespraaktolkFilter()) {
+            queryBuilder
+                    .must(existsQuery("talespraaktolk"));
+        }
+        if (filtervalg.harTegnspraakFilter()) {
+            queryBuilder
+                    .must(existsQuery("tegnspraaktolk"));
+        }
+        if (filtervalg.harTolkbehovFilter()) {
+            String query = filtervalg.getTolkBehovSpraak().trim();
+            BoolQueryBuilder matchTolkSpraak = QueryBuilders.boolQuery()
+                    .should(QueryBuilders.matchQuery("talespraaktolk", query))
+                    .should(QueryBuilders.matchQuery("tegnspraaktolk", query));
+            queryBuilder.must(matchTolkSpraak);
+        }
+
 
     }
 
@@ -204,6 +236,9 @@ public class OpensearchQueryBuilder {
             case "arbeidslistekategori" -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
             case "siste_endring_tidspunkt" -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
             case "arbeidsliste_overskrift" -> sorterArbeidslisteOverskrift(searchSourceBuilder, order);
+            case "fodeland" -> sorterFodeland(searchSourceBuilder, order);
+            case "statsborgerskap" -> sorterStatsborgerskap(searchSourceBuilder, order);
+            case "statsborgerskap_gyldig_fra" -> sorterStatsborgerskapGyldigFra(searchSourceBuilder, order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
@@ -238,6 +273,19 @@ public class OpensearchQueryBuilder {
         searchSourceBuilder.sort("arbeidsliste_tittel_sortering", order);
         searchSourceBuilder.sort("arbeidsliste_tittel_lengde", order);
     }
+
+    static void sorterFodeland(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        searchSourceBuilder.sort("foedelandFulltNavn", order);
+    }
+
+    static void sorterStatsborgerskap(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        searchSourceBuilder.sort("hovedStatsborgerskap.statsborgerskap", order);
+    }
+    
+    static void sorterStatsborgerskapGyldigFra(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        searchSourceBuilder.sort("hovedStatsborgerskap.gyldigFra", order);
+    }
+
 
     static SearchSourceBuilder sorterPaaNyForEnhet(SearchSourceBuilder builder, List<String> veilederePaaEnhet) {
         Script script = new Script(byggVeilederPaaEnhetScript(veilederePaaEnhet));

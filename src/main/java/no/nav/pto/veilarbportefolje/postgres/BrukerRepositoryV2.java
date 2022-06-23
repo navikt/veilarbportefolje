@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
@@ -23,9 +26,7 @@ import java.util.stream.Collectors;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBackup;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.*;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
@@ -40,6 +41,8 @@ public class BrukerRepositoryV2 {
     private final JdbcTemplate db;
     private final UnleashService unleashService;
 
+    private final KodeverkService kodeverskService;
+
     public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds) {
         return hentOppfolgingsBrukere(aktorIds, false);
     }
@@ -52,6 +55,8 @@ public class BrukerRepositoryV2 {
                         select OD.AKTOERID, OD.OPPFOLGING, ob.*,
                                ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
+                               bd.foedeland, bd.innflyttingTilNorgeFraLand, bd.angittFlyttedato,
+                               bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
                                BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
@@ -189,7 +194,7 @@ public class BrukerRepositoryV2 {
     @SneakyThrows
     private OppfolgingsBruker flettInnOppfolgingsbruker(OppfolgingsBruker bruker, String utkast14aStatus, ResultSet rs) {
         String fnr = rs.getString(FODSELSNR_ARENA);
-        if(fnr == null){
+        if (fnr == null) {
             return bruker;
         }
         if (!brukPDLBrukerdata(unleashService) && isProduction().orElse(false)) {
@@ -238,6 +243,10 @@ public class BrukerRepositoryV2 {
         Date foedsels_dato = rs.getDate("foedselsdato");
         String fornavn = rs.getString("fornavn_pdl");
         String etternavn = rs.getString("etternavn_pdl");
+
+        String landGruppe = Landgruppe.getInstance().getLandgruppeForLandKode(rs.getString("foedeland"));
+        String foedelandFulltNavn = kodeverskService.getBeskrivelseForLandkode(rs.getString("foedeland"));
+        String innflyttingTilNorgeFraLandFullNavn = kodeverskService.getBeskrivelseForLandkode(rs.getString("innflyttingTilNorgeFraLand"));
         bruker
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
@@ -245,7 +254,14 @@ public class BrukerRepositoryV2 {
                 .setEr_doed(rs.getBoolean("er_doed_pdl"))
                 .setFodselsdag_i_mnd(foedsels_dato.toLocalDate().getDayOfMonth())
                 .setFodselsdato(lagFodselsdato(foedsels_dato.toLocalDate()))
-                .setKjonn(rs.getString("kjoenn"));
+                .setFoedeland(rs.getString("foedeland"))
+                .setFoedelandFulltNavn(foedelandFulltNavn)
+                .setKjonn(rs.getString("kjoenn"))
+                .setTalespraaktolk(rs.getString("talespraaktolk"))
+                .setTegnspraaktolk(rs.getString("tegnspraaktolk"))
+                .setTolkBehovSistOppdatert(DateUtils.toLocalDateOrNull(rs.getString("tolkBehovSistOppdatert")))
+                .setInnflyttingTilNorgeFraLand(innflyttingTilNorgeFraLandFullNavn)
+                .setLandgruppe(landGruppe);
     }
 
     @SneakyThrows

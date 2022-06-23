@@ -60,4 +60,6 @@ public class PdlPerson {
 
         assertThat(kontrollerResponseOgHentNavn(navn).getFornavn()).isEqualTo(pdlNavn1);
     }
+
+    
 }

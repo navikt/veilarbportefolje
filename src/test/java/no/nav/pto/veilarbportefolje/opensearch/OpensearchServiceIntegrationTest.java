@@ -3,18 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch;
 import lombok.SneakyThrows;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
-import no.nav.pto.veilarbportefolje.domene.Bruker;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
-import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
-import no.nav.pto.veilarbportefolje.domene.Facet;
-import no.nav.pto.veilarbportefolje.domene.FacetResults;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.Kjonn;
-import no.nav.pto.veilarbportefolje.domene.Rettighetsgruppe;
-import no.nav.pto.veilarbportefolje.domene.StatusTall;
-import no.nav.pto.veilarbportefolje.domene.YtelseFilter;
-import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
+import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -24,6 +13,7 @@ import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
@@ -35,18 +25,11 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
-import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AVTALT_AKTIVITET;
-import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.TRENGER_VURDERING;
-import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.UFORDELTE_BRUKERE;
-import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.UNDER_VURDERING;
-import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.UTLOPTE_AKTIVITETER;
+import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggArbeidslisteQuery;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -70,7 +53,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @BeforeEach
-    void byttenhet(){
+    void byttenhet() {
         TEST_ENHET = randomNavKontor().getValue();
     }
 
@@ -1097,6 +1080,344 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getBrukere().get(1).getUtkast14aAnsvarligVeileder()).isEqualTo("BVeileder");
         assertThat(response.getBrukere().get(2).getUtkast14aAnsvarligVeileder()).isEqualTo("CVeileder");
         assertThat(response.getBrukere().get(3).getUtkast14aAnsvarligVeileder()).isNull();
+    }
+
+    @Test
+    public void skal_hente_alle_brukere_som_har_tolkbehov() {
+        var brukerMedTalkBehov1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTalespraaktolk("JPN")
+                .setTolkBehovSistOppdatert(LocalDate.parse("2022-02-22"));
+
+        var brukerMedTalkBehov2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTalespraaktolk("SWE")
+                .setTegnspraaktolk("SWE")
+                .setTolkBehovSistOppdatert(LocalDate.parse("2021-03-23"));
+
+        var brukerUttenTalkBehov = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET);
+
+        var liste = List.of(brukerMedTalkBehov1, brukerMedTalkBehov2, brukerUttenTalkBehov);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setTalespraaktolk(Boolean.TRUE);
+
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(2);
+        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).filter(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")).findFirst().isPresent());
+        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).filter(x -> x.getTolkBehovSistOppdatert().equals("2021-03-23")).findFirst().isPresent());
+
+
+        filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setTegnspraaktolk(Boolean.TRUE);
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+        assertThat(response.getAntall()).isEqualTo(1);
+        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).filter(x -> x.getTolkBehovSistOppdatert().equals("2021-03-23")).findFirst().isPresent());
+
+
+        filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setTolkBehovSpraak("JPN");
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+        assertThat(response.getAntall()).isEqualTo(1);
+        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).filter(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")).findFirst().isPresent());
+    }
+
+    @Test
+    public void skal_hente_alle_brukere_fra_landgruppe() {
+        var brukerFraLandGruppe1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setFoedeland("NOR")
+                .setFoedelandFulltNavn("Norge")
+                .setLandgruppe("1");
+
+        var brukerFraLandGruppe2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setFoedeland("EST")
+                .setFoedelandFulltNavn("Estland")
+                .setLandgruppe("2")
+                .setHovedStatsborgerskap(new Statsborgerskap("Estland", LocalDate.now(), null));
+        ;
+
+        var brukerFraLandGruppe3_1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setFoedeland("AZE")
+                .setFoedelandFulltNavn("Aserbajdsjan")
+                .setLandgruppe("3")
+                .setHovedStatsborgerskap(new Statsborgerskap("Norge", LocalDate.now(), null));
+        ;
+
+        var brukerFraLandGruppe3_2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setFoedeland("SGP")
+                .setFoedelandFulltNavn("Singapore")
+                .setLandgruppe("3")
+                .setHovedStatsborgerskap(new Statsborgerskap("Singapore", LocalDate.now(), null));
+
+        var brukerUkjentLandGruppe = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setHovedStatsborgerskap(new Statsborgerskap("Norge", LocalDate.now(), null));
+        ;
+
+        var liste = List.of(brukerFraLandGruppe1, brukerFraLandGruppe2, brukerFraLandGruppe3_1, brukerFraLandGruppe3_2, brukerUkjentLandGruppe);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setLandgruppe(List.of("LANDGRUPPE_3"));
+
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(2);
+        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Aserbajdsjan")).findFirst().isPresent());
+        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Singapore")).findFirst().isPresent());
+
+
+        filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setFoedeland(List.of("NOR"));
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+        assertThat(response.getAntall()).isEqualTo(1);
+        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Norge")).findFirst().isPresent());
+
+
+        filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setLandgruppe(List.of("LANDGRUPPE_UKJENT"));
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+        assertThat(response.getAntall()).isEqualTo(1);
+        assertThat(response.getBrukere().stream().noneMatch(x -> x.getFoedeland() != null));
+    }
+
+    @Test
+    public void test_sortering_landgruppe() {
+        var brukerFraLandGruppe1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setFoedeland("NOR")
+                .setFoedelandFulltNavn("Norge")
+                .setLandgruppe("1");
+
+        var brukerFraLandGruppe2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setFoedelandFulltNavn("Estland")
+                .setLandgruppe("2")
+                .setHovedStatsborgerskap(new Statsborgerskap("Estland", LocalDate.now(), null));
+        ;
+
+        var brukerFraLandGruppe3_1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setFoedelandFulltNavn("Aserbajdsjan")
+                .setLandgruppe("3")
+                .setHovedStatsborgerskap(new Statsborgerskap("Norge", LocalDate.now(), null));
+
+        var brukerFraLandGruppe3_2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setFoedelandFulltNavn("Singapore")
+                .setLandgruppe("3")
+                .setHovedStatsborgerskap(new Statsborgerskap("Singapore", LocalDate.now(), null));
+
+        var brukerFraLandGruppe3_3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setFoedelandFulltNavn("Botswana")
+                .setLandgruppe("3")
+                .setHovedStatsborgerskap(new Statsborgerskap("Botswana", LocalDate.now(), null));
+
+        var brukerUkjentLandGruppe = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setHovedStatsborgerskap(new Statsborgerskap("Norge", LocalDate.now(), null));
+
+        var liste = List.of(brukerFraLandGruppe1, brukerFraLandGruppe2, brukerFraLandGruppe3_1, brukerFraLandGruppe3_2, brukerFraLandGruppe3_3, brukerUkjentLandGruppe);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of());
+
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "fodeland",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(6);
+        assertThat(response.getBrukere().get(0).getFoedeland().equals("Aserbajdsjan"));
+        assertThat(response.getBrukere().get(2).getFoedeland().equals("Botswana"));
+        assertThat(response.getBrukere().get(2).getFoedeland().equals("Estland"));
+        assertThat(response.getBrukere().get(3).getFoedeland().equals("Norge"));
+        assertThat(response.getBrukere().get(4).getFoedeland().equals("Singapore"));
+        assertThat(response.getBrukere().get(5).getFoedeland() == null);
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "descending",
+                "fodeland",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(6);
+        assertThat(response.getBrukere().get(0).getFoedeland().equals("Singapore"));
+        assertThat(response.getBrukere().get(1).getFoedeland().equals("Norge"));
+        assertThat(response.getBrukere().get(2).getFoedeland().equals("Estland"));
+        assertThat(response.getBrukere().get(3).getFoedeland().equals("Botswana"));
+        assertThat(response.getBrukere().get(4).getFoedeland().equals("Aserbajdsjan"));
+        assertThat(response.getBrukere().get(5).getFoedeland() == null);
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "statsborgerskap",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(6);
+        assertThat(response.getBrukere().get(0).getHovedStatsborgerskap().getStatsborgerskap().equals("Estland"));
+        assertThat(response.getBrukere().get(1).getHovedStatsborgerskap().getStatsborgerskap().equals("Norge"));
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
