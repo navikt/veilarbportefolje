@@ -273,16 +273,16 @@ public class BrukerRepositoryV2 {
             log.info("Arena/PDL: Har ikke PDL data på aktoer: {}", aktoerId);
             return;
         }
-        if (isDifferent(rs.getString("fornavn_pdl"), rs.getString(FORNAVN))) {
+        if (isDifferent(rs.getString("fornavn_pdl").toLowerCase(), rs.getString(FORNAVN).toLowerCase())) {
             log.info("Arena/PDL: fornavn feil bruker: {}", aktoerId);
         }
-        if (isDifferent(rs.getString("etternavn_pdl"), rs.getString(ETTERNAVN))) {
+        if (isDifferent(rs.getString("etternavn_pdl").toLowerCase(), rs.getString(ETTERNAVN).toLowerCase())) {
             log.info("Arena/PDL: etternavn feil bruker: {}", aktoerId);
         }
         if (isDifferent(rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED))) {
             log.info("Arena/PDL: er_doed_pdl feil bruker: {}, pdl: {}, arena: {}", aktoerId, rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED));
         }
-        if (isDifferent(rs.getString("kjoenn"), FodselsnummerUtils.lagKjonn(fnr))) {
+        if (isDifferent(rs.getString("kjoenn").toLowerCase(), FodselsnummerUtils.lagKjonn(fnr).toLowerCase())) {
             log.info("Arena/PDL: kjønn feil bruker: {}", aktoerId);
         }
         if (isDifferent(lagFodselsdato(foedsels_dato.toLocalDate()), lagFodselsdato(fnr))) {
