@@ -54,7 +54,7 @@ public class BrukerRepositoryV2 {
         return db.query("""
                         select OD.AKTOERID, OD.OPPFOLGING, ob.*,
                                ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
-                               bd.etternavn as etternavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
+                               bd.etternavn as etternavn_pdl, bd.mellomnavn as mellomnavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
                                bd.foedeland, bd.innflyttingTilNorgeFraLand, bd.angittFlyttedato,
                                bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
@@ -241,7 +241,7 @@ public class BrukerRepositoryV2 {
     @SneakyThrows
     private void flettInnDataFraPDL(ResultSet rs, OppfolgingsBruker bruker) {
         Date foedsels_dato = rs.getDate("foedselsdato");
-        String fornavn = rs.getString("fornavn_pdl");
+        String fornavn = rs.getString("fornavn_pdl") + " " + rs.getString("mellomnavn_pdl");
         String etternavn = rs.getString("etternavn_pdl");
 
         String landGruppe = Landgruppe.getInstance().getLandgruppeForLandKode(rs.getString("foedeland"));
