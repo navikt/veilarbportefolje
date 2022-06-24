@@ -47,6 +47,8 @@ import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
@@ -130,7 +132,9 @@ import static org.mockito.Mockito.when;
         OpensearchCountService.class,
         KodeverkService.class,
         PersonOpprinnelseService.class,
-        PersonOpprinnelseRepository.class
+        PersonOpprinnelseRepository.class,
+        Siste14aVedtakService.class,
+        Siste14aVedtakRepository.class
 })
 public class ApplicationConfigTest {
 

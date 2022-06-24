@@ -347,6 +347,18 @@ CREATE TABLE public.shedlock (
 
 
 --
+-- Name: siste_14a_vedtak; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.siste_14a_vedtak (
+    aktor_id character varying(20) NOT NULL,
+    hovedmal character varying(30),
+    innsatsgruppe character varying(40) NOT NULL,
+    fattet_dato timestamp with time zone NOT NULL
+);
+
+
+--
 -- Name: siste_endring; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -570,6 +582,14 @@ ALTER TABLE ONLY public.scheduled_tasks
 
 ALTER TABLE ONLY public.shedlock
     ADD CONSTRAINT shedlock_pkey PRIMARY KEY (name);
+
+
+--
+-- Name: siste_14a_vedtak siste_14a_vedtak_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.siste_14a_vedtak
+    ADD CONSTRAINT siste_14a_vedtak_pkey PRIMARY KEY (aktor_id);
 
 
 --

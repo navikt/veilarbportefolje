@@ -52,6 +52,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakDTO;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
@@ -82,6 +84,7 @@ public class KafkaConfigCommon {
 
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
+        SISTE_14A_VEDTAK_TOPIC("pto.siste-14a-vedtak-v1"),
         DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireKafkaTopicPostfix()),
         ENDRING_PAA_MANUELL_STATUS("pto.endring-paa-manuell-status-v1"),
         VEILEDER_TILORDNET("pto.veileder-tilordnet-v1"),
@@ -124,7 +127,8 @@ public class KafkaConfigCommon {
     public KafkaConfigCommon(CVService cvService,
                              SistLestService sistLestService, RegistreringService registreringService,
                              ProfileringService profileringService, AktivitetService aktivitetService,
-                             Utkast14aStatusendringService vedtakService, DialogService dialogService, ManuellStatusService manuellStatusService,
+                             Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
+                             DialogService dialogService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
                              MalService malService, OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
@@ -258,7 +262,17 @@ public class KafkaConfigCommon {
                                         Topic.VEDTAK_STATUS_ENDRING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(Kafka14aStatusendring.class),
-                                        vedtakService::behandleKafkaRecord
+                                        utkast14aStatusendringService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.SISTE_14A_VEDTAK_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(Siste14aVedtakDTO.class),
+                                        siste14aVedtakService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
                                 .withLogging()
