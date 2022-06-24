@@ -129,7 +129,7 @@ public class PostgresOpensearchMapper {
         if (norskStatsborgerskap.isPresent()) {
             return getHovedStatsborgetskapMedFulltLandNavn(norskStatsborgerskap.get());
         } else {
-            statsborgerskaps.sort(Comparator.comparing(Statsborgerskap::getGyldigFra));
+            statsborgerskaps.sort(Comparator.comparing(Statsborgerskap::getGyldigFra, Comparator.nullsLast(Comparator.naturalOrder())));
             return getHovedStatsborgetskapMedFulltLandNavn(statsborgerskaps.get(0));
         }
     }
