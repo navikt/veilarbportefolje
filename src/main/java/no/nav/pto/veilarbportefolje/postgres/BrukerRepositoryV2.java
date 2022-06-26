@@ -241,7 +241,11 @@ public class BrukerRepositoryV2 {
     @SneakyThrows
     private void flettInnDataFraPDL(ResultSet rs, OppfolgingsBruker bruker) {
         Date foedsels_dato = rs.getDate("foedselsdato");
-        String fornavn = rs.getString("fornavn_pdl") + " " + rs.getString("mellomnavn_pdl");
+        String mellomnavn = rs.getString("mellomnavn_pdl");
+        String fornavn = rs.getString("fornavn_pdl");
+        if (mellomnavn != null) {
+            fornavn += " " + mellomnavn;
+        }
         String etternavn = rs.getString("etternavn_pdl");
 
         String landGruppe = Landgruppe.getInstance().getLandgruppeForLandKode(rs.getString("foedeland"));
