@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.Hovedmal;
+import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
@@ -12,6 +14,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +23,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toSet;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukVedtaksstotteForInnsatsgruppeOgHovedmal;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
 
@@ -31,6 +38,7 @@ public class PostgresOpensearchMapper {
     private final SisteEndringService sisteEndringService;
     private final PdlService pdlService;
     private final UnleashService unleashService;
+    private final Siste14aVedtakRepository siste14aVedtakRepository;
 
     private final KodeverkService kodeverkService;
 
@@ -55,6 +63,45 @@ public class PostgresOpensearchMapper {
         );
 
         return brukere;
+    }
+
+    public void flettInnInnsatsbehov(List<OppfolgingsBruker> brukere) {
+        Set<AktorId> aktorIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).collect(toSet());
+        Map<AktorId, Siste14aVedtak> siste14aVedtak = siste14aVedtakRepository.hentSiste14aVedtakForBrukere(aktorIder);
+
+        brukere.forEach(bruker -> {
+            flettInnInnsatsbehov(bruker, ofNullable(siste14aVedtak.get(bruker.getAktoer_id())));
+        });
+    }
+
+    /**
+     * Bruker kvalifiseringsgruppe fra Arena for å finne ut om det er en innsatsgruppe. Hvis det er en innsatsgruppe
+     * så hentes innsatsgruppe og hovedmål fra vedtaksstøtte. Dette fordi vedtaksstøtte er ny master for 14a, og det er
+     * en ny type innsatsgruppe, gradert varig, i vedtaksstøtte som ikke finnes i Arena. I tillegg skrives ikke hovedmål
+     * tilbake til Arena for 14a vedtak fattet i vedtaksstøtte.
+     */
+    private void flettInnInnsatsbehov(OppfolgingsBruker bruker, Optional<Siste14aVedtak> siste14aVedtak) {
+
+        String kvalifiseringsgruppeArena = bruker.getKvalifiseringsgruppekode();
+
+        if (brukVedtaksstotteForInnsatsgruppeOgHovedmal(unleashService) &&
+                Innsatsgruppe.contains(kvalifiseringsgruppeArena)) {
+
+            String innsatsgruppeVedtaksstotte = siste14aVedtak
+                    .map(Siste14aVedtak::getInnsatsgruppe)
+                    .map(Innsatsgruppe::fraVedtaksstotte)
+                    .map(Innsatsgruppe::name)
+                    .orElse(null);
+
+            String hovedmalVedtaksstotte = siste14aVedtak
+                    .map(Siste14aVedtak::getHovedmal)
+                    .map(Hovedmal::fraVedtaksstotte)
+                    .map(Hovedmal::name)
+                    .orElse(null);
+
+            bruker.setKvalifiseringsgruppekode(innsatsgruppeVedtaksstotte);
+            bruker.setHovedmaalkode(hovedmalVedtaksstotte);
+        }
     }
 
     public void flettInnSisteEndringerData(List<OppfolgingsBruker> brukere) {

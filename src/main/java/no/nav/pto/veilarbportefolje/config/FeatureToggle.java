@@ -19,6 +19,8 @@ public class FeatureToggle {
     public static final String PDL_BRUKERDATA = "veilarbportefolje.Pdl_brukerdata";
     public static final String PDL_BRUKERDATA_BACKUP = "veilarbportefolje.Pdl_brukerdata_backup";
 
+    public static final String INNSATSGRUPPE_HOVEDMAL_FRA_VEDTAKSSTOTTE = "veilarbportefolje.innsatsgruppe_hovedmal_fra_vedtaksstotte";
+
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
@@ -37,5 +39,9 @@ public class FeatureToggle {
 
     public static boolean brukArenaSomBackup(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.PDL_BRUKERDATA_BACKUP);
+    }
+
+    public static boolean brukVedtaksstotteForInnsatsgruppeOgHovedmal(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.INNSATSGRUPPE_HOVEDMAL_FRA_VEDTAKSSTOTTE);
     }
 }

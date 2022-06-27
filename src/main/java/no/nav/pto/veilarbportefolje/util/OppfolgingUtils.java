@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
 import no.nav.arbeid.soker.profilering.ProfilertTil;
+import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
 
 import java.util.List;
@@ -9,7 +10,6 @@ import java.util.Optional;
 import static java.util.Arrays.asList;
 
 public class OppfolgingUtils {
-    private static List<String> INNSATSGRUPPEKODER =  asList( "IKVAL", "BFORM", "BATT", "VARIG");
     private static List<String> OPPFOLGINGKODER = asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG");
 
 
@@ -29,7 +29,7 @@ public class OppfolgingUtils {
         if ("ISERV".equals(formidlingsgruppekode)) {
             return false;
         }
-        return INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && utkast14aStatus != null;
+        return Innsatsgruppe.contains(kvalifiseringsgruppekode) && utkast14aStatus != null;
     }
 
     public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode, String profileringsResultat, boolean erVedtakstottePilotPa) {
