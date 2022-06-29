@@ -15,7 +15,6 @@ import org.springframework.cache.annotation.Cacheable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import static java.lang.String.format;
 import static no.nav.common.utils.UrlUtils.joinPaths;
@@ -75,18 +74,11 @@ public class KodeverkClientImpl implements KodeverkClient {
 
             JsonNode betydningBeskrivelserNode = betydningNode.get("beskrivelser");
             JsonNode beskrivelseNbNode = betydningBeskrivelserNode.get("nb");
-            String beskrivelseNb = capitalize(beskrivelseNbNode.get("tekst").asText());
+            String beskrivelseNb = beskrivelseNbNode.get("tekst").asText();
 
             betydningerMap.put(betydningName, beskrivelseNb);
         });
 
         return betydningerMap;
     }
-
-    private String capitalize(String inputString) {
-        return Pattern.compile("(^|[^a-z\\u00C0-\\u017F\\u0400-\\u04FF'])([a-z\\u00C0-\\u017F\\u0400-\\u04FF])")
-                .matcher(inputString.toLowerCase())
-                .replaceAll(matche -> matche.group().toUpperCase());
-    }
-
 }
