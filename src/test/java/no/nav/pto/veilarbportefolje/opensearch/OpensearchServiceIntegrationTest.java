@@ -1091,7 +1091,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setTegnspraaktolk("JPN")
+                .setTalespraaktolk("JPN")
                 .setTolkBehovSistOppdatert(LocalDate.parse("2022-02-22"));
 
         var brukerMedTalkBehov2 = new OppfolgingsBruker()
@@ -1169,7 +1169,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().filter(x -> x.getTegnspraaktolk().equals("JPN")).filter(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")).findFirst().isPresent());
+        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).filter(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")).findFirst().isPresent());
     }
 
     @Test
