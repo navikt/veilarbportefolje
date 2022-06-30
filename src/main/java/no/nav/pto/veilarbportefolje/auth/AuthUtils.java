@@ -20,6 +20,12 @@ public class AuthUtils {
                 .setEtternavn("").setFornavn("")
                 .setArbeidsliste(emptyArbeidsliste())
                 .setSkjermetTil(null);
+                .setFoedeland(null)
+                .setLandgruppe(null)
+                .setTegnspraaktolk(null)
+                .setTalespraaktolk(null)
+                .setHovedStatsborgerskap(null)
+                .setHarFlereStatsborgerskap(false);
     }
 
     static void test(String navn, Object data, boolean matches) {

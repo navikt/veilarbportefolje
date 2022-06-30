@@ -81,5 +81,4 @@ public class KodeverkClientImpl implements KodeverkClient {
 
         return betydningerMap;
     }
-
 }
