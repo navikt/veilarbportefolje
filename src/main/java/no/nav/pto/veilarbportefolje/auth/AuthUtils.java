@@ -19,7 +19,7 @@ public class AuthUtils {
         return bruker.setFnr("").setKjonn("").setFodselsdato(null)
                 .setEtternavn("").setFornavn("")
                 .setArbeidsliste(emptyArbeidsliste())
-                .setSkjermetTil(null);
+                .setSkjermetTil(null)
                 .setFoedeland(null)
                 .setLandgruppe(null)
                 .setTegnspraaktolk(null)
