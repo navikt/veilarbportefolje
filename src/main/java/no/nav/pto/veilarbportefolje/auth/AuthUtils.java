@@ -18,7 +18,13 @@ public class AuthUtils {
     static Bruker fjernKonfidensiellInfo(Bruker bruker) {
         return bruker.setFnr("").setKjonn("").setFodselsdato(null)
                 .setEtternavn("").setFornavn("")
-                .setArbeidsliste(emptyArbeidsliste());
+                .setArbeidsliste(emptyArbeidsliste())
+                .setFoedeland(null)
+                .setLandgruppe(null)
+                .setTegnspraaktolk(null)
+                .setTalespraaktolk(null)
+                .setHovedStatsborgerskap(null)
+                .setHarFlereStatsborgerskap(false);
     }
 
     static void test(String navn, Object data, boolean matches) {
