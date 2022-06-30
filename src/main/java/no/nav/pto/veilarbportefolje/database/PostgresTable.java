@@ -52,6 +52,7 @@ public class PostgresTable {
         public static final String ER_DOED = "ER_DOED";
 
         public static final String ER_SKJERMET = "ER_SKJERMET";
+        public static final String SKJERMET_TIL = "SKJERMET_TIL";
     }
 
     public static final class OPPFOLGING_DATA {

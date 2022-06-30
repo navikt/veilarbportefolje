@@ -24,6 +24,7 @@ import org.opensearch.rest.RestStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -189,13 +190,27 @@ public class OpensearchIndexerV2 {
     public void updateErSkjermet(AktorId aktorId, Boolean erSkjermet) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("egenAnsatt", erSkjermet)
+                .field("egen_ansatt", erSkjermet)
                 .endObject();
 
         update(
                 aktorId,
                 content,
                 format("Oppdatert er_skjermet %s for bruker: %s", erSkjermet, aktorId)
+        );
+    }
+
+    @SneakyThrows
+    public void updateSkjermetTil(AktorId aktorId, LocalDateTime skjermetTil) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("skjermet_til", skjermetTil)
+                .endObject();
+
+        update(
+                aktorId,
+                content,
+                format("Oppdatert skjermet_til %s for bruker: %s", skjermetTil, aktorId)
         );
     }
 
