@@ -46,6 +46,11 @@ public class SkjermingService {
         }
 
         skjermingRepository.settSkjermingPeriode(fnr, DateUtils.toTimestamp(skjermetFra), DateUtils.toTimestamp(skjermetTil));
+
+        if (brukNOMSkjerming(unleashService)) {
+            String aktorId = aktorClient.hentAktorId(fnr).get();
+            opensearchIndexerV2.updateSkjermetTil(AktorId.of(aktorId), skjermetTil);
+        }
     }
 
     public void behandleSkjermingStatus(ConsumerRecord<String, String> kafkaMelding) {
