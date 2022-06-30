@@ -43,8 +43,7 @@ public class Filtervalg {
     public CVjobbprofil cvJobbprofil;
     public List<String> landgruppe;
     public List<String> foedeland;
-    public Boolean talespraaktolk;
-    public Boolean tegnspraaktolk;
+    public List<String> tolkebehov;
     public String tolkBehovSpraak;
 
     public boolean harAktiveFilter() {
@@ -71,7 +70,7 @@ public class Filtervalg {
                 harCvFilter() ||
                 harManuellBrukerStatus() ||
                 harNavnEllerFnrQuery() ||
-                harTolkbehovFilter() ||
+                harTolkbehovSpraakFilter() ||
                 harTegnspraakFilter() ||
                 harTalespraaktolkFilter() ||
                 harFoedelandFilter() ||
@@ -126,16 +125,16 @@ public class Filtervalg {
         return foedeland != null && !foedeland.isEmpty();
     }
 
-    public boolean harTolkbehovFilter() {
+    public boolean harTolkbehovSpraakFilter() {
         return tolkBehovSpraak != null && !tolkBehovSpraak.isEmpty();
     }
 
     public boolean harTalespraaktolkFilter() {
-        return talespraaktolk != null && talespraaktolk;
+        return tolkebehov != null && tolkebehov.contains("TALESPRAAKTOLK");
     }
 
     public boolean harTegnspraakFilter() {
-        return tegnspraaktolk != null && tegnspraaktolk;
+        return tolkebehov != null && tolkebehov.contains("TEGNSPRAAKTOLK");
     }
 
     public boolean harLandgruppeFilter() {

@@ -1121,7 +1121,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setTalespraaktolk(Boolean.TRUE);
+                .setTolkebehov(List.of("TALESPRAAKTOLK"));
 
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -1140,7 +1140,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setTegnspraaktolk(Boolean.TRUE);
+                .setTolkebehov(List.of("TEGNSPRAAKTOLK"));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
