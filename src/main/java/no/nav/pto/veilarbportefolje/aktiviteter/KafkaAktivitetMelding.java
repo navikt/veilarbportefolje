@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -7,6 +8,7 @@ import java.time.ZonedDateTime;
 
 @Data
 @Accessors(chain = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class KafkaAktivitetMelding {
     String aktivitetId;
     String aktorId;
