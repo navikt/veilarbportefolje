@@ -190,7 +190,7 @@ public class BrukerRepositoryV2 {
 
         if (brukNOMSkjerming(unleashService)) {
             bruker.setEgen_ansatt(rs.getBoolean(ER_SKJERMET));
-            bruker.setSkjermet_til(toLocalDateTimeOrNull(rs.getString(SKJERMET_TIL)));
+            bruker.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(SKJERMET_TIL)));
         }
 
         return bruker;
