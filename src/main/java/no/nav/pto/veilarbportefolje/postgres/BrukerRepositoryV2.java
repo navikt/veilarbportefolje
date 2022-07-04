@@ -268,8 +268,8 @@ public class BrukerRepositoryV2 {
                 .setFoedeland(rs.getString("foedeland"))
                 .setFoedelandFulltNavn(foedelandFulltNavn)
                 .setKjonn(rs.getString("kjoenn"))
-                .setTalespraaktolk(taleSpraakFulltNavn)
-                .setTegnspraaktolk(tegnSpraakFulltNavn)
+                .setTalespraaktolk(taleSpraakFulltNavn.length() > 0 ? taleSpraakFulltNavn : null)
+                .setTegnspraaktolk(tegnSpraakFulltNavn.length() > 0 ? tegnSpraakFulltNavn : null)
                 .setTolkBehovSistOppdatert(DateUtils.toLocalDateOrNull(rs.getString("tolkBehovSistOppdatert")))
                 .setInnflyttingTilNorgeFraLand(innflyttingTilNorgeFraLandFullNavn)
                 .setLandgruppe(landGruppe);
