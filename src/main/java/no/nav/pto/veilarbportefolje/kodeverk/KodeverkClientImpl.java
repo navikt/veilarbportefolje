@@ -1,20 +1,24 @@
 package no.nav.pto.veilarbportefolje.kodeverk;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.SneakyThrows;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.cache.annotation.Cacheable;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static java.lang.String.format;
 import static no.nav.common.utils.UrlUtils.joinPaths;
@@ -65,14 +69,27 @@ public class KodeverkClientImpl implements KodeverkClient {
         JsonNode betydninger = rootNode.get("betydninger");
 
         betydninger.fieldNames().forEachRemaining((betydningName) -> {
-            JsonNode betydningNode = betydninger.get(betydningName).get(0);
+            JsonNode betydningerValues = betydninger.get(betydningName);
+            AtomicReference<JsonNode> betydningNyeste = new AtomicReference<>(betydninger.get(betydningName).get(0));
+
+            //find most recent value
+            if (betydningerValues.isArray()) {
+                ArrayNode arrayField = (ArrayNode) betydningerValues;
+                arrayField.forEach(node -> {
+                    Timestamp gyldigFra = DateUtils.getTimestampFromSimpleISODate(node.get("gyldigFra").asText());
+                    Timestamp gyldigFraNyeste = DateUtils.getTimestampFromSimpleISODate(betydningNyeste.get().get("gyldigFra").asText());
+                    if (gyldigFra != null && gyldigFraNyeste != null && gyldigFra.after(gyldigFraNyeste)) {
+                        betydningNyeste.set(node);
+                    }
+                });
+            }
 
             // Noen koder mangler informasjon
-            if (betydningNode == null) {
+            if (betydningNyeste.get() == null) {
                 return;
             }
 
-            JsonNode betydningBeskrivelserNode = betydningNode.get("beskrivelser");
+            JsonNode betydningBeskrivelserNode = betydningNyeste.get().get("beskrivelser");
             JsonNode beskrivelseNbNode = betydningBeskrivelserNode.get("nb");
             String beskrivelseNb = beskrivelseNbNode.get("tekst").asText();
 
