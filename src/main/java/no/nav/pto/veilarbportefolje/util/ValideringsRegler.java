@@ -58,7 +58,6 @@ public class ValideringsRegler {
             "fodeland",
             "statsborgerskap",
             "statsborgerskap_gyldig_fra",
-            "tolkebehov",
             "tolkespraak",
             "tolkebehov_sistoppdatert"
     );

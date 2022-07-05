@@ -135,13 +135,17 @@ public class OpensearchQueryBuilder {
                     }
             );
         }
-        if (filtervalg.harTalespraaktolkFilter()) {
-            queryBuilder
-                    .must(existsQuery("talespraaktolk"));
-        }
-        if (filtervalg.harTegnspraakFilter()) {
-            queryBuilder
-                    .must(existsQuery("tegnspraaktolk"));
+        if (filtervalg.harTalespraaktolkFilter() || filtervalg.harTegnspraakFilter()) {
+            BoolQueryBuilder tolkBehovSubquery = QueryBuilders.boolQuery();
+            if (filtervalg.harTalespraaktolkFilter()) {
+                tolkBehovSubquery
+                        .should(existsQuery("talespraaktolk"));
+            }
+            if (filtervalg.harTegnspraakFilter()) {
+                tolkBehovSubquery
+                        .should(existsQuery("tegnspraaktolk"));
+            }
+            queryBuilder.must(tolkBehovSubquery);
         }
         if (filtervalg.harTolkbehovSpraakFilter()) {
             String query = filtervalg.getTolkBehovSpraak().trim();
@@ -248,7 +252,6 @@ public class OpensearchQueryBuilder {
             case "fodeland" -> sorterFodeland(searchSourceBuilder, order);
             case "statsborgerskap" -> sorterStatsborgerskap(searchSourceBuilder, order);
             case "statsborgerskap_gyldig_fra" -> sorterStatsborgerskapGyldigFra(searchSourceBuilder, order);
-            case "tolkebehov" -> sorterTolkeSpraak(filtervalg, searchSourceBuilder, order);
             case "tolkespraak" -> sorterTolkeSpraak(filtervalg, searchSourceBuilder, order);
             case "tolkebehov_sistoppdatert" -> searchSourceBuilder.sort("tolkBehovSistOppdatert", order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
