@@ -248,7 +248,7 @@ public class OpensearchQueryBuilder {
             case "fodeland" -> sorterFodeland(searchSourceBuilder, order);
             case "statsborgerskap" -> sorterStatsborgerskap(searchSourceBuilder, order);
             case "statsborgerskap_gyldig_fra" -> sorterStatsborgerskapGyldigFra(searchSourceBuilder, order);
-            case "tolkebehov" -> sorterTolkebehov(filtervalg, searchSourceBuilder, order);
+            case "tolkebehov" -> sorterTolkeSpraak(filtervalg, searchSourceBuilder, order);
             case "tolkespraak" -> sorterTolkeSpraak(filtervalg, searchSourceBuilder, order);
             case "tolkebehov_sistoppdatert" -> searchSourceBuilder.sort("tolkBehovSistOppdatert", order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
@@ -296,15 +296,6 @@ public class OpensearchQueryBuilder {
 
     static void sorterStatsborgerskapGyldigFra(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
         searchSourceBuilder.sort("hovedStatsborgerskap.gyldigFra", order);
-    }
-
-    static void sorterTolkebehov(Filtervalg filtervalg, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
-        if (filtervalg.harTalespraaktolkFilter()) {
-            searchSourceBuilder.sort("talespraaktolk", order);
-        }
-        if (filtervalg.harTegnspraakFilter()) {
-            searchSourceBuilder.sort("tegnspraaktolk", order);
-        }
     }
 
     static void sorterTolkeSpraak(Filtervalg filtervalg, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
