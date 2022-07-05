@@ -3,13 +3,12 @@ package no.nav.pto.veilarbportefolje.controller;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
+import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import org.joda.time.Instant;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -20,11 +19,14 @@ public class Frontendlogger {
 
     @PostMapping("/event")
     public void skrivEventTilInflux(FrontendEvent event) {
-        metricsClient.report(event.name,
-                event.fields == null ? new HashMap<>() : event.fields,
-                event.tags == null ? new HashMap<>() : event.tags,
-                Instant.now().getMillis()
-        );
+        Event toInflux = new Event(event.name);
+        if (event.getTags() != null) {
+            event.tags.forEach(toInflux::addTagToReport);
+        }
+        if (event.getFields() != null) {
+            event.fields.forEach(toInflux::addFieldToReport);
+        }
+        metricsClient.report(toInflux);
     }
 
     @Data
