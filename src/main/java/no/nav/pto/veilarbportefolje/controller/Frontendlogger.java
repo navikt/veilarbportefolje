@@ -7,11 +7,13 @@ import no.nav.common.metrics.MetricsClient;
 import org.joda.time.Instant;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-@RequestMapping("/api/logger")
+@RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/logger")
 public class Frontendlogger {
     private final MetricsClient metricsClient;
 
