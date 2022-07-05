@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -18,8 +19,12 @@ public class Frontendlogger {
     private final MetricsClient metricsClient;
 
     @PostMapping("/event")
-    public void skrivEventTilInflux(FrontendEvent event){
-        metricsClient.report(event.name, event.fields, event.tags, Instant.now().getMillis());
+    public void skrivEventTilInflux(FrontendEvent event) {
+        metricsClient.report(event.name,
+                event.fields == null ? new HashMap<>() : event.fields,
+                event.tags == null ? new HashMap<>() : event.tags,
+                Instant.now().getMillis()
+        );
     }
 
     @Data
