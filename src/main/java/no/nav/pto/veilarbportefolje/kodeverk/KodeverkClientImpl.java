@@ -77,8 +77,9 @@ public class KodeverkClientImpl implements KodeverkClient {
                     ArrayNode arrayField = (ArrayNode) betydningerValues;
                     betydningNyeste = StreamSupport
                             .stream(arrayField.spliterator(), false)
+                            .filter(x -> x.get("gyldigFra") != null)
                             .max(Comparator.comparing(o -> Integer.valueOf(o.get("gyldigFra").asText().substring(0, 4))))
-                            .get();
+                            .orElse(null);
                 } else {
                     betydningNyeste = betydningerValues.get(0);
                 }
