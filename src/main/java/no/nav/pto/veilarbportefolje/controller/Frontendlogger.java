@@ -33,7 +33,7 @@ public class Frontendlogger {
         toInflux.getTags().put("environment", isProduction().orElse(false) ? "p" : "q1");
 
         log.info("debug input: " + event);
-        log.info("debug influx: " + toInflux.getFields());
+        log.info("debug influx: " + toString(toInflux));
         metricsClient.report(toInflux);
     }
 
