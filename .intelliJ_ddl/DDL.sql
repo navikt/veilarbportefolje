@@ -477,14 +477,6 @@ ALTER TABLE ONLY public.bruker_registrering
 
 
 --
--- Name: bruker_statsborgerskap bruker_statsborgerskap_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.bruker_statsborgerskap
-    ADD CONSTRAINT bruker_statsborgerskap_pkey PRIMARY KEY (freg_ident);
-
-
---
 -- Name: brukertiltak brukertiltak_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -653,6 +645,20 @@ CREATE INDEX aktorid_ytelser_idx ON public.ytelsesvedtak USING btree (aktorid);
 --
 
 CREATE INDEX flyway_schema_history_s_idx ON public.flyway_schema_history USING btree (success);
+
+
+--
+-- Name: idx_freg_ident; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_freg_ident ON public.bruker_statsborgerskap USING btree (freg_ident);
+
+
+--
+-- Name: idx_gyldig_til; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_gyldig_til ON public.bruker_statsborgerskap USING btree (gyldig_til);
 
 
 --
