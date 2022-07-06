@@ -8,6 +8,6 @@ public class EndringsloggTest {
 
     @Test
     public void testLogger() {
-        frontendlogger.skrivEventTilInflux(new Frontendlogger.FrontendEvent("test", null, null));
+        frontendlogger.skrivEventTilInflux(new Frontendlogger.FrontendEvent().setName("test"));
     }
 }
