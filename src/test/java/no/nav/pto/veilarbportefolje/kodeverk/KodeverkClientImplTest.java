@@ -30,6 +30,7 @@ public class KodeverkClientImplTest {
         assertEquals("Hindi", kodeverkBeskrivelser.get("HI"));
         assertEquals("Pushto", kodeverkBeskrivelser.get("PS"));
         assertEquals("Portugesisk", kodeverkBeskrivelser.get("PT"));
+        assertEquals("Test", kodeverkBeskrivelser.get("TST"));
     }
 
 }

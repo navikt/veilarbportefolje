@@ -81,7 +81,7 @@ public class KodeverkClientImpl implements KodeverkClient {
                             .max(Comparator.comparing(o -> Integer.valueOf(o.get("gyldigFra").asText().substring(0, 4))))
                             .orElse(null);
                 } else {
-                    betydningNyeste = betydningerValues.get(0);
+                    betydningNyeste = betydningerValues;
                 }
 
                 // Noen koder mangler informasjon
