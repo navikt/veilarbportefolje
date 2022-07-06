@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,7 +23,7 @@ public class Frontendlogger {
     private final MetricsClient metricsClient;
 
     @PostMapping("/event")
-    public void skrivEventTilInflux(FrontendEvent event) {
+    public void skrivEventTilInflux(@RequestBody FrontendEvent event) {
         Event toInflux = new Event(event.name + ".event");
         if (event.getTags() != null) {
             event.getTags().forEach(toInflux::addTagToReport);
@@ -40,9 +41,9 @@ public class Frontendlogger {
     @Data
     @Accessors(chain = true)
     static class FrontendEvent {
-        private final String name;
-        private final Map<String, Object> fields;
-        private final Map<String, String> tags;
+        String name;
+        Map<String, Object> fields;
+        Map<String, String> tags;
 
         @Override
         public String toString() {
