@@ -33,8 +33,9 @@ public class Frontendlogger {
         }
         toInflux.getTags().put("environment", isProduction().orElse(false) ? "p" : "q1");
 
-        log.info("debug input: " + event);
-        log.info("debug influx: " + toString(toInflux));
+        if (!isProduction().orElse(false)) {
+            log.info("Skriver event til influx: name: " + eventToString(event.name, toInflux));
+        }
         metricsClient.report(toInflux);
     }
 
@@ -44,16 +45,10 @@ public class Frontendlogger {
         String name;
         Map<String, Object> fields;
         Map<String, String> tags;
-
-        @Override
-        public String toString() {
-            return "Name: " + name + ", fields: " + (fields == null ? null : fields.entrySet())
-                    + ", tags: " + (tags == null ? null : tags.entrySet());
-        }
     }
 
-    public static String toString(Event event) {
-        return "fields: " + (event.getFields() == null ? null : event.getFields().entrySet())
+    public static String eventToString(String name, Event event) {
+        return "name: " + name + ".event, fields: " + (event.getFields() == null ? null : event.getFields().entrySet())
                 + ", tags: " + (event.getTags() == null ? null : event.getTags().entrySet());
     }
 }
