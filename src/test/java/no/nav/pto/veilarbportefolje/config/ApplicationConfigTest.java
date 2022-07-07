@@ -84,6 +84,8 @@ import static org.mockito.Mockito.when;
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
 @Import({
+        Siste14aVedtakRepository.class,
+        Siste14aVedtakService.class,
         ArbeidslisteService.class,
         BrukerServiceV2.class,
         BrukerRepositoryV2.class,
@@ -132,9 +134,7 @@ import static org.mockito.Mockito.when;
         OpensearchCountService.class,
         KodeverkService.class,
         PersonOpprinnelseService.class,
-        PersonOpprinnelseRepository.class,
-        Siste14aVedtakService.class,
-        Siste14aVedtakRepository.class
+        PersonOpprinnelseRepository.class
 })
 public class ApplicationConfigTest {
 

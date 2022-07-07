@@ -43,6 +43,10 @@ public class Siste14aVedtakRepository {
         );
     }
 
+    public void delete(AktorId aktorId) {
+        db.update("delete from siste_14a_vedtak where aktor_id = ?", aktorId.get());
+    }
+
     @SneakyThrows
     public Optional<Siste14aVedtakDTO> hentSiste14aVedtak(AktorId aktorId) {
 
