@@ -29,8 +29,7 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konv
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.*;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.FodselsnummerUtils.lagFodselsdato;
 
 @Slf4j
@@ -53,7 +52,7 @@ public class BrukerRepositoryV2 {
         var params = aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
         return db.query("""
                         select OD.AKTOERID, OD.OPPFOLGING, ob.*,
-                               ns.er_skjermet, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
+                               ns.er_skjermet, ns.skjermet_til, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.mellomnavn as mellomnavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
                                bd.foedeland, bd.innflyttingTilNorgeFraLand, bd.angittFlyttedato,
                                bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert,
@@ -188,6 +187,12 @@ public class BrukerRepositoryV2 {
         } else if (isDevelopment().orElse(false)) {
             bruker.setFnr(null); // Midlertidig forsikring for at brukere i q1 aldri har ekte data. Fjernes sammen med toggles, og bruk av inner join for brukerdata
         }
+
+        if (brukNOMSkjerming(unleashService)) {
+            bruker.setEgen_ansatt(rs.getBoolean(ER_SKJERMET));
+            bruker.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(SKJERMET_TIL)));
+        }
+
         return bruker;
     }
 
@@ -251,6 +256,8 @@ public class BrukerRepositoryV2 {
         String landGruppe = Landgruppe.getInstance().getLandgruppeForLandKode(rs.getString("foedeland"));
         String foedelandFulltNavn = kodeverskService.getBeskrivelseForLandkode(rs.getString("foedeland"));
         String innflyttingTilNorgeFraLandFullNavn = kodeverskService.getBeskrivelseForLandkode(rs.getString("innflyttingTilNorgeFraLand"));
+        String taleSpraakFulltNavn = kodeverskService.getBeskrivelseForSpraakKode(rs.getString("talespraaktolk"));
+        String tegnSpraakFulltNavn = kodeverskService.getBeskrivelseForSpraakKode(rs.getString("tegnspraaktolk"));
         bruker
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
@@ -261,11 +268,11 @@ public class BrukerRepositoryV2 {
                 .setFoedeland(rs.getString("foedeland"))
                 .setFoedelandFulltNavn(foedelandFulltNavn)
                 .setKjonn(rs.getString("kjoenn"))
-                .setTalespraaktolk(rs.getString("talespraaktolk"))
-                .setTegnspraaktolk(rs.getString("tegnspraaktolk"))
+                .setTalespraaktolk((taleSpraakFulltNavn != null && !taleSpraakFulltNavn.isEmpty()) ? taleSpraakFulltNavn : null)
+                .setTegnspraaktolk((tegnSpraakFulltNavn != null && !tegnSpraakFulltNavn.isEmpty()) ? tegnSpraakFulltNavn : null)
                 .setTolkBehovSistOppdatert(DateUtils.toLocalDateOrNull(rs.getString("tolkBehovSistOppdatert")))
-                .setInnflyttingTilNorgeFraLand(innflyttingTilNorgeFraLandFullNavn)
-                .setLandgruppe(landGruppe);
+                .setInnflyttingTilNorgeFraLand((innflyttingTilNorgeFraLandFullNavn != null && !innflyttingTilNorgeFraLandFullNavn.isEmpty()) ? innflyttingTilNorgeFraLandFullNavn : null)
+                .setLandgruppe((landGruppe != null && !landGruppe.isEmpty()) ? landGruppe : null);
     }
 
     @SneakyThrows

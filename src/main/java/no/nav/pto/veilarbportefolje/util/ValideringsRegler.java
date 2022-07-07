@@ -57,7 +57,9 @@ public class ValideringsRegler {
             "siste_endring_tidspunkt",
             "fodeland",
             "statsborgerskap",
-            "statsborgerskap_gyldig_fra"
+            "statsborgerskap_gyldig_fra",
+            "tolkespraak",
+            "tolkebehov_sistoppdatert"
     );
 
     public static void sjekkEnhet(String enhet) {

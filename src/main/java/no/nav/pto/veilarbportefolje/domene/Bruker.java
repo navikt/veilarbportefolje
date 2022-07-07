@@ -34,6 +34,7 @@ public class Bruker {
     List<String> sikkerhetstiltak;
     String diskresjonskode;
     boolean egenAnsatt;
+    LocalDateTime skjermetTil;
     boolean nyForVeileder;
     boolean nyForEnhet;
     boolean trengerVurdering;
@@ -107,6 +108,7 @@ public class Bruker {
                 .setVeilederId(bruker.getVeileder_id())
                 .setDiskresjonskode(("7".equals(diskresjonskode) || "6".equals(diskresjonskode)) ? diskresjonskode : null)
                 .setEgenAnsatt(bruker.isEgen_ansatt())
+                .setSkjermetTil(bruker.getSkjermet_til())
                 .setErDoed(bruker.isEr_doed())
                 .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak)) //TODO: Hvorfor er dette en liste?
                 .setFodselsdagIMnd(bruker.getFodselsdag_i_mnd())

@@ -1,0 +1,62 @@
+{
+  "betydninger": {
+    "HI": [
+      {
+        "gyldigFra": "1900-01-01",
+        "gyldigTil": "9999-12-31",
+        "beskrivelser": {
+          "nb": {
+            "term": "Hindi",
+            "tekst": "Hindi"
+          }
+        }
+      }
+    ],
+    "PS": [
+      {
+        "gyldigFra": "1900-01-01",
+        "gyldigTil": "9999-12-31",
+        "beskrivelser": {
+          "nb": {
+            "term": "Pushto",
+            "tekst": "Pushto"
+          }
+        }
+      }
+    ],
+    "STI": [
+    ],
+    "TST": {
+      "gyldigFra": "1900-01-01",
+      "gyldigTil": "2017-10-26",
+      "beskrivelser": {
+        "nb": {
+          "term": "Test",
+          "tekst": "Test"
+        }
+      }
+    },
+    "PT": [
+      {
+        "gyldigFra": "1900-01-01",
+        "gyldigTil": "2017-10-26",
+        "beskrivelser": {
+          "nb": {
+            "term": "Portuguese",
+            "tekst": "Portuguese"
+          }
+        }
+      },
+      {
+        "gyldigFra": "2017-10-27",
+        "gyldigTil": "9999-12-31",
+        "beskrivelser": {
+          "nb": {
+            "term": "Portugesisk",
+            "tekst": "Portugesisk"
+          }
+        }
+      }
+    ]
+  }
+}

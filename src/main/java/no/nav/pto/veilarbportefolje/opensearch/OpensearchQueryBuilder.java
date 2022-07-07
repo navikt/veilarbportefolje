@@ -135,23 +135,36 @@ public class OpensearchQueryBuilder {
                     }
             );
         }
-        if (filtervalg.harTalespraaktolkFilter()) {
-            queryBuilder
-                    .must(existsQuery("talespraaktolk"));
+        if (filtervalg.harTalespraaktolkFilter() || filtervalg.harTegnspraakFilter()) {
+            BoolQueryBuilder tolkBehovSubquery = QueryBuilders.boolQuery();
+            if (filtervalg.harTalespraaktolkFilter()) {
+                tolkBehovSubquery
+                        .should(existsQuery("talespraaktolk"));
+            }
+            if (filtervalg.harTegnspraakFilter()) {
+                tolkBehovSubquery
+                        .should(existsQuery("tegnspraaktolk"));
+            }
+            queryBuilder.must(tolkBehovSubquery);
         }
-        if (filtervalg.harTegnspraakFilter()) {
-            queryBuilder
-                    .must(existsQuery("tegnspraaktolk"));
-        }
-        if (filtervalg.harTolkbehovFilter()) {
+        if (filtervalg.harTolkbehovSpraakFilter()) {
             String query = filtervalg.getTolkBehovSpraak().trim();
-            BoolQueryBuilder matchTolkSpraak = QueryBuilders.boolQuery()
-                    .should(QueryBuilders.matchQuery("talespraaktolk", query))
-                    .should(QueryBuilders.matchQuery("tegnspraaktolk", query));
+            BoolQueryBuilder matchTolkSpraak = QueryBuilders.boolQuery();
+
+            if (filtervalg.harTalespraaktolkFilter()) {
+                matchTolkSpraak.should(QueryBuilders.matchQuery("talespraaktolk", query));
+            }
+            if (filtervalg.harTegnspraakFilter()) {
+                matchTolkSpraak.should(QueryBuilders.matchQuery("tegnspraaktolk", query));
+            }
+
+            if (!filtervalg.harTalespraaktolkFilter() && !filtervalg.harTegnspraakFilter()) {
+                matchTolkSpraak.should(QueryBuilders.matchQuery("talespraaktolk", query));
+                matchTolkSpraak.should(QueryBuilders.matchQuery("tegnspraaktolk", query));
+            }
+
             queryBuilder.must(matchTolkSpraak);
         }
-
-
     }
 
     private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
@@ -239,6 +252,8 @@ public class OpensearchQueryBuilder {
             case "fodeland" -> sorterFodeland(searchSourceBuilder, order);
             case "statsborgerskap" -> sorterStatsborgerskap(searchSourceBuilder, order);
             case "statsborgerskap_gyldig_fra" -> sorterStatsborgerskapGyldigFra(searchSourceBuilder, order);
+            case "tolkespraak" -> sorterTolkeSpraak(filtervalg, searchSourceBuilder, order);
+            case "tolkebehov_sistoppdatert" -> searchSourceBuilder.sort("tolkBehovSistOppdatert", order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
@@ -281,9 +296,18 @@ public class OpensearchQueryBuilder {
     static void sorterStatsborgerskap(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
         searchSourceBuilder.sort("hovedStatsborgerskap.statsborgerskap", order);
     }
-    
+
     static void sorterStatsborgerskapGyldigFra(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
         searchSourceBuilder.sort("hovedStatsborgerskap.gyldigFra", order);
+    }
+
+    static void sorterTolkeSpraak(Filtervalg filtervalg, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        if (filtervalg.harTalespraaktolkFilter()) {
+            searchSourceBuilder.sort("talespraaktolk", order);
+        }
+        if (filtervalg.harTegnspraakFilter()) {
+            searchSourceBuilder.sort("tegnspraaktolk", order);
+        }
     }
 
 

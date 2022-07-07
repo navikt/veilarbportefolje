@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,6 +31,7 @@ public class OppfolgingsBruker {
     boolean har_delt_cv;
     boolean cv_eksistere;
     boolean egen_ansatt;
+    LocalDateTime skjermet_til;
     boolean er_doed;
     String veileder_id;
     int fodselsdag_i_mnd;
