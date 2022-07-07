@@ -23,13 +23,14 @@ public class Siste14aVedtakRepository {
     public void upsert(Siste14aVedtakDTO siste14aVedtak) {
 
         String sql = """
-                 insert into siste_14a_vedtak(aktor_id, hovedmal, innsatsgruppe, fattet_dato)
-                 values (?, ?, ?, ?)
+                 insert into siste_14a_vedtak(aktor_id, hovedmal, innsatsgruppe, fattet_dato, fra_arena)
+                 values (?, ?, ?, ?, ?)
                  on conflict (aktor_id) do update
-                     set (aktor_id, hovedmal, innsatsgruppe, fattet_dato) = (excluded.aktor_id,
-                                                                             excluded.hovedmal,
-                                                                             excluded.innsatsgruppe,
-                                                                             excluded.fattet_dato)
+                     set (aktor_id, hovedmal, innsatsgruppe, fattet_dato, fra_arena) = (excluded.aktor_id,
+                                                                                        excluded.hovedmal,
+                                                                                        excluded.innsatsgruppe,
+                                                                                        excluded.fattet_dato,
+                                                                                        excluded.fra_arena)
                 """;
 
         db.update(
@@ -37,7 +38,8 @@ public class Siste14aVedtakRepository {
                 siste14aVedtak.aktorId.get(),
                 siste14aVedtak.hovedmal.name(),
                 siste14aVedtak.innsatsgruppe.name(),
-                Timestamp.from(siste14aVedtak.fattetDato.toInstant())
+                Timestamp.from(siste14aVedtak.fattetDato.toInstant()),
+                siste14aVedtak.fraArena
         );
     }
 
@@ -57,6 +59,7 @@ public class Siste14aVedtakRepository {
                 AktorId.of(rs.getString("aktor_id")),
                 Siste14aVedtakDTO.Innsatsgruppe.valueOf(rs.getString("innsatsgruppe")),
                 Siste14aVedtakDTO.Hovedmal.valueOf(rs.getString("hovedmal")),
-                toZonedDateTime(rs.getTimestamp("fattet_dato")));
+                toZonedDateTime(rs.getTimestamp("fattet_dato")),
+                rs.getBoolean("fra_arena"));
     }
 }

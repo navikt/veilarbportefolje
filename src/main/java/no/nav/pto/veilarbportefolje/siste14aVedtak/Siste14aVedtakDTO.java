@@ -15,6 +15,7 @@ public class Siste14aVedtakDTO {
     Innsatsgruppe innsatsgruppe;
     Hovedmal hovedmal;
     ZonedDateTime fattetDato;
+    boolean fraArena;
 
     public enum Innsatsgruppe {
         STANDARD_INNSATS,
