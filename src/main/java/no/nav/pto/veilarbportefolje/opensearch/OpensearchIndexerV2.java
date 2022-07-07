@@ -187,7 +187,7 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void updateErSkjermet(AktorId aktorId, Boolean erSkjermet) {
+    public void updateErSkjermet(AktorId aktorId, boolean erSkjermet) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("egen_ansatt", erSkjermet)

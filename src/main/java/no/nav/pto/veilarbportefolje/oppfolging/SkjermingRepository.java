@@ -35,7 +35,7 @@ public class SkjermingRepository {
         return updatedNum > 0;
     }
 
-    public boolean settSkjerming(Fnr fnr, Boolean erSkjermet) {
+    public boolean settSkjerming(Fnr fnr, boolean erSkjermet) {
         int updatedNum = db.update("""
                         INSERT INTO NOM_SKJERMING (FODSELSNR, ER_SKJERMET) VALUES (?,?)
                         ON CONFLICT (FODSELSNR) DO UPDATE SET ER_SKJERMET = EXCLUDED.ER_SKJERMET
