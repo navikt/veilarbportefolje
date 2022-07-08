@@ -63,10 +63,10 @@ public class PdlIdentRepositoryTest {
         var brukerB = pdlIdentRepository.hentIdenter(lokalIdentBrukerB);
 
         assertThat(lokalIdentBrukerA).isNotEqualTo(lokalIdentBrukerB);
-        assertThat(brukerAPreBrukerB).isEqualTo(identerBrukerA);
-        assertThat(brukerAPostBrukerB).isNotEqualTo(identerBrukerA);
-        assertThat(brukerB).isEqualTo(identerBrukerB);
-        assertThat(brukerAPostBrukerB.size()).isEqualTo(0);
+        assertThat(brukerAPreBrukerB).containsExactlyInAnyOrderElementsOf(identerBrukerA);
+        assertThat(brukerAPostBrukerB.stream().sorted()).isNotEqualTo(identerBrukerA.stream().sorted());
+        assertThat(brukerB).containsExactlyInAnyOrderElementsOf(identerBrukerB);
+        assertThat(brukerAPostBrukerB).hasSize(0);
     }
 
     @Test
@@ -89,7 +89,7 @@ public class PdlIdentRepositoryTest {
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOpfolgingAvslutt);
 
         var lokaleIdenter = hentLokaleIdenter(historiskIdent);
-        assertThat(identer).isEqualTo(lokaleIdenter);
+        assertThat(identer).containsExactlyInAnyOrderElementsOf(lokaleIdenter);
     }
 
     @Test
@@ -106,7 +106,7 @@ public class PdlIdentRepositoryTest {
         pdlIdentRepository.upsertIdenter(identer);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingAvslutt);
         var lokaleIdenter = hentLokaleIdenter(ident);
-        assertThat(lokaleIdenter.size()).isEqualTo(0);
+        assertThat(lokaleIdenter).hasSize(0);
     }
 
     private List<PDLIdent> hentLokaleIdenter(AktorId ident) {

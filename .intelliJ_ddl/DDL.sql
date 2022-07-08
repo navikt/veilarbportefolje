@@ -648,6 +648,13 @@ CREATE INDEX flyway_schema_history_s_idx ON public.flyway_schema_history USING b
 
 
 --
+-- Name: idx_bruker_identer_person; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_bruker_identer_person ON public.bruker_identer USING btree (person);
+
+
+--
 -- Name: idx_freg_ident; Type: INDEX; Schema: public; Owner: -
 --
 

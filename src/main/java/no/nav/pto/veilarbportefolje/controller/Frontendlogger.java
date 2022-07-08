@@ -34,7 +34,7 @@ public class Frontendlogger {
         toInflux.getTags().put("environment", isProduction().orElse(false) ? "p" : "q1");
 
         if (!isProduction().orElse(false)) {
-            log.info("Skriver event til influx: name: " + eventToString(event.name, toInflux));
+            log.info("Skriver event til influx: " + eventToString(event.name, toInflux));
         }
         metricsClient.report(toInflux);
     }
