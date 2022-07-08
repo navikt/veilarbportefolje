@@ -1,8 +1,10 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +18,7 @@ import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -107,6 +110,35 @@ public class PdlIdentRepositoryTest {
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingAvslutt);
         var lokaleIdenter = hentLokaleIdenter(ident);
         assertThat(lokaleIdenter).hasSize(0);
+    }
+
+    @Test
+    public void henterIdenterForEnBruker() {
+        Fnr brukersOppsagIdent = randomFnr();
+
+        List<PDLIdent> brukersIdenter = List.of(
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(randomAktorId().get(), true, AKTORID),
+                new PDLIdent(brukersOppsagIdent.get(), true, FOLKEREGISTERIDENT),
+                new PDLIdent(randomFnr().get(), true, FOLKEREGISTERIDENT)
+        );
+
+        pdlIdentRepository.upsertIdenter(brukersIdenter);
+
+        List<PDLIdent> annenBrukersIdenter = List.of(
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(randomAktorId().get(), true, AKTORID),
+                new PDLIdent(randomFnr().get(), true, FOLKEREGISTERIDENT)
+        );
+
+        pdlIdentRepository.upsertIdenter(annenBrukersIdenter);
+
+        IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(brukersOppsagIdent);
+
+        assertThat(identer.identer())
+                .containsExactlyInAnyOrderElementsOf(brukersIdenter.stream().map(PDLIdent::getIdent).toList());
     }
 
     private List<PDLIdent> hentLokaleIdenter(AktorId ident) {

@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakDTO;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
@@ -103,11 +104,11 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
                 new Siste14aVedtakDTO(aktorId, STANDARD_INNSATS, BEHOLDE_ARBEID, ZonedDateTime.now(), false)
         );
 
-        assertFalse(siste14aVedtakRepository.hentSiste14aVedtak(aktorId).isEmpty());
+        assertFalse(siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get()))).isEmpty());
 
         avsluttOppfolging(aktorId, "2020-01-01T00:00:01+02:00", "2020-02-02T00:00:01+02:00");
 
-        assertTrue(siste14aVedtakRepository.hentSiste14aVedtak(aktorId).isEmpty());
+        assertTrue(siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get()))).isEmpty());
     }
 
     @Test
