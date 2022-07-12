@@ -32,7 +32,7 @@ public class Siste14aVedtakRepository {
         db.update(
                 sql,
                 siste14aVedtak.brukerId,
-                siste14aVedtak.hovedmal.name(),
+                siste14aVedtak.hovedmal != null ? siste14aVedtak.hovedmal.name() : null,
                 siste14aVedtak.innsatsgruppe.name(),
                 Timestamp.from(siste14aVedtak.fattetDato.toInstant()),
                 siste14aVedtak.fraArena
@@ -68,7 +68,7 @@ public class Siste14aVedtakRepository {
         return new Siste14aVedtak(
                 rs.getString("bruker_id"),
                 Siste14aVedtakKafkaDTO.Innsatsgruppe.valueOf(rs.getString("innsatsgruppe")),
-                Siste14aVedtakKafkaDTO.Hovedmal.valueOf(rs.getString("hovedmal")),
+                Optional.ofNullable(rs.getString("hovedmal")).map(Siste14aVedtakKafkaDTO.Hovedmal::valueOf).orElse(null),
                 toZonedDateTime(rs.getTimestamp("fattet_dato")),
                 rs.getBoolean("fra_arena"));
     }

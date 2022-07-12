@@ -397,9 +397,8 @@ public class KafkaConfigCommon {
                                 .build())
                 .collect(Collectors.toList());
 
-        consumerClientAivenSiste14a = KafkaConsumerClientBuilder.builder()
-                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
-                .withTopicConfig(new KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakKafkaDTO>()
+        KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakKafkaDTO> siste14aTopicConfig =
+                new KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakKafkaDTO>()
                         .withLogging()
                         .withMetrics(prometheusMeterRegistry)
                         .withStoreOnFailure(consumerRepository)
@@ -408,7 +407,11 @@ public class KafkaConfigCommon {
                                 Deserializers.stringDeserializer(),
                                 Deserializers.jsonDeserializer(Siste14aVedtakKafkaDTO.class),
                                 siste14aVedtakService::behandleKafkaRecord
-                        ))
+                        );
+
+        consumerClientAivenSiste14a = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
+                .withTopicConfig(siste14aTopicConfig)
                 .withToggle(() -> unleashService.isEnabled(KAFKA_SISTE_14A_STOP) || kafkaAivenUnleash.get())
                 .build();
 
@@ -429,7 +432,11 @@ public class KafkaConfigCommon {
                 .builder()
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
-                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(Stream.concat(topicConfigsAiven.stream(), topicConfigsOnPrem.stream()).collect(Collectors.toList())))
+                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(
+                        Stream.concat(
+                                Stream.concat(topicConfigsAiven.stream(), Stream.of(siste14aTopicConfig)),
+                                topicConfigsOnPrem.stream()
+                        ).collect(Collectors.toList())))
                 .withBackoffStrategy(new LinearBackoffStrategy(0, 2 * 60 * 60, 144))
                 .build();
     }
