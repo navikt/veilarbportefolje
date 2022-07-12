@@ -398,7 +398,7 @@ public class KafkaConfigCommon {
                 .collect(Collectors.toList());
 
         consumerClientAivenSiste14a = KafkaConsumerClientBuilder.builder()
-                .withProperties(aivenConsumerProperties)
+                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfig(new KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakKafkaDTO>()
                         .withLogging()
                         .withMetrics(prometheusMeterRegistry)
