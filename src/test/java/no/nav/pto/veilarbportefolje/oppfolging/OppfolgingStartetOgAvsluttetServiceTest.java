@@ -7,6 +7,10 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
@@ -22,10 +26,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
+import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Hovedmal.BEHOLDE_ARBEID;
+import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Innsatsgruppe.STANDARD_INNSATS;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
@@ -34,6 +40,12 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     private final OppfolgingPeriodeService oppfolgingPeriodeService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private Siste14aVedtakService siste14aVedtakService;
+
+    @Autowired
+    private Siste14aVedtakRepository siste14aVedtakRepository;
 
     @Autowired
     public OppfolgingStartetOgAvsluttetServiceTest(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepositoryV2 oppfolgingRepositoryV2, JdbcTemplate jdbcTemplate) {
@@ -83,6 +95,23 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     }
 
     @Test
+    void skal_slette_siste_14a_vedtak_når_oppfølging_avsluttes() {
+        final AktorId aktorId = randomAktorId();
+
+        testDataClient.setupBruker(aktorId, ZonedDateTime.parse("2020-01-01T00:00:01+02:00"));
+
+        siste14aVedtakService.lagreSiste14aVedtak(
+                new Siste14aVedtak(aktorId.get(), STANDARD_INNSATS, BEHOLDE_ARBEID, ZonedDateTime.now(), false)
+        );
+
+        assertFalse(siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get()))).isEmpty());
+
+        avsluttOppfolging(aktorId, "2020-01-01T00:00:01+02:00", "2020-02-02T00:00:01+02:00");
+
+        assertTrue(siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get()))).isEmpty());
+    }
+
+    @Test
     void skal_ikke_avslutte_bruker_som_har_startdato_senere_enn_sluttdato() {
         final Optional<BrukerOppdatertInformasjon> bruker = startOgAvsluttBruker("2020-01-01T00:00:01+02:00", "2020-01-01T00:00:00+02:00");
         assertThat(bruker.orElseThrow().getOppfolging()).isTrue();
@@ -95,16 +124,24 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     }
 
     private Optional<BrukerOppdatertInformasjon> startOgAvsluttBruker(String startDato, String sluttDato) {
-        final AktorId aktoerId = randomAktorId();
+        final AktorId aktorId = randomAktorId();
 
-        SisteOppfolgingsperiodeV1 oppfolgingStartetPayload = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktoerId.get(), ZonedDateTime.parse(startDato), null);
+        startOppfolging(aktorId, startDato);
+
+        avsluttOppfolging(aktorId, startDato, sluttDato);
+
+        return oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
+    }
+
+    private void startOppfolging(AktorId aktorId, String startDato) {
+        SisteOppfolgingsperiodeV1 oppfolgingStartetPayload = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktorId.get(), ZonedDateTime.parse(startDato), null);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(oppfolgingStartetPayload);
+    }
 
-        SisteOppfolgingsperiodeV1 oppfolgingAvsluttePayload = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktoerId.get(), ZonedDateTime.parse(startDato), ZonedDateTime.parse(sluttDato));
+    private void avsluttOppfolging(AktorId aktorId, String startDato, String sluttDato) {
+        SisteOppfolgingsperiodeV1 oppfolgingAvsluttePayload = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktorId.get(), ZonedDateTime.parse(startDato), ZonedDateTime.parse(sluttDato));
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(oppfolgingAvsluttePayload);
-
-        return oppfolgingRepositoryV2.hentOppfolgingData(aktoerId);
     }
 }

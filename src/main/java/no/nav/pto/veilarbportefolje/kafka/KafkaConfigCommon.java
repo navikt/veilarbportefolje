@@ -52,6 +52,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
@@ -72,6 +74,7 @@ import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsume
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.NaisUtils.getCredentials;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_STOP;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
@@ -82,6 +85,7 @@ public class KafkaConfigCommon {
 
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
+        SISTE_14A_VEDTAK_TOPIC("pto.siste-14a-vedtak-v1"),
         DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireKafkaTopicPostfix()),
         ENDRING_PAA_MANUELL_STATUS("pto.endring-paa-manuell-status-v1"),
         VEILEDER_TILORDNET("pto.veileder-tilordnet-v1"),
@@ -118,13 +122,15 @@ public class KafkaConfigCommon {
     }
 
     private final List<KafkaConsumerClient> consumerClientAiven;
+    private final KafkaConsumerClient consumerClientAivenSiste14a; // Midlertidig adskilt for egen toggle
     private final List<KafkaConsumerClient> consumerClientsOnPrem;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
                              SistLestService sistLestService, RegistreringService registreringService,
                              ProfileringService profileringService, AktivitetService aktivitetService,
-                             Utkast14aStatusendringService vedtakService, DialogService dialogService, ManuellStatusService manuellStatusService,
+                             Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
+                             DialogService dialogService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
                              MalService malService, OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
@@ -258,7 +264,7 @@ public class KafkaConfigCommon {
                                         Topic.VEDTAK_STATUS_ENDRING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(Kafka14aStatusendring.class),
-                                        vedtakService::behandleKafkaRecord
+                                        utkast14aStatusendringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
                                 .withLogging()
@@ -391,6 +397,21 @@ public class KafkaConfigCommon {
                                 .build())
                 .collect(Collectors.toList());
 
+        consumerClientAivenSiste14a = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
+                .withTopicConfig(new KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakKafkaDTO>()
+                        .withLogging()
+                        .withMetrics(prometheusMeterRegistry)
+                        .withStoreOnFailure(consumerRepository)
+                        .withConsumerConfig(
+                                Topic.SISTE_14A_VEDTAK_TOPIC.topicName,
+                                Deserializers.stringDeserializer(),
+                                Deserializers.jsonDeserializer(Siste14aVedtakKafkaDTO.class),
+                                siste14aVedtakService::behandleKafkaRecord
+                        ))
+                .withToggle(() -> unleashService.isEnabled(KAFKA_SISTE_14A_STOP) || kafkaAivenUnleash.get())
+                .build();
+
         consumerClientsOnPrem = topicConfigsOnPrem.stream()
                 .map(config ->
                         KafkaConsumerClientBuilder.builder()
@@ -418,6 +439,7 @@ public class KafkaConfigCommon {
     public void start() {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
+        consumerClientAivenSiste14a.start();
         consumerClientsOnPrem.forEach(KafkaConsumerClient::start);
     }
 
