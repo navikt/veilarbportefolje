@@ -23,7 +23,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 public class Siste14aVedtakRepository {
     private final JdbcTemplate db;
 
-    private void insert(Siste14aVedtakDTO siste14aVedtak) {
+    private void insert(Siste14aVedtak siste14aVedtak) {
         String sql = """
                  insert into siste_14a_vedtak(bruker_id, hovedmal, innsatsgruppe, fattet_dato, fra_arena)
                  values (?, ?, ?, ?, ?)
@@ -31,7 +31,7 @@ public class Siste14aVedtakRepository {
 
         db.update(
                 sql,
-                siste14aVedtak.aktorId.get(),
+                siste14aVedtak.brukerId,
                 siste14aVedtak.hovedmal.name(),
                 siste14aVedtak.innsatsgruppe.name(),
                 Timestamp.from(siste14aVedtak.fattetDato.toInstant()),
@@ -44,13 +44,13 @@ public class Siste14aVedtakRepository {
     }
 
     @Transactional
-    public void upsert(Siste14aVedtakDTO siste14aVedtak, IdenterForBruker identer) {
+    public void upsert(Siste14aVedtak siste14aVedtak, IdenterForBruker identer) {
         delete(identer);
         insert(siste14aVedtak);
     }
 
     @SneakyThrows
-    public Optional<Siste14aVedtakDTO> hentSiste14aVedtak(IdenterForBruker identer) {
+    public Optional<Siste14aVedtak> hentSiste14aVedtak(IdenterForBruker identer) {
 
         String sql = "select * from siste_14a_vedtak where bruker_id = any (?::varchar[])";
 
@@ -64,11 +64,11 @@ public class Siste14aVedtakRepository {
     }
 
     @SneakyThrows
-    private Siste14aVedtakDTO siste14aVedtakMapper(ResultSet rs, int rowNum) {
-        return new Siste14aVedtakDTO(
-                AktorId.of(rs.getString("bruker_id")),
-                Siste14aVedtakDTO.Innsatsgruppe.valueOf(rs.getString("innsatsgruppe")),
-                Siste14aVedtakDTO.Hovedmal.valueOf(rs.getString("hovedmal")),
+    private Siste14aVedtak siste14aVedtakMapper(ResultSet rs, int rowNum) {
+        return new Siste14aVedtak(
+                rs.getString("bruker_id"),
+                Siste14aVedtakKafkaDTO.Innsatsgruppe.valueOf(rs.getString("innsatsgruppe")),
+                Siste14aVedtakKafkaDTO.Hovedmal.valueOf(rs.getString("hovedmal")),
                 toZonedDateTime(rs.getTimestamp("fattet_dato")),
                 rs.getBoolean("fra_arena"));
     }

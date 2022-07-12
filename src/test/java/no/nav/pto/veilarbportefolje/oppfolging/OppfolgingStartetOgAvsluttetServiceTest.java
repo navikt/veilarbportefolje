@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakDTO;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakDTO.Hovedmal.BEHOLDE_ARBEID;
-import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakDTO.Innsatsgruppe.STANDARD_INNSATS;
+import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Hovedmal.BEHOLDE_ARBEID;
+import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Innsatsgruppe.STANDARD_INNSATS;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -101,7 +101,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         testDataClient.setupBruker(aktorId, ZonedDateTime.parse("2020-01-01T00:00:01+02:00"));
 
         siste14aVedtakService.lagreSiste14aVedtak(
-                new Siste14aVedtakDTO(aktorId, STANDARD_INNSATS, BEHOLDE_ARBEID, ZonedDateTime.now(), false)
+                new Siste14aVedtak(aktorId.get(), STANDARD_INNSATS, BEHOLDE_ARBEID, ZonedDateTime.now(), false)
         );
 
         assertFalse(siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get()))).isEmpty());

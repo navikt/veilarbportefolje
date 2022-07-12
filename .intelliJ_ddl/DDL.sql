@@ -351,10 +351,11 @@ CREATE TABLE public.shedlock (
 --
 
 CREATE TABLE public.siste_14a_vedtak (
-    aktor_id character varying(20) NOT NULL,
+    bruker_id character varying(20) NOT NULL,
     hovedmal character varying(30),
     innsatsgruppe character varying(40) NOT NULL,
-    fattet_dato timestamp with time zone NOT NULL
+    fattet_dato timestamp with time zone NOT NULL,
+    fra_arena boolean NOT NULL
 );
 
 
@@ -589,7 +590,7 @@ ALTER TABLE ONLY public.shedlock
 --
 
 ALTER TABLE ONLY public.siste_14a_vedtak
-    ADD CONSTRAINT siste_14a_vedtak_pkey PRIMARY KEY (aktor_id);
+    ADD CONSTRAINT siste_14a_vedtak_pkey PRIMARY KEY (bruker_id);
 
 
 --

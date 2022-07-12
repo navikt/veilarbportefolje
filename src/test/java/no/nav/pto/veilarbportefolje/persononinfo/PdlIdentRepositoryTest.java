@@ -128,14 +128,14 @@ public class PdlIdentRepositoryTest {
 
         pdlIdentRepository.upsertIdenter(annenBrukersIdenter);
 
-        IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(brukersOppsagIdent);
+        IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(brukersOppsagIdent.get());
 
         assertThat(identer.identer())
                 .containsExactlyInAnyOrderElementsOf(brukersIdenter.stream().map(PDLIdent::getIdent).toList());
     }
 
     @Test
-    public void harAktorIdUnderOppfolging_under_oppfølging_baset_på_gjeldende_og_historiske_identer() {
+    public void erBrukerUnderOppfolging__under_oppfølging_baset_på_gjeldende_og_historiske_identer() {
 
         Fnr fnr = randomFnr();
         Fnr historiskFnr = randomFnr();
@@ -152,14 +152,14 @@ public class PdlIdentRepositoryTest {
         pdlIdentRepository.upsertIdenter(brukersIdenter);
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
 
-        assertTrue(pdlIdentRepository.harAktorIdUnderOppfolging(fnr));
-        assertTrue(pdlIdentRepository.harAktorIdUnderOppfolging(historiskFnr));
-        assertTrue(pdlIdentRepository.harAktorIdUnderOppfolging(aktorId));
-        assertTrue(pdlIdentRepository.harAktorIdUnderOppfolging(historiskAktorId));
+        assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(fnr.get()));
+        assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(historiskFnr.get()));
+        assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(aktorId.get()));
+        assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(historiskAktorId.get()));
     }
 
     @Test
-    public void harAktorIdUnderOppfolging_ikke_under_oppfølging_baset_på_gjeldende_og_historiske_identer() {
+    public void erBrukerUnderOppfolging__ikke_under_oppfølging_baset_på_gjeldende_og_historiske_identer() {
         Fnr fnr = randomFnr();
         Fnr historiskFnr = randomFnr();
         AktorId aktorId = randomAktorId();
@@ -182,11 +182,11 @@ public class PdlIdentRepositoryTest {
         pdlIdentRepository.upsertIdenter(annenBrukersIdenter);
         oppfolgingRepositoryV2.settUnderOppfolging(annenBrukersAktorId, ZonedDateTime.now());
 
-        assertFalse(pdlIdentRepository.harAktorIdUnderOppfolging(fnr));
-        assertFalse(pdlIdentRepository.harAktorIdUnderOppfolging(historiskFnr));
-        assertFalse(pdlIdentRepository.harAktorIdUnderOppfolging(aktorId));
-        assertFalse(pdlIdentRepository.harAktorIdUnderOppfolging(historiskAktorId));
-        assertTrue(pdlIdentRepository.harAktorIdUnderOppfolging(annenBrukersAktorId));
+        assertFalse(pdlIdentRepository.erBrukerUnderOppfolging(fnr.get()));
+        assertFalse(pdlIdentRepository.erBrukerUnderOppfolging(historiskFnr.get()));
+        assertFalse(pdlIdentRepository.erBrukerUnderOppfolging(aktorId.get()));
+        assertFalse(pdlIdentRepository.erBrukerUnderOppfolging(historiskAktorId.get()));
+        assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(annenBrukersAktorId.get()));
     }
 
     private List<PDLIdent> hentLokaleIdenter(AktorId ident) {

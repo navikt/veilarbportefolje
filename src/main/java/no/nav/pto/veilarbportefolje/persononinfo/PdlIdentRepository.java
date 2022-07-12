@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
@@ -44,7 +43,7 @@ public class PdlIdentRepository {
         ).orElse(false);
     }
 
-    public boolean harAktorIdUnderOppfolging(EksternBrukerId brukerId) {
+    public boolean erBrukerUnderOppfolging(String brukerId) {
         return Optional.ofNullable(queryForObjectOrNull(() -> db.queryForObject("""
                 select bool_or(oppfolging) as harOppfolging from oppfolging_data
                         where aktoerid in (
@@ -52,7 +51,7 @@ public class PdlIdentRepository {
                             from bruker_identer bi1
                             inner join bruker_identer bi2 on bi2.person = bi1.person
                             where bi1.ident = ? and bi2.gruppe = 'AKTORID')
-                """, Boolean.class, brukerId.get()))).orElse(false);
+                """, Boolean.class, brukerId))).orElse(false);
     }
 
     public List<PDLIdent> hentIdenter(String ident) {
@@ -62,13 +61,13 @@ public class PdlIdentRepository {
                 .toList();
     }
 
-    public IdenterForBruker hentIdenterForBruker(EksternBrukerId brukerId) {
+    public IdenterForBruker hentIdenterForBruker(String brukerId) {
         List<String> identer = db.queryForList("""
                 select bi2.ident
                 from bruker_identer bi1
                 inner join bruker_identer bi2 on bi2.person = bi1.person
                 where bi1.ident = ?
-                """, String.class, brukerId.get());
+                """, String.class, brukerId);
 
         return new IdenterForBruker(identer);
     }

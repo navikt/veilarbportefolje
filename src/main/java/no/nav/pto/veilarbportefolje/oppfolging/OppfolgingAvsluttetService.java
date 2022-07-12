@@ -34,7 +34,7 @@ public class OppfolgingAvsluttetService {
         arbeidslisteService.slettArbeidsliste(aktoerId);
         sisteEndringService.slettSisteEndringer(aktoerId);
         cvRepositoryV2.resetHarDeltCV(aktoerId);
-        siste14aVedtakService.slettSiste14aVedtak(aktoerId);
+        siste14aVedtakService.slettSiste14aVedtak(aktoerId.get());
         pdlService.slettPdlData(aktoerId);
 
         opensearchIndexerV2.slettDokumenter(List.of(aktoerId));

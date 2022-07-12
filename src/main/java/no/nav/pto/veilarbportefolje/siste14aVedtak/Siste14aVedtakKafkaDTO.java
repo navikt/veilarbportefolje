@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 @Data
 @Accessors(chain = true)
 @AllArgsConstructor
-public class Siste14aVedtakDTO {
+public class Siste14aVedtakKafkaDTO {
     AktorId aktorId;
     Innsatsgruppe innsatsgruppe;
     Hovedmal hovedmal;

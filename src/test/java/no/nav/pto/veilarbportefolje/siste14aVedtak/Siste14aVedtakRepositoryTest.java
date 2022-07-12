@@ -11,6 +11,10 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Hovedmal.BEHOLDE_ARBEID;
+import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Hovedmal.SKAFFE_ARBEID;
+import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Innsatsgruppe.SITUASJONSBESTEMT_INNSATS;
+import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Innsatsgruppe.STANDARD_INNSATS;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,10 +33,10 @@ public class Siste14aVedtakRepositoryTest {
         AktorId aktorIdForAnnenBruker = randomAktorId();
         IdenterForBruker identerForAnnenBruker = new IdenterForBruker(List.of(aktorIdForAnnenBruker.get(), randomAktorId().get()));
 
-        Siste14aVedtakDTO siste14aVedtakForAnnenBruker = new Siste14aVedtakDTO(
-                aktorIdForAnnenBruker,
-                Siste14aVedtakDTO.Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
-                Siste14aVedtakDTO.Hovedmal.OKE_DELTAKELSE,
+        Siste14aVedtak siste14aVedtakForAnnenBruker = new Siste14aVedtak(
+                aktorIdForAnnenBruker.get(),
+                Siste14aVedtakKafkaDTO.Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
+                Siste14aVedtakKafkaDTO.Hovedmal.OKE_DELTAKELSE,
                 ZonedDateTime.parse("2022-01-01T11:33:22.133000+02:00"),
                 false
         );
@@ -41,10 +45,10 @@ public class Siste14aVedtakRepositoryTest {
 
         assertLagretVedtak(siste14aVedtakForAnnenBruker, identerForAnnenBruker);
 
-        Siste14aVedtakDTO siste14aVedtak = new Siste14aVedtakDTO(
-                aktorId1,
-                Siste14aVedtakDTO.Innsatsgruppe.STANDARD_INNSATS,
-                Siste14aVedtakDTO.Hovedmal.SKAFFE_ARBEID,
+        Siste14aVedtak siste14aVedtak = new Siste14aVedtak(
+                aktorId1.get(),
+                STANDARD_INNSATS,
+                SKAFFE_ARBEID,
                 ZonedDateTime.parse("2021-05-04T09:48:58.762000+02:00"),
                 false
         );
@@ -53,10 +57,10 @@ public class Siste14aVedtakRepositoryTest {
 
         assertLagretVedtak(siste14aVedtak, identerForBruker);
 
-        Siste14aVedtakDTO oppdatert14aVedtak = new Siste14aVedtakDTO(
-                aktorId2,
-                Siste14aVedtakDTO.Innsatsgruppe.SITUASJONSBESTEMT_INNSATS,
-                Siste14aVedtakDTO.Hovedmal.BEHOLDE_ARBEID,
+        Siste14aVedtak oppdatert14aVedtak = new Siste14aVedtak(
+                aktorId2.get(),
+                SITUASJONSBESTEMT_INNSATS,
+                BEHOLDE_ARBEID,
                 ZonedDateTime.parse("2022-01-04T10:01:32.689000+02:00"),
                 true
         );
@@ -71,22 +75,22 @@ public class Siste14aVedtakRepositoryTest {
         assertLagretVedtak(siste14aVedtakForAnnenBruker, identerForAnnenBruker);
     }
 
-    private void assertLagretVedtak(Siste14aVedtakDTO expected, IdenterForBruker identer) {
-        Optional<Siste14aVedtakDTO> kanskjeResultat =
+    private void assertLagretVedtak(Siste14aVedtak expected, IdenterForBruker identer) {
+        Optional<Siste14aVedtak> kanskjeResultat =
                 siste14aVedtakRepository.hentSiste14aVedtak(identer);
 
         assertTrue(kanskjeResultat.isPresent());
 
-        Siste14aVedtakDTO resultat = kanskjeResultat.get();
+        Siste14aVedtak resultat = kanskjeResultat.get();
 
         assertEquals(expected.getFattetDato().toInstant(), resultat.getFattetDato().toInstant());
-        assertEquals(expected.getAktorId(), resultat.getAktorId());
+        assertEquals(expected.getBrukerId(), resultat.getBrukerId());
         assertEquals(expected.getHovedmal(), resultat.getHovedmal());
         assertEquals(expected.getInnsatsgruppe(), resultat.getInnsatsgruppe());
         assertEquals(expected.isFraArena(), resultat.isFraArena());
     }
     private void assertSlettetVedtak(IdenterForBruker identer) {
-        Optional<Siste14aVedtakDTO> kanskjeResultat =
+        Optional<Siste14aVedtak> kanskjeResultat =
                 siste14aVedtakRepository.hentSiste14aVedtak(identer);
 
         assertFalse(kanskjeResultat.isPresent());
