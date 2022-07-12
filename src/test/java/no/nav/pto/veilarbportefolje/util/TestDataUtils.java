@@ -15,7 +15,7 @@ public class TestDataUtils {
 
 
     public static AktorId randomAktorId() {
-        return AktorId.of(valueOf(current().nextInt()));
+        return AktorId.of(randomDigits(13));
     }
 
     public static PersonId randomPersonId() {

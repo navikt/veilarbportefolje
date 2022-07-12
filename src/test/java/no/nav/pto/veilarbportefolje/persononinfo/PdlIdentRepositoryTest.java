@@ -1,56 +1,52 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class PdlIdentRepositoryTest {
-    private final JdbcTemplate db;
-    private final PdlIdentRepository pdlIdentRepository;
-    private final OppfolgingPeriodeService oppfolgingPeriodeService;
 
     @Autowired
-    public PdlIdentRepositoryTest(JdbcTemplate db, PdlIdentRepository pdlIdentRepository, OppfolgingPeriodeService oppfolgingPeriodeService) {
-        this.db = db;
-        this.pdlIdentRepository = pdlIdentRepository;
-        this.oppfolgingPeriodeService = oppfolgingPeriodeService;
-    }
+    private PdlIdentRepository pdlIdentRepository;
 
-    @BeforeEach
-    public void reset() {
-        db.update("truncate oppfolging_data");
-        db.update("truncate bruker_data CASCADE");
-        db.update("truncate bruker_identer");
-    }
+    @Autowired
+    private OppfolgingPeriodeService oppfolgingPeriodeService;
+
+    @Autowired
+    private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     @Test
     public void identSplitt_allePersonerMedTidligereIdenterSkalSlettes() {
-        PDLIdent identIKonflikt = new PDLIdent("12345", true, AKTORID);
+        PDLIdent identIKonflikt = new PDLIdent(randomAktorId().get(), true, AKTORID);
         List<PDLIdent> identerBrukerA = List.of(
                 identIKonflikt,
-                new PDLIdent("12346", false, AKTORID),
-                new PDLIdent("00000", false, FOLKEREGISTERIDENT)
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT)
         );
         List<PDLIdent> identerBrukerB = List.of(
                 identIKonflikt,
-                new PDLIdent("12347", false, AKTORID),
-                new PDLIdent("00001", false, FOLKEREGISTERIDENT)
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT)
         );
         pdlIdentRepository.upsertIdenter(identerBrukerA);
         String lokalIdentBrukerA = pdlIdentRepository.hentPerson(identIKonflikt.getIdent());
@@ -71,8 +67,8 @@ public class PdlIdentRepositoryTest {
 
     @Test
     public void oppfolgingAvsluttet_flereIdenterUnderOppfolging_lokalIdentLagringSkalIkkeSlettes() {
-        AktorId historiskIdent = AktorId.of("12345");
-        AktorId ident = AktorId.of("12346");
+        AktorId historiskIdent = randomAktorId();
+        AktorId ident = randomAktorId();
         List<PDLIdent> identer = List.of(
                 new PDLIdent(historiskIdent.get(), true, AKTORID),
                 new PDLIdent(ident.get(), false, AKTORID),
@@ -94,7 +90,7 @@ public class PdlIdentRepositoryTest {
 
     @Test
     public void oppfolgingAvsluttet_ingenAndreIdenterUnderOppfolging_identLagringSkalSlettes() {
-        AktorId ident = AktorId.of("12346");
+        AktorId ident = randomAktorId();
         List<PDLIdent> identer = List.of(
                 new PDLIdent(ident.get(), false, AKTORID)
         );
@@ -107,6 +103,90 @@ public class PdlIdentRepositoryTest {
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingAvslutt);
         var lokaleIdenter = hentLokaleIdenter(ident);
         assertThat(lokaleIdenter).hasSize(0);
+    }
+
+    @Test
+    public void henterIdenterForEnBruker() {
+        Fnr brukersOppsagIdent = randomFnr();
+
+        List<PDLIdent> brukersIdenter = List.of(
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(randomAktorId().get(), true, AKTORID),
+                new PDLIdent(brukersOppsagIdent.get(), true, FOLKEREGISTERIDENT),
+                new PDLIdent(randomFnr().get(), true, FOLKEREGISTERIDENT)
+        );
+
+        pdlIdentRepository.upsertIdenter(brukersIdenter);
+
+        List<PDLIdent> annenBrukersIdenter = List.of(
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(randomAktorId().get(), true, AKTORID),
+                new PDLIdent(randomFnr().get(), true, FOLKEREGISTERIDENT)
+        );
+
+        pdlIdentRepository.upsertIdenter(annenBrukersIdenter);
+
+        IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(brukersOppsagIdent.get());
+
+        assertThat(identer.identer())
+                .containsExactlyInAnyOrderElementsOf(brukersIdenter.stream().map(PDLIdent::getIdent).toList());
+    }
+
+    @Test
+    public void erBrukerUnderOppfolging__under_oppfølging_baset_på_gjeldende_og_historiske_identer() {
+
+        Fnr fnr = randomFnr();
+        Fnr historiskFnr = randomFnr();
+        AktorId aktorId = randomAktorId();
+        AktorId historiskAktorId = randomAktorId();
+
+        List<PDLIdent> brukersIdenter = List.of(
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(historiskFnr.get(), true, FOLKEREGISTERIDENT),
+                new PDLIdent(historiskAktorId.get(), true, AKTORID)
+        );
+
+        pdlIdentRepository.upsertIdenter(brukersIdenter);
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
+
+        assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(fnr.get()));
+        assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(historiskFnr.get()));
+        assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(aktorId.get()));
+        assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(historiskAktorId.get()));
+    }
+
+    @Test
+    public void erBrukerUnderOppfolging__ikke_under_oppfølging_baset_på_gjeldende_og_historiske_identer() {
+        Fnr fnr = randomFnr();
+        Fnr historiskFnr = randomFnr();
+        AktorId aktorId = randomAktorId();
+        AktorId historiskAktorId = randomAktorId();
+
+        List<PDLIdent> brukersIdenter = List.of(
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(historiskFnr.get(), true, FOLKEREGISTERIDENT),
+                new PDLIdent(historiskAktorId.get(), true, AKTORID)
+        );
+
+        AktorId annenBrukersAktorId = randomAktorId();
+        List<PDLIdent> annenBrukersIdenter = List.of(
+                new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(annenBrukersAktorId.get(), false, AKTORID)
+        );
+
+        pdlIdentRepository.upsertIdenter(brukersIdenter);
+        pdlIdentRepository.upsertIdenter(annenBrukersIdenter);
+        oppfolgingRepositoryV2.settUnderOppfolging(annenBrukersAktorId, ZonedDateTime.now());
+
+        assertFalse(pdlIdentRepository.erBrukerUnderOppfolging(fnr.get()));
+        assertFalse(pdlIdentRepository.erBrukerUnderOppfolging(historiskFnr.get()));
+        assertFalse(pdlIdentRepository.erBrukerUnderOppfolging(aktorId.get()));
+        assertFalse(pdlIdentRepository.erBrukerUnderOppfolging(historiskAktorId.get()));
+        assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(annenBrukersAktorId.get()));
     }
 
     private List<PDLIdent> hentLokaleIdenter(AktorId ident) {
