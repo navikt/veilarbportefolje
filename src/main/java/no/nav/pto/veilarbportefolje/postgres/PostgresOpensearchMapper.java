@@ -66,8 +66,8 @@ public class PostgresOpensearchMapper {
     }
 
     public void flettInnInnsatsbehov(List<OppfolgingsBruker> brukere) {
-        Set<AktorId> aktorIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).collect(toSet());
-        Map<AktorId, Siste14aVedtak> siste14aVedtak = siste14aVedtakRepository.hentSiste14aVedtakForBrukere(aktorIder);
+        Set<String> aktorIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(toSet());
+        Map<String, Siste14aVedtak> siste14aVedtak = siste14aVedtakRepository.hentSiste14aVedtakForBrukere(aktorIder);
 
         brukere.forEach(bruker -> {
             flettInnInnsatsbehov(bruker, ofNullable(siste14aVedtak.get(bruker.getAktoer_id())));

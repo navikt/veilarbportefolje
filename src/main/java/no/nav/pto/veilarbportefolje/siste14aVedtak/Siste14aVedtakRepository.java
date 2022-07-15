@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.siste14aVedtak;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -67,10 +66,10 @@ public class Siste14aVedtakRepository {
     }
 
     @SneakyThrows
-    public Map<AktorId, Siste14aVedtak> hentSiste14aVedtakForBrukere(Set<AktorId> aktorIder) {
-        Map<AktorId, Siste14aVedtak> result = new HashMap<>();
+    public Map<String, Siste14aVedtak> hentSiste14aVedtakForBrukere(Set<String> brukerIder) {
+        Map<String, Siste14aVedtak> result = new HashMap<>();
         String sql = """
-                select bi1.ident as aktor_id, s.*
+                select bi1.ident as oppslag_ident, s.*
                 from siste_14a_vedtak s
                 inner join bruker_identer bi1 on bi1.ident = any (?::varchar[])
                 inner join bruker_identer bi2 on bi2.person = bi1.person
@@ -78,11 +77,11 @@ public class Siste14aVedtakRepository {
                 """;
 
         return dbReadOnly.query(sql,
-                ps -> ps.setString(1, listParam(aktorIder.stream().map(AktorId::get).toList())),
+                ps -> ps.setString(1, listParam(brukerIder.stream().toList())),
                 (ResultSet rs) -> {
                     while (rs.next()) {
-                        AktorId aktorId = AktorId.of(rs.getString("aktor_id"));
-                        result.put(aktorId, siste14aVedtakMapper(rs));
+                        String ident = rs.getString("oppslag_ident");
+                        result.put(ident, siste14aVedtakMapper(rs));
                     }
                     return result;
                 });
