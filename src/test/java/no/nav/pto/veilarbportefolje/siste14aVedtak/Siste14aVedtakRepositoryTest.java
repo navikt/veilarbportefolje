@@ -23,8 +23,7 @@ import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO
 import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Hovedmal.SKAFFE_ARBEID;
 import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Innsatsgruppe.SITUASJONSBESTEMT_INNSATS;
 import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Innsatsgruppe.STANDARD_INNSATS;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -152,8 +151,9 @@ public class Siste14aVedtakRepositoryTest {
                         ident.getIdent(),
                         randomInnsatsgruppe(),
                         randomHovedmal(),
-                        ZonedDateTime.now().minusDays(random.nextInt(1, 20)),
-                        random.nextBoolean())
+                        randomZonedDate(),
+                        random.nextBoolean()
+                )
         ).collect(Collectors.toList());
 
         Collections.shuffle(vedtakListe);
@@ -162,13 +162,5 @@ public class Siste14aVedtakRepositoryTest {
         vedtakListe.forEach(vedtak -> siste14aVedtakRepository.upsert(vedtak, identerForBruker));
 
         return vedtakListe.get(vedtakListe.size() - 1);
-    }
-
-    private Innsatsgruppe randomInnsatsgruppe() {
-        return Innsatsgruppe.values()[random.nextInt(Innsatsgruppe.values().length)];
-    }
-
-    private Hovedmal randomHovedmal() {
-        return Hovedmal.values()[random.nextInt(Hovedmal.values().length)];
     }
 }
