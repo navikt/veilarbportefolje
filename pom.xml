@@ -218,6 +218,12 @@
             <version>${common.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.navikt.poao-tilgang</groupId>
+            <artifactId>client</artifactId>
+            <version>fcb6bb07710e322b7290d513e002ae8ac9bca339</version>
+        </dependency>
+
         <!--Logging-->
         <dependency>
             <groupId>org.slf4j</groupId>

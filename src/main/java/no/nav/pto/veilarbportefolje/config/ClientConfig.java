@@ -10,11 +10,15 @@ import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.rest.client.RestClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
+import no.nav.poao_tilgang.client.TilgangClient;
+import no.nav.poao_tilgang.client.TilgangHttpClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.client.CachedTilgangClient;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
@@ -31,6 +35,23 @@ import static no.nav.common.utils.UrlUtils.createServiceUrl;
 
 @Configuration
 public class ClientConfig {
+
+    @Bean
+    public TilgangClient tilgangClient(AzureAdMachineToMachineTokenClient tokenClient) {
+        String url = isProduction() ?
+                createProdInternalIngressUrl("poao-tilgang") :
+                createDevInternalIngressUrl("poao-tilgang");
+
+        String tokenScope = String.format("api://%s-gcp.poao.poao-tilgang/.default", isProduction() ? "prod" : "dev");
+
+        TilgangHttpClient tilgangClient = new TilgangHttpClient(
+                url,
+                () -> tokenClient.createMachineToMachineToken(tokenScope),
+                RestClient.baseClient()
+        );
+
+        return new CachedTilgangClient(tilgangClient);
+    }
 
     @Bean
     public AktorClient aktorClient(SystemUserTokenProvider systemUserTokenProvider) {
