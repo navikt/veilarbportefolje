@@ -12,8 +12,11 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.poao_tilgang.client.Decision;
+import no.nav.poao_tilgang.client.TilgangClient;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getContextAwareUserToken;
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetBrukerToken;
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.*;
 
 @Service
 public class AuthService {
@@ -31,16 +33,16 @@ public class AuthService {
     private final AuthContextHolder authContextHolder;
     private final AzureAdOnBehalfOfTokenClient aadOboTokenClient;
     private final EnvironmentProperties environmentProperties;
-    private final ModiaPep modiaPep;
+    private final TilgangClient tilgangClient;
     private final Pep veilarbPep;
     private final Cache<VeilederPaEnhet, Boolean > harVeilederTilgangTilEnhetCache;
 
     @Autowired
-    public AuthService(Pep veilarbPep, ModiaPep modiaPep, AuthContextHolder authContextHolder, AzureAdOnBehalfOfTokenClient aadOboTokenClient, EnvironmentProperties environmentProperties) {
+    public AuthService(Pep veilarbPep, TilgangClient tilgangClient, AuthContextHolder authContextHolder, AzureAdOnBehalfOfTokenClient aadOboTokenClient, EnvironmentProperties environmentProperties) {
         this.authContextHolder = authContextHolder;
         this.aadOboTokenClient = aadOboTokenClient;
         this.environmentProperties = environmentProperties;
-        this.modiaPep =  modiaPep;
+        this.tilgangClient =  tilgangClient;
         this.veilarbPep = veilarbPep;
         this.harVeilederTilgangTilEnhetCache = Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
@@ -49,11 +51,14 @@ public class AuthService {
     }
 
     public void tilgangTilOppfolging() {
-        AuthUtils.test("oppfølgingsbruker", AuthUtils.getInnloggetVeilederIdent(), modiaPep.harVeilederTilgangTilModia(getInnloggetBrukerToken()));
+        VeilederId veilederId = getInnloggetVeilederIdent();
+        Decision decisionPoaoTilgang = tilgangClient.harVeilederTilgangTilModia(veilederId.getValue());
+        boolean harTilgang = Decision.Type.PERMIT.equals(decisionPoaoTilgang.getType());
+        AuthUtils.test("oppfølgingsbruker", veilederId, harTilgang);
     }
 
     public void tilgangTilEnhet(String enhet) {
-        String veilederId = AuthUtils.getInnloggetVeilederIdent().toString();
+        String veilederId = getInnloggetVeilederIdent().toString();
         AuthUtils.test("tilgang til enhet", Tuple.of(enhet, veilederId), harVeilederTilgangTilEnhet(veilederId, enhet));
     }
 
@@ -67,7 +72,7 @@ public class AuthService {
     }
 
     public List<Bruker> sensurerBrukere(List<Bruker> brukere) {
-        String veilederIdent = AuthUtils.getInnloggetVeilederIdent().toString();
+        String veilederIdent = getInnloggetVeilederIdent().toString();
         return brukere.stream()
                 .map(bruker -> fjernKonfidensiellInfoDersomIkkeTilgang(bruker, veilederIdent))
                 .collect(toList());
@@ -94,7 +99,7 @@ public class AuthService {
     }
 
     public Skjermettilgang hentVeilederTilgangTilSkjermet(){
-        String veilederId = AuthUtils.getInnloggetVeilederIdent().toString();
+        String veilederId = getInnloggetVeilederIdent().toString();
         boolean tilgangTilKode6 = veilarbPep.harVeilederTilgangTilKode6(NavIdent.of(veilederId));
         boolean tilgangTilKode7 = veilarbPep.harVeilederTilgangTilKode7(NavIdent.of(veilederId));
         boolean tilgangEgenAnsatt = veilarbPep.harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederId));

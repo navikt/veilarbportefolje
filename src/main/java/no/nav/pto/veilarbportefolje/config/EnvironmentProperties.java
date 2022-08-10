@@ -22,7 +22,6 @@ public class EnvironmentProperties {
     private List<String> admins;
     private String unleashUrl;
     private String abacVeilarbUrl;
-    private String abacModiaUrl;
     private String opensearchUri;
     private String opensearchUsername;
     private String opensearchPassword;
