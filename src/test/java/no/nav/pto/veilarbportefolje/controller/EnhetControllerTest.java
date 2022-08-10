@@ -102,7 +102,7 @@ public class EnhetControllerTest {
 
     @Test(expected = ResponseStatusException.class)
     public void skal_ikke_hente_noe_hvis_mangler_tilgang() {
-        when(tilgangClient.harVeilederTilgangTilModia(anyString())).thenReturn(Decision.Permit.INSTANCE);
+        when(tilgangClient.harVeilederTilgangTilModia(anyString())).thenReturn(new Decision.Deny("",""));
         authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, generateMockJWT()),
                 () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
