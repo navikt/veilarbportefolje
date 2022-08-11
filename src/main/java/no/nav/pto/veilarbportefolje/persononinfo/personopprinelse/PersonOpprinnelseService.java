@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.Foedeland;
 import no.nav.pto.veilarbportefolje.domene.TolkSpraak;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
+import no.nav.pto.veilarbportefolje.util.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class PersonOpprinnelseService {
                 .forEach(code -> {
                     String foedelandFulltNavn = kodeverkService.getBeskrivelseForLandkode(code);
                     if (foedelandFulltNavn != null && !foedelandFulltNavn.isEmpty()) {
-                        codeToLand.add(new Foedeland(code, foedelandFulltNavn));
+                        codeToLand.add(new Foedeland(code, StringUtils.capitalize(foedelandFulltNavn)));
                     }
                 });
         return codeToLand;
@@ -40,7 +41,7 @@ public class PersonOpprinnelseService {
                 .forEach(code -> {
                     String spraak = kodeverkService.getBeskrivelseForSpraakKode(code);
                     if (spraak != null && !spraak.isEmpty()) {
-                        tolkSpraak.add(new TolkSpraak(code, spraak));
+                        tolkSpraak.add(new TolkSpraak(code, StringUtils.capitalize(spraak)));
                     }
                 });
         return tolkSpraak;
