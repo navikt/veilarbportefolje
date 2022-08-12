@@ -8,9 +8,11 @@ import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.util.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @Slf4j
@@ -30,8 +32,7 @@ public class PersonOpprinnelseService {
                         codeToLand.add(new Foedeland(code, StringUtils.capitalize(foedelandFulltNavn)));
                     }
                 });
-        codeToLand.sort(Comparator.comparing(Foedeland::getLand));
-        return codeToLand;
+        return codeToLand.stream().sorted(Comparator.comparing(Foedeland::getLand, Collator.getInstance(new Locale("nob", "NO")))).toList();
     }
 
     public List<TolkSpraak> hentTolkSpraak() {
