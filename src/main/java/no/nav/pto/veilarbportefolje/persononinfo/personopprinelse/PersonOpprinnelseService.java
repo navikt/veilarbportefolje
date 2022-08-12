@@ -32,7 +32,9 @@ public class PersonOpprinnelseService {
                         codeToLand.add(new Foedeland(code, StringUtils.capitalize(foedelandFulltNavn)));
                     }
                 });
-        return codeToLand.stream().sorted(Comparator.comparing(Foedeland::getLand, Collator.getInstance(new Locale("nob", "NO")))).toList();
+        return codeToLand.stream()
+                .sorted(Comparator.comparing(Foedeland::getLand, Collator.getInstance(new Locale("nob", "NO"))))
+                .toList();
     }
 
     public List<TolkSpraak> hentTolkSpraak() {
@@ -47,6 +49,8 @@ public class PersonOpprinnelseService {
                         tolkSpraak.add(new TolkSpraak(code, StringUtils.capitalize(spraak)));
                     }
                 });
-        return tolkSpraak;
+        return tolkSpraak.stream()
+                .sorted(Comparator.comparing(TolkSpraak::getSpraak, Collator.getInstance(new Locale("nob", "NO"))))
+                .toList();
     }
 }
