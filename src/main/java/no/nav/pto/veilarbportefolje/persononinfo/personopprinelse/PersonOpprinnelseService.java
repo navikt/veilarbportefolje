@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.util.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -29,6 +30,7 @@ public class PersonOpprinnelseService {
                         codeToLand.add(new Foedeland(code, StringUtils.capitalize(foedelandFulltNavn)));
                     }
                 });
+        codeToLand.sort(Comparator.comparing(Foedeland::getLand));
         return codeToLand;
     }
 
