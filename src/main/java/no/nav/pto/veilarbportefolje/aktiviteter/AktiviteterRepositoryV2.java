@@ -30,6 +30,8 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.FR
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.STATUS;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TILDATO;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.CVKANDELESSTATUS;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.SVARFRISTCVKANDELES;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.VERSION;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapAktivitetTilEntity;
@@ -62,14 +64,15 @@ public class AktiviteterRepositoryV2 {
     public void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
         db.update("""
                         INSERT INTO aktiviteter
-                        (AKTIVITETID, AKTOERID, AKTIVITETTYPE, AVTALT , FRADATO, TILDATO, STATUS, VERSION)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        (AKTIVITETID, AKTOERID, AKTIVITETTYPE, AVTALT , FRADATO, TILDATO, STATUS, CVKANDELESSTATUS, SVARFRISTCVKANDELES, VERSION)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT (AKTIVITETID)
-                        DO UPDATE SET (AKTOERID, AKTIVITETTYPE, AVTALT, FRADATO, TILDATO, STATUS, VERSION) =
-                        (excluded.aktoerid, excluded.aktivitettype, excluded.avtalt, excluded.fradato, excluded.tildato, excluded.status, excluded.version)
+                        DO UPDATE SET (AKTOERID, AKTIVITETTYPE, AVTALT, FRADATO, TILDATO, STATUS, CVKANDELESSTATUS, SVARFRISTCVKANDELES, VERSION) =
+                        (excluded.aktoerid, excluded.aktivitettype, excluded.avtalt, excluded.fradato, excluded.tildato, excluded.status, excluded.cvkandelesstatus, excluded.svarfristcvkandeles, excluded.version)
                         """,
                 aktivitet.getAktivitetId(), aktivitet.getAktorId(), aktivitet.getAktivitetType().name().toLowerCase(), aktivitet.isAvtalt(),
-                toTimestamp(aktivitet.getFraDato()), toTimestamp(aktivitet.getTilDato()), aktivitet.getAktivitetStatus().name().toLowerCase(), aktivitet.getVersion()
+                toTimestamp(aktivitet.getFraDato()), toTimestamp(aktivitet.getTilDato()), aktivitet.getAktivitetStatus().name().toLowerCase(),
+                aktivitet.getCvKanDelesStatus(), toTimestamp(aktivitet.getSvarFristCvKanDeles()), aktivitet.getVersion()
         );
     }
 

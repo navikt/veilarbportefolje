@@ -20,6 +20,8 @@ public class KafkaAktivitetMelding {
     AktivitetStatus aktivitetStatus;
     EndringsType endringsType;
     InnsenderData lagtInnAv;
+    CvKanDelesStatus cvKanDelesStatus;
+    ZonedDateTime svarFristCvKanDeles;
     boolean avtalt;
     boolean historisk;
 
@@ -54,6 +56,12 @@ public class KafkaAktivitetMelding {
     public enum InnsenderData {
         BRUKER,
         NAV
+    }
+
+    public enum CvKanDelesStatus {
+        JA,
+        NEI,
+        IKKE_SVART
     }
 
 }

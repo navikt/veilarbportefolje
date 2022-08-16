@@ -195,6 +195,8 @@ public class PostgresTable {
         public static final String FRADATO = "FRADATO";
         public static final String TILDATO = "TILDATO";
         public static final String STATUS = "STATUS";
+        public static final String CVKANDELESSTATUS = "CVKANDELESSTATUS";
+        public static final String SVARFRISTCVKANDELES = "SVARFRISTCVKANDELES";
         public static final String VERSION = "VERSION";
     }
 
