@@ -57,8 +57,8 @@ CREATE TABLE public.aktiviteter (
     tildato timestamp without time zone,
     status character varying(255),
     version bigint,
-    cvkandelesstatus character varying(20),
-    svarfristcvkandeles timestamp without time zone
+    cv_kan_deles_status character varying(20),
+    svarfrist_stilling_fra_nav timestamp without time zone
 );
 
 

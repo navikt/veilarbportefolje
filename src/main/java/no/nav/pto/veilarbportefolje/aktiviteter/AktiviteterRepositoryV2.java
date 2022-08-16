@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,8 +32,6 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.FR
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.STATUS;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TABLE_NAME;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.TILDATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.CVKANDELESSTATUS;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.SVARFRISTCVKANDELES;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.VERSION;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapAktivitetTilEntity;
@@ -62,17 +62,27 @@ public class AktiviteterRepositoryV2 {
     }
 
     public void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
+        String cvKanDelesStatus = Optional.ofNullable(aktivitet.getStillingFraNavData())
+                .map(KafkaAktivitetMelding.StillingFraNAV::getCvKanDelesStatus)
+                .map(KafkaAktivitetMelding.CvKanDelesStatus::name)
+                .orElse(null);
+
+        Timestamp svarfristStillingFraNAV = Optional.ofNullable(aktivitet.getStillingFraNavData())
+                .map(KafkaAktivitetMelding.StillingFraNAV::getSvarfrist)
+                .map(DateUtils::toTimestamp)
+                .orElse(null);
+
         db.update("""
                         INSERT INTO aktiviteter
-                        (AKTIVITETID, AKTOERID, AKTIVITETTYPE, AVTALT , FRADATO, TILDATO, STATUS, CVKANDELESSTATUS, SVARFRISTCVKANDELES, VERSION)
+                        (AKTIVITETID, AKTOERID, AKTIVITETTYPE, AVTALT , FRADATO, TILDATO, STATUS, cv_kan_deles_status, svarfrist_stilling_fra_nav, VERSION)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT (AKTIVITETID)
-                        DO UPDATE SET (AKTOERID, AKTIVITETTYPE, AVTALT, FRADATO, TILDATO, STATUS, CVKANDELESSTATUS, SVARFRISTCVKANDELES, VERSION) =
-                        (excluded.aktoerid, excluded.aktivitettype, excluded.avtalt, excluded.fradato, excluded.tildato, excluded.status, excluded.cvkandelesstatus, excluded.svarfristcvkandeles, excluded.version)
+                        DO UPDATE SET (AKTOERID, AKTIVITETTYPE, AVTALT, FRADATO, TILDATO, STATUS, cv_kan_deles_status, svarfrist_stilling_fra_nav, VERSION) =
+                        (excluded.aktoerid, excluded.aktivitettype, excluded.avtalt, excluded.fradato, excluded.tildato, excluded.status, excluded.cv_kan_deles_status, excluded.svarfrist_stilling_fra_nav, excluded.version)
                         """,
                 aktivitet.getAktivitetId(), aktivitet.getAktorId(), aktivitet.getAktivitetType().name().toLowerCase(), aktivitet.isAvtalt(),
                 toTimestamp(aktivitet.getFraDato()), toTimestamp(aktivitet.getTilDato()), aktivitet.getAktivitetStatus().name().toLowerCase(),
-                aktivitet.getCvKanDelesStatus(), toTimestamp(aktivitet.getSvarFristCvKanDeles()), aktivitet.getVersion()
+                cvKanDelesStatus, svarfristStillingFraNAV, aktivitet.getVersion()
         );
     }
 

@@ -45,25 +45,34 @@ public class KafkaAktivtetServiceTest {
 
     @Test
     public void skal_deserialisere_kafka_payload_V4() {
-        String aktivitetKafkaMelding = "{" +
-                "\"aktivitetId\":\"144136\"," +
-                "\"version\":\"1\"," +
-                "\"aktorId\":\"123456789\"," +
-                "\"fraDato\":\"2020-07-09T12:00:00+02:00\"," +
-                "\"tilDato\":null," +
-                "\"endretDato\":\"2020-05-28T09:47:42.48+02:00\"," +
-                "\"aktivitetType\":\"IJOBB\"," +
-                "\"aktivitetStatus\":\"FULLFORT\"," +
-                "\"endringsType\":\"OPPRETTET\"," +
-                "\"lagtInnAv\":\"NAV\"," +
-                "\"avtalt\":true," +
-                "\"historisk\":false" +
-                "}";
+        String aktivitetKafkaMelding = """
+                {
+                "aktivitetId":"144136",
+                "version":1,
+                "aktorId":"123456789",
+                "fraDato":"2020-07-09T12:00:00+02:00",
+                "tilDato":null,
+                "endretDato":"2020-05-28T09:47:42.48+02:00",
+                "aktivitetType":"STILLING_FRA_NAV",
+                "aktivitetStatus":"FULLFORT",
+                "endringsType":"OPPRETTET",
+                "lagtInnAv":"NAV",
+                "stillingFraNavData":{
+                    "cvKanDelesStatus":"IKKE_SVART",
+                    "svarfrist":"2022-08-18T00:00:00+02:00"
+                },
+                "avtalt":true,
+                "historisk":false
+                }
+                """;
 
         ZonedDateTime zonedDateTime = ZonedDateTime.parse("2020-07-09T12:00:00+02:00",
                 ISO_ZONED_DATE_TIME);
 
         ZonedDateTime zonedDateTime2 = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00",
+                ISO_ZONED_DATE_TIME);
+
+        ZonedDateTime zonedDateTime3 = ZonedDateTime.parse("2022-08-18T00:00:00+02:00",
                 ISO_ZONED_DATE_TIME);
 
         KafkaAktivitetMelding aktivitetDataFraKafka = new KafkaAktivitetMelding()
@@ -73,12 +82,17 @@ public class KafkaAktivtetServiceTest {
                 .setFraDato(zonedDateTime)
                 .setTilDato(null)
                 .setEndretDato(zonedDateTime2)
-                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.IJOBB)
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.STILLING_FRA_NAV)
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.FULLFORT)
                 .setLagtInnAv(KafkaAktivitetMelding.InnsenderData.NAV)
                 .setEndringsType(KafkaAktivitetMelding.EndringsType.OPPRETTET)
                 .setAvtalt(true)
-                .setHistorisk(false);
+                .setHistorisk(false)
+                .setStillingFraNavData(
+                        new KafkaAktivitetMelding.StillingFraNAV()
+                                .setCvKanDelesStatus(KafkaAktivitetMelding.CvKanDelesStatus.IKKE_SVART)
+                                .setSvarfrist(zonedDateTime3)
+                );
 
         assertThat(fromJson(aktivitetKafkaMelding, KafkaAktivitetMelding.class)).isEqualTo(aktivitetDataFraKafka);
     }
