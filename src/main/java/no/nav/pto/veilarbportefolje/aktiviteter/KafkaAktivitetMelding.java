@@ -20,15 +20,23 @@ public class KafkaAktivitetMelding {
     AktivitetStatus aktivitetStatus;
     EndringsType endringsType;
     InnsenderData lagtInnAv;
+    StillingFraNAV stillingFraNavData;
     boolean avtalt;
     boolean historisk;
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class StillingFraNAV {
+        CvKanDelesStatus cvKanDelesStatus;
+        ZonedDateTime svarfrist;
+    }
 
     public enum AktivitetStatus {
         PLANLAGT,
         GJENNOMFORES,
         FULLFORT,
         BRUKER_ER_INTERESSERT,
-        AVBRUTT;
+        AVBRUTT
 
     }
 
@@ -54,6 +62,12 @@ public class KafkaAktivitetMelding {
     public enum InnsenderData {
         BRUKER,
         NAV
+    }
+
+    public enum CvKanDelesStatus {
+        JA,
+        NEI,
+        IKKE_SVART
     }
 
 }

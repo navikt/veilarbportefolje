@@ -162,7 +162,12 @@ public class AktiviteterV2Test {
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setFraDato(fraDato2)
-                .setTilDato(tilDato2);
+                .setTilDato(tilDato2)
+                .setStillingFraNavData(
+                        new KafkaAktivitetMelding.StillingFraNAV()
+                                .setCvKanDelesStatus(KafkaAktivitetMelding.CvKanDelesStatus.IKKE_SVART)
+                                .setSvarfrist(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                );
 
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet1);
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet2);
