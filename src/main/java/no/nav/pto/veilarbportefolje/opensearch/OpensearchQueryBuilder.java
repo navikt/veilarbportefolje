@@ -148,22 +148,20 @@ public class OpensearchQueryBuilder {
             queryBuilder.must(tolkBehovSubquery);
         }
         if (filtervalg.harTolkbehovSpraakFilter()) {
-            String query = filtervalg.getTolkBehovSpraak().trim();
-            BoolQueryBuilder matchTolkSpraak = QueryBuilders.boolQuery();
+            BoolQueryBuilder subQuery = boolQuery();
 
             if (filtervalg.harTalespraaktolkFilter()) {
-                matchTolkSpraak.should(QueryBuilders.matchQuery("talespraaktolk", query));
+                filtervalg.getTolkBehovSpraak().stream().forEach(
+                        x -> subQuery.should(matchQuery("talespraaktolk", x))
+                );
+                queryBuilder.must(subQuery);
             }
             if (filtervalg.harTegnspraakFilter()) {
-                matchTolkSpraak.should(QueryBuilders.matchQuery("tegnspraaktolk", query));
+                filtervalg.getTolkBehovSpraak().forEach(x ->
+                        subQuery.should(matchQuery("tegnspraaktolk", x))
+                );
+                queryBuilder.must(subQuery);
             }
-
-            if (!filtervalg.harTalespraaktolkFilter() && !filtervalg.harTegnspraakFilter()) {
-                matchTolkSpraak.should(QueryBuilders.matchQuery("talespraaktolk", query));
-                matchTolkSpraak.should(QueryBuilders.matchQuery("tegnspraaktolk", query));
-            }
-
-            queryBuilder.must(matchTolkSpraak);
         }
     }
 

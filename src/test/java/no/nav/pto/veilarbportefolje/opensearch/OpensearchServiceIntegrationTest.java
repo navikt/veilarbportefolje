@@ -1157,7 +1157,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setTolkBehovSpraak("JPN");
+                .setTolkebehov(List.of("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"))
+                .setTolkBehovSpraak(List.of("JPN"));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
