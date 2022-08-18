@@ -22,8 +22,9 @@ public class PersonOpprinnelseRepository {
                             SELECT DISTINCT foedeland FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ? ORDER BY foedeland ASC 
                         """, enhetId)
                 .stream()
+                .filter(x -> x.get("foedeland") != null)
                 .map(x -> String.valueOf(x.get("foedeland")))
-                .filter(x -> x != null && x.length() > 0)
+                .filter(x -> !x.isEmpty())
                 .toList();
     }
 
@@ -32,16 +33,19 @@ public class PersonOpprinnelseRepository {
                             SELECT DISTINCT talespraaktolk FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ?
                         """, enhetId)
                 .stream()
+                .filter(x -> x.get("talespraaktolk") != null)
                 .map(x -> String.valueOf(x.get("talespraaktolk")))
-                .filter(x -> x != null && x.length() > 0).toList();
+                .filter(x -> !x.isEmpty())
+                .toList();
         ;
 
         List<String> tegnspraakList = dbReadOnly.queryForList("""
                             SELECT DISTINCT tegnspraaktolk FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ?
                         """, enhetId)
                 .stream()
+                .filter(x -> x.get("tegnspraaktolk") != null)
                 .map(x -> String.valueOf(x.get("tegnspraaktolk")))
-                .filter(x -> x != null && x.length() > 0)
+                .filter(x -> !x.isEmpty())
                 .toList();
         ;
 
