@@ -153,27 +153,24 @@ public class OpensearchQueryBuilder {
 
             if (filtervalg.harTalespraaktolkFilter()) {
                 filtervalg.getTolkBehovSpraak().stream().forEach(
-                        x -> subQuery.should(matchQuery("talespraaktolk", x))
+                        x -> queryBuilder.must(subQuery.should(matchQuery("talespraaktolk", x)))
                 );
-                queryBuilder.must(subQuery);
                 tolkbehovSelected = true;
             }
             if (filtervalg.harTegnspraakFilter()) {
                 filtervalg.getTolkBehovSpraak().forEach(x ->
-                        subQuery.should(matchQuery("tegnspraaktolk", x))
+                        queryBuilder.must(subQuery.should(matchQuery("tegnspraaktolk", x)))
                 );
-                queryBuilder.must(subQuery);
                 tolkbehovSelected = true;
             }
 
             if (!tolkbehovSelected) {
                 filtervalg.getTolkBehovSpraak().stream().forEach(
-                        x -> subQuery.should(matchQuery("talespraaktolk", x))
+                        x -> queryBuilder.must(subQuery.should(matchQuery("talespraaktolk", x)))
                 );
                 filtervalg.getTolkBehovSpraak().forEach(x ->
-                        subQuery.should(matchQuery("tegnspraaktolk", x))
+                        queryBuilder.must(subQuery.should(matchQuery("tegnspraaktolk", x)))
                 );
-                queryBuilder.must(subQuery);
             }
         }
     }

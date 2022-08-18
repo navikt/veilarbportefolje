@@ -1111,7 +1111,9 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
-                .setEnhet_id(TEST_ENHET);
+                .setEnhet_id(TEST_ENHET)
+                .setTalespraaktolk(null)
+                .setTegnspraaktolk(null);
 
         var liste = List.of(brukerMedTalkBehov1, brukerMedTalkBehov2, brukerUttenTalkBehov);
 
