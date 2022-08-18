@@ -1115,7 +1115,17 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setTalespraaktolk(null)
                 .setTegnspraaktolk(null);
 
-        var liste = List.of(brukerMedTalkBehov1, brukerMedTalkBehov2, brukerUttenTalkBehov);
+        var brukerUttenTalkBehov1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTalespraaktolk("")
+                .setTegnspraaktolk("");
+
+        var liste = List.of(brukerMedTalkBehov1, brukerMedTalkBehov2, brukerUttenTalkBehov, brukerUttenTalkBehov1);
 
         skrivBrukereTilTestindeks(liste);
 

@@ -140,11 +140,13 @@ public class OpensearchQueryBuilder {
 
             if (filtervalg.harTalespraaktolkFilter()) {
                 tolkBehovSubquery
-                        .must(existsQuery("talespraaktolk"));
+                        .should(existsQuery("talespraaktolk"))
+                        .mustNot(matchQuery("talespraaktolk", ""));
             }
             if (filtervalg.harTegnspraakFilter()) {
                 tolkBehovSubquery
-                        .must(existsQuery("tegnspraaktolk"));
+                        .should(existsQuery("tegnspraaktolk"))
+                        .mustNot(matchQuery("tegnspraaktolk", ""));
             }
             queryBuilder.must(tolkBehovSubquery);
         }
