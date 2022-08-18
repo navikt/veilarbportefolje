@@ -23,6 +23,7 @@ public class PersonOpprinnelseRepository {
                         """, enhetId)
                 .stream()
                 .map(x -> String.valueOf(x.get("foedeland")))
+                .filter(x -> x != null && x.length() > 0)
                 .toList();
     }
 
@@ -31,7 +32,8 @@ public class PersonOpprinnelseRepository {
                             SELECT DISTINCT talespraaktolk FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ?
                         """, enhetId)
                 .stream()
-                .map(x -> String.valueOf(x.get("talespraaktolk"))).toList();
+                .map(x -> String.valueOf(x.get("talespraaktolk")))
+                .filter(x -> x != null && x.length() > 0).toList();
         ;
 
         List<String> tegnspraakList = dbReadOnly.queryForList("""
@@ -39,6 +41,7 @@ public class PersonOpprinnelseRepository {
                         """, enhetId)
                 .stream()
                 .map(x -> String.valueOf(x.get("tegnspraaktolk")))
+                .filter(x -> x != null && x.length() > 0)
                 .toList();
         ;
 
