@@ -136,14 +136,15 @@ public class OpensearchQueryBuilder {
             );
         }
         if (filtervalg.harTalespraaktolkFilter() || filtervalg.harTegnspraakFilter()) {
-            BoolQueryBuilder tolkBehovSubquery = QueryBuilders.boolQuery();
+            BoolQueryBuilder tolkBehovSubquery = boolQuery();
+
             if (filtervalg.harTalespraaktolkFilter()) {
                 tolkBehovSubquery
-                        .should(existsQuery("talespraaktolk"));
+                        .must(existsQuery("talespraaktolk"));
             }
             if (filtervalg.harTegnspraakFilter()) {
                 tolkBehovSubquery
-                        .should(existsQuery("tegnspraaktolk"));
+                        .must(existsQuery("tegnspraaktolk"));
             }
             queryBuilder.must(tolkBehovSubquery);
         }
