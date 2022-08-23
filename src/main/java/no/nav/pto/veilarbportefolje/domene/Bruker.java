@@ -85,6 +85,9 @@ public class Bruker {
     boolean harFlereStatsborgerskap;
     String innflyttingTilNorgeFraLand;
 
+    String nesteCvKanDelesStatus;
+    LocalDate nesteFristCvStillingFraNav;
+
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();

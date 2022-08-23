@@ -58,6 +58,7 @@ public class OpensearchIndexer {
     public void syncronIndekseringsRequest(OppfolgingsBruker bruker) {
         IndexRequest indexRequest = new IndexRequest(alias.getValue()).id(bruker.getAktoer_id());
         indexRequest.source(toJson(bruker), XContentType.JSON);
+        //sender dokumentet
         restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
     }
 

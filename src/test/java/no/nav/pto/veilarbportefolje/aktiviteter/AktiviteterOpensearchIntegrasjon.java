@@ -87,6 +87,42 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     }
 
     @Test
+    public void lasteroppaktivitetStillingFraNAV() {
+        NavKontor navKontor = randomNavKontor();
+        testDataClient.setupBruker(aktoer, fodselsnummer, navKontor.getValue());
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.STILLING_FRA_NAV)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(null)
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setVersion(1L)
+                .setAvtalt(false)
+                .setStillingFraNavData(
+                        new KafkaAktivitetMelding.StillingFraNAV()
+                                .setCvKanDelesStatus(KafkaAktivitetMelding.CvKanDelesStatus.IKKE_SVART)
+                                .setSvarfrist(ZonedDateTime.parse("2044-02-03T00:00:00+02:00")))
+        );
+        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setNavnEllerFnrQuery(fodselsnummer.toString()).setFerdigfilterListe(new ArrayList<>()),
+                            null,
+                            null);
+
+                    assertThat(responseBrukere.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukere.getBrukere().get(0).getNesteCvKanDelesStatus()).isEqualTo("JA");
+                    assertThat(responseBrukere.getBrukere().get(0).getNesteFristCvStillingFraNav()).isEqualTo("2044-02-03");
+                }
+        );
+    }
+
+    @Test
     public void hentMoteplan() {
         NavKontor navKontor = randomNavKontor();
         VeilederId veileder = randomVeilederId();

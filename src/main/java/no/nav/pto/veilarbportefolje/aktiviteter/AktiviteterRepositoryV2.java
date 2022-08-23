@@ -92,6 +92,7 @@ public class AktiviteterRepositoryV2 {
     }
 
     public void leggTilAktiviteterFraAktivitetsplanen(String aktoerIder, boolean avtalt, HashMap<AktorId, List<AktivitetEntityDto>> result) {
+        //må vel legge inn stilling_fra_NAV her
         var params = new MapSqlParameterSource();
         params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
         params.addValue("avtalt", avtalt);
