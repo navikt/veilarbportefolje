@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -102,7 +103,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setAvtalt(false)
                 .setStillingFraNavData(
                         new KafkaAktivitetMelding.StillingFraNAV()
-                                .setCvKanDelesStatus(KafkaAktivitetMelding.CvKanDelesStatus.IKKE_SVART)
+                                .setCvKanDelesStatus(KafkaAktivitetMelding.CvKanDelesStatus.JA)
                                 .setSvarfrist(ZonedDateTime.parse("2044-02-03T00:00:00+02:00")))
         );
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
