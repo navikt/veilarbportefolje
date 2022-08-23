@@ -1111,9 +1111,21 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
-                .setEnhet_id(TEST_ENHET);
+                .setEnhet_id(TEST_ENHET)
+                .setTalespraaktolk(null)
+                .setTegnspraaktolk(null);
 
-        var liste = List.of(brukerMedTalkBehov1, brukerMedTalkBehov2, brukerUttenTalkBehov);
+        var brukerUttenTalkBehov1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTalespraaktolk("")
+                .setTegnspraaktolk("");
+
+        var liste = List.of(brukerMedTalkBehov1, brukerMedTalkBehov2, brukerUttenTalkBehov, brukerUttenTalkBehov1);
 
         skrivBrukereTilTestindeks(liste);
 
@@ -1134,8 +1146,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).filter(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")).findFirst().isPresent());
-        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).filter(x -> x.getTolkBehovSistOppdatert().equals("2021-03-23")).findFirst().isPresent());
+        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")));
+        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2021-03-23")));
 
 
         filterValg = new Filtervalg()
@@ -1152,7 +1164,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).filter(x -> x.getTolkBehovSistOppdatert().equals("2021-03-23")).findFirst().isPresent());
+        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2021-03-23")));
 
 
         filterValg = new Filtervalg()
@@ -1170,7 +1182,24 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).filter(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")).findFirst().isPresent());
+        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")));
+
+        filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setTolkebehov(List.of())
+                .setTolkBehovSpraak(List.of("JPN"));
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+        assertThat(response.getAntall()).isEqualTo(1);
+        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")));
     }
 
     @Test

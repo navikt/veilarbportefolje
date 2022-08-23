@@ -136,14 +136,17 @@ public class OpensearchQueryBuilder {
             );
         }
         if (filtervalg.harTalespraaktolkFilter() || filtervalg.harTegnspraakFilter()) {
-            BoolQueryBuilder tolkBehovSubquery = QueryBuilders.boolQuery();
+            BoolQueryBuilder tolkBehovSubquery = boolQuery();
+
             if (filtervalg.harTalespraaktolkFilter()) {
                 tolkBehovSubquery
-                        .should(existsQuery("talespraaktolk"));
+                        .should(existsQuery("talespraaktolk"))
+                        .mustNot(matchQuery("talespraaktolk", ""));
             }
             if (filtervalg.harTegnspraakFilter()) {
                 tolkBehovSubquery
-                        .should(existsQuery("tegnspraaktolk"));
+                        .should(existsQuery("tegnspraaktolk"))
+                        .mustNot(matchQuery("tegnspraaktolk", ""));
             }
             queryBuilder.must(tolkBehovSubquery);
         }
@@ -153,27 +156,24 @@ public class OpensearchQueryBuilder {
 
             if (filtervalg.harTalespraaktolkFilter()) {
                 filtervalg.getTolkBehovSpraak().stream().forEach(
-                        x -> subQuery.should(matchQuery("talespraaktolk", x))
+                        x -> queryBuilder.must(subQuery.should(matchQuery("talespraaktolk", x)))
                 );
-                queryBuilder.must(subQuery);
                 tolkbehovSelected = true;
             }
             if (filtervalg.harTegnspraakFilter()) {
                 filtervalg.getTolkBehovSpraak().forEach(x ->
-                        subQuery.should(matchQuery("tegnspraaktolk", x))
+                        queryBuilder.must(subQuery.should(matchQuery("tegnspraaktolk", x)))
                 );
-                queryBuilder.must(subQuery);
                 tolkbehovSelected = true;
             }
 
             if (!tolkbehovSelected) {
                 filtervalg.getTolkBehovSpraak().stream().forEach(
-                        x -> subQuery.should(matchQuery("talespraaktolk", x))
+                        x -> queryBuilder.must(subQuery.should(matchQuery("talespraaktolk", x)))
                 );
                 filtervalg.getTolkBehovSpraak().forEach(x ->
-                        subQuery.should(matchQuery("tegnspraaktolk", x))
+                        queryBuilder.must(subQuery.should(matchQuery("tegnspraaktolk", x)))
                 );
-                queryBuilder.must(subQuery);
             }
         }
     }
