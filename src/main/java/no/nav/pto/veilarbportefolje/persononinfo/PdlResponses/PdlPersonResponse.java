@@ -94,7 +94,29 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Bostedsadresse {
             private String angittFlyttedato;
+            private Vegadresse vegadresse;
+            private UtenlandskAdresse utenlandskAdresse;
+            private UkjentBosted ukjentBosted;
             private Metadata metadata;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Vegadresse {
+            private final String kommunenummer;
+            private final String bydelsnummer;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class UtenlandskAdresse {
+            private String landkode;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class UkjentBosted {
+            private String bostedskommune;
         }
 
         @Data

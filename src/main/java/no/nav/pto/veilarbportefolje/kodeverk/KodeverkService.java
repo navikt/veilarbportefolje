@@ -16,6 +16,10 @@ public class KodeverkService {
 
     public final static String KODEVERK_LANDKODER = "Landkoder";
     public final static String KODEVERK_SPRAAK = "Språk";
+
+    public final static String KODEVERK_BYDELER = "Bydeler";
+
+    public final static String KODEVERK_KOMMUNER = "Kommuner";
     private final KodeverkClient kodeverkClient;
 
     public String getBeskrivelseForLandkode(String kode) {
@@ -24,6 +28,14 @@ public class KodeverkService {
 
     public String getBeskrivelseForSpraakKode(String spraakKode) {
         return finnBeskrivelse(KODEVERK_SPRAAK, spraakKode);
+    }
+
+    public String getBeskrivelseForBydeler(String bydel) {
+        return finnBeskrivelse(KODEVERK_BYDELER, bydel);
+    }
+
+    public String getBeskrivelseForKomunner(String komunne) {
+        return finnBeskrivelse(KODEVERK_KOMMUNER, komunne);
     }
 
     private String finnBeskrivelse(String kodeverksnavn, String kode) {

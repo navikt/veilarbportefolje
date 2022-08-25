@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.persononinfo.bosted.BostedService;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
@@ -22,6 +23,7 @@ public class EnhetController {
     private final AuthService authService;
     private final TiltakService tiltakService;
     private final PersonOpprinnelseService personOpprinnelseService;
+    private final BostedService bostedService;
 
     @PostMapping("/{enhet}/portefolje")
     public Portefolje hentPortefoljeForEnhet(
@@ -89,5 +91,25 @@ public class EnhetController {
         authService.tilgangTilEnhet(enhet);
 
         return personOpprinnelseService.hentTolkSpraak();
+    }
+
+    @GetMapping("/{enhet}/bydel")
+    public List<Bydel> hentBydel(
+            @PathVariable("enhet")
+            String enhet) {
+        ValideringsRegler.sjekkEnhet(enhet);
+        authService.tilgangTilEnhet(enhet);
+
+        return bostedService.hentBydel(enhet);
+    }
+
+    @GetMapping("/{enhet}/bydel")
+    public List<Kommune> hentBostedKommune(
+            @PathVariable("enhet")
+            String enhet) {
+        ValideringsRegler.sjekkEnhet(enhet);
+        authService.tilgangTilEnhet(enhet);
+
+        return bostedService.hentKommunne(enhet);
     }
 }

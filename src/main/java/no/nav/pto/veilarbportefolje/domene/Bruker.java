@@ -84,6 +84,10 @@ public class Bruker {
     Statsborgerskap hovedStatsborgerskap;
     boolean harFlereStatsborgerskap;
     String innflyttingTilNorgeFraLand;
+    String bostedKommune;
+    String bydel;
+    LocalDate bostedSistOppdatert;
+    boolean harUtelandsAddresse;
 
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
@@ -94,6 +98,7 @@ public class Bruker {
         String diskresjonskode = bruker.getDiskresjonskode();
         LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(bruker.getOppfolging_startdato());
         boolean trengerVurdering = bruker.isTrenger_vurdering();
+        Boolean harUtelandsAddresse = bruker.getUtenlandskAdresse() != null;
 
         return new Bruker()
                 .setNyForEnhet(ufordelt)
@@ -160,7 +165,11 @@ public class Bruker {
                 .setHarFlereStatsborgerskap(bruker.isHarFlereStatsborgerskap())
                 .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
                 .setLandgruppe(bruker.getLandgruppe())
-                .setInnflyttingTilNorgeFraLand(bruker.getInnflyttingTilNorgeFraLand());
+                .setInnflyttingTilNorgeFraLand(bruker.getInnflyttingTilNorgeFraLand())
+                .setBydel(bruker.getBydelsnummer())
+                .setBostedKommune(bruker.getKommunenummer())
+                .setHarUtelandsAddresse(harUtelandsAddresse)
+                .setBostedSistOppdatert(bruker.getBostedSistOppdatert());
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {

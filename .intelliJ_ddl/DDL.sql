@@ -107,7 +107,11 @@ CREATE TABLE public.bruker_data (
     angittflyttedato date,
     talespraaktolk character varying(20),
     tegnspraaktolk character varying(20),
-    tolkbehovsistoppdatert date
+    tolkbehovsistoppdatert date,
+    bydelsnummer character varying(10),
+    kommunenummer character varying(10),
+    utenlandskadresse character varying(10),
+    bostedsistoppdatert date
 );
 
 
