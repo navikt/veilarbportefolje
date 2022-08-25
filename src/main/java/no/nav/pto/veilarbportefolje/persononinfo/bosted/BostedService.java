@@ -36,7 +36,7 @@ public class BostedService {
                 .toList();
     }
 
-    public List<Kommune> hentKommunne(String enhetId) {
+    public List<Kommune> hentKommune(String enhetId) {
         List<String> kommuneCodes = bostedRepository.hentKommune(enhetId);
         List<Kommune> codeToKommune = new ArrayList<>();
 

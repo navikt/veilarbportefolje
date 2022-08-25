@@ -103,13 +103,13 @@ public class EnhetController {
         return bostedService.hentBydel(enhet);
     }
 
-    @GetMapping("/{enhet}/bydel")
+    @GetMapping("/{enhet}/kommune")
     public List<Kommune> hentBostedKommune(
             @PathVariable("enhet")
             String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return bostedService.hentKommunne(enhet);
+        return bostedService.hentKommune(enhet);
     }
 }
