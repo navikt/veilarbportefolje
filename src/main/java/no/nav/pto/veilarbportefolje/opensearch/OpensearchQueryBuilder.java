@@ -124,46 +124,63 @@ public class OpensearchQueryBuilder {
         }
         if (filtervalg.harLandgruppeFilter()) {
             BoolQueryBuilder subQuery = boolQuery();
+            BoolQueryBuilder subQueryUnkjent = boolQuery();
             filtervalg.getLandgruppe().forEach(
                     landGruppe -> {
                         String landgruppeCode = landGruppe.replace("LANDGRUPPE_", "");
-                        if (landgruppeCode.equals("UKJENT")) {
-                            queryBuilder.must(subQuery.mustNot(existsQuery("landgruppe")));
+                        if (landgruppeCode.equalsIgnoreCase("UKJENT")) {
+                            subQueryUnkjent.mustNot(existsQuery("landgruppe"));
+                            subQuery.should(subQueryUnkjent);
                         } else {
-                            queryBuilder.must(subQuery.should(matchQuery("landgruppe", landgruppeCode)));
+                            subQuery.should(matchQuery("landgruppe", landgruppeCode));
                         }
                     }
             );
+            queryBuilder.must(subQuery);
         }
         if (filtervalg.harTalespraaktolkFilter() || filtervalg.harTegnspraakFilter()) {
-            BoolQueryBuilder tolkBehovSubquery = QueryBuilders.boolQuery();
+            BoolQueryBuilder tolkBehovSubquery = boolQuery();
+            BoolQueryBuilder tolkBehovTale = boolQuery();
+            BoolQueryBuilder tolkBehovTegn = boolQuery();
+
             if (filtervalg.harTalespraaktolkFilter()) {
                 tolkBehovSubquery
-                        .should(existsQuery("talespraaktolk"));
+                        .should(tolkBehovTale.must(existsQuery("talespraaktolk")))
+                        .must(tolkBehovTale.mustNot(matchQuery("talespraaktolk", "")));
             }
             if (filtervalg.harTegnspraakFilter()) {
                 tolkBehovSubquery
-                        .should(existsQuery("tegnspraaktolk"));
+                        .should(tolkBehovTegn.must(existsQuery("tegnspraaktolk")))
+                        .should(tolkBehovTegn.mustNot(matchQuery("tegnspraaktolk", "")));
             }
             queryBuilder.must(tolkBehovSubquery);
         }
         if (filtervalg.harTolkbehovSpraakFilter()) {
-            String query = filtervalg.getTolkBehovSpraak().trim();
-            BoolQueryBuilder matchTolkSpraak = QueryBuilders.boolQuery();
+            boolean tolkbehovSelected = false;
+            BoolQueryBuilder tolkBehovSubquery = boolQuery();
 
             if (filtervalg.harTalespraaktolkFilter()) {
-                matchTolkSpraak.should(QueryBuilders.matchQuery("talespraaktolk", query));
+                filtervalg.getTolkBehovSpraak().stream().forEach(
+                        x -> tolkBehovSubquery.should(matchQuery("talespraaktolk", x))
+                );
+                tolkbehovSelected = true;
             }
             if (filtervalg.harTegnspraakFilter()) {
-                matchTolkSpraak.should(QueryBuilders.matchQuery("tegnspraaktolk", query));
+                filtervalg.getTolkBehovSpraak().forEach(x ->
+                        tolkBehovSubquery.should(matchQuery("tegnspraaktolk", x))
+                );
+                tolkbehovSelected = true;
             }
 
-            if (!filtervalg.harTalespraaktolkFilter() && !filtervalg.harTegnspraakFilter()) {
-                matchTolkSpraak.should(QueryBuilders.matchQuery("talespraaktolk", query));
-                matchTolkSpraak.should(QueryBuilders.matchQuery("tegnspraaktolk", query));
+            if (!tolkbehovSelected) {
+                filtervalg.getTolkBehovSpraak().stream().forEach(
+                        x -> tolkBehovSubquery.should(matchQuery("talespraaktolk", x))
+                );
+                filtervalg.getTolkBehovSpraak().forEach(x ->
+                        tolkBehovSubquery.should(matchQuery("tegnspraaktolk", x))
+                );
             }
-
-            queryBuilder.must(matchTolkSpraak);
+            queryBuilder.must(tolkBehovSubquery);
         }
     }
 
