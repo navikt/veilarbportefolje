@@ -17,7 +17,7 @@ public class BostedRepository {
 
     public List<String> hentBydel(String enhetId) {
         return dbReadOnly.queryForList("""
-                            SELECT DISTINCT bydelsnummer FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ? ORDER BY foedeland ASC 
+                            SELECT DISTINCT bydelsnummer FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ?  
                         """, enhetId)
                 .stream()
                 .filter(x -> x.get("bydelsnummer") != null)
@@ -28,11 +28,11 @@ public class BostedRepository {
 
     public List<String> hentKommune(String enhetId) {
         return dbReadOnly.queryForList("""
-                            SELECT DISTINCT kommunenummer FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ? ORDER BY foedeland ASC 
+                            SELECT DISTINCT kommunenummer FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ?  
                         """, enhetId)
                 .stream()
-                .filter(x -> x.get("bydelsnummer") != null)
-                .map(x -> String.valueOf(x.get("bydelsnummer")))
+                .filter(x -> x.get("kommunenummer") != null)
+                .map(x -> String.valueOf(x.get("kommunenummer")))
                 .filter(x -> !x.isEmpty())
                 .toList();
     }
