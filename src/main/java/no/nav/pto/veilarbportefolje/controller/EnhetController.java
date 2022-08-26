@@ -80,7 +80,7 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return personOpprinnelseService.hentFoedeland();
+        return personOpprinnelseService.hentFoedeland(enhet);
     }
 
     @GetMapping("/{enhet}/tolkSpraak")
@@ -90,7 +90,7 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return personOpprinnelseService.hentTolkSpraak();
+        return personOpprinnelseService.hentTolkSpraak(enhet);
     }
 
     @GetMapping("/{enhet}/bydel")
