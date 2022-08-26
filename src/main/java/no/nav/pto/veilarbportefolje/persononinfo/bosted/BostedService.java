@@ -58,8 +58,8 @@ public class BostedService {
         List<Kommune> kommunes = hentKommune(enhetId);
         List<Bydel> bydels = hentBydel(enhetId);
 
-        kommunes.forEach(x -> result.add(new GeografiskBosted(x.code, x.navn)));
-        bydels.forEach(x -> result.add(new GeografiskBosted(x.code, x.navn)));
+        kommunes.forEach(x -> result.add(new GeografiskBosted(x.code, x.code + " " + x.navn)));
+        bydels.forEach(x -> result.add(new GeografiskBosted(x.code, x.code + " " + x.navn)));
 
         return result.stream()
                 .sorted(Comparator.comparing(GeografiskBosted::getCode))
