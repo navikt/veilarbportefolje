@@ -93,23 +93,14 @@ public class EnhetController {
         return personOpprinnelseService.hentTolkSpraak(enhet);
     }
 
-    @GetMapping("/{enhet}/bydel")
-    public List<Bydel> hentBydel(
+
+    @GetMapping("/{enhet}/geografiskbosted")
+    public List<GeografiskBosted> hentGeografiskBosted(
             @PathVariable("enhet")
             String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return bostedService.hentBydel(enhet);
-    }
-
-    @GetMapping("/{enhet}/kommune")
-    public List<Kommune> hentBostedKommune(
-            @PathVariable("enhet")
-            String enhet) {
-        ValideringsRegler.sjekkEnhet(enhet);
-        authService.tilgangTilEnhet(enhet);
-
-        return bostedService.hentKommune(enhet);
+        return bostedService.hentGeografiskBosted(enhet);
     }
 }

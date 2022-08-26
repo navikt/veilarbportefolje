@@ -26,7 +26,7 @@ public class AuthUtils {
                 .setTalespraaktolk(null)
                 .setHovedStatsborgerskap(null)
                 .setHarFlereStatsborgerskap(false)
-                .setBydel(null)
+                .setBostedBydel(null)
                 .setBostedKommune(null)
                 .setHarUtelandsAddresse(false)
                 .setBostedSistOppdatert(null);

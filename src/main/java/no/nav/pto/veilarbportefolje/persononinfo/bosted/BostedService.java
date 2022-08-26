@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.persononinfo.bosted;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.Bydel;
+import no.nav.pto.veilarbportefolje.domene.GeografiskBosted;
 import no.nav.pto.veilarbportefolje.domene.Kommune;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class BostedService {
     private final BostedRepository bostedRepository;
     private final KodeverkService kodeverkService;
 
-    public List<Bydel> hentBydel(String enhetId) {
+    private List<Bydel> hentBydel(String enhetId) {
         List<String> bydelCodes = bostedRepository.hentBydel(enhetId);
         List<Bydel> codeToBydel = new ArrayList<>();
 
@@ -36,7 +37,7 @@ public class BostedService {
                 .toList();
     }
 
-    public List<Kommune> hentKommune(String enhetId) {
+    private List<Kommune> hentKommune(String enhetId) {
         List<String> kommuneCodes = bostedRepository.hentKommune(enhetId);
         List<Kommune> codeToKommune = new ArrayList<>();
 
@@ -50,5 +51,19 @@ public class BostedService {
         return codeToKommune.stream()
                 .sorted(Comparator.comparing(Kommune::getNavn, Collator.getInstance(new Locale("nob", "NO"))))
                 .toList();
+    }
+
+    public List<GeografiskBosted> hentGeografiskBosted(String enhetId) {
+        List<GeografiskBosted> result = new ArrayList<>();
+        List<Kommune> kommunes = hentKommune(enhetId);
+        List<Bydel> bydels = hentBydel(enhetId);
+
+        kommunes.forEach(x -> result.add(new GeografiskBosted(x.code, x.navn)));
+        bydels.forEach(x -> result.add(new GeografiskBosted(x.code, x.navn)));
+
+        return result.stream()
+                .sorted(Comparator.comparing(GeografiskBosted::getCode))
+                .toList();
+
     }
 }

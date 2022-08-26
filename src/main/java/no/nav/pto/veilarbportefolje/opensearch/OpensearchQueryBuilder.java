@@ -182,6 +182,16 @@ public class OpensearchQueryBuilder {
             }
             queryBuilder.must(tolkBehovSubquery);
         }
+
+        if (filtervalg.harBostedFilter()) {
+            BoolQueryBuilder bostedSubquery = boolQuery();
+            filtervalg.getGeografiskBosted().forEach(x -> {
+                        bostedSubquery.should(matchQuery("kommunenummer", x));
+                        bostedSubquery.should(matchQuery("bydelsnummer", x));
+                    }
+            );
+            queryBuilder.must(bostedSubquery);
+        }
     }
 
     private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {

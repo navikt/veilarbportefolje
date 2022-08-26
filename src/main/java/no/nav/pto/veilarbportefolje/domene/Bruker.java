@@ -85,7 +85,7 @@ public class Bruker {
     boolean harFlereStatsborgerskap;
     String innflyttingTilNorgeFraLand;
     String bostedKommune;
-    String bydel;
+    String bostedBydel;
     LocalDate bostedSistOppdatert;
     boolean harUtelandsAddresse;
 
@@ -166,7 +166,7 @@ public class Bruker {
                 .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
                 .setLandgruppe(bruker.getLandgruppe())
                 .setInnflyttingTilNorgeFraLand(bruker.getInnflyttingTilNorgeFraLand())
-                .setBydel(bruker.getBydelsnummer())
+                .setBostedBydel(bruker.getBydelsnummer())
                 .setBostedKommune(bruker.getKommunenummer())
                 .setHarUtelandsAddresse(harUtelandsAddresse)
                 .setBostedSistOppdatert(bruker.getBostedSistOppdatert());

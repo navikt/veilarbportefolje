@@ -45,6 +45,7 @@ public class Filtervalg {
     public List<String> foedeland;
     public List<String> tolkebehov;
     public List<String> tolkBehovSpraak;
+    public List<String> geografiskBosted;
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
@@ -74,7 +75,7 @@ public class Filtervalg {
                 harTegnspraakFilter() ||
                 harTalespraaktolkFilter() ||
                 harFoedelandFilter() ||
-                harLandgruppeFilter();
+                harLandgruppeFilter() || harBostedFilter();
     }
 
     public boolean harCvFilter() {
@@ -139,6 +140,10 @@ public class Filtervalg {
 
     public boolean harLandgruppeFilter() {
         return landgruppe != null && !landgruppe.isEmpty();
+    }
+
+    public boolean harBostedFilter() {
+        return geografiskBosted != null && !geografiskBosted.isEmpty();
     }
 
     public boolean valider() {
