@@ -5,8 +5,10 @@ import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
 
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +21,7 @@ public class AktivitetEntityDto {
     Timestamp utlop;
     Timestamp start;
     String cvKanDelesStatus;
-    String svarfristStillingFraNav;
+    LocalDate svarfristStillingFraNav;
 
     public static List<AktivitetEntityDto> leggTilAktivitetPaResultat(AktivitetEntityDto aktivitet, List<AktivitetEntityDto> currentAktiviteter) {
         if (currentAktiviteter == null) {
@@ -45,13 +47,15 @@ public class AktivitetEntityDto {
             // Noen aktiviteter skal ikke vises i oversikten: samtalereferat
             return Optional.empty();
         }
+        LocalDate svarfrist = Optional.ofNullable(rs.getDate("svarfrist_stilling_fra_nav")).map(Date::toLocalDate).orElse(null);
+
         return Optional.of(
                 new AktivitetEntityDto()
                         .setStart(rs.getTimestamp("fradato"))
                         .setUtlop(rs.getTimestamp("tildato"))
                         .setAktivitetsType(AktivitetsType.valueOf(type))
                         .setCvKanDelesStatus(rs.getString("cv_kan_deles_status"))
-                        .setSvarfristStillingFraNav(rs.getString("svarfrist_stilling_fra_nav"))
+                        .setSvarfristStillingFraNav(svarfrist)
         );
     }
 

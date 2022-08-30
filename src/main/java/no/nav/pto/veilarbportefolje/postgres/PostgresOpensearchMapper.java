@@ -75,7 +75,7 @@ public class PostgresOpensearchMapper {
         bruker.setAlle_aktiviteter_ijobb_utlopsdato(aktivitetData.getAktivitetIjobbUtlopsdato());
         bruker.setAlle_aktiviteter_sokeavtale_utlopsdato(aktivitetData.getAktivitetSokeavtaleUtlopsdato());
         bruker.setNesteCvKanDelesStatus(aktivitetData.getNesteCvKanDelesStatus());
-        bruker.setNesteSvarfristStillingFraNav(LocalDate.parse(aktivitetData.getNesteSvarfristStillingFraNav().substring(0,10)));
+        bruker.setNesteSvarfristStillingFraNav(aktivitetData.getNesteSvarfristStillingFraNav());
         bruker.setAlleAktiviteter(aktivitetData.getAlleAktiviteter());
         // NOTE: tiltak, gruppeaktiviteter, og utdanningsaktiviteter blir håndtert av copy_to feltet i opensearch
         // Dette gjøres da disse aktivitetene ikke kan være satt til "ikke avtalt"

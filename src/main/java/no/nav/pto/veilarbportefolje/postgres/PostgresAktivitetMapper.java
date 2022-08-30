@@ -124,7 +124,7 @@ public class PostgresAktivitetMapper {
             Optional<AktivitetEntityDto> nesteStillingFraNav = aktiviteter.stream()
                     .filter(aktivitetEntityDto -> stilling_fra_nav.equals(aktivitetEntityDto.aktivitetsType))
                     .filter(aktivitetEntityDto -> aktivitetEntityDto.svarfristStillingFraNav != null)
-                    .filter(aktivitetEntityDto -> LocalDate.parse(aktivitetEntityDto.svarfristStillingFraNav.substring(0,10)).isAfter(yesterday))
+                    .filter(aktivitetEntityDto -> aktivitetEntityDto.svarfristStillingFraNav.isAfter(yesterday))
                     .min(Comparator.comparing(frist -> frist.svarfristStillingFraNav));
             entity.setNesteCvKanDelesStatus(nesteStillingFraNav.map(AktivitetEntityDto::getCvKanDelesStatus).orElse(null));
             entity.setNesteSvarfristStillingFraNav(nesteStillingFraNav.map((AktivitetEntityDto::getSvarfristStillingFraNav)).orElse(null));
