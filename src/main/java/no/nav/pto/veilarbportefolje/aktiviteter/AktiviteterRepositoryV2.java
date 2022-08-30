@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
-import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -18,7 +17,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -67,9 +66,10 @@ public class AktiviteterRepositoryV2 {
                 .map(KafkaAktivitetMelding.CvKanDelesStatus::name)
                 .orElse(null);
 
-        Timestamp svarfristStillingFraNAV = Optional.ofNullable(aktivitet.getStillingFraNavData())
+        LocalDate svarfristStillingFraNAV = Optional.ofNullable(aktivitet.getStillingFraNavData())
                 .map(KafkaAktivitetMelding.StillingFraNAV::getSvarfrist)
-                .map(DateUtils::toTimestamp)
+                .map(svarfrist -> svarfrist.substring(0,10))
+                .map(LocalDate::parse)
                 .orElse(null);
 
         db.update("""
@@ -92,13 +92,12 @@ public class AktiviteterRepositoryV2 {
     }
 
     public void leggTilAktiviteterFraAktivitetsplanen(String aktoerIder, boolean avtalt, HashMap<AktorId, List<AktivitetEntityDto>> result) {
-        //må vel legge inn stilling_fra_NAV her
         var params = new MapSqlParameterSource();
         params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
         params.addValue("avtalt", avtalt);
         params.addValue("ids", aktoerIder);
         namedDb.query("""
-                        SELECT aktoerid, tildato, fradato, aktivitettype FROM aktiviteter
+                        SELECT aktoerid, tildato, fradato, aktivitettype, cv_kan_deles_status, svarfrist_stilling_fra_nav FROM aktiviteter
                         WHERE avtalt = :avtalt::boolean AND NOT (status = ANY (:ikkestatuser::varchar[])) AND aktoerid = ANY (:ids::varchar[])
                         """,
                 params, (ResultSet rs) -> {

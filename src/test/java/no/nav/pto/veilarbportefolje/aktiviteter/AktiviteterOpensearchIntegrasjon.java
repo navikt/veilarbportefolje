@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +105,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setStillingFraNavData(
                         new KafkaAktivitetMelding.StillingFraNAV()
                                 .setCvKanDelesStatus(KafkaAktivitetMelding.CvKanDelesStatus.JA)
-                                .setSvarfrist(ZonedDateTime.parse("2044-02-03T00:00:00+02:00")))
+                                .setSvarfrist("2044-02-03T00:00:00+02:00"))
         );
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
                     BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
@@ -118,7 +119,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(1);
                     assertThat(responseBrukere.getBrukere().get(0).getNesteCvKanDelesStatus()).isEqualTo("JA");
-                    assertThat(responseBrukere.getBrukere().get(0).getNesteFristCvStillingFraNav()).isEqualTo("2044-02-03");
+                    assertThat(responseBrukere.getBrukere().get(0).getNesteSvarfristCvStillingFraNav()).isEqualTo(LocalDate.parse("2044-02-03"));
                 }
         );
     }

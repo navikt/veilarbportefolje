@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,6 +74,8 @@ public class PostgresOpensearchMapper {
         bruker.setAlle_aktiviteter_behandling_utlopsdato(aktivitetData.getAktivitetBehandlingUtlopsdato());
         bruker.setAlle_aktiviteter_ijobb_utlopsdato(aktivitetData.getAktivitetIjobbUtlopsdato());
         bruker.setAlle_aktiviteter_sokeavtale_utlopsdato(aktivitetData.getAktivitetSokeavtaleUtlopsdato());
+        bruker.setNesteCvKanDelesStatus(aktivitetData.getNesteCvKanDelesStatus());
+        bruker.setNesteSvarfristStillingFraNav(LocalDate.parse(aktivitetData.getNesteSvarfristStillingFraNav().substring(0,10)));
         bruker.setAlleAktiviteter(aktivitetData.getAlleAktiviteter());
         // NOTE: tiltak, gruppeaktiviteter, og utdanningsaktiviteter blir håndtert av copy_to feltet i opensearch
         // Dette gjøres da disse aktivitetene ikke kan være satt til "ikke avtalt"

@@ -18,6 +18,8 @@ public class AktivitetEntityDto {
     String muligTiltaksNavn; // Er kun satt for aktiviteter lagret i tiltaks tabellen
     Timestamp utlop;
     Timestamp start;
+    String cvKanDelesStatus;
+    String svarfristStillingFraNav;
 
     public static List<AktivitetEntityDto> leggTilAktivitetPaResultat(AktivitetEntityDto aktivitet, List<AktivitetEntityDto> currentAktiviteter) {
         if (currentAktiviteter == null) {
@@ -48,6 +50,8 @@ public class AktivitetEntityDto {
                         .setStart(rs.getTimestamp("fradato"))
                         .setUtlop(rs.getTimestamp("tildato"))
                         .setAktivitetsType(AktivitetsType.valueOf(type))
+                        .setCvKanDelesStatus(rs.getString("cv_kan_deles_status"))
+                        .setSvarfristStillingFraNav(rs.getString("svarfrist_stilling_fra_nav"))
         );
     }
 
