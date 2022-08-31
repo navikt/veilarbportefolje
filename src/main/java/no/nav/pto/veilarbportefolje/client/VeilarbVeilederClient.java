@@ -51,7 +51,7 @@ public class VeilarbVeilederClient {
     private List<String> hentVeilederePaaEnhetQuery(EnhetId enhet) {
         String path = format("/enhet/%s/identer", enhet);
         Request request = new Request.Builder()
-                .header(AUTHORIZATION, "Bearer " + authService.getOboOrOpenAmToken(veilarbbVeilederApi))
+                .header(AUTHORIZATION, "Bearer " + authService.getOboToken(veilarbbVeilederApi))
                 .url(url + path)
                 .build();
 
