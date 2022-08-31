@@ -166,7 +166,7 @@ public class AktiviteterV2Test {
                 .setStillingFraNavData(
                         new KafkaAktivitetMelding.StillingFraNAV()
                                 .setCvKanDelesStatus(KafkaAktivitetMelding.CvKanDelesStatus.IKKE_SVART)
-                                .setSvarfrist(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                                .setSvarfrist("2065-02-03T00:00:00+02:00")
                 );
 
         aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitet1);

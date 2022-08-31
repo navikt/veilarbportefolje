@@ -58,7 +58,7 @@ CREATE TABLE public.aktiviteter (
     status character varying(255),
     version bigint,
     cv_kan_deles_status character varying(20),
-    svarfrist_stilling_fra_nav timestamp without time zone
+    svarfrist_stilling_fra_nav date
 );
 
 
@@ -107,7 +107,11 @@ CREATE TABLE public.bruker_data (
     angittflyttedato date,
     talespraaktolk character varying(20),
     tegnspraaktolk character varying(20),
-    tolkbehovsistoppdatert date
+    tolkbehovsistoppdatert date,
+    bydelsnummer character varying(10),
+    kommunenummer character varying(10),
+    utenlandskadresse character varying(10),
+    bostedsistoppdatert date
 );
 
 

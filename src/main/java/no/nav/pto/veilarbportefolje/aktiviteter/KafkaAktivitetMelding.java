@@ -28,7 +28,7 @@ public class KafkaAktivitetMelding {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class StillingFraNAV {
         CvKanDelesStatus cvKanDelesStatus;
-        ZonedDateTime svarfrist;
+        String svarfrist;
     }
 
     public enum AktivitetStatus {
