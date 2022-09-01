@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create release
-      uses: softprops/action-gh-release@v1
-      with:
-        name: Release to dev
-        tag_name: release/dev@${{ env.IMAGE_TAG }}
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release to dev
+          tag_name: release/dev@${{ env.IMAGE_TAG }}
