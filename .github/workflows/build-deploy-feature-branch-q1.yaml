@@ -62,4 +62,3 @@ jobs:
       with:
         name: Release to dev
         tag_name: release/dev@${{ env.IMAGE_TAG }}
-        prerelease: true
