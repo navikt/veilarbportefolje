@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -196,6 +197,18 @@ public class AdminController {
     private void sjekkTilgangTilAdmin() {
         boolean erSystemBrukerFraAzure = harAADRolleForSystemTilSystemTilgang(authContextHolder);
         boolean harAdminRetgheter = harAdminScope(authContextHolder);
+        authContextHolder.getIdTokenClaims()
+                .map(claims -> {
+                    try {
+                        var claimsStr = claims.getStringClaim("scp");
+                        log.info("DEBUG: scp {}", claimsStr);
+                        return claimsStr;
+                    } catch (ParseException e) {
+                        return "";
+                    }
+                });
+
+        log.info("DEBUG: er admin: {}, er systembruker: {}", harAdminRetgheter, erSystemBrukerFraAzure);
         if (harAdminRetgheter && erSystemBrukerFraAzure) {
             return;
         }
