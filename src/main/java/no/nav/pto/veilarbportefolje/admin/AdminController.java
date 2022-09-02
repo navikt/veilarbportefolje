@@ -29,12 +29,14 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.harAADRolleForSystemTilSystemTilgang;
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.harAdminScope;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
-    public final static String PTO_ADMIN_SERVICE_USER = "srvpto-admin";
     private final AktorClient aktorClient;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final HovedIndekserer hovedIndekserer;
@@ -192,11 +194,11 @@ public class AdminController {
     }
 
     private void sjekkTilgangTilAdmin() {
-        String subject = authContextHolder.getSubject()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-
-        if (!PTO_ADMIN_SERVICE_USER.equals(subject)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        boolean erSystemBrukerFraAzure = harAADRolleForSystemTilSystemTilgang(authContextHolder);
+        boolean harAdminRetgheter = harAdminScope(authContextHolder);
+        if (harAdminRetgheter && erSystemBrukerFraAzure) {
+            return;
         }
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 }

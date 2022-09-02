@@ -10,7 +10,14 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidsListeController.emptyArbeidsliste;
 
 public class AuthUtils {
@@ -45,6 +52,34 @@ public class AuthUtils {
                 .instance().getNavIdent()
                 .map(id -> VeilederId.of(id.get()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id is missing from subject"));
+    }
+
+    public static boolean harAADRolleForSystemTilSystemTilgang(AuthContextHolder authContextHolder) {
+        return authContextHolder.getIdTokenClaims()
+                .flatMap(claims -> {
+                    try {
+                        return Optional.ofNullable(claims.getStringListClaim("roles"));
+                    } catch (ParseException e) {
+                        return Optional.empty();
+                    }
+                })
+                .orElse(emptyList())
+                .contains("access_as_application");
+    }
+
+    public static boolean harAdminScope(AuthContextHolder authContextHolder) {
+        List<String> scp = authContextHolder.getIdTokenClaims()
+                .map(claims -> {
+                    try {
+                        return claims.getStringClaim("scp");
+                    } catch (ParseException e) {
+                        return "";
+                    }
+                })
+                .map(scope -> scope.split(" "))
+                .map(Arrays::asList)
+                .orElseGet(Collections::emptyList);
+        return scp.contains("portefolje-admin");
     }
 
     public static String getContextAwareUserToken(

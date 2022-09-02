@@ -59,6 +59,12 @@ spec:
         - application: veilarbpersonflate
           namespace: poao
           cluster: dev-gcp
+        - application: pto-admin
+          namespace: pto
+          cluster: dev-fss
+          permissions:
+            scopes:
+              - "portefolje-admin"
   resources:
     limits:
       cpu: "4"
