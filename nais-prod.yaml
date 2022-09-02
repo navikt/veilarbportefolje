@@ -14,6 +14,7 @@ spec:
     cpuThresholdPercentage: 50
   port: 8080
   ingresses:
+    - https://veilarbportefolje.intern.nav.no
     - https://veilarbportefolje.prod-fss-pub.nais.io
     - https://veilarbportefolje.nais.adeo.no
     - https://app.adeo.no/veilarbportefolje
