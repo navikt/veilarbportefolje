@@ -27,9 +27,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.text.ParseException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.util.Collections.emptyList;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.harAADRolleForSystemTilSystemTilgang;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.harAdminScope;
 
@@ -198,13 +201,22 @@ public class AdminController {
     private void sjekkTilgangTilAdmin() {
         boolean erSystemBrukerFraAzure = harAADRolleForSystemTilSystemTilgang(authContextHolder);
         boolean harAdminRetgheter = harAdminScope(authContextHolder);
-        log.info("DEBUG: key claims: {}",authContextHolder.getIdTokenClaims().get().getClaims().keySet());
+        log.info("DEBUG: key claims: {}", authContextHolder.getIdTokenClaims().get().getClaims().keySet());
         authContextHolder.getIdTokenClaims()
                 .map(claims -> {
                     var claimsStr = (String) claims.getClaim("scp");
                     log.info("DEBUG: scp {}", claimsStr);
                     return claimsStr;
                 });
+        authContextHolder.getIdTokenClaims()
+                .flatMap(claims -> {
+                    try {
+                        return Optional.ofNullable(claims.getStringListClaim("roles"));
+                    } catch (ParseException e) {
+                        return Optional.empty();
+                    }
+                })
+                .orElse(emptyList()).forEach(role -> log.info("DEBUG: role {}", role));
 
         log.info("DEBUG: er admin: {}, er systembruker: {}", harAdminRetgheter, erSystemBrukerFraAzure);
         if (harAdminRetgheter && erSystemBrukerFraAzure) {
