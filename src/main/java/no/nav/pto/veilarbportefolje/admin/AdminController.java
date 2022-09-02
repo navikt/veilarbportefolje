@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.text.ParseException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,6 +48,7 @@ public class AdminController {
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchAdminService opensearchAdminService;
     private final PdlService pdlService;
+    private final Pep veilarbPep;
 
     @DeleteMapping("/oppfolgingsbruker")
     public String slettOppfolgingsbruker(@RequestBody String aktoerId) {
@@ -197,15 +198,12 @@ public class AdminController {
     private void sjekkTilgangTilAdmin() {
         boolean erSystemBrukerFraAzure = harAADRolleForSystemTilSystemTilgang(authContextHolder);
         boolean harAdminRetgheter = harAdminScope(authContextHolder);
+        log.info("DEBUG: key claims: {}",authContextHolder.getIdTokenClaims().get().getClaims().keySet());
         authContextHolder.getIdTokenClaims()
                 .map(claims -> {
-                    try {
-                        var claimsStr = claims.getStringClaim("scp");
-                        log.info("DEBUG: scp {}", claimsStr);
-                        return claimsStr;
-                    } catch (ParseException e) {
-                        return "";
-                    }
+                    var claimsStr = (String) claims.getClaim("scp");
+                    log.info("DEBUG: scp {}", claimsStr);
+                    return claimsStr;
                 });
 
         log.info("DEBUG: er admin: {}, er systembruker: {}", harAdminRetgheter, erSystemBrukerFraAzure);

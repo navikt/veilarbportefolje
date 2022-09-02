@@ -63,6 +63,8 @@ spec:
           namespace: pto
           cluster: dev-fss
           permissions:
+            roles:
+              - "portefolje-admin"
             scopes:
               - "portefolje-admin"
   resources:
