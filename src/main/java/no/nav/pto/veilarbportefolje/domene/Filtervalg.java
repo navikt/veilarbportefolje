@@ -44,7 +44,7 @@ public class Filtervalg {
     public List<String> landgruppe;
     public List<String> foedeland;
     public List<String> tolkebehov;
-    public String tolkBehovSpraak;
+    public List<String> tolkBehovSpraak;
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||

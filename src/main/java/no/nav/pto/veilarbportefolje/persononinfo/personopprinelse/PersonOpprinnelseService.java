@@ -21,8 +21,8 @@ public class PersonOpprinnelseService {
     private final PersonOpprinnelseRepository personOpprinnelseRepository;
     private final KodeverkService kodeverkService;
 
-    public List<Foedeland> hentFoedeland() {
-        List<String> landCodes = personOpprinnelseRepository.hentFoedeland();
+    public List<Foedeland> hentFoedeland(String enhetId) {
+        List<String> landCodes = personOpprinnelseRepository.hentFoedeland(enhetId);
         List<Foedeland> codeToLand = new ArrayList<>();
 
         landCodes.stream()
@@ -37,9 +37,9 @@ public class PersonOpprinnelseService {
                 .toList();
     }
 
-    public List<TolkSpraak> hentTolkSpraak() {
+    public List<TolkSpraak> hentTolkSpraak(String enhetId) {
         List<TolkSpraak> tolkSpraak = new ArrayList<>();
-        personOpprinnelseRepository.hentTolkSpraak()
+        personOpprinnelseRepository.hentTolkSpraak(enhetId)
                 .stream()
                 .filter(x -> x != null && !x.isEmpty())
                 .sorted()

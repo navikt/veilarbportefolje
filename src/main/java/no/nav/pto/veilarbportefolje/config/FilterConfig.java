@@ -27,7 +27,8 @@ public class FilterConfig {
 
     private final List<String> ALLOWED_SERVICE_USERS = List.of(
             "srvveilarbperson",
-            "srvveilarboppfolging"
+            "srvveilarboppfolging",
+            "srvpto-admin"
     );
 
     private OidcAuthenticatorConfig azureAdAuthConfig(EnvironmentProperties properties) {

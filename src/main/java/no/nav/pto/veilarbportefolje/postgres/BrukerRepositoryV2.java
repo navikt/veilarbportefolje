@@ -256,8 +256,6 @@ public class BrukerRepositoryV2 {
         String landGruppe = Landgruppe.getInstance().getLandgruppeForLandKode(rs.getString("foedeland"));
         String foedelandFulltNavn = kodeverskService.getBeskrivelseForLandkode(rs.getString("foedeland"));
         String innflyttingTilNorgeFraLandFullNavn = kodeverskService.getBeskrivelseForLandkode(rs.getString("innflyttingTilNorgeFraLand"));
-        String taleSpraakFulltNavn = kodeverskService.getBeskrivelseForSpraakKode(rs.getString("talespraaktolk"));
-        String tegnSpraakFulltNavn = kodeverskService.getBeskrivelseForSpraakKode(rs.getString("tegnspraaktolk"));
         bruker
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
@@ -268,8 +266,8 @@ public class BrukerRepositoryV2 {
                 .setFoedeland(rs.getString("foedeland"))
                 .setFoedelandFulltNavn(foedelandFulltNavn)
                 .setKjonn(rs.getString("kjoenn"))
-                .setTalespraaktolk((taleSpraakFulltNavn != null && !taleSpraakFulltNavn.isEmpty()) ? taleSpraakFulltNavn : null)
-                .setTegnspraaktolk((tegnSpraakFulltNavn != null && !tegnSpraakFulltNavn.isEmpty()) ? tegnSpraakFulltNavn : null)
+                .setTalespraaktolk(rs.getString("talespraaktolk"))
+                .setTegnspraaktolk(rs.getString("tegnspraaktolk"))
                 .setTolkBehovSistOppdatert(DateUtils.toLocalDateOrNull(rs.getString("tolkBehovSistOppdatert")))
                 .setInnflyttingTilNorgeFraLand((innflyttingTilNorgeFraLandFullNavn != null && !innflyttingTilNorgeFraLandFullNavn.isEmpty()) ? innflyttingTilNorgeFraLandFullNavn : null)
                 .setLandgruppe((landGruppe != null && !landGruppe.isEmpty()) ? landGruppe : null);

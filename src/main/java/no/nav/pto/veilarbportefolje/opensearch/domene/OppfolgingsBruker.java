@@ -104,4 +104,7 @@ public class OppfolgingsBruker {
     String innflyttingTilNorgeFraLand;
     boolean harFlereStatsborgerskap;
     Statsborgerskap hovedStatsborgerskap;
+
+    String nesteCvKanDelesStatus;
+    LocalDate nesteSvarfristStillingFraNav;
 }

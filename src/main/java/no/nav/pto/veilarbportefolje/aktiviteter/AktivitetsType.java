@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 public enum AktivitetsType {
     egen,
     stilling,
+    stilling_fra_nav,
     sokeavtale,
     behandling,
     ijobb,
