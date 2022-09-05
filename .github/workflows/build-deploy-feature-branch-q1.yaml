@@ -52,3 +52,14 @@ jobs:
           CLUSTER: dev-fss
           RESOURCE: nais-dev.yaml
           VAR: version=${{ env.IMAGE_TAG }},namespace=pto
+  release-dev:
+    name: Create dev release
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release to dev
+          tag_name: release/dev@${{ env.IMAGE_TAG }}
+          prerelease: true
