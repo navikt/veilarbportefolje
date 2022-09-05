@@ -55,10 +55,7 @@ public class AuthUtils {
 
     public static String hentApplikasjonFraContex(AuthContextHolder authContextHolder) {
         return authContextHolder.getIdTokenClaims()
-                .flatMap(claims -> getStringClaimOrEmpty(claims,"azp_name"))
-                .map(appContex -> appContex.split(":"))
-                .filter(appContex -> appContex.length == 3) //  "cluster:team:app"
-                .map(appContex -> appContex[2])
+                .flatMap(claims -> getStringClaimOrEmpty(claims,"azp_name")) //  "cluster:team:app"
                 .orElse(null);
     }
 

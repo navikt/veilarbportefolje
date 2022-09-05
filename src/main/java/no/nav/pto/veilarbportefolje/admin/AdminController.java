@@ -7,7 +7,9 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
+import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
@@ -31,7 +33,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.erSystemkallFraAzureAd;
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getStringClaimOrEmpty;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex;
 
 @Slf4j
@@ -39,6 +40,8 @@ import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraCont
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
+    private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.getClusterName().orElse("test"),
+            "pto", "pto-admin").toString();
     private final AktorClient aktorClient;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final HovedIndekserer hovedIndekserer;
@@ -198,13 +201,7 @@ public class AdminController {
 
     private void sjekkTilgangTilAdmin() {
         boolean erSystemBrukerFraAzure = erSystemkallFraAzureAd(authContextHolder);
-        boolean erPtoAdmin = "pto-admin".equals(hentApplikasjonFraContex(authContextHolder));
-        authContextHolder.getIdTokenClaims()
-                .flatMap(claims -> getStringClaimOrEmpty(claims,"azp_name"))
-                .map(appContex -> {
-                    log.info(appContex);
-                    return appContex.split(":");
-                });
+        boolean erPtoAdmin = PTO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
 
         if (erPtoAdmin && erSystemBrukerFraAzure) {
             return;
