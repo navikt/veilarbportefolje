@@ -89,6 +89,9 @@ public class Bruker {
     LocalDate bostedSistOppdatert;
     boolean harUtelandsAddresse;
 
+    String nesteCvKanDelesStatus;
+    LocalDate nesteSvarfristCvStillingFraNav;
+
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
@@ -139,6 +142,8 @@ public class Bruker {
                 .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))
                 .setAlleMoterStartTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_startdato()))
                 .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
+                .setNesteCvKanDelesStatus(bruker.getNesteCvKanDelesStatus())
+                .setNesteSvarfristCvStillingFraNav(bruker.getNesteSvarfristStillingFraNav())
                 .setUtkast14aStatus(bruker.getUtkast_14a_status())
                 .setUtkast14aStatusEndret(toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()))
                 .setUtkast14aAnsvarligVeileder(bruker.getUtkast_14a_ansvarlig_veileder())

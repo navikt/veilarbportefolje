@@ -19,7 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -82,6 +84,42 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                             null);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(1);
+                }
+        );
+    }
+
+    @Test
+    public void lasteroppaktivitetStillingFraNAV() {
+        NavKontor navKontor = randomNavKontor();
+        testDataClient.setupBruker(aktoer, fodselsnummer, navKontor.getValue());
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.STILLING_FRA_NAV)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(null)
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setVersion(1L)
+                .setAvtalt(false)
+                .setStillingFraNavData(
+                        new KafkaAktivitetMelding.StillingFraNAV()
+                                .setCvKanDelesStatus(KafkaAktivitetMelding.CvKanDelesStatus.JA)
+                                .setSvarfrist("2044-02-03T00:00:00+02:00"))
+        );
+        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setNavnEllerFnrQuery(fodselsnummer.toString()).setFerdigfilterListe(new ArrayList<>()),
+                            null,
+                            null);
+
+                    assertThat(responseBrukere.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukere.getBrukere().get(0).getNesteCvKanDelesStatus()).isEqualTo("JA");
+                    assertThat(responseBrukere.getBrukere().get(0).getNesteSvarfristCvStillingFraNav()).isEqualTo(LocalDate.parse("2044-02-03"));
                 }
         );
     }

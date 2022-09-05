@@ -58,7 +58,7 @@ CREATE TABLE public.aktiviteter (
     status character varying(255),
     version bigint,
     cv_kan_deles_status character varying(20),
-    svarfrist_stilling_fra_nav timestamp without time zone
+    svarfrist_stilling_fra_nav date
 );
 
 

@@ -72,8 +72,7 @@ public class KafkaAktivtetServiceTest {
         ZonedDateTime zonedDateTime2 = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00",
                 ISO_ZONED_DATE_TIME);
 
-        ZonedDateTime zonedDateTime3 = ZonedDateTime.parse("2022-08-18T00:00:00+02:00",
-                ISO_ZONED_DATE_TIME);
+        String dateAsString = "2022-08-18T00:00:00+02:00";
 
         KafkaAktivitetMelding aktivitetDataFraKafka = new KafkaAktivitetMelding()
                 .setAktivitetId("144136")
@@ -91,7 +90,7 @@ public class KafkaAktivtetServiceTest {
                 .setStillingFraNavData(
                         new KafkaAktivitetMelding.StillingFraNAV()
                                 .setCvKanDelesStatus(KafkaAktivitetMelding.CvKanDelesStatus.IKKE_SVART)
-                                .setSvarfrist(zonedDateTime3)
+                                .setSvarfrist(dateAsString)
                 );
 
         assertThat(fromJson(aktivitetKafkaMelding, KafkaAktivitetMelding.class)).isEqualTo(aktivitetDataFraKafka);

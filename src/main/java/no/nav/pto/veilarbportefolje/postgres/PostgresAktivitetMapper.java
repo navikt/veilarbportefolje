@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.*;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType.mote;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType.*;
 
 public class PostgresAktivitetMapper {
     public static AktivitetEntity kalkulerGenerellAktivitetInformasjon(List<AktivitetEntityDto> aktiviteter) {
@@ -25,6 +25,7 @@ public class PostgresAktivitetMapper {
                 .map(AktivitetsType::name)
                 .collect(Collectors.toSet());
         byggAktivitetStatusBrukerData(entity, aktiviteter);
+        byggStillingFraNavData(aktiviteter,aktiveAktiviteter,entity);
 
         return entity.setAlleAktiviteter(aktiveAktiviteter);
     }
@@ -115,6 +116,19 @@ public class PostgresAktivitetMapper {
                 .setNesteAktivitetStart(nesteAktivitetStart.map(DateUtils::toIsoUTC).orElse(null))
                 .setNyesteUtlopteAktivitet(nyesteUtlopteDato.map(DateUtils::toIsoUTC).orElse(null))
                 .setForrigeAktivitetStart(forrigeAktivitetStart.map(DateUtils::toIsoUTC).orElse(null));
+    }
+
+    private static void byggStillingFraNavData(List<AktivitetEntityDto> aktiviteter, Set<String> aktiveAktiviteter, AktivitetEntity entity){
+        if(aktiveAktiviteter.contains(stilling_fra_nav.name())){
+            LocalDate yesterday = LocalDate.now().minusDays(1);
+            Optional<AktivitetEntityDto> nesteStillingFraNav = aktiviteter.stream()
+                    .filter(aktivitetEntityDto -> stilling_fra_nav.equals(aktivitetEntityDto.aktivitetsType))
+                    .filter(aktivitetEntityDto -> aktivitetEntityDto.svarfristStillingFraNav != null)
+                    .filter(aktivitetEntityDto -> aktivitetEntityDto.svarfristStillingFraNav.isAfter(yesterday))
+                    .min(Comparator.comparing(frist -> frist.svarfristStillingFraNav));
+            entity.setNesteCvKanDelesStatus(nesteStillingFraNav.map(AktivitetEntityDto::getCvKanDelesStatus).orElse(null));
+            entity.setNesteSvarfristStillingFraNav(nesteStillingFraNav.map((AktivitetEntityDto::getSvarfristStillingFraNav)).orElse(null));
+        }
     }
 
     private static Timestamp nesteFremITiden(Timestamp a, Timestamp b) {

@@ -12,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.*;
 import java.util.function.BinaryOperator;
 
+import static java.lang.Integer.parseInt;
+
 @Data()
 @Accessors(chain = true)
 public class Filtervalg {
@@ -153,7 +155,7 @@ public class Filtervalg {
 
         Boolean alderOk = alder
                 .stream()
-                .map(alderInput -> (FiltervalgMappers.alder.containsKey(alderInput) || FiltervalgMappers.isValidDynamicRange(alderInput)))
+                .map(Filtervalg::erGyldigAldersSpenn)
                 .reduce(true, and());
 
         Boolean fodselsdatoOk = fodselsdagIMnd
@@ -179,5 +181,10 @@ public class Filtervalg {
 
     private BinaryOperator<Boolean> and() {
         return (aBoolean, aBoolean2) -> aBoolean && aBoolean2;
+    }
+
+    public static boolean erGyldigAldersSpenn(String fraTilAlderIput){
+        String[] fraTilAlder = fraTilAlderIput.split("-");
+        return fraTilAlder.length == 2 && parseInt(fraTilAlder[0]) <= parseInt(fraTilAlder[1]);
     }
 }

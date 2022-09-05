@@ -15,7 +15,13 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,7 +44,6 @@ public class PostgresOpensearchMapper {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
         Map<AktorId, List<AktivitetEntityDto>> avtalteAktiviterMap = aktivitetOpensearchService.hentAvtaltAktivitetData(aktoerIder);
         Map<AktorId, List<AktivitetEntityDto>> ikkeAvtalteAktiviterMap = aktivitetOpensearchService.hentIkkeAvtaltAktivitetData(aktoerIder);
-
         brukere.forEach(bruker -> {
                     AktorId aktorId = AktorId.of(bruker.getAktoer_id());
 
@@ -73,6 +78,8 @@ public class PostgresOpensearchMapper {
         bruker.setAlle_aktiviteter_behandling_utlopsdato(aktivitetData.getAktivitetBehandlingUtlopsdato());
         bruker.setAlle_aktiviteter_ijobb_utlopsdato(aktivitetData.getAktivitetIjobbUtlopsdato());
         bruker.setAlle_aktiviteter_sokeavtale_utlopsdato(aktivitetData.getAktivitetSokeavtaleUtlopsdato());
+        bruker.setNesteCvKanDelesStatus(aktivitetData.getNesteCvKanDelesStatus());
+        bruker.setNesteSvarfristStillingFraNav(aktivitetData.getNesteSvarfristStillingFraNav());
         bruker.setAlleAktiviteter(aktivitetData.getAlleAktiviteter());
         // NOTE: tiltak, gruppeaktiviteter, og utdanningsaktiviteter blir håndtert av copy_to feltet i opensearch
         // Dette gjøres da disse aktivitetene ikke kan være satt til "ikke avtalt"

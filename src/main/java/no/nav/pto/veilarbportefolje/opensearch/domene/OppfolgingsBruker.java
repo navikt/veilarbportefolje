@@ -108,4 +108,7 @@ public class OppfolgingsBruker {
     String bydelsnummer;
     String utenlandskAdresse;
     LocalDate bostedSistOppdatert;
+
+    String nesteCvKanDelesStatus;
+    LocalDate nesteSvarfristStillingFraNav;
 }
