@@ -65,8 +65,6 @@ spec:
           permissions:
             roles:
               - "portefolje-admin"
-            scopes:
-              - "portefolje-admin"
   resources:
     limits:
       cpu: "4"
