@@ -3,21 +3,20 @@ package no.nav.pto.veilarbportefolje.auth;
 import com.nimbusds.jwt.JWTClaimsSet;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.common.auth.context.UserRole;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
-import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidsListeController.emptyArbeidsliste;
 
 public class AuthUtils {
@@ -54,7 +53,19 @@ public class AuthUtils {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id is missing from subject"));
     }
 
-    public static boolean harAADRolleForSystemTilSystemTilgang(AuthContextHolder authContextHolder) {
+    public static String hentApplikasjonFraContex(AuthContextHolder authContextHolder) {
+        return authContextHolder.getIdTokenClaims()
+                .flatMap(claims -> getStringClaimOrEmpty(claims,"azp_name")) //  "cluster:team:app"
+                .orElse(null);
+    }
+
+    public static boolean erSystemkallFraAzureAd(AuthContextHolder authContextHolder){
+        UserRole role = authContextHolder.getRole()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        return UserRole.SYSTEM.equals(role) && harAADRolleForSystemTilSystemTilgang(authContextHolder);
+    }
+
+    private static boolean harAADRolleForSystemTilSystemTilgang(AuthContextHolder authContextHolder) {
         return authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> {
                     try {
@@ -67,40 +78,16 @@ public class AuthUtils {
                 .contains("access_as_application");
     }
 
-    public static boolean harAdminScope(AuthContextHolder authContextHolder) {
-        List<String> scp = authContextHolder.getIdTokenClaims()
-                .map(claims -> {
-                    try {
-                        return claims.getStringClaim("scp");
-                    } catch (ParseException e) {
-                        return "";
-                    }
-                })
-                .map(scope -> scope.split(" "))
-                .map(Arrays::asList)
-                .orElseGet(Collections::emptyList);
-        return scp.contains("portefolje-admin");
-    }
-
-    public static String getContextAwareUserToken(
-            DownstreamApi receivingApp,
-            AuthContextHolder authContextHolder,
-            AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient,
-            EnvironmentProperties properties
-    ) {
-        final String azureAdIssuer = properties.getNaisAadIssuer();
-        String token = authContextHolder.requireIdTokenString();
-
-        String tokenIssuer = authContextHolder.getIdTokenClaims()
-                .map(JWTClaimsSet::getIssuer)
-                .orElseThrow();
-        return azureAdIssuer.equals(tokenIssuer)
-                ? getAadOboTokenForTjeneste(azureAdOnBehalfOfTokenClient, receivingApp)
-                : token;
-    }
-
     public static String getAadOboTokenForTjeneste(AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, DownstreamApi api) {
         String scope = "api://" + api.cluster() + "." + api.namespace() + "." + api.serviceName() + "/.default";
         return azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(scope, getInnloggetBrukerToken());
+    }
+
+    public static Optional<String> getStringClaimOrEmpty(JWTClaimsSet claims, String claimName) {
+        try {
+            return ofNullable(claims.getStringClaim(claimName));
+        } catch (Exception e) {
+            return empty();
+        }
     }
 }

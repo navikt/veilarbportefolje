@@ -7,14 +7,12 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
-import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.TilgangClient;
-import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,23 +23,20 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.*;
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getAadOboTokenForTjeneste;
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetBrukerToken;
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetVeilederIdent;
 
 @Service
 public class AuthService {
-
-    private final AuthContextHolder authContextHolder;
     private final AzureAdOnBehalfOfTokenClient aadOboTokenClient;
-    private final EnvironmentProperties environmentProperties;
     private final TilgangClient tilgangClient;
     private final Pep veilarbPep;
     private final Cache<VeilederPaEnhet, Boolean > harVeilederTilgangTilEnhetCache;
 
     @Autowired
-    public AuthService(Pep veilarbPep, TilgangClient tilgangClient, AuthContextHolder authContextHolder, AzureAdOnBehalfOfTokenClient aadOboTokenClient, EnvironmentProperties environmentProperties) {
-        this.authContextHolder = authContextHolder;
+    public AuthService(Pep veilarbPep, TilgangClient tilgangClient, AzureAdOnBehalfOfTokenClient aadOboTokenClient) {
         this.aadOboTokenClient = aadOboTokenClient;
-        this.environmentProperties = environmentProperties;
         this.tilgangClient =  tilgangClient;
         this.veilarbPep = veilarbPep;
         this.harVeilederTilgangTilEnhetCache = Caffeine.newBuilder()
@@ -63,7 +58,7 @@ public class AuthService {
     }
 
     public boolean harVeilederTilgangTilEnhet(String veilederId, String enhet) {
-        return tryCacheFirst(harVeilederTilgangTilEnhetCache, new VeilederPaEnhet(veilederId,enhet),
+        return tryCacheFirst(harVeilederTilgangTilEnhetCache, new VeilederPaEnhet(veilederId, enhet),
                 () -> veilarbPep.harVeilederTilgangTilEnhet(NavIdent.of(veilederId), EnhetId.of(enhet)));
     }
 
@@ -107,12 +102,12 @@ public class AuthService {
         return new Skjermettilgang(tilgangTilKode6, tilgangTilKode7, tilgangEgenAnsatt);
     }
 
-    public String getOboOrOpenAmToken(DownstreamApi receivingApp){
-        return getContextAwareUserToken(receivingApp, authContextHolder, aadOboTokenClient, environmentProperties);
+    public String getOboToken(DownstreamApi receivingApp){
+        return getAadOboTokenForTjeneste(aadOboTokenClient, receivingApp);
     }
     @Data
     @Accessors(chain = true)
-    class VeilederPaEnhet {
+    static class VeilederPaEnhet {
         private final String veilederId;
         private final String enhetId;
     }
