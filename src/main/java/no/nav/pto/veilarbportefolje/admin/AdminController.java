@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
@@ -40,8 +39,7 @@ import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraCont
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
-    private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.getClusterName().orElse("test"),
-            "pto", "pto-admin").toString();
+    private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "pto-admin").toString();
     private final AktorClient aktorClient;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final HovedIndekserer hovedIndekserer;
@@ -52,7 +50,6 @@ public class AdminController {
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchAdminService opensearchAdminService;
     private final PdlService pdlService;
-    private final Pep veilarbPep;
 
     @DeleteMapping("/oppfolgingsbruker")
     public String slettOppfolgingsbruker(@RequestBody String aktoerId) {
