@@ -51,7 +51,8 @@ spec:
       enabled: true
       claims:
         extra:
-          - "NAVident"
+          - NAVident
+          - azp_name
   accessPolicy:
     inbound:
       rules:
@@ -64,9 +65,6 @@ spec:
         - application: pto-admin
           namespace: pto
           cluster: prod-fss
-          permissions:
-            scopes:
-              - "portefolje-admin"
   resources:
     limits:
       cpu: "4"
