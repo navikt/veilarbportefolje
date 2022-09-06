@@ -39,7 +39,8 @@ import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraCont
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
-    private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "pto-admin").toString();
+    private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
+            "prod:fss": "dev-fss", "pto", "pto-admin").toString();
     private final AktorClient aktorClient;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final HovedIndekserer hovedIndekserer;
