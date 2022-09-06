@@ -8,9 +8,9 @@ import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.utils.EnvironmentUtils;
+import no.nav.common.utils.UrlUtils;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
-import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -24,17 +24,17 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Slf4j
 public class VeilarbVeilederClient {
-    private final DownstreamApi veilarbbVeilederApi;
+    private final DownstreamApi veilarbVeilederApi;
     private final String url;
     private final OkHttpClient client;
     private final AuthService authService;
     private final Cache<EnhetId, List<String>> hentVeilederePaaEnhetCache;
 
-    public VeilarbVeilederClient(AuthService authService, EnvironmentProperties environmentProperties) {
+    public VeilarbVeilederClient(AuthService authService) {
         this.authService = authService;
-        this.url = environmentProperties.getVeilarbVeilederUrl();
+        this.veilarbVeilederApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbveileder");
+        this.url = UrlUtils.createServiceUrl(veilarbVeilederApi.serviceName(), veilarbVeilederApi.namespace(), true);
         this.client = RestClient.baseClient();
-        this.veilarbbVeilederApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbveileder");
 
         hentVeilederePaaEnhetCache = Caffeine.newBuilder()
                 .expireAfterWrite(10, TimeUnit.MINUTES)
@@ -51,7 +51,7 @@ public class VeilarbVeilederClient {
     private List<String> hentVeilederePaaEnhetQuery(EnhetId enhet) {
         String path = format("/enhet/%s/identer", enhet);
         Request request = new Request.Builder()
-                .header(AUTHORIZATION, "Bearer " + authService.getOboToken(veilarbbVeilederApi))
+                .header(AUTHORIZATION, "Bearer " + authService.getOboToken(veilarbVeilederApi))
                 .url(url + path)
                 .build();
 

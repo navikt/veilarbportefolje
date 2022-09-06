@@ -10,8 +10,6 @@ import java.util.List;
 @Setter
 @ConfigurationProperties(prefix = "app.env")
 public class EnvironmentProperties {
-    private String veilarbVeilederUrl;
-    private String stsDiscoveryUrl;
     private String naisAadDiscoveryUrl;
     private String naisAadClientId;
     private String naisAadIssuer;

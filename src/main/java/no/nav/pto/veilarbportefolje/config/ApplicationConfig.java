@@ -6,11 +6,8 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.featuretoggle.UnleashClientImpl;
-import no.nav.common.sts.NaisSystemUserTokenProvider;
-import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
-import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClientImpl;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -22,7 +19,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 
-import static no.nav.common.utils.NaisUtils.getCredentials;
 import static no.nav.common.utils.UrlUtils.createServiceUrl;
 
 
@@ -43,16 +39,6 @@ public class ApplicationConfig {
     @Bean
     public LockProvider lockProvider(JdbcTemplate jdbcTemplate) {
         return new JdbcTemplateLockProvider(jdbcTemplate);
-    }
-
-    @Bean
-    public Credentials serviceUserCredentials() {
-        return getCredentials("service_user");
-    }
-
-    @Bean
-    public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
-        return new NaisSystemUserTokenProvider(properties.getStsDiscoveryUrl(), serviceUserCredentials.username, serviceUserCredentials.password);
     }
 
     @Bean
