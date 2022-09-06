@@ -49,7 +49,7 @@ public class VeilarbVeilederClient {
 
     @SneakyThrows
     private List<String> hentVeilederePaaEnhetQuery(EnhetId enhet) {
-        String path = format("/enhet/%s/identer", enhet);
+        String path = format("/api/enhet/%s/identer", enhet);
         Request request = new Request.Builder()
                 .header(AUTHORIZATION, "Bearer " + authService.getOboToken(veilarbVeilederApi))
                 .url(url + path)
