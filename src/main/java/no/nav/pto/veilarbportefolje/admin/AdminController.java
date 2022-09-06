@@ -6,7 +6,9 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
+import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
@@ -29,12 +31,15 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.erSystemkallFraAzureAd;
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
-    public final static String PTO_ADMIN_SERVICE_USER = "srvpto-admin";
+    private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "pto-admin").toString();
     private final AktorClient aktorClient;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final HovedIndekserer hovedIndekserer;
@@ -192,11 +197,12 @@ public class AdminController {
     }
 
     private void sjekkTilgangTilAdmin() {
-        String subject = authContextHolder.getSubject()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        boolean erSystemBrukerFraAzure = erSystemkallFraAzureAd(authContextHolder);
+        boolean erPtoAdmin = PTO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
 
-        if (!PTO_ADMIN_SERVICE_USER.equals(subject)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if (erPtoAdmin && erSystemBrukerFraAzure) {
+            return;
         }
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 }
