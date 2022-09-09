@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.config;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
@@ -27,9 +27,24 @@ import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
-import no.nav.pto.veilarbportefolje.opensearch.*;
+import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
+import no.nav.pto.veilarbportefolje.opensearch.IndexName;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
-import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
+import no.nav.pto.veilarbportefolje.oppfolging.SkjermingRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
@@ -228,11 +243,6 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public SystemUserTokenProvider systemUserTokenProvider() {
-        return mock(SystemUserTokenProvider.class);
-    }
-
-    @Bean
     public DataSource dataSource() {
         return SingletonPostgresContainer.init().createDataSource();
     }
@@ -285,4 +295,8 @@ public class ApplicationConfigTest {
         return mock(KodeverkClient.class);
     }
 
+    @Bean
+    public AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient() {
+        return mock(AzureAdMachineToMachineTokenClient.class);
+    }
 }

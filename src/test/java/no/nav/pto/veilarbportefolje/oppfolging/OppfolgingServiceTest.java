@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
@@ -24,29 +23,25 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class OppfolgingServiceTest {
     private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private OppfolgingService oppfolgingService;
-    private SystemUserTokenProvider systemUserTokenProvider;
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
     @Before
     public void setup() {
-        systemUserTokenProvider = mock(SystemUserTokenProvider.class);
         oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(SingletonPostgresContainer.init().createJdbcTemplate());
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        oppfolgingService = new OppfolgingService(mock(OppfolgingAvsluttetService.class), systemUserTokenProvider, apiUrl, oppfolgingRepositoryV2, mock(AktorClient.class));
+        oppfolgingService = new OppfolgingService(mock(OppfolgingAvsluttetService.class), apiUrl, oppfolgingRepositoryV2, mock(AktorClient.class), () -> "SYSTEM_TOKEN");
 
     }
 
     @Test
     public void hentOppfolgingData__skal_lage_riktig_request_og_parse_response() {
         String AKTORID = "1234567";
-        when(systemUserTokenProvider.getSystemUserToken()).thenReturn("SYSTEM_TOKEN");
         ZonedDateTime startDato_portefolje = ZonedDateTime.now();
 
         givenThat(get(urlEqualTo("/api/admin/hentVeilarbinfo/bruker?aktorId=" + AKTORID))

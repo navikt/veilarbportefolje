@@ -6,10 +6,11 @@ import no.nav.common.job.JobRunner;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.common.utils.UrlUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
@@ -28,6 +29,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static no.nav.common.utils.UrlUtils.joinPaths;
 
@@ -37,23 +39,24 @@ public class OppfolgingService {
     private final String veilarboppfolgingUrl;
     private final OkHttpClient client;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
-    private final SystemUserTokenProvider systemUserTokenProvider;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final AktorClient aktorClient;
+    private final Supplier<String> systemUserTokenProvider;
 
     private static int antallBrukereSlettet;
 
     @Autowired
-    public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient) {
+    public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient, AzureAdMachineToMachineTokenClient tokenClient) {
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
-        this.systemUserTokenProvider = systemUserTokenProvider;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.aktorClient = aktorClient;
         this.client = RestClient.baseClient();
         this.veilarboppfolgingUrl = UrlUtils.createServiceUrl("veilarboppfolging", "pto", true);
+        systemUserTokenProvider = () -> tokenClient.createMachineToMachineToken(String.format("api://%s-fss.pto.veilarboppfolging/.default", (EnvironmentUtils.isProduction().orElseThrow()) ? "prod" : "dev"));
+
     }
 
-    public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, SystemUserTokenProvider systemUserTokenProvider, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient) {
+    public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient,  Supplier<String> systemUserTokenProvider) {
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
@@ -120,8 +123,8 @@ public class OppfolgingService {
             return;
         }
 
-            log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte manuell fra: {}, til:{} ", bruker, manuellDb, korrektManuell);
-            oppfolgingRepositoryV2.settManuellStatus(bruker, korrektManuell);
+        log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte manuell fra: {}, til:{} ", bruker, manuellDb, korrektManuell);
+        oppfolgingRepositoryV2.settManuellStatus(bruker, korrektManuell);
     }
 
 
@@ -130,8 +133,8 @@ public class OppfolgingService {
             return;
         }
 
-            log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte nyForVeileder fra: {}, til:{} ", bruker, nyForVeilederDb, korrektNyForVeileder);
-            oppfolgingRepositoryV2.settNyForVeileder(bruker, korrektNyForVeileder);
+        log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte nyForVeileder fra: {}, til:{} ", bruker, nyForVeilederDb, korrektNyForVeileder);
+        oppfolgingRepositoryV2.settNyForVeileder(bruker, korrektNyForVeileder);
 
     }
 
@@ -144,15 +147,15 @@ public class OppfolgingService {
             return;
         }
 
-            log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
-            oppfolgingRepositoryV2.settVeileder(bruker, VeilederId.of(korrektVeileder));
+        log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
+        oppfolgingRepositoryV2.settVeileder(bruker, VeilederId.of(korrektVeileder));
 
     }
 
     private Veilarbportefoljeinfo hentVeilarbData(AktorId aktoer) throws RuntimeException, IOException {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarboppfolgingUrl, "/api/admin/hentVeilarbinfo/bruker?aktorId=" + aktoer))
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.get())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -168,7 +171,7 @@ public class OppfolgingService {
         Fnr fnr = aktorClient.hentFnr(aktorId);
         Request request = new Request.Builder()
                 .url(joinPaths(veilarboppfolgingUrl, "/api/v2/oppfolging?fnr=" + fnr))
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.get())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
