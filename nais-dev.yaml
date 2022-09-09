@@ -49,7 +49,8 @@ spec:
       enabled: true
       claims:
         extra:
-          - "NAVident"
+          - NAVident
+          - azp_name
   accessPolicy:
     inbound:
       rules:
@@ -59,6 +60,9 @@ spec:
         - application: veilarbpersonflate
           namespace: poao
           cluster: dev-gcp
+        - application: pto-admin
+          namespace: pto
+          cluster: dev-fss
   resources:
     limits:
       cpu: "4"

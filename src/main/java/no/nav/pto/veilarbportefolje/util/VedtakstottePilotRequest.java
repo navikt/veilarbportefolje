@@ -49,7 +49,7 @@ public class VedtakstottePilotRequest {
         Request request = new Request.Builder()
                 .url(UrlUtils.joinPaths(baseURL, "/api/utrulling/erUtrullet?enhetId=" + enhetId.get()))
                 .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())
-                .header("Authorization", "Bearer " + authService.getOboOrOpenAmToken(veilarbVedtakstotteApi))
+                .header("Authorization", "Bearer " + authService.getOboToken(veilarbVedtakstotteApi))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
