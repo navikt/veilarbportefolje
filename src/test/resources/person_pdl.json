@@ -108,6 +108,20 @@
             ]
           }
         }
+      ],
+      "adressebeskyttelse": [
+        {
+          "gradering": "FORTROLIG",
+          "metadata": {
+            "master": "PDL",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:53"
+              }
+            ]
+          }
+        }
       ]
     }
   }

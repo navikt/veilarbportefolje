@@ -48,6 +48,9 @@ query($ident: ID!) {
         ...metadataDetails
       }
     }
+    adressebeskyttelse {
+      gradering
+    }
     tilrettelagtKommunikasjon {
       talespraaktolk {
         spraak

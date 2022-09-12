@@ -26,6 +26,7 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private List<Statsborgerskap> statsborgerskap;
             private List<Bostedsadresse> bostedsadresse;
             private List<TilrettelagtKommunikasjon> tilrettelagtKommunikasjon;
+            private List<Adressebeskyttelse> adressebeskyttelse;
         }
 
         @Data
@@ -96,6 +97,13 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private Vegadresse vegadresse;
             private UtenlandskAdresse utenlandskAdresse;
             private UkjentBosted ukjentBosted;
+            private Metadata metadata;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Adressebeskyttelse {
+            private String gradering;
             private Metadata metadata;
         }
 

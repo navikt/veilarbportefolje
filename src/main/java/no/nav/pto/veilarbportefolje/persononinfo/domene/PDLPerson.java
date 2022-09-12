@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -35,6 +36,7 @@ public class PDLPerson {
     private String utenlandskAdresse;
     private boolean harUkjentBosted;
     private LocalDate bostedSistOppdatert;
+    private String diskresjonskode;
 
 
     public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
@@ -56,7 +58,8 @@ public class PDLPerson {
                 .setBostedSistOppdatert(hentBostedSisteOppdatert(response.getBostedsadresse()))
                 .setTalespraaktolk(hentTalespraaktolk(response.getTilrettelagtKommunikasjon()))
                 .setTegnspraaktolk(hentTegnspraaktolk(response.getTilrettelagtKommunikasjon()))
-                .setTolkBehovSistOppdatert(hentTolkBehovSistOppdatert(response.getTilrettelagtKommunikasjon()));
+                .setTolkBehovSistOppdatert(hentTolkBehovSistOppdatert(response.getTilrettelagtKommunikasjon()))
+                .setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()));
     }
 
 
@@ -190,9 +193,20 @@ public class PDLPerson {
     }
 
 
+    private static String hentDiskresjonkode(List<PdlPersonResponse.PdlPersonResponseData.Adressebeskyttelse> adressebeskyttelse) {
+        if (adressebeskyttelse == null) {
+            return null;
+        }
+        var adressebeskyttelseAktiv = adressebeskyttelse.stream().filter(x -> !x.getMetadata().isHistorisk()).toList();
+        return adressebeskyttelseAktiv.stream().findFirst()
+                .map(PdlPersonResponse.PdlPersonResponseData.Adressebeskyttelse::getGradering)
+                .map(Diskresjonskode::mapKodeTilTall)
+                .orElse(null);
+    }
+
     private static List<Statsborgerskap> hentStatsborgerskap(List<PdlPersonResponse.PdlPersonResponseData.Statsborgerskap> statsborgerskaps) {
         if (statsborgerskaps == null) {
-            return null;
+            return Collections.emptyList();
         }
         var statsborgerskapsAktiv = statsborgerskaps.stream().filter(statsborgerskap -> !statsborgerskap.getMetadata().isHistorisk()).toList();
         return statsborgerskapsAktiv.stream().map(s -> {
