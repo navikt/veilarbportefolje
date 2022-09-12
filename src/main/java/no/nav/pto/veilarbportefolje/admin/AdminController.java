@@ -195,6 +195,7 @@ public class AdminController {
         boolean erPtoAdmin = PTO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
 
         if (erPtoAdmin && erSystemBrukerFraAzure) {
+            log.info("Tilgang approved");
             return;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
