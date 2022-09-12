@@ -26,7 +26,8 @@ import java.util.stream.Collectors;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.*;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBackup;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
@@ -188,10 +189,8 @@ public class BrukerRepositoryV2 {
             bruker.setFnr(null); // Midlertidig forsikring for at brukere i q1 aldri har ekte data. Fjernes sammen med toggles, og bruk av inner join for brukerdata
         }
 
-        if (brukNOMSkjerming(unleashService)) {
-            bruker.setEgen_ansatt(rs.getBoolean(ER_SKJERMET));
-            bruker.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(SKJERMET_TIL)));
-        }
+        bruker.setEgen_ansatt(rs.getBoolean(ER_SKJERMET));
+        bruker.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(SKJERMET_TIL)));
 
         return bruker;
     }
@@ -205,9 +204,7 @@ public class BrukerRepositoryV2 {
         if (!brukPDLBrukerdata(unleashService) && isProduction().orElse(false)) {
             flettInnPersonDataFraArena(rs, bruker);
         }
-        if (!brukNOMSkjerming(unleashService)) {
-            bruker.setEgen_ansatt(rs.getBoolean(SPERRET_ANSATT_ARENA));
-        }
+        
         String formidlingsgruppekode = rs.getString(FORMIDLINGSGRUPPEKODE);
         String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
         return bruker

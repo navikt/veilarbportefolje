@@ -23,10 +23,6 @@ public class FeatureToggle {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
 
-    public static boolean brukNOMSkjerming(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.NOM_SKJERMING);
-    }
-
     public static boolean brukOppfolgingsbrukerPaPostgres(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.OPPFOLGINGS_BRUKER);
     }
