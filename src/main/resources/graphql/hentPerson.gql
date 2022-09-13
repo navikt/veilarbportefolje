@@ -55,6 +55,15 @@ query($ident: ID!) {
         ...metadataDetails
       }
     }
+    sikkerhetstiltak {
+      tiltakstype
+      beskrivelse
+      gyldigFraOgMed
+      gyldigTilOgMed
+      metadata {
+        ...metadataDetails
+      }
+    }
     tilrettelagtKommunikasjon {
       talespraaktolk {
         spraak

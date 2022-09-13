@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.Kjonn;
+import no.nav.pto.veilarbportefolje.domene.Sikkerhetstiltak;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -37,6 +38,7 @@ public class PDLPerson {
     private boolean harUkjentBosted;
     private LocalDate bostedSistOppdatert;
     private String diskresjonskode;
+    private Sikkerhetstiltak sikkerhetstiltak;
 
 
     public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
@@ -59,7 +61,8 @@ public class PDLPerson {
                 .setTalespraaktolk(hentTalespraaktolk(response.getTilrettelagtKommunikasjon()))
                 .setTegnspraaktolk(hentTegnspraaktolk(response.getTilrettelagtKommunikasjon()))
                 .setTolkBehovSistOppdatert(hentTolkBehovSistOppdatert(response.getTilrettelagtKommunikasjon()))
-                .setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()));
+                .setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()))
+                .setSikkerhetstiltak(hentSikkerhetstiltak(response.getSikkerhetstiltak()));
     }
 
 
@@ -201,6 +204,20 @@ public class PDLPerson {
         return adressebeskyttelseAktiv.stream().findFirst()
                 .map(PdlPersonResponse.PdlPersonResponseData.Adressebeskyttelse::getGradering)
                 .map(Diskresjonskode::mapKodeTilTall)
+                .orElse(null);
+    }
+
+    private static Sikkerhetstiltak hentSikkerhetstiltak(List<PdlPersonResponse.PdlPersonResponseData.Sikkerhetstiltak> sikkerhetstiltak) {
+        if (sikkerhetstiltak == null) {
+            return null;
+        }
+        var sikkerhetstiltakAktiv = sikkerhetstiltak.stream().filter(x -> !x.getMetadata().isHistorisk()).toList();
+        return sikkerhetstiltakAktiv.stream().findFirst()
+                .map(x -> {
+                    LocalDate gyldigFra = (x.getGyldigFraOgMed() != null) ? LocalDate.parse(x.getGyldigFraOgMed()) : null;
+                    LocalDate gyldigTil = (x.getGyldigTilOgMed() != null) ? LocalDate.parse(x.getGyldigTilOgMed()) : null;
+                    return new Sikkerhetstiltak(x.getTiltakstype(), x.getBeskrivelse(), gyldigFra, gyldigTil);
+                })
                 .orElse(null);
     }
 
