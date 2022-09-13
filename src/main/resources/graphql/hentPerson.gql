@@ -50,6 +50,10 @@ query($ident: ID!) {
     }
     adressebeskyttelse {
       gradering
+
+      metadata {
+        ...metadataDetails
+      }
     }
     tilrettelagtKommunikasjon {
       talespraaktolk {
