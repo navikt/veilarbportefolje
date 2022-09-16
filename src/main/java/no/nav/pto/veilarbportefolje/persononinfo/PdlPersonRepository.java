@@ -40,7 +40,9 @@ public class PdlPersonRepository {
         db.update("""
                         INSERT INTO bruker_data (freg_ident, fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato, 
                         foedeland, talespraaktolk, tegnspraaktolk, tolkBehovSistOppdatert,
-                        kommunenummer, bydelsnummer, utenlandskAdresse, bostedSistOppdatert, harUkjentBosted, diskresjonkode)
+                        kommunenummer, bydelsnummer, utenlandskAdresse, bostedSistOppdatert, harUkjentBosted, diskresjonkode,
+                        sikkerhetstiltak_type, sikkerhetstiltak_beskrivelse, sikkerhetstiltak_gyldigfra, 
+                        sikkerhetstiltak_gyldigtil)
                         values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                         on conflict (freg_ident)
                         do update set (fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato, 
