@@ -140,7 +140,7 @@ public class PDLPerson {
         var bostedsadresses = response.stream().filter(bostedsadresse -> !bostedsadresse.getMetadata().isHistorisk()).toList();
         return bostedsadresses.stream().findFirst()
                 .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getUtenlandskAdresse)
-                .map(x -> x.getLandkode())
+                .map(addresse -> addresse.getLandkode())
                 .orElse(null);
     }
 
@@ -197,7 +197,7 @@ public class PDLPerson {
         }
         return tilrettelagtKommunikasjonAktiv.stream().findFirst().get().getMetadata().getEndringer()
                 .stream()
-                .map(x -> DateUtils.toLocalDateOrNull(x.getRegistrert()))
+                .map(endringer -> DateUtils.toLocalDateOrNull(endringer.getRegistrert()))
                 .filter(Objects::nonNull)
                 .max(LocalDate::compareTo)
                 .get();
@@ -210,9 +210,9 @@ public class PDLPerson {
         var bostedsadresses = response.stream().filter(bostedsadresse -> !bostedsadresse.getMetadata().isHistorisk()).toList();
 
         return bostedsadresses.stream().findFirst()
-                .map(x -> x.getMetadata().getEndringer())
-                .map(x -> x.get(0))
-                .map(x -> DateUtils.toLocalDateOrNull(x.getRegistrert()))
+                .map(bostedsadresse -> bostedsadresse.getMetadata().getEndringer())
+                .map(endringers -> endringers.get(0))
+                .map(endringer -> DateUtils.toLocalDateOrNull(endringer.getRegistrert()))
                 .orElse(null);
     }
 

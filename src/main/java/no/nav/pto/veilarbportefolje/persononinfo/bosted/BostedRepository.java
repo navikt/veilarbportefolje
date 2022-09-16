@@ -20,9 +20,9 @@ public class BostedRepository {
                             SELECT DISTINCT bydelsnummer FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ?  
                         """, enhetId)
                 .stream()
-                .filter(x -> x.get("bydelsnummer") != null)
-                .map(x -> String.valueOf(x.get("bydelsnummer")))
-                .filter(x -> !x.isEmpty())
+                .filter(rs -> rs.get("bydelsnummer") != null)
+                .map(rs -> String.valueOf(rs.get("bydelsnummer")))
+                .filter(rs -> !rs.isEmpty())
                 .toList();
     }
 
@@ -31,9 +31,9 @@ public class BostedRepository {
                             SELECT DISTINCT kommunenummer FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ?  
                         """, enhetId)
                 .stream()
-                .filter(x -> x.get("kommunenummer") != null)
-                .map(x -> String.valueOf(x.get("kommunenummer")))
-                .filter(x -> !x.isEmpty())
+                .filter(rs -> rs.get("kommunenummer") != null)
+                .map(rs -> String.valueOf(rs.get("kommunenummer")))
+                .filter(rs -> !rs.isEmpty())
                 .toList();
     }
 }

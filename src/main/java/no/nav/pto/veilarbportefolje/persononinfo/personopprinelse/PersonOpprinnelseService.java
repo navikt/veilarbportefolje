@@ -41,7 +41,7 @@ public class PersonOpprinnelseService {
         List<TolkSpraak> tolkSpraak = new ArrayList<>();
         personOpprinnelseRepository.hentTolkSpraak(enhetId)
                 .stream()
-                .filter(x -> x != null && !x.isEmpty())
+                .filter(tolkSpraakEnhet -> tolkSpraakEnhet != null && !tolkSpraakEnhet.isEmpty())
                 .sorted()
                 .forEach(code -> {
                     String spraak = kodeverkService.getBeskrivelseForSpraakKode(code);

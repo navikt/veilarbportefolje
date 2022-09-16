@@ -26,16 +26,16 @@ public class Landgruppe {
 
     private Landgruppe() {
         List<String> landGruppe0 = getLandgruppeFromFile(0);
-        landGruppe0.forEach(x -> landGruppeMap.put(x, "0"));
+        landGruppe0.forEach(landgruppe -> landGruppeMap.put(landgruppe, "0"));
 
         List<String> landGruppe1 = getLandgruppeFromFile(1);
-        landGruppe1.forEach(x -> landGruppeMap.put(x, "1"));
+        landGruppe1.forEach(landgruppe -> landGruppeMap.put(landgruppe, "1"));
 
         List<String> landGruppe2 = getLandgruppeFromFile(2);
-        landGruppe2.forEach(x -> landGruppeMap.put(x, "2"));
+        landGruppe2.forEach(landgruppe -> landGruppeMap.put(landgruppe, "2"));
 
         List<String> landGruppe3 = getLandgruppeFromFile(3);
-        landGruppe3.forEach(x -> landGruppeMap.put(x, "3"));
+        landGruppe3.forEach(landgruppe -> landGruppeMap.put(landgruppe, "3"));
     }
 
     public String getLandgruppeForLandKode(String countryCode) {

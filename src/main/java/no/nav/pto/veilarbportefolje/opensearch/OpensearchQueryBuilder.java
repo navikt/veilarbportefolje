@@ -160,24 +160,24 @@ public class OpensearchQueryBuilder {
             BoolQueryBuilder tolkBehovSubquery = boolQuery();
 
             if (filtervalg.harTalespraaktolkFilter()) {
-                filtervalg.getTolkBehovSpraak().stream().forEach(
-                        x -> tolkBehovSubquery.should(matchQuery("talespraaktolk", x))
+                filtervalg.getTolkBehovSpraak().forEach(
+                        tolkbehovSpraak -> tolkBehovSubquery.should(matchQuery("talespraaktolk", tolkbehovSpraak))
                 );
                 tolkbehovSelected = true;
             }
             if (filtervalg.harTegnspraakFilter()) {
-                filtervalg.getTolkBehovSpraak().forEach(x ->
-                        tolkBehovSubquery.should(matchQuery("tegnspraaktolk", x))
+                filtervalg.getTolkBehovSpraak().forEach(tolkbehovSpraak ->
+                        tolkBehovSubquery.should(matchQuery("tegnspraaktolk", tolkbehovSpraak))
                 );
                 tolkbehovSelected = true;
             }
 
             if (!tolkbehovSelected) {
-                filtervalg.getTolkBehovSpraak().stream().forEach(
-                        x -> tolkBehovSubquery.should(matchQuery("talespraaktolk", x))
+                filtervalg.getTolkBehovSpraak().forEach(
+                        tolkbehovSpraak -> tolkBehovSubquery.should(matchQuery("talespraaktolk", tolkbehovSpraak))
                 );
-                filtervalg.getTolkBehovSpraak().forEach(x ->
-                        tolkBehovSubquery.should(matchQuery("tegnspraaktolk", x))
+                filtervalg.getTolkBehovSpraak().forEach(tolkbehovSpraak ->
+                        tolkBehovSubquery.should(matchQuery("tegnspraaktolk", tolkbehovSpraak))
                 );
             }
             queryBuilder.must(tolkBehovSubquery);
@@ -185,9 +185,9 @@ public class OpensearchQueryBuilder {
 
         if (filtervalg.harBostedFilter()) {
             BoolQueryBuilder bostedSubquery = boolQuery();
-            filtervalg.getGeografiskBosted().forEach(x -> {
-                        bostedSubquery.should(matchQuery("kommunenummer", x));
-                        bostedSubquery.should(matchQuery("bydelsnummer", x));
+            filtervalg.getGeografiskBosted().forEach(geografiskBosted -> {
+                        bostedSubquery.should(matchQuery("kommunenummer", geografiskBosted));
+                        bostedSubquery.should(matchQuery("bydelsnummer", geografiskBosted));
                     }
             );
             queryBuilder.must(bostedSubquery);
