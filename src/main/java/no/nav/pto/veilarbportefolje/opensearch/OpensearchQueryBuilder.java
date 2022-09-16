@@ -185,7 +185,7 @@ public class OpensearchQueryBuilder {
 
         if (filtervalg.harBostedFilter()) {
             BoolQueryBuilder bostedSubquery = boolQuery();
-            filtervalg.getGeografiskBosted().forEach(geografiskBosted -> {
+            filtervalg.getGeografiskBosted().stream().forEach(geografiskBosted -> {
                         bostedSubquery.should(matchQuery("kommunenummer", geografiskBosted));
                         bostedSubquery.should(matchQuery("bydelsnummer", geografiskBosted));
                     }
