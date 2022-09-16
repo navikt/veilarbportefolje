@@ -1495,7 +1495,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setKommunenummer("10");
+                .setKommunenummer("10")
+                .setBydelsnummer("1222");
 
         var bruker2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
