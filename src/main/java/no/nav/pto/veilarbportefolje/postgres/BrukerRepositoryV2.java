@@ -57,6 +57,7 @@ public class BrukerRepositoryV2 {
                                bd.etternavn as etternavn_pdl, bd.mellomnavn as mellomnavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
                                bd.foedeland, bd.innflyttingTilNorgeFraLand, bd.angittFlyttedato,
                                bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert,
+                               bd.bydelsnummer, bd.kommunenummer, bd.bostedsistoppdatert, bd.utenlandskadresse,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
                                BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
@@ -267,7 +268,11 @@ public class BrukerRepositoryV2 {
                 .setTegnspraaktolk(rs.getString("tegnspraaktolk"))
                 .setTolkBehovSistOppdatert(DateUtils.toLocalDateOrNull(rs.getString("tolkBehovSistOppdatert")))
                 .setInnflyttingTilNorgeFraLand((innflyttingTilNorgeFraLandFullNavn != null && !innflyttingTilNorgeFraLandFullNavn.isEmpty()) ? innflyttingTilNorgeFraLandFullNavn : null)
-                .setLandgruppe((landGruppe != null && !landGruppe.isEmpty()) ? landGruppe : null);
+                .setLandgruppe((landGruppe != null && !landGruppe.isEmpty()) ? landGruppe : null)
+                .setBydelsnummer(rs.getString("bydelsnummer"))
+                .setKommunenummer(rs.getString("kommunenummer"))
+                .setUtenlandskAdresse(rs.getString("utenlandskAdresse"))
+                .setBostedSistOppdatert(toLocalDateOrNull(rs.getString("bostedSistOppdatert")));
     }
 
     @SneakyThrows

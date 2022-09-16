@@ -31,7 +31,11 @@ public class AuthUtils {
                 .setTegnspraaktolk(null)
                 .setTalespraaktolk(null)
                 .setHovedStatsborgerskap(null)
-                .setHarFlereStatsborgerskap(false);
+                .setHarFlereStatsborgerskap(false)
+                .setBostedBydel(null)
+                .setBostedKommune(null)
+                .setHarUtelandsAddresse(false)
+                .setBostedSistOppdatert(null);
     }
 
     static void test(String navn, Object data, boolean matches) {

@@ -24,6 +24,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.persononinfo.bosted.BostedService;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +62,7 @@ public class EnhetControllerTest {
         authContextHolder = AuthContextHolderThreadLocal.instance();
 
         AuthService authService = new AuthService(pep, tilgangClient, mock(AzureAdOnBehalfOfTokenClient.class));
-        enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(PersonOpprinnelseService.class));
+        enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(PersonOpprinnelseService.class), mock(BostedService.class));
     }
 
     @Test
@@ -107,7 +108,7 @@ public class EnhetControllerTest {
 
     @Test(expected = ResponseStatusException.class)
     public void skal_ikke_hente_noe_hvis_mangler_tilgang() {
-        when(tilgangClient.harVeilederTilgangTilModia(anyString())).thenReturn(new Decision.Deny("",""));
+        when(tilgangClient.harVeilederTilgangTilModia(anyString())).thenReturn(new Decision.Deny("", ""));
         authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, generateMockJWT()),
                 () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
