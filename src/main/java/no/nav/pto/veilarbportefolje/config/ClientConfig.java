@@ -11,7 +11,6 @@ import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.rest.client.RestClient;
-import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
@@ -54,24 +53,13 @@ public class ClientConfig {
     }
 
     @Bean
-    public AktorClient aktorClient(SystemUserTokenProvider systemUserTokenProvider) {
-        AktorOppslagClient aktorOppslagClient = new PdlAktorOppslagClient(
-                internalDevOrProdPdlIngress(),
-                systemUserTokenProvider::getSystemUserToken,
-                systemUserTokenProvider::getSystemUserToken
-        );
-
-        return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient));
-    }
-
-    @Bean
     public MetricsClient metricsClient() {
         return new InfluxClient();
     }
 
     @Bean
-    public VeilarbVeilederClient veilarbVeilederClient(AuthService authService, EnvironmentProperties environmentProperties) {
-        return new VeilarbVeilederClient(authService, environmentProperties);
+    public VeilarbVeilederClient veilarbVeilederClient(AuthService authService) {
+        return new VeilarbVeilederClient(authService);
     }
 
     @Bean
@@ -91,6 +79,13 @@ public class ClientConfig {
     @Bean
     public HttpClient httpClient() {
         return HttpClient.newBuilder().build();
+    }
+
+    @Bean
+    public AktorClient aktorClient(PdlClient pdlClient) {
+        AktorOppslagClient aktorOppslagClient = new PdlAktorOppslagClient(pdlClient);
+
+        return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient));
     }
 
     @Bean

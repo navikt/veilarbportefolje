@@ -13,8 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukNOMSkjerming;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -47,11 +45,9 @@ public class SkjermingService {
 
         skjermingRepository.settSkjermingPeriode(fnr, DateUtils.toTimestamp(skjermetFra), DateUtils.toTimestamp(skjermetTil));
 
-        if (brukNOMSkjerming(unleashService)) {
-            brukerService.hentAktorId(fnr).ifPresent(aktorId ->
-                    opensearchIndexerV2.updateSkjermetTil(aktorId, skjermetTil)
-            );
-        }
+        brukerService.hentAktorId(fnr).ifPresent(aktorId ->
+                opensearchIndexerV2.updateSkjermetTil(aktorId, skjermetTil)
+        );
     }
 
     public void behandleSkjermingStatus(ConsumerRecord<String, String> kafkaMelding) {
@@ -64,10 +60,8 @@ public class SkjermingService {
             skjermingRepository.deleteSkjermingData(fnr);
         }
 
-        if (brukNOMSkjerming(unleashService)) {
-            brukerService.hentAktorId(fnr).ifPresent(aktorId ->
-                    opensearchIndexerV2.updateErSkjermet(aktorId, erSkjermet)
-            );
-        }
+        brukerService.hentAktorId(fnr).ifPresent(aktorId ->
+                opensearchIndexerV2.updateErSkjermet(aktorId, erSkjermet)
+        );
     }
 }

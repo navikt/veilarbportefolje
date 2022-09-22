@@ -1,0 +1,2 @@
+ALTER TABLE BRUKER_DATA
+    ADD diskresjonkode VARCHAR(3);

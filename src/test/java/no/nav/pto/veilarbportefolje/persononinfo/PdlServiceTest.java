@@ -61,7 +61,7 @@ public class PdlServiceTest {
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
                 new PdlPersonRepository(db, db),
-                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM"))
+                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
         );
     }
 
