@@ -78,8 +78,7 @@ public class OpensearchQueryBuilder {
         }
 
         if (filtervalg.harKjonnfilter()) {
-            BoolQueryBuilder subQuery = boolQuery();
-            queryBuilder.must(subQuery.should(matchQuery("kjonn", filtervalg.kjonn.name())));
+            queryBuilder.must(matchQuery("kjonn", filtervalg.kjonn.name()));
         }
 
         if (filtervalg.harCvFilter()) {
@@ -94,6 +93,9 @@ public class OpensearchQueryBuilder {
             }
         }
 
+        if (filtervalg.harStillingFraNavFilter()) {
+                queryBuilder.must(matchQuery("neste_cv_kan_deles_status", "JA"));
+        }
 
         if (filtervalg.harAktivitetFilter()) {
             byggAktivitetFilterQuery(filtervalg, queryBuilder);
@@ -465,6 +467,7 @@ public class OpensearchQueryBuilder {
             BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
             filtervalgsListe.forEach(filtervalg -> boolQueryBuilder.should(matchQuery(matchQueryString, filtervalg)));
             return queryBuilder.filter(boolQueryBuilder);
+            //SPM: should
         }
 
         return queryBuilder;

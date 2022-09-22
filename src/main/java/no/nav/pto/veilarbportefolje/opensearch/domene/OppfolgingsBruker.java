@@ -105,6 +105,6 @@ public class OppfolgingsBruker {
     boolean harFlereStatsborgerskap;
     Statsborgerskap hovedStatsborgerskap;
 
-    String nesteCvKanDelesStatus;
-    LocalDate nesteSvarfristStillingFraNav;
+    String neste_cv_kan_deles_status;
+    LocalDate neste_svarfrist_stilling_fra_nav;
 }

@@ -125,6 +125,71 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     }
 
     @Test
+    public void filtrerBrukerePaStillingFraNAV() {
+        NavKontor navKontor = randomNavKontor();
+        AktorId aktoer1 = randomAktorId();
+        AktorId aktoer2 = randomAktorId();
+        VeilederId veileder = randomVeilederId();
+        testDataClient.setupBruker(aktoer1, navKontor, veileder, ZonedDateTime.now());
+        testDataClient.setupBruker(aktoer2, navKontor, veileder, ZonedDateTime.now());
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer1.toString())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.STILLING_FRA_NAV)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(null)
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setVersion(1L)
+                .setAvtalt(false)
+                .setStillingFraNavData(
+                        new KafkaAktivitetMelding.StillingFraNAV()
+                                .setCvKanDelesStatus(KafkaAktivitetMelding.CvKanDelesStatus.JA)
+                                .setSvarfrist("2044-02-03T00:00:00+02:00"))
+        );
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("4")
+                .setAktorId(aktoer2.toString())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(null)
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setVersion(1L)
+                .setAvtalt(true)
+        );
+        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
+            BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                    navKontor.getValue(),
+                    empty(),
+                    "asc",
+                    "ikke_satt",
+                    new Filtervalg().setFerdigfilterListe(List.of(I_AKTIVITET)),
+                    null,
+                    null);
+
+            assertThat(responseBrukere.getAntall()).isEqualTo(2);
+        });
+
+
+
+        BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                navKontor.getValue(),
+                empty(),
+                "asc",
+                "ikke_satt",
+                new Filtervalg().setStillingFraNav(List.of("JA")).setFerdigfilterListe(new ArrayList<>()),
+                null,
+                null);
+
+        assertThat(responseBrukere.getAntall()).isEqualTo(1);
+        assertThat(responseBrukere.getBrukere().get(0).getNesteCvKanDelesStatus()).isEqualTo("JA");
+        assertThat(responseBrukere.getBrukere().get(0).getNesteSvarfristCvStillingFraNav()).isEqualTo(LocalDate.parse("2044-02-03"));
+
+
+    }
+
+    @Test
     public void hentMoteplan() {
         NavKontor navKontor = randomNavKontor();
         VeilederId veileder = randomVeilederId();
