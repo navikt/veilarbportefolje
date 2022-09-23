@@ -18,6 +18,7 @@ jobs:
           image_name: ghcr.io/${{ github.repository }}/veilarbportefolje
           tag: ${{ github.sha }}
           actor: ${{ github.actor }}
+        secrets: inherit
 
 
 
