@@ -11,7 +11,7 @@ jobs:
         with:
           repository: navikt/obo-github-workflows
           token: ${{ secrets.TOKEN}}
-          path: ./.github/workflows/reusable
+          path: ./.github/workflows/
   run-felles-workflow:
     name: Run felles workflow
     uses: ./.github/workflows/reusable-backend-build-deploy-feature-branch.yaml
