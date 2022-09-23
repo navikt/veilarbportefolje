@@ -4,11 +4,22 @@ on:
 
 jobs:
   obo-felles-feature-branch-to-dev:
-    uses: navikt/obo-felles/.github/workflows/backend-build-deploy-feature-branch.yaml@main
-    with:
-      image_name: ghcr.io/${{ github.repository }}/veilarbportefolje
-      tag: ${{ github.sha }}
-    secrets:
-      registry_username: ${{ github.actor }}
-      registry_password: ${{ secrets.GITHUB_TOKEN }}
-      nais_deploy_key: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+    runs-on: ubuntu-latest
+    name: OBO felles
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: navikt/obo-github-workflows
+          token: ${{ secrets.TOKEN}}
+          path: reusable-workflows
+      - name: Run reusable workflow
+        uses: ./reusable-workflows/backend-build-deploy-feature-branch.yaml
+        with:
+          image_name: ghcr.io/${{ github.repository }}/veilarbportefolje
+          tag: ${{ github.sha }}
+        secrets:
+          registry_username: ${{ github.actor }}
+          registry_password: ${{ secrets.GITHUB_TOKEN }}
+          nais_deploy_key: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+
+
