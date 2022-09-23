@@ -14,7 +14,7 @@ jobs:
           path: ./.github/workflows/reusable
   run-felles-workflow:
     name: Run felles workflow
-    uses: ./.github/workflows/reusable/backend-build-deploy-feature-branch.yaml
+    uses: ./.github/workflows/reusable-backend-build-deploy-feature-branch.yaml
     with:
       image_name: ghcr.io/${{ github.repository }}/veilarbportefolje
       tag: ${{ github.sha }}
