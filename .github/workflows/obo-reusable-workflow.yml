@@ -1,11 +1,9 @@
 name: Test reusable workflow
-
 on:
   workflow_dispatch:
 
 jobs:
-
-  obo_feature_branch_to_dev:
+  obo-felles-feature-branch-to-dev:
     uses: obo-felles/.github/workflows/backend-build-deploy-feature-branch.yaml@main
     with:
       image_name: ghcr.io/${{ github.repository }}/veilarbportefolje
