@@ -26,6 +26,6 @@ public class Siste14aVedtakKafkaDTO {
     }
 
     public enum Hovedmal {
-        SKAFFE_ARBEID, BEHOLDE_ARBEID, OKE_DELTAKELSE;
+        SKAFFE_ARBEID, BEHOLDE_ARBEID, OKE_DELTAKELSE
     }
 }

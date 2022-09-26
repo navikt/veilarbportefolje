@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 public class PostgresContainer {
 
     private final static String DB_IMAGE = "postgres:11.5";
-    private final static String DB_USER = "postgres";
+    public final static String DB_USER = "postgres";
     private final static int DB_PORT = 5432;
 
     private final GenericContainer container;
@@ -43,7 +43,7 @@ public class PostgresContainer {
         return new JdbcTemplate(createDataSource());
     }
 
-    private String getDbContainerUrl() {
+    public String getDbContainerUrl() {
         String containerIp = container.getContainerIpAddress();
         String containerPort = container.getFirstMappedPort().toString();
         return String.format("jdbc:postgresql://%s:%s/postgres", containerIp, containerPort);

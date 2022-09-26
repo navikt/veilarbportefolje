@@ -47,6 +47,7 @@ public class OpensearchIndexer {
             postgresOpensearchMapper.flettInnAktivitetsData(List.of(bruker));
             postgresOpensearchMapper.flettInnSisteEndringerData(List.of(bruker));
             postgresOpensearchMapper.flettInnStatsborgerskapData(List.of(bruker));
+            postgresOpensearchMapper.flettInnInnsatsbehov(List.of(bruker));
 
             syncronIndekseringsRequest(bruker);
         } else {
@@ -112,6 +113,7 @@ public class OpensearchIndexer {
         postgresOpensearchMapper.flettInnAktivitetsData(brukere);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
         postgresOpensearchMapper.flettInnStatsborgerskapData(brukere);
+        postgresOpensearchMapper.flettInnInnsatsbehov(brukere);
         if(brukere.isEmpty()){
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
             return;
@@ -121,7 +123,7 @@ public class OpensearchIndexer {
 
     public void dryrunAvPostgresTilOpensearchMapping(List<AktorId> brukereUnderOppfolging) {
         partition(brukereUnderOppfolging, BATCH_SIZE).forEach(bolk -> {
-            List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(bolk, true);
+            brukerRepositoryV2.hentOppfolgingsBrukere(bolk, true);
         });
     }
 }
