@@ -1591,7 +1591,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(3);
-        assertThat(response.getBrukere().stream().anyMatch(x -> x.getBostedKommune().equalsIgnoreCase("10")));
+        assertThat(response.getBrukere().stream().filter(x -> x.getBostedKommune().equalsIgnoreCase("10")).count()).isEqualTo(2);
         assertThat(response.getBrukere().stream().anyMatch(x -> x.getBostedBydel().equalsIgnoreCase("1233")));
     }
 
