@@ -39,7 +39,7 @@ public class OpensearchIndexer {
     public void indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;
         bruker = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
-        bruker.ifPresent(this::indekserBruker);
+        bruker.ifPresentOrElse(this::indekserBruker, () -> opensearchIndexerV2.slettDokumenter(List.of(aktoerId)));
     }
 
     private void indekserBruker(OppfolgingsBruker bruker) {
