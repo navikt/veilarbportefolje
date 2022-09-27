@@ -94,6 +94,7 @@ public class KafkaConfigCommon {
         SIST_LEST("aapen-fo-veilederHarLestAktivitetsplanen-v1"),
         ENDRING_PAA_OPPFOLGINGSBRUKER("pto.endring-paa-oppfolgingsbruker-v2"),
 
+        CV_ENDRET_V2("teampam.cv-endret-ekstern-v2"),
         CV_ENDRET_AIVEN("teampam.cv-endret-avro-v1"),
         CV_TOPIC("teampam.samtykke-status-1"),
         OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
@@ -275,6 +276,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         new AivenAvroDeserializer<Melding>().getDeserializer(),
                                         cvService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.CV_ENDRET_V2.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new AivenAvroDeserializer<Melding>().getDeserializer(),
+                                        cvService::behandleKafkaMeldingLogikkV2
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, VeilederTilordnetDTO>()
                                 .withLogging()
