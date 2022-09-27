@@ -145,7 +145,7 @@
         <dependency>
             <groupId>com.github.navikt</groupId>
             <artifactId>pto-schema</artifactId>
-            <version>1.2021.10.20_12.32-2c14462ba05f</version>
+            <version>d92ae677dd4e6f9b9ed6bafc062d53df89147a7a</version>
         </dependency>
 
         <!-- Funksjonell programmering-->
@@ -334,6 +334,10 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <repositories>
+                <repository>
+                    <id>jitpack</id>
+                    <url>https://jitpack.io</url>
+                </repository>
                 <!-- Legger til central eksplisitt for prioritet over jitpack -->
                 <repository>
                     <id>central</id>
@@ -342,10 +346,6 @@
                 <repository>
                     <id>confluent</id>
                     <url>https://packages.confluent.io/maven</url>
-                </repository>
-                <repository>
-                    <id>jitpack</id>
-                    <url>https://jitpack.io</url>
                 </repository>
             </repositories>
         </profile>

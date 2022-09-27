@@ -277,14 +277,14 @@ public class KafkaConfigCommon {
                                         new AivenAvroDeserializer<Melding>().getDeserializer(),
                                         cvService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, no.nav.arbeid.cv.avro.v2.Melding>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.CV_ENDRET_V2.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new AivenAvroDeserializer<Melding>().getDeserializer(),
+                                        new AivenAvroDeserializer<no.nav.arbeid.cv.avro.v2.Melding>().getDeserializer(),
                                         cvService::behandleKafkaMeldingLogikkV2
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, VeilederTilordnetDTO>()

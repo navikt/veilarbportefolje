@@ -31,7 +31,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
         opensearchIndexerV2.updateCvEksistere(aktoerId, cvEksisterer);
     }
 
-    public void behandleKafkaMeldingLogikkV2(ConsumerRecord<String, Melding> kafkarecord) {
+    public void behandleKafkaMeldingLogikkV2(ConsumerRecord<String, no.nav.arbeid.cv.avro.v2.Melding> kafkarecord) {
         log.info(
                 "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
                 kafkarecord.key(),
@@ -40,7 +40,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
                 kafkarecord.topic()
         );
         var kafkaMelding = kafkarecord.value();
-        AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
+        AktorId aktoerId = AktorId.of(String.valueOf(kafkaMelding.getAktoerId()));
         boolean cvEksisterer = cvEksistere(kafkaMelding);
 
         cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
@@ -74,5 +74,10 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
 
     private boolean cvEksistere(Melding melding) {
         return melding.getMeldingstype() == Meldingstype.ENDRE || melding.getMeldingstype() == Meldingstype.OPPRETT;
+    }
+
+    private boolean cvEksistere(no.nav.arbeid.cv.avro.v2.Melding melding) {
+        return melding.getMeldingstype() == no.nav.arbeid.cv.avro.v2.Meldingstype.ENDRE
+                || melding.getMeldingstype() == no.nav.arbeid.cv.avro.v2.Meldingstype.OPPRETT;
     }
 }
