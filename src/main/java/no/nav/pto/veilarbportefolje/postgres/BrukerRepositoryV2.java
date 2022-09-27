@@ -26,8 +26,7 @@ import java.util.stream.Collectors;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBackup;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.*;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
@@ -205,7 +204,7 @@ public class BrukerRepositoryV2 {
         if (!brukPDLBrukerdata(unleashService) && isProduction().orElse(false)) {
             flettInnPersonDataFraArena(rs, bruker);
         }
-        
+
         String formidlingsgruppekode = rs.getString(FORMIDLINGSGRUPPEKODE);
         String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
         return bruker
@@ -268,11 +267,15 @@ public class BrukerRepositoryV2 {
                 .setTegnspraaktolk(rs.getString("tegnspraaktolk"))
                 .setTolkBehovSistOppdatert(DateUtils.toLocalDateOrNull(rs.getString("tolkBehovSistOppdatert")))
                 .setInnflyttingTilNorgeFraLand((innflyttingTilNorgeFraLandFullNavn != null && !innflyttingTilNorgeFraLandFullNavn.isEmpty()) ? innflyttingTilNorgeFraLandFullNavn : null)
-                .setLandgruppe((landGruppe != null && !landGruppe.isEmpty()) ? landGruppe : null)
-                .setBydelsnummer(rs.getString("bydelsnummer"))
-                .setKommunenummer(rs.getString("kommunenummer"))
-                .setUtenlandskAdresse(rs.getString("utenlandskAdresse"))
-                .setBostedSistOppdatert(toLocalDateOrNull(rs.getString("bostedSistOppdatert")));
+                .setLandgruppe((landGruppe != null && !landGruppe.isEmpty()) ? landGruppe : null);
+
+        if (isBostedFilterEnabled(unleashService)) {
+            bruker.
+                    setBydelsnummer(rs.getString("bydelsnummer"))
+                    .setKommunenummer(rs.getString("kommunenummer"))
+                    .setUtenlandskAdresse(rs.getString("utenlandskAdresse"))
+                    .setBostedSistOppdatert(toLocalDateOrNull(rs.getString("bostedSistOppdatert")));
+        }
     }
 
     @SneakyThrows
