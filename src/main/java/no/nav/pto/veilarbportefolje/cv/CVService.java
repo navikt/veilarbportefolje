@@ -23,7 +23,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
 
     @Override
     public void behandleKafkaMeldingLogikk(Melding kafkaMelding) {
-        AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
+        AktorId aktoerId = AktorId.of(String.valueOf(kafkaMelding.getAktoerId()));
         boolean cvEksisterer = cvEksistere(kafkaMelding);
         log.info("Oppdater CV eksisterer for bruker: {}, eksisterer: {}", aktoerId.get(), cvEksisterer);
 
@@ -31,7 +31,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
         opensearchIndexerV2.updateCvEksistere(aktoerId, cvEksisterer);
     }
 
-    public void behandleKafkaMeldingLogikkV2(ConsumerRecord<String, Melding> kafkarecord) {
+    public void behandleKafkaMeldingLogikkRewind(ConsumerRecord<String, Melding> kafkarecord) {
         log.info(
                 "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
                 kafkarecord.key(),
@@ -40,7 +40,7 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
                 kafkarecord.topic()
         );
         var kafkaMelding = kafkarecord.value();
-        AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
+        AktorId aktoerId = AktorId.of(String.valueOf(kafkaMelding.getAktoerId()));
         boolean cvEksisterer = cvEksistere(kafkaMelding);
 
         cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
