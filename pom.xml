@@ -328,10 +328,6 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <repositories>
-                <repository>
-                    <id>jitpack</id>
-                    <url>https://jitpack.io</url>
-                </repository>
                 <!-- Legger til central eksplisitt for prioritet over jitpack -->
                 <repository>
                     <id>central</id>
@@ -340,6 +336,10 @@
                 <repository>
                     <id>confluent</id>
                     <url>https://packages.confluent.io/maven</url>
+                </repository>
+                <repository>
+                    <id>jitpack</id>
+                    <url>https://jitpack.io</url>
                 </repository>
             </repositories>
         </profile>
