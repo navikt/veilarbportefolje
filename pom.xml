@@ -138,14 +138,8 @@
         </dependency>
         <dependency>
             <groupId>com.github.navikt</groupId>
-            <artifactId>pam-cv-avro-cvmeldinger</artifactId>
-            <version>51</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.navikt</groupId>
             <artifactId>pto-schema</artifactId>
-            <version>d92ae677dd4e6f9b9ed6bafc062d53df89147a7a</version>
+            <version>1.2022.09.28_12.06-c4c0f289872c</version>
         </dependency>
 
         <!-- Funksjonell programmering-->
