@@ -377,8 +377,7 @@ public class KafkaConfigCommon {
         KafkaOnpremUnleash kafkaOnpremUnleash = new KafkaOnpremUnleash(unleashService);
 
         Properties aivenConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_CONFIG);
-        aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
-        //aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
+        aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         consumerClientAiven = topicConfigsAiven.stream()
                 .map(config ->
