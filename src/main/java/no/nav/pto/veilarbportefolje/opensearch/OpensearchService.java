@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.apache.commons.lang3.StringUtils;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.action.search.SearchResponse;
@@ -33,7 +33,7 @@ import static org.opensearch.index.query.QueryBuilders.*;
 public class OpensearchService {
     private final RestHighLevelClient restHighLevelClient;
     private final VeilarbVeilederClient veilarbVeilederClient;
-    private final VedtakstottePilotRequest vedtakstottePilotRequest;
+    private final VedtaksstotteClient vedtaksstotteClient;
     private final IndexName indexName;
     private final UnleashService unleashService;
 
@@ -156,6 +156,6 @@ public class OpensearchService {
     }
 
     private boolean erVedtakstottePilotPa(EnhetId enhetId) {
-        return vedtakstottePilotRequest.erVedtakstottePilotPa(enhetId);
+        return vedtaksstotteClient.erVedtakstottePilotPa(enhetId);
     }
 }
