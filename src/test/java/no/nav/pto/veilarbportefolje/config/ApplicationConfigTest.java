@@ -70,7 +70,7 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
-import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
 import org.opensearch.client.RestHighLevelClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -178,10 +178,10 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public VedtakstottePilotRequest vedtakstottePilotRequest() {
-        VedtakstottePilotRequest vedtakstottePilotRequest = mock(VedtakstottePilotRequest.class);
-        when(vedtakstottePilotRequest.erVedtakstottePilotPa(any())).thenReturn(true);
-        return vedtakstottePilotRequest;
+    public VedtaksstotteClient vedtaksstotteClient() {
+        VedtaksstotteClient vedtaksstotteClient = mock(VedtaksstotteClient.class);
+        when(vedtaksstotteClient.erVedtakstottePilotPa(any())).thenReturn(true);
+        return vedtaksstotteClient;
     }
 
     @Bean

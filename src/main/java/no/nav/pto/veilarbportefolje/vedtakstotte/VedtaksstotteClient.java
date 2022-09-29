@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.util;
+package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -19,14 +19,14 @@ import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.rest.client.RestUtils.throwIfNotSuccessful;
 
-public class VedtakstottePilotRequest {
+public class VedtaksstotteClient {
     private final DownstreamApi veilarbVedtakstotteApi;
     private final AuthService authService;
     private final String baseURL;
     private final OkHttpClient client;
     private final Cache<EnhetId, Boolean> hentVedtakstotteCache;
 
-    public VedtakstottePilotRequest(AuthService authService) {
+    public VedtaksstotteClient(AuthService authService) {
         this.authService = authService;
         this.veilarbVedtakstotteApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbvedtaksstotte");
         this.baseURL = UrlUtils.createServiceUrl("veilarbvedtaksstotte", "pto", true);
