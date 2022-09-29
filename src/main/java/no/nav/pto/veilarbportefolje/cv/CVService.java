@@ -31,21 +31,6 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
         opensearchIndexerV2.updateCvEksistere(aktoerId, cvEksisterer);
     }
 
-    public void behandleKafkaMeldingLogikkRewind(ConsumerRecord<String, Melding> kafkarecord) {
-        log.info(
-                "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
-                kafkarecord.key(),
-                kafkarecord.offset(),
-                kafkarecord.partition(),
-                kafkarecord.topic()
-        );
-        var kafkaMelding = kafkarecord.value();
-        AktorId aktoerId = AktorId.of(String.valueOf(kafkaMelding.getAktoerId()));
-        boolean cvEksisterer = cvEksistere(kafkaMelding);
-
-        cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
-    }
-
     public void behandleKafkaMeldingCVHjemmel(ConsumerRecord<String, CVMelding> kafkaMelding) {
         log.info(
                 "Behandler kafka-melding med key {} og offset {} på topic {}",

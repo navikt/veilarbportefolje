@@ -38,15 +38,7 @@ import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
@@ -80,7 +72,6 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 @Configuration
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
-    public final static String CLIENT_ID_CONFIG_CV_REWIND = "veilarbportefolje-consumer-rewind-cv";
     public static final String KAFKA_BROKERS = EnvironmentUtils.getRequiredProperty("KAFKA_BROKERS_URL");
     private static final Credentials serviceUserCredentials = getCredentials("service_user");
 
@@ -124,7 +115,6 @@ public class KafkaConfigCommon {
 
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final KafkaConsumerClient consumerClientAivenSiste14a; // Midlertidig adskilt for egen toggle
-    private final KafkaConsumerClient consumerClientAivenRewindCv; // Midlertidig
     private final List<KafkaConsumerClient> consumerClientsOnPrem;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
@@ -387,8 +377,7 @@ public class KafkaConfigCommon {
         KafkaOnpremUnleash kafkaOnpremUnleash = new KafkaOnpremUnleash(unleashService);
 
         Properties aivenConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_CONFIG);
-        aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "latest");
-        //aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
+        aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         consumerClientAiven = topicConfigsAiven.stream()
                 .map(config ->
@@ -398,24 +387,6 @@ public class KafkaConfigCommon {
                                 .withToggle(kafkaAivenUnleash)
                                 .build())
                 .collect(Collectors.toList());
-
-        KafkaConsumerClientBuilder.TopicConfig<String, Melding> cvV2Topic =
-                new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
-                        .withLogging()
-                        .withMetrics(prometheusMeterRegistry)
-                        .withStoreOnFailure(consumerRepository)
-                        .withConsumerConfig(
-                                Topic.CV_ENDRET_V2.topicName,
-                                Deserializers.stringDeserializer(),
-                                new AivenAvroDeserializer<Melding>().getDeserializer(),
-                                cvService::behandleKafkaMeldingLogikkRewind
-                        );
-        var cvRewindSettings = aivenDefaultConsumerProperties(CLIENT_ID_CONFIG_CV_REWIND);
-        cvRewindSettings.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
-        consumerClientAivenRewindCv = KafkaConsumerClientBuilder.builder()
-                .withProperties(cvRewindSettings)
-                .withTopicConfig(cvV2Topic)
-                .build();
 
         KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakKafkaDTO> siste14aTopicConfig =
                 new KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakKafkaDTO>()
@@ -467,7 +438,6 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientAivenSiste14a.start();
-        consumerClientAivenRewindCv.start();
         consumerClientsOnPrem.forEach(KafkaConsumerClient::start);
     }
 
