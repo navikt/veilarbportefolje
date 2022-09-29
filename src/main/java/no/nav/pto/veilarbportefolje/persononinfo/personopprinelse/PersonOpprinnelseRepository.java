@@ -22,9 +22,9 @@ public class PersonOpprinnelseRepository {
                             SELECT DISTINCT foedeland FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ? ORDER BY foedeland ASC 
                         """, enhetId)
                 .stream()
-                .filter(x -> x.get("foedeland") != null)
-                .map(x -> String.valueOf(x.get("foedeland")))
-                .filter(x -> !x.isEmpty())
+                .filter(rs -> rs.get("foedeland") != null)
+                .map(rs -> String.valueOf(rs.get("foedeland")))
+                .filter(rs -> !rs.isEmpty())
                 .toList();
     }
 
@@ -33,9 +33,9 @@ public class PersonOpprinnelseRepository {
                             SELECT DISTINCT talespraaktolk FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ?
                         """, enhetId)
                 .stream()
-                .filter(x -> x.get("talespraaktolk") != null)
-                .map(x -> String.valueOf(x.get("talespraaktolk")))
-                .filter(x -> !x.isEmpty())
+                .filter(rs -> rs.get("talespraaktolk") != null)
+                .map(rs -> String.valueOf(rs.get("talespraaktolk")))
+                .filter(rs -> !rs.isEmpty())
                 .toList();
         ;
 
@@ -43,9 +43,9 @@ public class PersonOpprinnelseRepository {
                             SELECT DISTINCT tegnspraaktolk FROM bruker_data bd, oppfolgingsbruker_arena_v2 op WHERE bd.freg_ident = op.fodselsnr AND nav_kontor = ?
                         """, enhetId)
                 .stream()
-                .filter(x -> x.get("tegnspraaktolk") != null)
-                .map(x -> String.valueOf(x.get("tegnspraaktolk")))
-                .filter(x -> !x.isEmpty())
+                .filter(rs -> rs.get("tegnspraaktolk") != null)
+                .map(rs -> String.valueOf(rs.get("tegnspraaktolk")))
+                .filter(rs -> !rs.isEmpty())
                 .toList();
         ;
 

@@ -1486,6 +1486,210 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getBrukere().get(1).getHovedStatsborgerskap().getStatsborgerskap().equals("Norge"));
     }
 
+    @Test
+    public void skal_hente_alle_brukere_med_bosted() {
+        var bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setKommunenummer("10")
+                .setBydelsnummer("1222");
+
+        var bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setKommunenummer("12")
+                .setBydelsnummer("1233");
+
+        var bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setKommunenummer("12")
+                .setBydelsnummer("1234");
+
+        var bruker4 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setKommunenummer("10")
+                .setBydelsnummer("1010");
+
+        var brukerUkjentBosted = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET);
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, brukerUkjentBosted);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setGeografiskBosted(List.of("10"));
+
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(2);
+        assertThat(response.getBrukere().stream().allMatch(x -> x.getBostedKommune().equals("10")));
+
+
+        filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setGeografiskBosted(List.of("1233"));
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+        assertThat(response.getAntall()).isEqualTo(1);
+        assertThat(response.getBrukere().stream().allMatch(x -> x.getBostedBydel().equals("1233")));
+
+
+        filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setGeografiskBosted(List.of("10", "1233"));
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+        assertThat(response.getAntall()).isEqualTo(3);
+        assertThat(response.getBrukere().stream().filter(x -> x.getBostedKommune().equalsIgnoreCase("10")).count()).isEqualTo(2);
+        assertThat(response.getBrukere().stream().anyMatch(x -> x.getBostedBydel().equalsIgnoreCase("1233")));
+    }
+
+    @Test
+    public void test_sortering_bostedkommune() {
+        var bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setKommunenummer("10");
+
+        var bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setKommunenummer("12")
+                .setBydelsnummer("1233");
+
+        var bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setKommunenummer("12")
+                .setBydelsnummer("1234");
+
+        var bruker4 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setKommunenummer("10")
+                .setBydelsnummer("1010");
+
+        var brukerUkjentBosted = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET);
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, brukerUkjentBosted);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of());
+
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "kommunenummer",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(5);
+        assertThat(response.getBrukere().get(0).getBostedKommune().equals("10"));
+        assertThat(response.getBrukere().get(1).getBostedKommune().equals("10"));
+        assertThat(response.getBrukere().get(2).getBostedKommune().equals("12"));
+        assertThat(response.getBrukere().get(3).getBostedKommune().equals("12"));
+        assertThat(response.getBrukere().get(4).getBostedKommune() == null);
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "descending",
+                "bydelsnummer",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(5);
+        assertThat(response.getBrukere().get(0).getBostedBydel().equals("1010"));
+        assertThat(response.getBrukere().get(1).getBostedBydel().equals("1233"));
+        assertThat(response.getBrukere().get(2).getBostedBydel().equals("1233"));
+        assertThat(response.getBrukere().get(3).getBostedBydel() == null);
+        assertThat(response.getBrukere().get(4).getBostedBydel() == null);
+
+    }
+
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
         return brukere.getBrukere().stream().anyMatch(bruker -> veilederId.equals(bruker.getVeilederId()));
     }

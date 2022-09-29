@@ -195,6 +195,15 @@
             "type": "date"
           }
         }
+      },
+      "bydelsnummer": {
+        "type": "keyword"
+      },
+      "kommunenummer": {
+        "type": "keyword"
+      },
+      "bostedSistOppdatert": {
+        "type": "date"
       }
     }
   }

@@ -48,7 +48,7 @@ select * from dba_scheduler_jobs;
 ## PostgreSQL
 
 Innloggingsinformasjon til databasen:
-
+https://vault.adeo.no/
 * Dev: `vault read postgresql/preprod-fss/creds/veilarbportefolje-dev-admin`
 * Prod: `vault read postgresql/prod-fss/creds/veilarbportefolje-prod-readonly`
 

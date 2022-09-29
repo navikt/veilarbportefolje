@@ -31,7 +31,12 @@ public class AuthUtils {
                 .setTegnspraaktolk(null)
                 .setTalespraaktolk(null)
                 .setHovedStatsborgerskap(null)
-                .setHarFlereStatsborgerskap(false);
+                .setHarFlereStatsborgerskap(false)
+                .setBostedBydel(null)
+                .setBostedKommune(null)
+                .setHarUtelandsAddresse(false)
+                .setBostedSistOppdatert(null)
+                .setInnflyttingTilNorgeFraLand(null);
     }
 
     static void test(String navn, Object data, boolean matches) {
@@ -55,11 +60,11 @@ public class AuthUtils {
 
     public static String hentApplikasjonFraContex(AuthContextHolder authContextHolder) {
         return authContextHolder.getIdTokenClaims()
-                .flatMap(claims -> getStringClaimOrEmpty(claims,"azp_name")) //  "cluster:team:app"
+                .flatMap(claims -> getStringClaimOrEmpty(claims, "azp_name")) //  "cluster:team:app"
                 .orElse(null);
     }
 
-    public static boolean erSystemkallFraAzureAd(AuthContextHolder authContextHolder){
+    public static boolean erSystemkallFraAzureAd(AuthContextHolder authContextHolder) {
         UserRole role = authContextHolder.getRole()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
         return UserRole.SYSTEM.equals(role) && harAADRolleForSystemTilSystemTilgang(authContextHolder);

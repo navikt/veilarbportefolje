@@ -59,7 +59,10 @@ public class ValideringsRegler {
             "statsborgerskap",
             "statsborgerskap_gyldig_fra",
             "tolkespraak",
-            "tolkebehov_sistoppdatert"
+            "tolkebehov_sistoppdatert",
+            "kommunenummer",
+            "bydelsnummer",
+            "bostedSistOppdatert"
     );
 
     public static void sjekkEnhet(String enhet) {
