@@ -48,6 +48,7 @@ public class Filtervalg {
     public List<String> tolkebehov;
     public List<String> tolkBehovSpraak;
     public List<StillingFraNAVFilter> stillingFraNavFilter;
+    public List<String> geografiskBosted;
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
@@ -77,8 +78,9 @@ public class Filtervalg {
                 harTegnspraakFilter() ||
                 harTalespraaktolkFilter() ||
                 harFoedelandFilter() ||
+                harStillingFraNavFilter() ||
                 harLandgruppeFilter() ||
-                harStillingFraNavFilter();
+                harBostedFilter();
     }
 
     public boolean harCvFilter() {
@@ -147,6 +149,10 @@ public class Filtervalg {
 
     public boolean harStillingFraNavFilter() { return stillingFraNavFilter != null && !stillingFraNavFilter.isEmpty(); }
     // kanskje vi egentlig skal filtrere på cvKanDelesStatus == JA her, siden det er kun de vi får inn uansett?
+
+    public boolean harBostedFilter() {
+        return geografiskBosted != null && !geografiskBosted.isEmpty();
+    }
 
     public boolean valider() {
         if (!harAktiveFilter()) {

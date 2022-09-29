@@ -104,6 +104,10 @@ public class OppfolgingsBruker {
     String innflyttingTilNorgeFraLand;
     boolean harFlereStatsborgerskap;
     Statsborgerskap hovedStatsborgerskap;
+    String kommunenummer;
+    String bydelsnummer;
+    String utenlandskAdresse;
+    LocalDate bostedSistOppdatert;
 
     String neste_cv_kan_deles_status;
     LocalDate neste_svarfrist_stilling_fra_nav;

@@ -169,26 +169,36 @@ public class OpensearchQueryBuilder {
 
             if (filtervalg.harTalespraaktolkFilter()) {
                 filtervalg.getTolkBehovSpraak().forEach(
-                        x -> tolkBehovSubquery.should(matchQuery("talespraaktolk", x))
+                        tolkbehovSpraak -> tolkBehovSubquery.should(matchQuery("talespraaktolk", tolkbehovSpraak))
                 );
                 tolkbehovSelected = true;
             }
             if (filtervalg.harTegnspraakFilter()) {
-                filtervalg.getTolkBehovSpraak().forEach(x ->
-                        tolkBehovSubquery.should(matchQuery("tegnspraaktolk", x))
+                filtervalg.getTolkBehovSpraak().forEach(tolkbehovSpraak ->
+                        tolkBehovSubquery.should(matchQuery("tegnspraaktolk", tolkbehovSpraak))
                 );
                 tolkbehovSelected = true;
             }
 
             if (!tolkbehovSelected) {
                 filtervalg.getTolkBehovSpraak().forEach(
-                        x -> tolkBehovSubquery.should(matchQuery("talespraaktolk", x))
+                        tolkbehovSpraak -> tolkBehovSubquery.should(matchQuery("talespraaktolk", tolkbehovSpraak))
                 );
-                filtervalg.getTolkBehovSpraak().forEach(x ->
-                        tolkBehovSubquery.should(matchQuery("tegnspraaktolk", x))
+                filtervalg.getTolkBehovSpraak().forEach(tolkbehovSpraak ->
+                        tolkBehovSubquery.should(matchQuery("tegnspraaktolk", tolkbehovSpraak))
                 );
             }
             queryBuilder.must(tolkBehovSubquery);
+        }
+
+        if (filtervalg.harBostedFilter()) {
+            BoolQueryBuilder bostedSubquery = boolQuery();
+            filtervalg.getGeografiskBosted().forEach(geografiskBosted -> {
+                        bostedSubquery.should(matchQuery("kommunenummer", geografiskBosted));
+                        bostedSubquery.should(matchQuery("bydelsnummer", geografiskBosted));
+                    }
+            );
+            queryBuilder.must(bostedSubquery);
         }
     }
 
@@ -471,7 +481,6 @@ public class OpensearchQueryBuilder {
             BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
             filtervalgsListe.forEach(filtervalg -> boolQueryBuilder.should(matchQuery(matchQueryString, filtervalg)));
             return queryBuilder.filter(boolQueryBuilder);
-            //SPM: should
         }
 
         return queryBuilder;

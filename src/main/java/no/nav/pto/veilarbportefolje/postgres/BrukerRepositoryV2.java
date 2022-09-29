@@ -26,8 +26,7 @@ import java.util.stream.Collectors;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBackup;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.*;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
@@ -57,6 +56,7 @@ public class BrukerRepositoryV2 {
                                bd.etternavn as etternavn_pdl, bd.mellomnavn as mellomnavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
                                bd.foedeland, bd.innflyttingTilNorgeFraLand, bd.angittFlyttedato,
                                bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert,
+                               bd.bydelsnummer, bd.kommunenummer, bd.bostedsistoppdatert, bd.utenlandskadresse,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
                                BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
@@ -204,7 +204,7 @@ public class BrukerRepositoryV2 {
         if (!brukPDLBrukerdata(unleashService) && isProduction().orElse(false)) {
             flettInnPersonDataFraArena(rs, bruker);
         }
-        
+
         String formidlingsgruppekode = rs.getString(FORMIDLINGSGRUPPEKODE);
         String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
         return bruker
@@ -268,6 +268,14 @@ public class BrukerRepositoryV2 {
                 .setTolkBehovSistOppdatert(DateUtils.toLocalDateOrNull(rs.getString("tolkBehovSistOppdatert")))
                 .setInnflyttingTilNorgeFraLand((innflyttingTilNorgeFraLandFullNavn != null && !innflyttingTilNorgeFraLandFullNavn.isEmpty()) ? innflyttingTilNorgeFraLandFullNavn : null)
                 .setLandgruppe((landGruppe != null && !landGruppe.isEmpty()) ? landGruppe : null);
+
+        if (isBostedFilterEnabled(unleashService)) {
+            bruker.
+                    setBydelsnummer(rs.getString("bydelsnummer"))
+                    .setKommunenummer(rs.getString("kommunenummer"))
+                    .setUtenlandskAdresse(rs.getString("utenlandskAdresse"))
+                    .setBostedSistOppdatert(toLocalDateOrNull(rs.getString("bostedSistOppdatert")));
+        }
     }
 
     @SneakyThrows

@@ -15,13 +15,7 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -130,7 +124,7 @@ public class PostgresOpensearchMapper {
 
     private Statsborgerskap getHovedStatsborgerskapFraList(List<Statsborgerskap> statsborgerskaps) {
         Optional<Statsborgerskap> norskStatsborgerskap = statsborgerskaps.stream()
-                .filter(x -> x.getStatsborgerskap().equals("NOR"))
+                .filter(statsborgerskap -> statsborgerskap.getStatsborgerskap().equals("NOR"))
                 .findFirst();
 
         if (norskStatsborgerskap.isPresent()) {

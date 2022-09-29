@@ -46,11 +46,11 @@ public class PdlService {
         String lokalIdent = pdlIdentRepository.hentPerson(aktorId.get());
         List<PDLIdent> identer = pdlIdentRepository.hentIdenter(lokalIdent);
         List<AktorId> aktorIds = identer.stream()
-                .filter(x -> PDLIdent.Gruppe.AKTORID.equals(x.getGruppe()))
+                .filter(ident -> PDLIdent.Gruppe.AKTORID.equals(ident.getGruppe()))
                 .map(PDLIdent::getIdent)
                 .map(AktorId::new).toList();
         List<Fnr> fnrs = identer.stream()
-                .filter(x -> PDLIdent.Gruppe.FOLKEREGISTERIDENT.equals(x.getGruppe()))
+                .filter(ident -> PDLIdent.Gruppe.FOLKEREGISTERIDENT.equals(ident.getGruppe()))
                 .map(PDLIdent::getIdent)
                 .map(Fnr::new).toList();
 

@@ -19,6 +19,8 @@ public class FeatureToggle {
     public static final String PDL_BRUKERDATA = "veilarbportefolje.Pdl_brukerdata";
     public static final String PDL_BRUKERDATA_BACKUP = "veilarbportefolje.Pdl_brukerdata_backup";
 
+    public static final String BOSTED_FILTER_ENABLED = "veilarbportefolje.Bosted_Filter_Enabled";
+
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
@@ -29,6 +31,10 @@ public class FeatureToggle {
 
     public static boolean brukPDLBrukerdata(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.PDL_BRUKERDATA);
+    }
+
+    public static boolean isBostedFilterEnabled(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.BOSTED_FILTER_ENABLED);
     }
 
     public static boolean brukArenaSomBackup(UnleashService unleashService) {

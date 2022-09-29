@@ -40,6 +40,16 @@ query($ident: ID!) {
     }
     bostedsadresse {
       angittFlyttedato
+      vegadresse {
+        kommunenummer
+        bydelsnummer
+      }
+      utenlandskAdresse {
+        landkode
+      }
+      ukjentBosted {
+        bostedskommune
+      }
 
       metadata {
         ...metadataDetails
