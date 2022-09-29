@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Data
@@ -34,6 +35,7 @@ public class PDLPerson {
     private String kommunenummer;
     private String bydelsnummer;
     private String utenlandskAdresse;
+    private boolean harUkjentBosted;
     private LocalDate bostedSistOppdatert;
 
 
@@ -53,6 +55,7 @@ public class PDLPerson {
                 .setBydelsnummer(hentBydel(response.getBostedsadresse()))
                 .setKommunenummer(hentBostedKommune(response.getBostedsadresse()))
                 .setUtenlandskAdresse(hentUtenlandskAdresse(response.getBostedsadresse()))
+                .setHarUkjentBosted(hentHarUkjentBosted(response.getBostedsadresse()))
                 .setBostedSistOppdatert(hentBostedSisteOppdatert(response.getBostedsadresse()))
                 .setTalespraaktolk(hentTalespraaktolk(response.getTilrettelagtKommunikasjon()))
                 .setTegnspraaktolk(hentTegnspraaktolk(response.getTilrettelagtKommunikasjon()))
@@ -112,56 +115,31 @@ public class PDLPerson {
     }
 
     private static LocalDate hentAngittFlyttedato(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
-        if (response == null) {
-            return null;
-        }
-        var bostedsadresses = response.stream().filter(bostedsadresse -> !bostedsadresse.getMetadata().isHistorisk()).toList();
-        return bostedsadresses.stream().findFirst()
+        return hentBostedAdresse(response)
                 .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getAngittFlyttedato)
                 .map(LocalDate::parse)
                 .orElse(null);
     }
 
     private static String hentBydel(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
-        if (response == null) {
-            return null;
-        }
-        var bostedsadresses = response.stream().filter(bostedsadresse -> !bostedsadresse.getMetadata().isHistorisk()).toList();
-        return bostedsadresses.stream().findFirst()
+        return hentBostedAdresse(response)
                 .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getVegadresse)
                 .map(PdlPersonResponse.PdlPersonResponseData.Vegadresse::getBydelsnummer)
                 .orElse(null);
     }
 
     private static String hentUtenlandskAdresse(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
-        if (response == null) {
-            return null;
-        }
-        var bostedsadresses = response.stream().filter(bostedsadresse -> !bostedsadresse.getMetadata().isHistorisk()).toList();
-        return bostedsadresses.stream().findFirst()
+        return hentBostedAdresse(response)
                 .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getUtenlandskAdresse)
-                .map(addresse -> addresse.getLandkode())
+                .map(PdlPersonResponse.PdlPersonResponseData.UtenlandskAdresse::getLandkode)
                 .orElse(null);
     }
 
     private static String hentBostedKommune(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
-        if (response == null) {
-            return null;
-        }
-        var bostedsadresses = response.stream().filter(bostedsadresse -> !bostedsadresse.getMetadata().isHistorisk()).toList();
-        String bostedKommune = bostedsadresses.stream().findFirst()
+        return hentBostedAdresse(response)
                 .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getVegadresse)
                 .map(PdlPersonResponse.PdlPersonResponseData.Vegadresse::getKommunenummer)
                 .orElse(null);
-
-        if (bostedKommune == null) {
-            return bostedsadresses.stream().findFirst()
-                    .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getUkjentBosted)
-                    .map(PdlPersonResponse.PdlPersonResponseData.UkjentBosted::getBostedskommune)
-                    .orElse(null);
-        }
-
-        return bostedKommune;
     }
 
     private static String hentTalespraaktolk(List<PdlPersonResponse.PdlPersonResponseData.TilrettelagtKommunikasjon> tilrettelagtKommunikasjon) {
@@ -203,13 +181,18 @@ public class PDLPerson {
                 .get();
     }
 
-    private static LocalDate hentBostedSisteOppdatert(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
+    private static boolean hentHarUkjentBosted(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
         if (response == null) {
-            return null;
+            return false;
         }
         var bostedsadresses = response.stream().filter(bostedsadresse -> !bostedsadresse.getMetadata().isHistorisk()).toList();
-
         return bostedsadresses.stream().findFirst()
+                .map(x -> x.getUkjentBosted() != null)
+                .orElse(false);
+    }
+
+    private static LocalDate hentBostedSisteOppdatert(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
+        return hentBostedAdresse(response)
                 .map(bostedsadresse -> bostedsadresse.getMetadata().getEndringer())
                 .map(endringers -> endringers.get(0))
                 .map(endringer -> DateUtils.toLocalDateOrNull(endringer.getRegistrert()))
@@ -227,5 +210,12 @@ public class PDLPerson {
             LocalDate gyldigTil = (s.getGyldigTilOgMed() != null) ? LocalDate.parse(s.getGyldigTilOgMed()) : null;
             return new PDLStatsborgerskap(s.getLand(), gyldigFra, gyldigTil);
         }).map(PDLStatsborgerskap::toStatsborgerskap).collect(Collectors.toList());
+    }
+
+    private static Optional<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> hentBostedAdresse(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
+        if (response == null) {
+            return Optional.empty();
+        }
+        return response.stream().filter(bostedsadresse -> !bostedsadresse.getMetadata().isHistorisk()).findFirst();
     }
 }

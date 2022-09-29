@@ -107,6 +107,7 @@ public class OppfolgingsBruker {
     String kommunenummer;
     String bydelsnummer;
     String utenlandskAdresse;
+    boolean harUkjentBosted;
     LocalDate bostedSistOppdatert;
 
     String nesteCvKanDelesStatus;
