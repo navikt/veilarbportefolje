@@ -88,6 +88,7 @@ public class Bruker {
     String bostedBydel;
     LocalDate bostedSistOppdatert;
     boolean harUtelandsAddresse;
+    boolean harUkjentBosted;
 
     String nesteCvKanDelesStatus;
     LocalDate nesteSvarfristCvStillingFraNav;
@@ -174,6 +175,7 @@ public class Bruker {
                 .setBostedBydel(bruker.getBydelsnummer())
                 .setBostedKommune(bruker.getKommunenummer())
                 .setHarUtelandsAddresse(harUtelandsAddresse)
+                .setHarUkjentBosted(bruker.isHarUkjentBosted())
                 .setBostedSistOppdatert(bruker.getBostedSistOppdatert());
     }
 

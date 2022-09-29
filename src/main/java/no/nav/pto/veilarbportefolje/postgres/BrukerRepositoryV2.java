@@ -274,6 +274,7 @@ public class BrukerRepositoryV2 {
                     setBydelsnummer(rs.getString("bydelsnummer"))
                     .setKommunenummer(rs.getString("kommunenummer"))
                     .setUtenlandskAdresse(rs.getString("utenlandskAdresse"))
+                    .setHarUkjentBosted(rs.getBoolean("harUkjentBosted"))
                     .setBostedSistOppdatert(toLocalDateOrNull(rs.getString("bostedSistOppdatert")));
         }
     }
