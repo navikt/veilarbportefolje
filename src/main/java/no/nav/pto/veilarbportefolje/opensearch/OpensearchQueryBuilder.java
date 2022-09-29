@@ -94,7 +94,13 @@ public class OpensearchQueryBuilder {
         }
 
         if (filtervalg.harStillingFraNavFilter()) {
-                queryBuilder.must(matchQuery("neste_cv_kan_deles_status", "JA"));
+            filtervalg.stillingFraNavFilter.forEach(
+                    stillingFraNAVFilter -> {
+                        switch (stillingFraNAVFilter) {
+                            case CV_KAN_DELES_STATUS_JA -> queryBuilder.must(matchQuery("neste_cv_kan_deles_status", "JA"));
+                            default -> throw new IllegalStateException("Stilling fra NAV ikke funnet");
+                        }
+                    });
         }
 
         if (filtervalg.harAktivitetFilter()) {
@@ -120,7 +126,7 @@ public class OpensearchQueryBuilder {
 
         if (filtervalg.harFoedelandFilter()) {
             BoolQueryBuilder subQuery = boolQuery();
-            filtervalg.getFoedeland().stream().forEach(
+            filtervalg.getFoedeland().forEach(
                     foedeLand -> queryBuilder.must(subQuery.should(matchQuery("foedeland", foedeLand)))
             );
         }
@@ -162,7 +168,7 @@ public class OpensearchQueryBuilder {
             BoolQueryBuilder tolkBehovSubquery = boolQuery();
 
             if (filtervalg.harTalespraaktolkFilter()) {
-                filtervalg.getTolkBehovSpraak().stream().forEach(
+                filtervalg.getTolkBehovSpraak().forEach(
                         x -> tolkBehovSubquery.should(matchQuery("talespraaktolk", x))
                 );
                 tolkbehovSelected = true;
@@ -175,7 +181,7 @@ public class OpensearchQueryBuilder {
             }
 
             if (!tolkbehovSelected) {
-                filtervalg.getTolkBehovSpraak().stream().forEach(
+                filtervalg.getTolkBehovSpraak().forEach(
                         x -> tolkBehovSubquery.should(matchQuery("talespraaktolk", x))
                 );
                 filtervalg.getTolkBehovSpraak().forEach(x ->
@@ -244,9 +250,7 @@ public class OpensearchQueryBuilder {
 
         switch (sortField) {
             case "valgteaktiviteter" -> sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
-            case "moterMedNAVIdag" -> {
-                searchSourceBuilder.sort("alle_aktiviteter_mote_startdato", order);
-            }
+            case "moterMedNAVIdag" -> searchSourceBuilder.sort("alle_aktiviteter_mote_startdato", order);
             case "motestatus" -> searchSourceBuilder.sort("aktivitet_mote_startdato", order);
             case "iavtaltaktivitet" -> {
                 FieldSortBuilder builder = new FieldSortBuilder("aktivitet_utlopsdatoer")
