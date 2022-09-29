@@ -111,7 +111,12 @@ CREATE TABLE public.bruker_data (
     bydelsnummer character varying(10),
     kommunenummer character varying(10),
     utenlandskadresse character varying(10),
-    bostedsistoppdatert date
+    bostedsistoppdatert date,
+    diskresjonkode character varying(3),
+    sikkerhetstiltak_type character varying(20),
+    sikkerhetstiltak_beskrivelse character varying(255),
+    sikkerhetstiltak_gyldigfra date,
+    sikkerhetstiltak_gyldigtil date
 );
 
 

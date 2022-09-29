@@ -20,7 +20,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.client.CachedTilgangClient;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -63,8 +63,8 @@ public class ClientConfig {
     }
 
     @Bean
-    public VedtakstottePilotRequest vedtakstottePilotRequest(AuthService authService) {
-        return new VedtakstottePilotRequest(authService);
+    public VedtaksstotteClient vedtaksstotteClient(AuthService authService) {
+        return new VedtaksstotteClient(authService);
     }
 
     @Bean
