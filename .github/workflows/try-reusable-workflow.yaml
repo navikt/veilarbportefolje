@@ -6,7 +6,7 @@ on:
 jobs:
 
   obo_feature_branch_to_dev:
-    uses: navikt/obo-felles/.github/workflows/backend-build-deploy-feature-branch.yaml@main
+    uses: navikt/obo-github-workflows/.github/workflows/reusable-backend-build-deploy-feature-branch.yaml@main
     with:
       image_name: ghcr.io/${{ github.repository }}/veilarbportefolje
       tag: ${{ github.sha }}
