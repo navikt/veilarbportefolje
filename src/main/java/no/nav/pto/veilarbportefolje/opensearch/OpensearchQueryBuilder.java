@@ -78,8 +78,7 @@ public class OpensearchQueryBuilder {
         }
 
         if (filtervalg.harKjonnfilter()) {
-            BoolQueryBuilder subQuery = boolQuery();
-            queryBuilder.must(subQuery.should(matchQuery("kjonn", filtervalg.kjonn.name())));
+            queryBuilder.must(matchQuery("kjonn", filtervalg.kjonn.name()));
         }
 
         if (filtervalg.harCvFilter()) {
@@ -94,6 +93,15 @@ public class OpensearchQueryBuilder {
             }
         }
 
+        if (filtervalg.harStillingFraNavFilter()) {
+            filtervalg.stillingFraNavFilter.forEach(
+                    stillingFraNAVFilter -> {
+                        switch (stillingFraNAVFilter) {
+                            case CV_KAN_DELES_STATUS_JA -> queryBuilder.must(matchQuery("neste_cv_kan_deles_status", "JA"));
+                            default -> throw new IllegalStateException("Stilling fra NAV ikke funnet");
+                        }
+                    });
+        }
 
         if (filtervalg.harAktivitetFilter()) {
             byggAktivitetFilterQuery(filtervalg, queryBuilder);
@@ -118,7 +126,7 @@ public class OpensearchQueryBuilder {
 
         if (filtervalg.harFoedelandFilter()) {
             BoolQueryBuilder subQuery = boolQuery();
-            filtervalg.getFoedeland().stream().forEach(
+            filtervalg.getFoedeland().forEach(
                     foedeLand -> queryBuilder.must(subQuery.should(matchQuery("foedeland", foedeLand)))
             );
         }
@@ -185,7 +193,7 @@ public class OpensearchQueryBuilder {
 
         if (filtervalg.harBostedFilter()) {
             BoolQueryBuilder bostedSubquery = boolQuery();
-            filtervalg.getGeografiskBosted().stream().forEach(geografiskBosted -> {
+            filtervalg.getGeografiskBosted().forEach(geografiskBosted -> {
                         bostedSubquery.should(matchQuery("kommunenummer", geografiskBosted));
                         bostedSubquery.should(matchQuery("bydelsnummer", geografiskBosted));
                     }
@@ -252,9 +260,7 @@ public class OpensearchQueryBuilder {
 
         switch (sortField) {
             case "valgteaktiviteter" -> sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
-            case "moterMedNAVIdag" -> {
-                searchSourceBuilder.sort("alle_aktiviteter_mote_startdato", order);
-            }
+            case "moterMedNAVIdag" -> searchSourceBuilder.sort("alle_aktiviteter_mote_startdato", order);
             case "motestatus" -> searchSourceBuilder.sort("aktivitet_mote_startdato", order);
             case "iavtaltaktivitet" -> {
                 FieldSortBuilder builder = new FieldSortBuilder("aktivitet_utlopsdatoer")
