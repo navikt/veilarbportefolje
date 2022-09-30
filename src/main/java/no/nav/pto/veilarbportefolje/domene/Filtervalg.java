@@ -148,7 +148,6 @@ public class Filtervalg {
     }
 
     public boolean harStillingFraNavFilter() { return stillingFraNavFilter != null && !stillingFraNavFilter.isEmpty(); }
-    // kanskje vi egentlig skal filtrere på cvKanDelesStatus == JA her, siden det er kun de vi får inn uansett?
 
     public boolean harBostedFilter() {
         return geografiskBosted != null && !geografiskBosted.isEmpty();
