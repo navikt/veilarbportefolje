@@ -110,6 +110,6 @@ public class OppfolgingsBruker {
     boolean harUkjentBosted;
     LocalDate bostedSistOppdatert;
 
-    String nesteCvKanDelesStatus;
-    LocalDate nesteSvarfristStillingFraNav;
+    String neste_cv_kan_deles_status;
+    LocalDate neste_svarfrist_stilling_fra_nav;
 }
