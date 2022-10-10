@@ -42,7 +42,7 @@ class RegistreringServiceTest extends EndToEndTest {
     @Test
     void utdanning_full_integration() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
 
         ArbeidssokerRegistrertEvent kafkaMessage = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(aktoerId.toString())

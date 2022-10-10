@@ -89,7 +89,7 @@ public class YtelserTest extends EndToEndTest {
         YtelsesDTO dto = new YtelsesDTO();
         dto.setOperationType("I");
         dto.setAfter(innhold);
-        testDataClient.setupBruker(aktorId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
 
         ytelsesService.behandleKafkaMelding(dto, TypeKafkaYtelse.AAP);
 

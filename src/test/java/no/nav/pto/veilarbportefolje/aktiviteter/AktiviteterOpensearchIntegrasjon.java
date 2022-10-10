@@ -64,7 +64,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     @Test
     public void lasteroppeikkelagreteaktiviteteter() {
         NavKontor navKontor = randomNavKontor();
-        testDataClient.setupBruker(aktoer, fodselsnummer, navKontor.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
                 .setAktorId(aktoer.get())
@@ -93,7 +93,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     @Test
     public void lasteroppaktivitetStillingFraNAV() {
         NavKontor navKontor = randomNavKontor();
-        testDataClient.setupBruker(aktoer, fodselsnummer, navKontor.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
                 .setAktorId(aktoer.get())
@@ -132,8 +132,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         AktorId aktoer1 = randomAktorId();
         AktorId aktoer2 = randomAktorId();
         VeilederId veileder = randomVeilederId();
-        testDataClient.setupBruker(aktoer1, navKontor, veileder, ZonedDateTime.now());
-        testDataClient.setupBruker(aktoer2, navKontor, veileder, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoer1, navKontor, veileder, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoer2, navKontor, veileder, ZonedDateTime.now());
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
                 .setAktorId(aktoer1.toString())
@@ -197,7 +197,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         NavKontor navKontor = randomNavKontor();
         VeilederId veileder = randomVeilederId();
         VeilederId annenVeileder = randomVeilederId();
-        testDataClient.setupBruker(aktoer, navKontor, veileder, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, navKontor, veileder, ZonedDateTime.now());
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("1")
                 .setAktorId(aktoer.get())
@@ -241,7 +241,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         NavKontor navKontor = randomNavKontor();
         VeilederId veileder = randomVeilederId();
 
-        testDataClient.setupBruker(aktoer, navKontor, veileder, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, navKontor, veileder, ZonedDateTime.now());
         settSperretAnsatt(aktoer, navKontor);
 
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
@@ -270,8 +270,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         AktorId aktoerKode6 = randomAktorId();
         AktorId aktoerKode7 = randomAktorId();
 
-        testDataClient.setupBruker(aktoerKode6, navKontor, veileder, ZonedDateTime.now());
-        testDataClient.setupBruker(aktoerKode7, navKontor, veileder, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerKode6, navKontor, veileder, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerKode7, navKontor, veileder, ZonedDateTime.now());
         settDiskresjonskode(aktoerKode6, navKontor, "6");
         settDiskresjonskode(aktoerKode7, navKontor, "7");
 

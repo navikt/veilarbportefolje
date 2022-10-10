@@ -38,7 +38,7 @@ class CvServiceTest extends EndToEndTest {
 
     @Test
     void skal_hente_fnr_fra_aktoertjenesten_om_fnr_mangler_i_melding() {
-        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("har_delt_cv", false)
@@ -62,7 +62,7 @@ class CvServiceTest extends EndToEndTest {
 
     @Test
     void skal_oppdatere_dokumentet_i_db_og_opensearch() {
-        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("har_delt_cv", false)
@@ -89,7 +89,7 @@ class CvServiceTest extends EndToEndTest {
 
     @Test
     void skal_ikke_behandle_meldinger_som_har_meldingstype_arbeidsgiver_generell() {
-        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("har_delt_cv", false)
@@ -113,7 +113,7 @@ class CvServiceTest extends EndToEndTest {
 
     @Test
     void skal_ikke_behandle_meldinger_som_har_meldingstype_cv_generell() {
-        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("har_delt_cv", false)

@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-public enum Innsatsgruppe {
+public enum ArenaInnsatsgruppe {
     BATT,
     BFORM,
     IKVAL,

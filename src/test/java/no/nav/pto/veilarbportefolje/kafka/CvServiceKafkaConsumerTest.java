@@ -37,9 +37,9 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
         postgres.update("truncate TABLE OPPFOLGING_DATA");
         postgres.update("truncate TABLE oppfolgingsbruker_arena_v2");
         postgres.update("truncate TABLE bruker_cv");
-        testDataClient.setupBruker(aktoerId1, ZonedDateTime.now());
-        testDataClient.setupBruker(aktoerId2, ZonedDateTime.now());
-        testDataClient.setupBruker(aktoerId3, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId1, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId2, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId3, ZonedDateTime.now());
     }
 
     @Test

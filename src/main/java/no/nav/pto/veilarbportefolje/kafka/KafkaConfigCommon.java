@@ -44,7 +44,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDto;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
@@ -388,15 +388,15 @@ public class KafkaConfigCommon {
                                 .build())
                 .collect(Collectors.toList());
 
-        KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakKafkaDTO> siste14aTopicConfig =
-                new KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakKafkaDTO>()
+        KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakKafkaDto> siste14aTopicConfig =
+                new KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakKafkaDto>()
                         .withLogging()
                         .withMetrics(prometheusMeterRegistry)
                         .withStoreOnFailure(consumerRepository)
                         .withConsumerConfig(
                                 Topic.SISTE_14A_VEDTAK_TOPIC.topicName,
                                 Deserializers.stringDeserializer(),
-                                Deserializers.jsonDeserializer(Siste14aVedtakKafkaDTO.class),
+                                Deserializers.jsonDeserializer(Siste14aVedtakKafkaDto.class),
                                 siste14aVedtakService::behandleKafkaRecord
                         );
 

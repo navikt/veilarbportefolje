@@ -3,8 +3,9 @@ package no.nav.pto.veilarbportefolje.siste14aVedtak;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,8 +68,8 @@ public class Siste14aVedtakRepository {
     private Siste14aVedtak siste14aVedtakMapper(ResultSet rs, int rowNum) {
         return new Siste14aVedtak(
                 rs.getString("bruker_id"),
-                Siste14aVedtakKafkaDTO.Innsatsgruppe.valueOf(rs.getString("innsatsgruppe")),
-                Optional.ofNullable(rs.getString("hovedmal")).map(Siste14aVedtakKafkaDTO.Hovedmal::valueOf).orElse(null),
+                Innsatsgruppe.valueOf(rs.getString("innsatsgruppe")),
+                Optional.ofNullable(rs.getString("hovedmal")).map(Hovedmal::valueOf).orElse(null),
                 toZonedDateTime(rs.getTimestamp("fattet_dato")),
                 rs.getBoolean("fra_arena"));
     }

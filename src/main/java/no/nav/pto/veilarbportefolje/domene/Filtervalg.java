@@ -23,8 +23,8 @@ public class Filtervalg {
     public List<String> alder = new ArrayList<>();
     public Kjonn kjonn;
     public List<String> fodselsdagIMnd = new ArrayList<>();
-    public List<Innsatsgruppe> innsatsgruppe = new ArrayList<>();
-    public List<Hovedmal> hovedmal = new ArrayList<>();
+    public List<ArenaInnsatsgruppe> innsatsgruppe = new ArrayList<>();
+    public List<ArenaHovedmal> hovedmal = new ArrayList<>();
     public List<Formidlingsgruppe> formidlingsgruppe = new ArrayList<>();
     public List<Servicegruppe> servicegruppe = new ArrayList<>();
     public List<Rettighetsgruppe> rettighetsgruppe = new ArrayList<>();

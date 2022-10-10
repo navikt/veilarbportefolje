@@ -26,16 +26,9 @@ public class Kafka14aStatusendring {
     }
 
 
+    // Statusendringene er kun for vedtak fra Vedtaksstøtte der det ikke er mulig med hovedmål OKE_DELTAKELSE
     public enum Hovedmal {
         SKAFFE_ARBEID, BEHOLDE_ARBEID
-    }
-
-    public enum Innsatsgruppe {
-        STANDARD_INNSATS,
-        SITUASJONSBESTEMT_INNSATS,
-        SPESIELT_TILPASSET_INNSATS,
-        GRADERT_VARIG_TILPASSET_INNSATS,
-        VARIG_TILPASSET_INNSATS
     }
 
     long vedtakId;
