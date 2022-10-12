@@ -11,11 +11,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Hovedmal.BEHOLDE_ARBEID;
-import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Hovedmal.SKAFFE_ARBEID;
-import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Innsatsgruppe.SITUASJONSBESTEMT_INNSATS;
-import static no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDTO.Innsatsgruppe.STANDARD_INNSATS;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal.*;
+import static no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -35,8 +33,8 @@ public class Siste14aVedtakRepositoryTest {
 
         Siste14aVedtak siste14aVedtakForAnnenBruker = new Siste14aVedtak(
                 aktorIdForAnnenBruker.get(),
-                Siste14aVedtakKafkaDTO.Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
-                Siste14aVedtakKafkaDTO.Hovedmal.OKE_DELTAKELSE,
+                SPESIELT_TILPASSET_INNSATS,
+                OKE_DELTAKELSE,
                 ZonedDateTime.parse("2022-01-01T11:33:22.133000+02:00"),
                 false
         );

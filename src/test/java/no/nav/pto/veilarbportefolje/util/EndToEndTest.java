@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class EndToEndTest {
 
     @Autowired

@@ -8,7 +8,7 @@ import java.util.List;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson.kontrollerResponseOgHentNavn;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PdlPerson {
+public class PDLPersonTest {
 
     @Test
     public void prioriteringAvUlikeKilderForNavn() {

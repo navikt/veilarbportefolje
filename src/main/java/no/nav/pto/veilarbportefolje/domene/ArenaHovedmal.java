@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-public enum Hovedmal {
+public enum ArenaHovedmal {
     SKAFFEA,
     BEHOLDEA,
     OKEDELT

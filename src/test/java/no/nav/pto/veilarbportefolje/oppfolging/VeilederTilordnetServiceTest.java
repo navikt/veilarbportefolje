@@ -29,7 +29,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
 
-        testDataClient.setupBruker(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
 
         veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder));
 
@@ -46,7 +46,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = VeilederId.of(null);
 
-        testDataClient.setupBruker(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
 
         veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder));
 

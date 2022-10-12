@@ -40,7 +40,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
     @Test
     void skal_oppdatere_oversikten_når_bruker_blir_satt_til_manuell() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
 
         ManuellStatusDTO melding = new ManuellStatusDTO(aktoerId.toString(), true);
         manuellStatusService.behandleKafkaMeldingLogikk(melding);
@@ -54,7 +54,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
     @Test
     void skal_oppdatere_oversikten_når_bruker_blir_satt_til_digital_oppfølging() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
 
         ManuellStatusDTO melding = new ManuellStatusDTO(aktoerId.toString(), false);
         manuellStatusService.behandleKafkaMeldingLogikk(melding);
