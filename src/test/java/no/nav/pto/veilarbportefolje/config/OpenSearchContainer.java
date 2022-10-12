@@ -13,9 +13,13 @@ public class OpenSearchContainer extends GenericContainer<OpenSearchContainer>{
                 .withTag(opensearchVersion));
     }
 
+    /**
+     * Denne versjonen bør samsvare med versjon av instans i Aiven. Versjon kan sjekkes ved å spørre i
+     * <a href="https://nav-it.slack.com/archives/C5KUST8N6/p1665564633449399">#nais</a>.
+     */
     public OpenSearchContainer() {
         super(DockerImageName.parse("opensearchproject/opensearch")
-                .withTag(OpenSearchClient.class.getPackage().getImplementationVersion()));
+                .withTag("1.2.4"));
         log.info("Starter opensearch med versjon: {}", OpenSearchClient.class.getPackage().getImplementationVersion());
     }
 
