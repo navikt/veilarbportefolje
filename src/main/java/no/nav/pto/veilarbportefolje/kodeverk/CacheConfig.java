@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 public class CacheConfig {
     public static final String KODEVERK_BETYDNING_CACHE_NAME = "kodeverk_betydning_cache";
     public static final String TILGANG_TIL_MODIA_CACHE_NAME = "tilgang_til_modia_cache";
+    public static final String VEDTAKSSTOTTE_PILOT_TOGGLE_CACHE_NAME = "vedtaksstotte_pilot_toggle_cache";
 
 
     @Bean
@@ -29,6 +30,14 @@ public class CacheConfig {
         return new CaffeineCache(TILGANG_TIL_MODIA_CACHE_NAME, Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(10_000)
+                .build());
+    }
+
+    @Bean
+    public Cache vedtakstottePilotToggleCache() {
+        return new CaffeineCache(VEDTAKSSTOTTE_PILOT_TOGGLE_CACHE_NAME, Caffeine.newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+                .maximumSize(500)
                 .build());
     }
 }

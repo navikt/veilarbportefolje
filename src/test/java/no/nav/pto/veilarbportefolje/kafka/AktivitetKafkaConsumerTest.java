@@ -33,7 +33,7 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
     @Test
     void skal_oppdatere_aktivitet_i_opensearch() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.setupBruker(aktoerId, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
 
         final String tilDato = (LocalDate.now().plusMonths(1)).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toString();
         createAktivitetDocument(aktoerId);

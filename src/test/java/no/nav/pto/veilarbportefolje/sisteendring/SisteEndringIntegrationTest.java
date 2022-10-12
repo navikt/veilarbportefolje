@@ -79,7 +79,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void sisteendring_populering_mal() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue());
         populateOpensearch(testEnhet, veilederId, aktoerId.get());
         String endretTid = "2020-05-28T07:47:42.480Z";
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse(endretTid);
@@ -98,7 +98,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void sisteendring_populering_aktiviteter() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue());
         populateOpensearch(testEnhet, veilederId, aktoerId.get());
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse("2020-05-28T07:47:42.480Z");
         ZonedDateTime endretTidZonedDateTime_NY_IJOBB = ZonedDateTime.parse("2028-05-28T07:47:42.480Z");
@@ -135,7 +135,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void sisteendring_filtrering() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue());
         ZonedDateTime zonedDateTime = ZonedDateTime.parse("2019-05-28T09:47:42.48+02:00");
         ZonedDateTime zonedDateTime_NY_IJOBB = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00");
 
@@ -210,7 +210,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     //@Test
     public void sisteendring_ulestfilter() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.setupBruker(aktoerId, fodselsnummer1, testEnhet.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue());
         ZonedDateTime endretTid_FULLFORT_IJOBB = ZonedDateTime.parse("2019-05-28T09:47:42.48+02:00");
         ZonedDateTime endretTid_NY_IJOBB = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00");
 
@@ -293,9 +293,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         final AktorId aktoerId_1 = randomAktorId();
         final AktorId aktoerId_2 = randomAktorId();
         final AktorId aktoerId_3 = randomAktorId();
-        testDataClient.setupBruker(aktoerId_1, fodselsnummer1, testEnhet.getValue());
-        testDataClient.setupBruker(aktoerId_2, fodselsnummer2, testEnhet.getValue());
-        testDataClient.setupBruker(aktoerId_3, fodselsnummer3, testEnhet.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId_1, fodselsnummer1, testEnhet.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId_2, fodselsnummer2, testEnhet.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId_3, fodselsnummer3, testEnhet.getValue());
 
         ZonedDateTime endret_Tid_IJOBB_bruker_1_i_2024 = ZonedDateTime.parse("2024-05-28T09:47:42.480Z");
         ZonedDateTime endret_Tid_IJOBB_bruker_2_i_2025 = ZonedDateTime.parse("2025-05-28T09:47:42.480Z");

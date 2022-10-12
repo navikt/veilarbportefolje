@@ -11,18 +11,9 @@ import java.time.ZonedDateTime;
 @Data
 @Accessors(chain = true)
 @AllArgsConstructor
-public class Siste14aVedtak {
-    String brukerId;
+public class Siste14aVedtakApiDto {
     Innsatsgruppe innsatsgruppe;
     Hovedmal hovedmal;
     ZonedDateTime fattetDato;
     boolean fraArena;
-
-    public static Siste14aVedtak fraKafkaDto(Siste14aVedtakKafkaDto dto) {
-        return new Siste14aVedtak(dto.aktorId.get(), dto.innsatsgruppe, dto.hovedmal, dto.fattetDato, dto.fraArena);
-    }
-
-    public static Siste14aVedtak fraApiDto(Siste14aVedtakApiDto dto, String brukerId) {
-        return new Siste14aVedtak(brukerId, dto.innsatsgruppe, dto.hovedmal, dto.fattetDato, dto.fraArena);
-    }
 }

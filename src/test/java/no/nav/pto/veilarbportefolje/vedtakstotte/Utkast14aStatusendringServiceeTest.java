@@ -60,7 +60,7 @@ public class Utkast14aStatusendringServiceeTest {
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID)
                 .setHovedmal(Kafka14aStatusendring.Hovedmal.BEHOLDE_ARBEID)
-                .setInnsatsgruppe(Kafka14aStatusendring.Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS);
+                .setInnsatsgruppe(Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS);
 
         utkast14aStatusendringService.behandleKafkaMeldingLogikk(kafkaVedtakSendtTilBeslutter);
 
@@ -76,7 +76,7 @@ public class Utkast14aStatusendringServiceeTest {
                 .setAktorId(AKTORID)
                 .setVedtakId(2)
                 .setHovedmal(Kafka14aStatusendring.Hovedmal.SKAFFE_ARBEID)
-                .setInnsatsgruppe(Kafka14aStatusendring.Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS));
+                .setInnsatsgruppe(Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS));
 
         Kafka14aStatusendring kafkaVedtakSendtTilBruker = new Kafka14aStatusendring()
                 .setVedtakStatusEndring(Kafka14aStatusendring.Status.VEDTAK_SENDT)
@@ -84,7 +84,7 @@ public class Utkast14aStatusendringServiceeTest {
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID)
                 .setHovedmal(Kafka14aStatusendring.Hovedmal.SKAFFE_ARBEID)
-                .setInnsatsgruppe(Kafka14aStatusendring.Innsatsgruppe.VARIG_TILPASSET_INNSATS);
+                .setInnsatsgruppe(Innsatsgruppe.VARIG_TILPASSET_INNSATS);
 
         utkast14aStatusendringService.behandleKafkaMeldingLogikk(kafkaVedtakSendtTilBruker);
 

@@ -90,7 +90,7 @@ public class Utkast14aStatusRepository {
         return new Kafka14aStatusendring()
                 .setVedtakId(rs.getInt(ID))
                 .setHovedmal(hovedmal.map(Kafka14aStatusendring.Hovedmal::valueOf).orElse(null))
-                .setInnsatsgruppe(innsatsgruppe.map(Kafka14aStatusendring.Innsatsgruppe::valueOf).orElse(null))
+                .setInnsatsgruppe(innsatsgruppe.map(Innsatsgruppe::valueOf).orElse(null))
                 .setVedtakStatusEndring(Kafka14aStatusendring.Status.valueOf(rs.getString(STATUS)))
                 .setTimestamp(rs.getTimestamp(ENDRET_TIDSPUNKT).toLocalDateTime())
                 .setAktorId(rs.getString(AKTOERID))

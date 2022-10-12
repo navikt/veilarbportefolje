@@ -14,9 +14,11 @@ import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
+import no.nav.common.utils.UrlUtils;
 import no.nav.poao_tilgang.client.TilgangClient;
 import no.nav.poao_tilgang.client.TilgangHttpClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
 import no.nav.pto.veilarbportefolje.client.CachedTilgangClient;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -63,8 +65,21 @@ public class ClientConfig {
     }
 
     @Bean
-    public VedtaksstotteClient vedtaksstotteClient(AuthService authService) {
-        return new VedtaksstotteClient(authService);
+    public VedtaksstotteClient vedtaksstotteClient(
+            AuthService authService,
+            AzureAdMachineToMachineTokenClient tokenClient
+    ) {
+
+        String tokenScope = String.format(
+                "api://%s-fss.pto.veilarbvedtaksstotte/.default",
+                isProduction() ? "prod" : "dev"
+        );
+
+        return new VedtaksstotteClient(
+                createServiceUrl("veilarbvedtaksstotte", "pto", true),
+                authService,
+                () -> tokenClient.createMachineToMachineToken(tokenScope),
+                new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbvedtaksstotte"));
     }
 
     @Bean
