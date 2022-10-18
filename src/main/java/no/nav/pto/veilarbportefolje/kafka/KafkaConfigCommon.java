@@ -401,7 +401,7 @@ public class KafkaConfigCommon {
                         );
 
         consumerClientAivenSiste14a = KafkaConsumerClientBuilder.builder()
-                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
+                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG + "-replay"))
                 .withTopicConfig(siste14aTopicConfig)
                 .withToggle(() -> unleashService.isEnabled(KAFKA_SISTE_14A_STOP) || kafkaAivenUnleash.get())
                 .build();
