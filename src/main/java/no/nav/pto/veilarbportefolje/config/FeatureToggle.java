@@ -21,9 +21,6 @@ public class FeatureToggle {
 
     public static final String BOSTED_FILTER_ENABLED = "veilarbportefolje.Bosted_Filter_Enabled";
 
-    public static final String HENT_SISTE_14A_VEDTAK_VED_OPPFOLGING_STARTET =
-            "veilarbportefolje.hent_siste_14a_vedtak_ved_oppfolging_startet";
-
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
@@ -42,9 +39,5 @@ public class FeatureToggle {
 
     public static boolean brukArenaSomBackup(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.PDL_BRUKERDATA_BACKUP);
-    }
-
-    public static boolean hentSiste14aVedtakVedOppfolgingStartet(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.HENT_SISTE_14A_VEDTAK_VED_OPPFOLGING_STARTET);
     }
 }
