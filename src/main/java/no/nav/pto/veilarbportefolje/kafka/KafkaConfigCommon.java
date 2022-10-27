@@ -78,13 +78,12 @@ public class KafkaConfigCommon {
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
         SISTE_14A_VEDTAK_TOPIC("pto.siste-14a-vedtak-v1"),
-
         DIALOG_CONSUMER_TOPIC("dab.endring-paa-dialog-v1"),
         ENDRING_PAA_MANUELL_STATUS("pto.endring-paa-manuell-status-v1"),
         VEILEDER_TILORDNET("pto.veileder-tilordnet-v1"),
         ENDRING_PAA_NY_FOR_VEILEDER("pto.endring-paa-ny-for-veileder-v1"),
         ENDRING_PA_MAL("pto.endring-paa-maal-v1"),
-        SIST_LEST("aapen-fo-veilederHarLestAktivitetsplanen-v1"),
+        SIST_LEST("pto.veileder-har-lest-aktivitetsplanen-v1"),
         ENDRING_PAA_OPPFOLGINGSBRUKER("pto.endring-paa-oppfolgingsbruker-v2"),
 
         CV_ENDRET_V2("teampam.cv-endret-ekstern-v2"),
@@ -348,11 +347,8 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(Dialogdata.class),
                                         dialogService::behandleKafkaRecord
-                                )
-                );
-
-        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
-                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
@@ -361,6 +357,21 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(SistLestKafkaMelding.class),
                                         sistLestService::behandleKafkaRecord
+                                )
+                                )
+                );
+
+        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
+                List.of(
+                        new KafkaConsumerClientBuilder.TopicConfig<String, MalEndringKafkaDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.ENDRING_PA_MAL.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
+                                        malService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, String>()
                                 .withLogging()
