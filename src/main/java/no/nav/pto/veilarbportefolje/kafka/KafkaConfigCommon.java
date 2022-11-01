@@ -78,7 +78,7 @@ public class KafkaConfigCommon {
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
         SISTE_14A_VEDTAK_TOPIC("pto.siste-14a-vedtak-v1"),
-        DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireKafkaTopicPostfix()),
+        DIALOG_CONSUMER_TOPIC("dab.endring-paa-dialog-v1"),
         ENDRING_PAA_MANUELL_STATUS("pto.endring-paa-manuell-status-v1"),
         VEILEDER_TILORDNET("pto.veileder-tilordnet-v1"),
         ENDRING_PAA_NY_FOR_VEILEDER("pto.endring-paa-ny-for-veileder-v1"),
