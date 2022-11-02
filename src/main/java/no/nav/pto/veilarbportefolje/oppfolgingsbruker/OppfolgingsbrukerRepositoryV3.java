@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -16,7 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.ResultSet;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.DISKRESJONSKODE;
@@ -56,6 +60,13 @@ public class OppfolgingsbrukerRepositoryV3 {
             return 0;
         }
         return upsert(oppfolgingsbruker);
+    }
+
+    public Map<Fnr, OppfolgingsbrukerEntity> hentOppfolgingsBrukere(Set<Fnr> fnrs) {
+        String fnrsCondition = fnrs.stream().map(Fnr::toString).collect(Collectors.joining(",", "{", "}"));
+        String sql = "SELECT * FROM OPPFOLGINGSBRUKER_ARENA_V2 WHERE fodselsnr = any (?::varchar[])";
+        return db.query(sql, OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbruker, fnrsCondition)
+                .stream().collect(Collectors.toMap(oppfolgingsbruker -> Fnr.of(oppfolgingsbruker.fodselsnr()), Function.identity()));
     }
 
     public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(Fnr fnr) {

@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -112,4 +113,6 @@ public class OppfolgingsBruker {
 
     String neste_cv_kan_deles_status;
     LocalDate neste_svarfrist_stilling_fra_nav;
+
+    Avvik14aVedtak avvik14aVedtak;
 }
