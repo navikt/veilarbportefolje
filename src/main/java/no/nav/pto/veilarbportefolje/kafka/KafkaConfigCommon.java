@@ -327,6 +327,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(SkjermingDTO.class),
                                         skjermingService::behandleSkjermedePersoner
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, Dialogdata>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.DIALOG_CONSUMER_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(Dialogdata.class),
+                                        dialogService::behandleKafkaRecord
                                 )
                 );
 
@@ -340,16 +350,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(SistLestKafkaMelding.class),
                                         sistLestService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, Dialogdata>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.DIALOG_CONSUMER_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(Dialogdata.class),
-                                        dialogService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, MalEndringKafkaDTO>()
                                 .withLogging()
