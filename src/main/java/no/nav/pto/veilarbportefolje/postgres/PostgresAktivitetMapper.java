@@ -11,8 +11,10 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.Math.abs;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.*;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.closestToTodayComparator;
 
 public class PostgresAktivitetMapper {
     public static AktivitetEntity kalkulerGenerellAktivitetInformasjon(List<AktivitetEntityDto> aktiviteter) {
@@ -120,12 +122,12 @@ public class PostgresAktivitetMapper {
 
     private static void byggStillingFraNavData(List<AktivitetEntityDto> aktiviteter, Set<String> aktiveAktiviteter, AktivitetEntity entity){
         if(aktiveAktiviteter.contains(stilling_fra_nav.name())){
-            LocalDate yesterday = LocalDate.now().minusDays(1);
+            LocalDate today = LocalDate.now();
             Optional<AktivitetEntityDto> nesteStillingFraNav = aktiviteter.stream()
                     .filter(aktivitetEntityDto -> stilling_fra_nav.equals(aktivitetEntityDto.aktivitetsType))
                     .filter(aktivitetEntityDto -> aktivitetEntityDto.svarfristStillingFraNav != null)
-                    .filter(aktivitetEntityDto -> aktivitetEntityDto.svarfristStillingFraNav.isAfter(yesterday))
-                    .min(Comparator.comparing(frist -> frist.svarfristStillingFraNav));
+                    //.min(Comparator.comparing(aktivitet -> closestToToday(aktivitet.svarfristStillingFraNav, today)));
+                    .min(Comparator.comparing(aktivitet -> aktivitet.svarfristStillingFraNav, closestToTodayComparator()));
             entity.setNesteCvKanDelesStatus(nesteStillingFraNav.map(AktivitetEntityDto::getCvKanDelesStatus).orElse(null));
             entity.setNesteSvarfristStillingFraNav(nesteStillingFraNav.map((AktivitetEntityDto::getSvarfristStillingFraNav)).orElse(null));
         }

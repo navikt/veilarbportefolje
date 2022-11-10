@@ -1,13 +1,14 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Test;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import static java.time.Duration.ofSeconds;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -78,5 +79,38 @@ public class DateUtilsTest {
     @Test(expected = NullPointerException.class)
     public void null_skal_kaste_exception() {
         getTimestampFromSimpleISODate(null);
+    }
+
+    @Test
+    public void testerValgAvDatoNaermestIDag() {
+        LocalDate Idag = LocalDate.now();
+        LocalDate Imorgen = Idag.plusDays(1);
+        LocalDate Igaar = Idag.minusDays(1);
+        LocalDate TreDagerSiden = Idag.minusDays(3);
+        LocalDate FireDagerFremITid = Idag.plusDays(4);
+        LocalDate TiDagerSiden = Idag.minusDays(10);
+        LocalDate ElleveDagerSiden = Idag.minusDays(50);
+        LocalDate FjortenDagerFremITid = Idag.plusDays(50);
+        LocalDate TjuefemagerFremITid = Idag.plusDays(25);
+        LocalDate TjuefemnDagerBakITid = Idag.minusDays(25);
+        LocalDate TrettifireDagerBkITid = Idag.minusDays(34);
+
+        ArrayList<LocalDate> treDagerSidenNaermest = new ArrayList<>( Arrays.asList(FireDagerFremITid, TiDagerSiden, FjortenDagerFremITid, TjuefemagerFremITid, TrettifireDagerBkITid, TjuefemnDagerBakITid, ElleveDagerSiden));
+        ArrayList<LocalDate> fireDagerFremNaermest = new ArrayList<>( Arrays.asList(FireDagerFremITid, TiDagerSiden, FjortenDagerFremITid, TjuefemagerFremITid, TrettifireDagerBkITid, TjuefemnDagerBakITid));
+        ArrayList<LocalDate> toDatoerLikeNaerme = new ArrayList<>( Arrays.asList(TreDagerSiden, Igaar, FireDagerFremITid, TiDagerSiden, Imorgen, FjortenDagerFremITid));
+        ArrayList<LocalDate> kunEnDato = new ArrayList<>( Arrays.asList(FjortenDagerFremITid));
+        ArrayList<LocalDate> inneholderDagensDato = new ArrayList<>( Arrays.asList(TreDagerSiden, Igaar, FireDagerFremITid, Idag, TiDagerSiden, Imorgen, FjortenDagerFremITid));
+
+        LocalDate closest1 = treDagerSidenNaermest.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
+        LocalDate closest2 = treDagerSidenNaermest.stream().min(Comparator.comparing(dato -> closestToToday(dato))).get();
+
+
+
+        AssertionsForClassTypes.assertThat(closest2).isEqualTo(TreDagerSiden);
+        AssertionsForClassTypes.assertThat(closest1).isEqualTo(TreDagerSiden);
+        AssertionsForClassTypes.assertThat(fireDagerFremNaermest.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get()).isEqualTo(FireDagerFremITid);
+        AssertionsForClassTypes.assertThat(toDatoerLikeNaerme.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get()).isEqualTo(Imorgen);
+        AssertionsForClassTypes.assertThat(kunEnDato.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get()).isEqualTo(FjortenDagerFremITid);
+        AssertionsForClassTypes.assertThat(inneholderDagensDato.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get()).isEqualTo(Idag);
     }
 }

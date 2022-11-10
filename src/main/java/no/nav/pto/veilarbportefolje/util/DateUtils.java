@@ -4,12 +4,15 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
+import java.time.chrono.ChronoLocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
+import static java.lang.Math.abs;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
 public class DateUtils {
@@ -175,5 +178,28 @@ public class DateUtils {
 
     public static ZonedDateTime now() {
         return ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS);
+    }
+
+    public static int closestToToday(LocalDate date){
+        LocalDate today = LocalDate.now();
+        Integer v = date.compareTo(today);
+        Integer abso = abs(v);
+        return abs(date.compareTo(today));
+    }
+
+    public static long fromLocalDateToEpochSecond(LocalDate date){
+        return date.toEpochSecond(date.atStartOfDay().toLocalTime(), ZoneOffset.UTC);
+    }
+    public static int closest(LocalDate dato){
+        return LocalDate dato = LocalDate.now();
+    }
+
+    public static Comparator<LocalDate> closestToTodayComparator() {
+        // this function returns a comparator which finds the date closest to today regardless of past/future
+        // .compareTo returns an Integer representing the offset from today (negative if past).
+        // If several dates are equally closest, the Comparator will return the date most recently compared
+        // ["date1", "date2", "date3", "date4"] : If date1 and date3 are the two closest dates and are equally close, date3 will be returned
+        LocalDate today = LocalDate.now();
+        return Comparator.comparing(dato -> abs(dato.toEpochSecond(today.atStartOfDay().toLocalTime(), ZoneOffset.of("2"))));
     }
 }
