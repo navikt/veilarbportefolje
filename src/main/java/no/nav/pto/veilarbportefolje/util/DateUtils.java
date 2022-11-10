@@ -190,16 +190,24 @@ public class DateUtils {
     public static long fromLocalDateToEpochSecond(LocalDate date){
         return date.toEpochSecond(date.atStartOfDay().toLocalTime(), ZoneOffset.UTC);
     }
-    public static int closest(LocalDate dato){
-        return LocalDate dato = LocalDate.now();
-    }
 
     public static Comparator<LocalDate> closestToTodayComparator() {
-        // this function returns a comparator which finds the date closest to today regardless of past/future
-        // .compareTo returns an Integer representing the offset from today (negative if past).
-        // If several dates are equally closest, the Comparator will return the date most recently compared
-        // ["date1", "date2", "date3", "date4"] : If date1 and date3 are the two closest dates and are equally close, date3 will be returned
         LocalDate today = LocalDate.now();
-        return Comparator.comparing(dato -> abs(dato.toEpochSecond(today.atStartOfDay().toLocalTime(), ZoneOffset.of("2"))));
+        //Krever det noe å initalisere denne gang på gang?
+        long todayEpoch = fromLocalDateToEpochSecond(today);
+        //dumt å intialisere denne over igjen og igjen? Kanskje ikke siden den har bare 00 00 00 så det blir jo det samme hver gang.
+        return Comparator.comparing(dato -> abs(fromLocalDateToEpochSecond(dato)-todayEpoch));
     }
+    public static long closestToTodayComparatorDate(LocalDate date) {
+        LocalDate today = LocalDate.now();
+        //Krever det noe å initalisere denne gang på gang?
+        long todayEpoch = fromLocalDateToEpochSecond(today);
+        long dateEpoch = fromLocalDateToEpochSecond(date);
+
+        long diff = dateEpoch - todayEpoch;
+        long diffTwo = todayEpoch - dateEpoch;
+        //dumt å intialisere denne over igjen og igjen? Kanskje ikke siden den har bare 00 00 00 så det blir jo det samme hver gang.
+        return abs(dateEpoch-todayEpoch);
+    }
+
 }
