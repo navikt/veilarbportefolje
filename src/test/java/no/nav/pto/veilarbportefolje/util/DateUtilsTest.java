@@ -125,9 +125,5 @@ public class DateUtilsTest {
         AssertionsForClassTypes.assertThat(closest8).isEqualTo(Igaar);
         AssertionsForClassTypes.assertThat(closest9).isEqualTo(Igaar);
         AssertionsForClassTypes.assertThat(closest10).isEqualTo(Idag);
-        //AssertionsForClassTypes.assertThat(fireDagerFremNaermest.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get()).isEqualTo(FireDagerFremITid);
-        //AssertionsForClassTypes.assertThat(toDatoerLikeNaerme.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get()).isEqualTo(Imorgen);
-        //AssertionsForClassTypes.assertThat(kunEnDato.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get()).isEqualTo(FjortenDagerFremITid);
-        //AssertionsForClassTypes.assertThat(inneholderDagensDato.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get()).isEqualTo(Idag);
     }
 }
