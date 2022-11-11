@@ -65,7 +65,8 @@ public class OppfolgingsbrukerRepositoryV3 {
     public Map<Fnr, OppfolgingsbrukerEntity> hentOppfolgingsBrukere(Set<Fnr> fnrs) {
         String fnrsCondition = fnrs.stream().map(Fnr::toString).collect(Collectors.joining(",", "{", "}"));
         String sql = """
-                                SELECT bi1.ident as oppslag_fnr, ob.*
+                                SELECT DISTINCT ON (bi1.ident)
+                                     bi1.ident as oppslag_fnr, ob.*
                                 FROM OPPFOLGINGSBRUKER_ARENA_V2 ob
                                 INNER JOIN BRUKER_IDENTER bi1 on bi1.ident = any (?::varchar[])
                                 INNER JOIN BRUKER_IDENTER bi2 on bi2.person = bi1.person
