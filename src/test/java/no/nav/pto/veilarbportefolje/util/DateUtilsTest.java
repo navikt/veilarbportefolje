@@ -88,42 +88,53 @@ public class DateUtilsTest {
         LocalDate Imorgen = Idag.plusDays(1);
         LocalDate Igaar = Idag.minusDays(1);
         LocalDate TreDagerSiden = Idag.minusDays(3);
-        LocalDate FireDagerFremITid = Idag.plusDays(4);
+        LocalDate FireDagerFrem = Idag.plusDays(4);
         LocalDate TiDagerSiden = Idag.minusDays(10);
-        LocalDate ElleveDagerSiden = Idag.minusDays(50);
-        LocalDate FjortenDagerFremITid = Idag.plusDays(50);
-        LocalDate TjuefemagerFremITid = Idag.plusDays(25);
-        LocalDate TjuefemnDagerBakITid = Idag.minusDays(25);
-        LocalDate TrettifireDagerBkITid = Idag.minusDays(34);
+        LocalDate FemtiDagerSiden = Idag.minusDays(50);
+        LocalDate FemtiDagerFrem = Idag.plusDays(50);
+        LocalDate TjuefemDagerFrem = Idag.plusDays(25);
+        LocalDate TjuefemDagerSiden = Idag.minusDays(25);
+        LocalDate TrettifireDagerSiden = Idag.minusDays(34);
 
-        ArrayList<LocalDate> treDagerSidenNaermest = new ArrayList<>( Arrays.asList(TreDagerSiden, FireDagerFremITid, TiDagerSiden, FjortenDagerFremITid, TjuefemagerFremITid, TrettifireDagerBkITid, TjuefemnDagerBakITid, ElleveDagerSiden));
-        ArrayList<LocalDate> fireDagerFremNaermest = new ArrayList<>( Arrays.asList(FireDagerFremITid, TiDagerSiden, FjortenDagerFremITid, TjuefemagerFremITid, TrettifireDagerBkITid, TjuefemnDagerBakITid));
-        ArrayList<LocalDate> toDatoerLikeNaerme = new ArrayList<>( Arrays.asList(TreDagerSiden, Igaar, FireDagerFremITid, TiDagerSiden, Imorgen, FjortenDagerFremITid));
-        ArrayList<LocalDate> kunEnDato = new ArrayList<>( Arrays.asList(Igaar));
-        ArrayList<LocalDate> inneholderDagensDato = new ArrayList<>( Arrays.asList(TreDagerSiden, Igaar, FireDagerFremITid, Idag, TiDagerSiden, Imorgen, FjortenDagerFremITid));
+        ArrayList<LocalDate> treDagerSidenNaermest = new ArrayList<>( Arrays.asList(TreDagerSiden, FireDagerFrem, TiDagerSiden, FemtiDagerSiden, FemtiDagerFrem, TjuefemDagerFrem, TjuefemDagerSiden, TrettifireDagerSiden));
+        ArrayList<LocalDate> fireDagerFremNaermest = new ArrayList<>( Arrays.asList(FireDagerFrem, TiDagerSiden, FemtiDagerFrem, TjuefemDagerFrem, TrettifireDagerSiden, TjuefemDagerSiden));
+        ArrayList<LocalDate> tiDagerSidenNaermest = new ArrayList<>( Arrays.asList(FemtiDagerSiden, FemtiDagerFrem, TjuefemDagerFrem, TjuefemDagerSiden, TiDagerSiden, TrettifireDagerSiden));
+        ArrayList<LocalDate> toDatoerLikeNaermeImorgenSist = new ArrayList<>( Arrays.asList(TreDagerSiden, Igaar, TiDagerSiden, Imorgen, FemtiDagerFrem));
+        ArrayList<LocalDate> toDatoerLikeNaermeIgaarSist = new ArrayList<>( Arrays.asList(TreDagerSiden, Imorgen, TiDagerSiden, Igaar, FemtiDagerFrem));
+        ArrayList<LocalDate> kunEnDato = new ArrayList<>( Arrays.asList(FemtiDagerSiden));
+        ArrayList<LocalDate> inneholderDagensDato = new ArrayList<>( Arrays.asList(TreDagerSiden, Igaar, FireDagerFrem, Idag, TiDagerSiden, Imorgen, FemtiDagerSiden));
 
-        LocalDate closest1 = treDagerSidenNaermest.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
-        LocalDate closest2 = fireDagerFremNaermest.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
-        LocalDate closest3 = toDatoerLikeNaerme.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
-        LocalDate closest4 = kunEnDato.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
-        LocalDate closest5 = inneholderDagensDato.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
-        LocalDate closest6 = treDagerSidenNaermest.stream().min(Comparator.comparing(dato -> closestToTodayComparatorDate(dato))).get();
-        LocalDate closest7 = fireDagerFremNaermest.stream().min(Comparator.comparing(dato -> closestToTodayComparatorDate(dato))).get();
-        LocalDate closest8 = toDatoerLikeNaerme.stream().min(Comparator.comparing(dato -> closestToTodayComparatorDate(dato))).get();
-        LocalDate closest9 = kunEnDato.stream().min(Comparator.comparing(dato -> closestToTodayComparatorDate(dato))).get();
-        LocalDate closest10 = inneholderDagensDato.stream().min(Comparator.comparing(dato -> closestToTodayComparatorDate(dato))).get();
+        LocalDate expectTreDagerSiden = treDagerSidenNaermest.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
+        LocalDate expectFireDagerFrem = fireDagerFremNaermest.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
+        LocalDate expectImorgen = toDatoerLikeNaermeImorgenSist.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
+        LocalDate expectIgaar = toDatoerLikeNaermeIgaarSist.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
+        LocalDate expectFemtiDagerSiden = kunEnDato.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
+        LocalDate expectIdag = inneholderDagensDato.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
+        LocalDate expectTiDagerSidenNaermest = tiDagerSidenNaermest.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
+
+        LocalDate expectTreDagerSiden2 = treDagerSidenNaermest.stream().min(Comparator.comparing(dato -> closestToTodayComparatorDate(dato))).get();
+        LocalDate expectFireDagerFrem2 = fireDagerFremNaermest.stream().min(Comparator.comparing(dato -> closestToTodayComparatorDate(dato))).get();
+        LocalDate expectImorgen2 = toDatoerLikeNaermeImorgenSist.stream().min(Comparator.comparing(dato -> closestToTodayComparatorDate(dato))).get();
+        LocalDate expectIgaar2 = toDatoerLikeNaermeIgaarSist.stream().min(Comparator.comparing(dato -> closestToTodayComparatorDate(dato))).get();
+        LocalDate expectFemtiDagerSiden2 = kunEnDato.stream().min(Comparator.comparing(dato -> closestToTodayComparatorDate(dato))).get();
+        LocalDate expectIdag2 = inneholderDagensDato.stream().min(Comparator.comparing(dato -> closestToTodayComparatorDate(dato))).get();
+        LocalDate expectTiDagerSidenNaermest2 = tiDagerSidenNaermest.stream().min(Comparator.comparing(dato -> closestToTodayComparatorDate(dato))).get();
 
 
+        AssertionsForClassTypes.assertThat(expectTreDagerSiden).isEqualTo(TreDagerSiden);
+        AssertionsForClassTypes.assertThat(expectFireDagerFrem).isEqualTo(FireDagerFrem);
+        AssertionsForClassTypes.assertThat(expectImorgen).isEqualTo(Igaar);
+        AssertionsForClassTypes.assertThat(expectIgaar).isEqualTo(Imorgen);
+        AssertionsForClassTypes.assertThat(expectFemtiDagerSiden).isEqualTo(FemtiDagerSiden);
+        AssertionsForClassTypes.assertThat(expectIdag).isEqualTo(Idag);
+        AssertionsForClassTypes.assertThat(expectTiDagerSidenNaermest).isEqualTo(TiDagerSiden);
 
-        AssertionsForClassTypes.assertThat(closest1).isEqualTo(TreDagerSiden);
-        AssertionsForClassTypes.assertThat(closest2).isEqualTo(FireDagerFremITid);
-        AssertionsForClassTypes.assertThat(closest3).isEqualTo(Igaar);
-        AssertionsForClassTypes.assertThat(closest4).isEqualTo(Igaar);
-        AssertionsForClassTypes.assertThat(closest5).isEqualTo(Idag);
-        AssertionsForClassTypes.assertThat(closest6).isEqualTo(TreDagerSiden);
-        AssertionsForClassTypes.assertThat(closest7).isEqualTo(FireDagerFremITid);
-        AssertionsForClassTypes.assertThat(closest8).isEqualTo(Igaar);
-        AssertionsForClassTypes.assertThat(closest9).isEqualTo(Igaar);
-        AssertionsForClassTypes.assertThat(closest10).isEqualTo(Idag);
+        AssertionsForClassTypes.assertThat(expectTreDagerSiden2).isEqualTo(TreDagerSiden);
+        AssertionsForClassTypes.assertThat(expectFireDagerFrem2).isEqualTo(FireDagerFrem);
+        AssertionsForClassTypes.assertThat(expectImorgen2).isEqualTo(Igaar);
+        AssertionsForClassTypes.assertThat(expectIgaar2).isEqualTo(Imorgen);
+        AssertionsForClassTypes.assertThat(expectFemtiDagerSiden2).isEqualTo(FemtiDagerSiden);
+        AssertionsForClassTypes.assertThat(expectIdag2).isEqualTo(Idag);
+        AssertionsForClassTypes.assertThat(expectTiDagerSidenNaermest2).isEqualTo(TiDagerSiden);
     }
 }
