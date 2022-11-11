@@ -62,17 +62,20 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
                         .setAktoer_id(randomAktorId().toString())
+                        .setFnr(randomFnr().get())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(randomAktorId().toString())
+                        .setFnr(randomFnr().get())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET),
 
                 // Markert som slettet
                 new OppfolgingsBruker()
                         .setAktoer_id(randomAktorId().toString())
+                        .setFnr(randomFnr().get())
                         .setOppfolging(false)
                         .setEnhet_id(TEST_ENHET)
         );
@@ -144,6 +147,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         String now = Instant.now().toString();
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
+                        .setAktoer_id(randomAktorId().get())
                         .setFnr(randomFnr().toString())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET)
@@ -151,6 +155,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                         .setVeileder_id(TEST_VEILEDER_0),
 
                 new OppfolgingsBruker()
+                        .setAktoer_id(randomAktorId().get())
                         .setFnr(randomFnr().toString())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET)
@@ -158,6 +163,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                         .setVeileder_id(TEST_VEILEDER_1),
 
                 new OppfolgingsBruker()
+                        .setAktoer_id(randomAktorId().get())
                         .setFnr(randomFnr().toString())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET)
@@ -187,18 +193,21 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
                 new OppfolgingsBruker()
                         .setAktoer_id(randomAktorId().toString())
+                        .setFnr(randomFnr().get())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET)
                         .setVeileder_id(null),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(randomAktorId().toString())
+                        .setFnr(randomFnr().get())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET)
                         .setVeileder_id(TEST_VEILEDER_0),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(randomAktorId().toString())
+                        .setFnr(randomFnr().get())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET)
                         .setVeileder_id(LITE_PRIVILEGERT_VEILEDER)
@@ -236,6 +245,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 )
                 .map(id ->
                         new OppfolgingsBruker()
+                                .setAktoer_id(randomAktorId().get())
                                 .setFnr(randomFnr().toString())
                                 .setVeileder_id(id)
                                 .setOppfolging(true)
@@ -259,6 +269,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var brukerMedArbeidsliste =
                 new OppfolgingsBruker()
+                        .setAktoer_id(randomAktorId().get())
                         .setFnr(randomFnr().toString())
                         .setOppfolging(true)
                         .setVeileder_id(TEST_VEILEDER_0)
@@ -268,6 +279,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var brukerUtenArbeidsliste =
                 new OppfolgingsBruker()
+                        .setAktoer_id(randomAktorId().get())
                         .setFnr(randomFnr().toString())
                         .setOppfolging(true)
                         .setVeileder_id(TEST_VEILEDER_0)
@@ -492,6 +504,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     void skal_hente_brukere_som_trenger_vurdering_og_er_ny_for_enhet() {
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
         var nyForEnhet = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -499,6 +512,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setTrenger_vurdering(true);
 
         var ikkeNyForEnhet = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -542,12 +556,14 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     @Test
     void skal_ikke_kunne_hente_brukere_veileder_ikke_har_tilgang_til() {
         var brukerVeilederHarTilgangTil = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);
 
         var brukerVeilederIkkeHarTilgangTil = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id("NEGA_$testEnhet")
@@ -587,12 +603,14 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
         var brukerMedUfordeltStatus = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(LITE_PRIVILEGERT_VEILEDER);
 
         var brukerMedFordeltStatus = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -624,6 +642,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     @Test
     void skal_returnere_brukere_basert_på_fødselsdag_i_måneden() {
         var testBruker1 = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setFodselsdag_i_mnd(7)
@@ -631,6 +650,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0);
 
         var testBruker2 = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setFodselsdag_i_mnd(8)
@@ -665,6 +685,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     @Test
     void skal_hente_ut_brukere_basert_på_kjønn() {
         var mann = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -672,6 +693,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setKjonn("M");
 
         var kvinne = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -704,6 +726,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     @Test
     void skal_hente_ut_brukere_som_går_på_arbeidsavklaringspenger() {
         var brukerMedAAP = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -711,6 +734,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setRettighetsgruppekode(Rettighetsgruppe.AAP.name());
 
         var brukerUtenAAP = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -747,6 +771,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     void skal_hente_ut_brukere_filtrert_på_dagpenger_som_ytelse() {
 
         var brukerMedDagpengerMedPermittering = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -756,6 +781,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
 
         var brukerMedPermitteringFiskeindustri = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -764,6 +790,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name());
 
         var brukerMedAAP = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -772,6 +799,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setYtelse(YtelseMapping.AAP_MAXTID.name());
 
         var brukerMedAnnenVeileder = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
@@ -807,6 +835,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     @Test
     void skal_hente_ut_brukere_som_har_avtale_om_å_søke_jobber() {
         var brukerMedSokeAvtale = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
@@ -814,6 +843,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setAktiviteter(Set.of("sokeavtale"));
 
         var brukerMedBehandling = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
@@ -821,6 +851,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setAktiviteter(Set.of("behandling"));
 
         var brukerMedUtenAktiviteter = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
@@ -905,6 +936,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     void skal_hente_ut_alle_brukere_med_tiltak() {
 
         var brukerMedTiltak = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
@@ -912,6 +944,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setAktiviteter(Set.of("tiltak"));
 
         var brukerMedBehandling = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
@@ -919,6 +952,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setAktiviteter(Set.of("behandling"));
 
         var brukerUtenAktiviteter = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -15,8 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.DISKRESJONSKODE;
@@ -56,6 +56,40 @@ public class OppfolgingsbrukerRepositoryV3 {
             return 0;
         }
         return upsert(oppfolgingsbruker);
+    }
+
+    private record OppfolgingsbrukerEntityMedOppslagFnr(Fnr oppslagFnr,
+                                                        OppfolgingsbrukerEntity oppfolgingsbrukerEntity) {
+    }
+
+    public Map<Fnr, OppfolgingsbrukerEntity> hentOppfolgingsBrukere(Set<Fnr> fnrs) {
+        String fnrsCondition = fnrs.stream().map(Fnr::toString).collect(Collectors.joining(",", "{", "}"));
+        String sql = """
+                                SELECT bi1.ident as oppslag_fnr, ob.*
+                                FROM OPPFOLGINGSBRUKER_ARENA_V2 ob
+                                INNER JOIN BRUKER_IDENTER bi1 on bi1.ident = any (?::varchar[])
+                                INNER JOIN BRUKER_IDENTER bi2 on bi2.person = bi1.person
+                                WHERE ob.fodselsnr = bi2.ident
+                                AND bi2.gruppe = ?
+                """;
+
+        return db.query(sql,
+                        (rs, row) -> mapTilOppfolgingsbrukerMedOppslagFnr(rs, row, "oppslag_fnr"),
+                        fnrsCondition,
+                        PDLIdent.Gruppe.FOLKEREGISTERIDENT.name())
+                .stream().filter(Objects::nonNull).collect(Collectors.toMap(
+                        OppfolgingsbrukerEntityMedOppslagFnr::oppslagFnr,
+                        OppfolgingsbrukerEntityMedOppslagFnr::oppfolgingsbrukerEntity)
+                );
+    }
+
+    @SneakyThrows
+    private static OppfolgingsbrukerEntityMedOppslagFnr mapTilOppfolgingsbrukerMedOppslagFnr(ResultSet rs, int row, String oppslagFnrColumn) {
+        OppfolgingsbrukerEntity oppfolgingsbrukerEntity = mapTilOppfolgingsbruker(rs, row);
+
+        return oppfolgingsbrukerEntity != null
+                ? new OppfolgingsbrukerEntityMedOppslagFnr(Fnr.of(rs.getString(oppslagFnrColumn)), oppfolgingsbrukerEntity)
+                : null;
     }
 
     public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(Fnr fnr) {

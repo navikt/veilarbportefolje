@@ -2,21 +2,30 @@ package no.nav.pto.veilarbportefolje.util;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.domene.value.*;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.util.Random;
 import java.util.UUID;
 
 import static java.lang.String.valueOf;
 import static java.time.Duration.ofDays;
+import static java.time.Month.DECEMBER;
+import static java.time.Month.JANUARY;
 import static java.util.concurrent.ThreadLocalRandom.current;
 import static org.apache.commons.lang3.RandomUtils.nextLong;
 
 public class TestDataUtils {
 
+    private final static Random random = new Random();
+
     public static Fnr randomFnr() {
-        return Fnr.ofValidFnr("010101"+randomDigits(5));
+        return Fnr.ofValidFnr("010101" + randomDigits(5));
     }
 
 
@@ -83,7 +92,35 @@ public class TestDataUtils {
         );
     }
 
+    public static LocalDate randomLocalDate() {
+        YearMonth yearMonth = YearMonth.of(random.nextInt(2000, Year.now().getValue() + 10),
+                random.nextInt(JANUARY.getValue(), DECEMBER.getValue() + 1));
+        return LocalDate.of(
+                yearMonth.getYear(),
+                yearMonth.getMonth(),
+                random.nextInt(1, yearMonth.atEndOfMonth().getDayOfMonth() + 1));
+    }
+
+    public static LocalTime randomLocalTime() {
+        return LocalTime.of(random.nextInt(0, 24), random.nextInt(0, 60));
+    }
+
+    public static ZonedDateTime randomZonedDate() {
+        return ZonedDateTime.of(
+                randomLocalDate(),
+                randomLocalTime(),
+                ZoneId.systemDefault());
+    }
+
     public static SisteOppfolgingsperiodeV1 genererSluttdatoForOppfolgingsperiode(SisteOppfolgingsperiodeV1 periode) {
         return genererSluttdatoForOppfolgingsperiode(periode, tilfeldigSenereDato(periode.getStartDato()));
+    }
+
+    public static Innsatsgruppe randomInnsatsgruppe() {
+        return Innsatsgruppe.values()[random.nextInt(Innsatsgruppe.values().length)];
+    }
+
+    public static Hovedmal randomHovedmal() {
+        return Hovedmal.values()[random.nextInt(Hovedmal.values().length)];
     }
 }
