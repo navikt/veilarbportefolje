@@ -204,6 +204,9 @@
       },
       "bostedSistOppdatert": {
         "type": "date"
+      },
+      "avvik14aVedtak": {
+        "type": "keyword"
       }
     }
   }
