@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
@@ -93,6 +94,8 @@ public class Bruker {
     String nesteCvKanDelesStatus;
     LocalDate nesteSvarfristCvStillingFraNav;
 
+    boolean harAvvik14aVedtak;
+
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
@@ -176,7 +179,8 @@ public class Bruker {
                 .setBostedKommune(bruker.getKommunenummer())
                 .setHarUtelandsAddresse(harUtelandsAddresse)
                 .setHarUkjentBosted(bruker.isHarUkjentBosted())
-                .setBostedSistOppdatert(bruker.getBostedSistOppdatert());
+                .setBostedSistOppdatert(bruker.getBostedSistOppdatert())
+                .setHarAvvik14aVedtak(bruker.getAvvik14aVedtak() == null && bruker.getAvvik14aVedtak() != Avvik14aVedtak.INGEN_AVVIK);
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {
