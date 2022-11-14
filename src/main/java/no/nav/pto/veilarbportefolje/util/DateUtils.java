@@ -187,6 +187,4 @@ public class DateUtils {
     private static long fromLocalDateToEpochSecond(LocalDate date){
         return date.toEpochSecond(date.atStartOfDay().toLocalTime(), ZoneOffset.UTC);
     }
-
-
 }
