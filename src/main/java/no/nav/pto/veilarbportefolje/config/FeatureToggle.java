@@ -8,6 +8,7 @@ public class FeatureToggle {
     private FeatureToggle() {
     }
 
+
     public static final String ALIAS_INDEKSERING = "veilarbportefolje.aliasIndeksering";
     public static final String KAFKA_AIVEN_CONSUMERS_STOP = "veilarbportefolje.kafka_aiven_consumers_stop";
     public static final String KAFKA_ONPREM_CONSUMERS_STOP = "veilarbportefolje.kafka_onprem_consumers_stop";
@@ -20,6 +21,8 @@ public class FeatureToggle {
     public static final String PDL_BRUKERDATA_BACKUP = "veilarbportefolje.Pdl_brukerdata_backup";
 
     public static final String BOSTED_FILTER_ENABLED = "veilarbportefolje.Bosted_Filter_Enabled";
+
+    private static final String MAP_AVVIK_14A_VEDTAK = "veilarbportefolje.map_avvik_14a_vedtak";
 
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
@@ -39,5 +42,9 @@ public class FeatureToggle {
 
     public static boolean brukArenaSomBackup(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.PDL_BRUKERDATA_BACKUP);
+    }
+
+    public static boolean mapAvvik14aVedtak(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.MAP_AVVIK_14A_VEDTAK);
     }
 }
