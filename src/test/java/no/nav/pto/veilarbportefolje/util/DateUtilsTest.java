@@ -1,14 +1,10 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import no.nav.common.types.identer.Id;
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Test;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 

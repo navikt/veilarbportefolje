@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.lang.Math.abs;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.*;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.closestToTodayComparator;
