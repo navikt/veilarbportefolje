@@ -122,11 +122,9 @@ public class PostgresAktivitetMapper {
 
     private static void byggStillingFraNavData(List<AktivitetEntityDto> aktiviteter, Set<String> aktiveAktiviteter, AktivitetEntity entity){
         if(aktiveAktiviteter.contains(stilling_fra_nav.name())){
-            LocalDate today = LocalDate.now();
             Optional<AktivitetEntityDto> nesteStillingFraNav = aktiviteter.stream()
                     .filter(aktivitetEntityDto -> stilling_fra_nav.equals(aktivitetEntityDto.aktivitetsType))
                     .filter(aktivitetEntityDto -> aktivitetEntityDto.svarfristStillingFraNav != null)
-                    //.min(Comparator.comparing(aktivitet -> closestToToday(aktivitet.svarfristStillingFraNav, today)));
                     .min(Comparator.comparing(aktivitet -> aktivitet.svarfristStillingFraNav, closestToTodayComparator()));
             entity.setNesteCvKanDelesStatus(nesteStillingFraNav.map(AktivitetEntityDto::getCvKanDelesStatus).orElse(null));
             entity.setNesteSvarfristStillingFraNav(nesteStillingFraNav.map((AktivitetEntityDto::getSvarfristStillingFraNav)).orElse(null));

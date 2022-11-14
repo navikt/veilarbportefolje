@@ -180,34 +180,14 @@ public class DateUtils {
         return ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS);
     }
 
-    public static int closestToToday(LocalDate date){
-        LocalDate today = LocalDate.now();
-        Integer v = date.compareTo(today);
-        Integer abso = abs(v);
-        return abs(date.compareTo(today));
+    public static Comparator<LocalDate> closestToTodayComparator() {
+        long todayEpoch = fromLocalDateToEpochSecond(LocalDate.now());
+        return Comparator.comparing(dato -> abs(fromLocalDateToEpochSecond(dato)-todayEpoch));
     }
 
-    public static long fromLocalDateToEpochSecond(LocalDate date){
+    private static long fromLocalDateToEpochSecond(LocalDate date){
         return date.toEpochSecond(date.atStartOfDay().toLocalTime(), ZoneOffset.UTC);
     }
 
-    public static Comparator<LocalDate> closestToTodayComparator() {
-        LocalDate today = LocalDate.now();
-        //Krever det noe å initalisere denne gang på gang?
-        long todayEpoch = fromLocalDateToEpochSecond(today);
-        //dumt å intialisere denne over igjen og igjen? Kanskje ikke siden den har bare 00 00 00 så det blir jo det samme hver gang.
-        return Comparator.comparing(dato -> abs(fromLocalDateToEpochSecond(dato)-todayEpoch));
-    }
-    public static long closestToTodayComparatorDate(LocalDate date) {
-        LocalDate today = LocalDate.now();
-        //Krever det noe å initalisere denne gang på gang?
-        long todayEpoch = fromLocalDateToEpochSecond(today);
-        long dateEpoch = fromLocalDateToEpochSecond(date);
-
-        long diff = dateEpoch - todayEpoch;
-        long diffTwo = todayEpoch - dateEpoch;
-        //dumt å intialisere denne over igjen og igjen? Kanskje ikke siden den har bare 00 00 00 så det blir jo det samme hver gang.
-        return abs(dateEpoch-todayEpoch);
-    }
 
 }
