@@ -6,11 +6,14 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
+import static java.lang.Math.abs;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
+import static java.time.temporal.ChronoUnit.DAYS;
 
 public class DateUtils {
 
@@ -175,5 +178,10 @@ public class DateUtils {
 
     public static ZonedDateTime now() {
         return ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS);
+    }
+
+    public static Comparator<LocalDate> closestToTodayComparator() {
+        LocalDate today = LocalDate.now();
+        return Comparator.comparing(dato -> abs(DAYS.between(today, dato)));
     }
 }
