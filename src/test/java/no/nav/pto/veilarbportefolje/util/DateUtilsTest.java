@@ -4,10 +4,9 @@ import org.junit.Test;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.util.Comparator;
+import java.util.List;
 
 import static java.time.Duration.ofSeconds;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -78,5 +77,52 @@ public class DateUtilsTest {
     @Test(expected = NullPointerException.class)
     public void null_skal_kaste_exception() {
         getTimestampFromSimpleISODate(null);
+    }
+
+    @Test
+    public void liste_av_datoer_som_inneholder_i_dag_skal_returnere_i_dag_som_naermeste_dag(){
+        LocalDate Idag = LocalDate.now();
+        LocalDate Imorgen = Idag.plusDays(1);
+        LocalDate Igaar = Idag.minusDays(1);
+        List<LocalDate> datoListeInneholderDagensDato = List.of(Idag, Igaar, Imorgen);
+
+        LocalDate datoNaermestIdag = datoListeInneholderDagensDato.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
+
+        assertThat(datoNaermestIdag).isEqualTo(Idag);
+    }
+
+    @Test
+    public void liste_av_datoer_som_inneholder_femti_dager_frem_og_forti_dager_siden_skal_returnere_forti_dager_siden_som_naermeste_dag(){
+        LocalDate idag = LocalDate.now();
+        LocalDate femtiDagerFrem = idag.plusDays(50);
+        LocalDate fortiDagerSiden = idag.minusDays(40);
+        List<LocalDate> datoliste = List.of(femtiDagerFrem, fortiDagerSiden);
+
+        LocalDate datoNaermestIdag = datoliste.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
+
+        assertThat(datoNaermestIdag).isEqualTo(fortiDagerSiden);
+    }
+
+    @Test
+    public void liste_av_datoer_som_inneholder_ti_dager_frem_og_fjorten_dager_siden_skal_returnere_ti_dager_frem_som_naermeste_dag(){
+        LocalDate Idag = LocalDate.now();
+        LocalDate TiDagerFrem = Idag.plusDays(10);
+        LocalDate FjortenDagerSiden = Idag.minusDays(14);
+        List<LocalDate> datoliste = List.of(TiDagerFrem, FjortenDagerSiden);
+
+        LocalDate datoNaermestIdag = datoliste.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
+
+        assertThat(datoNaermestIdag).isEqualTo(TiDagerFrem);
+    }
+
+    @Test
+    public void liste_av_datoer_som_inneholder_kun_en_dato_skal_returnere_den_datoen(){
+        LocalDate Idag = LocalDate.now();
+        LocalDate SekstiDagerFrem = Idag.plusDays(60);
+        List<LocalDate> datoliste = List.of(SekstiDagerFrem);
+
+        LocalDate datoNaermestIdag = datoliste.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
+
+        assertThat(datoNaermestIdag).isEqualTo(SekstiDagerFrem);
     }
 }
