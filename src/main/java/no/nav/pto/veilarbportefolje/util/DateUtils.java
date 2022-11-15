@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import static java.lang.Math.abs;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
+import static java.time.temporal.ChronoUnit.DAYS;
 
 public class DateUtils {
 
@@ -180,11 +181,7 @@ public class DateUtils {
     }
 
     public static Comparator<LocalDate> closestToTodayComparator() {
-        long todayEpoch = fromLocalDateToEpochSecond(LocalDate.now());
-        return Comparator.comparing(dato -> abs(fromLocalDateToEpochSecond(dato)-todayEpoch));
-    }
-
-    private static long fromLocalDateToEpochSecond(LocalDate date){
-        return date.toEpochSecond(date.atStartOfDay().toLocalTime(), ZoneOffset.UTC);
+        LocalDate today = LocalDate.now();
+        return Comparator.comparing(dato -> abs(DAYS.between(today, dato)));
     }
 }

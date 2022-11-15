@@ -8,7 +8,9 @@ import java.time.*;
 import java.util.Comparator;
 import java.util.List;
 
+import static java.lang.Math.abs;
 import static java.time.Duration.ofSeconds;
+import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
