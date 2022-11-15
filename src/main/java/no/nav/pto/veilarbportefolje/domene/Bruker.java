@@ -180,7 +180,7 @@ public class Bruker {
                 .setHarUtelandsAddresse(harUtelandsAddresse)
                 .setHarUkjentBosted(bruker.isHarUkjentBosted())
                 .setBostedSistOppdatert(bruker.getBostedSistOppdatert())
-                .setHarAvvik14aVedtak(bruker.getAvvik14aVedtak() == null && bruker.getAvvik14aVedtak() != Avvik14aVedtak.INGEN_AVVIK);
+                .setHarAvvik14aVedtak(bruker.getAvvik14aVedtak() != null && bruker.getAvvik14aVedtak() != Avvik14aVedtak.INGEN_AVVIK);
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {

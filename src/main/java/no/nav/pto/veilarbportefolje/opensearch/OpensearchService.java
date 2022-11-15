@@ -3,16 +3,12 @@ package no.nav.pto.veilarbportefolje.opensearch;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.apache.commons.lang3.StringUtils;
@@ -26,9 +22,7 @@ import org.opensearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -41,9 +35,7 @@ public class OpensearchService {
     private final RestHighLevelClient restHighLevelClient;
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final VedtaksstotteClient vedtaksstotteClient;
-    private final Avvik14aVedtakService avvik14aVedtakService;
     private final IndexName indexName;
-    private final UnleashService unleashService;
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder,
                                         String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {

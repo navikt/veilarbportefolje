@@ -97,7 +97,8 @@ public class OpensearchQueryBuilder {
             filtervalg.stillingFraNavFilter.forEach(
                     stillingFraNAVFilter -> {
                         switch (stillingFraNAVFilter) {
-                            case CV_KAN_DELES_STATUS_JA -> queryBuilder.must(matchQuery("neste_cv_kan_deles_status", "JA"));
+                            case CV_KAN_DELES_STATUS_JA ->
+                                    queryBuilder.must(matchQuery("neste_cv_kan_deles_status", "JA"));
                             default -> throw new IllegalStateException("Stilling fra NAV ikke funnet");
                         }
                     });
@@ -199,6 +200,14 @@ public class OpensearchQueryBuilder {
                     }
             );
             queryBuilder.must(bostedSubquery);
+        }
+
+        if (filtervalg.harAvvik14aVedtakFilter()) {
+            BoolQueryBuilder avvik14aVedtakSubQuery = boolQuery();
+            filtervalg.avvik14aVedtak.forEach(avvik14aVedtak ->
+                    avvik14aVedtakSubQuery.should(matchQuery("avvik14aVedtak", avvik14aVedtak))
+            );
+            queryBuilder.must(avvik14aVedtakSubQuery);
         }
     }
 
