@@ -36,10 +36,6 @@ public class FeatureToggle {
         return unleashService.isEnabled(FeatureToggle.PDL_BRUKERDATA);
     }
 
-    public static boolean isBostedFilterEnabled(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.BOSTED_FILTER_ENABLED);
-    }
-
     public static boolean brukArenaSomBackup(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.PDL_BRUKERDATA_BACKUP);
     }
