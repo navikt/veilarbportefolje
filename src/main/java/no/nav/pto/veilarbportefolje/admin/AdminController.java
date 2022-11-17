@@ -18,7 +18,14 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -33,7 +40,7 @@ import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraCont
 @RequiredArgsConstructor
 public class AdminController {
     private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
-            "prod-fss" : "dev-fss", "pto", "pto-admin").toString();
+            "prod-fss": "dev-fss", "pto", "pto-admin").toString();
     private final AktorClient aktorClient;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final HovedIndekserer hovedIndekserer;
