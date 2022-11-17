@@ -1784,8 +1784,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         assertThat(response.getBrukere())
                 .hasSize(2)
-                .extracting(Bruker::isHarAvvik14aVedtak)
-                .containsOnly(true);
+                .extracting(Bruker::getAvvik14aVedtak)
+                .containsExactlyInAnyOrder(Avvik14aVedtak.INNSATSGRUPPE_ULIK, Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK);
     }
 
     @Test
@@ -1847,8 +1847,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         assertThat(response.getBrukere())
                 .hasSize(5)
-                .extracting(Bruker::isHarAvvik14aVedtak)
-                .containsOnly(false);
+                .extracting(Bruker::getAvvik14aVedtak)
+                .containsOnly(Avvik14aVedtak.INGEN_AVVIK);
     }
 
     @Test

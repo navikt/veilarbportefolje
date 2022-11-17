@@ -94,7 +94,7 @@ public class Bruker {
     String nesteCvKanDelesStatus;
     LocalDate nesteSvarfristCvStillingFraNav;
 
-    boolean harAvvik14aVedtak;
+    Avvik14aVedtak avvik14aVedtak;
 
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
@@ -180,7 +180,7 @@ public class Bruker {
                 .setHarUtelandsAddresse(harUtelandsAddresse)
                 .setHarUkjentBosted(bruker.isHarUkjentBosted())
                 .setBostedSistOppdatert(bruker.getBostedSistOppdatert())
-                .setHarAvvik14aVedtak(bruker.getAvvik14aVedtak() != null && bruker.getAvvik14aVedtak() != Avvik14aVedtak.INGEN_AVVIK);
+                .setAvvik14aVedtak(bruker.getAvvik14aVedtak());
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {
