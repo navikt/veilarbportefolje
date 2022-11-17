@@ -114,7 +114,8 @@ CREATE TABLE public.bruker_data (
     sikkerhetstiltak_type character varying(20),
     sikkerhetstiltak_beskrivelse character varying(255),
     sikkerhetstiltak_gyldigfra date,
-    sikkerhetstiltak_gyldigtil date
+    sikkerhetstiltak_gyldigtil date,
+    harukjentbosted boolean DEFAULT false
 );
 
 
