@@ -57,7 +57,7 @@ public class BrukerRepositoryV2 {
                                bd.etternavn as etternavn_pdl, bd.mellomnavn as mellomnavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
                                bd.foedeland, 
                                bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert, bd.diskresjonkode as pdl_diskresjonkode,
-                               bd.bydelsnummer, bd.kommunenummer, bd.bostedsistoppdatert, bd.utenlandskadresse, bd.harUkjentBosted, 
+                               bd.bydelsnummer, bd.kommunenummer, bd.bostedsistoppdatert, bd.utenlandskadresse, bd.harUkjentBosted,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
                                BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
