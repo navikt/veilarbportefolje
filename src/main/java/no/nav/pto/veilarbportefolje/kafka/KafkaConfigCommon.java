@@ -352,7 +352,16 @@ public class KafkaConfigCommon {
                 );
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
-                List.of(
+                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.SIST_LEST.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(SistLestKafkaMelding.class),
+                                        sistLestService::behandleKafkaRecord
+                                ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, MalEndringKafkaDTO>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
@@ -362,16 +371,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
                                         malService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.SIST_LEST.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(SistLestKafkaMelding.class),
-                                        sistLestService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, String>()
                                 .withLogging()
