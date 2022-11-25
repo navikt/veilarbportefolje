@@ -6,6 +6,7 @@ import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.pto.veilarbportefolje.registrering.DinSituasjonSvar;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.apache.commons.lang3.StringUtils;
 
@@ -49,6 +50,7 @@ public class Filtervalg {
     public List<String> tolkBehovSpraak;
     public List<StillingFraNAVFilter> stillingFraNavFilter;
     public List<String> geografiskBosted;
+    public List<Avvik14aVedtak> avvik14aVedtak;
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
@@ -80,7 +82,8 @@ public class Filtervalg {
                 harFoedelandFilter() ||
                 harStillingFraNavFilter() ||
                 harLandgruppeFilter() ||
-                harBostedFilter();
+                harBostedFilter() ||
+                harAvvik14aVedtakFilter();
     }
 
     public boolean harCvFilter() {
@@ -151,6 +154,10 @@ public class Filtervalg {
 
     public boolean harBostedFilter() {
         return geografiskBosted != null && !geografiskBosted.isEmpty();
+    }
+
+    public boolean harAvvik14aVedtakFilter() {
+        return avvik14aVedtak != null && !avvik14aVedtak.isEmpty();
     }
 
     public boolean valider() {

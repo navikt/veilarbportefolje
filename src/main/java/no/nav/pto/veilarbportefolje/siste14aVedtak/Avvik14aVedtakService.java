@@ -3,14 +3,13 @@ package no.nav.pto.veilarbportefolje.siste14aVedtak;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.PortefoljeMapper;
 import no.nav.pto.veilarbportefolje.domene.ArenaHovedmal;
 import no.nav.pto.veilarbportefolje.domene.ArenaInnsatsgruppe;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.domene.Vedtak14aInfo;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
-import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
-import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -66,8 +65,8 @@ public class Avvik14aVedtakService {
     }
 
     private Avvik14aVedtak finnAvvik(Vedtak14aInfo vedtak14aInfo) {
-        ArenaInnsatsgruppe konvertertInnsatsgruppe = mapTilArenaInnsatsgruppe(vedtak14aInfo.getInnsatsgruppe());
-        ArenaHovedmal konvertertHovedmaal = mapTilArenaHovedmal(vedtak14aInfo.getHovedmal());
+        ArenaInnsatsgruppe konvertertInnsatsgruppe = PortefoljeMapper.mapTilArenaInnsatsgruppe(vedtak14aInfo.getInnsatsgruppe());
+        ArenaHovedmal konvertertHovedmaal = PortefoljeMapper.mapTilArenaHovedmal(vedtak14aInfo.getHovedmal());
 
         if (vedtak14aInfo.getArenaInnsatsgruppe() == null) {
             return Avvik14aVedtak.INGEN_AVVIK;
@@ -92,28 +91,4 @@ public class Avvik14aVedtakService {
         return Avvik14aVedtak.INGEN_AVVIK;
     }
 
-    private ArenaInnsatsgruppe mapTilArenaInnsatsgruppe(Innsatsgruppe innsatsgruppe) {
-        if (innsatsgruppe == null) {
-            return null;
-        }
-
-        return switch (innsatsgruppe) {
-            case STANDARD_INNSATS -> ArenaInnsatsgruppe.IKVAL;
-            case SITUASJONSBESTEMT_INNSATS -> ArenaInnsatsgruppe.BFORM;
-            case SPESIELT_TILPASSET_INNSATS -> ArenaInnsatsgruppe.BATT;
-            case GRADERT_VARIG_TILPASSET_INNSATS, VARIG_TILPASSET_INNSATS -> ArenaInnsatsgruppe.VARIG;
-        };
-    }
-
-    private ArenaHovedmal mapTilArenaHovedmal(Hovedmal hovedmal) {
-        if (hovedmal == null) {
-            return null;
-        }
-
-        return switch (hovedmal) {
-            case SKAFFE_ARBEID -> ArenaHovedmal.SKAFFEA;
-            case BEHOLDE_ARBEID -> ArenaHovedmal.BEHOLDEA;
-            case OKE_DELTAKELSE -> ArenaHovedmal.OKEDELT;
-        };
-    }
 }

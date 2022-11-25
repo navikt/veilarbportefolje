@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
@@ -12,6 +13,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +36,7 @@ public class PostgresOpensearchMapper {
     private final UnleashService unleashService;
 
     private final KodeverkService kodeverkService;
+    private final Avvik14aVedtakService avvik14aService;
 
     public List<OppfolgingsBruker> flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -139,5 +143,12 @@ public class PostgresOpensearchMapper {
         return new Statsborgerskap(kodeverkService.getBeskrivelseForLandkode(statsborgerskap.getStatsborgerskap()),
                 statsborgerskap.getGyldigFra(),
                 statsborgerskap.getGyldigTil());
+    }
+
+    public void flettInnAvvik14aVedtak(List<OppfolgingsBruker> brukere) {
+        Map<GjeldendeIdenter, Avvik14aVedtak> avvik14aVedtakList = avvik14aService.hentAvvik(brukere.stream().map(GjeldendeIdenter::of).collect(Collectors.toSet()));
+        brukere.forEach(bruker -> {
+            bruker.setAvvik14aVedtak(avvik14aVedtakList.get(GjeldendeIdenter.of(bruker)));
+        });
     }
 }
