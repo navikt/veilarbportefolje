@@ -62,7 +62,8 @@ public class ValideringsRegler {
             "tolkebehov_sistoppdatert",
             "kommunenummer",
             "bydelsnummer",
-            "bostedSistOppdatert"
+            "bostedSistOppdatert",
+            "neste_svarfrist_stilling_fra_nav"
     );
 
     public static void sjekkEnhet(String enhet) {

@@ -39,6 +39,13 @@ public class OpensearchQueryBuilderTest {
     }
 
     @Test
+    public void skal_sortere_pa_neste_svarfrist_stilling_fra_nav() {
+        var searchSourceBuilder = sorterQueryParametere("asc", "neste_svarfrist_stilling_fra_nav", new SearchSourceBuilder(), new Filtervalg());
+        var fieldName = searchSourceBuilder.sorts().get(0).toString();
+        assertThat(fieldName).contains("neste_svarfrist_stilling_fra_nav");
+    }
+
+    @Test
     public void skal_bygge_riktig_filtrer_paa_veileder_script() {
         String actualScript = byggVeilederPaaEnhetScript(List.of("Z000000", "Z000001", "Z000002"));
         String expectedScript = "(doc.veileder_id.size() != 0 && [\"Z000000\",\"Z000001\",\"Z000002\"].contains(doc.veileder_id.value)).toString()";
