@@ -6,7 +6,12 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
+import no.nav.pto_schema.enums.arena.Hovedmaal;
+import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.search.builder.SearchSourceBuilder;
@@ -1722,6 +1727,190 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getBrukere().get(3).getBostedBydel() == null);
         assertThat(response.getBrukere().get(4).getBostedBydel() == null);
 
+    }
+
+    @Test
+    public void skal_filtrere_brukere_med_riktige_avvikstyper_når_filter_for_avvik_er_valgt_hvor_noen_brukere_har_avvik_og_noen_ikke_har_avvik() {
+        var bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK);
+
+        var bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_MANGLER_I_NY_KILDE);
+
+        var bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_ULIK);
+
+        var bruker4 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.HOVEDMAAL_ULIK);
+
+        var bruker5 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK);
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setAvvik14aVedtak(List.of(Avvik14aVedtak.INNSATSGRUPPE_ULIK, Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK));
+
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getBrukere())
+                .hasSize(2)
+                .extracting(Bruker::getAvvik14aVedtak)
+                .containsExactlyInAnyOrder(Avvik14aVedtak.INNSATSGRUPPE_ULIK, Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK);
+    }
+
+    @Test
+    public void skal_filtrere_brukere_med_riktige_avvikstyper_når_filter_for_avvik_er_valgt_hvor_alle_brukere_ikke_har_avvik() {
+        var bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK);
+
+        var bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK);
+
+        var bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK);
+
+        var bruker4 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK);
+
+        var bruker5 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK);
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setAvvik14aVedtak(List.of(Avvik14aVedtak.INGEN_AVVIK));
+
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getBrukere())
+                .hasSize(5)
+                .extracting(Bruker::getAvvik14aVedtak)
+                .containsOnly(Avvik14aVedtak.INGEN_AVVIK);
+    }
+
+    @Test
+    void skal_ikke_filtrere_på_avvikstype_når_filter_for_avvik_ikke_er_valgt() {
+        var bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK);
+
+        var bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_MANGLER_I_NY_KILDE);
+
+        var bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_ULIK);
+
+        var bruker4 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.HOVEDMAAL_ULIK);
+
+        var bruker5 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK);
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValg = new Filtervalg();
+
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getBrukere()).hasSize(5);
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {

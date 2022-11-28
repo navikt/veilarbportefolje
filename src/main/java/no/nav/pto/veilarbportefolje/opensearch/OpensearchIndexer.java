@@ -5,13 +5,10 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
-import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
 import org.opensearch.action.bulk.BulkRequest;
 import org.opensearch.action.index.IndexRequest;
 import org.opensearch.client.RequestOptions;
@@ -21,9 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static no.nav.common.json.JsonUtils.toJson;
@@ -42,7 +37,6 @@ public class OpensearchIndexer {
     private final IndexName alias;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final Avvik14aVedtakService avvik14aService;
     private final UnleashService unleashService;
 
     public void indekser(AktorId aktoerId) {
@@ -58,7 +52,7 @@ public class OpensearchIndexer {
             postgresOpensearchMapper.flettInnStatsborgerskapData(List.of(bruker));
 
             if(FeatureToggle.mapAvvik14aVedtak(unleashService)) {
-                flettInnAvvik14aVedtak(List.of(bruker));
+                postgresOpensearchMapper.flettInnAvvik14aVedtak(List.of(bruker));
             }
 
             syncronIndekseringsRequest(bruker);
@@ -124,24 +118,18 @@ public class OpensearchIndexer {
         List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
 
         if (FeatureToggle.mapAvvik14aVedtak(unleashService)) {
-            flettInnAvvik14aVedtak(brukere);
+            postgresOpensearchMapper.flettInnAvvik14aVedtak(brukere);
         }
 
         postgresOpensearchMapper.flettInnAktivitetsData(brukere);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
         postgresOpensearchMapper.flettInnStatsborgerskapData(brukere);
+
         if (brukere.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
             return;
         }
         this.skrivTilIndeks(alias.getValue(), brukere);
-    }
-
-    private void flettInnAvvik14aVedtak(List<OppfolgingsBruker> brukere) {
-        Map<GjeldendeIdenter, Avvik14aVedtak> avvik14aVedtakList = avvik14aService.hentAvvik(brukere.stream().map(GjeldendeIdenter::of).collect(Collectors.toSet()));
-        brukere.forEach(bruker -> {
-            bruker.setAvvik14aVedtak(avvik14aVedtakList.get(GjeldendeIdenter.of(bruker)));
-        });
     }
 
     public void dryrunAvPostgresTilOpensearchMapping(List<AktorId> brukereUnderOppfolging) {
