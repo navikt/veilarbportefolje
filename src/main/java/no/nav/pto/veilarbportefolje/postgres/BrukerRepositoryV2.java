@@ -55,7 +55,7 @@ public class BrukerRepositoryV2 {
                         select OD.AKTOERID, OD.OPPFOLGING, ob.*,
                                ns.er_skjermet, ns.skjermet_til, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.mellomnavn as mellomnavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
-                               bd.foedeland, bd.innflyttingTilNorgeFraLand, bd.angittFlyttedato,
+                               bd.foedeland, 
                                bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert,
                                bd.bydelsnummer, bd.kommunenummer, bd.bostedsistoppdatert, bd.utenlandskadresse, bd.harUkjentBosted, 
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
@@ -253,7 +253,6 @@ public class BrukerRepositoryV2 {
 
         String landGruppe = Landgruppe.getInstance().getLandgruppeForLandKode(rs.getString("foedeland"));
         String foedelandFulltNavn = kodeverskService.getBeskrivelseForLandkode(rs.getString("foedeland"));
-        String innflyttingTilNorgeFraLandFullNavn = kodeverskService.getBeskrivelseForLandkode(rs.getString("innflyttingTilNorgeFraLand"));
         bruker
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
@@ -267,7 +266,6 @@ public class BrukerRepositoryV2 {
                 .setTalespraaktolk(rs.getString("talespraaktolk"))
                 .setTegnspraaktolk(rs.getString("tegnspraaktolk"))
                 .setTolkBehovSistOppdatert(DateUtils.toLocalDateOrNull(rs.getString("tolkBehovSistOppdatert")))
-                .setInnflyttingTilNorgeFraLand((innflyttingTilNorgeFraLandFullNavn != null && !innflyttingTilNorgeFraLandFullNavn.isEmpty()) ? innflyttingTilNorgeFraLandFullNavn : null)
                 .setLandgruppe((landGruppe != null && !landGruppe.isEmpty()) ? landGruppe : null)
                 .setBydelsnummer(rs.getString("bydelsnummer"))
                 .setKommunenummer(rs.getString("kommunenummer"))

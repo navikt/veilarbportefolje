@@ -35,8 +35,7 @@ public class AuthUtils {
                 .setBostedBydel(null)
                 .setBostedKommune(null)
                 .setHarUtelandsAddresse(false)
-                .setBostedSistOppdatert(null)
-                .setInnflyttingTilNorgeFraLand(null);
+                .setBostedSistOppdatert(null);
     }
 
     static void test(String navn, Object data, boolean matches) {
