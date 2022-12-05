@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -45,13 +46,14 @@ public class OpensearchIndexer {
         bruker.ifPresentOrElse(this::indekserBruker, () -> opensearchIndexerV2.slettDokumenter(List.of(aktoerId)));
     }
 
+    @Timed
     private void indekserBruker(OppfolgingsBruker bruker) {
         if (erUnderOppfolging(bruker)) {
             postgresOpensearchMapper.flettInnAktivitetsData(List.of(bruker));
             postgresOpensearchMapper.flettInnSisteEndringerData(List.of(bruker));
             postgresOpensearchMapper.flettInnStatsborgerskapData(List.of(bruker));
 
-            if(FeatureToggle.mapAvvik14aVedtak(unleashService)) {
+            if (FeatureToggle.mapAvvik14aVedtak(unleashService)) {
                 postgresOpensearchMapper.flettInnAvvik14aVedtak(List.of(bruker));
             }
 
