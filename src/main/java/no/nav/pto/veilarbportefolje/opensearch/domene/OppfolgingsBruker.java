@@ -102,6 +102,7 @@ public class OppfolgingsBruker {
     String tegnspraaktolk;
     LocalDate tolkBehovSistOppdatert;
     String landgruppe;
+    String innflyttingTilNorgeFraLand;
     boolean harFlereStatsborgerskap;
     Statsborgerskap hovedStatsborgerskap;
     String kommunenummer;
