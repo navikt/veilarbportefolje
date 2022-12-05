@@ -77,10 +77,8 @@
           }
         }
       ],
-      "innflyttingTilNorge": [],
       "bostedsadresse": [
         {
-          "angittFlyttedato": "2022-03-10",
           "metadata": {
             "master": "FREG",
             "historisk": false,
