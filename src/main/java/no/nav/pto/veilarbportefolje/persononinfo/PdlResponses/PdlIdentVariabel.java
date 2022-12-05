@@ -7,4 +7,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class PdlIdentVariabel {
     private String ident;
+    private boolean historikk;
+
 }
