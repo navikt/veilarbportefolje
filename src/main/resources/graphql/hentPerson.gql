@@ -1,4 +1,4 @@
-query($ident: ID! ) {
+query($ident: ID!) {
   hentPerson(ident: $ident) {
     navn {
       fornavn
@@ -32,7 +32,14 @@ query($ident: ID! ) {
         ...metadataDetails
       }
     }
+    innflyttingTilNorge {
+      fraflyttingsland
+      metadata {
+        ...metadataDetails
+      }
+    }
     bostedsadresse {
+      angittFlyttedato
       vegadresse {
         kommunenummer
         bydelsnummer
