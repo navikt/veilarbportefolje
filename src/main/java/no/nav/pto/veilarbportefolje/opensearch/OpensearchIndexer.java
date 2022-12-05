@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
-import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +15,7 @@ import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.common.xcontent.XContentType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,7 +40,6 @@ public class OpensearchIndexer {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final UnleashService unleashService;
 
-    @Timed
     public void indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;
         bruker = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
@@ -48,6 +47,8 @@ public class OpensearchIndexer {
     }
 
     private void indekserBruker(OppfolgingsBruker bruker) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         if (erUnderOppfolging(bruker)) {
             postgresOpensearchMapper.flettInnAktivitetsData(List.of(bruker));
             postgresOpensearchMapper.flettInnSisteEndringerData(List.of(bruker));
@@ -61,6 +62,9 @@ public class OpensearchIndexer {
         } else {
             opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
         }
+        stopWatch.stop();
+        log.info("IndekserBruker stats");
+        log.info(stopWatch.shortSummary());
     }
 
     @SneakyThrows
