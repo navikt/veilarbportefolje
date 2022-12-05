@@ -27,8 +27,6 @@ public class PDLPerson {
     private LocalDate foedsel;
     private String foedeland;
     private List<Statsborgerskap> statsborgerskap;
-    private String innflyttingTilNorgeFraLand;
-    private LocalDate angittFlyttedato;
     private String talespraaktolk;
     private String tegnspraaktolk;
     private LocalDate tolkBehovSistOppdatert;
@@ -51,7 +49,6 @@ public class PDLPerson {
                 .setFoedsel(kontrollerOgHentFodsel(response.getFoedsel()))
                 .setFoedeland(hentFoedselLand(response.getFoedsel()))
                 .setStatsborgerskap(hentStatsborgerskap(response.getStatsborgerskap()))
-                .setAngittFlyttedato(hentAngittFlyttedato(response.getBostedsadresse()))
                 .setBydelsnummer(hentBydel(response.getBostedsadresse()))
                 .setKommunenummer(hentBostedKommune(response.getBostedsadresse()))
                 .setUtenlandskAdresse(hentUtenlandskAdresse(response.getBostedsadresse()))
@@ -112,13 +109,6 @@ public class PDLPerson {
         return fodselsListe.stream().findFirst()
                 .map(PdlPersonResponse.PdlPersonResponseData.Foedsel::getFoedeland)
                 .orElse("");
-    }
-
-    private static LocalDate hentAngittFlyttedato(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
-        return hentBostedAdresse(response)
-                .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getAngittFlyttedato)
-                .map(LocalDate::parse)
-                .orElse(null);
     }
 
     private static String hentBydel(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {

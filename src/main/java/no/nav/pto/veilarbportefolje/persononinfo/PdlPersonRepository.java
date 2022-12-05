@@ -35,10 +35,10 @@ public class PdlPersonRepository {
                         INSERT INTO bruker_data (freg_ident, fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato, 
                         foedeland,  innflyttingTilNorgeFraLand, angittFlyttedato, talespraaktolk, tegnspraaktolk, tolkBehovSistOppdatert,
                         kommunenummer, bydelsnummer, utenlandskAdresse, bostedSistOppdatert, harUkjentBosted)
-                        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                         on conflict (freg_ident)
                         do update set (fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato, 
-                        foedeland, innflyttingTilNorgeFraLand, angittFlyttedato, talespraaktolk, tegnspraaktolk, tolkBehovSistOppdatert,
+                        foedeland, talespraaktolk, tegnspraaktolk, tolkBehovSistOppdatert,
                         kommunenummer, bydelsnummer, utenlandskAdresse, bostedSistOppdatert, harUkjentBosted) =
                         (excluded.fornavn, excluded.etternavn, excluded.mellomnavn, excluded.kjoenn, excluded.er_doed, excluded.foedselsdato, 
                         excluded.foedeland, excluded.innflyttingTilNorgeFraLand, excluded.angittFlyttedato,
@@ -47,7 +47,7 @@ public class PdlPersonRepository {
                         """,
                 fnr.get(), personData.getFornavn(), personData.getEtternavn(), personData.getMellomnavn(),
                 personData.getKjonn().name(), personData.isErDoed(), personData.getFoedsel(), personData.getFoedeland(),
-                personData.getInnflyttingTilNorgeFraLand(), personData.getAngittFlyttedato(), personData.getTalespraaktolk(),
+                personData.getTalespraaktolk(),
                 personData.getTegnspraaktolk(), personData.getTolkBehovSistOppdatert(),
                 personData.getKommunenummer(), personData.getBydelsnummer(), personData.getUtenlandskAdresse(),
                 personData.getBostedSistOppdatert(), personData.isHarUkjentBosted());
@@ -91,8 +91,6 @@ public class PdlPersonRepository {
                                 .setErDoed(rs.getBoolean("er_doed"))
                                 .setFoedsel(rs.getDate("foedselsdato").toLocalDate())
                                 .setFoedeland(rs.getString("foedeland"))
-                                .setInnflyttingTilNorgeFraLand(rs.getString("innflyttingTilNorgeFraLand"))
-                                .setAngittFlyttedato(toLocalDateOrNull(rs.getString("angittFlyttedato")))
                                 .setTalespraaktolk(rs.getString("talespraaktolk"))
                                 .setTegnspraaktolk(rs.getString("tegnspraaktolk"))
                                 .setTolkBehovSistOppdatert(toLocalDateOrNull(rs.getString("tolkBehovSistOppdatert")))

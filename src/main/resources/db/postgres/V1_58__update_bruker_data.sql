@@ -1,0 +1,5 @@
+ALTER TABLE BRUKER_DATA
+    DROP COLUMN innflyttingTilNorgeFraLand;
+
+ALTER TABLE BRUKER_DATA
+    DROP COLUMN angittFlyttedato;
