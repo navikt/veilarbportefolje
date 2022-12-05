@@ -93,7 +93,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Bostedsadresse {
-            private String angittFlyttedato;
             private Vegadresse vegadresse;
             private UtenlandskAdresse utenlandskAdresse;
             private UkjentBosted ukjentBosted;

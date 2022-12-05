@@ -26,7 +26,7 @@ public class PdlPortefoljeClient {
     private static final String hentPersonQuery = FileUtils.getResourceFileAsString("graphql/hentPerson.gql");
 
     public PDLPerson hentBrukerDataFraPdl(Fnr fnr) throws RuntimeException {
-        GraphqlRequest<PdlIdentVariabel> request = new GraphqlRequest<>(hentPersonQuery, new PdlIdentVariabel(fnr.get()));
+        GraphqlRequest<PdlIdentVariabel> request = new GraphqlRequest<>(hentPersonQuery, new PdlIdentVariabel(fnr.get(), false));
         PdlPersonResponse respons = pdlClient.request(request, PdlPersonResponse.class);
         if (hasErrors(respons)) {
             throw new RuntimeException("Kunne ikke hente identer fra PDL");
@@ -36,7 +36,7 @@ public class PdlPortefoljeClient {
     }
 
     public List<PDLIdent> hentIdenterFraPdl(AktorId aktorId) throws RuntimeException {
-        GraphqlRequest<PdlIdentVariabel> request = new GraphqlRequest<>(hentIdenterQuery, new PdlIdentVariabel(aktorId.get()));
+        GraphqlRequest<PdlIdentVariabel> request = new GraphqlRequest<>(hentIdenterQuery, new PdlIdentVariabel(aktorId.get(), true));
         PdlIdentResponse respons = pdlClient.request(request, PdlIdentResponse.class);
         if (hasErrors(respons)) {
             throw new RuntimeException("Kunne ikke hente identer fra PDL");

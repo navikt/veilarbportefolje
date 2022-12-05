@@ -33,7 +33,7 @@ public class PdlPersonRepository {
     public void upsertPerson(Fnr fnr, PDLPerson personData) {
         db.update("""
                         INSERT INTO bruker_data (freg_ident, fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato, 
-                        foedeland,  innflyttingTilNorgeFraLand, angittFlyttedato, talespraaktolk, tegnspraaktolk, tolkBehovSistOppdatert,
+                        foedeland, talespraaktolk, tegnspraaktolk, tolkBehovSistOppdatert,
                         kommunenummer, bydelsnummer, utenlandskAdresse, bostedSistOppdatert, harUkjentBosted)
                         values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                         on conflict (freg_ident)
@@ -41,7 +41,7 @@ public class PdlPersonRepository {
                         foedeland, talespraaktolk, tegnspraaktolk, tolkBehovSistOppdatert,
                         kommunenummer, bydelsnummer, utenlandskAdresse, bostedSistOppdatert, harUkjentBosted) =
                         (excluded.fornavn, excluded.etternavn, excluded.mellomnavn, excluded.kjoenn, excluded.er_doed, excluded.foedselsdato, 
-                        excluded.foedeland, excluded.innflyttingTilNorgeFraLand, excluded.angittFlyttedato,
+                        excluded.foedeland,
                         excluded.talespraaktolk, excluded.tegnspraaktolk, excluded.tolkBehovSistOppdatert,
                         excluded.kommunenummer, excluded.bydelsnummer, excluded.utenlandskAdresse, excluded.bostedSistOppdatert, excluded.harUkjentBosted)
                         """,
