@@ -40,13 +40,13 @@ public class OpensearchIndexer {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final UnleashService unleashService;
 
+    @Timed
     public void indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;
         bruker = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
         bruker.ifPresentOrElse(this::indekserBruker, () -> opensearchIndexerV2.slettDokumenter(List.of(aktoerId)));
     }
 
-    @Timed
     private void indekserBruker(OppfolgingsBruker bruker) {
         if (erUnderOppfolging(bruker)) {
             postgresOpensearchMapper.flettInnAktivitetsData(List.of(bruker));
