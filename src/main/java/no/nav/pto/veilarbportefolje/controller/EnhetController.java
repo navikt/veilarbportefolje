@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.controller;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
@@ -14,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,6 +29,21 @@ public class EnhetController {
     private final TiltakService tiltakService;
     private final PersonOpprinnelseService personOpprinnelseService;
     private final BostedService bostedService;
+
+    private final Cache<String, List<Foedeland>> enhetFoedelandCache = Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .maximumSize(1000)
+            .build();
+
+    private final Cache<String, List<TolkSpraak>> enhetTolkSpraakCache = Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .maximumSize(1000)
+            .build();
+
+    private final Cache<String, List<GeografiskBosted>> enhetGeografiskBostedCache = Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .maximumSize(1000)
+            .build();
 
     @PostMapping("/{enhet}/portefolje")
     public Portefolje hentPortefoljeForEnhet(
@@ -80,7 +100,8 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return personOpprinnelseService.hentFoedeland(enhet);
+        return tryCacheFirst(enhetFoedelandCache, enhet,
+                () -> personOpprinnelseService.hentFoedeland(enhet));
     }
 
     @GetMapping("/{enhet}/tolkSpraak")
@@ -90,7 +111,8 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return personOpprinnelseService.hentTolkSpraak(enhet);
+        return tryCacheFirst(enhetTolkSpraakCache, enhet,
+                () -> personOpprinnelseService.hentTolkSpraak(enhet));
     }
 
 
@@ -101,6 +123,7 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return bostedService.hentGeografiskBosted(enhet);
+        return tryCacheFirst(enhetGeografiskBostedCache, enhet,
+                () -> bostedService.hentGeografiskBosted(enhet));
     }
 }
