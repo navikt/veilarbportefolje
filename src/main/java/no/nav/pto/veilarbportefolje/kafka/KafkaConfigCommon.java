@@ -358,21 +358,10 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(SistLestKafkaMelding.class),
                                         sistLestService::behandleKafkaRecord
                                 )
-                                )
                 );
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
                 List.of(
-                        new KafkaConsumerClientBuilder.TopicConfig<String, MalEndringKafkaDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.ENDRING_PA_MAL.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
-                                        malService::behandleKafkaRecord
-                                ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, String>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
