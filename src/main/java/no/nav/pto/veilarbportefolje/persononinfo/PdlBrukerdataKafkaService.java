@@ -25,7 +25,7 @@ import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String> {
+public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDokument> {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final PdlService pdlService;
     private final PdlIdentRepository pdlIdentRepository;
@@ -36,7 +36,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
     @Override
     @SneakyThrows
     public void behandleKafkaMeldingLogikk(PdlDokument pdlDokument) {
-        if (pdlDokumentJson == null) {
+        if (pdlDokument == null) {
             log.info("""
                         Fikk tom endrings melding fra PDL.
                         Dette er en tombstone som ignoreres fordi alle historiske identer lenket til nye identer slettes ved en oppdatering.

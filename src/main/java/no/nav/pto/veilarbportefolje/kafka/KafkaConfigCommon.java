@@ -356,7 +356,7 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(SistLestKafkaMelding.class),
                                         sistLestService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, String>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, PdlDokument>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
