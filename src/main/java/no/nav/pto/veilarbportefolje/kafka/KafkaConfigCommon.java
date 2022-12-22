@@ -32,7 +32,6 @@ import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.AivenAvroDeserializer;
-import no.nav.pto.veilarbportefolje.kafka.deserializers.OnpremAvroDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
@@ -40,6 +39,7 @@ import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -363,7 +363,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.PDL_BRUKERDATA.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new OnpremAvroDeserializer<String>().getDeserializer(),
+                                        Deserializers.jsonDeserializer(PdlDokument.class),
                                         pdlBrukerdataKafkaService::behandleKafkaRecord
                                 )
                 );

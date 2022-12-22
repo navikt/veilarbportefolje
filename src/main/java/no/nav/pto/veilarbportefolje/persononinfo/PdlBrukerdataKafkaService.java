@@ -35,7 +35,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
 
     @Override
     @SneakyThrows
-    public void behandleKafkaMeldingLogikk(String pdlDokumentJson) {
+    public void behandleKafkaMeldingLogikk(PdlDokument pdlDokument) {
         if (pdlDokumentJson == null) {
             log.info("""
                         Fikk tom endrings melding fra PDL.
@@ -44,7 +44,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
             return;
         }
 
-        PdlDokument pdlDokument = objectMapper.readValue(pdlDokumentJson, PdlDokument.class);
         List<PDLIdent> pdlIdenter = pdlDokument.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
 
@@ -67,7 +66,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
             PDLPerson person = PDLPerson.genererFraApiRespons(personFraKafka);
             pdlPersonRepository.upsertPerson(aktivFnr, person);
         } catch (PdlPersonValideringException e) {
-            if(isDevelopment().orElse(false)){
+            if (isDevelopment().orElse(false)) {
                 log.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivAktorId), e);
                 return;
             }
