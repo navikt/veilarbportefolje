@@ -34,7 +34,6 @@ import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.AivenAvroDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.OnpremAvroDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
-import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaOnpremUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
@@ -63,7 +62,6 @@ import java.util.stream.Stream;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.NaisUtils.getCredentials;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_STOP;
@@ -84,7 +82,7 @@ public class KafkaConfigCommon {
         VEILEDER_TILORDNET("pto.veileder-tilordnet-v1"),
         ENDRING_PAA_NY_FOR_VEILEDER("pto.endring-paa-ny-for-veileder-v1"),
         ENDRING_PA_MAL("pto.endring-paa-maal-v1"),
-        SIST_LEST("aapen-fo-veilederHarLestAktivitetsplanen-v1"),
+        SIST_LEST("pto.veileder-har-lest-aktivitetsplanen-v1"),
         ENDRING_PAA_OPPFOLGINGSBRUKER("pto.endring-paa-oppfolgingsbruker-v2"),
 
         CV_ENDRET_V2("teampam.cv-endret-ekstern-v2"),
@@ -104,7 +102,7 @@ public class KafkaConfigCommon {
         TILTAKSPENGER_TOPIC("teamarenanais.aapen-arena-tiltakspengevedtakendret-v1-" + requireKafkaTopicPostfix()),
         NOM_SKJERMING_STATUS("nom.skjermede-personer-status-v1"),
         NOM_SKJERMEDE_PERSONER("nom.skjermede-personer-v1"),
-        PDL_BRUKERDATA("aapen-person-pdl-dokument-v1");
+        PDL_BRUKERDATA("pdl.pdl-persondokument-v1");
 
         @Getter
         final String topicName;
@@ -116,7 +114,6 @@ public class KafkaConfigCommon {
 
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final KafkaConsumerClient consumerClientAivenSiste14a; // Midlertidig adskilt for egen toggle
-    private final List<KafkaConsumerClient> consumerClientsOnPrem;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
@@ -348,11 +345,8 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(Dialogdata.class),
                                         dialogService::behandleKafkaRecord
-                                )
-                );
-
-        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsOnPrem =
-                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
@@ -374,8 +368,8 @@ public class KafkaConfigCommon {
                                 )
                 );
 
+
         KafkaAivenUnleash kafkaAivenUnleash = new KafkaAivenUnleash(unleashService);
-        KafkaOnpremUnleash kafkaOnpremUnleash = new KafkaOnpremUnleash(unleashService);
 
         Properties aivenConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_CONFIG);
         aivenConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
@@ -407,28 +401,12 @@ public class KafkaConfigCommon {
                 .withToggle(() -> unleashService.isEnabled(KAFKA_SISTE_14A_STOP) || kafkaAivenUnleash.get())
                 .build();
 
-        consumerClientsOnPrem = topicConfigsOnPrem.stream()
-                .map(config ->
-                        KafkaConsumerClientBuilder.builder()
-                                .withProperties(onPremDefaultConsumerProperties(
-                                        CLIENT_ID_CONFIG,
-                                        KAFKA_BROKERS,
-                                        serviceUserCredentials)
-                                )
-                                .withTopicConfig(config)
-                                .withToggle(kafkaOnpremUnleash)
-                                .build())
-                .collect(Collectors.toList());
-
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(
-                        Stream.concat(
-                                Stream.concat(topicConfigsAiven.stream(), Stream.of(siste14aTopicConfig)),
-                                topicConfigsOnPrem.stream()
-                        ).collect(Collectors.toList())))
+                        Stream.concat(topicConfigsAiven.stream(), Stream.of(siste14aTopicConfig)).collect(Collectors.toList())))
                 .withBackoffStrategy(new LinearBackoffStrategy(0, 2 * 60 * 60, 144))
                 .build();
     }
@@ -439,7 +417,6 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientAivenSiste14a.start();
-        consumerClientsOnPrem.forEach(KafkaConsumerClient::start);
     }
 
 
