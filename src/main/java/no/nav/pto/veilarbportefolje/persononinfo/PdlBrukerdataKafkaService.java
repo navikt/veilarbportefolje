@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,6 @@ import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 @Service
 @RequiredArgsConstructor
 public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDokument> {
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final PdlService pdlService;
     private final PdlIdentRepository pdlIdentRepository;
     private final PdlPersonRepository pdlPersonRepository;
