@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +24,7 @@ import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String> {
-    private final ObjectMapper objectMapper = new ObjectMapper();
+public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDokument> {
     private final PdlService pdlService;
     private final PdlIdentRepository pdlIdentRepository;
     private final PdlPersonRepository pdlPersonRepository;
@@ -35,8 +33,8 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
 
     @Override
     @SneakyThrows
-    public void behandleKafkaMeldingLogikk(String pdlDokumentJson) {
-        if (pdlDokumentJson == null) {
+    public void behandleKafkaMeldingLogikk(PdlDokument pdlDokument) {
+        if (pdlDokument == null) {
             log.info("""
                         Fikk tom endrings melding fra PDL.
                         Dette er en tombstone som ignoreres fordi alle historiske identer lenket til nye identer slettes ved en oppdatering.
@@ -44,7 +42,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
             return;
         }
 
-        PdlDokument pdlDokument = objectMapper.readValue(pdlDokumentJson, PdlDokument.class);
         List<PDLIdent> pdlIdenter = pdlDokument.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
 
@@ -67,7 +64,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
             PDLPerson person = PDLPerson.genererFraApiRespons(personFraKafka);
             pdlPersonRepository.upsertPerson(aktivFnr, person);
         } catch (PdlPersonValideringException e) {
-            if(isDevelopment().orElse(false)){
+            if (isDevelopment().orElse(false)) {
                 log.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivAktorId), e);
                 return;
             }
