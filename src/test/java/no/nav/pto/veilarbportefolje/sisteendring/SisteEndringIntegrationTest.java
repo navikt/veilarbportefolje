@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
@@ -15,11 +16,13 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +54,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final AktivitetService aktivitetService;
     private final OpensearchService opensearchService;
     private final SistLestService sistLestService;
+    private final UnleashService unleashService;
     private final VeilederId veilederId = VeilederId.of("Z123456");
     private final NavKontor testEnhet = NavKontor.of("0000");
     private final Fnr fodselsnummer1 = Fnr.ofValidFnr("10108000000"); //TESTFAMILIE
@@ -59,11 +63,21 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private Long aktivitetVersion = 1L;
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService,  JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer) {
+    public SisteEndringIntegrationTest(
+            MalService malService,
+            JdbcTemplate jdbcTemplatePostgres,
+            OpensearchService opensearchService,
+            SisteEndringService sisteEndringService,
+            AktiviteterRepositoryV2 aktiviteterRepositoryV2,
+            OpensearchIndexer opensearchIndexer,
+            UnleashService unleashService
+    ) {
+        this.unleashService = unleashService;
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         BrukerServiceV2 brukerService = mock(BrukerServiceV2.class);
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
-        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer);
+        Mockito.when(unleashService.isEnabled(FeatureToggle.BRUK_NY_KILDE_FOR_TILTAKSAKTIVITETER)).thenReturn(false);
+        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer, unleashService);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.opensearchService = opensearchService;
         this.malService = malService;
