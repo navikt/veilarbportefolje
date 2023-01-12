@@ -5,12 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
@@ -28,12 +30,24 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final SisteEndringService sisteEndringService;
     private final OpensearchIndexer opensearchIndexer;
 
+    private final UnleashService unleashService;
+
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
-        sisteEndringService.behandleAktivitet(aktivitetData);
-        boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-        if (bleProsessert) {
-            opensearchIndexer.indekser(aktorId);
+        boolean erTiltaksaktivitet = true; //KafkaAktivitetMelding.AktivitetTypeData.TILTAK == aktivitetData.aktivitetType
+        if(FeatureToggle.brukNyKildeForTiltaksaktiviteter(unleashService)){
+            if(){
+
+            }else{
+
+            }
+
+        }else{
+            sisteEndringService.behandleAktivitet(aktivitetData);
+            boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
+            if (bleProsessert) {
+                opensearchIndexer.indekser(aktorId);
+            }
         }
     }
 
