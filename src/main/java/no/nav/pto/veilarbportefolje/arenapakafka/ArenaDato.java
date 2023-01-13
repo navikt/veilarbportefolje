@@ -40,4 +40,9 @@ public class ArenaDato {
         }
         return LocalDate.parse(dato, format);
     }
+
+    public static ArenaDato of(ZonedDateTime dato) {
+        // TODO
+        return null;
+    }
 }
