@@ -33,20 +33,34 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
-        // TODO: Bytt ut med sjekk på aktivitetData.aktivitetType (eks: KafkaAktivitetMelding.AktivitetTypeData.TILTAK == aktivitetData.aktivitetType)
+
+         /*
+             Feature-togglen kan enables når endringene til Team DAB er i prod
+             https://github.com/navikt/veilarbaktivitet/pull/568
+             https://github.com/navikt/veilarbaktivitet/pull/569
+         */
         if (FeatureToggle.brukNyKildeForTiltaksaktiviteter(unleashService)) {
-            boolean erTiltaksaktivitet = true;
+            boolean erTiltaksaktivitet = KafkaAktivitetMelding.AktivitetTypeData.TILTAK == aktivitetData.aktivitetType;
             if (erTiltaksaktivitet) {
-                // TODO: Håndter tiltaksaktiviteter
+                behandleTiltaksaktivitet(aktivitetData, aktorId);
             } else {
-                // TODO: Håndter andre (aktivitetsplan) aktiviteter
+                behandleAktivitetFraAktivitetsplanen(aktivitetData, aktorId);
             }
         } else {
-            sisteEndringService.behandleAktivitet(aktivitetData);
-            boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-            if (bleProsessert) {
-                opensearchIndexer.indekser(aktorId);
-            }
+            behandleAktivitetFraAktivitetsplanen(aktivitetData, aktorId);
+        }
+    }
+
+    private void behandleTiltaksaktivitet(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
+        // TODO 13.01.23
+
+    }
+
+    private void behandleAktivitetFraAktivitetsplanen(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
+        sisteEndringService.behandleAktivitet(aktivitetData);
+        boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
+        if (bleProsessert) {
+            opensearchIndexer.indekser(aktorId);
         }
     }
 

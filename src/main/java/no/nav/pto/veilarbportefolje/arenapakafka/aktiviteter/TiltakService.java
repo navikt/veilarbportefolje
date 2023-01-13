@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.arenapakafka.ArenaDato;
 import no.nav.pto.veilarbportefolje.arenapakafka.TiltakStatuser;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
@@ -51,7 +53,7 @@ public class TiltakService {
         behandleKafkaMelding(melding);
     }
 
-    public void behandleKafkaMelding(TiltakDTO kafkaMelding){
+    public void behandleKafkaMelding(TiltakDTO kafkaMelding) {
         TiltakInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
@@ -67,6 +69,38 @@ public class TiltakService {
 
         arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
         opensearchIndexer.indekser(aktorId);
+    }
+
+    public void behandleKafkaMeldingV2(KafkaAktivitetMelding kafkaMelding) {
+        if (kafkaMelding == null) {
+            return;
+        }
+
+        AktorId aktorId = AktorId.of(kafkaMelding.getAktorId());
+        if (kafkaMelding.isHistorisk()) {
+            log.info("Sletter tiltak postgres: {}, pa aktoer: {}", kafkaMelding.getAktivitetId(), aktorId);
+            tiltakRepositoryV2.delete(kafkaMelding.getAktivitetId());
+        } else {
+            log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", kafkaMelding.getAktivitetId(), aktorId);
+            tiltakRepositoryV2.upsert(mapTilTiltakinnhold(kafkaMelding), aktorId);
+        }
+    }
+
+    private static TiltakInnhold mapTilTiltakinnhold(KafkaAktivitetMelding kafkaMelding) {
+        if (kafkaMelding == null) {
+            return null;
+        }
+
+        return new TiltakInnhold()
+                .setFnr(kafkaMelding.getAktorId())  // TODO: Dobbeltsjekke om det er FNR vi får fra Team DAB - dersom ikke så må vi hente dette på et vis
+                .setAktivitetid(kafkaMelding.getAktivitetId())
+                .setAktivitetperiodeFra(ArenaDato.of(kafkaMelding.getFraDato()))
+                .setAktivitetperiodeTil(ArenaDato.of(kafkaMelding.getTilDato()))
+                .setTiltakstype(kafkaMelding.getTiltakskode())  // Feltet på TiltakInnhold heter tiltakstype men i DB-tabellen har vi kalt det tiltakskode - derav bruker Team DAB tiltakskode som navn på feltet (lett å bli forvirret ...)
+                //.setTiltaksnavn(???) // TODO: Dette brukes i TiltakRepositoryV2 for å oppdatere TILTAKSKODEVERKET - sjekke om dette er noe Team DAB vil videreføre? Usikker på om vi trenger det videre, vi har jo en eksplisitt mapping fra kode til navn i veilarbportefoljeflatefs tror jeg ...
+                //.setPersonId(???) // TODO: Vi inserter dette feltet i TiltakRepositoryV2 men jeg klarer ikke å finne at denne verdien noensinne blir brukt etter det - må sjekkes opp
+                ;
+
     }
 
     public EnhetTiltak hentEnhettiltak(EnhetId enhet) {
