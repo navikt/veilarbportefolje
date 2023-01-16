@@ -210,6 +210,7 @@ public class ApplicationConfigTest {
     public UnleashService unleashService() {
         final UnleashService mock = mock(UnleashService.class);
         when(mock.isEnabled(anyString())).thenReturn(true);
+        when(mock.isEnabled(FeatureToggle.BRUK_NY_KILDE_FOR_TILTAKSAKTIVITETER)).thenReturn(false);
         return mock;
     }
 

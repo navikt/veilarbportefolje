@@ -55,7 +55,11 @@ public class TiltakRepositoryV2 {
                         = (excluded.personid, excluded.aktoerid, excluded.tiltakskode, excluded.fradato, excluded.tildato)
                         """,
                 innhold.getAktivitetid(),
-                String.valueOf(innhold.getPersonId()), aktorId.get(), innhold.getTiltakstype(), fraDato, tilDato
+                String.valueOf(innhold.getPersonId()),
+                aktorId.get(),
+                innhold.getTiltakstype(),
+                fraDato,
+                tilDato
         );
     }
 

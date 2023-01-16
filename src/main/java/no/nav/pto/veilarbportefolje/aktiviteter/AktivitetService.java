@@ -29,25 +29,38 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final SisteEndringService sisteEndringService;
     private final OpensearchIndexer opensearchIndexer;
-
     private final UnleashService unleashService;
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
-        boolean erTiltaksaktivitet = true; //KafkaAktivitetMelding.AktivitetTypeData.TILTAK == aktivitetData.aktivitetType
-        if(FeatureToggle.brukNyKildeForTiltaksaktiviteter(unleashService)){
-            if(){
 
-            }else{
-
+         /*
+             Feature-togglen kan enables når endringene til Team DAB er i prod
+             https://github.com/navikt/veilarbaktivitet/pull/568
+             https://github.com/navikt/veilarbaktivitet/pull/569
+         */
+        if (FeatureToggle.brukNyKildeForTiltaksaktiviteter(unleashService)) {
+            boolean erTiltaksaktivitet = KafkaAktivitetMelding.AktivitetTypeData.TILTAK == aktivitetData.aktivitetType;
+            if (erTiltaksaktivitet) {
+                behandleTiltaksaktivitet(aktivitetData, aktorId);
+            } else {
+                behandleAktivitetFraAktivitetsplanen(aktivitetData, aktorId);
             }
+        } else {
+            behandleAktivitetFraAktivitetsplanen(aktivitetData, aktorId);
+        }
+    }
 
-        }else{
-            sisteEndringService.behandleAktivitet(aktivitetData);
-            boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-            if (bleProsessert) {
-                opensearchIndexer.indekser(aktorId);
-            }
+    private void behandleTiltaksaktivitet(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
+        // TODO 13.01.23
+
+    }
+
+    private void behandleAktivitetFraAktivitetsplanen(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
+        sisteEndringService.behandleAktivitet(aktivitetData);
+        boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
+        if (bleProsessert) {
+            opensearchIndexer.indekser(aktorId);
         }
     }
 
@@ -99,7 +112,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         return sensurertListe;
     }
 
-    private static Moteplan skjermMoteplan(Moteplan moteplan){
+    private static Moteplan skjermMoteplan(Moteplan moteplan) {
         return new Moteplan(skjermetDeltaker, moteplan.dato(), moteplan.avtaltMedNav());
     }
 }
