@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
@@ -30,6 +31,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final SisteEndringService sisteEndringService;
     private final OpensearchIndexer opensearchIndexer;
     private final UnleashService unleashService;
+    private TiltakService tiltakService;
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
@@ -39,28 +41,25 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
              https://github.com/navikt/veilarbaktivitet/pull/568
              https://github.com/navikt/veilarbaktivitet/pull/569
          */
+        sisteEndringService.behandleAktivitet(aktivitetData);
         if (FeatureToggle.brukNyKildeForTiltaksaktiviteter(unleashService)) {
             boolean erTiltaksaktivitet = KafkaAktivitetMelding.AktivitetTypeData.TILTAK == aktivitetData.aktivitetType;
             if (erTiltaksaktivitet) {
-                behandleTiltaksaktivitet(aktivitetData, aktorId);
+                // TODO Ved prosessering av aktiviteter sjekker vi om versjonen på kafkameldingen er større enn versjonen som ligger i databasen.
+                // Er dette noe som trengs for tiltaksAktiviteter også?
+                tiltakService.behandleKafkaMeldingV2(aktivitetData);
+
             } else {
-                behandleAktivitetFraAktivitetsplanen(aktivitetData, aktorId);
+                boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
+                if (bleProsessert) {
+                    opensearchIndexer.indekser(aktorId);
+                }
             }
         } else {
-            behandleAktivitetFraAktivitetsplanen(aktivitetData, aktorId);
-        }
-    }
-
-    private void behandleTiltaksaktivitet(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
-        // TODO 13.01.23
-
-    }
-
-    private void behandleAktivitetFraAktivitetsplanen(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
-        sisteEndringService.behandleAktivitet(aktivitetData);
-        boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-        if (bleProsessert) {
-            opensearchIndexer.indekser(aktorId);
+            boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
+            if (bleProsessert) {
+                opensearchIndexer.indekser(aktorId);
+            }
         }
     }
 

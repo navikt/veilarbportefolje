@@ -75,11 +75,14 @@ public class TiltakService {
         if(!validerMelding(kafkaMelding)) {
             return;
         }
+        //TODO: Trenger vi å sjekke om en melding allerede er lest slik det ble gjort med meldinger fra Arena?
+        // Dersom ja, kan vi bruke meldings-iden til kafkameldingen til dette formålet?
 
         AktorId aktorId = AktorId.of(kafkaMelding.getAktorId());
         String aktivitetId = kafkaMelding.getAktivitetId();
 
         if (kafkaMelding.isHistorisk()) {
+            //TODO: Sjekke med DAB at historisk ikke kan være null (evn håndtering hvis den er null)
             log.info("Sletter tiltak postgres: {}, pa aktoer: {}", aktivitetId, aktorId);
             tiltakRepositoryV2.delete(aktivitetId);
         } else {
@@ -118,7 +121,6 @@ public class TiltakService {
                 .setAktivitetperiodeTil(ArenaDato.of(kafkaMelding.getTilDato()))
                 .setTiltakstype(kafkaMelding.getTiltakskode())  // Feltet på TiltakInnhold heter tiltakstype men i DB-tabellen har vi kalt det tiltakskode - derav bruker Team DAB tiltakskode som navn på feltet (lett å bli forvirret ...)
                 //.setTiltaksnavn(???) // TODO: Dette brukes i TiltakRepositoryV2 for å oppdatere TILTAKSKODEVERKET - sjekke om dette er noe Team DAB vil videreføre? Usikker på om vi trenger det videre, vi har jo en eksplisitt mapping fra kode til navn i veilarbportefoljeflatefs tror jeg ...
-                //.setPersonId(???) // TODO: Vi inserter dette feltet i TiltakRepositoryV2 men jeg klarer ikke å finne at denne verdien noensinne blir brukt etter det - må sjekkes opp
                 ;
 
     }
