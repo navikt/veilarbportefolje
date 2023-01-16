@@ -72,18 +72,38 @@ public class TiltakService {
     }
 
     public void behandleKafkaMeldingV2(KafkaAktivitetMelding kafkaMelding) {
-        if (kafkaMelding == null) {
+        if(!validerMelding(kafkaMelding)) {
             return;
         }
 
         AktorId aktorId = AktorId.of(kafkaMelding.getAktorId());
+        String aktivitetId = kafkaMelding.getAktivitetId();
+
         if (kafkaMelding.isHistorisk()) {
-            log.info("Sletter tiltak postgres: {}, pa aktoer: {}", kafkaMelding.getAktivitetId(), aktorId);
-            tiltakRepositoryV2.delete(kafkaMelding.getAktivitetId());
+            log.info("Sletter tiltak postgres: {}, pa aktoer: {}", aktivitetId, aktorId);
+            tiltakRepositoryV2.delete(aktivitetId);
         } else {
-            log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", kafkaMelding.getAktivitetId(), aktorId);
+            log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", aktivitetId, aktorId);
             tiltakRepositoryV2.upsert(mapTilTiltakinnhold(kafkaMelding), aktorId);
         }
+
+        // TODO: "Hendelse"-konseptet er ikke overførbart når vi nå henter tiltaksaktiviteter fra Team DAB - skal vi erstatte det med noe annet eller er det ikke relevant lenger?
+        // arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
+        opensearchIndexer.indekser(aktorId);
+    }
+
+    private boolean validerMelding(KafkaAktivitetMelding kafkaMelding) {
+        if(kafkaMelding == null) {
+            log.warn("Ble tilsendt tom melding (null). Meldingen prosesseres ikke.");
+            return false;
+        }
+
+        if(kafkaMelding.getAktivitetId() == null) {
+            log.warn("Ble tilsendt uten aktivitetId. Meldingen prosesseres ikke.");
+            return false;
+        }
+
+        return true;
     }
 
     private static TiltakInnhold mapTilTiltakinnhold(KafkaAktivitetMelding kafkaMelding) {
