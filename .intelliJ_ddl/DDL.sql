@@ -103,8 +103,6 @@ CREATE TABLE public.bruker_data (
     er_doed boolean,
     foedselsdato date,
     foedeland character varying(10),
-    innflyttingtilnorgefraland character varying(10),
-    angittflyttedato date,
     talespraaktolk character varying(20),
     tegnspraaktolk character varying(20),
     tolkbehovsistoppdatert date,
@@ -168,7 +166,8 @@ CREATE TABLE public.brukertiltak (
     personid character varying(20),
     tiltakskode character varying(10),
     tildato timestamp without time zone,
-    fradato timestamp without time zone
+    fradato timestamp without time zone,
+    version bigint
 );
 
 
