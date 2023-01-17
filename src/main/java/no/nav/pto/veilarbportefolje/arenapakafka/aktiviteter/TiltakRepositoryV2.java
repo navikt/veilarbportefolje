@@ -92,15 +92,12 @@ public class TiltakRepositoryV2 {
         );
     }
 
-    /*
-    private Long getVersjon(String aktivitetId) {
+    public Long getVersjon(String aktivitetId) {
         String sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTIVITETID);
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getLong(VERSION), aktivitetId))
         ).orElse(-1L);
     }
-     */
-    //TODO: få inn VERSION som felt i BRUKERTILTAK-TABELLEN
 
 
     public void leggTilTiltak(String aktoerIder, HashMap<AktorId, List<AktivitetEntityDto>> result) {

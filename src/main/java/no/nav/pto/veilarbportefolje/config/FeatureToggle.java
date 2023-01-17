@@ -22,8 +22,6 @@ public class FeatureToggle {
 
     private static final String MAP_AVVIK_14A_VEDTAK = "veilarbportefolje.map_avvik_14a_vedtak";
 
-    public static final String BRUK_NY_KILDE_FOR_TILTAKSAKTIVITETER = "veilarbportefolje.bruk_ny_kilde_for_tiltaksaktiviteter";
-
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
@@ -44,7 +42,4 @@ public class FeatureToggle {
         return unleashService.isEnabled(FeatureToggle.MAP_AVVIK_14A_VEDTAK);
     }
 
-    public static boolean brukNyKildeForTiltaksaktiviteter(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.BRUK_NY_KILDE_FOR_TILTAKSAKTIVITETER);
-    }
 }

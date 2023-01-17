@@ -206,6 +206,7 @@ public class PostgresTable {
         public static final String TILTAKSKODE = "TILTAKSKODE";
         public static final String TILDATO = "TILDATO";
         public static final String FRADATO = "FRADATO";
+        public static final String VERSION = "VERSION";
     }
 
     public static final class TILTAKKODEVERK {

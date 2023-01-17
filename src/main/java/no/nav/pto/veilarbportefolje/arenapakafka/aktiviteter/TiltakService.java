@@ -18,7 +18,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
@@ -26,8 +25,6 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHende
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getAktorId;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getInnhold;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGoldenGate;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.*;
-import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
 @Service
@@ -74,30 +71,28 @@ public class TiltakService {
         opensearchIndexer.indekser(aktorId);
     }
 
-    public void behandleKafkaMeldingV2(KafkaAktivitetMelding kafkaMelding) {
+    /**
+     * Behandler kafkamelding om tiltaksaktivitet
+     * TODO: Beskrive forskjell mellom denne og den andre med samme navn
+     */
+    public boolean behandleKafkaMelding(KafkaAktivitetMelding kafkaMelding) {
         if(!validerMelding(kafkaMelding)) {
-            return;
+            return false;
         }
-        //TODO: Trenger vi å sjekke om en melding allerede er lest slik det ble gjort med meldinger fra Arena?
-        // Dersom ja, kan vi bruke meldings-iden til kafkameldingen til dette formålet?
-
         AktorId aktorId = AktorId.of(kafkaMelding.getAktorId());
         String aktivitetId = kafkaMelding.getAktivitetId();
 
         if (kafkaMelding.isHistorisk()) {
-            //TODO: Sjekke med DAB at historisk ikke kan være null (evn håndtering hvis den er null)
             log.info("Sletter tiltak postgres: {}, pa aktoer: {}", aktivitetId, aktorId);
             tiltakRepositoryV2.delete(aktivitetId);
+            return true;
         } else if (erNyVersjonAvAktivitet(kafkaMelding)) {
             log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", aktivitetId, aktorId);
             tiltakRepositoryV2.upsert(mapTilTiltakinnhold(kafkaMelding), aktorId);
+            return true;
         }else{
-            return;
+            return false;
         }
-
-        // TODO: "Hendelse"-konseptet er ikke overførbart når vi nå henter tiltaksaktiviteter fra Team DAB - skal vi erstatte det med noe annet eller er det ikke relevant lenger?
-        // arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
-        opensearchIndexer.indekser(aktorId);
     }
 
     private boolean erNyVersjonAvAktivitet(KafkaAktivitetMelding aktivitet) {
@@ -105,8 +100,7 @@ public class TiltakService {
         if (kommendeVersjon == null) {
             return false;
         }
-        //Long databaseVersjon = getVersjon(aktivitet.getAktivitetId());
-        Long databaseVersjon = Long.getLong("1");
+        Long databaseVersjon = tiltakRepositoryV2.getVersjon(aktivitet.getAktivitetId());
         if (databaseVersjon == null) {
             return true;
         }

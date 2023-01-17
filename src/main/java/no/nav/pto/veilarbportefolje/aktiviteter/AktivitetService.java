@@ -6,14 +6,12 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
@@ -30,37 +28,29 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final SisteEndringService sisteEndringService;
     private final OpensearchIndexer opensearchIndexer;
-    private final UnleashService unleashService;
-    private TiltakService tiltakService;
+    private final TiltakService tiltakService;
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
-
-         /*
+         /*x
              Feature-togglen kan enables når endringene til Team DAB er i prod
              https://github.com/navikt/veilarbaktivitet/pull/568
              https://github.com/navikt/veilarbaktivitet/pull/569
          */
         sisteEndringService.behandleAktivitet(aktivitetData);
-        if (FeatureToggle.brukNyKildeForTiltaksaktiviteter(unleashService)) {
+
             boolean erTiltaksaktivitet = KafkaAktivitetMelding.AktivitetTypeData.TILTAK == aktivitetData.aktivitetType;
             if (erTiltaksaktivitet) {
-                // TODO Ved prosessering av aktiviteter sjekker vi om versjonen på kafkameldingen er større enn versjonen som ligger i databasen.
-                // Er dette noe som trengs for tiltaksAktiviteter også?
-                tiltakService.behandleKafkaMeldingV2(aktivitetData);
-
+                boolean bleProsessert = tiltakService.behandleKafkaMelding(aktivitetData);
+                if (bleProsessert) {
+                    opensearchIndexer.indekser(aktorId);
+                }
             } else {
                 boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
                 if (bleProsessert) {
                     opensearchIndexer.indekser(aktorId);
                 }
             }
-        } else {
-            boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-            if (bleProsessert) {
-                opensearchIndexer.indekser(aktorId);
-            }
-        }
     }
 
     public void slettOgIndekserUtdanningsAktivitet(String aktivitetid, AktorId aktorId) {
