@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKERTILTAK.*;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapTiltakTilEntity;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -90,6 +91,17 @@ public class TiltakRepositoryV2 {
                 queryForObjectOrNull(() -> db.queryForObject(sql, String.class, kode))
         );
     }
+
+    /*
+    private Long getVersjon(String aktivitetId) {
+        String sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTIVITETID);
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getLong(VERSION), aktivitetId))
+        ).orElse(-1L);
+    }
+     */
+    //TODO: få inn VERSION som felt i BRUKERTILTAK-TABELLEN
+
 
     public void leggTilTiltak(String aktoerIder, HashMap<AktorId, List<AktivitetEntityDto>> result) {
         namedDb.query("""

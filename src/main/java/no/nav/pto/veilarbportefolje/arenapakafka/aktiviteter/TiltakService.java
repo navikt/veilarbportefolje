@@ -18,6 +18,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
@@ -25,6 +26,8 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHende
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getAktorId;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getInnhold;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGoldenGate;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.*;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
 @Service
@@ -85,15 +88,32 @@ public class TiltakService {
             //TODO: Sjekke med DAB at historisk ikke kan være null (evn håndtering hvis den er null)
             log.info("Sletter tiltak postgres: {}, pa aktoer: {}", aktivitetId, aktorId);
             tiltakRepositoryV2.delete(aktivitetId);
-        } else {
+        } else if (erNyVersjonAvAktivitet(kafkaMelding)) {
             log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", aktivitetId, aktorId);
             tiltakRepositoryV2.upsert(mapTilTiltakinnhold(kafkaMelding), aktorId);
+        }else{
+            return;
         }
 
         // TODO: "Hendelse"-konseptet er ikke overførbart når vi nå henter tiltaksaktiviteter fra Team DAB - skal vi erstatte det med noe annet eller er det ikke relevant lenger?
         // arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
         opensearchIndexer.indekser(aktorId);
     }
+
+    private boolean erNyVersjonAvAktivitet(KafkaAktivitetMelding aktivitet) {
+        Long kommendeVersjon = aktivitet.getVersion();
+        if (kommendeVersjon == null) {
+            return false;
+        }
+        //Long databaseVersjon = getVersjon(aktivitet.getAktivitetId());
+        Long databaseVersjon = Long.getLong("1");
+        if (databaseVersjon == null) {
+            return true;
+        }
+        return kommendeVersjon.compareTo(databaseVersjon) >= 0;
+    }
+
+
 
     private boolean validerMelding(KafkaAktivitetMelding kafkaMelding) {
         if(kafkaMelding == null) {
@@ -115,7 +135,7 @@ public class TiltakService {
         }
 
         return new TiltakInnhold()
-                .setFnr(kafkaMelding.getAktorId())  // TODO: Dobbeltsjekke om det er FNR vi får fra Team DAB - dersom ikke så må vi hente dette på et vis
+                //.setFnr(kafkaMelding.getAktorId())  // TODO: Dobbeltsjekke om det er FNR vi får fra Team DAB - dersom ikke så må vi hente dette på et vis
                 .setAktivitetid(kafkaMelding.getAktivitetId())
                 .setAktivitetperiodeFra(ArenaDato.of(kafkaMelding.getFraDato()))
                 .setAktivitetperiodeTil(ArenaDato.of(kafkaMelding.getTilDato()))
