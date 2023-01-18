@@ -25,7 +25,6 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHende
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getAktorId;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getInnhold;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGoldenGate;
-import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltaksaktiviteterKodeNavn.*;
 
 @Slf4j
 @Service
@@ -54,12 +53,16 @@ public class TiltakService {
         behandleKafkaMelding(melding);
     }
 
+
     public void behandleKafkaMelding(TiltakDTO kafkaMelding) {
         TiltakInnhold innhold = getInnhold(kafkaMelding);
+
         if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
         }
+
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
+
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
             log.info("Sletter tiltak postgres: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
             tiltakRepositoryV2.delete(innhold.getAktivitetid());
@@ -77,9 +80,10 @@ public class TiltakService {
      * TODO: Beskrive forskjell mellom denne og den andre med samme navn
      */
     public boolean behandleKafkaMelding(KafkaAktivitetMelding kafkaMelding) {
-        if(!validerMelding(kafkaMelding)) {
+        if (!validerMelding(kafkaMelding)) {
             return false;
         }
+
         AktorId aktorId = AktorId.of(kafkaMelding.getAktorId());
         String aktivitetId = kafkaMelding.getAktivitetId();
 
@@ -91,32 +95,35 @@ public class TiltakService {
             log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", aktivitetId, aktorId);
             tiltakRepositoryV2.upsert(mapTilTiltakinnhold(kafkaMelding), aktorId);
             return true;
-        }else{
+        } else {
             return false;
         }
     }
 
     private boolean erNyVersjonAvAktivitet(KafkaAktivitetMelding aktivitet) {
         Long kommendeVersjon = aktivitet.getVersion();
+
         if (kommendeVersjon == null) {
             return false;
         }
+
         Long databaseVersjon = tiltakRepositoryV2.getVersjon(aktivitet.getAktivitetId());
+
         if (databaseVersjon == null) {
             return true;
         }
+
         return kommendeVersjon.compareTo(databaseVersjon) >= 0;
     }
 
 
-
     private boolean validerMelding(KafkaAktivitetMelding kafkaMelding) {
-        if(kafkaMelding == null) {
+        if (kafkaMelding == null) {
             log.warn("Ble tilsendt tom melding (null). Meldingen prosesseres ikke.");
             return false;
         }
 
-        if(kafkaMelding.getAktivitetId() == null) {
+        if (kafkaMelding.getAktivitetId() == null) {
             log.warn("Ble tilsendt uten aktivitetId. Meldingen prosesseres ikke.");
             return false;
         }
@@ -130,14 +137,11 @@ public class TiltakService {
         }
 
         return new TiltakInnhold()
-                //.setFnr(kafkaMelding.getAktorId())  // TODO: Dobbeltsjekke om det er FNR vi får fra Team DAB - dersom ikke så må vi hente dette på et vis
                 .setAktivitetid(kafkaMelding.getAktivitetId())
                 .setAktivitetperiodeFra(ArenaDato.of(kafkaMelding.getFraDato()))
                 .setAktivitetperiodeTil(ArenaDato.of(kafkaMelding.getTilDato()))
-                .setTiltakstype(kafkaMelding.getTiltakskode())  // Feltet på TiltakInnhold heter tiltakstype men i DB-tabellen har vi kalt det tiltakskode - derav bruker Team DAB tiltakskode som navn på feltet (lett å bli forvirret ...)
-                .setTiltaksnavn(TiltaksaktiviteterKodeNavn.hentNavn(kafkaMelding.getTiltakskode()))
-                ;
-
+                .setTiltakstype(kafkaMelding.getTiltakskode())
+                .setTiltaksnavn(TiltakkodeverkMapper.mapTilTiltaknavn(kafkaMelding.getTiltakskode()));
     }
 
     public EnhetTiltak hentEnhettiltak(EnhetId enhet) {

@@ -8,9 +8,9 @@ import java.util.Map;
 import static java.util.Map.entry;
 
 @Slf4j
-public class TiltaksaktiviteterKodeNavn {
+public class TiltakkodeverkMapper {
 
-    public static Map<String, String> kodenavnrelasjon = new HashMap<>(
+    private static final Map<String, String> tiltakskodeTiltaksnavnMap = new HashMap<>(
             Map.ofEntries(
                     entry("LONNTILS", "Lønnstilskudd"),
                     entry("MENTOR", "Mentor"),
@@ -119,12 +119,12 @@ public class TiltaksaktiviteterKodeNavn {
             )
     );
 
-    public static String hentNavn(String kode){
-        if (kodenavnrelasjon.containsKey(kode)) {
-            return kodenavnrelasjon.get(kode);
-        }else{
-            log.warn("Tiltaksaktivitet med kode: " + kode + "finnes ikke i vår mapping.");
-           return ""; //TODO:: Hva skal vi returnere hvis det ikke finnes? (Det vises i frontend)
+    public static String mapTilTiltaknavn(String tiltakkode) {
+        if (tiltakskodeTiltaksnavnMap.containsKey(tiltakkode)) {
+            return tiltakskodeTiltaksnavnMap.get(tiltakkode);
+        } else {
+            log.warn("Klarte ikke å mappe tiltakkode: " + tiltakkode + " til korresponderende tiltaknavn. Dette betyr at vår interne mapping må oppdateres med ny tiltakskode/tiltaksnavn entry.");
+            return ""; //TODO: Hva skal vi returnere hvis det ikke finnes? (Det vises i frontend) - loggmeldingen må også tilpasses basert på hva vi bestemmer oss for (si noe om hvordan man fikser opp i inkonsistens i data som det medfører)
         }
     }
-    }
+}

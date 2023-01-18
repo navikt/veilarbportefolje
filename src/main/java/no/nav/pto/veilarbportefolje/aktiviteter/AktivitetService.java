@@ -32,25 +32,20 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
-         /*x
-             Feature-togglen kan enables når endringene til Team DAB er i prod
-             https://github.com/navikt/veilarbaktivitet/pull/568
-             https://github.com/navikt/veilarbaktivitet/pull/569
-         */
         sisteEndringService.behandleAktivitet(aktivitetData);
 
-            boolean erTiltaksaktivitet = KafkaAktivitetMelding.AktivitetTypeData.TILTAK == aktivitetData.aktivitetType;
-            if (erTiltaksaktivitet) {
-                boolean bleProsessert = tiltakService.behandleKafkaMelding(aktivitetData);
-                if (bleProsessert) {
-                    opensearchIndexer.indekser(aktorId);
-                }
-            } else {
-                boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
-                if (bleProsessert) {
-                    opensearchIndexer.indekser(aktorId);
-                }
+        boolean erTiltaksaktivitet = KafkaAktivitetMelding.AktivitetTypeData.TILTAK == aktivitetData.aktivitetType;
+        if (erTiltaksaktivitet) {
+            boolean bleProsessert = tiltakService.behandleKafkaMelding(aktivitetData);
+            if (bleProsessert) {
+                opensearchIndexer.indekser(aktorId);
             }
+        } else {
+            boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
+            if (bleProsessert) {
+                opensearchIndexer.indekser(aktorId);
+            }
+        }
     }
 
     public void slettOgIndekserUtdanningsAktivitet(String aktivitetid, AktorId aktorId) {
