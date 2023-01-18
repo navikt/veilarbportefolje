@@ -5,7 +5,11 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
@@ -55,6 +59,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final OpensearchService opensearchService;
     private final SistLestService sistLestService;
     private final UnleashService unleashService;
+    private final TiltakService tiltakService;
     private final VeilederId veilederId = VeilederId.of("Z123456");
     private final NavKontor testEnhet = NavKontor.of("0000");
     private final Fnr fodselsnummer1 = Fnr.ofValidFnr("10108000000"); //TESTFAMILIE
@@ -70,17 +75,18 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             SisteEndringService sisteEndringService,
             AktiviteterRepositoryV2 aktiviteterRepositoryV2,
             OpensearchIndexer opensearchIndexer,
-            UnleashService unleashService
+            UnleashService unleashService,
+            TiltakService tiltakService
     ) {
         this.unleashService = unleashService;
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         BrukerServiceV2 brukerService = mock(BrukerServiceV2.class);
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
-        Mockito.when(unleashService.isEnabled(FeatureToggle.BRUK_NY_KILDE_FOR_TILTAKSAKTIVITETER)).thenReturn(false);
-        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer, unleashService);
+        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer, tiltakService);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.opensearchService = opensearchService;
         this.malService = malService;
+        this.tiltakService = tiltakService;
     }
 
     @BeforeEach

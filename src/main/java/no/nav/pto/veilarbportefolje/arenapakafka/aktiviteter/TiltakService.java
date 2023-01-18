@@ -25,6 +25,7 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHende
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getAktorId;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getInnhold;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGoldenGate;
+import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltaksaktiviteterKodeNavn.*;
 
 @Slf4j
 @Service
@@ -134,7 +135,7 @@ public class TiltakService {
                 .setAktivitetperiodeFra(ArenaDato.of(kafkaMelding.getFraDato()))
                 .setAktivitetperiodeTil(ArenaDato.of(kafkaMelding.getTilDato()))
                 .setTiltakstype(kafkaMelding.getTiltakskode())  // Feltet på TiltakInnhold heter tiltakstype men i DB-tabellen har vi kalt det tiltakskode - derav bruker Team DAB tiltakskode som navn på feltet (lett å bli forvirret ...)
-                //.setTiltaksnavn(???) // TODO: Dette brukes i TiltakRepositoryV2 for å oppdatere TILTAKSKODEVERKET - sjekke om dette er noe Team DAB vil videreføre? Usikker på om vi trenger det videre, vi har jo en eksplisitt mapping fra kode til navn i veilarbportefoljeflatefs tror jeg ...
+                .setTiltaksnavn(TiltaksaktiviteterKodeNavn.hentNavn(kafkaMelding.getTiltakskode()))
                 ;
 
     }

@@ -8,6 +8,8 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.featuretoggle.UnleashClientImpl;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClientImpl;
 import no.nav.pto.veilarbportefolje.service.UnleashService;

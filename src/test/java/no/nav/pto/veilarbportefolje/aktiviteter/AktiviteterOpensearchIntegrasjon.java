@@ -4,6 +4,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
@@ -37,6 +38,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     private final AktivitetService aktivitetService;
+    private final TiltakService tiltakService;
     private final OpensearchService opensearchService;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final AktorId aktoer = randomAktorId();
@@ -45,8 +47,9 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     private final PdlIdentRepository pdlIdentRepository;
 
     @Autowired
-    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository,  JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
+    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, TiltakService tiltakService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
         this.aktivitetService = aktivitetService;
+        this.tiltakService = tiltakService;
         this.opensearchService = opensearchService;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
