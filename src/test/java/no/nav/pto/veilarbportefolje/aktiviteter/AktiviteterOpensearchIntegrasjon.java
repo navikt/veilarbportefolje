@@ -6,10 +6,7 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.Moteplan;
-import no.nav.pto.veilarbportefolje.domene.StillingFraNAVFilter;
+import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
@@ -26,10 +23,12 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AKTIVITET;
+import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AVTALT_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
@@ -92,6 +91,39 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 }
         );
     }
+
+
+    @Test
+    public void lasterOppTiltaksaktivitet() {
+        NavKontor navKontor = randomNavKontor();
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode("MIDLONTIL")
+                .setVersion(1L)
+                .setAvtalt(true));
+        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of(I_AVTALT_AKTIVITET)),
+                            null,
+                            null);
+
+                    assertThat(responseBrukere.getAntall()).isEqualTo(1);
+                }
+        );
+    }
+
+
 
     @Test
     public void lasteroppaktivitetStillingFraNAV() {
