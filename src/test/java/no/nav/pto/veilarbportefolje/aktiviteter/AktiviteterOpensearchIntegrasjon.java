@@ -5,6 +5,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arenapakafka.ArenaDato;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
@@ -20,6 +21,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -34,7 +37,6 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AKTIVITET;
-import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AVTALT_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
@@ -52,15 +54,23 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
     private final TiltakRepositoryV2 tiltakRepositoryV2;
 
+    @Mock
+    private final AktorClient aktorClient;
+
+    private final ArenaHendelseRepository arenaHendelseRepository;
+
+
     @Autowired
-    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, TiltakService tiltakService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository, TiltakRepositoryV2 tiltakRepositoryV2) {
+    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository, TiltakRepositoryV2 tiltakRepositoryV2, AktorClient aktorClient, ArenaHendelseRepository arenaHendelseRepository) {
         this.aktivitetService = aktivitetService;
-        this.tiltakService = tiltakService;
+        this.arenaHendelseRepository = arenaHendelseRepository;
+        this.tiltakService = new TiltakService(tiltakRepositoryV2, aktorClient, arenaHendelseRepository, opensearchIndexer);
         this.opensearchService = opensearchService;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.pdlIdentRepository = pdlIdentRepository;
         this.tiltakRepositoryV2 = tiltakRepositoryV2;
+        this.aktorClient = aktorClient;
     }
 
     @BeforeEach
@@ -224,16 +234,31 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         NavKontor navKontor = randomNavKontor();
         AktorId a1 = randomAktorId();
         Fnr f1 = randomFnr();
+        Mockito.when(aktorClient.hentAktorId(f1)).thenReturn(a1);
         testDataClient.lagreBrukerUnderOppfolging(a1, f1, navKontor.getValue());
         AktorId a2 = randomAktorId();
         Fnr f2 = randomFnr();
+        Mockito.when(aktorClient.hentAktorId(f2)).thenReturn(a2);
         testDataClient.lagreBrukerUnderOppfolging(a2, f2, navKontor.getValue());
         AktorId a3 = randomAktorId();
         Fnr f3 = randomFnr();
+        Mockito.when(aktorClient.hentAktorId(f3)).thenReturn(a3);
         testDataClient.lagreBrukerUnderOppfolging(a3, f3, navKontor.getValue());
+        String tt1 = "LONNTILS";
+        String tt2 = "MIDLONTIL";
+        String tt3 = "MENTOR";
+        String tt4 = "NETTAMO";
+        String tn1 = "Lønnstilskudd";
+        String tn2 = "Midlertidig lønnstilskudd";
+        String tn3 = "Mentor";
+        String tn4 = "Nettbasert arbeidsmarkedsopplæring (AMO)";
 
-        sendKafkaMeldingerFraArena();
-        sendKafkaMeldingerFraDAB();
+        Map.Entry til1 = Map.entry(tt1, tn1);
+        Map.Entry til2 = Map.entry(tt2, tn2);
+        Map.Entry til3 = Map.entry(tt3, tn3);
+
+        sendKafkaMeldingerFraArena(f1, f2, f3, til1, til2, til3);
+        sendKafkaMeldingerFraDAB(a1, a2, a3, til1, til2, til3);
 
 
         // Les ut state fra OpenSearch, s2
@@ -241,34 +266,69 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
         // Verifiser at s2 er riktig (= det vi forventer)
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
-                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                    BrukereMedAntall responseBrukereUnderOppf = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
                             "asc",
                             "ikke_satt",
-                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
+                            new Filtervalg().setFerdigfilterListe(List.of(I_AKTIVITET)),
+                            null,
+                            null);
+                    assertThat(responseBrukereUnderOppf.getAntall()).isEqualTo(2);
+
+                    BrukereMedAntall responseBruker1 = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of()).setNavnEllerFnrQuery(f1.get()),
+                            null,
+                            null);
+                    // forventer at bruker1 har tt2
+                    assertThat(responseBruker1.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
+
+                    BrukereMedAntall responseBruker2 = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of()).setNavnEllerFnrQuery(f2.get()),
                             null,
                             null);
 
-                    assertThat(responseBrukere.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
+                    // forventer at bruker2 har ingen tiltaksaktivitet
+                    assertThat(responseBruker2.getBrukere().get(0).getBrukertiltak().size()).isEqualTo(0);
+
+                    BrukereMedAntall responseBruker3 = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of()).setNavnEllerFnrQuery(f3.get()),
+                            null,
+                            null);
+
+                    // forventer at bruker3 har tt3
+                    assertThat(responseBruker3.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MENTOR");
+
+
                 }
         );
     }
 
-    private void sendKafkaMeldingerFraArena(Fnr fnr1, Fnr fnr2, Fnr fnr3) {
+    private void sendKafkaMeldingerFraArena(Fnr fnr1, Fnr fnr2, Fnr fnr3, Map.Entry<String, String> til1, Map.Entry<String, String> til2, Map.Entry<String, String> til3) {
         // 1. Lag 3 Kafka-meldinger m1, m2 og m3 for 3 nye unike tiltaksaktiviteter, med henholdsvis tiltakId a1, a2, a3 for bruker b1, b2 og b3
-        // 2. Lag Kafka-melding som oppdaterer a1
+        // 2. Lag Kafka-melding som oppdaterer a1 med ny tiltakstype (tt2) og navn
         // 3. Lag Kafka-melding som sletter a2
         // 4. Send m1 på nytt
         // 5. Lag Kafka-melding som sletter a3
-        // 6. Lag Kafka-melding m4 med tiltakId a4 for bruker b3
-        String tt1 = "LONNTILS";
-        String tn1 = "Lønnstilskudd";
+        // 6. Lag Kafka-melding m4 med ny tiltakstype (tt3) a4 for bruker b3
+
 
         TiltakInnhold i1 = new TiltakInnhold()
                 .setFnr(fnr1.get())
-                .setTiltaksnavn(tn1)
-                .setTiltakstype(tt1)
+                .setTiltaksnavn(til1.getValue())
+                .setTiltakstype(til1.getKey())
                 .setDeltakerStatus("GJENN")
                 .setEndretDato(new ArenaDato("2021-01-01"))
                 .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
@@ -277,8 +337,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
         TiltakInnhold i2 = new TiltakInnhold()
                 .setFnr(fnr2.get())
-                .setTiltaksnavn(tn1)
-                .setTiltakstype(tt1)
+                .setTiltaksnavn(til2.getValue())
+                .setTiltakstype(til2.getKey())
                 .setDeltakerStatus("GJENN")
                 .setEndretDato(new ArenaDato("2021-01-01"))
                 .setAktivitetperiodeFra(new ArenaDato("2017-10-03"))
@@ -287,8 +347,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
         TiltakInnhold i3 = new TiltakInnhold()
                 .setFnr(fnr3.get())
-                .setTiltaksnavn(tn1)
-                .setTiltakstype(tt1)
+                .setTiltaksnavn(til3.getValue())
+                .setTiltakstype(til3.getKey())
                 .setDeltakerStatus("GJENN")
                 .setEndretDato(new ArenaDato("2021-01-01"))
                 .setAktivitetperiodeFra(new ArenaDato("2016-10-03"))
@@ -305,8 +365,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
         TiltakInnhold i1_ny = new TiltakInnhold()
                 .setFnr(fnr1.get())
-                .setTiltaksnavn(tn1)
-                .setTiltakstype(tt1)
+                .setTiltaksnavn(til2.getValue())
+                .setTiltakstype(til2.getKey())
                 .setDeltakerStatus("GJENN")
                 .setEndretDato(new ArenaDato("2021-01-01"))
                 .setAktivitetperiodeFra(new ArenaDato("2018-11-03"))
@@ -326,8 +386,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
         TiltakInnhold i4 = new TiltakInnhold()
                 .setFnr(fnr3.get())
-                .setTiltaksnavn(tn1)
-                .setTiltakstype(tt1)
+                .setTiltaksnavn(til3.getValue())
+                .setTiltakstype(til3.getKey())
                 .setDeltakerStatus("GJENN")
                 .setEndretDato(new ArenaDato("2020-01-01"))
                 .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
@@ -338,14 +398,13 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
     }
 
-    private void sendKafkaMeldingerFraDAB(AktorId aktorId1, AktorId aktorId2, AktorId aktorId3) {
+    private void sendKafkaMeldingerFraDAB(AktorId aktorId1, AktorId aktorId2, AktorId aktorId3, Map.Entry<String, String> til1, Map.Entry<String, String> til2, Map.Entry<String, String> til3) {
         // 1. Lag 3 Kafka-meldinger m1, m2 og m3 for 3 nye unike tiltaksaktiviteter, med henholdsvis tiltakId a1, a2, a3 for bruker b1, b2 og b3
-        // 2. Lag Kafka-melding som oppdaterer a1
+        // 2. Lag Kafka-melding som oppdaterer a1 med ny tiltakstype (tt2) og navn
         // 3. Lag Kafka-melding som sletter a2
         // 4. Send m1 på nytt
         // 5. Lag Kafka-melding som sletter a3
-        // 6. Lag Kafka-melding m4 med tiltakId a4 for bruker b3
-        String tt1 = "LONNTILS";
+        // 6. Lag Kafka-melding m4 med ny tiltakstype (tt3) a4 for bruker b3
         KafkaAktivitetMelding k1 = new KafkaAktivitetMelding()
                 .setAktivitetId("TA-123456789")
                 .setAktorId(aktorId1.get())
@@ -354,7 +413,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setFraDato(ZonedDateTime.of(LocalDate.parse("2018-10-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
                 .setTilDato(ZonedDateTime.of(LocalDate.parse("2024-11-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
-                .setTiltakskode(tt1)
+                .setTiltakskode(til1.getKey())
                 .setVersion(1L)
                 .setAvtalt(true)
                 .setHistorisk(false);
@@ -367,7 +426,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setFraDato(ZonedDateTime.of(LocalDate.parse("2017-10-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
                 .setTilDato(ZonedDateTime.of(LocalDate.parse("2023-11-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
-                .setTiltakskode(tt1)
+                .setTiltakskode(til2.getKey())
                 .setVersion(1L)
                 .setAvtalt(true)
                 .setHistorisk(false);
@@ -380,7 +439,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setFraDato(ZonedDateTime.of(LocalDate.parse("2016-10-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
                 .setTilDato(ZonedDateTime.of(LocalDate.parse("2022-11-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
-                .setTiltakskode(tt1)
+                .setTiltakskode(til3.getKey())
                 .setVersion(1L)
                 .setAvtalt(true)
                 .setHistorisk(false);
@@ -397,7 +456,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setFraDato(ZonedDateTime.of(LocalDate.parse("2018-11-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
                 .setTilDato(ZonedDateTime.of(LocalDate.parse("2024-10-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
-                .setTiltakskode(tt1)
+                .setTiltakskode(til2.getKey())
                 .setVersion(1L)
                 .setAvtalt(true)
                 .setHistorisk(false);
@@ -418,7 +477,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setFraDato(ZonedDateTime.of(LocalDate.parse("2022-01-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
                 .setTilDato(ZonedDateTime.of(LocalDate.parse("2027-01-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
-                .setTiltakskode(tt1)
+                .setTiltakskode(til3.getKey())
                 .setVersion(1L)
                 .setAvtalt(true)
                 .setHistorisk(false);
