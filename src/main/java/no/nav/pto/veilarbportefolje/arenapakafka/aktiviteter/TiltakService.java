@@ -93,7 +93,7 @@ public class TiltakService {
             return true;
         } else if (erNyVersjonAvAktivitet(kafkaMelding)) {
             log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", aktivitetId, aktorId);
-            tiltakRepositoryV2.upsert(mapTilTiltakinnhold(kafkaMelding), aktorId);
+            tiltakRepositoryV2.upsert(mapTilTiltakinnhold(kafkaMelding), aktorId, kafkaMelding.getVersion());
             return true;
         } else {
             return false;

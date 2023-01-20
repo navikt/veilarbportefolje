@@ -41,6 +41,10 @@ public class TiltakRepositoryV2 {
     private final NamedParameterJdbcTemplate namedDb;
 
     public void upsert(TiltakInnhold innhold, AktorId aktorId) {
+        upsert(innhold, aktorId, null);
+    }
+
+    public void upsert(TiltakInnhold innhold, AktorId aktorId, Long tiltakVersion) {
         LocalDateTime fraDato = getLocalDateTimeOrNull(innhold.getAktivitetperiodeFra(), false);
         LocalDateTime tilDato = getLocalDateTimeOrNull(innhold.getAktivitetperiodeTil(), true);
 
@@ -51,16 +55,17 @@ public class TiltakRepositoryV2 {
         }
         db.update("""
                         INSERT INTO brukertiltak
-                        (aktivitetid, personid, aktoerid, tiltakskode, fradato, tildato) VALUES (?, ?, ?, ?, ?, ?)
-                        ON CONFLICT (aktivitetid) DO UPDATE SET (personid, aktoerid, tiltakskode, fradato, tildato)
-                        = (excluded.personid, excluded.aktoerid, excluded.tiltakskode, excluded.fradato, excluded.tildato)
+                        (aktivitetid, personid, aktoerid, tiltakskode, fradato, tildato, version) VALUES (?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT (aktivitetid) DO UPDATE SET (personid, aktoerid, tiltakskode, fradato, tildato, version)
+                        = (excluded.personid, excluded.aktoerid, excluded.tiltakskode, excluded.fradato, excluded.tildato, excluded.version)
                         """,
                 innhold.getAktivitetid(),
                 String.valueOf(innhold.getPersonId()),
                 aktorId.get(),
                 innhold.getTiltakstype(),
                 fraDato,
-                tilDato
+                tilDato,
+                tiltakVersion
         );
     }
 
