@@ -23,6 +23,8 @@ public class FeatureToggle {
 
     public static final String MAP_AVVIK_14A_VEDTAK = "veilarbportefolje.map_avvik_14a_vedtak";
 
+    private static final String POAO_TILGANG_ENABLED = "veilarbportefolje.poao-tilgang-enabled";
+
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
@@ -41,5 +43,9 @@ public class FeatureToggle {
 
     public static boolean mapAvvik14aVedtak(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.MAP_AVVIK_14A_VEDTAK);
+    }
+
+    public static boolean brukPoaoTilgang(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
     }
 }

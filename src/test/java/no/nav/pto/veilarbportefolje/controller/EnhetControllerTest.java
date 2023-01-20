@@ -18,7 +18,7 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
-import no.nav.poao_tilgang.client.TilgangClient;
+import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
@@ -37,13 +37,7 @@ import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.util.Collections;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.isNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EnhetControllerTest {
@@ -51,14 +45,14 @@ public class EnhetControllerTest {
     private OpensearchService opensearchService;
     private EnhetController enhetController;
     private Pep pep;
-    private TilgangClient tilgangClient;
+    private PoaoTilgangClient tilgangClient;
     private AuthContextHolder authContextHolder;
 
     @Before
     public void initController() {
         opensearchService = mock(OpensearchService.class);
         pep = mock(Pep.class);
-        tilgangClient = mock(TilgangClient.class);
+        tilgangClient = mock(PoaoTilgangClient.class);
         authContextHolder = AuthContextHolderThreadLocal.instance();
 
         AuthService authService = new AuthService(pep, tilgangClient, mock(AzureAdOnBehalfOfTokenClient.class));
