@@ -4,7 +4,10 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.arenapakafka.ArenaDato;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
@@ -20,15 +23,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AKTIVITET;
-import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AVTALT_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
@@ -45,14 +48,17 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     private final JdbcTemplate jdbcTemplatePostgres;
     private final PdlIdentRepository pdlIdentRepository;
 
+    private final TiltakRepositoryV2 tiltakRepositoryV2;
+
     @Autowired
-    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, TiltakService tiltakService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
+    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, TiltakService tiltakService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository, TiltakRepositoryV2 tiltakRepositoryV2) {
         this.aktivitetService = aktivitetService;
         this.tiltakService = tiltakService;
         this.opensearchService = opensearchService;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.pdlIdentRepository = pdlIdentRepository;
+        this.tiltakRepositoryV2 = tiltakRepositoryV2;
     }
 
     @BeforeEach
@@ -114,16 +120,204 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                             empty(),
                             "asc",
                             "ikke_satt",
-                            new Filtervalg().setFerdigfilterListe(List.of(I_AVTALT_AKTIVITET)),
+                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukere.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
+                }
+        );
+    }
+
+    @Test
+    public void lasterOppTiltaksaktivitet2() {
+        NavKontor navKontor = randomNavKontor();
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode("MIDLONTIL")
+                .setVersion(1L)
+                .setAvtalt(true));
+
+        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
+                            null,
+                            null);
+
+                    assertThat(responseBrukere.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
+                }
+        );
+    }
+
+    @Test
+    public void versjonsnummerTiltaksaktivitet() {
+        NavKontor navKontor = randomNavKontor();
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode("LONNTILS")
+                .setVersion(1L)
+                .setAvtalt(true));
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode("MIDLONTIL")
+                .setVersion(2L)
+                .setAvtalt(true));
+
+
+        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukereMIDLONTIL = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
+                            null,
+                            null);
+
+            BrukereMedAntall responseBrukereLONNTILS = opensearchService.hentBrukere(
+                    navKontor.getValue(),
+                    empty(),
+                    "asc",
+                    "ikke_satt",
+                    new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("LONNTILS")),
+                    null,
+                    null);
+
+                    assertThat(responseBrukereMIDLONTIL.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukereLONNTILS.getAntall()).isEqualTo(0);
+                    assertThat(responseBrukereMIDLONTIL.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
+
                 }
         );
     }
 
 
+    @Test
+    public void skal_laste_inn_samme_data_fra_ny_datakilde_korrekt() {
+        String tiltaksType1 = "LONNTILS";
+        String tiltaksNavn1 = "Lønnstilskudd";
+        String tiltaksType2 = "MIDLONTIL";
+        String tiltaksNavn2 = "Midlertidig lønnstilskudd";
+
+        TiltakInnhold tiltak1 = new TiltakInnhold()
+                .setFnr(fodselsnummer.toString())
+                .setTiltaksnavn(tiltaksNavn1)
+                .setTiltakstype(tiltaksType1)
+                .setDeltakerStatus("GJENN")
+                .setEndretDato(new ArenaDato("2021-01-01"))
+                .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
+                .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
+                .setAktivitetid("2");
+        tiltakRepositoryV2.upsert(tiltak1, aktoer);
+
+        TiltakInnhold tiltak2 = new TiltakInnhold()
+                .setFnr(fodselsnummer.toString())
+                .setTiltaksnavn(tiltaksNavn2)
+                .setTiltakstype(tiltaksType2)
+                .setDeltakerStatus("GJENN")
+                .setEndretDato(new ArenaDato("2021-01-01"))
+                .setAktivitetperiodeFra(new ArenaDato("2017-02-03"))
+                .setAktivitetperiodeTil(new ArenaDato("2023-02-03"))
+                .setAktivitetid("3");
+        tiltakRepositoryV2.upsert(tiltak2, aktoer);
+
+        NavKontor navKontor = randomNavKontor();
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.of(LocalDate.parse("2018-10-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
+                .setTilDato(ZonedDateTime.of(LocalDate.parse("2024-11-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
+                .setEndretDato(ZonedDateTime.of(LocalDate.parse("2021-01-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode(tiltaksType1)
+                .setVersion(1L)
+                .setAvtalt(true));
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("3")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.of(LocalDate.parse("2017-02-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
+                .setTilDato(ZonedDateTime.of(LocalDate.parse("2023-02-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
+                .setEndretDato(ZonedDateTime.of(LocalDate.parse("2021-01-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode(tiltaksType2)
+                .setVersion(1L)
+                .setAvtalt(true));
+
+
+        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukereMIDLONTIL = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
+                            null,
+                            null);
+
+                    assertThat(responseBrukereMIDLONTIL.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukereMIDLONTIL.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
+
+                }
+        );
+    }
+
+    @Test
+    public void brukertiltakErOppdatert() {
+        NavKontor navKontor = randomNavKontor();
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode("MIDLONTIL")
+                .setVersion(1L)
+                .setAvtalt(true));
+        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
+                            null,
+                            null);
+
+                    assertThat(responseBrukere.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
+                }
+        );
+    }
 
     @Test
     public void lasteroppaktivitetStillingFraNAV() {

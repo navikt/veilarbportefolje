@@ -131,7 +131,7 @@ public class TiltakService {
         return true;
     }
 
-    private static TiltakInnhold mapTilTiltakinnhold(KafkaAktivitetMelding kafkaMelding) {
+    public static TiltakInnhold mapTilTiltakinnhold(KafkaAktivitetMelding kafkaMelding) {
         if (kafkaMelding == null) {
             return null;
         }

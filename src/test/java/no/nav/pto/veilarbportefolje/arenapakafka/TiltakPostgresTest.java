@@ -4,11 +4,13 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
+import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
@@ -29,12 +31,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
 
+import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService.mapTilTiltakinnhold;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.FAR_IN_THE_FUTURE_DATE;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -202,5 +204,73 @@ public class TiltakPostgresTest {
         assertThat(enhetTiltak.getTiltak().size()).isEqualTo(2);
         assertThat(enhetTiltak.getTiltak().get(tiltaksType1)).isEqualTo(tiltaksNavn1);
         assertThat(enhetTiltak.getTiltak().get(tiltaksType2)).isEqualTo(tiltaksNavn2);
+    }
+
+    @Test
+    public void skal_lagre_tiltaksaktivitet_pa_enhet() {
+        String navKontor = "0007";
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
+        ));
+        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
+                new OppfolgingsbrukerEntity(fnr.get(), null, null, "" +
+                        "Tester", "Testerson", navKontor, null, null, null, null,
+                        "1234",  true, false, ZonedDateTime.now()));
+        String tiltaksType1 = "MIDLONTIL";
+        String tiltaksType2 = "LONNTILS";
+        String tiltaksNavn1 = "Midlertidig lønnstilskudd";
+        String tiltaksNavn2 = "Lønnstilskudd";
+
+        KafkaAktivitetMelding kafkaMelding1 = new KafkaAktivitetMelding()
+                .setAktivitetId("1")
+                .setAktorId(aktorId.toString())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode(tiltaksType1)
+                .setVersion(1L)
+                .setAvtalt(true);
+
+        KafkaAktivitetMelding kafkaMelding2 = new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktorId.toString())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode(tiltaksType2)
+                .setVersion(1L)
+                .setAvtalt(true);
+
+        tiltakRepositoryV2.upsert(mapTilTiltakinnhold(kafkaMelding1), aktorId);
+        tiltakRepositoryV2.upsert(mapTilTiltakinnhold(kafkaMelding2), aktorId);
+
+        EnhetTiltak enhetTiltak = tiltakRepositoryV2.hentTiltakPaEnhet(EnhetId.of(navKontor));
+        assertThat(enhetTiltak.getTiltak().size()).isEqualTo(2);
+        assertThat(enhetTiltak.getTiltak().get(tiltaksType1)).isEqualTo(tiltaksNavn1);
+        assertThat(enhetTiltak.getTiltak().get(tiltaksType2)).isEqualTo(tiltaksNavn2);
+    }
+
+
+    @Test
+    public void mapper_riktig_navn() {
+        AktorId aktorId = randomAktorId();
+        KafkaAktivitetMelding kafkaMelding = new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktorId.toString())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode("MIDLONTIL")
+                .setVersion(1L)
+                .setAvtalt(true);
+        tiltakRepositoryV2.upsert(mapTilTiltakinnhold(kafkaMelding), aktorId);
+        assertThat(tiltakRepositoryV2.hentVerdiITiltakskodeVerk("MIDLONTIL").get()).isEqualTo("Midlertidig lønnstilskudd");
     }
 }
