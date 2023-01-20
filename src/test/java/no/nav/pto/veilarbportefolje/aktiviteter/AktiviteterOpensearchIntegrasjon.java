@@ -201,14 +201,14 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                             null,
                             null);
 
-            BrukereMedAntall responseBrukereLONNTILS = opensearchService.hentBrukere(
-                    navKontor.getValue(),
-                    empty(),
-                    "asc",
-                    "ikke_satt",
-                    new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("LONNTILS")),
-                    null,
-                    null);
+                    BrukereMedAntall responseBrukereLONNTILS = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("LONNTILS")),
+                            null,
+                            null);
 
                     assertThat(responseBrukereMIDLONTIL.getAntall()).isEqualTo(1);
                     assertThat(responseBrukereLONNTILS.getAntall()).isEqualTo(0);
@@ -226,6 +226,52 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         String tiltaksType2 = "MIDLONTIL";
         String tiltaksNavn2 = "Midlertidig lønnstilskudd";
 
+        insertBrukertiltak(tiltaksType1, tiltaksNavn1, tiltaksType2, tiltaksNavn2);
+
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setEndretDato(ZonedDateTime.of(LocalDate.parse("2021-01-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
+                .setFraDato(ZonedDateTime.of(LocalDate.parse("2018-10-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
+                .setTilDato(ZonedDateTime.of(LocalDate.parse("2024-11-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode(tiltaksType1)
+                .setVersion(1L)
+                .setAvtalt(true));
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("3")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setEndretDato(ZonedDateTime.of(LocalDate.parse("2021-01-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
+                .setFraDato(ZonedDateTime.of(LocalDate.parse("2017-02-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
+                .setTilDato(ZonedDateTime.of(LocalDate.parse("2023-02-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode(tiltaksType2)
+                .setVersion(1L)
+                .setAvtalt(true));
+        NavKontor navKontor = randomNavKontor();
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
+
+
+        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukereMIDLONTIL = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
+                            null,
+                            null);
+
+                    assertThat(responseBrukereMIDLONTIL.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukereMIDLONTIL.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
+
+                }
+        );
+    }
+
+    private void insertBrukertiltak(String tiltaksType1, String tiltaksNavn1, String tiltaksType2, String tiltaksNavn2) {
         TiltakInnhold tiltak1 = new TiltakInnhold()
                 .setFnr(fodselsnummer.toString())
                 .setTiltaksnavn(tiltaksNavn1)
@@ -247,48 +293,6 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setAktivitetperiodeTil(new ArenaDato("2023-02-03"))
                 .setAktivitetid("3");
         tiltakRepositoryV2.upsert(tiltak2, aktoer);
-
-        NavKontor navKontor = randomNavKontor();
-        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
-        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
-                .setAktivitetId("2")
-                .setAktorId(aktoer.get())
-                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
-                .setFraDato(ZonedDateTime.of(LocalDate.parse("2018-10-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
-                .setTilDato(ZonedDateTime.of(LocalDate.parse("2024-11-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
-                .setEndretDato(ZonedDateTime.of(LocalDate.parse("2021-01-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
-                .setTiltakskode(tiltaksType1)
-                .setVersion(1L)
-                .setAvtalt(true));
-        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
-                .setAktivitetId("3")
-                .setAktorId(aktoer.get())
-                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
-                .setFraDato(ZonedDateTime.of(LocalDate.parse("2017-02-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
-                .setTilDato(ZonedDateTime.of(LocalDate.parse("2023-02-03"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
-                .setEndretDato(ZonedDateTime.of(LocalDate.parse("2021-01-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
-                .setTiltakskode(tiltaksType2)
-                .setVersion(1L)
-                .setAvtalt(true));
-
-
-        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
-                    BrukereMedAntall responseBrukereMIDLONTIL = opensearchService.hentBrukere(
-                            navKontor.getValue(),
-                            empty(),
-                            "asc",
-                            "ikke_satt",
-                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
-                            null,
-                            null);
-
-                    assertThat(responseBrukereMIDLONTIL.getAntall()).isEqualTo(1);
-                    assertThat(responseBrukereMIDLONTIL.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
-
-                }
-        );
     }
 
     @Test
@@ -405,7 +409,6 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         });
 
 
-
         BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                 navKontor.getValue(),
                 empty(),
@@ -415,7 +418,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 null,
                 null);
 
-        System.out.println(JsonUtils.toJson( new Filtervalg().setStillingFraNavFilter(List.of(StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA)).setFerdigfilterListe(new ArrayList<>())));
+        System.out.println(JsonUtils.toJson(new Filtervalg().setStillingFraNavFilter(List.of(StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA)).setFerdigfilterListe(new ArrayList<>())));
         assertThat(responseBrukere.getAntall()).isEqualTo(1);
         assertThat(responseBrukere.getBrukere().get(0).getNesteCvKanDelesStatus()).isEqualTo("JA");
         assertThat(responseBrukere.getBrukere().get(0).getNesteSvarfristCvStillingFraNav()).isEqualTo(LocalDate.parse("2044-02-03"));
