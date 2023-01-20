@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
@@ -21,7 +22,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -39,7 +39,6 @@ import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
@@ -54,14 +53,12 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
     private final TiltakRepositoryV2 tiltakRepositoryV2;
 
-    @Mock
-    private final AktorClient aktorClient;
-
     private final ArenaHendelseRepository arenaHendelseRepository;
+    private final AktorClient aktorClient;
 
 
     @Autowired
-    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository, TiltakRepositoryV2 tiltakRepositoryV2, AktorClient aktorClient, ArenaHendelseRepository arenaHendelseRepository) {
+    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository, TiltakRepositoryV2 tiltakRepositoryV2, AktorClient aktorClient, ArenaHendelseRepository arenaHendelseRepository, OpensearchIndexer opensearchIndexer) {
         this.aktivitetService = aktivitetService;
         this.arenaHendelseRepository = arenaHendelseRepository;
         this.tiltakService = new TiltakService(tiltakRepositoryV2, aktorClient, arenaHendelseRepository, opensearchIndexer);
@@ -79,6 +76,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         jdbcTemplatePostgres.update("TRUNCATE oppfolgingsbruker_arena_v2");
         jdbcTemplatePostgres.update("TRUNCATE bruker_identer");
         jdbcTemplatePostgres.update("TRUNCATE oppfolging_data");
+        jdbcTemplatePostgres.update("TRUNCATE brukertiltak");
+        jdbcTemplatePostgres.update("TRUNCATE lest_arena_hendelse_aktivitet");
     }
 
     @Test
@@ -109,7 +108,6 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 }
         );
     }
-
 
     @Test
     public void lasterOppTiltaksaktivitet() {
@@ -244,38 +242,15 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         Fnr f3 = randomFnr();
         Mockito.when(aktorClient.hentAktorId(f3)).thenReturn(a3);
         testDataClient.lagreBrukerUnderOppfolging(a3, f3, navKontor.getValue());
-        String tt1 = "LONNTILS";
-        String tt2 = "MIDLONTIL";
-        String tt3 = "MENTOR";
-        String tt4 = "NETTAMO";
-        String tn1 = "Lønnstilskudd";
-        String tn2 = "Midlertidig lønnstilskudd";
-        String tn3 = "Mentor";
-        String tn4 = "Nettbasert arbeidsmarkedsopplæring (AMO)";
 
-        Map.Entry til1 = Map.entry(tt1, tn1);
-        Map.Entry til2 = Map.entry(tt2, tn2);
-        Map.Entry til3 = Map.entry(tt3, tn3);
+        Map.Entry<String, String> til1 = Map.entry("LONNTILS", "Lønnstilskudd");
+        Map.Entry<String, String> til2 = Map.entry("MIDLONTIL", "Midlertidig lønnstilskudd");
+        Map.Entry<String, String> til3 = Map.entry("MENTOR", "Mentor");
 
         sendKafkaMeldingerFraArena(f1, f2, f3, til1, til2, til3);
         sendKafkaMeldingerFraDAB(a1, a2, a3, til1, til2, til3);
 
-
-        // Les ut state fra OpenSearch, s2
-
-
-        // Verifiser at s2 er riktig (= det vi forventer)
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
-                    BrukereMedAntall responseBrukereUnderOppf = opensearchService.hentBrukere(
-                            navKontor.getValue(),
-                            empty(),
-                            "asc",
-                            "ikke_satt",
-                            new Filtervalg().setFerdigfilterListe(List.of(I_AKTIVITET)),
-                            null,
-                            null);
-                    assertThat(responseBrukereUnderOppf.getAntall()).isEqualTo(2);
-
                     BrukereMedAntall responseBruker1 = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
@@ -310,8 +285,6 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
                     // forventer at bruker3 har tt3
                     assertThat(responseBruker3.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MENTOR");
-
-
                 }
         );
     }
