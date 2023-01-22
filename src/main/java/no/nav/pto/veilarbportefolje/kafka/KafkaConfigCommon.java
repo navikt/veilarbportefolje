@@ -62,6 +62,7 @@ import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfig
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_STOP;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_TILTAKSAKTIVITET_ENDRET_STOP;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
@@ -109,6 +110,8 @@ public class KafkaConfigCommon {
 
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final KafkaConsumerClient consumerClientAivenSiste14a; // Midlertidig adskilt for egen toggle
+
+    private final KafkaConsumerClient consumerClientAivenTiltaksaktivitetendret; // Midlertidig adskilt for egen toggle
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
@@ -154,16 +157,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(GruppeAktivitetDTO.class),
                                         gruppeAktivitetService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, TiltakDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.TILTAK_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(TiltakDTO.class),
-                                        tiltakService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerRegistrertEvent>()
                                 .withLogging()
@@ -396,6 +389,21 @@ public class KafkaConfigCommon {
                 .withToggle(() -> unleashService.isEnabled(KAFKA_SISTE_14A_STOP) || kafkaAivenUnleash.get())
                 .build();
 
+        consumerClientAivenTiltaksaktivitetendret = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
+                .withTopicConfig(new KafkaConsumerClientBuilder.TopicConfig<String, TiltakDTO>()
+                        .withLogging()
+                        .withMetrics(prometheusMeterRegistry)
+                        .withStoreOnFailure(consumerRepository)
+                        .withConsumerConfig(
+                                Topic.TILTAK_TOPIC.topicName,
+                                Deserializers.stringDeserializer(),
+                                Deserializers.jsonDeserializer(TiltakDTO.class),
+                                tiltakService::behandleKafkaRecord
+                        ))
+                .withToggle(() -> unleashService.isEnabled(KAFKA_TILTAKSAKTIVITET_ENDRET_STOP) || kafkaAivenUnleash.get())
+                .build();
+
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
@@ -412,6 +420,7 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientAivenSiste14a.start();
+        consumerClientAivenTiltaksaktivitetendret.start();
     }
 
 
