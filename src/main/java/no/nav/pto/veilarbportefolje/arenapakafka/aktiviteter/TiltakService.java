@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,12 @@ public class TiltakService {
     }
 
 
+    /*
+     * Metoden er deprecated da vi nå henter data om tiltaksaktiviteter fra ny datakilde.
+     * Metoden las stå inntil testene som bruker den er fjernet.
+     *
+     */
+    @Deprecated
     public void behandleKafkaMelding(TiltakDTO kafkaMelding) {
         TiltakInnhold innhold = getInnhold(kafkaMelding);
 
@@ -75,9 +82,18 @@ public class TiltakService {
         opensearchIndexer.indekser(aktorId);
     }
 
-    /**
-     * Behandler kafkamelding om tiltaksaktivitet
-     * TODO: Beskrive forskjell mellom denne og den andre med samme navn
+    /*
+     * Behandler en KafkaAktivitetMelding som om det var en TiltakDTO.
+     *
+     * Denne metoden er en midlertidig tilpasning slik at vi kan ta i mot data om tiltaksaktiviteter
+     * fra ny datakilde uten å måtte endre implementasjonen for persistering og uthenting/presentasjon
+     * av disse dataene.
+     *
+     * Tidligere ble tiltaksaktiviteter lest fra KafkaConfigCommon.Topic.TILTAK_TOPIC,
+     * men leses nå fra Aktivitetsplanen KafkaConfigCommon.Topic.AIVEN_AKTIVITER_TOPIC.
+     *
+     * Se forøvrig Arena-dokumentasjonen for Tiltaksaktivitet:
+     * https://confluence.adeo.no/pages/viewpage.action?pageId=409961201#ARENA413103L%C3%B8sningsbeskrivelse-TILTAKSAKTIVITET
      */
     public boolean behandleKafkaMelding(KafkaAktivitetMelding kafkaMelding) {
         if (!validerMelding(kafkaMelding)) {
