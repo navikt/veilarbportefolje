@@ -426,7 +426,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         aktivitetService.behandleKafkaMeldingLogikk(k3.setHistorisk(true));
 
         KafkaAktivitetMelding k5 = new KafkaAktivitetMelding()
-                .setAktivitetId("TA-323456789")
+                .setAktivitetId("TA-423456789")
                 .setAktorId(aktorId3.get())
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
                 .setEndretDato(ZonedDateTime.of(LocalDate.parse("2022-01-01"), LocalTime.parse("00:00:00"), ZoneId.systemDefault()))
