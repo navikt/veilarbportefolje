@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.arenapakafka;
 
+import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
@@ -10,7 +11,9 @@ import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Date;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -69,7 +72,8 @@ public class ArenaUtilsTest {
 
         Assertions.assertThat(ArenaDato.of(dato1).getDato()).isEqualTo(new ArenaDato("2023-05-25").getDato());
         Assertions.assertThat(ArenaDato.of(dato2).getDato()).isEqualTo(new ArenaDato("2023-10-03").getDato());
-        Assertions.assertThat(ArenaDato.of(dato3).getDato()).isEqualTo(new ArenaDato("2023-05-26").getDato());
-        Assertions.assertThat(ArenaDato.of(dato4).getDato()).isEqualTo(new ArenaDato("2023-10-04").getDato());
+        Assertions.assertThat(ArenaDato.of(dato3).getDato()).isEqualTo(new ArenaDato("2023-05-25").getDato());
+        Assertions.assertThat(ArenaDato.of(dato4).getDato()).isEqualTo(new ArenaDato("2023-10-03").getDato());
     }
+
 }

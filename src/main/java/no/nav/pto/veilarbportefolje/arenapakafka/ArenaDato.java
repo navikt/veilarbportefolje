@@ -33,6 +33,7 @@ public class ArenaDato {
         }
         return LocalDateTime.parse(dato, format).toLocalDate().atStartOfDay();
     }
+
     public LocalDate getLocalDate() {
         if (dato.length() == localDateLength) {
             return LocalDate.parse(dato);
@@ -40,10 +41,8 @@ public class ArenaDato {
         return LocalDate.parse(dato, format);
     }
 
-    public static ArenaDato of(ZonedDateTime datoMedTiddsone) {
-        ZonedDateTime datoMedSystemDefaultTiddsone = datoMedTiddsone.withZoneSameInstant(ZoneId.systemDefault());
-        LocalDate date = datoMedSystemDefaultTiddsone.toLocalDate();
-        return new ArenaDato(date.toString());
+    public static ArenaDato of(ZonedDateTime dato) {
+        return new ArenaDato(dato.toLocalDate().toString());
     }
 
 }
