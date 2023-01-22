@@ -1,5 +1,9 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
+import lombok.SneakyThrows;
+import lombok.experimental.Accessors;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
@@ -26,18 +30,18 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -117,13 +121,21 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setAktivitetId("2")
                 .setAktorId(aktoer.get())
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
-                .setFraDato(ZonedDateTime.now())
-                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
+                .setFraDato(ZonedDateTime.parse("2023-05-25T00:00:00+02:00"))
+                .setTilDato(ZonedDateTime.parse("2023-10-03T23:59:59+02:00"))
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setTiltakskode("MIDLONTIL")
                 .setVersion(1L)
                 .setAvtalt(true));
+
+        List<BrukerTiltak> fraTiltakDB = hentFelterBrukerTiltakPaAktorId(aktoer);
+        assertThat(fraTiltakDB.size()).isEqualTo(1);
+        assertThat(fraTiltakDB.get(0).version).isEqualTo(1L);
+        assertThat(fraTiltakDB.get(0).fradato).isEqualTo(Timestamp.valueOf("2023-05-25 00:00:00.0"));
+        assertThat(fraTiltakDB.get(0).tildato).isEqualTo(Timestamp.valueOf("2023-10-03 23:59:59.0"));
+        assertThat(fraTiltakDB.get(0).tiltakskode).isEqualTo("MIDLONTIL");
+
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
                     BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                             navKontor.getValue(),
@@ -141,38 +153,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     }
 
     @Test
-    public void lasterOppTiltaksaktivitet2() {
-        NavKontor navKontor = randomNavKontor();
-        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
-        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
-                .setAktivitetId("2")
-                .setAktorId(aktoer.get())
-                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
-                .setFraDato(ZonedDateTime.now())
-                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
-                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
-                .setTiltakskode("MIDLONTIL")
-                .setVersion(1L)
-                .setAvtalt(true));
-
-        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
-                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
-                            navKontor.getValue(),
-                            empty(),
-                            "asc",
-                            "ikke_satt",
-                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
-                            null,
-                            null);
-
-                    assertThat(responseBrukere.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
-                }
-        );
-    }
-
-    @Test
-    public void versjonsnummerTiltaksaktivitet() {
+    public void verifiserAtKafkameldingMedSammeAktivitetIdMenNyVersjonOverskriverGammelVersjon() {
         NavKontor navKontor = randomNavKontor();
         testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
@@ -198,6 +179,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setVersion(2L)
                 .setAvtalt(true));
 
+        assertThat(hentFelterBrukerTiltakPaAktivitetId("2").size()).isEqualTo(1);
+        assertThat(hentFelterBrukerTiltakPaAktivitetId("2").get(0).getVersion()).isEqualTo(2L);
 
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
                     BrukereMedAntall responseBrukereMIDLONTIL = opensearchService.hentBrukere(
@@ -226,7 +209,6 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         );
     }
 
-
     @Test
     public void skal_laste_inn_samme_data_fra_ny_datakilde_korrekt() {
         NavKontor navKontor = randomNavKontor();
@@ -248,6 +230,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         Map.Entry<String, String> til3 = Map.entry("MENTOR", "Mentor");
 
         sendKafkaMeldingerFraArena(f1, f2, f3, til1, til2, til3);
+
         sendKafkaMeldingerFraDAB(a1, a2, a3, til1, til2, til3);
 
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
@@ -260,7 +243,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                             null,
                             null);
                     // forventer at bruker1 har tt2
-                    assertThat(responseBruker1.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
+                    assertThat(responseBruker1.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("LONNTILS");
 
                     BrukereMedAntall responseBruker2 = opensearchService.hentBrukere(
                             navKontor.getValue(),
@@ -458,6 +441,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         aktivitetService.behandleKafkaMeldingLogikk(k5);
     }
 
+
     @Test
     public void brukertiltakErOppdatert() {
         NavKontor navKontor = randomNavKontor();
@@ -473,6 +457,21 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setTiltakskode("MIDLONTIL")
                 .setVersion(1L)
                 .setAvtalt(true));
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("3")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode("LONNTILS")
+                .setVersion(1L)
+                .setAvtalt(true));
+
+        List<BrukerTiltak> brukertiltak= hentFelterBrukerTiltakPaAktorId(aktoer);
+        assertThat(brukertiltak.size()).isEqualTo(2);
+
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
                     BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                             navKontor.getValue(),
@@ -719,5 +718,54 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                         "test", "testson", navKontor.getValue(), null, null,
                         null, null, kode, false, false,
                         ZonedDateTime.now()));
+    }
+
+
+
+    public List<BrukerTiltak> hentFelterBrukerTiltakPaAktorId(AktorId aktorId) {
+        String sql = String.format("SELECT * FROM %s WHERE %s = ? ", "brukertiltak", "aktoerid");
+        return jdbcTemplatePostgres.queryForList(sql, aktorId.get())
+                .stream().map(this::brukertiltakMapper)
+                .toList();
+    }
+
+    public List<BrukerTiltak> hentFelterBrukerTiltakPaAktivitetId(String aktivitetid) {
+        String sql = String.format("SELECT * FROM %s WHERE %s = ? ", "brukertiltak", "aktivitetid");
+        return jdbcTemplatePostgres.queryForList(sql, aktivitetid)
+                .stream().map(this::brukertiltakMapper)
+                .toList();
+    }
+
+    public Optional<Timestamp> hentfradatoBrukerTiltak(AktorId aktorId, String aktivitetid) {
+        String sql = String.format("SELECT %s FROM %s WHERE %s = ? ", "fradato", "brukertiltak", "aktivitetid");
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> jdbcTemplatePostgres.queryForObject(sql, (rs, row) -> rs.getTimestamp("fradato"), aktivitetid))
+        );
+    }
+
+    @SneakyThrows
+    public BrukerTiltak brukertiltakMapper (Map<String, Object> row) {
+        return new
+                BrukerTiltak()
+                .setAktivitetid((String) row.get("aktivitetid"))
+                .setPersonid(Integer.valueOf((String) row.get("personid")))
+                .setAktorid((String) row.get("aktoerid"))
+                .setTiltakskode((String) row.get("tiltakskode"))
+                .setFradato((Timestamp) row.get("fradato"))
+                .setTildato((Timestamp) row.get("tildato"))
+                .setVersion((Long) row.get("version"));
+    }
+
+    @Data
+    @Accessors(chain = true)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private class BrukerTiltak{
+        String aktivitetid;
+        Integer personid;
+        String aktorid;
+        String tiltakskode;
+        Timestamp fradato;
+        Timestamp tildato;
+        Long version;
     }
 }

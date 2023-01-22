@@ -4,10 +4,13 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseReposi
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -55,5 +58,18 @@ public class ArenaUtilsTest {
 
         assertThat(deleteHendelseErGammel).isFalse();
         assertThat(insertHendelseErGammel).isTrue();
+    }
+
+    @Test
+    public void testArenaDato(){
+        ZonedDateTime dato1 = ZonedDateTime.parse("2023-05-25T23:00:00+02:00");
+        ZonedDateTime dato2 = ZonedDateTime.parse("2023-10-03T23:59:59+02:00");
+        ZonedDateTime dato3 = ZonedDateTime.parse("2023-05-25T23:00:00+00:00");
+        ZonedDateTime dato4 = ZonedDateTime.parse("2023-10-03T23:59:59+00:00");
+
+        Assertions.assertThat(ArenaDato.of(dato1).getDato()).isEqualTo(new ArenaDato("2023-05-25").getDato());
+        Assertions.assertThat(ArenaDato.of(dato2).getDato()).isEqualTo(new ArenaDato("2023-10-03").getDato());
+        Assertions.assertThat(ArenaDato.of(dato3).getDato()).isEqualTo(new ArenaDato("2023-05-26").getDato());
+        Assertions.assertThat(ArenaDato.of(dato4).getDato()).isEqualTo(new ArenaDato("2023-10-04").getDato());
     }
 }

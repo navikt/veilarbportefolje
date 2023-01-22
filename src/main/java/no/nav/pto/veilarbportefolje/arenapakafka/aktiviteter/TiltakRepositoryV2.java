@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -44,7 +45,7 @@ public class TiltakRepositoryV2 {
         upsert(innhold, aktorId, null);
     }
 
-    public void upsert(TiltakInnhold innhold, AktorId aktorId, Long tiltakVersion) {
+    public void upsert(@NotNull TiltakInnhold innhold, AktorId aktorId, Long tiltakVersion) {
         LocalDateTime fraDato = getLocalDateTimeOrNull(innhold.getAktivitetperiodeFra(), false);
         LocalDateTime tilDato = getLocalDateTimeOrNull(innhold.getAktivitetperiodeTil(), true);
 
