@@ -1,12 +1,11 @@
 package no.nav.pto.veilarbportefolje.arenapakafka;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import org.junit.Test;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class ArenaDato {
     private static final int localDateLength = "0000-00-00".length();
@@ -19,7 +18,7 @@ public class ArenaDato {
     }
 
     /*
-        NB: Klokkelsett i arena datoer kan ikke stoles pa.
+        NB: Klokkeslett i arenadatoer kan ikke stoles pa.
      */
     public ZonedDateTime getDato() {
         if (dato.length() == localDateLength) {
@@ -34,10 +33,16 @@ public class ArenaDato {
         }
         return LocalDateTime.parse(dato, format).toLocalDate().atStartOfDay();
     }
+
     public LocalDate getLocalDate() {
         if (dato.length() == localDateLength) {
             return LocalDate.parse(dato);
         }
         return LocalDate.parse(dato, format);
     }
+
+    public static ArenaDato of(ZonedDateTime dato) {
+        return new ArenaDato(dato.toLocalDate().toString());
+    }
+
 }

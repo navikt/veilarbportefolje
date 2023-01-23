@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 
 public class FeatureToggle {
 
+
     private FeatureToggle() {
     }
 
@@ -21,6 +22,7 @@ public class FeatureToggle {
     public static final String PDL_BRUKERDATA_BACKUP = "veilarbportefolje.Pdl_brukerdata_backup";
 
     private static final String MAP_AVVIK_14A_VEDTAK = "veilarbportefolje.map_avvik_14a_vedtak";
+    private static final String LONNSTILSKUDD_FRA_DAB = "veilarbportefolje.lonnstilskudd_fra_dab";
 
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
@@ -40,5 +42,9 @@ public class FeatureToggle {
 
     public static boolean mapAvvik14aVedtak(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.MAP_AVVIK_14A_VEDTAK);
+    }
+
+    public static boolean lonnstilskuddFraDABEnabled(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.LONNSTILSKUDD_FRA_DAB);
     }
 }

@@ -4,19 +4,23 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakkodeverkMapper.tiltakskodeTiltaksnavnMap;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 
 @Slf4j
@@ -27,13 +31,39 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final SisteEndringService sisteEndringService;
     private final OpensearchIndexer opensearchIndexer;
+    private final TiltakService tiltakService;
+    private final UnleashService unleashService;
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
         sisteEndringService.behandleAktivitet(aktivitetData);
+
+        boolean erTiltaksaktivitet = KafkaAktivitetMelding.AktivitetTypeData.TILTAK == aktivitetData.aktivitetType;
+
+        if (erTiltaksaktivitet) {
+            behandleTiltaksaktivitetMelding(aktivitetData, aktorId);
+        } else {
+            behandleAktivitetsplanAktivitetMelding(aktivitetData, aktorId);
+        }
+    }
+
+    private void behandleAktivitetsplanAktivitetMelding(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
         boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
         if (bleProsessert) {
             opensearchIndexer.indekser(aktorId);
+        }
+    }
+
+    private void behandleTiltaksaktivitetMelding(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
+        boolean erTiltakskodeStottet = tiltakskodeTiltaksnavnMap.containsKey(aktivitetData.tiltakskode);
+        if (erTiltakskodeStottet) {
+            boolean skalIndeksereBruker = tiltakService.behandleKafkaMelding(aktivitetData) && FeatureToggle.lonnstilskuddFraDABEnabled(unleashService);
+
+            if (skalIndeksereBruker) {
+                opensearchIndexer.indekser(aktorId);
+            }
+        } else {
+            throw new RuntimeException("Mottok aktivitet med aktivitetId: " + aktivitetData.aktivitetId + " med uventet tiltakskode: " + aktivitetData.tiltakskode + " fra ny kilde. Tiltak ble ikke lagret.");
         }
     }
 
@@ -85,7 +115,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         return sensurertListe;
     }
 
-    private static Moteplan skjermMoteplan(Moteplan moteplan){
+    private static Moteplan skjermMoteplan(Moteplan moteplan) {
         return new Moteplan(skjermetDeltaker, moteplan.dato(), moteplan.avtaltMedNav());
     }
 }
