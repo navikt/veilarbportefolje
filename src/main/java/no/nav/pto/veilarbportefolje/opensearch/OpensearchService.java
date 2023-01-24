@@ -5,11 +5,11 @@ import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.apache.commons.lang3.StringUtils;
 import org.opensearch.action.search.SearchRequest;
@@ -36,9 +36,10 @@ public class OpensearchService {
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final VedtaksstotteClient vedtaksstotteClient;
     private final IndexName indexName;
+	private final UnleashService unleashService;
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder,
-                                        String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
+										String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         int from = Optional.ofNullable(fra).orElse(0);
@@ -70,11 +71,13 @@ public class OpensearchService {
 
         searchSourceBuilder.query(boolQuery);
 
-        if (kallesFraMinOversikt) {
-            searchSourceBuilder.sort("ny_for_veileder", SortOrder.DESC);
-        } else {
-            sorterPaaNyForEnhet(searchSourceBuilder, veiledereMedTilgangTilEnhet);
-        }
+		if(!FeatureToggle.fjerneUfordeltEllerNyBrukerSortering(unleashService)) {
+			if (kallesFraMinOversikt) {
+				searchSourceBuilder.sort("ny_for_veileder", SortOrder.DESC);
+			} else {
+				sorterPaaNyForEnhet(searchSourceBuilder, veiledereMedTilgangTilEnhet);
+			}
+		}
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
