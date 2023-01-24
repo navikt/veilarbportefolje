@@ -68,15 +68,16 @@ public class TiltakRepositoryV3 {
     public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
         final String hentTiltakPaEnhetSql = """
                 SELECT * FROM tiltakkodeverket WHERE
-                kode IN 
-                    (SELECT DISTINCT tiltakskode FROM 
-                        (SELECT * FROM brukertiltak FULL OUTER JOIN brukertiltak_v2 b ON brukertiltak.aktivitetid = b.aktivitetid) BT
-                    INNER JOIN aktive_identer ai on ai.aktorid = BT.aktoerid
-                    INNER JOIN oppfolgingsbruker_arena_v2 OP ON OP.fodselsnr = ai.fnr
-                    WHERE OP.nav_kontor = ?
-                    )
+                kode IN (SELECT DISTINCT tiltakskode FROM
+                (
+                    SELECT tiltakskode, aktoerid FROM brukertiltak
+                    UNION
+                    SELECT tiltakskode, aktoerid FROM brukertiltak_v2
+                ) BT
+                INNER JOIN aktive_identer ai on ai.aktorid = BT.aktoerid
+                INNER JOIN oppfolgingsbruker_arena_v2 OP ON OP.fodselsnr = ai.fnr
+                WHERE OP.nav_kontor = ?)
                 """;
-
         return new EnhetTiltak().setTiltak(
                 dbReadOnly.queryForList(hentTiltakPaEnhetSql, enhetId.get())
                         .stream().map(this::mapTilTiltak)
@@ -94,7 +95,8 @@ public class TiltakRepositoryV3 {
     public void leggTilTiltak(String aktoerIder, HashMap<AktorId, List<AktivitetEntityDto>> result) {
         namedDb.query("""
                         SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak
-                        FULL OUTER JOIN brukertiltak_v2 b on brukertiltak.aktivitetid = b.aktivitetid
+                        UNION
+                        SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak_v2
                         WHERE aktoerid = ANY (:ids::varchar[])
                         """,
                 new MapSqlParameterSource("ids", aktoerIder),
