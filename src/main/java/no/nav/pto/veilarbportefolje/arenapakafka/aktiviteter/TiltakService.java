@@ -165,7 +165,8 @@ public class TiltakService {
                 .setFraDato(ArenaDato.of(kafkaMelding.getFraDato()))
                 .setTilDato(ArenaDato.of(kafkaMelding.getTilDato()))
                 .setTiltakskode(kafkaMelding.getTiltakskode())
-                .setTiltaksnavn(TiltakkodeverkMapper.mapTilTiltaknavn(kafkaMelding.getTiltakskode()));
+                .setTiltaksnavn(TiltakkodeverkMapper.mapTilTiltaknavn(kafkaMelding.getTiltakskode()))
+                .setVersion(kafkaMelding.getVersion());
     }
 
     public EnhetTiltak hentEnhettiltak(EnhetId enhet) {

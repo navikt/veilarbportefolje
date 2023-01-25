@@ -479,4 +479,60 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         assertThat(result1.get(a2)).hasSameElementsAs(result2.get(a2));
         assertThat(result1.get(a3)).hasSameElementsAs(result2.get(a3));
     }
+
+    @Test
+    public void verifiserAtKafkameldingMedSammeAktivitetIdMenNyVersjonOverskriverGammelVersjon() {
+        AktorId aktoer = randomAktorId();
+        Fnr fodselsnummer = randomFnr();
+        NavKontor navKontor = randomNavKontor();
+
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode("VARLONTIL")
+                .setVersion(1L)
+                .setAvtalt(true));
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.parse("2023-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setTiltakskode("MIDLONTIL")
+                .setVersion(2L)
+                .setAvtalt(true));
+
+        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukereMIDLONTIL = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
+                            null,
+                            null);
+
+                    BrukereMedAntall responseBrukereLONNTILS = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
+                            null,
+                            null);
+
+                    assertThat(responseBrukereMIDLONTIL.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukereLONNTILS.getAntall()).isEqualTo(0);
+                    assertThat(responseBrukereMIDLONTIL.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
+                }
+        );
+    }
 }
