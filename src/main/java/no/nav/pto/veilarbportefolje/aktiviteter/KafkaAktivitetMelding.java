@@ -63,7 +63,10 @@ public class KafkaAktivitetMelding {
 
     public enum InnsenderData {
         BRUKER,
-        NAV
+        NAV,
+        ARBEIDSGIVER,
+        TILTAKSARRANGOER,
+        ARENAIDENT
     }
 
     public enum CvKanDelesStatus {
