@@ -391,7 +391,7 @@ public class KafkaConfigCommon {
                                 siste14aVedtakService::behandleKafkaRecord
                         );
 
-        KafkaConsumerClientBuilder.TopicConfig<String, CVMelding> cvHjemmelRewindConfig = new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
+        KafkaConsumerClientBuilder.TopicConfig<String, CVMelding> cvHjemmelRewind = new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
                 .withLogging()
                 .withMetrics(prometheusMeterRegistry)
                 .withStoreOnFailure(consumerRepository)
@@ -410,7 +410,7 @@ public class KafkaConfigCommon {
 
         consumerClientCvHjemmelRewind = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG + "-rewind"))
-                .withTopicConfig(cvHjemmelRewindConfig)
+                .withTopicConfig(cvHjemmelRewind)
                 .withToggle(kafkaAivenUnleash)
                 .build();
 
@@ -419,7 +419,7 @@ public class KafkaConfigCommon {
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(
-                        Stream.concat(Stream.concat(topicConfigsAiven.stream(), Stream.of(siste14aTopicConfig)), Stream.of(cvHjemmelRewindConfig)).collect(Collectors.toList())))
+                        Stream.concat(topicConfigsAiven.stream(), Stream.of(siste14aTopicConfig)).collect(Collectors.toList())))
                 .withBackoffStrategy(new LinearBackoffStrategy(0, 2 * 60 * 60, 144))
                 .build();
     }
