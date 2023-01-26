@@ -1,11 +1,9 @@
 package no.nav.pto.veilarbportefolje.arenapakafka;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import org.junit.Test;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 public class ArenaDato {
     private static final int localDateLength = "0000-00-00".length();

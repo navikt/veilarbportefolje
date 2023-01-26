@@ -28,7 +28,6 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateT
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapTiltakTilEntity;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.*;
 
 @Slf4j
 @Repository
