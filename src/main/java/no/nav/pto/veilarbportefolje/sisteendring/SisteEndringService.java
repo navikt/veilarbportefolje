@@ -59,7 +59,7 @@ public class SisteEndringService {
     }
 
     public void behandleAktivitet(KafkaAktivitetMelding kafkaAktivitet) {
-        if (kafkaAktivitet.getLagtInnAv() == null || kafkaAktivitet.getLagtInnAv() == KafkaAktivitetMelding.InnsenderData.NAV) {
+        if (kafkaAktivitet.getLagtInnAv() == null || kafkaAktivitet.getLagtInnAv() != KafkaAktivitetMelding.InnsenderData.BRUKER) {
             return;
         }
 

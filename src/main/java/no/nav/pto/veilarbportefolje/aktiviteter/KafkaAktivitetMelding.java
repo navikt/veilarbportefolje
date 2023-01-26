@@ -23,6 +23,7 @@ public class KafkaAktivitetMelding {
     StillingFraNAV stillingFraNavData;
     boolean avtalt;
     boolean historisk;
+    String tiltakskode;
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -49,7 +50,8 @@ public class KafkaAktivitetMelding {
         MOTE,
         SAMTALEREFERAT,
         UTDANNINGAKTIVITET,
-        STILLING_FRA_NAV
+        STILLING_FRA_NAV,
+        TILTAK
     }
 
     public enum EndringsType {
@@ -61,7 +63,10 @@ public class KafkaAktivitetMelding {
 
     public enum InnsenderData {
         BRUKER,
-        NAV
+        NAV,
+        ARBEIDSGIVER,
+        TILTAKSARRANGOER,
+        ARENAIDENT
     }
 
     public enum CvKanDelesStatus {
