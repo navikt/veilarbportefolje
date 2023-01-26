@@ -70,6 +70,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         jdbcTemplatePostgres.update("TRUNCATE brukertiltak");
         jdbcTemplatePostgres.update("TRUNCATE brukertiltak_v2");
         jdbcTemplatePostgres.update("TRUNCATE tiltakkodeverket");
+        jdbcTemplatePostgres.update("TRUNCATE lest_arena_hendelse_aktivitet");
     }
 
     @Test
