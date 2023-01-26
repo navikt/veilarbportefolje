@@ -208,6 +208,16 @@ public class PostgresTable {
         public static final String FRADATO = "FRADATO";
     }
 
+    public static final class BRUKERTILTAK_V2 {
+        public static final String TABLE_NAME = "BRUKERTILTAK_V2";
+        public static final String AKTIVITETID = "AKTIVITETID";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String TILTAKSKODE = "TILTAKSKODE";
+        public static final String TILDATO = "TILDATO";
+        public static final String FRADATO = "FRADATO";
+        public static final String VERSION = "VERSION";
+    }
+
     public static final class TILTAKKODEVERK {
         public static final String TABLE_NAME = "TILTAKKODEVERKET";
         public static final String KODE = "KODE";
