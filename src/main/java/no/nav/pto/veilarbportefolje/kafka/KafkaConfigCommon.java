@@ -109,6 +109,7 @@ public class KafkaConfigCommon {
 
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final KafkaConsumerClient consumerClientAivenSiste14a; // Midlertidig adskilt for egen toggle
+    private final KafkaConsumerClient consumerClientCvHjemmelRewind;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
@@ -390,10 +391,27 @@ public class KafkaConfigCommon {
                                 siste14aVedtakService::behandleKafkaRecord
                         );
 
+        KafkaConsumerClientBuilder.TopicConfig<String, CVMelding> cvHjemmelRewindConfig = new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
+                .withLogging()
+                .withMetrics(prometheusMeterRegistry)
+                .withStoreOnFailure(consumerRepository)
+                .withConsumerConfig(
+                        Topic.CV_TOPIC.topicName,
+                        Deserializers.stringDeserializer(),
+                        Deserializers.jsonDeserializer(CVMelding.class),
+                        cvService::behandleKafkaMeldingCVHjemmel
+                );
+
         consumerClientAivenSiste14a = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfig(siste14aTopicConfig)
                 .withToggle(() -> unleashService.isEnabled(KAFKA_SISTE_14A_STOP) || kafkaAivenUnleash.get())
+                .build();
+
+        consumerClientCvHjemmelRewind = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG + "-rewind"))
+                .withTopicConfig(cvHjemmelRewindConfig)
+                .withToggle(kafkaAivenUnleash)
                 .build();
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
@@ -401,7 +419,7 @@ public class KafkaConfigCommon {
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(
-                        Stream.concat(topicConfigsAiven.stream(), Stream.of(siste14aTopicConfig)).collect(Collectors.toList())))
+                        Stream.concat(Stream.concat(topicConfigsAiven.stream(), Stream.of(siste14aTopicConfig)), Stream.of(cvHjemmelRewindConfig)).collect(Collectors.toList())))
                 .withBackoffStrategy(new LinearBackoffStrategy(0, 2 * 60 * 60, 144))
                 .build();
     }
@@ -412,6 +430,7 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientAivenSiste14a.start();
+        consumerClientCvHjemmelRewind.start();
     }
 
 
