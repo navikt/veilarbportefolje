@@ -95,6 +95,7 @@ public class TiltakRepositoryV3 {
     public void leggTilTiltak(String aktoerIder, HashMap<AktorId, List<AktivitetEntityDto>> result) {
         namedDb.query("""
                         SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak
+                        WHERE aktoerid = ANY (:ids::varchar[])
                         UNION
                         SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak_v2
                         WHERE aktoerid = ANY (:ids::varchar[])

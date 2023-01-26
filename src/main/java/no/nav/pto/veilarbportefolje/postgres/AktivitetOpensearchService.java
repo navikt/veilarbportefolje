@@ -32,12 +32,7 @@ public class AktivitetOpensearchService {
 
         aktiviteterRepositoryV2.leggTilAktiviteterFraAktivitetsplanen(aktoerIder, true, result);
         gruppeAktivitetRepositoryV2.leggTilGruppeAktiviteter(aktoerIder, result);
-
-        if (FeatureToggle.lonnstilskuddFraDABEnabled(unleashService)) {
-            tiltakRepositoryV3.leggTilTiltak(aktoerIder, result);
-        } else {
-            tiltakRepositoryV2.leggTilTiltak(aktoerIder, result);
-        }
+        tiltakRepositoryV3.leggTilTiltak(aktoerIder, result);
 
         return result;
     }

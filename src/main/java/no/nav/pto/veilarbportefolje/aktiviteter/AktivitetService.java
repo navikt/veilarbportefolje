@@ -57,7 +57,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private void behandleTiltaksaktivitetMelding(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
         boolean erTiltakskodeStottet = tiltakskodeTiltaksnavnMap.containsKey(aktivitetData.tiltakskode);
         if (erTiltakskodeStottet) {
-            boolean skalIndeksereBruker = tiltakService.behandleKafkaMelding(aktivitetData) && FeatureToggle.lonnstilskuddFraDABEnabled(unleashService);
+            boolean skalIndeksereBruker = tiltakService.behandleKafkaMelding(aktivitetData);
 
             if (skalIndeksereBruker) {
                 opensearchIndexer.indekser(aktorId);

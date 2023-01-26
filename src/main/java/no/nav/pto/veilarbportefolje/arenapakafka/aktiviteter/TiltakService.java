@@ -50,8 +50,6 @@ public class TiltakService {
             .maximumSize(1000)
             .build();
 
-    private final List<String> ekskluderteTiltakstyper = List.of("MIDLONTIL", "VARLONTIL");
-
     public void behandleKafkaRecord(ConsumerRecord<String, TiltakDTO> kafkaMelding) {
         TiltakDTO melding = kafkaMelding.value();
         log.info(
@@ -61,15 +59,7 @@ public class TiltakService {
                 kafkaMelding.partition(),
                 kafkaMelding.topic()
         );
-
-        if (FeatureToggle.lonnstilskuddFraDABEnabled(unleashService)) {
-            boolean erIkkeLonnstilskudd = !ekskluderteTiltakstyper.contains(melding.getAfter().getTiltakstype());
-            if (erIkkeLonnstilskudd) {
-                behandleKafkaMelding(melding);
-            }
-        } else {
             behandleKafkaMelding(melding);
-        }
     }
 
 
@@ -171,13 +161,9 @@ public class TiltakService {
 
     public EnhetTiltak hentEnhettiltak(EnhetId enhet) {
         return tryCacheFirst(enhetTiltakCachePostgres, enhet,
-                () -> {
-                    if (FeatureToggle.lonnstilskuddFraDABEnabled(unleashService)) {
-                        return tiltakRepositoryV3.hentTiltakPaEnhet(enhet);
-                    } else {
-                        return tiltakRepositoryV2.hentTiltakPaEnhet(enhet);
-                    }
-                });
+                () ->
+                        tiltakRepositoryV3.hentTiltakPaEnhet(enhet)
+                );
     }
 
     private boolean erGammelMelding(TiltakDTO kafkaMelding, TiltakInnhold innhold) {
