@@ -19,6 +19,8 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 
+import java.util.List;
+
 import static no.nav.common.utils.UrlUtils.createServiceUrl;
 
 
@@ -49,8 +51,8 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public UnleashClient unleashClient(EnvironmentProperties properties) {
-        return new UnleashClientImpl(properties.getUnleashUrl(), APPLICATION_NAME);
+    public UnleashClient unleashClient(EnvironmentProperties properties, AuthContextHolder authContextHolder) {
+        return new UnleashClientImpl(properties.getUnleashUrl(), APPLICATION_NAME, List.of(new ByUserIdStrategy(authContextHolder)));
     }
 
     @Bean
