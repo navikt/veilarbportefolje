@@ -22,6 +22,7 @@ public class FeatureToggle {
     public static final String PDL_BRUKERDATA_BACKUP = "veilarbportefolje.Pdl_brukerdata_backup";
 
     public static final String MAP_AVVIK_14A_VEDTAK = "veilarbportefolje.map_avvik_14a_vedtak";
+ 	  public static final String FJERNE_UFORDELT_ELLER_NY_BRUKER_SORTERING = "veilarbportefolje.fjerne_ufordelt_eller_ny_bruker_sortering";
 
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
@@ -42,4 +43,8 @@ public class FeatureToggle {
     public static boolean mapAvvik14aVedtak(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.MAP_AVVIK_14A_VEDTAK);
     }
+
+	public static boolean fjerneUfordeltEllerNyBrukerSortering(UnleashService unleashService) {
+		return unleashService.isEnabled(FeatureToggle.FJERNE_UFORDELT_ELLER_NY_BRUKER_SORTERING);
+	}
 }
