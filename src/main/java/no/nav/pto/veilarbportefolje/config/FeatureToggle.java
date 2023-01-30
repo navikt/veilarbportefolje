@@ -22,7 +22,9 @@ public class FeatureToggle {
     public static final String PDL_BRUKERDATA_BACKUP = "veilarbportefolje.Pdl_brukerdata_backup";
 
     public static final String MAP_AVVIK_14A_VEDTAK = "veilarbportefolje.map_avvik_14a_vedtak";
- 	  public static final String FJERNE_UFORDELT_ELLER_NY_BRUKER_SORTERING = "veilarbportefolje.fjerne_ufordelt_eller_ny_bruker_sortering";
+    public static final String FJERNE_UFORDELT_ELLER_NY_BRUKER_SORTERING = "veilarbportefolje.fjerne_ufordelt_eller_ny_bruker_sortering";
+
+    public static final String STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER = "veilarbportefolje.stopp_indeksering_av_tiltaksaktiviteter";
 
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
@@ -44,7 +46,11 @@ public class FeatureToggle {
         return unleashService.isEnabled(FeatureToggle.MAP_AVVIK_14A_VEDTAK);
     }
 
-	public static boolean fjerneUfordeltEllerNyBrukerSortering(UnleashService unleashService) {
-		return unleashService.isEnabled(FeatureToggle.FJERNE_UFORDELT_ELLER_NY_BRUKER_SORTERING);
-	}
+    public static boolean fjerneUfordeltEllerNyBrukerSortering(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.FJERNE_UFORDELT_ELLER_NY_BRUKER_SORTERING);
+    }
+
+    public static boolean stoppIndekseringAvTiltaksaktiviteter(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER);
+    }
 }
