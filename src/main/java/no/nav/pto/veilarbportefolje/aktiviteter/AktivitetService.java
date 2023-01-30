@@ -6,6 +6,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -58,7 +59,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         if (erTiltakskodeStottet) {
             boolean skalIndeksereBruker = tiltakService.behandleKafkaMelding(aktivitetData);
 
-            if (skalIndeksereBruker) {
+            if (skalIndeksereBruker && !FeatureToggle.disableIndeksering(unleashService)) {
                 opensearchIndexer.indekser(aktorId);
             }
         } else {
