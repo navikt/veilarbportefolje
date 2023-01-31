@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakkodeverkMapper.tiltakskodeTiltaksnavnMap;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.stoppIndekseringAvTiltaksaktiviteter;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 
 @Slf4j
@@ -56,7 +57,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private void behandleTiltaksaktivitetMelding(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
         boolean erTiltakskodeStottet = tiltakskodeTiltaksnavnMap.containsKey(aktivitetData.tiltakskode);
         if (erTiltakskodeStottet) {
-            boolean skalIndeksereBruker = tiltakService.behandleKafkaMelding(aktivitetData);
+            boolean skalIndeksereBruker = tiltakService.behandleKafkaMelding(aktivitetData) && !stoppIndekseringAvTiltaksaktiviteter(unleashService);
 
             if (skalIndeksereBruker) {
                 opensearchIndexer.indekser(aktorId);
