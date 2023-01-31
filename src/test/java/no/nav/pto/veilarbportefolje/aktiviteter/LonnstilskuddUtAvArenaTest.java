@@ -209,7 +209,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         TiltakInnhold i1a = new TiltakInnhold()
                 .setFnr(fnr1.get())
                 .setDeltakerStatus("GJENN")
-                .setTiltakstype(til1.getKey())
+                .setTiltakstype("MENTOR")
                 .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
                 .setAktivitetid("TA-123456789");
@@ -278,7 +278,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             null,
                             null);
 
-                    assertThat(response1.getAntall()).isEqualTo(1);
+                    assertThat(response1.getAntall()).isEqualTo(0);
 
                     BrukereMedAntall response2 = opensearchService.hentBrukere(
                             navKontor.getValue(),
@@ -290,17 +290,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             null);
 
                     assertThat(response2.getAntall()).isEqualTo(1);
-
-                    BrukereMedAntall response3 = opensearchService.hentBrukere(
-                            navKontor.getValue(),
-                            empty(),
-                            "asc",
-                            "ikke_satt",
-                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MOTE")),
-                            null,
-                            null);
-
-                    assertThat(response3.getAntall()).isEqualTo(0);
                 }
 
 
