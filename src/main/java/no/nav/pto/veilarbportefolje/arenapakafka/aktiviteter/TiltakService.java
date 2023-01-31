@@ -68,10 +68,10 @@ public class TiltakService {
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
 
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
-            log.info("Sletter tiltak postgres: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
+            log.info("Sletter tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
             tiltakRepositoryV2.delete(innhold.getAktivitetid());
         } else {
-            log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", innhold.getAktivitetid(), aktorId);
+            log.info("Lagrer tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
             tiltakRepositoryV2.upsert(innhold, aktorId);
         }
 

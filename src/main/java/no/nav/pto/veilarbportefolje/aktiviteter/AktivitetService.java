@@ -41,8 +41,12 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         boolean erTiltaksaktivitet = KafkaAktivitetMelding.AktivitetTypeData.TILTAK == aktivitetData.aktivitetType;
 
         if (erTiltaksaktivitet) {
+            //Midlertidig loggmelding ifbm overgang til ny datakilde for lønnstilskudd
+            log.info("Behandler tiltaksaktivitet fra ny kilde");
             behandleTiltaksaktivitetMelding(aktivitetData, aktorId);
         } else {
+            //Midlertidig loggmelding ifbm overgang til ny datakilde for lønnstilskudd
+            log.info("Behandler aktivitetsplanaktivitet");
             behandleAktivitetsplanAktivitetMelding(aktivitetData, aktorId);
         }
     }
