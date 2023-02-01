@@ -40,6 +40,10 @@ public class ArenaDato {
     }
 
     public static ArenaDato of(ZonedDateTime dato) {
+        if(dato == null) {
+            return null;
+        }
+
         return new ArenaDato(dato.toLocalDate().toString());
     }
 
