@@ -185,6 +185,47 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         );
     }
 
+    @Test
+    public void skal_lese_melding_og_indeksere_bruker_naar_fraDato_og_tilDato_er_null() {
+        Mockito.when(unleashService.isEnabled(FeatureToggle.STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER)).thenReturn(false);
+        NavKontor navKontor = randomNavKontor();
+        AktorId aktorId1 = randomAktorId();
+        Fnr fnr1 = randomFnr();
+        when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
+        testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue());
+
+        Map.Entry<String, String> til1 = Map.entry("MIDLONTIL", "Midlertidig lønnstilskudd");
+
+        KafkaAktivitetMelding k1 = new KafkaAktivitetMelding()
+                .setAktivitetId("TA-123456789")
+                .setAktorId(aktorId1.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setEndretDato(ZonedDateTime.parse("2021-01-01T00:00:00+02:00"))
+                .setFraDato(null)
+                .setTilDato(null)
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT)
+                .setTiltakskode(til1.getKey())
+                .setVersion(1L)
+                .setAvtalt(true)
+                .setHistorisk(false);
+
+        aktivitetService.behandleKafkaMeldingLogikk(k1);
+
+        verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall response1 = opensearchService.hentBrukere(
+                            navKontor.getValue(),
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
+                            null,
+                            null);
+
+                    assertThat(response1.getAntall()).isEqualTo(1);
+                }
+        );
+    }
+
 
     @Test
     public void skal_ikke_indeksere_lonnstilskudd_fra_DAB_naar_featuretoggle_er_enabled() {
@@ -291,8 +332,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
 
                     assertThat(response2.getAntall()).isEqualTo(1);
                 }
-
-
         );
     }
 

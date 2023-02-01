@@ -97,11 +97,11 @@ public class TiltakService {
         String aktivitetId = kafkaMelding.getAktivitetId();
 
         if (kafkaMelding.isHistorisk()) {
-            log.info("Sletter tiltak postgres: {}, pa aktoer: {}", aktivitetId, aktorId);
+            log.info("Sletter tiltaksaktivitet fra ny kilde: {} med tiltakskode {}, pa aktoer: {}", aktivitetId, kafkaMelding.getTiltakskode(), aktorId);
             tiltakRepositoryV3.delete(aktivitetId);
             return true;
         } else if (erNyVersjonAvAktivitet(kafkaMelding)) {
-            log.info("Lagrer tiltak postgres: {}, pa aktoer: {}", aktivitetId, aktorId);
+            log.info("Lagrer tiltaksaktivitet fra ny kilde: {} med tiltakskode {}, pa aktoer: {}", aktivitetId, kafkaMelding.getTiltakskode(), aktorId);
             tiltakRepositoryV3.upsert(mapTilTiltakaktivitetEntity(kafkaMelding), aktorId);
             return true;
         } else {
