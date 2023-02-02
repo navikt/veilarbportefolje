@@ -67,9 +67,6 @@ public class AuthService {
 
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilEnhet(EnhetId.of(enhet));
-            if (decision.isPermit() != abacResponse) {
-                log.warn("Diff mellom ABAC og poao-tilgang: harVeilederTilgangTilEnhet");
-            }
         }
         return abacResponse;
     }
@@ -78,9 +75,6 @@ public class AuthService {
         boolean abacResponse = veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, Fnr.of(fnr));
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harTilgangTilPerson(Fnr.of(fnr));
-            if (decision.isPermit() != abacResponse) {
-                log.warn("Diff mellom ABAC og poao-tilgang: harTilgangTilPerson");
-            }
         }
         AuthUtils.test("tilgangTilBruker", fnr, abacResponse);
     }
