@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetIkkeAktivStatuser;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
@@ -18,10 +19,8 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
@@ -40,6 +39,9 @@ public class TiltakRepositoryV3 {
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate namedDb;
 
+    private final static String aktivitetsplanenIkkeAktiveStatuser = Arrays.stream(AktivitetIkkeAktivStatuser.values())
+            .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
+
     public void upsert(TiltakaktivitetEntity tiltakaktivitet, AktorId aktorId) {
         LocalDateTime fraDato = getLocalDateTimeOrNull(tiltakaktivitet.getFraDato(), false);
         LocalDateTime tilDato = getLocalDateTimeOrNull(tiltakaktivitet.getTilDato(), true);
@@ -51,11 +53,11 @@ public class TiltakRepositoryV3 {
         }
         db.update("""
                         INSERT INTO brukertiltak_v2
-                        (aktivitetid, aktoerid, tiltakskode, fradato, tildato, version) VALUES (?, ?, ?, ?, ?, ?)
-                        ON CONFLICT (aktivitetid) DO UPDATE SET (aktoerid, tiltakskode, fradato, tildato, version)
-                        = (excluded.aktoerid, excluded.tiltakskode, excluded.fradato, excluded.tildato, excluded.version)
+                        (aktivitetid, aktoerid, tiltakskode, fradato, tildato, version, status) VALUES (?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT (aktivitetid) DO UPDATE SET (aktoerid, tiltakskode, fradato, tildato, version, status)
+                        = (excluded.aktoerid, excluded.tiltakskode, excluded.fradato, excluded.tildato, excluded.version, excluded.status)
                         """,
-                tiltakaktivitet.getAktivitetId(), aktorId.get(), tiltakaktivitet.getTiltakskode(), fraDato, tilDato, tiltakaktivitet.getVersion()
+                tiltakaktivitet.getAktivitetId(), aktorId.get(), tiltakaktivitet.getTiltakskode(), fraDato, tilDato, tiltakaktivitet.getVersion(), tiltakaktivitet.getStatus()
         );
     }
 
@@ -71,14 +73,14 @@ public class TiltakRepositoryV3 {
                 (
                     SELECT tiltakskode, aktoerid FROM brukertiltak
                     UNION
-                    SELECT tiltakskode, aktoerid FROM brukertiltak_v2
+                    SELECT tiltakskode, aktoerid FROM brukertiltak_v2 WHERE NOT (status = ANY (?::varchar[]))
                 ) BT
                 INNER JOIN aktive_identer ai on ai.aktorid = BT.aktoerid
                 INNER JOIN oppfolgingsbruker_arena_v2 OP ON OP.fodselsnr = ai.fnr
                 WHERE OP.nav_kontor = ?)
                 """;
         return new EnhetTiltak().setTiltak(
-                dbReadOnly.queryForList(hentTiltakPaEnhetSql, enhetId.get())
+                dbReadOnly.queryForList(hentTiltakPaEnhetSql, aktivitetsplanenIkkeAktiveStatuser, enhetId.get())
                         .stream().map(this::mapTilTiltak)
                         .collect(toMap(Tiltakkodeverk::getKode, Tiltakkodeverk::getVerdi))
         );
@@ -92,14 +94,19 @@ public class TiltakRepositoryV3 {
     }
 
     public void leggTilTiltak(String aktoerIder, HashMap<AktorId, List<AktivitetEntityDto>> result) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("ids", aktoerIder);
+        params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
+
         namedDb.query("""
                         SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak
                         WHERE aktoerid = ANY (:ids::varchar[])
                         UNION
                         SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak_v2
                         WHERE aktoerid = ANY (:ids::varchar[])
+                        AND NOT (status = ANY (:ikkestatuser::varchar[]))
                         """,
-                new MapSqlParameterSource("ids", aktoerIder),
+                params,
                 (ResultSet rs) -> {
                     while (rs.next()) {
                         AktorId aktoerId = AktorId.of(rs.getString("aktoerid"));
@@ -140,6 +147,4 @@ public class TiltakRepositoryV3 {
     private Tiltakkodeverk mapTilTiltak(Map<String, Object> rs) {
         return Tiltakkodeverk.of((String) rs.get(PostgresTable.TILTAKKODEVERK.KODE), (String) rs.get(PostgresTable.TILTAKKODEVERK.VERDI));
     }
-
-
 }
