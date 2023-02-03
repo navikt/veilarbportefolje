@@ -181,7 +181,8 @@ CREATE TABLE public.brukertiltak_v2 (
     tiltakskode character varying(10),
     tildato timestamp without time zone,
     fradato timestamp without time zone,
-    version bigint
+    version bigint,
+    status character varying(255)
 );
 
 
