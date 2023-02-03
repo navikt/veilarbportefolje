@@ -15,7 +15,6 @@ import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.common.xcontent.XContentType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 
 import java.io.IOException;
 import java.util.List;
@@ -52,12 +51,8 @@ public class OpensearchIndexer {
             postgresOpensearchMapper.flettInnSisteEndringerData(List.of(bruker));
             postgresOpensearchMapper.flettInnStatsborgerskapData(List.of(bruker));
 
-            if(FeatureToggle.mapAvvik14aVedtak(unleashService)) {
-                StopWatch sw = new StopWatch();
-                sw.start();
+            if (FeatureToggle.mapAvvik14aVedtak(unleashService)) {
                 postgresOpensearchMapper.flettInnAvvik14aVedtak(List.of(bruker));
-                sw.stop();
-                log.info(sw.shortSummary());
             }
 
             syncronIndekseringsRequest(bruker);
