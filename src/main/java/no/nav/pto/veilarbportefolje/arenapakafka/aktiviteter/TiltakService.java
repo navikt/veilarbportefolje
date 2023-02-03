@@ -20,6 +20,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
@@ -54,7 +55,7 @@ public class TiltakService {
                 kafkaMelding.partition(),
                 kafkaMelding.topic()
         );
-            behandleKafkaMelding(melding);
+        behandleKafkaMelding(melding);
     }
 
 
@@ -151,14 +152,15 @@ public class TiltakService {
                 .setTilDato(ArenaDato.of(kafkaMelding.getTilDato()))
                 .setTiltakskode(kafkaMelding.getTiltakskode())
                 .setTiltaksnavn(TiltakkodeverkMapper.mapTilTiltaknavn(kafkaMelding.getTiltakskode()))
-                .setVersion(kafkaMelding.getVersion());
+                .setVersion(kafkaMelding.getVersion())
+                .setStatus(Optional.ofNullable(kafkaMelding.getAktivitetStatus()).map(status -> status.name().toLowerCase()).orElse(null));
     }
 
     public EnhetTiltak hentEnhettiltak(EnhetId enhet) {
         return tryCacheFirst(enhetTiltakCachePostgres, enhet,
                 () ->
                         tiltakRepositoryV3.hentTiltakPaEnhet(enhet)
-                );
+        );
     }
 
     private boolean erGammelMelding(TiltakDTO kafkaMelding, TiltakInnhold innhold) {
