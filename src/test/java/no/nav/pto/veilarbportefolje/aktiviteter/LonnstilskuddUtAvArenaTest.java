@@ -175,8 +175,22 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAvtalt(true)
                 .setHistorisk(false);
 
+        KafkaAktivitetMelding k3 = new KafkaAktivitetMelding()
+                .setAktivitetId("TA-323456789")
+                .setAktorId(aktorId2.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK)
+                .setEndretDato(ZonedDateTime.parse("2021-01-01T00:00:00+02:00"))
+                .setFraDato(ZonedDateTime.parse("2017-10-03T00:00:00+02:00"))
+                .setTilDato(ZonedDateTime.parse("2023-11-01T00:00:00+02:00"))
+                .setAktivitetStatus(null)
+                .setTiltakskode(til1.getKey())
+                .setVersion(1L)
+                .setAvtalt(true)
+                .setHistorisk(false);
+
         aktivitetService.behandleKafkaMeldingLogikk(k1);
         aktivitetService.behandleKafkaMeldingLogikk(k2);
+        aktivitetService.behandleKafkaMeldingLogikk(k3);
 
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
                     BrukereMedAntall response1 = opensearchService.hentBrukere(
