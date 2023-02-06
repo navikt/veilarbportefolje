@@ -352,6 +352,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
 
         aktivitetService.behandleKafkaMeldingLogikk(k1);
 
+
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
                     BrukereMedAntall response1 = opensearchService.hentBrukere(
                             navKontor.getValue(),
