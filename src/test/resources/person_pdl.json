@@ -108,6 +108,46 @@
             ]
           }
         }
+      ],
+      "adressebeskyttelse": [
+        {
+          "gradering": "FORTROLIG",
+          "metadata": {
+            "master": "PDL",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:53"
+              }
+            ]
+          }
+        }
+      ],
+      "sikkerhetstiltak": [
+        {
+          "tiltakstype": "FYUS",
+          "beskrivelse": "Fysisk utestengelse",
+          "kontaktperson": {
+            "personident": "Z99",
+            "enhet": "0106"
+          },
+          "gyldigFraOgMed": "2022-05-12",
+          "gyldigTilOgMed": "2022-08-05",
+          "metadata": {
+            "endringer": [
+              {
+                "kilde": "Dolly",
+                "registrert": "2022-05-13T11:36:24",
+                "registrertAv": "srvdolly",
+                "systemkilde": "srvdolly",
+                "type": "OPPRETT"
+              }
+            ],
+            "master": "PDL",
+            "opplysningsId": "efc0a89a-0d75-4f38-9bb9-94dac9388618",
+            "historisk": false
+          }
+        }
       ]
     }
   }
