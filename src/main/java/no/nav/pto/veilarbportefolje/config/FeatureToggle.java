@@ -26,6 +26,8 @@ public class FeatureToggle {
 
     public static final String STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER = "veilarbportefolje.stopp_indeksering_av_tiltaksaktiviteter";
 
+    private static final String POAO_TILGANG_ENABLED = "veilarbportefolje.poao-tilgang-enabled";
+
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
@@ -46,6 +48,10 @@ public class FeatureToggle {
         return unleashService.isEnabled(FeatureToggle.MAP_AVVIK_14A_VEDTAK);
     }
 
+    public static boolean brukPoaoTilgang(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
+    }
+	
     public static boolean fjerneUfordeltEllerNyBrukerSortering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.FJERNE_UFORDELT_ELLER_NY_BRUKER_SORTERING);
     }

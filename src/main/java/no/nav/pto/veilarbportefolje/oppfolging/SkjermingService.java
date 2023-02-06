@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,6 @@ public class SkjermingService {
     private final SkjermingRepository skjermingRepository;
     private final BrukerServiceV2 brukerService;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final UnleashService unleashService;
 
     @SneakyThrows
     public void behandleSkjermedePersoner(ConsumerRecord<String, SkjermingDTO> kafkaMelding) {
