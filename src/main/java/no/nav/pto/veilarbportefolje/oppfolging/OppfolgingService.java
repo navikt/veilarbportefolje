@@ -11,7 +11,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.EnvironmentUtils;
-import no.nav.common.utils.UrlUtils;
+import no.nav.pto.veilarbportefolje.client.ClientUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -51,12 +51,12 @@ public class OppfolgingService {
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.aktorClient = aktorClient;
         this.client = RestClient.baseClient();
-        this.veilarboppfolgingUrl = UrlUtils.createServiceUrl("veilarboppfolging", "pto", true);
-        systemUserTokenProvider = () -> tokenClient.createMachineToMachineToken(String.format("api://%s-fss.pto.veilarboppfolging/.default", (EnvironmentUtils.isProduction().orElseThrow()) ? "prod" : "dev"));
+        this.veilarboppfolgingUrl = ClientUtils.getVeilarboppfolgingServiceUrl();
+        systemUserTokenProvider = () -> tokenClient.createMachineToMachineToken(ClientUtils.getVeilarboppfolgingTokenScope((EnvironmentUtils.isProduction().orElseThrow())));
 
     }
 
-    public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient,  Supplier<String> systemUserTokenProvider) {
+    public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient, Supplier<String> systemUserTokenProvider) {
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
@@ -182,4 +182,5 @@ public class OppfolgingService {
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
         }
     }
+
 }

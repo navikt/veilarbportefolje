@@ -9,13 +9,11 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.poao_tilgang.client.*;
+import no.nav.pto.veilarbportefolje.client.ClientUtils;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
-
-import static no.nav.common.utils.UrlUtils.createDevInternalIngressUrl;
-import static no.nav.common.utils.UrlUtils.createProdInternalIngressUrl;
 
 public class PoaoTilgangWrapper {
     private final PoaoTilgangClient poaoTilgangClient;
@@ -34,11 +32,9 @@ public class PoaoTilgangWrapper {
     public PoaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient) {
         boolean isProduction = EnvironmentUtils.isProduction().orElseThrow();
 
-        String url = isProduction ?
-                createProdInternalIngressUrl("poao-tilgang") :
-                createDevInternalIngressUrl("poao-tilgang");
+        String url = ClientUtils.getPoaoTilgangUrl(isProduction);
 
-        String tokenScope = String.format("api://%s-gcp.poao.poao-tilgang/.default", isProduction ? "prod" : "dev");
+        String tokenScope = ClientUtils.getPoaoTilgangTokenScope(isProduction);
 
         this.authContextHolder = authContextHolder;
 

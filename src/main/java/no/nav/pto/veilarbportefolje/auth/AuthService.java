@@ -147,8 +147,8 @@ public class AuthService {
         return new Skjermettilgang(tilgangTilKode6, tilgangTilKode7, tilgangEgenAnsatt);
     }
 
-    public String getOboToken(DownstreamApi receivingApp) {
-        return getAadOboTokenForTjeneste(aadOboTokenClient, receivingApp);
+    public String getOboToken(String tokenScope) {
+        return aadOboTokenClient.exchangeOnBehalfOfToken(tokenScope, getInnloggetBrukerToken());
     }
 
     @Data

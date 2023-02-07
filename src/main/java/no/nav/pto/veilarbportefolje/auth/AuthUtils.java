@@ -4,7 +4,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
-import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.springframework.http.HttpStatus;
@@ -88,11 +87,6 @@ public class AuthUtils {
                 })
                 .orElse(emptyList())
                 .contains("access_as_application");
-    }
-
-    public static String getAadOboTokenForTjeneste(AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, DownstreamApi api) {
-        String scope = "api://" + api.cluster() + "." + api.namespace() + "." + api.serviceName() + "/.default";
-        return azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(scope, getInnloggetBrukerToken());
     }
 
     public static Optional<String> getStringClaimOrEmpty(JWTClaimsSet claims, String claimName) {

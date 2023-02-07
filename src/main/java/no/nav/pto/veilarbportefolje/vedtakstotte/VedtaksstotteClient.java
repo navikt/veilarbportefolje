@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.UrlUtils;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
+import no.nav.pto.veilarbportefolje.client.ClientUtils;
 import no.nav.pto.veilarbportefolje.kodeverk.CacheConfig;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakApiDto;
 import okhttp3.OkHttpClient;
@@ -65,10 +66,11 @@ public class VedtaksstotteClient {
         if (enhetId == null) {
             return false;
         }
+        String tokenScope = ClientUtils.getVeilarbvedtaksstotteTokenScope(veilarbVedtakstotteApi);
         Request request = new Request.Builder()
                 .url(UrlUtils.joinPaths(baseURL, "/api/utrulling/erUtrullet?enhetId=" + enhetId.get()))
                 .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())
-                .header("Authorization", "Bearer " + authService.getOboToken(veilarbVedtakstotteApi))
+                .header("Authorization", "Bearer " + authService.getOboToken(tokenScope))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -78,4 +80,5 @@ public class VedtaksstotteClient {
             return false;
         }
     }
+
 }

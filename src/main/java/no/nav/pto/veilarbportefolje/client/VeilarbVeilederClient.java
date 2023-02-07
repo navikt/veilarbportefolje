@@ -8,7 +8,6 @@ import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.utils.EnvironmentUtils;
-import no.nav.common.utils.UrlUtils;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
 import okhttp3.OkHttpClient;
@@ -32,8 +31,8 @@ public class VeilarbVeilederClient {
 
     public VeilarbVeilederClient(AuthService authService) {
         this.authService = authService;
-        this.veilarbVeilederApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbveileder");
-        this.url = UrlUtils.createServiceUrl(veilarbVeilederApi.serviceName(), veilarbVeilederApi.namespace(), true);
+        this.veilarbVeilederApi = ClientUtils.getVeilarbVeilederDownstreamApi(EnvironmentUtils.requireClusterName());
+        this.url = ClientUtils.getVeilarbveilederServiceUrl(veilarbVeilederApi);
         this.client = RestClient.baseClient();
 
         hentVeilederePaaEnhetCache = Caffeine.newBuilder()
@@ -50,8 +49,9 @@ public class VeilarbVeilederClient {
     @SneakyThrows
     private List<String> hentVeilederePaaEnhetQuery(EnhetId enhet) {
         String path = format("/api/enhet/%s/identer", enhet);
+        String tokenScope = ClientUtils.getVeilarbveilederTokenScope(veilarbVeilederApi);
         Request request = new Request.Builder()
-                .header(AUTHORIZATION, "Bearer " + authService.getOboToken(veilarbVeilederApi))
+                .header(AUTHORIZATION, "Bearer " + authService.getOboToken(tokenScope))
                 .url(url + path)
                 .build();
 
@@ -60,4 +60,5 @@ public class VeilarbVeilederClient {
             return RestUtils.parseJsonResponseArrayOrThrow(response, String.class);
         }
     }
+
 }

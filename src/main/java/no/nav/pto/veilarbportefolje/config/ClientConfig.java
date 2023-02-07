@@ -15,8 +15,8 @@ import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
-import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
+import no.nav.pto.veilarbportefolje.client.ClientUtils;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 import java.net.http.HttpClient;
 
 import static no.nav.common.utils.NaisUtils.getCredentials;
-import static no.nav.common.utils.UrlUtils.*;
 
 
 @Configuration
@@ -53,24 +52,21 @@ public class ClientConfig {
             AzureAdMachineToMachineTokenClient tokenClient
     ) {
 
-        String tokenScope = String.format(
-                "api://%s-fss.pto.veilarbvedtaksstotte/.default",
-                isProduction() ? "prod" : "dev"
-        );
-
         return new VedtaksstotteClient(
-                createServiceUrl("veilarbvedtaksstotte", "pto", true),
+                ClientUtils.getVeilarbvedtaksstotteServiceUrl(),
                 authService,
-                () -> tokenClient.createMachineToMachineToken(tokenScope),
-                new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbvedtaksstotte"));
+                () -> tokenClient.createMachineToMachineToken(ClientUtils.getVeilarbvedtaksstotteTokenScope(EnvironmentUtils.isProduction().orElseThrow())),
+                ClientUtils.getVeilarbvedtakstotteDownstreamApi(EnvironmentUtils.requireClusterName()));
     }
 
     @Bean
     public Pep veilarbPep(EnvironmentProperties properties) {
         Credentials serviceUserCredentials = getCredentials("service_user");
         return VeilarbPepFactory.get(
-                properties.getAbacVeilarbUrl(), serviceUserCredentials.username,
-                serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
+                properties.getAbacVeilarbUrl(),
+                serviceUserCredentials.username,
+                serviceUserCredentials.password,
+                new SpringAuditRequestInfoSupplier()
         );
     }
 
@@ -88,17 +84,10 @@ public class ClientConfig {
 
     @Bean
     public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient) {
-        String tokenScop = String.format("api://%s-fss.pdl.pdl-api/.default",
-                isProduction() ? "prod" : "dev"
-        );
         return new PdlClientImpl(
-                createServiceUrl("pdl-api", "pdl", false),
-                () -> tokenClient.createMachineToMachineToken(tokenScop)
+                ClientUtils.getPdlServiceUrl(),
+                () -> tokenClient.createMachineToMachineToken(ClientUtils.getPdlM2MTokenScope(EnvironmentUtils.isProduction().orElseThrow()))
         );
-    }
-
-    private static boolean isProduction() {
-        return EnvironmentUtils.isProduction().orElseThrow();
     }
 
 }
