@@ -54,18 +54,8 @@ public class ClientUtils {
         );
     }
 
-    @NotNull
-    public static String getVeilarbvedtaksstotteTokenScope(DownstreamApi veilarbvedtaksstotteApi) {
-        return "api://" + veilarbvedtaksstotteApi.cluster() + "." + veilarbvedtaksstotteApi.namespace() + "." + veilarbvedtaksstotteApi.serviceName() + "/.default";
-    }
-
     public static String getPoaoTilgangTokenScope(boolean isProduction) {
         return String.format("api://%s-gcp.poao.poao-tilgang/.default", isProduction ? "prod" : "dev");
-    }
-
-    @NotNull
-    public static DownstreamApi getVeilarbvedtakstotteDownstreamApi(String cluster) {
-        return new DownstreamApi(cluster, "pto", "veilarbvedtaksstotte");
     }
 
     @NotNull

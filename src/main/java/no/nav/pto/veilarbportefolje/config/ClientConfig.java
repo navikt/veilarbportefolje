@@ -55,8 +55,8 @@ public class ClientConfig {
         return new VedtaksstotteClient(
                 ClientUtils.getVeilarbvedtaksstotteServiceUrl(),
                 authService,
-                () -> tokenClient.createMachineToMachineToken(ClientUtils.getVeilarbvedtaksstotteTokenScope(EnvironmentUtils.isProduction().orElseThrow())),
-                ClientUtils.getVeilarbvedtakstotteDownstreamApi(EnvironmentUtils.requireClusterName()));
+                () -> tokenClient.createMachineToMachineToken(ClientUtils.getVeilarbvedtaksstotteTokenScope(EnvironmentUtils.isProduction().orElseThrow()))
+        );
     }
 
     @Bean

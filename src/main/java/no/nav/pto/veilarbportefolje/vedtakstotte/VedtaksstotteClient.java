@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.common.utils.UrlUtils;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
@@ -24,7 +25,6 @@ import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.rest.client.RestUtils.throwIfNotSuccessful;
 
 public class VedtaksstotteClient {
-    private final DownstreamApi veilarbVedtakstotteApi;
     private final AuthService authService;
     private final String baseURL;
     private final OkHttpClient client;
@@ -33,11 +33,9 @@ public class VedtaksstotteClient {
     public VedtaksstotteClient(
             String baseUrl,
             AuthService authService,
-            Supplier<String> machineToMachineTokenSupplier,
-            DownstreamApi veilarbVedtakstotteApi
+            Supplier<String> machineToMachineTokenSupplier
     ) {
         this.authService = authService;
-        this.veilarbVedtakstotteApi = veilarbVedtakstotteApi;
         this.baseURL = baseUrl;
         this.client = baseClient();
         this.machineToMachineTokenSupplier = machineToMachineTokenSupplier;
@@ -66,7 +64,7 @@ public class VedtaksstotteClient {
         if (enhetId == null) {
             return false;
         }
-        String tokenScope = ClientUtils.getVeilarbvedtaksstotteTokenScope(veilarbVedtakstotteApi);
+        String tokenScope = ClientUtils.getVeilarbvedtaksstotteTokenScope(EnvironmentUtils.isProduction().orElseThrow());
         Request request = new Request.Builder()
                 .url(UrlUtils.joinPaths(baseURL, "/api/utrulling/erUtrullet?enhetId=" + enhetId.get()))
                 .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())
