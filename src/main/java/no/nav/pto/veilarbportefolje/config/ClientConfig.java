@@ -101,9 +101,4 @@ public class ClientConfig {
         return EnvironmentUtils.isProduction().orElseThrow();
     }
 
-    private String internalDevOrProdPdlIngress() {
-        return isProduction()
-                ? createProdInternalIngressUrl("pdl-api")
-                : createDevInternalIngressUrl("pdl-api-q1");
-    }
 }
