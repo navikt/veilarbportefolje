@@ -16,4 +16,16 @@ public class EnvironmentProperties {
     private String opensearchUri;
     private String opensearchUsername;
     private String opensearchPassword;
+    private String kodeverkUrl;
+    private String veilarboppfolgingUrl;
+    private String veilarboppfolgingScope;
+    private String veilarbvedtaksstotteUrl;
+    private String veilarbvedtaksstotteScope;
+    private String veilarbveilederUrl;
+    private String veilarbveilederScope;
+    private String pdlUrl;
+    private String pdlScope;
+    private String poaoTilgangUrl;
+    private String poaoTilgangScope;
 }
+

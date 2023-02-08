@@ -10,8 +10,7 @@ import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
-import no.nav.common.utils.EnvironmentUtils;
-import no.nav.common.utils.UrlUtils;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static no.nav.common.utils.UrlUtils.createServiceUrl;
 import static no.nav.common.utils.UrlUtils.joinPaths;
 
 @Slf4j
@@ -46,17 +46,23 @@ public class OppfolgingService {
     private static int antallBrukereSlettet;
 
     @Autowired
-    public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient, AzureAdMachineToMachineTokenClient tokenClient) {
+    public OppfolgingService(
+            OppfolgingAvsluttetService oppfolgingAvsluttetService,
+            OppfolgingRepositoryV2 oppfolgingRepositoryV2,
+            AktorClient aktorClient,
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties
+    ) {
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.aktorClient = aktorClient;
         this.client = RestClient.baseClient();
-        this.veilarboppfolgingUrl = UrlUtils.createServiceUrl("veilarboppfolging", "pto", true);
-        systemUserTokenProvider = () -> tokenClient.createMachineToMachineToken(String.format("api://%s-fss.pto.veilarboppfolging/.default", (EnvironmentUtils.isProduction().orElseThrow()) ? "prod" : "dev"));
+        this.veilarboppfolgingUrl = environmentProperties.getVeilarboppfolgingUrl();
+        systemUserTokenProvider = () -> tokenClient.createMachineToMachineToken(environmentProperties.getVeilarboppfolgingScope());
 
     }
 
-    public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient,  Supplier<String> systemUserTokenProvider) {
+    public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient, Supplier<String> systemUserTokenProvider) {
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
@@ -182,4 +188,5 @@ public class OppfolgingService {
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
         }
     }
+
 }

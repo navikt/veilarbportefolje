@@ -7,15 +7,12 @@ import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.common.utils.EnvironmentUtils;
 import no.nav.poao_tilgang.client.*;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
-
-import static no.nav.common.utils.UrlUtils.createDevInternalIngressUrl;
-import static no.nav.common.utils.UrlUtils.createProdInternalIngressUrl;
 
 public class PoaoTilgangWrapper {
     private final PoaoTilgangClient poaoTilgangClient;
@@ -31,14 +28,9 @@ public class PoaoTilgangWrapper {
             .expireAfterWrite(Duration.ofMinutes(30))
             .build();
 
-    public PoaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient) {
-        boolean isProduction = EnvironmentUtils.isProduction().orElseThrow();
-
-        String url = isProduction ?
-                createProdInternalIngressUrl("poao-tilgang") :
-                createDevInternalIngressUrl("poao-tilgang");
-
-        String tokenScope = String.format("api://%s-gcp.poao.poao-tilgang/.default", isProduction ? "prod" : "dev");
+    public PoaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
+        String url = environmentProperties.getPoaoTilgangUrl();
+        String tokenScope = environmentProperties.getPoaoTilgangScope();
 
         this.authContextHolder = authContextHolder;
 

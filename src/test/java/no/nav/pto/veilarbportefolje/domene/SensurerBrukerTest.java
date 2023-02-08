@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.domene;
 
 
 import no.nav.common.abac.Pep;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
@@ -36,7 +37,7 @@ public class SensurerBrukerTest {
         UnleashService unleashService = mock(UnleashService.class);
         when(unleashService.isEnabled(anyString())).thenReturn(true);
         poaoTilgangWrapper = mock(PoaoTilgangWrapper.class);
-        authService = new AuthService(pep, poaoTilgangWrapper, azureAdOnBehalfOfTokenClient, unleashService);
+        authService = new AuthService(pep, poaoTilgangWrapper, azureAdOnBehalfOfTokenClient, unleashService, mock(MetricsClient.class));
     }
 
     @Test
