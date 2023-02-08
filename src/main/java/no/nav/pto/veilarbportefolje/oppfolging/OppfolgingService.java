@@ -57,7 +57,7 @@ public class OppfolgingService {
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.aktorClient = aktorClient;
         this.client = RestClient.baseClient();
-        this.veilarboppfolgingUrl = createServiceUrl("veilarboppfolging", "pto", true);
+        this.veilarboppfolgingUrl = environmentProperties.getVeilarboppfolgingUrl();
         systemUserTokenProvider = () -> tokenClient.createMachineToMachineToken(environmentProperties.getVeilarboppfolgingScope());
 
     }
