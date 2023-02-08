@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.text.ParseException;
 import java.util.Optional;
+import java.util.UUID;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
@@ -60,6 +61,13 @@ public class AuthUtils {
     public static String hentApplikasjonFraContex(AuthContextHolder authContextHolder) {
         return authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> getStringClaimOrEmpty(claims, "azp_name")) //  "cluster:team:app"
+                .orElse(null);
+    }
+
+    public static UUID hentInnloggetVeilederUUID(AuthContextHolder authContextHolder) {
+        return authContextHolder.getIdTokenClaims()
+                .flatMap(claims -> getStringClaimOrEmpty(claims, "oid"))
+                .map(UUID::fromString)
                 .orElse(null);
     }
 

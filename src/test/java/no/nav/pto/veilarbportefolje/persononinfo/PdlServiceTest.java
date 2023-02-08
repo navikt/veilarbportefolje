@@ -91,5 +91,10 @@ public class PdlServiceTest {
         assertThat(pdlPerson.getStatsborgerskap().stream().anyMatch(x -> x.getGyldigFra().toString().equals("1991-12-30")));
         assertThat(pdlPerson.getTalespraaktolk().equals("UK"));
         assertThat(pdlPerson.getTolkBehovSistOppdatert().toString().equals("2022-06-02"));
+        assertThat(pdlPerson.getDiskresjonskode().equals("7"));
+        assertThat(pdlPerson.getSikkerhetstiltak().getTiltakstype().equals("FYUS"));
+        assertThat(pdlPerson.getSikkerhetstiltak().getBeskrivelse().equals("Fysisk utestengelse"));
+        assertThat(pdlPerson.getSikkerhetstiltak().getGyldigFra().toString().equals("2022-05-12"));
+        assertThat(pdlPerson.getSikkerhetstiltak().getGyldigTil().toString().equals("2022-08-05"));
     }
 }

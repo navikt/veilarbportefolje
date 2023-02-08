@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.config;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.VeilarbPepFactory;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
 import no.nav.common.client.aktoroppslag.PdlAktorOppslagClient;
@@ -10,16 +11,12 @@ import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
-import no.nav.common.utils.UrlUtils;
-import no.nav.poao_tilgang.client.TilgangClient;
-import no.nav.poao_tilgang.client.TilgangHttpClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
-import no.nav.pto.veilarbportefolje.client.CachedTilgangClient;
+import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
@@ -29,29 +26,15 @@ import org.springframework.context.annotation.Configuration;
 import java.net.http.HttpClient;
 
 import static no.nav.common.utils.NaisUtils.getCredentials;
-import static no.nav.common.utils.UrlUtils.createDevInternalIngressUrl;
-import static no.nav.common.utils.UrlUtils.createProdInternalIngressUrl;
-import static no.nav.common.utils.UrlUtils.createServiceUrl;
+import static no.nav.common.utils.UrlUtils.*;
 
 
 @Configuration
 public class ClientConfig {
 
     @Bean
-    public TilgangClient tilgangClient(AzureAdMachineToMachineTokenClient tokenClient) {
-        String url = isProduction() ?
-                createProdInternalIngressUrl("poao-tilgang") :
-                createDevInternalIngressUrl("poao-tilgang");
-
-        String tokenScope = String.format("api://%s-gcp.poao.poao-tilgang/.default", isProduction() ? "prod" : "dev");
-
-        TilgangHttpClient tilgangClient = new TilgangHttpClient(
-                url,
-                () -> tokenClient.createMachineToMachineToken(tokenScope),
-                RestClient.baseClient()
-        );
-
-        return new CachedTilgangClient(tilgangClient);
+    public PoaoTilgangWrapper poaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient) {
+        return new PoaoTilgangWrapper(authContextHolder, tokenClient);
     }
 
     @Bean

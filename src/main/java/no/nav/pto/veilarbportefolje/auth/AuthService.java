@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import io.vavr.Tuple;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
@@ -12,9 +13,10 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
-import no.nav.poao_tilgang.client.TilgangClient;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,22 +25,24 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getAadOboTokenForTjeneste;
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetBrukerToken;
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetVeilederIdent;
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.*;
 
 @Service
+@Slf4j
 public class AuthService {
     private final AzureAdOnBehalfOfTokenClient aadOboTokenClient;
-    private final TilgangClient tilgangClient;
+    private final PoaoTilgangWrapper poaoTilgangWrapper;
     private final Pep veilarbPep;
-    private final Cache<VeilederPaEnhet, Boolean > harVeilederTilgangTilEnhetCache;
+    private final Cache<VeilederPaEnhet, Boolean> harVeilederTilgangTilEnhetCache;
+
+    private final UnleashService unleashService;
 
     @Autowired
-    public AuthService(Pep veilarbPep, TilgangClient tilgangClient, AzureAdOnBehalfOfTokenClient aadOboTokenClient) {
+    public AuthService(Pep veilarbPep, PoaoTilgangWrapper poaoTilgangWrapper, AzureAdOnBehalfOfTokenClient aadOboTokenClient, UnleashService unleashService) {
         this.aadOboTokenClient = aadOboTokenClient;
-        this.tilgangClient =  tilgangClient;
+        this.poaoTilgangWrapper = poaoTilgangWrapper;
         this.veilarbPep = veilarbPep;
+        this.unleashService = unleashService;
         this.harVeilederTilgangTilEnhetCache = Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(6000)
@@ -47,7 +51,7 @@ public class AuthService {
 
     public void tilgangTilOppfolging() {
         VeilederId veilederId = getInnloggetVeilederIdent();
-        Decision decisionPoaoTilgang = tilgangClient.harVeilederTilgangTilModia(veilederId.getValue());
+        Decision decisionPoaoTilgang = poaoTilgangWrapper.harVeilederTilgangTilModia();
         boolean harTilgang = Decision.Type.PERMIT.equals(decisionPoaoTilgang.getType());
         AuthUtils.test("oppfølgingsbruker", veilederId, harTilgang);
     }
@@ -58,12 +62,21 @@ public class AuthService {
     }
 
     public boolean harVeilederTilgangTilEnhet(String veilederId, String enhet) {
-        return tryCacheFirst(harVeilederTilgangTilEnhetCache, new VeilederPaEnhet(veilederId, enhet),
+        Boolean abacResponse = tryCacheFirst(harVeilederTilgangTilEnhetCache, new VeilederPaEnhet(veilederId, enhet),
                 () -> veilarbPep.harVeilederTilgangTilEnhet(NavIdent.of(veilederId), EnhetId.of(enhet)));
+
+        if (FeatureToggle.brukPoaoTilgang(unleashService)) {
+            Decision decision = poaoTilgangWrapper.harVeilederTilgangTilEnhet(EnhetId.of(enhet));
+        }
+        return abacResponse;
     }
 
     public void tilgangTilBruker(String fnr) {
-        AuthUtils.test("tilgangTilBruker", fnr, veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, Fnr.of(fnr)));
+        boolean abacResponse = veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, Fnr.of(fnr));
+        if (FeatureToggle.brukPoaoTilgang(unleashService)) {
+            Decision decision = poaoTilgangWrapper.harTilgangTilPerson(Fnr.of(fnr));
+        }
+        AuthUtils.test("tilgangTilBruker", fnr, abacResponse);
     }
 
     public List<Bruker> sensurerBrukere(List<Bruker> brukere) {
@@ -74,37 +87,70 @@ public class AuthService {
     }
 
     public Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String veilederIdent) {
-        if(!bruker.erKonfidensiell()) {
+        if (!bruker.erKonfidensiell()) {
             return bruker;
         }
 
         String diskresjonskode = bruker.getDiskresjonskode();
 
-        if("6".equals(diskresjonskode) && !veilarbPep.harVeilederTilgangTilKode6(NavIdent.of(veilederIdent))) {
+        if ("6".equals(diskresjonskode) && !harVeilederTilgangTilKode6(NavIdent.of(veilederIdent))) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
-        if("7".equals(diskresjonskode) && !veilarbPep.harVeilederTilgangTilKode7(NavIdent.of(veilederIdent))) {
+        if ("7".equals(diskresjonskode) && !harVeilederTilgangTilKode7(NavIdent.of(veilederIdent))) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
-        if(bruker.isEgenAnsatt() && !veilarbPep.harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederIdent))) {
+        if (bruker.isEgenAnsatt() && !harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederIdent))) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
         return bruker;
-
     }
 
-    public Skjermettilgang hentVeilederTilgangTilSkjermet(){
+    private boolean harVeilederTilgangTilKode6(NavIdent veilederIdent) {
+        boolean abacResponse = veilarbPep.harVeilederTilgangTilKode6(veilederIdent);
+        if (FeatureToggle.brukPoaoTilgang(unleashService)) {
+            Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode6();
+            if (decision.isPermit() != abacResponse) {
+                log.warn("Diff mellom ABAC og poao-tilgang: harVeilederTilgangTilKode6");
+            }
+        }
+        return abacResponse;
+    }
+
+    private boolean harVeilederTilgangTilKode7(NavIdent veilederIdent) {
+        boolean abacResponse = veilarbPep.harVeilederTilgangTilKode7(veilederIdent);
+        if (FeatureToggle.brukPoaoTilgang(unleashService)) {
+            Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode7();
+            if (decision.isPermit() != abacResponse) {
+                log.warn("Diff mellom ABAC og poao-tilgang: harVeilederTilgangTilKode7");
+            }
+        }
+        return abacResponse;
+    }
+
+    private boolean harVeilederTilgangTilEgenAnsatt(NavIdent veilederIdent) {
+        boolean abacResponse = veilarbPep.harVeilederTilgangTilEgenAnsatt(veilederIdent);
+        if (FeatureToggle.brukPoaoTilgang(unleashService)) {
+            Boolean decision = poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt();
+            if (decision != abacResponse) {
+                log.warn("Diff mellom ABAC og poao-tilgang: harVeilederTilgangTilEgenAnsatt");
+            }
+        }
+        return abacResponse;
+    }
+
+    public Skjermettilgang hentVeilederTilgangTilSkjermet() {
         String veilederId = getInnloggetVeilederIdent().toString();
-        boolean tilgangTilKode6 = veilarbPep.harVeilederTilgangTilKode6(NavIdent.of(veilederId));
-        boolean tilgangTilKode7 = veilarbPep.harVeilederTilgangTilKode7(NavIdent.of(veilederId));
-        boolean tilgangEgenAnsatt = veilarbPep.harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederId));
+        boolean tilgangTilKode6 = harVeilederTilgangTilKode6(NavIdent.of(veilederId));
+        boolean tilgangTilKode7 = harVeilederTilgangTilKode7(NavIdent.of(veilederId));
+        boolean tilgangEgenAnsatt = harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederId));
 
         return new Skjermettilgang(tilgangTilKode6, tilgangTilKode7, tilgangEgenAnsatt);
     }
 
-    public String getOboToken(DownstreamApi receivingApp){
+    public String getOboToken(DownstreamApi receivingApp) {
         return getAadOboTokenForTjeneste(aadOboTokenClient, receivingApp);
     }
+
     @Data
     @Accessors(chain = true)
     static class VeilederPaEnhet {

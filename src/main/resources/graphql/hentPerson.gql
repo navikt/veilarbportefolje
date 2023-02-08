@@ -48,6 +48,22 @@ query($ident: ID!) {
         ...metadataDetails
       }
     }
+    adressebeskyttelse {
+      gradering
+
+      metadata {
+        ...metadataDetails
+      }
+    }
+    sikkerhetstiltak {
+      tiltakstype
+      beskrivelse
+      gyldigFraOgMed
+      gyldigTilOgMed
+      metadata {
+        ...metadataDetails
+      }
+    }
     tilrettelagtKommunikasjon {
       talespraaktolk {
         spraak
