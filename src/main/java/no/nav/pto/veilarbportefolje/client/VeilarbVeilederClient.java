@@ -30,7 +30,7 @@ public class VeilarbVeilederClient {
 
     public VeilarbVeilederClient(AuthService authService, EnvironmentProperties environmentProperties) {
         this.authService = authService;
-        this.url = ClientUtils.getVeilarbveilederServiceUrl(environmentProperties);
+        this.url = environmentProperties.getVeilarbveilederUrl();
         this.client = RestClient.baseClient();
         this.environmentProperties = environmentProperties;
 
@@ -48,7 +48,7 @@ public class VeilarbVeilederClient {
     @SneakyThrows
     private List<String> hentVeilederePaaEnhetQuery(EnhetId enhet) {
         String path = format("/api/enhet/%s/identer", enhet);
-        String tokenScope = ClientUtils.getVeilarbveilederTokenScope(environmentProperties);
+        String tokenScope = environmentProperties.getVeilarbveilederScope();
         Request request = new Request.Builder()
                 .header(AUTHORIZATION, "Bearer " + authService.getOboToken(tokenScope))
                 .url(url + path)

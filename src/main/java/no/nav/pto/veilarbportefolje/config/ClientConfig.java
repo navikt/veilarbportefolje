@@ -13,14 +13,11 @@ import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
-import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
-import no.nav.pto.veilarbportefolje.client.ClientUtils;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -56,9 +53,9 @@ public class ClientConfig {
     ) {
 
         return new VedtaksstotteClient(
-                ClientUtils.getVeilarbvedtaksstotteServiceUrl(environmentProperties),
+                environmentProperties.getVeilarbvedtaksstotteUrl(),
                 authService,
-                () -> tokenClient.createMachineToMachineToken(ClientUtils.getVeilarbvedtaksstotteTokenScope(environmentProperties)),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getVeilarbvedtaksstotteScope()),
                 environmentProperties
         );
     }
@@ -89,8 +86,8 @@ public class ClientConfig {
     @Bean
     public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
         return new PdlClientImpl(
-                ClientUtils.getPdlServiceUrl(environmentProperties),
-                () -> tokenClient.createMachineToMachineToken(ClientUtils.getPdlM2MTokenScope(environmentProperties))
+                environmentProperties.getPdlUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getPdlScope())
         );
     }
 

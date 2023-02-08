@@ -4,11 +4,8 @@ import lombok.SneakyThrows;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.common.utils.EnvironmentUtils;
 import no.nav.common.utils.UrlUtils;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
-import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
-import no.nav.pto.veilarbportefolje.client.ClientUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.kodeverk.CacheConfig;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakApiDto;
@@ -68,7 +65,7 @@ public class VedtaksstotteClient {
         if (enhetId == null) {
             return false;
         }
-        String tokenScope = ClientUtils.getVeilarbvedtaksstotteTokenScope(environmentProperties);
+        String tokenScope = environmentProperties.getVeilarbvedtaksstotteScope();
         Request request = new Request.Builder()
                 .url(UrlUtils.joinPaths(baseURL, "/api/utrulling/erUtrullet?enhetId=" + enhetId.get()))
                 .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())

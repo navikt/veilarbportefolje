@@ -8,7 +8,6 @@ import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.client.*;
-import no.nav.pto.veilarbportefolje.client.ClientUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 
 import java.time.Duration;
@@ -30,8 +29,8 @@ public class PoaoTilgangWrapper {
             .build();
 
     public PoaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
-        String url = ClientUtils.getPoaoTilgangUrl(environmentProperties);
-        String tokenScope = ClientUtils.getPoaoTilgangTokenScope(environmentProperties);
+        String url = environmentProperties.getPoaoTilgangUrl();
+        String tokenScope = environmentProperties.getPoaoTilgangScope();
 
         this.authContextHolder = authContextHolder;
 

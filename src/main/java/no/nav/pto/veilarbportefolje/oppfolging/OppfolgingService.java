@@ -10,7 +10,6 @@ import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
-import no.nav.pto.veilarbportefolje.client.ClientUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
@@ -59,7 +58,7 @@ public class OppfolgingService {
         this.aktorClient = aktorClient;
         this.client = RestClient.baseClient();
         this.veilarboppfolgingUrl = createServiceUrl("veilarboppfolging", "pto", true);
-        systemUserTokenProvider = () -> tokenClient.createMachineToMachineToken(ClientUtils.getVeilarboppfolgingTokenScope(environmentProperties));
+        systemUserTokenProvider = () -> tokenClient.createMachineToMachineToken(environmentProperties.getVeilarboppfolgingScope());
 
     }
 
