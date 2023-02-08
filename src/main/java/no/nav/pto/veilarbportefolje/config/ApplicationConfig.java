@@ -65,8 +65,8 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public KodeverkClient kodeverkClient() {
-        return new KodeverkClientImpl(createServiceUrl("kodeverk", "default", false));
+    public KodeverkClient kodeverkClient(EnvironmentProperties environmentProperties) {
+        return new KodeverkClientImpl(environmentProperties.getKodeverkUrl());
     }
 
 }
