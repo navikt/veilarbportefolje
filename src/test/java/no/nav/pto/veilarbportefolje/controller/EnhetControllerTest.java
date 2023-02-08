@@ -14,6 +14,7 @@ import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.NavIdent;
@@ -59,7 +60,7 @@ public class EnhetControllerTest {
         authContextHolder = AuthContextHolderThreadLocal.instance();
         unleashService = mock(UnleashService.class);
 
-        AuthService authService = new AuthService(pep, poaoTilgangWrapper, mock(AzureAdOnBehalfOfTokenClient.class), unleashService);
+        AuthService authService = new AuthService(pep, poaoTilgangWrapper, mock(AzureAdOnBehalfOfTokenClient.class), unleashService, mock(MetricsClient.class));
         enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(PersonOpprinnelseService.class), mock(BostedService.class));
     }
 
