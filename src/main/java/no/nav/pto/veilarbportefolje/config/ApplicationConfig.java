@@ -23,7 +23,6 @@ import java.util.List;
 
 import static no.nav.common.utils.UrlUtils.createServiceUrl;
 
-
 @EnableScheduling
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
@@ -69,4 +68,5 @@ public class ApplicationConfig {
     public KodeverkClient kodeverkClient() {
         return new KodeverkClientImpl(createServiceUrl("kodeverk", "default", false));
     }
+
 }
