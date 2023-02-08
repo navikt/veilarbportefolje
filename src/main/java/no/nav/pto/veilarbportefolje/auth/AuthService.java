@@ -27,7 +27,8 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.*;
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetBrukerToken;
+import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetVeilederIdent;
 
 @Service
 @Slf4j
@@ -114,7 +115,7 @@ public class AuthService {
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode6();
             if (decision.isPermit() != abacResponse) {
-                metricsClient.report(new Event("poao-tilgang-diff").addFieldToReport("method", "harVeilederTilgangTilKode6"));
+                metricsClient.report(new Event("poao-tilgang-diff").addTagToReport("method", "harVeilederTilgangTilKode6"));
             }
         }
         return abacResponse;
@@ -125,7 +126,7 @@ public class AuthService {
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode7();
             if (decision.isPermit() != abacResponse) {
-                metricsClient.report(new Event("poao-tilgang-diff").addFieldToReport("method", "harVeilederTilgangTilKode7"));
+                metricsClient.report(new Event("poao-tilgang-diff").addTagToReport("method", "harVeilederTilgangTilKode7"));
             }
         }
         return abacResponse;
@@ -136,7 +137,7 @@ public class AuthService {
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Boolean decision = poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt();
             if (decision != abacResponse) {
-                metricsClient.report(new Event("poao-tilgang-diff").addFieldToReport("method", "harVeilederTilgangTilEgenAnsatt"));
+                metricsClient.report(new Event("poao-tilgang-diff").addTagToReport("method", "harVeilederTilgangTilEgenAnsatt"));
             }
         }
         return abacResponse;
