@@ -26,7 +26,7 @@ public class VedtaksstotteClientTest {
         Fnr fnr = Fnr.of("123");
 
         String url = "http://localhost:" + wireMockRule.port();
-        VedtaksstotteClient client = new VedtaksstotteClient(url, null, () -> "TOKEN");
+        VedtaksstotteClient client = new VedtaksstotteClient(url, null, () -> "TOKEN", null);
 
         String responseBody = """
                     {

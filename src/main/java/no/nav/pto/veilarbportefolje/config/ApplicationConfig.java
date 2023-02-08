@@ -8,7 +8,6 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.featuretoggle.UnleashClientImpl;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
-import no.nav.pto.veilarbportefolje.client.ClientUtils;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClientImpl;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -21,6 +20,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 
 import java.util.List;
+
+import static no.nav.common.utils.UrlUtils.createServiceUrl;
 
 @EnableScheduling
 @Configuration
@@ -65,7 +66,7 @@ public class ApplicationConfig {
 
     @Bean
     public KodeverkClient kodeverkClient() {
-        return new KodeverkClientImpl(ClientUtils.getKodeverkServiceUrl());
+        return new KodeverkClientImpl(createServiceUrl("kodeverk", "default", false));
     }
 
 }

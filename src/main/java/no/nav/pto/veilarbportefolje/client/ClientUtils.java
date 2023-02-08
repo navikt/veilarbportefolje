@@ -1,65 +1,56 @@
 package no.nav.pto.veilarbportefolje.client;
 
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import org.jetbrains.annotations.NotNull;
 
 import static no.nav.common.utils.UrlUtils.*;
 
 public class ClientUtils {
-    public static String getVeilarboppfolgingServiceUrl() {
-        return createServiceUrl("veilarboppfolging", "pto", true);
+
+    public static String getVeilarbvedtaksstotteServiceUrl(EnvironmentProperties environmentProperties) {
+        //return createServiceUrl("veilarbvedtaksstotte", "pto", true);
+        return environmentProperties.getVeilarbvedtaksstotteUrl();
     }
 
-    public static String getKodeverkServiceUrl() {
-        return createServiceUrl("kodeverk", "default", false);
+    public static String getPdlServiceUrl(EnvironmentProperties environmentProperties) {
+        //return createServiceUrl("pdl-api", "pdl", false);
+        return environmentProperties.getPdlUrl();
     }
 
-    public static String getVeilarbvedtaksstotteServiceUrl() {
-        return createServiceUrl("veilarbvedtaksstotte", "pto", true);
+    public static String getPoaoTilgangUrl(EnvironmentProperties environmentProperties) {
+        //return isProduction ? createProdInternalIngressUrl("poao-tilgang") : createDevInternalIngressUrl("poao-tilgang");
+        return environmentProperties.getPoaoTilgangUrl();
     }
 
-    public static String getPdlServiceUrl() {
-        return createServiceUrl("pdl-api", "pdl", false);
-    }
-
-    public static String getPoaoTilgangUrl(boolean isProduction) {
-        return isProduction ?
-                createProdInternalIngressUrl("poao-tilgang") :
-                createDevInternalIngressUrl("poao-tilgang");
-    }
-
-    static String getVeilarbveilederServiceUrl(DownstreamApi downstreamApi) {
-        return createServiceUrl(downstreamApi.serviceName(), downstreamApi.namespace(), true);
+    static String getVeilarbveilederServiceUrl(EnvironmentProperties environmentProperties) {
+        //return createServiceUrl("veilarbveileder", "pto", true);
+        return environmentProperties.getVeilarbveilederUrl();
     }
 
     @NotNull
-    public static String getVeilarbveilederTokenScope(DownstreamApi downstreamApi) {
-        return "api://" + downstreamApi.cluster() + "." + downstreamApi.namespace() + "." + downstreamApi.serviceName() + "/.default";
+    public static String getVeilarbveilederTokenScope(EnvironmentProperties environmentProperties) {
+        //return "api://" + cluster + ".pto.veilarbveileder/.default";
+        return environmentProperties.getVeilarbveilederScope();
     }
 
-    public static String getVeilarboppfolgingTokenScope(Boolean isProduction) {
-        return String.format("api://%s-fss.pto.veilarboppfolging/.default", isProduction ? "prod" : "dev");
+    public static String getVeilarboppfolgingTokenScope(EnvironmentProperties environmentProperties) {
+        //return String.format("api://%s-fss.pto.veilarboppfolging/.default", isProduction ? "prod" : "dev");
+        return environmentProperties.getVeilarboppfolgingScope();
     }
 
-    public static String getVeilarbvedtaksstotteTokenScope(boolean isProduction) {
-        return String.format(
-                "api://%s-fss.pto.veilarbvedtaksstotte/.default",
-                isProduction ? "prod" : "dev"
-        );
+    public static String getVeilarbvedtaksstotteTokenScope(EnvironmentProperties environmentProperties) {
+        //return String.format("api://%s-fss.pto.veilarbvedtaksstotte/.default", isProduction ? "prod" : "dev");
+        return environmentProperties.getVeilarbvedtaksstotteScope();
     }
 
-    public static String getPdlM2MTokenScope(boolean isProduction) {
-        return String.format("api://%s-fss.pdl.pdl-api/.default",
-                isProduction ? "prod" : "dev"
-        );
+    public static String getPdlM2MTokenScope(EnvironmentProperties environmentProperties) {
+        //return String.format("api://%s-fss.pdl.pdl-api/.default", isProduction ? "prod" : "dev");
+        return environmentProperties.getPdlScope();
     }
 
-    public static String getPoaoTilgangTokenScope(boolean isProduction) {
-        return String.format("api://%s-gcp.poao.poao-tilgang/.default", isProduction ? "prod" : "dev");
-    }
-
-    @NotNull
-    static DownstreamApi getVeilarbVeilederDownstreamApi(String cluster) {
-        return new DownstreamApi(cluster, "pto", "veilarbveileder");
+    public static String getPoaoTilgangTokenScope(EnvironmentProperties environmentProperties) {
+        //return String.format("api://%s-gcp.poao.poao-tilgang/.default", isProduction ? "prod" : "dev");
+        return environmentProperties.getPoaoTilgangScope();
     }
 }

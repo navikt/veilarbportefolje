@@ -10,8 +10,8 @@ import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
-import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.client.ClientUtils;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static no.nav.common.utils.UrlUtils.createServiceUrl;
 import static no.nav.common.utils.UrlUtils.joinPaths;
 
 @Slf4j
@@ -46,13 +47,19 @@ public class OppfolgingService {
     private static int antallBrukereSlettet;
 
     @Autowired
-    public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient, AzureAdMachineToMachineTokenClient tokenClient) {
+    public OppfolgingService(
+            OppfolgingAvsluttetService oppfolgingAvsluttetService,
+            OppfolgingRepositoryV2 oppfolgingRepositoryV2,
+            AktorClient aktorClient,
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties
+    ) {
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.aktorClient = aktorClient;
         this.client = RestClient.baseClient();
-        this.veilarboppfolgingUrl = ClientUtils.getVeilarboppfolgingServiceUrl();
-        systemUserTokenProvider = () -> tokenClient.createMachineToMachineToken(ClientUtils.getVeilarboppfolgingTokenScope((EnvironmentUtils.isProduction().orElseThrow())));
+        this.veilarboppfolgingUrl = createServiceUrl("veilarboppfolging", "pto", true);
+        systemUserTokenProvider = () -> tokenClient.createMachineToMachineToken(ClientUtils.getVeilarboppfolgingTokenScope(environmentProperties));
 
     }
 

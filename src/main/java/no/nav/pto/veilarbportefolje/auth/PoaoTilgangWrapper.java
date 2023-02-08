@@ -7,9 +7,9 @@ import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.common.utils.EnvironmentUtils;
 import no.nav.poao_tilgang.client.*;
 import no.nav.pto.veilarbportefolje.client.ClientUtils;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 
 import java.time.Duration;
 import java.util.List;
@@ -29,12 +29,9 @@ public class PoaoTilgangWrapper {
             .expireAfterWrite(Duration.ofMinutes(30))
             .build();
 
-    public PoaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient) {
-        boolean isProduction = EnvironmentUtils.isProduction().orElseThrow();
-
-        String url = ClientUtils.getPoaoTilgangUrl(isProduction);
-
-        String tokenScope = ClientUtils.getPoaoTilgangTokenScope(isProduction);
+    public PoaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
+        String url = ClientUtils.getPoaoTilgangUrl(environmentProperties);
+        String tokenScope = ClientUtils.getPoaoTilgangTokenScope(environmentProperties);
 
         this.authContextHolder = authContextHolder;
 

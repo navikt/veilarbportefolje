@@ -9,6 +9,7 @@ import no.nav.common.utils.UrlUtils;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
 import no.nav.pto.veilarbportefolje.client.ClientUtils;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.kodeverk.CacheConfig;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakApiDto;
 import okhttp3.OkHttpClient;
@@ -29,16 +30,19 @@ public class VedtaksstotteClient {
     private final String baseURL;
     private final OkHttpClient client;
     private final Supplier<String> machineToMachineTokenSupplier;
+    private final EnvironmentProperties environmentProperties;
 
     public VedtaksstotteClient(
             String baseUrl,
             AuthService authService,
-            Supplier<String> machineToMachineTokenSupplier
+            Supplier<String> machineToMachineTokenSupplier,
+            EnvironmentProperties environmentProperties
     ) {
         this.authService = authService;
         this.baseURL = baseUrl;
         this.client = baseClient();
         this.machineToMachineTokenSupplier = machineToMachineTokenSupplier;
+        this.environmentProperties = environmentProperties;
     }
 
     @Cacheable(CacheConfig.VEDTAKSSTOTTE_PILOT_TOGGLE_CACHE_NAME)
@@ -64,7 +68,7 @@ public class VedtaksstotteClient {
         if (enhetId == null) {
             return false;
         }
-        String tokenScope = ClientUtils.getVeilarbvedtaksstotteTokenScope(EnvironmentUtils.isProduction().orElseThrow());
+        String tokenScope = ClientUtils.getVeilarbvedtaksstotteTokenScope(environmentProperties);
         Request request = new Request.Builder()
                 .url(UrlUtils.joinPaths(baseURL, "/api/utrulling/erUtrullet?enhetId=" + enhetId.get()))
                 .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())
