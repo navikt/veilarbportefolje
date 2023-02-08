@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
+import no.nav.familie.eksterne.kontrakter.arbeidsoppfolging.VedtakOvergangsstønadArbeidsoppfølging;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -256,6 +257,9 @@ public class OpensearchIndexerV2 {
         update(aktoerId, content, "Sletter arbeidsliste");
     }
 
+    public void updateOvergangsstonad(VedtakOvergangsstønadArbeidsoppfølging melding) {
+    }
+
     @SneakyThrows
     public void slettDokumenter(List<AktorId> aktorIds) {
         secureLog.info("Sletter gamle aktorIder {}", aktorIds);
@@ -308,5 +312,4 @@ public class OpensearchIndexerV2 {
             }
         }
     }
-
 }

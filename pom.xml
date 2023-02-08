@@ -141,6 +141,11 @@
             <artifactId>pto-schema</artifactId>
             <version>1.2022.09.28_12.06-c4c0f289872c</version>
         </dependency>
+        <dependency>
+            <groupId>no.nav.familie.eksterne.kontrakter</groupId>
+            <artifactId>arbeidsoppfolging</artifactId>
+            <version>2.0_20230203094245_a4a6d4d</version>
+        </dependency>
 
         <!-- Funksjonell programmering-->
         <dependency>
