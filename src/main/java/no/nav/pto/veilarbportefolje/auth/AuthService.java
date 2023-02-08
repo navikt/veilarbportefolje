@@ -8,6 +8,8 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
+import no.nav.common.metrics.Event;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -36,13 +38,15 @@ public class AuthService {
     private final Cache<VeilederPaEnhet, Boolean> harVeilederTilgangTilEnhetCache;
 
     private final UnleashService unleashService;
+    private final MetricsClient metricsClient;
 
     @Autowired
-    public AuthService(Pep veilarbPep, PoaoTilgangWrapper poaoTilgangWrapper, AzureAdOnBehalfOfTokenClient aadOboTokenClient, UnleashService unleashService) {
+    public AuthService(Pep veilarbPep, PoaoTilgangWrapper poaoTilgangWrapper, AzureAdOnBehalfOfTokenClient aadOboTokenClient, UnleashService unleashService, MetricsClient metricsClient) {
         this.aadOboTokenClient = aadOboTokenClient;
         this.poaoTilgangWrapper = poaoTilgangWrapper;
         this.veilarbPep = veilarbPep;
         this.unleashService = unleashService;
+        this.metricsClient = metricsClient;
         this.harVeilederTilgangTilEnhetCache = Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(6000)
@@ -66,7 +70,7 @@ public class AuthService {
                 () -> veilarbPep.harVeilederTilgangTilEnhet(NavIdent.of(veilederId), EnhetId.of(enhet)));
 
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
-            Decision decision = poaoTilgangWrapper.harVeilederTilgangTilEnhet(EnhetId.of(enhet));
+            poaoTilgangWrapper.harVeilederTilgangTilEnhet(EnhetId.of(enhet));
         }
         return abacResponse;
     }
@@ -74,7 +78,7 @@ public class AuthService {
     public void tilgangTilBruker(String fnr) {
         boolean abacResponse = veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, Fnr.of(fnr));
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
-            Decision decision = poaoTilgangWrapper.harTilgangTilPerson(Fnr.of(fnr));
+            poaoTilgangWrapper.harTilgangTilPerson(Fnr.of(fnr));
         }
         AuthUtils.test("tilgangTilBruker", fnr, abacResponse);
     }
@@ -110,7 +114,7 @@ public class AuthService {
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode6();
             if (decision.isPermit() != abacResponse) {
-                log.warn("Diff mellom ABAC og poao-tilgang: harVeilederTilgangTilKode6");
+                metricsClient.report(new Event("poao-tilgang-diff").addFieldToReport("method", "harVeilederTilgangTilKode6"));
             }
         }
         return abacResponse;
@@ -121,7 +125,7 @@ public class AuthService {
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode7();
             if (decision.isPermit() != abacResponse) {
-                log.warn("Diff mellom ABAC og poao-tilgang: harVeilederTilgangTilKode7");
+                metricsClient.report(new Event("poao-tilgang-diff").addFieldToReport("method", "harVeilederTilgangTilKode7"));
             }
         }
         return abacResponse;
@@ -132,7 +136,7 @@ public class AuthService {
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Boolean decision = poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt();
             if (decision != abacResponse) {
-                log.warn("Diff mellom ABAC og poao-tilgang: harVeilederTilgangTilEgenAnsatt");
+                metricsClient.report(new Event("poao-tilgang-diff").addFieldToReport("method", "harVeilederTilgangTilEgenAnsatt"));
             }
         }
         return abacResponse;
