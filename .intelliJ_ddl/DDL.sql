@@ -1,3 +1,5 @@
+CREATE DATABASE veilarbportefolje;
+
 --
 -- PostgreSQL database dump
 --
