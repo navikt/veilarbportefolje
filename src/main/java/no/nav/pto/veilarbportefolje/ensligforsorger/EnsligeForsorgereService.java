@@ -17,6 +17,11 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
     @Override
     protected void behandleKafkaMeldingLogikk(VedtakOvergangsstønadArbeidsoppfølging melding) {
         log.info("Oppdatert overgangsstonad for bruker: {}", melding.getPersonIdent());
+        //save data in DB
+        //handle logic (different perioder, deleting previous vedtak..)
+        //indexing
+        
+
         opensearchIndexerV2.updateOvergangsstonad(melding);
     }
 }
