@@ -20,7 +20,7 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
         //save data in DB
         //handle logic (different perioder, deleting previous vedtak..)
         //indexing
-        
+        ensligeForsorgereRepository.lagreDataForEnsligeForsorgere(melding);
 
         opensearchIndexerV2.updateOvergangsstonad(melding);
     }

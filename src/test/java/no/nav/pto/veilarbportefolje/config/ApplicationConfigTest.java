@@ -20,28 +20,14 @@ import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereRepository;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
-import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
-import no.nav.pto.veilarbportefolje.opensearch.IndexName;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.opensearch.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingRepository;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
@@ -68,8 +54,8 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.opensearch.client.RestHighLevelClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -150,7 +136,8 @@ import static org.mockito.Mockito.when;
         KodeverkService.class,
         PersonOpprinnelseService.class,
         PersonOpprinnelseRepository.class,
-        Avvik14aVedtakService.class
+        Avvik14aVedtakService.class,
+        EnsligeForsorgereRepository.class
 })
 public class ApplicationConfigTest {
 
