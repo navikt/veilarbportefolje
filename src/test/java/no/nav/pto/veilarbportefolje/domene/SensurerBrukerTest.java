@@ -59,6 +59,7 @@ public class SensurerBrukerTest {
     @Test
     public void skalIkkeSeEgenAnsatt() {
         when(pep.harVeilederTilgangTilEgenAnsatt(eq(NavIdent.of("X123456")))).thenReturn(false);
+        when(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(new Decision.Deny("", ""));
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt(), "X123456");
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
@@ -86,6 +87,7 @@ public class SensurerBrukerTest {
     @Test
     public void skalSeEgenAnsatt() {
         when(pep.harVeilederTilgangTilEgenAnsatt(eq(NavIdent.of("X123456")))).thenReturn(true);
+        when(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(Decision.Permit.INSTANCE);
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt(), "X123456");
         assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
         assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKodeEgenAnsatt");
