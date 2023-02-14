@@ -8,10 +8,9 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.LEST_ARENA_HENDELSE_AKTIVITETER.AKTIVITETID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.LEST_ARENA_HENDELSE_AKTIVITETER.HENDELSE_ID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.LEST_ARENA_HENDELSE_AKTIVITETER.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.LEST_ARENA_HENDELSE_AKTIVITETER.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -21,7 +20,7 @@ public class ArenaHendelseRepository {
     private final JdbcTemplate db;
 
     public int upsertAktivitetHendelse(String id, long hendelse) {
-        log.info("Lagrer pa id: {}, ny hendelse: {}", id, hendelse);
+        secureLog.info("Lagrer pa id: {}, ny hendelse: {}", id, hendelse);
         return db.update("INSERT INTO " + TABLE_NAME +
                         " (" + AKTIVITETID + ", " + HENDELSE_ID + ") " +
                         "VALUES (?, ?) " +
@@ -33,7 +32,7 @@ public class ArenaHendelseRepository {
     }
 
     public int upsertYtelsesHendelse(String id, long hendelse) {
-        log.info("Lagrer pa id: {}, ny hendelse: {}", id, hendelse);
+        secureLog.info("Lagrer pa id: {}, ny hendelse: {}", id, hendelse);
         return db.update("INSERT INTO " + PostgresTable.LEST_ARENA_HENDELSE_YTELSER.TABLE_NAME +
                         " (" + PostgresTable.LEST_ARENA_HENDELSE_YTELSER.VEDTAKID + ", " + PostgresTable.LEST_ARENA_HENDELSE_YTELSER.HENDELSE_ID + ") " +
                         "VALUES (?, ?) " +

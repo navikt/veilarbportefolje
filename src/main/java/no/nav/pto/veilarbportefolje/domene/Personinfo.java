@@ -8,11 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 @Data
 @Accessors(chain = true)
 @Slf4j
 public class Personinfo {
-    public static Map<String, String> kodeTilBeskrivelse  = new HashMap<>();
+    public static Map<String, String> kodeTilBeskrivelse = new HashMap<>();
+
     static {
         kodeTilBeskrivelse.put("FYUS", "Fysisk utestengelse");
         kodeTilBeskrivelse.put("FTUS", "Fysisk/telefonisk utestengelse");
@@ -23,11 +26,11 @@ public class Personinfo {
     private boolean egenAnsatt;
 
     public Personinfo withSikkerhetstiltak(String sikkerhetstiltak) {
-        if(Objects.isNull(sikkerhetstiltak)) {
+        if (Objects.isNull(sikkerhetstiltak)) {
             return this;
         }
-        if(!kodeTilBeskrivelse.containsKey(sikkerhetstiltak)) {
-            log.warn("Finner ikke beskrivelse for sikkerhetstiltak {}", sikkerhetstiltak);
+        if (!kodeTilBeskrivelse.containsKey(sikkerhetstiltak)) {
+            secureLog.warn("Finner ikke beskrivelse for sikkerhetstiltak {}", sikkerhetstiltak);
             return this;
         }
         this.sikkerhetstiltak = kodeTilBeskrivelse.get(sikkerhetstiltak);

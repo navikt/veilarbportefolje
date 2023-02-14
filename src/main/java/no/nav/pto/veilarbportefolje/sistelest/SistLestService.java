@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -18,7 +20,7 @@ public class SistLestService extends KafkaCommonConsumerService<SistLestKafkaMel
     private final SisteEndringService sisteEndringService;
 
     public void behandleKafkaMeldingLogikk(SistLestKafkaMelding melding) {
-        log.info("Aktivitetsplanen for {} ble lest av {}, lest: {}", melding.getAktorId(), melding.getVeilederId(), melding.getHarLestTidspunkt());
+        secureLog.info("Aktivitetsplanen for {} ble lest av {}, lest: {}", melding.getAktorId(), melding.getVeilederId(), melding.getHarLestTidspunkt());
         Optional<VeilederId> veilederId = brukerService.hentVeilederForBruker(melding.getAktorId());
         if (veilederId.isEmpty()) {
             return;

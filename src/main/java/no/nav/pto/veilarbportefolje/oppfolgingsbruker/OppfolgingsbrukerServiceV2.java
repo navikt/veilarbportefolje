@@ -23,6 +23,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukOppfolgingsbrukerPaPostgres;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -54,7 +55,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
 
         brukerServiceV2.hentAktorId(Fnr.of(kafkaMelding.getFodselsnummer()))
                 .ifPresent(id -> {
-                    log.info("Fikk endring pa oppfolgingsbruker (V2): {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v2", id);
+                    secureLog.info("Fikk endring pa oppfolgingsbruker (V2): {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v2", id);
                     if (brukOppfolgingsbrukerPaPostgres(unleashService)) {
                         opensearchIndexer.indekser(id);
                     } else {

@@ -5,11 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
+import okhttp3.*;
 import org.apache.commons.io.IOUtils;
 import org.opensearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.opensearch.action.admin.indices.delete.DeleteIndexRequest;
@@ -39,6 +35,7 @@ import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.createAbsoluteUrl;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.getAuthHeaderValue;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 
@@ -74,7 +71,7 @@ public class OpensearchAdminService {
         CreateIndexResponse response = restHighLevelClient.indices().create(request, RequestOptions.DEFAULT);
 
         if (!response.isAcknowledged()) {
-            log.error("Kunne ikke opprette ny indeks {}", indeksNavn);
+            secureLog.error("Kunne ikke opprette ny indeks {}", indeksNavn);
             throw new RuntimeException();
         }
         return indeksNavn;
@@ -91,9 +88,9 @@ public class OpensearchAdminService {
         DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName);
         boolean acknowledged = restHighLevelClient.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT).isAcknowledged();
         if (!acknowledged) {
-            log.error("Kunne ikke slette index: {}", indexName);
+            secureLog.error("Kunne ikke slette index: {}", indexName);
         } else {
-            log.info("Index: {}, er slettet", indexName);
+            secureLog.info("Index: {}, er slettet", indexName);
         }
         return acknowledged;
     }
@@ -108,7 +105,7 @@ public class OpensearchAdminService {
         AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
 
         if (!response.isAcknowledged()) {
-            log.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
+            secureLog.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
             throw new RuntimeException();
         }
     }
@@ -132,7 +129,7 @@ public class OpensearchAdminService {
         AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
 
         if (!response.isAcknowledged()) {
-            log.error("Kunne ikke oppdatere alias {}", BRUKERINDEKS_ALIAS);
+            secureLog.error("Kunne ikke oppdatere alias {}", BRUKERINDEKS_ALIAS);
         }
     }
 
@@ -189,7 +186,7 @@ public class OpensearchAdminService {
         AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
 
         if (!response.isAcknowledged()) {
-            log.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
+            secureLog.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
             throw new RuntimeException();
         }
 

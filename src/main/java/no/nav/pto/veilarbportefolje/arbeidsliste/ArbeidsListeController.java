@@ -16,14 +16,7 @@ import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
@@ -35,6 +28,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidsliste;
 
 @Slf4j
@@ -89,7 +83,7 @@ public class ArbeidsListeController {
         String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().toString();
 
         Fnr fnr = Fnr.ofValidFnr(fnrString);
-        Try<AktorId> aktoerId = Try.of(()-> aktorClient.hentAktorId(fnr));
+        Try<AktorId> aktoerId = Try.of(() -> aktorClient.hentAktorId(fnr));
 
         boolean harVeilederTilgang = brukerService.hentNavKontor(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet.getValue()))
@@ -113,7 +107,7 @@ public class ArbeidsListeController {
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
         arbeidslisteService.createArbeidsliste(data(body, Fnr.ofValidFnr(fnr)))
-                .onFailure(e -> log.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
+                .onFailure(e -> secureLog.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
         return arbeidslisteService.getArbeidsliste(Fnr.ofValidFnr(fnr)).get()
@@ -130,7 +124,7 @@ public class ArbeidsListeController {
 
         arbeidslisteService
                 .updateArbeidsliste(data(body, fnr))
-                .onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
+                .onFailure(e -> secureLog.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
         return arbeidslisteService.getArbeidsliste(fnr).get()
@@ -156,41 +150,41 @@ public class ArbeidsListeController {
 
     @PostMapping("/delete")
     public RestResponse<String> deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
-            authService.tilgangTilOppfolging();
+        authService.tilgangTilOppfolging();
 
-            java.util.List<String> feiledeFnrs = new ArrayList<>();
-            java.util.List<String> okFnrs = new ArrayList<>();
+        java.util.List<String> feiledeFnrs = new ArrayList<>();
+        java.util.List<String> okFnrs = new ArrayList<>();
 
-            java.util.List<Fnr> fnrs = arbeidslisteData
-                    .stream()
-                    .map(data -> Fnr.ofValidFnr(data.getFnr()))
-                    .collect(Collectors.toList());
+        java.util.List<Fnr> fnrs = arbeidslisteData
+                .stream()
+                .map(data -> Fnr.ofValidFnr(data.getFnr()))
+                .collect(Collectors.toList());
 
-            Validation<List<Fnr>, List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
-            Validation<String, List<Fnr>> veilederForBrukere = arbeidslisteService.erVeilederForBrukere(fnrs);
-            if (validerFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
-                throw new IllegalStateException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
+        Validation<List<Fnr>, List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
+        Validation<String, List<Fnr>> veilederForBrukere = arbeidslisteService.erVeilederForBrukere(fnrs);
+        if (validerFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
+            throw new IllegalStateException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
+        }
+
+        validerFnrs.get().forEach(fnr -> {
+            final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(fnr);
+
+            final AktorId aktoerId = brukerService.hentAktorId(fnr)
+                    .orElse(new AktorId("uten aktør-ID"));
+
+            if (antallRaderSlettet != 1) {
+                feiledeFnrs.add(fnr.get());
+                secureLog.warn("Kunne ikke slette arbeidsliste for bruker {} ", aktoerId.get());
+            } else {
+                okFnrs.add(fnr.get());
+                secureLog.info("Arbeidsliste for aktoerid {} slettet", aktoerId.get());
             }
+        });
 
-            validerFnrs.get().forEach(fnr -> {
-                final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(fnr);
-
-                final AktorId aktoerId = brukerService.hentAktorId(fnr)
-                        .orElse(new AktorId("uten aktør-ID"));
-
-                if (antallRaderSlettet != 1) {
-                    feiledeFnrs.add(fnr.get());
-                    log.warn("Kunne ikke slette arbeidsliste for bruker {} ", aktoerId.get());
-                } else {
-                    okFnrs.add(fnr.get());
-                    log.info("Arbeidsliste for aktoerid {} slettet", aktoerId.get());
-                }
-            });
-
-            if (feiledeFnrs.size() == fnrs.size()) {
-                throw new IllegalStateException();
-            }
-            return RestResponse.of(okFnrs, feiledeFnrs);
+        if (feiledeFnrs.size() == fnrs.size()) {
+            throw new IllegalStateException();
+        }
+        return RestResponse.of(okFnrs, feiledeFnrs);
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukAvAliasIndeksering;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -21,7 +22,7 @@ public class HovedIndekserer {
     private final UnleashService unleashService;
 
     public void hovedIndeksering() {
-        log.info("Starter jobb: hovedindeksering");
+        secureLog.info("Starter jobb: hovedindeksering");
         List<AktorId> brukereSomMaOppdateres;
         brukereSomMaOppdateres = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
 
@@ -34,18 +35,18 @@ public class HovedIndekserer {
 
     public void aliasBasertHovedIndeksering(List<AktorId> brukere) {
         long tidsStempel0 = System.currentTimeMillis();
-        log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
+        secureLog.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
         String gammelIndex = opensearchAdminService.hentBrukerIndex();
         String nyIndex = opensearchAdminService.opprettSkjultSkriveIndeksPaAlias();
-        log.info("Hovedindeksering: skaper 'write index': {}", nyIndex);
+        secureLog.info("Hovedindeksering: skaper 'write index': {}", nyIndex);
 
         boolean success = tryIndekserAlleBrukere(brukere);
         if (success) {
             opensearchAdminService.slettGammeltOgOppdaterNyttAlias(gammelIndex, nyIndex);
             opensearchAdminService.slettIndex(gammelIndex);
             long tid = System.currentTimeMillis() - tidsStempel0;
-            log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
+            secureLog.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
         } else {
             opensearchAdminService.slettIndex(nyIndex);
             throw new RuntimeException("Hovedindeksering: ble ikke fullført");
@@ -57,7 +58,7 @@ public class HovedIndekserer {
             opensearchIndexer.batchIndeksering(brukere);
             return true;
         } catch (Exception e) {
-            log.error("Hovedindeksering feilet", e);
+            secureLog.error("Hovedindeksering feilet", e);
             return false;
         }
     }

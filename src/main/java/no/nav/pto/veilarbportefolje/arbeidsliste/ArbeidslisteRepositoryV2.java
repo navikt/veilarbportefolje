@@ -18,17 +18,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.ENDRINGSTIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.FRIST;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.KATEGORI;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.KOMMENTAR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.OVERSKRIFT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.SIST_ENDRET_AV_VEILEDERIDENT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -83,7 +76,7 @@ public class ArbeidslisteRepositoryV2 {
                     upsert(aktoerId.get(), dto);
                     return dto;
                 }
-        ).onFailure(e -> log.warn("Kunne ikke inserte arbeidsliste til db", e));
+        ).onFailure(e -> secureLog.warn("Kunne ikke inserte arbeidsliste til db", e));
     }
 
 
@@ -100,22 +93,22 @@ public class ArbeidslisteRepositoryV2 {
                     int rows = db.update(updateSql, data.getVeilederId().getValue(), endringsTidspunkt, data.getOverskrift(),
                             data.getKommentar(), data.getFrist(), data.getKategori().name(), data.getAktorId().get());
 
-                    log.info("Oppdaterte arbeidsliste pa bruker {}, rader: {}", data.getAktorId().get(), rows);
+                    secureLog.info("Oppdaterte arbeidsliste pa bruker {}, rader: {}", data.getAktorId().get(), rows);
                     return data.setEndringstidspunkt(endringsTidspunkt);
                 }
-        ).onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste i db", e));
+        ).onFailure(e -> secureLog.warn("Kunne ikke oppdatere arbeidsliste i db", e));
     }
 
     public int slettArbeidsliste(AktorId aktoerId) {
         if (aktoerId == null) {
             return 0;
         }
-        log.info("Sletter arbeidsliste pa bruker: {}", aktoerId);
+        secureLog.info("Sletter arbeidsliste pa bruker: {}", aktoerId);
         return db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
     }
 
     public int upsert(String aktoerId, ArbeidslisteDTO dto) {
-        log.info("Upsert arbeidsliste pa bruker: {}", aktoerId);
+        secureLog.info("Upsert arbeidsliste pa bruker: {}", aktoerId);
         return db.update("""
                         INSERT INTO ARBEIDSLISTE (AKTOERID, SIST_ENDRET_AV_VEILEDERIDENT , ENDRINGSTIDSPUNKT,
                         OVERSKRIFT, KOMMENTAR, FRIST , KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE)

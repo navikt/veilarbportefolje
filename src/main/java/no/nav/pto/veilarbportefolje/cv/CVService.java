@@ -12,6 +12,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 
 @RequiredArgsConstructor
@@ -25,14 +26,14 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
     public void behandleKafkaMeldingLogikk(Melding kafkaMelding) {
         AktorId aktoerId = AktorId.of(String.valueOf(kafkaMelding.getAktoerId()));
         boolean cvEksisterer = cvEksistere(kafkaMelding);
-        log.info("Oppdater CV eksisterer for bruker: {}, eksisterer: {}", aktoerId.get(), cvEksisterer);
+        secureLog.info("Oppdater CV eksisterer for bruker: {}, eksisterer: {}", aktoerId.get(), cvEksisterer);
 
         cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
         opensearchIndexerV2.updateCvEksistere(aktoerId, cvEksisterer);
     }
 
     public void behandleKafkaMeldingCVHjemmel(ConsumerRecord<String, CVMelding> kafkaMelding) {
-        log.info(
+        secureLog.info(
                 "Behandler kafka-melding med key {} og offset {} på topic {}",
                 kafkaMelding.key(),
                 kafkaMelding.offset(),
@@ -47,11 +48,11 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
         boolean harDeltCv = (cvMelding.getSlettetDato() == null);
 
         if (cvMelding.getRessurs() != CV_HJEMMEL) {
-            log.info("Ignorer melding for ressurs {} for bruker {}", cvMelding.getRessurs(), aktoerId);
+            secureLog.info("Ignorer melding for ressurs {} for bruker {}", cvMelding.getRessurs(), aktoerId);
             return;
         }
 
-        log.info("Oppdaterte bruker: {}. Har delt cv: {}", aktoerId, harDeltCv);
+        secureLog.info("Oppdaterte bruker: {}. Har delt cv: {}", aktoerId, harDeltCv);
         cvRepositoryV2.upsertHarDeltCv(aktoerId, harDeltCv);
 
         opensearchIndexerV2.updateHarDeltCv(aktoerId, harDeltCv);

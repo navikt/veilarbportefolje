@@ -10,11 +10,8 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHendelseBasertPaOperasjon;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erUtgatt;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getAktorId;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getInnhold;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGoldenGate;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -26,7 +23,7 @@ public class GruppeAktivitetService {
 
     public void behandleKafkaRecord(ConsumerRecord<String, GruppeAktivitetDTO> kafkaMelding) {
         GruppeAktivitetDTO melding = kafkaMelding.value();
-        log.info(
+        secureLog.info(
                 "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
                 kafkaMelding.key(),
                 kafkaMelding.offset(),
@@ -53,10 +50,10 @@ public class GruppeAktivitetService {
         return gruppeInnhold.getAktivitetperiodeTil() == null || erUtgatt(gruppeInnhold.getAktivitetperiodeTil(), true);
     }
 
-    private boolean erGammelMelding(GruppeAktivitetDTO kafkaMelding, GruppeAktivitetInnhold innhold){
+    private boolean erGammelMelding(GruppeAktivitetDTO kafkaMelding, GruppeAktivitetInnhold innhold) {
         Long hendelseIDB = gruppeAktivitetRepositoryV2.retrieveHendelse(innhold).orElse(-1L);
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), skalSlettesGoldenGate(kafkaMelding))) {
-            log.info("Fikk tilsendt gammel gruppe-aktivtet-melding pa Posrgres");
+            secureLog.info("Fikk tilsendt gammel gruppe-aktivtet-melding pa Posrgres");
             return true;
         }
         return false;

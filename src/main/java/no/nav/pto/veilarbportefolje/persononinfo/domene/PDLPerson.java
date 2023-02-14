@@ -10,12 +10,10 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Data
 @Slf4j
@@ -103,7 +101,7 @@ public class PDLPerson {
         } else if ("MANN".equals(kjonn)) {
             return Kjonn.M;
         }
-        log.error("Ikke implementert støtte for kjønn: {} ", kjonn);
+        secureLog.error("Ikke implementert støtte for kjønn: {} ", kjonn);
         throw new PdlPersonValideringException("Fant kjønn som ikke er støttet");
     }
 

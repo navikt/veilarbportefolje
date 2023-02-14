@@ -19,6 +19,7 @@ import javax.sql.DataSource;
 
 import static no.nav.pto.veilarbportefolje.util.DbUtils.createDataSource;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.getSqlAdminRole;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Configuration
@@ -44,12 +45,12 @@ public class DbConfigPostgres {
         return new JdbcTemplate(dataSource);
     }
 
-    @Bean(name="PostgresJdbcReadOnly")
+    @Bean(name = "PostgresJdbcReadOnly")
     public JdbcTemplate dbRead(@Qualifier("PostgresReadOnly") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
-    @Bean(name="PostgresNamedJdbcReadOnly")
+    @Bean(name = "PostgresNamedJdbcReadOnly")
     public NamedParameterJdbcTemplate namedParameterJdbcTemplate(@Qualifier("PostgresReadOnly") DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
     }
@@ -62,13 +63,13 @@ public class DbConfigPostgres {
     @PostConstruct
     @SneakyThrows
     public void migrateDb() {
-        log.info("Starting database migration...");
+        secureLog.info("Starting database migration...");
         DataSource dataSource = createDataSource(environmentProperties.getDbUrl(), true);
 
         Flyway.configure()
                 .dataSource(dataSource)
                 .locations("db/postgres")
-                .initSql("SET ROLE '" + getSqlAdminRole()+"';")
+                .initSql("SET ROLE '" + getSqlAdminRole() + "';")
                 .baselineOnMigrate(true)
                 .load()
                 .migrate();

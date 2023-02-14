@@ -20,6 +20,7 @@ import java.util.List;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivAktor;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -35,7 +36,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
     @SneakyThrows
     public void behandleKafkaMeldingLogikk(PdlDokument pdlDokument) {
         if (pdlDokument == null) {
-            log.info("""
+            secureLog.info("""
                         Fikk tom endrings melding fra PDL.
                         Dette er en tombstone som ignoreres fordi alle historiske identer lenket til nye identer slettes ved en oppdatering.
                     """);
@@ -47,7 +48,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
-            log.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
+            secureLog.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
 
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
             handterIdentEndring(pdlIdenter);
@@ -65,10 +66,10 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             pdlPersonRepository.upsertPerson(aktivFnr, person);
         } catch (PdlPersonValideringException e) {
             if (isDevelopment().orElse(false)) {
-                log.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivAktorId), e);
+                secureLog.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivAktorId), e);
                 return;
             }
-            log.warn(String.format("Fikk pdl validerings error på aktor: %s, prøver å laste inn data på REST", aktivAktorId), e);
+            secureLog.warn(String.format("Fikk pdl validerings error på aktor: %s, prøver å laste inn data på REST", aktivAktorId), e);
             pdlService.hentOgLagreBrukerData(aktivFnr);
         }
         List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);

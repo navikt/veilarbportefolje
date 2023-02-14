@@ -23,6 +23,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
 @Slf4j
@@ -81,9 +82,9 @@ public class OpensearchIndexer {
 
         try {
             restHighLevelClient.bulk(bulk, RequestOptions.DEFAULT);
-            log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
+            secureLog.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
         } catch (IOException e) {
-            log.error(String.format("Klart ikke å skrive til indeks: %s", aktoerIds), e);
+            secureLog.error(String.format("Klart ikke å skrive til indeks: %s", aktoerIds), e);
             throw e;
         }
     }
@@ -96,18 +97,18 @@ public class OpensearchIndexer {
 
     public void oppdaterAlleBrukereIOpensearch(List<AktorId> brukere) {
         long tidsStempel0 = System.currentTimeMillis();
-        log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
+        secureLog.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
         batchIndeksering(brukere);
         long tid = System.currentTimeMillis() - tidsStempel0;
-        log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
+        secureLog.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
     }
 
     public void batchIndeksering(List<AktorId> alleBrukere) {
         try {
             partition(alleBrukere, BATCH_SIZE).forEach(this::indekserBolk);
         } catch (Exception e) {
-            log.error("Hovedindeksering: ble ikke fullført", e);
+            secureLog.error("Hovedindeksering: ble ikke fullført", e);
             throw e;
         }
     }
@@ -126,7 +127,7 @@ public class OpensearchIndexer {
         postgresOpensearchMapper.flettInnStatsborgerskapData(brukere);
 
         if (brukere.isEmpty()) {
-            log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
+            secureLog.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
             return;
         }
         this.skrivTilIndeks(alias.getValue(), brukere);

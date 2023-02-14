@@ -27,6 +27,7 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateT
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapTiltakTilEntity;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -46,7 +47,7 @@ public class TiltakRepositoryV3 {
         LocalDateTime fraDato = getLocalDateTimeOrNull(tiltakaktivitet.getFraDato(), false);
         LocalDateTime tilDato = getLocalDateTimeOrNull(tiltakaktivitet.getTilDato(), true);
 
-        log.info("Lagrer tiltak: {}", tiltakaktivitet.getAktivitetId());
+        secureLog.info("Lagrer tiltak: {}", tiltakaktivitet.getAktivitetId());
 
         if (skalOppdatereTiltakskodeVerk(tiltakaktivitet.getTiltakskode(), tiltakaktivitet.getTiltaksnavn())) {
             upsertTiltakKodeVerk(tiltakaktivitet);
@@ -62,7 +63,7 @@ public class TiltakRepositoryV3 {
     }
 
     public void delete(String tiltakaktivitetId) {
-        log.info("Sletter tiltak: {}", tiltakaktivitetId);
+        secureLog.info("Sletter tiltak: {}", tiltakaktivitetId);
         db.update("DELETE FROM brukertiltak_v2 WHERE aktivitetid = ?", tiltakaktivitetId);
     }
 

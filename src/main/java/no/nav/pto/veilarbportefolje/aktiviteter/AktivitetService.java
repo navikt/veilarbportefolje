@@ -22,6 +22,7 @@ import java.util.List;
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakkodeverkMapper.tiltakskodeTiltaksnavnMap;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.stoppIndekseringAvTiltaksaktiviteter;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -42,11 +43,11 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         if (erTiltaksaktivitet) {
             // Midlertidig loggmelding ifbm overgang til ny datakilde for lønnstilskudd
-            log.info("Behandler tiltaksaktivitet fra ny kilde");
+            secureLog.info("Behandler tiltaksaktivitet fra ny kilde");
             behandleTiltaksaktivitetMelding(aktivitetData, aktorId);
         } else {
             // Midlertidig loggmelding ifbm overgang til ny datakilde for lønnstilskudd
-            log.info("Behandler aktivitetsplanaktivitet");
+            secureLog.info("Behandler aktivitetsplanaktivitet");
             behandleAktivitetsplanAktivitetMelding(aktivitetData, aktorId);
         }
     }
@@ -84,13 +85,13 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
     public void deaktiverUtgatteUtdanningsAktivteter() {
         List<AktivitetDTO> utdanningsAktiviteter = aktiviteterRepositoryV2.getPasserteAktiveUtdanningsAktiviter();
-        log.info("Skal markere: {} utdanningsaktivteter som utgått", utdanningsAktiviteter.size());
+        secureLog.info("Skal markere: {} utdanningsaktivteter som utgått", utdanningsAktiviteter.size());
         utdanningsAktiviteter.forEach(aktivitetDTO -> {
                     if (!AktivitetsType.utdanningaktivitet.name().equals(aktivitetDTO.getAktivitetType())) {
-                        log.error("Feil i utdanningsaktivteter sql!!!");
+                        secureLog.error("Feil i utdanningsaktivteter sql!!!");
                         return;
                     }
-                    log.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato());
+                    secureLog.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato());
                     aktiviteterRepositoryV2.setTilFullfort(aktivitetDTO.getAktivitetID());
                 }
         );
