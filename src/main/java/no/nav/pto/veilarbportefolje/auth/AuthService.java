@@ -135,8 +135,8 @@ public class AuthService {
     private boolean harVeilederTilgangTilEgenAnsatt(NavIdent veilederIdent) {
         boolean abacResponse = veilarbPep.harVeilederTilgangTilEgenAnsatt(veilederIdent);
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
-            Boolean decision = poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt();
-            if (decision != abacResponse) {
+            Decision decision = poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt();
+            if (decision.isPermit() != abacResponse) {
                 metricsClient.report(new Event("poao-tilgang-diff").addTagToReport("method", "harVeilederTilgangTilEgenAnsatt"));
             }
         }

@@ -78,7 +78,9 @@ public class PoaoTilgangWrapper {
         ).getOrThrow();
     }
 
-    public Boolean harVeilederTilgangTilEgenAnsatt() {
-        return poaoTilgangClient.erSkjermetPerson(AuthUtils.hentInnloggetVeilederUUID(authContextHolder).toString()).getOrThrow();
+    public Decision harVeilederTilgangTilEgenAnsatt() {
+        return poaoTilgangClient.evaluatePolicy(new NavAnsattBehandleSkjermedePersonerPolicyInput(
+                AuthUtils.hentInnloggetVeilederUUID(authContextHolder))
+        ).getOrThrow();
     }
 }
