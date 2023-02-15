@@ -19,13 +19,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.BRUKERS_SITUASJON;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.REGISTRERING_OPPRETTET;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.UTDANNING;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.UTDANNING_BESTATT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.UTDANNING_GODKJENT;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_REGISTRERING.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -59,7 +55,7 @@ public class RegistreringRepositoryV2 {
     }
 
     public Optional<ArbeidssokerRegistrertEvent> hentBrukerRegistrering(AktorId aktoerId) {
-        log.info("Hent BrukerRegistrering for bruker: {}", aktoerId.get());
+        secureLog.info("Hent BrukerRegistrering for bruker: {}", aktoerId.get());
         String sql = "SELECT * FROM BRUKER_REGISTRERING WHERE AKTOERID = ?";
         return ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilArbeidssokerRegistrertEvent, aktoerId.get()))

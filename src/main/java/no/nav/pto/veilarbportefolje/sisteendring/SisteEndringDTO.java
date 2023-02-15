@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 @Data
 @Accessors(chain = true)
 public class SisteEndringDTO {
@@ -42,7 +44,7 @@ public class SisteEndringDTO {
                                                                  KafkaAktivitetMelding.AktivitetTypeData type,
                                                                  KafkaAktivitetMelding.AktivitetStatus status) {
         if (endringsType == null || type == null || status == null) {
-            log.error("Et eller flere felt i aktivtet er null endringstype: {}, aktivitetstype: {}, aktivitetsstatus: {}",
+            secureLog.error("Et eller flere felt i aktivtet er null endringstype: {}, aktivitetstype: {}, aktivitetsstatus: {}",
                     endringsType,
                     type,
                     status

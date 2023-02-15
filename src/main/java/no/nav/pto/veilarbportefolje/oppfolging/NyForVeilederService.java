@@ -8,6 +8,8 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 
 @Slf4j
 @Service
@@ -26,7 +28,7 @@ public class NyForVeilederService extends KafkaCommonConsumerService<NyForVeiled
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktorId, brukerErNyForVeileder);
 
         opensearchIndexerV2.oppdaterNyForVeileder(dto.getAktorId(), brukerErNyForVeileder);
-        log.info("Oppdatert bruker: {}, er ny for veileder: {}", dto.getAktorId(), brukerErNyForVeileder);
+        secureLog.info("Oppdatert bruker: {}, er ny for veileder: {}", dto.getAktorId(), brukerErNyForVeileder);
     }
 
     private void kastErrorHvisBrukerSkalVaereUnderOppfolging(AktorId aktorId, boolean nyForVeileder) {

@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 
 @Slf4j
 @Service
@@ -38,6 +40,6 @@ public class OppfolgingAvsluttetService {
         pdlService.slettPdlData(aktoerId);
 
         opensearchIndexerV2.slettDokumenter(List.of(aktoerId));
-        log.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);
+        secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);
     }
 }

@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -24,7 +26,7 @@ public class PdlService {
     public void hentOgLagrePdlData(AktorId aktorId) {
         List<PDLIdent> identer = hentOgLagreIdenter(aktorId);
         Fnr fnr = hentAktivFnr(identer);
-        log.info("Oppdaterer pdl brukerdata for aktor: {}", aktorId);
+        secureLog.info("Oppdaterer pdl brukerdata for aktor: {}", aktorId);
         hentOgLagreBrukerData(fnr);
     }
 
@@ -34,7 +36,7 @@ public class PdlService {
     }
 
     private List<PDLIdent> hentOgLagreIdenter(AktorId aktorId) {
-        log.info("Oppdaterer ident mapping for aktor: {}", aktorId);
+        secureLog.info("Oppdaterer ident mapping for aktor: {}", aktorId);
 
         List<PDLIdent> identer = pdlClient.hentIdenterFraPdl(aktorId);
         pdlIdentRepository.upsertIdenter(identer);
@@ -55,14 +57,14 @@ public class PdlService {
                 .map(Fnr::new).toList();
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIds)) {
-            log.warn("""
+            secureLog.warn("""
                             Sletter ikke identer tilknyttet aktorId: {}.
                             Da en eller flere relaterte identer på person: {} er under oppfolging.
                             """,
                     aktorId, lokalIdent);
             return;
         }
-        log.info("Sletter identer og brukerdata for aktor: {}", aktorId);
+        secureLog.info("Sletter identer og brukerdata for aktor: {}", aktorId);
         pdlPersonRepository.slettLagretBrukerData(fnrs);
         pdlIdentRepository.slettLagretePerson(lokalIdent);
     }

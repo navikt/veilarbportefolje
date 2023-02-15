@@ -7,6 +7,8 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import org.springframework.stereotype.Service;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,10 +28,10 @@ public class OppfolgingPeriodeService extends KafkaCommonConsumerService<SisteOp
         }
 
         if (sisteOppfolgingsperiod.getSluttDato() == null) {
-            log.info("Starter oppfolging for: " + sisteOppfolgingsperiod.getAktorId());
+            secureLog.info("Starter oppfolging for: " + sisteOppfolgingsperiod.getAktorId());
             oppfolgingStartetService.startOppfolging(AktorId.of(sisteOppfolgingsperiod.getAktorId()), sisteOppfolgingsperiod.getStartDato());
         } else {
-            log.info("Avslutter oppfolging for: " + sisteOppfolgingsperiod.getAktorId());
+            secureLog.info("Avslutter oppfolging for: " + sisteOppfolgingsperiod.getAktorId());
             oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(sisteOppfolgingsperiod.getAktorId()));
         }
     }

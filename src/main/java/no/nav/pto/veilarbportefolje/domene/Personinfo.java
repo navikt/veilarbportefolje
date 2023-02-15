@@ -12,7 +12,8 @@ import java.util.Objects;
 @Accessors(chain = true)
 @Slf4j
 public class Personinfo {
-    public static Map<String, String> kodeTilBeskrivelse  = new HashMap<>();
+    public static Map<String, String> kodeTilBeskrivelse = new HashMap<>();
+
     static {
         kodeTilBeskrivelse.put("FYUS", "Fysisk utestengelse");
         kodeTilBeskrivelse.put("FTUS", "Fysisk/telefonisk utestengelse");
@@ -23,10 +24,10 @@ public class Personinfo {
     private boolean egenAnsatt;
 
     public Personinfo withSikkerhetstiltak(String sikkerhetstiltak) {
-        if(Objects.isNull(sikkerhetstiltak)) {
+        if (Objects.isNull(sikkerhetstiltak)) {
             return this;
         }
-        if(!kodeTilBeskrivelse.containsKey(sikkerhetstiltak)) {
+        if (!kodeTilBeskrivelse.containsKey(sikkerhetstiltak)) {
             log.warn("Finner ikke beskrivelse for sikkerhetstiltak {}", sikkerhetstiltak);
             return this;
         }

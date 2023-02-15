@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static no.nav.common.utils.UrlUtils.createServiceUrl;
 import static no.nav.common.utils.UrlUtils.joinPaths;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -97,22 +97,22 @@ public class OppfolgingService {
                 oppdaterNyForVeilederHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getNyForVeileder).orElse(false), veialrbinfo.isNyForVeileder());
                 oppdaterVeilederHvisNodvendig(bruker, dbInfoPostgres.map(BrukerOppdatertInformasjon::getVeileder).orElse(null), Optional.ofNullable(veialrbinfo.getVeilederId()).map(NavIdent::get).orElse(null));
             } else {
-                log.info("OppfolgingsJobb: bruker er ikke under oppfolging, aktoer: " + bruker);
+                secureLog.info("OppfolgingsJobb: bruker er ikke under oppfolging, aktoer: " + bruker);
                 oppfolgingAvsluttetService.avsluttOppfolging(bruker);
                 antallBrukereSlettet++;
             }
         } catch (RuntimeException e) {
-            log.error("RuntimeException i OppfolgingsJobb for bruker {}", bruker);
-            log.error("RuntimeException i OppfolgingsJobb", e);
+            secureLog.error("RuntimeException i OppfolgingsJobb for bruker {}", bruker);
+            secureLog.error("RuntimeException i OppfolgingsJobb", e);
         } catch (Exception e) {
-            log.error("Exception i OppfolgingsJobb for bruker {}", bruker);
-            log.error("Exception i OppfolgingsJobb", e);
+            secureLog.error("Exception i OppfolgingsJobb for bruker {}", bruker);
+            secureLog.error("Exception i OppfolgingsJobb", e);
         }
     }
 
     private void oppdaterStartDatoHvisNodvendig(AktorId bruker, Timestamp startFraDb, ZonedDateTime korrektStartDato) {
         if (korrektStartDato == null) {
-            log.warn("OppfolgingsJobb: startdato fra veilarboppfolging var null pa bruker: {} ", bruker);
+            secureLog.warn("OppfolgingsJobb: startdato fra veilarboppfolging var null pa bruker: {} ", bruker);
             return;
         }
         ZonedDateTime zonedDbVerdi = Optional.ofNullable(startFraDb).map(timestamp -> ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("UTC"))).orElse(null);
@@ -120,7 +120,7 @@ public class OppfolgingService {
         if (zonedDbVerdi != null && korrektStartDato.isEqual(zonedDbVerdi)) {
             return;
         }
-        log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker, zonedDbVerdi, korrektStartDato);
+        secureLog.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte startdato fra: {}, til:{} ", bruker, zonedDbVerdi, korrektStartDato);
         oppfolgingRepositoryV2.settStartdato(bruker, korrektStartDato);
     }
 
@@ -129,7 +129,7 @@ public class OppfolgingService {
             return;
         }
 
-        log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte manuell fra: {}, til:{} ", bruker, manuellDb, korrektManuell);
+        secureLog.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte manuell fra: {}, til:{} ", bruker, manuellDb, korrektManuell);
         oppfolgingRepositoryV2.settManuellStatus(bruker, korrektManuell);
     }
 
@@ -139,7 +139,7 @@ public class OppfolgingService {
             return;
         }
 
-        log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte nyForVeileder fra: {}, til:{} ", bruker, nyForVeilederDb, korrektNyForVeileder);
+        secureLog.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte nyForVeileder fra: {}, til:{} ", bruker, nyForVeilederDb, korrektNyForVeileder);
         oppfolgingRepositoryV2.settNyForVeileder(bruker, korrektNyForVeileder);
 
     }
@@ -153,7 +153,7 @@ public class OppfolgingService {
             return;
         }
 
-        log.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
+        secureLog.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
         oppfolgingRepositoryV2.settVeileder(bruker, VeilederId.of(korrektVeileder));
 
     }
