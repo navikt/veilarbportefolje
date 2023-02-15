@@ -122,7 +122,7 @@ public class AdminController {
     public String createIndex() {
         sjekkTilgangTilAdmin();
         String indexName = opensearchAdminService.opprettNyIndeks();
-        secureLog.info("Opprettet index: {}", indexName);
+        log.info("Opprettet index: {}", indexName);
         return indexName;
     }
 
@@ -135,7 +135,7 @@ public class AdminController {
     @PostMapping("/opensearch/deleteIndex")
     public boolean deleteIndex(@RequestParam String indexName) {
         sjekkTilgangTilAdmin();
-        secureLog.info("Sletter index: {}", indexName);
+        log.info("Sletter index: {}", indexName);
         return opensearchAdminService.slettIndex(indexName);
     }
 
@@ -171,7 +171,7 @@ public class AdminController {
         List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
         brukereUnderOppfolging.forEach(bruker -> {
             if (antall.getAndAdd(1) % 100 == 0) {
-                secureLog.info("pdl brukerdata: inlastning {}% ferdig", ((double) antall.get() / (double) brukereUnderOppfolging.size()) * 100.0);
+                log.info("pdl brukerdata: inlastning {}% ferdig", ((double) antall.get() / (double) brukereUnderOppfolging.size()) * 100.0);
             }
             try {
                 pdlService.hentOgLagrePdlData(bruker);
@@ -179,7 +179,7 @@ public class AdminController {
                 secureLog.info("pdl brukerdata: feil under innlastning av pdl data på bruker: {}", bruker, e);
             }
         });
-        secureLog.info("pdl brukerdata: ferdig med innlastning");
+        log.info("pdl brukerdata: ferdig med innlastning");
         return "ferdig";
     }
 
@@ -188,7 +188,7 @@ public class AdminController {
         sjekkTilgangTilAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
         opensearchIndexer.dryrunAvPostgresTilOpensearchMapping(brukereUnderOppfolging);
-        secureLog.info("ferdig med dryrun");
+        log.info("ferdig med dryrun");
     }
 
     private void sjekkTilgangTilAdmin() {

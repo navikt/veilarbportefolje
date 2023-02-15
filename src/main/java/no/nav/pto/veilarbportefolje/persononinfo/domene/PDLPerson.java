@@ -13,8 +13,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
-
 @Data
 @Slf4j
 @Accessors(chain = true)
@@ -101,7 +99,7 @@ public class PDLPerson {
         } else if ("MANN".equals(kjonn)) {
             return Kjonn.M;
         }
-        secureLog.error("Ikke implementert støtte for kjønn: {} ", kjonn);
+        log.error("Ikke implementert støtte for kjønn: {} ", kjonn);
         throw new PdlPersonValideringException("Fant kjønn som ikke er støttet");
     }
 

@@ -19,7 +19,6 @@ import javax.sql.DataSource;
 
 import static no.nav.pto.veilarbportefolje.util.DbUtils.createDataSource;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.getSqlAdminRole;
-import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Configuration
@@ -63,7 +62,7 @@ public class DbConfigPostgres {
     @PostConstruct
     @SneakyThrows
     public void migrateDb() {
-        secureLog.info("Starting database migration...");
+        log.info("Starting database migration...");
         DataSource dataSource = createDataSource(environmentProperties.getDbUrl(), true);
 
         Flyway.configure()

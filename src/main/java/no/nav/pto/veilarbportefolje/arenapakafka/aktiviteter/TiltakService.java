@@ -127,12 +127,12 @@ public class TiltakService {
 
     private boolean validerMelding(KafkaAktivitetMelding kafkaMelding) {
         if (kafkaMelding == null) {
-            secureLog.warn("Ble tilsendt tom melding (null). Meldingen prosesseres ikke.");
+            log.warn("Ble tilsendt tom melding (null). Meldingen prosesseres ikke.");
             return false;
         }
 
         if (kafkaMelding.getAktivitetId() == null) {
-            secureLog.warn("Ble tilsendt uten aktivitetId. Meldingen prosesseres ikke.");
+            log.warn("Ble tilsendt uten aktivitetId. Meldingen prosesseres ikke.");
             return false;
         }
 

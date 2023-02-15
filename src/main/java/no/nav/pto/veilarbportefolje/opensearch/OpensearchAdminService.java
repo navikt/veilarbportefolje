@@ -35,7 +35,6 @@ import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.createAbsoluteUrl;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService.getAuthHeaderValue;
-import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 
@@ -71,7 +70,7 @@ public class OpensearchAdminService {
         CreateIndexResponse response = restHighLevelClient.indices().create(request, RequestOptions.DEFAULT);
 
         if (!response.isAcknowledged()) {
-            secureLog.error("Kunne ikke opprette ny indeks {}", indeksNavn);
+            log.error("Kunne ikke opprette ny indeks {}", indeksNavn);
             throw new RuntimeException();
         }
         return indeksNavn;
@@ -88,9 +87,9 @@ public class OpensearchAdminService {
         DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName);
         boolean acknowledged = restHighLevelClient.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT).isAcknowledged();
         if (!acknowledged) {
-            secureLog.error("Kunne ikke slette index: {}", indexName);
+            log.error("Kunne ikke slette index: {}", indexName);
         } else {
-            secureLog.info("Index: {}, er slettet", indexName);
+            log.info("Index: {}, er slettet", indexName);
         }
         return acknowledged;
     }
@@ -105,7 +104,7 @@ public class OpensearchAdminService {
         AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
 
         if (!response.isAcknowledged()) {
-            secureLog.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
+            log.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
             throw new RuntimeException();
         }
     }
@@ -129,7 +128,7 @@ public class OpensearchAdminService {
         AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
 
         if (!response.isAcknowledged()) {
-            secureLog.error("Kunne ikke oppdatere alias {}", BRUKERINDEKS_ALIAS);
+            log.error("Kunne ikke oppdatere alias {}", BRUKERINDEKS_ALIAS);
         }
     }
 
@@ -186,7 +185,7 @@ public class OpensearchAdminService {
         AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, RequestOptions.DEFAULT);
 
         if (!response.isAcknowledged()) {
-            secureLog.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
+            log.error("Kunne ikke legge til alias {}", BRUKERINDEKS_ALIAS);
             throw new RuntimeException();
         }
 

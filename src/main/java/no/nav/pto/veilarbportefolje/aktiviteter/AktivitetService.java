@@ -43,11 +43,11 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
         if (erTiltaksaktivitet) {
             // Midlertidig loggmelding ifbm overgang til ny datakilde for lønnstilskudd
-            secureLog.info("Behandler tiltaksaktivitet fra ny kilde");
+            log.info("Behandler tiltaksaktivitet fra ny kilde");
             behandleTiltaksaktivitetMelding(aktivitetData, aktorId);
         } else {
             // Midlertidig loggmelding ifbm overgang til ny datakilde for lønnstilskudd
-            secureLog.info("Behandler aktivitetsplanaktivitet");
+            log.info("Behandler aktivitetsplanaktivitet");
             behandleAktivitetsplanAktivitetMelding(aktivitetData, aktorId);
         }
     }
@@ -85,10 +85,10 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
 
     public void deaktiverUtgatteUtdanningsAktivteter() {
         List<AktivitetDTO> utdanningsAktiviteter = aktiviteterRepositoryV2.getPasserteAktiveUtdanningsAktiviter();
-        secureLog.info("Skal markere: {} utdanningsaktivteter som utgått", utdanningsAktiviteter.size());
+        log.info("Skal markere: {} utdanningsaktivteter som utgått", utdanningsAktiviteter.size());
         utdanningsAktiviteter.forEach(aktivitetDTO -> {
                     if (!AktivitetsType.utdanningaktivitet.name().equals(aktivitetDTO.getAktivitetType())) {
-                        secureLog.error("Feil i utdanningsaktivteter sql!!!");
+                        log.error("Feil i utdanningsaktivteter sql!!!");
                         return;
                     }
                     secureLog.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato());

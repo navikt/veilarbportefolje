@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 import static java.lang.String.format;
-import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
 @Slf4j
@@ -47,7 +46,7 @@ public class KodeverkService {
         String betydning = betydninger.get(kode);
 
         if (betydning == null) {
-            secureLog.error(format("Fant ikke kode %s i kodeverk %s", kode, kodeverksnavn));
+            log.error(format("Fant ikke kode %s i kodeverk %s", kode, kodeverksnavn));
             return "Ikke tilgjengelig";
         }
 

@@ -78,7 +78,7 @@ public class OppfolgingService {
                     List<AktorId> oppfolgingsBruker = oppfolgingRepositoryV2.hentAlleBrukereUnderOppfolging();
                     oppfolgingsBruker.forEach(this::oppdaterBruker);
 
-                    secureLog.info("OppfolgingsJobb: oppdaterte informasjon pa: {} brukere der av: {} ble slettet", oppfolgingsBruker.size(), antallBrukereSlettet);
+                    log.info("OppfolgingsJobb: oppdaterte informasjon pa: {} brukere der av: {} ble slettet", oppfolgingsBruker.size(), antallBrukereSlettet);
                 });
     }
 

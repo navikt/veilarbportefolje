@@ -90,7 +90,7 @@ public class ArbeidslisteService {
         if (aktoerId.isPresent()) {
             return slettArbeidsliste(aktoerId.get());
         }
-        secureLog.error("fant ikke aktørId på fnr");
+        log.error("fant ikke aktørId på fnr");
         return -1;
     }
 

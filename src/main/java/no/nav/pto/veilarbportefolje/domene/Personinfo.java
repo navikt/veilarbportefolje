@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
-
 @Data
 @Accessors(chain = true)
 @Slf4j
@@ -30,7 +28,7 @@ public class Personinfo {
             return this;
         }
         if (!kodeTilBeskrivelse.containsKey(sikkerhetstiltak)) {
-            secureLog.warn("Finner ikke beskrivelse for sikkerhetstiltak {}", sikkerhetstiltak);
+            log.warn("Finner ikke beskrivelse for sikkerhetstiltak {}", sikkerhetstiltak);
             return this;
         }
         this.sikkerhetstiltak = kodeTilBeskrivelse.get(sikkerhetstiltak);

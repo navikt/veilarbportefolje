@@ -113,7 +113,7 @@ public class BrukerRepositoryV2 {
                         """, (rs, i) -> flettInnOppfolgingsbruker(bruker, bruker.getUtkast_14a_status(), rs), bruker.getFnr())
         );
         long endTime = System.currentTimeMillis();
-        secureLog.info("Ytelse, søkte opp historisk arena data på: {}ms", endTime - startTime);
+        log.info("Ytelse, søkte opp historisk arena data på: {}ms", endTime - startTime);
         if (brukerMedHistoriskData != null && brukerMedHistoriskData.getEnhet_id() != null) {
             secureLog.info("Bruker historisk ident i arena for aktor: {}", bruker.getAktoer_id());
         }

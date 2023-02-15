@@ -53,7 +53,7 @@ public class GruppeAktivitetService {
     private boolean erGammelMelding(GruppeAktivitetDTO kafkaMelding, GruppeAktivitetInnhold innhold) {
         Long hendelseIDB = gruppeAktivitetRepositoryV2.retrieveHendelse(innhold).orElse(-1L);
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), skalSlettesGoldenGate(kafkaMelding))) {
-            secureLog.info("Fikk tilsendt gammel gruppe-aktivtet-melding pa Posrgres");
+            log.info("Fikk tilsendt gammel gruppe-aktivtet-melding pa Posrgres");
             return true;
         }
         return false;

@@ -34,7 +34,6 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.opensearch.index.query.QueryBuilders.*;
 import static org.opensearch.search.aggregations.AggregationBuilders.filter;
@@ -214,7 +213,7 @@ public class OpensearchQueryBuilder {
 
     private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
         if (sisteEndringKategori != null && sisteEndringKategori.size() > 1) {
-            secureLog.error("Det ble filtrert på flere ulike siste endringer (ulest): {}", sisteEndringKategori.size());
+            log.error("Det ble filtrert på flere ulike siste endringer (ulest): {}", sisteEndringKategori.size());
             throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
         }
         List<String> relvanteKategorier = sisteEndringKategori;
@@ -234,7 +233,7 @@ public class OpensearchQueryBuilder {
             return;
         }
         if (sisteEndringKategori.size() != 1) {
-            secureLog.error("Det ble filtrert på flere ulike siste endringer: {}", sisteEndringKategori.size());
+            log.error("Det ble filtrert på flere ulike siste endringer: {}", sisteEndringKategori.size());
             throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
         }
         queryBuilder.must(existsQuery("siste_endringer." + sisteEndringKategori.get(0)));
@@ -316,7 +315,7 @@ public class OpensearchQueryBuilder {
             return;
         }
         if (filtervalg.sisteEndringKategori.size() != 1) {
-            secureLog.error("Det ble sortert på flere ulike siste endringer: {}", filtervalg.sisteEndringKategori.size());
+            log.error("Det ble sortert på flere ulike siste endringer: {}", filtervalg.sisteEndringKategori.size());
             throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
         }
         String expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0) + ".tidspunkt']?.value.toInstant().toEpochMilli()";

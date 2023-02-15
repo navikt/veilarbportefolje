@@ -97,18 +97,18 @@ public class OpensearchIndexer {
 
     public void oppdaterAlleBrukereIOpensearch(List<AktorId> brukere) {
         long tidsStempel0 = System.currentTimeMillis();
-        secureLog.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
+        log.info("Hovedindeksering: Indekserer {} brukere", brukere.size());
 
         batchIndeksering(brukere);
         long tid = System.currentTimeMillis() - tidsStempel0;
-        secureLog.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
+        log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
     }
 
     public void batchIndeksering(List<AktorId> alleBrukere) {
         try {
             partition(alleBrukere, BATCH_SIZE).forEach(this::indekserBolk);
         } catch (Exception e) {
-            secureLog.error("Hovedindeksering: ble ikke fullført", e);
+            log.error("Hovedindeksering: ble ikke fullført", e);
             throw e;
         }
     }
@@ -127,7 +127,7 @@ public class OpensearchIndexer {
         postgresOpensearchMapper.flettInnStatsborgerskapData(brukere);
 
         if (brukere.isEmpty()) {
-            secureLog.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
+            log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
             return;
         }
         this.skrivTilIndeks(alias.getValue(), brukere);
