@@ -31,6 +31,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
@@ -216,7 +217,7 @@ public class OpensearchIndexerV2 {
 
     @SneakyThrows
     public void updateArbeidsliste(ArbeidslisteDTO arbeidslisteDTO) {
-        log.info("Oppdater arbeidsliste for {} med frist {}", arbeidslisteDTO.getAktorId(), arbeidslisteDTO.getFrist());
+        secureLog.info("Oppdater arbeidsliste for {} med frist {}", arbeidslisteDTO.getAktorId(), arbeidslisteDTO.getFrist());
         final String frist = toIsoUTC(arbeidslisteDTO.getFrist());
         int arbeidsListeLengde = Optional.ofNullable(arbeidslisteDTO.getOverskrift())
                 .map(String::length).orElse(0);
@@ -257,7 +258,7 @@ public class OpensearchIndexerV2 {
 
     @SneakyThrows
     public void slettDokumenter(List<AktorId> aktorIds) {
-        log.info("Sletter gamle aktorIder {}", aktorIds);
+        secureLog.info("Sletter gamle aktorIder {}", aktorIds);
         for (AktorId aktorId : aktorIds) {
             if (aktorId != null) {
                 delete(aktorId);
@@ -267,7 +268,7 @@ public class OpensearchIndexerV2 {
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
         if (!oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId)) {
-            log.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging, heler ikke for historiske identer: {}, med info {}", aktoerId, logInfo);
+            secureLog.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging, heler ikke for historiske identer: {}, med info {}", aktoerId, logInfo);
             return;
         }
         UpdateRequest updateRequest = new UpdateRequest();
@@ -278,13 +279,13 @@ public class OpensearchIndexerV2 {
 
         try {
             restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);
-            log.info("Oppdaterte dokument for bruker {} med info {}", aktoerId, logInfo);
+            secureLog.info("Oppdaterte dokument for bruker {} med info {}", aktoerId, logInfo);
         } catch (OpenSearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
-                log.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId);
+                secureLog.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId);
             } else {
                 final String message = format("Det skjedde en feil ved oppdatering av opensearch for bruker %s", aktoerId);
-                log.error(message, e);
+                secureLog.error(message, e);
             }
         }
     }
@@ -297,13 +298,13 @@ public class OpensearchIndexerV2 {
 
         try {
             restHighLevelClient.delete(deleteRequest, RequestOptions.DEFAULT);
-            log.info("Slettet dokument for {} ", aktoerId);
+            secureLog.info("Slettet dokument for {} ", aktoerId);
         } catch (OpenSearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
-                log.info("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.get());
+                secureLog.info("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.get());
             } else {
                 final String message = format("Det skjedde en feil ved sletting i opensearch for bruker %s", aktoerId.get());
-                log.error(message, e);
+                secureLog.error(message, e);
             }
         }
     }

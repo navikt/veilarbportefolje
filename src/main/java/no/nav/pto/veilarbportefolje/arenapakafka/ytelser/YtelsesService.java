@@ -21,12 +21,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHendelseBasertPaOperasjon;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getAktorId;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getInnhold;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGoldenGate;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse.AAP;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse.DAGPENGER;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -40,7 +38,7 @@ public class YtelsesService {
 
     public void behandleKafkaRecord(ConsumerRecord<String, YtelsesDTO> kafkaMelding, TypeKafkaYtelse ytelse) {
         YtelsesDTO melding = kafkaMelding.value();
-        log.info(
+        secureLog.info(
                 "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
                 kafkaMelding.key(),
                 kafkaMelding.offset(),
@@ -58,11 +56,11 @@ public class YtelsesService {
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding)) {
-            log.info("Postgres: Sletter ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
+            secureLog.info("Postgres: Sletter ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
             ytelsesRepositoryV2.slettYtelse(innhold.getVedtakId());
             oppdaterYtelsesInformasjonMedUnntaksLogikkForSletting(aktorId, innhold);
         } else {
-            log.info("Postgres: Lagrer ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
+            secureLog.info("Postgres: Lagrer ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
             ytelsesRepositoryV2.upsert(aktorId, ytelse, innhold);
             oppdaterYtelsesInformasjon(aktorId);
         }
@@ -73,7 +71,7 @@ public class YtelsesService {
 
     public Optional<YtelseDAO> oppdaterYtelsesInformasjon(AktorId aktorId) {
         Optional<YtelseDAO> lopendeYtelse = finnLopendeYtelse(aktorId);
-        log.info("Postgres: AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, lopendeYtelse.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
+        secureLog.info("Postgres: AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, lopendeYtelse.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
         oppdaterAktivYtelse(aktorId, lopendeYtelse.orElse(null));
 
         return lopendeYtelse;
@@ -96,7 +94,7 @@ public class YtelsesService {
         if (erLopendeVedtak) {
             Optional<YtelseDAO> sisteYtelsePaSakId = finnSisteYtelsePaSakIdSomIkkeErUtlopt(aktorId, innhold.getSaksId());
             if (sisteYtelsePaSakId.isPresent()) {
-                log.info("AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, sisteYtelsePaSakId.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
+                secureLog.info("AktoerId: {} har en løpende ytelse med saksId: {}", aktorId, sisteYtelsePaSakId.map(YtelseDAO::getSaksId).orElse("ingen løpende vedtak"));
                 oppdaterAktivYtelse(aktorId, sisteYtelsePaSakId.get());
 
                 return sisteYtelsePaSakId;
@@ -154,15 +152,15 @@ public class YtelsesService {
 
     public void oppdaterBrukereMedYtelserSomStarterIDag() {
         List<AktorId> brukere = ytelsesRepositoryV2.hentBrukereMedYtelserSomStarterIDag();
-        log.info("(Postgres) Oppdaterer ytelser for: " + brukere.size() + " antall brukere");
+        secureLog.info("(Postgres) Oppdaterer ytelser for: " + brukere.size() + " antall brukere");
 
         brukere.forEach(aktorId -> {
-            log.info("(Postgres) Oppdaterer ytelse for aktorId: " + aktorId);
+            secureLog.info("(Postgres) Oppdaterer ytelse for aktorId: " + aktorId);
 
             oppdaterYtelsesInformasjon(aktorId);
         });
 
-        log.info("(Postgres) Oppdatering av ytelser fullført");
+        secureLog.info("(Postgres) Oppdatering av ytelser fullført");
     }
 
     private Optional<YtelseDAO> finnVedtakMedSisteUtlopsDatoPaSak(List<YtelseDAO> ytelser, YtelseDAO tidligsteYtelse) {
@@ -186,7 +184,7 @@ public class YtelsesService {
         Long hendelseIDB = arenaHendelseRepository.retrieveYtelsesHendelse(innhold.getVedtakId());
 
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), skalSlettesGoldenGate(kafkaMelding))) {
-            log.info("Fikk tilsendt gammel ytelsesmelding, vedtak: {}, personId: {}", innhold.getVedtakId(), innhold.getPersonId());
+            secureLog.info("Fikk tilsendt gammel ytelsesmelding, vedtak: {}, personId: {}", innhold.getVedtakId(), innhold.getPersonId());
             return true;
         }
         return false;

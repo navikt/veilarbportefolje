@@ -10,11 +10,9 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.CV_EKSISTERER;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.HAR_DELT_CV;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -57,7 +55,7 @@ public class CVRepositoryV2 {
     }
 
     public int resetHarDeltCV(AktorId aktoerId) {
-        log.info("resetter CV for bruker: {}", aktoerId.get());
+        secureLog.info("resetter CV for bruker: {}", aktoerId.get());
         final String updateSql = String.format(
                 "UPDATE %s SET %s = ? WHERE %s = ?",
                 TABLE_NAME, HAR_DELT_CV, AKTOERID

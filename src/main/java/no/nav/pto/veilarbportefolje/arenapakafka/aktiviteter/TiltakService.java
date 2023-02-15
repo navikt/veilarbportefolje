@@ -24,10 +24,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.erGammelHendelseBasertPaOperasjon;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getAktorId;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getInnhold;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.skalSlettesGoldenGate;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -48,7 +46,7 @@ public class TiltakService {
 
     public void behandleKafkaRecord(ConsumerRecord<String, TiltakDTO> kafkaMelding) {
         TiltakDTO melding = kafkaMelding.value();
-        log.info(
+        secureLog.info(
                 "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
                 kafkaMelding.key(),
                 kafkaMelding.offset(),
@@ -69,10 +67,10 @@ public class TiltakService {
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
 
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
-            log.info("Sletter tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
+            secureLog.info("Sletter tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
             tiltakRepositoryV2.delete(innhold.getAktivitetid());
         } else {
-            log.info("Lagrer tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
+            secureLog.info("Lagrer tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
             tiltakRepositoryV2.upsert(innhold, aktorId);
         }
 
@@ -98,11 +96,11 @@ public class TiltakService {
         String aktivitetId = kafkaMelding.getAktivitetId();
 
         if (kafkaMelding.isHistorisk()) {
-            log.info("Sletter tiltaksaktivitet fra ny kilde: {} med tiltakskode {}, pa aktoer: {}", aktivitetId, kafkaMelding.getTiltakskode(), aktorId);
+            secureLog.info("Sletter tiltaksaktivitet fra ny kilde: {} med tiltakskode {}, pa aktoer: {}", aktivitetId, kafkaMelding.getTiltakskode(), aktorId);
             tiltakRepositoryV3.delete(aktivitetId);
             return true;
         } else if (erNyVersjonAvAktivitet(kafkaMelding)) {
-            log.info("Lagrer tiltaksaktivitet fra ny kilde: {} med tiltakskode {}, pa aktoer: {}", aktivitetId, kafkaMelding.getTiltakskode(), aktorId);
+            secureLog.info("Lagrer tiltaksaktivitet fra ny kilde: {} med tiltakskode {}, pa aktoer: {}", aktivitetId, kafkaMelding.getTiltakskode(), aktorId);
             tiltakRepositoryV3.upsert(mapTilTiltakaktivitetEntity(kafkaMelding), aktorId);
             return true;
         } else {
@@ -167,7 +165,7 @@ public class TiltakService {
         Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(innhold.getAktivitetid());
 
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), skalSlettesGoldenGate(kafkaMelding))) {
-            log.info("Fikk tilsendt gammel tiltaks-melding, aktivitet: {}", innhold.getAktivitetid());
+            secureLog.info("Fikk tilsendt gammel tiltaks-melding, aktivitet: {}", innhold.getAktivitetid());
             return true;
         }
         return false;

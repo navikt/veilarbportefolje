@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -113,7 +114,7 @@ public class PdlIdentRepository {
     }
 
     public void slettLagretePerson(String person) {
-        log.info("Sletter lokal ident: {}", person);
+        secureLog.info("Sletter lokal ident: {}", person);
         db.update("delete from bruker_identer where person = ?", person);
     }
 }

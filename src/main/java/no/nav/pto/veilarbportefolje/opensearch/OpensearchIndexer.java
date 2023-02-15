@@ -23,6 +23,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
 @Slf4j
@@ -81,9 +82,9 @@ public class OpensearchIndexer {
 
         try {
             restHighLevelClient.bulk(bulk, RequestOptions.DEFAULT);
-            log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
+            secureLog.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
         } catch (IOException e) {
-            log.error(String.format("Klart ikke å skrive til indeks: %s", aktoerIds), e);
+            secureLog.error(String.format("Klart ikke å skrive til indeks: %s", aktoerIds), e);
             throw e;
         }
     }

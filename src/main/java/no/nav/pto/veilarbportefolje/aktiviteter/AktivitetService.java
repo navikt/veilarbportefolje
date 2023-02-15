@@ -22,6 +22,7 @@ import java.util.List;
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakkodeverkMapper.tiltakskodeTiltaksnavnMap;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.stoppIndekseringAvTiltaksaktiviteter;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -90,7 +91,7 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
                         log.error("Feil i utdanningsaktivteter sql!!!");
                         return;
                     }
-                    log.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato());
+                    secureLog.info("Deaktiverer utdaningsaktivitet: {}, med utløpsdato: {}", aktivitetDTO.getAktivitetID(), aktivitetDTO.getTilDato());
                     aktiviteterRepositoryV2.setTilFullfort(aktivitetDTO.getAktivitetID());
                 }
         );

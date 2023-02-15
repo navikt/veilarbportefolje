@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @RestController
@@ -34,7 +35,7 @@ public class Frontendlogger {
         toInflux.getTags().put("environment", isProduction().orElse(false) ? "p" : "q1");
 
         if (!isProduction().orElse(false)) {
-            log.info("Skriver event til influx: " + eventToString(event.name, toInflux));
+            secureLog.info("Skriver event til influx: " + eventToString(event.name, toInflux));
         }
         metricsClient.report(toInflux);
     }

@@ -7,6 +7,8 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.stereotype.Service;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -15,6 +17,6 @@ public class ProfileringService extends KafkaCommonConsumerService<ArbeidssokerP
 
     public void behandleKafkaMeldingLogikk(ArbeidssokerProfilertEvent kafkaMelding) {
         profileringRepositoryV2.upsertBrukerProfilering(kafkaMelding);
-        log.info("Oppdaterer brukerprofilering i postgres for: {}, {}, {}", kafkaMelding.getAktorid(), kafkaMelding.getProfilertTil().name(), DateUtils.zonedDateStringToTimestamp(kafkaMelding.getProfileringGjennomfort()));
+        secureLog.info("Oppdaterer brukerprofilering i postgres for: {}, {}, {}", kafkaMelding.getAktorid(), kafkaMelding.getProfilertTil().name(), DateUtils.zonedDateStringToTimestamp(kafkaMelding.getProfileringGjennomfort()));
     }
 }
