@@ -29,6 +29,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetBrukerToken;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetVeilederIdent;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
 @Slf4j
@@ -137,7 +138,7 @@ public class AuthService {
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt();
             if (decision.isPermit() != abacResponse) {
-                metricsClient.report(new Event("poao-tilgang-diff").addTagToReport("method", "harVeilederTilgangTilEgenAnsatt"));
+                secureLog.warn("Diff between abac and poao-tilgang for veileder: " + veilederIdent);
             }
         }
         return abacResponse;
