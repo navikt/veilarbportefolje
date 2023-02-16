@@ -66,7 +66,8 @@ public class KafkaAktivitetMelding {
         NAV,
         ARBEIDSGIVER,
         TILTAKSARRANGOER,
-        ARENAIDENT
+        ARENAIDENT,
+        SYSTEM
     }
 
     public enum CvKanDelesStatus {
