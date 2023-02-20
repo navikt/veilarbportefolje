@@ -38,7 +38,6 @@ public class AuthService {
     private final PoaoTilgangWrapper poaoTilgangWrapper;
     private final Pep veilarbPep;
     private final Cache<VeilederPaEnhet, Boolean> harVeilederTilgangTilEnhetCache;
-
     private final UnleashService unleashService;
     private final MetricsClient metricsClient;
 

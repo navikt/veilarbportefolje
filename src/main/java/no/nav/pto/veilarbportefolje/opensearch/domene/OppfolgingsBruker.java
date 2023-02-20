@@ -66,7 +66,6 @@ public class OppfolgingsBruker {
     String aktivitet_tiltak_utlopsdato = getFarInTheFutureDate();
     String aktivitet_utdanningaktivitet_utlopsdato = getFarInTheFutureDate();
     String aktivitet_gruppeaktivitet_utlopsdato = getFarInTheFutureDate();
-
     String alle_aktiviteter_mote_startdato = getFarInTheFutureDate();
     String alle_aktiviteter_mote_utlopsdato = getFarInTheFutureDate();
     String alle_aktiviteter_stilling_utlopsdato = getFarInTheFutureDate();
@@ -97,7 +96,6 @@ public class OppfolgingsBruker {
     String utdanning_bestatt;
     String utdanning_godkjent;
     Map<String, Endring> siste_endringer;
-
     String talespraaktolk;
     String tegnspraaktolk;
     LocalDate tolkBehovSistOppdatert;
@@ -109,9 +107,7 @@ public class OppfolgingsBruker {
     String utenlandskAdresse;
     boolean harUkjentBosted;
     LocalDate bostedSistOppdatert;
-
     String neste_cv_kan_deles_status;
     LocalDate neste_svarfrist_stilling_fra_nav;
-
     Avvik14aVedtak avvik14aVedtak;
 }
