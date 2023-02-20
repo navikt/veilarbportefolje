@@ -176,6 +176,11 @@ public class DateUtils {
         return ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS).format(ISO_ZONED_DATE_TIME);
     }
 
+    public static Date fnrToDate(String fnr) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat("ddMMyy");
+        return formatter.parse(fnr.substring(0, 5));
+    }
+
     public static ZonedDateTime now() {
         return ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS);
     }

@@ -19,7 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.fnrToDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 
 @Slf4j
@@ -240,9 +243,32 @@ public class EnsligeForsorgereRepository {
                 .max(Comparator.comparing(EnsligeForsorgerTiltak::til_dato));
     }
 
+    private LocalDateTime hentYngsteBarn(String vedtakId) {
+        String sql = """
+                     SELECT fnr, termindato FROM enslige_forsorgere_barn WHERE vedtakid = ?            
+                """;
+        dbReadOnly.queryForList(sql, vedtakId).
+                stream().map(this::mapTilBarn)
+                .map(barn -> {
+                    if (barn.fnr() != null) {
+                        try {
+                            return fnrToDate(barn.fnr());
+                        } catch (ParseException e) {
+                            logs.warn("Kan ikke parse fnr for ef barn");
+                        }
+                    }
+                })
+    }
+
+
     @SneakyThrows
     private EnsligeForsorgerTiltak mapTilTiltak(Map<String, Object> rs) {
         return new EnsligeForsorgerTiltak(toLocalDateOrNull(String.valueOf(rs.get("fra_dato"))), toLocalDateOrNull(String.valueOf(rs.get("til_dato"))));
+    }
+
+    @SneakyThrows
+    private EnsligeForsorgereBarn mapTilBarn(Map<String, Object> rs) {
+        return new EnsligeForsorgereBarn((String) rs.get("fnr"), toLocalDateOrNull((String) rs.get("termindato")));
     }
 
 
