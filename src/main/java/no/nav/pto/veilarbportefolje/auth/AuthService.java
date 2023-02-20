@@ -111,7 +111,7 @@ public class AuthService {
         return bruker;
     }
 
-    private boolean harVeilederTilgangTilKode6(NavIdent veilederIdent) {
+    public boolean harVeilederTilgangTilKode6(NavIdent veilederIdent) {
         boolean abacResponse = veilarbPep.harVeilederTilgangTilKode6(veilederIdent);
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode6();
@@ -122,7 +122,7 @@ public class AuthService {
         return abacResponse;
     }
 
-    private boolean harVeilederTilgangTilKode7(NavIdent veilederIdent) {
+    public boolean harVeilederTilgangTilKode7(NavIdent veilederIdent) {
         boolean abacResponse = veilarbPep.harVeilederTilgangTilKode7(veilederIdent);
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode7();
@@ -133,7 +133,7 @@ public class AuthService {
         return abacResponse;
     }
 
-    private boolean harVeilederTilgangTilEgenAnsatt(NavIdent veilederIdent) {
+    public boolean harVeilederTilgangTilEgenAnsatt(NavIdent veilederIdent) {
         boolean abacResponse = veilarbPep.harVeilederTilgangTilEgenAnsatt(veilederIdent);
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt();
