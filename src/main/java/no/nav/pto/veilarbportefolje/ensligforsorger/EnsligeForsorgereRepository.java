@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.ensligforsorger;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +24,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 
 @Slf4j
@@ -38,6 +42,26 @@ public class EnsligeForsorgereRepository {
 
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate namedDb;
+
+    private final Cache<String, Integer> stonadstypeCache = Caffeine.newBuilder()
+            .expireAfterWrite(120, TimeUnit.MINUTES)
+            .maximumSize(10)
+            .build();
+    private final Cache<String, Integer> vedtakresultatCache = Caffeine.newBuilder()
+            .expireAfterWrite(120, TimeUnit.MINUTES)
+            .maximumSize(10)
+            .build();
+
+    private final Cache<String, Integer> periodeTypeCache = Caffeine.newBuilder()
+            .expireAfterWrite(120, TimeUnit.MINUTES)
+            .maximumSize(10)
+            .build();
+
+    private final Cache<String, Integer> vettakAktivitetstypeCache = Caffeine.newBuilder()
+            .expireAfterWrite(120, TimeUnit.MINUTES)
+            .maximumSize(10)
+            .build();
+
 
     public void lagreDataForEnsligeForsorgere(VedtakOvergangsstønadArbeidsoppfølging vedtakOvergangsstønadArbeidsoppfølging) {
 
@@ -93,6 +117,11 @@ public class EnsligeForsorgereRepository {
     }
 
     private Integer hentStonadstype(String stonadTypeConst) {
+        return tryCacheFirst(stonadstypeCache, stonadTypeConst,
+                () -> this.hentStonadstypeFraDB(stonadTypeConst));
+    }
+
+    private Integer hentStonadstypeFraDB(String stonadTypeConst) {
         String sql = "SELECT ID FROM EF_STONAD_TYPE WHERE STONAD_TYPE = :stonadType::varchar";
         Optional<Integer> stonadTypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("stonadType", stonadTypeConst), Integer.class));
 
@@ -114,6 +143,10 @@ public class EnsligeForsorgereRepository {
     }
 
     private Integer hentVedtakresultat(String vedtakResultatConst) {
+        return tryCacheFirst(vedtakresultatCache, vedtakResultatConst, () -> this.hentVedtakresultatFraDB(vedtakResultatConst));
+    }
+
+    private Integer hentVedtakresultatFraDB(String vedtakResultatConst) {
         String sql = "SELECT ID FROM ef_vedtaksresultat_type WHERE vedtaksresultat_type = :vedtakResultatConst::varchar";
         Optional<Integer> vedtakResultatTypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("vedtaksresultat_type", vedtakResultatConst), Integer.class));
 
@@ -135,6 +168,10 @@ public class EnsligeForsorgereRepository {
     }
 
     private Integer hentPeriodetype(String periodeTypeConst) {
+        return tryCacheFirst(periodeTypeCache, periodeTypeConst, () -> this.hentPeriodetypeFraDB(periodeTypeConst));
+    }
+
+    private Integer hentPeriodetypeFraDB(String periodeTypeConst) {
         String sql = "SELECT ID FROM ef_vedtaksperiode_type WHERE periode_type = :periodeTypeConst::varchar";
         Optional<Integer> vedtakPeriodetypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("periode_type", periodeTypeConst), Integer.class));
 
@@ -156,6 +193,10 @@ public class EnsligeForsorgereRepository {
     }
 
     private Integer hentVettakAktivitetstype(String aktivitetsType) {
+        return tryCacheFirst(vettakAktivitetstypeCache, aktivitetsType, () -> this.hentVettakAktivitetstypeFraDB(aktivitetsType));
+    }
+
+    private Integer hentVettakAktivitetstypeFraDB(String aktivitetsType) {
         String sql = "SELECT ID FROM ef_aktivitet_type WHERE aktivitet_type = :aktivitetsType::varchar";
         Optional<Integer> vedtakAktivitetstypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("aktivitet_type", aktivitetsType), Integer.class));
 
