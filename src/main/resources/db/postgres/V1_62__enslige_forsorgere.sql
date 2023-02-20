@@ -76,7 +76,7 @@ CREATE TABLE enslige_forsorgere
 (
     vedtakId        bigint primary key,
     personIdent     VARCHAR(30) not null,
-    stønadstype     integer REFERENCES ef_stonad_type (id),
+    stonadstype     integer REFERENCES ef_stonad_type (id),
     vedtaksresultat integer REFERENCES ef_vedtaksresultat_type (id),
     oppdatert       timestamp DEFAULT now()
 );
