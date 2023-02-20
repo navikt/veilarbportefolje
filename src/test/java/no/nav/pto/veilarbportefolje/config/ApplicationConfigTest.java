@@ -14,6 +14,8 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
+import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.auth.BrukerInnsynTilganger;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
@@ -299,5 +301,14 @@ public class ApplicationConfigTest {
     @Bean
     public AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient() {
         return mock(AzureAdMachineToMachineTokenClient.class);
+    }
+
+    @Bean
+    public AuthService authService() {
+        AuthService authService = mock(AuthService.class);
+        when(authService.hentVeilederBrukerInnsynTilganger()).thenReturn(
+                new BrukerInnsynTilganger(false, false, false)
+        );
+        return authService;
     }
 }
