@@ -5,10 +5,10 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
-import no.nav.familie.eksterne.kontrakter.arbeidsoppfolging.VedtakOvergangsstønadArbeidsoppfølging;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
@@ -257,7 +257,24 @@ public class OpensearchIndexerV2 {
         update(aktoerId, content, "Sletter arbeidsliste");
     }
 
-    public void updateOvergangsstonad(VedtakOvergangsstønadArbeidsoppfølging melding) {
+    @SneakyThrows
+    public void updateOvergangsstonad(AktorId aktorId, EnsligeForsorgerOvergangsstønadTiltakDto ensligeForsorgerOvergangsstønadTiltakDto) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("ef_overgangsstonad", ensligeForsorgerOvergangsstønadTiltakDto)
+                .endObject();
+
+        update(aktorId, content, "Update overgangsstønad");
+    }
+
+    @SneakyThrows
+    public void deleteOvergansstonad(AktorId aktorId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("ef_overgangsstonad", (String) null)
+                .endObject();
+
+        update(aktorId, content, "Fjern overgangsstønad");
     }
 
     @SneakyThrows
@@ -312,4 +329,6 @@ public class OpensearchIndexerV2 {
             }
         }
     }
+
+
 }

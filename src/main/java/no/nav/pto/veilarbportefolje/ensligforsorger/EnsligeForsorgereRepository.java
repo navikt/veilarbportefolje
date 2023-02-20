@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.familie.eksterne.kontrakter.arbeidsoppfolging.VedtakOvergangsstønadArbeidsoppfølging;
-import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerTiltak;
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOvergangsstønadTiltak;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgereBarn;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgereVedtakPeriode;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,8 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +30,7 @@ import java.util.stream.Collectors;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.fnrToDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -65,8 +64,15 @@ public class EnsligeForsorgereRepository {
             .maximumSize(10)
             .build();
 
+    public void lagreEnsligeForsorgereStonad(VedtakOvergangsstønadArbeidsoppfølging vedtakOvergangsstønadArbeidsoppfølging) {
+        if (vedtakOvergangsstønadArbeidsoppfølging.getStønadstype().toString().equals("OVERGANGSSTØNAD")) {
+            lagreOvergangsstonad(vedtakOvergangsstønadArbeidsoppfølging);
+        } else {
+            log.info("Vi støtter kun overgangstønad for enslige forsorgere. Fått: " + vedtakOvergangsstønadArbeidsoppfølging.getStønadstype());
+        }
+    }
 
-    public void lagreDataForEnsligeForsorgere(VedtakOvergangsstønadArbeidsoppfølging vedtakOvergangsstønadArbeidsoppfølging) {
+    public void lagreOvergangsstonad(VedtakOvergangsstønadArbeidsoppfølging vedtakOvergangsstønadArbeidsoppfølging) {
 
         long vedtakId = vedtakOvergangsstønadArbeidsoppfølging.getVedtakId();
         Integer stonadstypeId = hentStonadstype(vedtakOvergangsstønadArbeidsoppfølging.getStønadstype().toString());
@@ -86,7 +92,6 @@ public class EnsligeForsorgereRepository {
 
         List<EnsligeForsorgereBarn> ef_barn = vedtakOvergangsstønadArbeidsoppfølging.getBarn().stream().map(ef_barn_dto -> new EnsligeForsorgereBarn(ef_barn_dto.getFødselsnummer(), ef_barn_dto.getTermindato())).collect(Collectors.toList());
         lagreDataForEnsligeForsorgereBarn(vedtakId, ef_barn);
-
     }
 
     private void lagreEnsligeForsorgereVedtakPerioder(long vedtakId, List<EnsligeForsorgereVedtakPeriode> vedtakPerioder) {
@@ -221,12 +226,11 @@ public class EnsligeForsorgereRepository {
     }
 
 
-    public Optional<EnsligeForsorgerTiltak> hentDataForEnsligeForsorgere(String personIdent) {
+    public Optional<EnsligeForsorgerOvergangsstønadTiltak> hentOvergangsstønadForEnsligeForsorger(String personIdent) {
         String sql = """
-                 SELECT efp.fra_dato,
-                       efp.til_dato,
-                       vperiode_type.PERIODE_TYPE,
-                       EAT.AKTIVITET_TYPE
+                 SELECT ef.vedtakId, efp.fra_dato, efp.til_dato,
+                       vperiode_type.PERIODE_TYPE as vedtaksPeriodeType,
+                       EAT.AKTIVITET_TYPE as aktivitetsType
                 FROM enslige_forsorgere ef,
                      enslige_forsorgere_periode efp
                 LEFT JOIN EF_VEDTAKSPERIODE_TYPE vperiode_type on efp.PERIODETYPE = vperiode_type.ID
@@ -236,34 +240,48 @@ public class EnsligeForsorgereRepository {
                 WHERE ef.vedtakId = efp.vedtakId
                   AND est.STONAD_TYPE = 'OVERGANGSSTØNAD'
                   AND EVT.VEDTAKSRESULTAT_TYPE = 'INNVILGET'
-                  AND ef.personIdent = ?;
+                  AND ef.personIdent = ? LIMIT 1;
                  """;
         return dbReadOnly.queryForList(sql, personIdent)
                 .stream().map(this::mapTilTiltak)
-                .max(Comparator.comparing(EnsligeForsorgerTiltak::til_dato));
+                .findFirst();
     }
 
-    private LocalDateTime hentYngsteBarn(String vedtakId) {
+    public Optional<LocalDate> hentYngsteBarn(Long vedtakId) {
         String sql = """
                      SELECT fnr, termindato FROM enslige_forsorgere_barn WHERE vedtakid = ?            
                 """;
-        dbReadOnly.queryForList(sql, vedtakId).
+        return dbReadOnly.queryForList(sql, vedtakId).
                 stream().map(this::mapTilBarn)
-                .map(barn -> {
-                    if (barn.fnr() != null) {
-                        try {
-                            return fnrToDate(barn.fnr());
-                        } catch (ParseException e) {
-                            logs.warn("Kan ikke parse fnr for ef barn");
-                        }
-                    }
-                })
+                .map(barn -> hentBarnetsFødselsdato(vedtakId, barn.fnr(), barn.terminDato()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .max(LocalDate::compareTo);
+    }
+
+    private Optional<LocalDate> hentBarnetsFødselsdato(Long vedtakId, String fnr, LocalDate terminDato) {
+        if (fnr != null) {
+            try {
+                return Optional.of(fnrToDate(fnr));
+            } catch (ParseException e) {
+                secureLog.warn("Kan ikke parse fnr for ef barn for vedtakId: " + vedtakId);
+
+            }
+        } else if (terminDato != null) {
+            return Optional.of(terminDato);
+        }
+        return Optional.empty();
+
     }
 
 
     @SneakyThrows
-    private EnsligeForsorgerTiltak mapTilTiltak(Map<String, Object> rs) {
-        return new EnsligeForsorgerTiltak(toLocalDateOrNull(String.valueOf(rs.get("fra_dato"))), toLocalDateOrNull(String.valueOf(rs.get("til_dato"))));
+    private EnsligeForsorgerOvergangsstønadTiltak mapTilTiltak(Map<String, Object> rs) {
+        return new EnsligeForsorgerOvergangsstønadTiltak((Long) rs.get("vedtakId"),
+                (String) rs.get("vedtaksPeriodeType"),
+                (String) rs.get("aktivitetsType"),
+                toLocalDateOrNull(String.valueOf(rs.get("fra_dato"))),
+                toLocalDateOrNull(String.valueOf(rs.get("til_dato"))));
     }
 
     @SneakyThrows

@@ -176,9 +176,9 @@ public class DateUtils {
         return ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS).format(ISO_ZONED_DATE_TIME);
     }
 
-    public static Date fnrToDate(String fnr) throws ParseException {
+    public static LocalDate fnrToDate(String fnr) throws ParseException {
         SimpleDateFormat formatter = new SimpleDateFormat("ddMMyy");
-        return formatter.parse(fnr.substring(0, 5));
+        return LocalDate.ofInstant(formatter.parse(fnr.substring(0, 5)).toInstant(), ZoneId.systemDefault());
     }
 
     public static ZonedDateTime now() {
