@@ -26,9 +26,9 @@ public class FeatureToggle {
 
     public static final String STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER = "veilarbportefolje.stopp_indeksering_av_tiltaksaktiviteter";
 
-    private static final String POAO_TILGANG_ENABLED = "veilarbportefolje.poao-tilgang-enabled";
+    public static final String POAO_TILGANG_ENABLED = "veilarbportefolje.poao-tilgang-enabled";
 
-    private static final String BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER = "veilarbportefolje.bruk_filter_for_brukerinnsyn_tilganger";
+    public static final String BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER = "veilarbportefolje.bruk_filter_for_brukerinnsyn_tilganger";
 
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
