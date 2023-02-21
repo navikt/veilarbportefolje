@@ -607,7 +607,13 @@ public class OpensearchQueryBuilder {
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteBla", "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
-                                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name())
+                                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name()),
+                                kode7BrukereUfordelt(filtrereVeilederOgEnhet),
+                                kode7BrukereVenterPaSvarFraNav(filtrereVeilederOgEnhet),
+                                kode6BrukereUfordelt(filtrereVeilederOgEnhet),
+                                kode6BrukereVenterPaSvarFraNav(filtrereVeilederOgEnhet),
+                                egenAnsattBrukereUfordelt(filtrereVeilederOgEnhet),
+                                egenAnsattBrukereVenterPaSvarFraNav(filtrereVeilederOgEnhet)
                         ));
     }
 
@@ -718,6 +724,69 @@ public class OpensearchQueryBuilder {
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
                         .must(existsQuery(value))
+        );
+    }
+
+    private static FiltersAggregator.KeyedFilter kode7BrukereUfordelt(BoolQueryBuilder filtrereEnhet) {
+        return new FiltersAggregator.KeyedFilter(
+                "kode7BrukereUfordelt",
+                boolQuery()
+                        .must(filtrereEnhet)
+                        .must(termQuery("diskresjonskode", "7"))
+                        .mustNot(existsQuery("veileder_id"))
+        );
+    }
+
+    private static FiltersAggregator.KeyedFilter kode7BrukereVenterPaSvarFraNav(BoolQueryBuilder filtrereEnhet) {
+        return new FiltersAggregator.KeyedFilter(
+                "kode7BrukereVenterPaSvarFraNav",
+                boolQuery()
+                        .must(filtrereEnhet)
+                        .must(termQuery("diskresjonskode", "7"))
+                        .must(existsQuery("venterpasvarfranav"))
+
+        );
+    }
+
+    private static FiltersAggregator.KeyedFilter kode6BrukereUfordelt(BoolQueryBuilder filtrereEnhet) {
+        return new FiltersAggregator.KeyedFilter(
+                "kode6BrukereUfordelt",
+                boolQuery()
+                        .must(filtrereEnhet)
+                        .must(termQuery("diskresjonskode", "6"))
+                        .mustNot(existsQuery("veileder_id"))
+        );
+    }
+
+    private static FiltersAggregator.KeyedFilter kode6BrukereVenterPaSvarFraNav(BoolQueryBuilder filtrereEnhet) {
+        return new FiltersAggregator.KeyedFilter(
+                "kode6BrukereVenterPaSvarFraNav",
+                boolQuery()
+                        .must(filtrereEnhet)
+                        .must(termQuery("diskresjonskode", "6"))
+                        .must(existsQuery("venterpasvarfranav"))
+
+        );
+    }
+
+    private static FiltersAggregator.KeyedFilter egenAnsattBrukereUfordelt(BoolQueryBuilder filtrereEnhet) {
+        return new FiltersAggregator.KeyedFilter(
+                "egenAnsattBrukereUfordelt",
+                boolQuery()
+                        .must(filtrereEnhet)
+                        .must(termQuery("egen_ansatt", true))
+                        .mustNot(existsQuery("veileder_id"))
+        );
+    }
+
+    private static FiltersAggregator.KeyedFilter egenAnsattBrukereVenterPaSvarFraNav(BoolQueryBuilder filtrereEnhet) {
+        return new FiltersAggregator.KeyedFilter(
+                "egenAnsattBrukereVenterPaSvarFraNav",
+                boolQuery()
+                        .must(filtrereEnhet)
+                        .must(termQuery("egen_ansatt", true))
+                        .must(existsQuery("venterpasvarfranav"))
+
         );
     }
 
