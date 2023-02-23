@@ -5,6 +5,7 @@ import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
@@ -79,7 +80,12 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_kun_hente_brukere_som_innlogget_veileder_har_innsynsrett_pa_nar_man_henter_enhetens_portefolje() {
-        when(unleashService.isEnabled(FeatureToggle.POAO_TILGANG_ENABLED)).thenReturn(false);
+        List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
+
+        doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
+        doReturn(false).when(unleashService).isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
+        doReturn(true).when(unleashService).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
+
         doReturn(true).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_0));
         doReturn(false).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_0));
         doReturn(false).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_0));
@@ -96,25 +102,25 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         doReturn(true).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_3));
         doReturn(true).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_3));
 
-        var kode6Bruker_0 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
-        var kode6Bruker_1 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
-        var kode6Bruker_2 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
-        var kode6Bruker_3 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode6Bruker_0 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode6Bruker_1 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode6Bruker_2 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode6Bruker_3 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
 
-        var kode7Bruker_0 = genererRandomBruker(true, TEST_ENHET, null, "7", false);
-        var kode7Bruker_1 = genererRandomBruker(true, TEST_ENHET, null, "7", false);
-        var kode7Bruker_2 = genererRandomBruker(true, TEST_ENHET, null, "7", false);
-        var kode7Bruker_3 = genererRandomBruker(true, TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode7Bruker_0 = genererRandomBruker(true, TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode7Bruker_1 = genererRandomBruker(true, TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode7Bruker_2 = genererRandomBruker(true, TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode7Bruker_3 = genererRandomBruker(true, TEST_ENHET, null, "7", false);
 
-        var egenAnsattBruker_0 = genererRandomBruker(true, TEST_ENHET, null, null, true);
-        var egenAnsattBruker_1 = genererRandomBruker(true, TEST_ENHET, null, null, true);
-        var egenAnsattBruker_2 = genererRandomBruker(true, TEST_ENHET, null, null, true);
-        var egenAnsattBruker_3 = genererRandomBruker(true, TEST_ENHET, null, null, true);
+        OppfolgingsBruker egenAnsattBruker_0 = genererRandomBruker(true, TEST_ENHET, null, null, true);
+        OppfolgingsBruker egenAnsattBruker_1 = genererRandomBruker(true, TEST_ENHET, null, null, true);
+        OppfolgingsBruker egenAnsattBruker_2 = genererRandomBruker(true, TEST_ENHET, null, null, true);
+        OppfolgingsBruker egenAnsattBruker_3 = genererRandomBruker(true, TEST_ENHET, null, null, true);
 
-        var egenAnsattOgKode7Bruker_0 = genererRandomBruker(true, TEST_ENHET, null, "7", true);
-        var egenAnsattOgKode7Bruker_1 = genererRandomBruker(true, TEST_ENHET, null, "7", true);
-        var egenAnsattOgKode7Bruker_2 = genererRandomBruker(true, TEST_ENHET, null, "7", true);
-        var egenAnsattOgKode7Bruker_3 = genererRandomBruker(true, TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_0 = genererRandomBruker(true, TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_1 = genererRandomBruker(true, TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_2 = genererRandomBruker(true, TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_3 = genererRandomBruker(true, TEST_ENHET, null, "7", true);
 
         List<OppfolgingsBruker> brukere = List.of(
                 kode6Bruker_0,
@@ -185,7 +191,12 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_kun_hente_brukere_som_innlogget_veileder_har_innsynsrett_pa_nar_man_henter_veileders_portefolje() {
-        when(unleashService.isEnabled(FeatureToggle.POAO_TILGANG_ENABLED)).thenReturn(false);
+        List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
+
+        doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
+        doReturn(false).when(unleashService).isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
+        doReturn(true).when(unleashService).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
+
         doReturn(true).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_0));
         doReturn(false).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_0));
         doReturn(false).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_0));
@@ -202,25 +213,25 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         doReturn(true).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_3));
         doReturn(true).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_3));
 
-        var kode6Bruker_medVeileder0Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false);
-        var kode7Bruker_medVeileder0Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", false);
-        var egenAnsattBruker_medVeileder0Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true);
-        var egenAnsattOgKode7Bruker_medVeileder0Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", true);
+        OppfolgingsBruker kode6Bruker_medVeileder0Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false);
+        OppfolgingsBruker kode7Bruker_medVeileder0Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", false);
+        OppfolgingsBruker egenAnsattBruker_medVeileder0Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_medVeileder0Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", true);
 
-        var kode6Bruker_medVeileder1Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "6", false);
-        var kode7Bruker_medVeileder1Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", false);
-        var egenAnsattBruker_medVeileder1Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, null, true);
-        var egenAnsattOgKode7Bruker_medVeileder1Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", true);
+        OppfolgingsBruker kode6Bruker_medVeileder1Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "6", false);
+        OppfolgingsBruker kode7Bruker_medVeileder1Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", false);
+        OppfolgingsBruker egenAnsattBruker_medVeileder1Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, null, true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_medVeileder1Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", true);
 
-        var kode6Bruker_medVeileder2Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, "6", false);
-        var kode7Bruker_medVeileder2Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, "7", false);
-        var egenAnsattBruker_medVeileder2Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, null, true);
-        var egenAnsattOgKode7Bruker_medVeileder2Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, "7", true);
+        OppfolgingsBruker kode6Bruker_medVeileder2Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, "6", false);
+        OppfolgingsBruker kode7Bruker_medVeileder2Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, "7", false);
+        OppfolgingsBruker egenAnsattBruker_medVeileder2Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, null, true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_medVeileder2Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, "7", true);
 
-        var kode6Bruker_medVeileder3Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "6", false);
-        var kode7Bruker_medVeileder3Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "7", false);
-        var egenAnsattBruker_medVeileder3Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, null, true);
-        var egenAnsattOgKode7Bruker_medVeileder3Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "7", true);
+        OppfolgingsBruker kode6Bruker_medVeileder3Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "6", false);
+        OppfolgingsBruker kode7Bruker_medVeileder3Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "7", false);
+        OppfolgingsBruker egenAnsattBruker_medVeileder3Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, null, true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_medVeileder3Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "7", true);
 
         List<OppfolgingsBruker> brukere = List.of(
                 kode6Bruker_medVeileder0Tilordnet,
@@ -256,18 +267,18 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.getAntall()).isEqualTo(3);
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.getBrukere()).containsExactlyInAnyOrder(
-                Bruker.of(kode6Bruker_medVeileder0Tilordnet, true, false)
+                Bruker.of(kode6Bruker_medVeileder0Tilordnet, false, false)
         );
         assertThat(brukereSomVeilederMedKode7TilgangHarInnsynsrettPa.getBrukere()).containsExactlyInAnyOrder(
-                Bruker.of(kode7Bruker_medVeileder1Tilordnet, true, false)
+                Bruker.of(kode7Bruker_medVeileder1Tilordnet, false, false)
         );
         assertThat(brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa.getBrukere()).containsExactlyInAnyOrder(
-                Bruker.of(egenAnsattBruker_medVeileder2Tilordnet, true, false)
+                Bruker.of(egenAnsattBruker_medVeileder2Tilordnet, false, false)
         );
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.getBrukere()).containsExactlyInAnyOrder(
-                Bruker.of(kode7Bruker_medVeileder3Tilordnet, true, false),
-                Bruker.of(egenAnsattBruker_medVeileder3Tilordnet, true, false),
-                Bruker.of(egenAnsattOgKode7Bruker_medVeileder3Tilordnet, true, false)
+                Bruker.of(kode7Bruker_medVeileder3Tilordnet, false, false),
+                Bruker.of(egenAnsattBruker_medVeileder3Tilordnet, false, false),
+                Bruker.of(egenAnsattOgKode7Bruker_medVeileder3Tilordnet, false, false)
         );
     }
 
