@@ -8,6 +8,8 @@ import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
+import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
 import org.opensearch.index.query.BoolQueryBuilder;
 import org.opensearch.index.query.QueryBuilder;
 import org.opensearch.index.query.QueryBuilders;
@@ -570,7 +572,7 @@ public class OpensearchQueryBuilder {
                 .must(termQuery("oppfolging", true))
                 .must(termQuery("enhet_id", enhetId));
 
-        return byggStatusTallQuery(enhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa);
+        return byggStatusTallQuery(getEnhetStatusTallFiltre(enhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa));
     }
 
     static SearchSourceBuilder byggStatusTallForVeilederQuery(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
@@ -579,39 +581,49 @@ public class OpensearchQueryBuilder {
                 .must(termQuery("enhet_id", enhetId))
                 .must(termQuery("veileder_id", veilederId));
 
-        return byggStatusTallQuery(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa);
+        return byggStatusTallQuery(getVeilederStatusTallFiltre(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa));
     }
 
-    private static SearchSourceBuilder byggStatusTallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+    private static SearchSourceBuilder byggStatusTallQuery(FiltersAggregator.KeyedFilter[] statusTallFiltre) {
         return new SearchSourceBuilder()
                 .size(0)
-                .aggregation(
-                        filters(
-                                "statustall",
-                                erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
-                                mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
-                                mustExistFilter(filtrereVeilederOgEnhet, "iAktivitet", "alleAktiviteter"),
-                                ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
-                                inaktiveBrukere(filtrereVeilederOgEnhet),
-                                mustBeTrueFilter(filtrereVeilederOgEnhet, "minArbeidsliste", "arbeidsliste_aktiv"),
-                                mustBeTrueFilter(filtrereVeilederOgEnhet, "nyeBrukereForVeileder", "ny_for_veileder"),
-                                totalt(filtrereVeilederOgEnhet),
-                                trengerVurderingFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
-                                mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraNAV", "venterpasvarfranav"),
-                                mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraBruker", "venterpasvarfrabruker"),
-                                ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
-                                mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
-                                moterMedNavIdag(filtrereVeilederOgEnhet),
-                                alleMoterMedNavIdag(filtrereVeilederOgEnhet),
-                                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "utkast_14a_status"),
-                                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteBla", "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
-                                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
-                                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
-                                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name()),
-                                adressebeskyttelseEllerSkjermingTotalt(filtrereVeilederOgEnhet),
-                                adressebeskyttelseEllerSkjermingUfordelte(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
-                                adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV(filtrereVeilederOgEnhet)
-                        ));
+                .aggregation(filters("statustall", statusTallFiltre));
+    }
+
+    @NotNull
+    private static FiltersAggregator.KeyedFilter[] getEnhetStatusTallFiltre(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+        return ArrayUtils.addAll(
+                getVeilederStatusTallFiltre(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa),
+                adressebeskyttelseEllerSkjermingTotalt(filtrereVeilederOgEnhet),
+                adressebeskyttelseEllerSkjermingUfordelte(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
+                adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV(filtrereVeilederOgEnhet)
+        );
+    }
+
+    @NotNull
+    private static FiltersAggregator.KeyedFilter[] getVeilederStatusTallFiltre(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+        return new FiltersAggregator.KeyedFilter[]{
+                erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
+                mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
+                mustExistFilter(filtrereVeilederOgEnhet, "iAktivitet", "alleAktiviteter"),
+                ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
+                inaktiveBrukere(filtrereVeilederOgEnhet),
+                mustBeTrueFilter(filtrereVeilederOgEnhet, "minArbeidsliste", "arbeidsliste_aktiv"),
+                mustBeTrueFilter(filtrereVeilederOgEnhet, "nyeBrukereForVeileder", "ny_for_veileder"),
+                totalt(filtrereVeilederOgEnhet),
+                trengerVurderingFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
+                mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraNAV", "venterpasvarfranav"),
+                mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraBruker", "venterpasvarfrabruker"),
+                ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
+                mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
+                moterMedNavIdag(filtrereVeilederOgEnhet),
+                alleMoterMedNavIdag(filtrereVeilederOgEnhet),
+                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "utkast_14a_status"),
+                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteBla", "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name())
+        };
     }
 
     private static FiltersAggregator.KeyedFilter trengerVurderingFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {

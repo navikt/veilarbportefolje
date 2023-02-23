@@ -118,7 +118,7 @@ public class OpensearchService {
         return new BrukereMedAntall(totalHits, brukere);
     }
 
-    public StatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
+    public VeilederPortefoljeStatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
         SearchSourceBuilder request =
@@ -126,10 +126,10 @@ public class OpensearchService {
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return new StatusTall(buckets, vedtakstottePilotErPa);
+        return new VeilederPortefoljeStatusTall(buckets, vedtakstottePilotErPa);
     }
 
-    public StatusTall hentStatusTallForEnhet(String enhetId) {
+    public EnhetPortefoljeStatusTall hentStatusTallForEnhet(String enhetId) {
         List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
@@ -139,7 +139,7 @@ public class OpensearchService {
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return new StatusTall(buckets, vedtakstottePilotErPa);
+        return new EnhetPortefoljeStatusTall(buckets, vedtakstottePilotErPa);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {

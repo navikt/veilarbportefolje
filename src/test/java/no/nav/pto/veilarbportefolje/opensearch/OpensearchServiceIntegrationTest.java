@@ -860,7 +860,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(veilederExistsInResponse(LITE_PRIVILEGERT_VEILEDER, response)).isTrue();
 
-        StatusTall statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
+        EnhetPortefoljeStatusTall statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
         assertThat(statustall.ufordelteBrukere).isEqualTo(1);
     }
 
