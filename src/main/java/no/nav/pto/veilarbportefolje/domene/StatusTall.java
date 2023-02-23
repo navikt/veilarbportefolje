@@ -26,9 +26,9 @@ public class StatusTall {
     public long minArbeidslisteLilla;
     public long minArbeidslisteGronn;
     public long minArbeidslisteGul;
-    public StatusTallUtvidet kode6Brukere;
-    public StatusTallUtvidet kode7Brukere;
-    public StatusTallUtvidet egenAnsattBrukere;
+    public long adressebeskyttelseEllerSkjermingTotalt;
+    public long adressebeskyttelseEllerSkjermingUtfordelte;
+    public long adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV;
 
     public StatusTall(StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
         this.totalt = buckets.getTotalt().getDoc_count();
@@ -50,8 +50,8 @@ public class StatusTall {
         this.minArbeidslisteGronn = buckets.getMinArbeidslisteGronn().getDoc_count();
         this.minArbeidslisteGul = buckets.getMinArbeidslisteGul().getDoc_count();
         this.underVurdering = vedtakstottePilotErPa ? buckets.getUnderVurdering().getDoc_count() : 0;
-        this.kode6Brukere = new StatusTallUtvidet(buckets.getKode6BrukereUfordelt().getDoc_count(), buckets.getKode6BrukereVenterPaSvarFraNav().getDoc_count());
-        this.kode7Brukere = new StatusTallUtvidet(buckets.getKode7BrukereUfordelt().getDoc_count(), buckets.getKode7BrukereVenterPaSvarFraNav().getDoc_count());
-        this.egenAnsattBrukere = new StatusTallUtvidet(buckets.getEgenAnsattBrukereUfordelt().getDoc_count(), buckets.getEgenAnsattBrukereVenterPaSvarFraNav().getDoc_count());
+        this.adressebeskyttelseEllerSkjermingTotalt = buckets.getAdressebeskyttelseEllerSkjermingTotalt().getDoc_count();
+        this.adressebeskyttelseEllerSkjermingUtfordelte = buckets.getAdressebeskyttelseEllerSkjermingUtfordelte().getDoc_count();
+        this.adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV = buckets.getAdressebeskyttelseEllerSkjermingVenterPaSvarFraNAV().getDoc_count();
     }
 }

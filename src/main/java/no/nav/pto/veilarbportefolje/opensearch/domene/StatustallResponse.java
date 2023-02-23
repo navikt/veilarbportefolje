@@ -38,12 +38,9 @@ public class StatustallResponse {
                 Bucket minArbeidslisteLilla;
                 Bucket minArbeidslisteGronn;
                 Bucket minArbeidslisteGul;
-                Bucket kode7BrukereUfordelt;
-                Bucket kode7BrukereVenterPaSvarFraNav;
-                Bucket kode6BrukereUfordelt;
-                Bucket kode6BrukereVenterPaSvarFraNav;
-                Bucket egenAnsattBrukereUfordelt;
-                Bucket egenAnsattBrukereVenterPaSvarFraNav;
+                Bucket adressebeskyttelseEllerSkjermingTotalt;
+                Bucket adressebeskyttelseEllerSkjermingUtfordelte;
+                Bucket adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV;
             }
         }
     }
