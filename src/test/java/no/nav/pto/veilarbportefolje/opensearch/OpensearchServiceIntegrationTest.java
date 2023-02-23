@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
@@ -575,6 +576,56 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(statustall.trengerVurdering).isEqualTo(1);
         assertThat(statustall.venterPaSvarFraNAV).isEqualTo(1);
         assertThat(statustall.utlopteAktiviteter).isEqualTo(1);
+    }
+
+    @Test
+    public void skal_hente_riktige_statustall_for_enhet_for_brukere_med_adresse_beskyttelse_eller_skjerming() {
+        List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
+
+        doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
+        doReturn(false).when(unleashService).isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
+        doReturn(true).when(unleashService).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
+
+        OppfolgingsBruker kode_6_bruker = genererRandomBruker(true, TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false);
+        OppfolgingsBruker kode_6_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
+        OppfolgingsBruker kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", false);
+        OppfolgingsBruker kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
+        OppfolgingsBruker egen_ansatt_bruker = genererRandomBruker(true, TEST_ENHET, null, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
+        List<OppfolgingsBruker> brukere = List.of(
+                kode_6_bruker,
+                kode_6_bruker_med_tilordnet_veileder,
+                kode_6_bruker_som_venter_pa_svar_fra_nav,
+                kode_7_bruker,
+                kode_7_bruker_med_tilordnet_veileder,
+                kode_7_bruker_som_venter_pa_svar_fra_nav,
+                egen_ansatt_bruker,
+                egen_ansatt_bruker_med_tilordnet_veileder,
+                egen_ansatt_bruker_som_venter_pa_svar_fra_nav,
+                egen_ansatt_og_kode_7_bruker,
+                egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder,
+                egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav
+        );
+
+        skrivBrukereTilTestindeks(brukere);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
+
+        EnhetPortefoljeStatusTall respons = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
+
+        assertThat(respons.adressebeskyttelseEllerSkjermingTotalt).isEqualTo(12);
+        assertThat(respons.adressebeskyttelseEllerSkjermingUfordelte).isEqualTo(4);
+        assertThat(respons.adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV).isEqualTo(4);
     }
 
     @Test

@@ -749,7 +749,7 @@ public class OpensearchQueryBuilder {
 
     private static FiltersAggregator.KeyedFilter adressebeskyttelseEllerSkjermingUfordelte(BoolQueryBuilder filtrereEnhet, List<String> veiledereMedTilgangTilEnhet) {
         return new FiltersAggregator.KeyedFilter(
-                "adressebeskyttelseEllerSkjermingUtfordelte",
+                "adressebeskyttelseEllerSkjermingUfordelte",
                 boolQuery()
                         .must(filtrereEnhet)
                         .should(termQuery("diskresjonskode", "6"))

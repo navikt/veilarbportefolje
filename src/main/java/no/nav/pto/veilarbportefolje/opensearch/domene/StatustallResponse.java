@@ -39,7 +39,7 @@ public class StatustallResponse {
                 Bucket minArbeidslisteGronn;
                 Bucket minArbeidslisteGul;
                 Bucket adressebeskyttelseEllerSkjermingTotalt;
-                Bucket adressebeskyttelseEllerSkjermingUtfordelte;
+                Bucket adressebeskyttelseEllerSkjermingUfordelte;
                 Bucket adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV;
             }
         }
