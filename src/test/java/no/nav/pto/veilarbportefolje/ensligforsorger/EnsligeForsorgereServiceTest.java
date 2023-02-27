@@ -10,9 +10,11 @@ import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -33,6 +35,14 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     private EnsligeForsorgereService ensligeForsorgereService;
     @Autowired
     private AktorClient aktorClient;
+
+    @Autowired
+    private JdbcTemplate postgres;
+
+    @Before
+    public void setup() {
+        postgres.update("truncate TABLE enslige_forsorgere CASCADE");
+    }
 
     @Test
     public void testNyOvergangsstonadForBrukerIndex() {
@@ -81,9 +91,9 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                             null);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(1);
-                    assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().vedtaksPeriodetype()).isEqualTo("NY_PERIODE_FOR_NYTT_BARN");
-                    assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().aktivitetsType()).isEqualTo("BARN_UNDER_ETT_ÅR");
-                    assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().til_dato()).isEqualTo(LocalDate.of(2024, 4, 4));
+                    assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().vedtaksPeriodetype()).isEqualTo("Ny periode for nytt barn");
+                    assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().harAktivitetsplikt()).isEqualTo(false);
+                    assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().utlopsDato()).isEqualTo(LocalDate.of(2024, 4, 4));
                     assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().yngsteBarnsFødselsdato()).isEqualTo(LocalDate.of(2023, 5, 4));
                 }
         );

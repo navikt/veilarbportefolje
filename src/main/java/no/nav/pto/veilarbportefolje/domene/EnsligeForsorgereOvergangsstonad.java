@@ -4,8 +4,8 @@ import java.time.LocalDate;
 
 public record EnsligeForsorgereOvergangsstonad(
         String vedtaksPeriodetype,
-        Boolean aktivitetsplikt,
-        LocalDate til_dato,
+        Boolean harAktivitetsplikt,
+        LocalDate utlopsDato,
         LocalDate yngsteBarnsFødselsdato) {
 
 }

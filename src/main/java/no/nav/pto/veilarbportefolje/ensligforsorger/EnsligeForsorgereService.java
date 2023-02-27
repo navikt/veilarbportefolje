@@ -8,6 +8,7 @@ import no.nav.familie.eksterne.kontrakter.arbeidsoppfolging.VedtakOvergangsstøn
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOvergangsstønadTiltak;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.EnsligeForsorgerOvergangsstønadTiltakDto;
+import no.nav.pto.veilarbportefolje.ensligforsorger.mapping.AktivitetsTypeTilAktivitetsplikt;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.ensligforsorger.mapping.PeriodetypeTilBeskrivelse.mapPeriodetypeTilBeskrivelse;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
@@ -42,9 +44,12 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
                 secureLog.warn("Kan ikke finne ef barn for vedtakId: " + ensligeForsorgerOvergangsstønadTiltak.vedtakid());
             }
 
+            Optional<Boolean> harAktivitetsplikt = AktivitetsTypeTilAktivitetsplikt.harAktivitetsplikt(ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype(), ensligeForsorgerOvergangsstønadTiltak.aktivitetsType());
+            String vedtakPeriodeBeskrivelse = mapPeriodetypeTilBeskrivelse(ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype());
+
             opensearchIndexerV2.updateOvergangsstonad(aktorId, new EnsligeForsorgerOvergangsstønadTiltakDto(
-                    ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype(),
-                    ensligeForsorgerOvergangsstønadTiltak.aktivitetsType(),
+                    vedtakPeriodeBeskrivelse,
+                    harAktivitetsplikt.orElse(null),
                     ensligeForsorgerOvergangsstønadTiltak.til_dato(),
                     yngsteBarn.orElse(null)
             ));

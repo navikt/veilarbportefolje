@@ -262,9 +262,9 @@ public class OpensearchIndexerV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .startObject("ef_overgangsstonad")
-                .field("vedtaksPeriodetype", ensligeForsorgerOvergangsstønadTiltakDto.vedtaksPeriodetype())
-                .field("aktivitetsType", ensligeForsorgerOvergangsstønadTiltakDto.aktivitetsType())
-                .field("til_dato", ensligeForsorgerOvergangsstønadTiltakDto.til_dato())
+                .field("vedtaksPeriodetype", ensligeForsorgerOvergangsstønadTiltakDto.vedtaksPeriodetypeBeskrivelse())
+                .field("harAktivitetsplikt", ensligeForsorgerOvergangsstønadTiltakDto.aktivitsplikt())
+                .field("utlopsDato", ensligeForsorgerOvergangsstønadTiltakDto.utløpsDato())
                 .field("yngsteBarnsFødselsdato", ensligeForsorgerOvergangsstønadTiltakDto.yngsteBarnsFødselsdato())
                 .endObject()
                 .endObject();

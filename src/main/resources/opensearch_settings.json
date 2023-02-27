@@ -222,10 +222,10 @@
           "vedtaksPeriodetype": {
             "type": "keyword"
           },
-          "aktivitetsType": {
+          "harAktivitetsplikt": {
             "type": "keyword"
           },
-          "til_dato": {
+          "utlopsDato": {
             "type": "date"
           },
           "yngsteBarnsFødselsdato": {
