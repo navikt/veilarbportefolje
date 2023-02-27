@@ -10,7 +10,7 @@ import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     @Autowired
     private JdbcTemplate postgres;
 
-    @Before
+    @BeforeEach
     public void setup() {
         postgres.update("truncate TABLE enslige_forsorgere CASCADE");
     }
