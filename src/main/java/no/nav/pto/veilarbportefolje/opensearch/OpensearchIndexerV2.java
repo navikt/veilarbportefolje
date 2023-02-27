@@ -261,7 +261,12 @@ public class OpensearchIndexerV2 {
     public void updateOvergangsstonad(AktorId aktorId, EnsligeForsorgerOvergangsstønadTiltakDto ensligeForsorgerOvergangsstønadTiltakDto) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("ef_overgangsstonad", ensligeForsorgerOvergangsstønadTiltakDto)
+                .startObject("ef_overgangsstonad")
+                .field("vedtaksPeriodetype", ensligeForsorgerOvergangsstønadTiltakDto.vedtaksPeriodetype())
+                .field("aktivitetsType", ensligeForsorgerOvergangsstønadTiltakDto.aktivitetsType())
+                .field("til_dato", ensligeForsorgerOvergangsstønadTiltakDto.til_dato())
+                .field("yngsteBarnsFødselsdato", ensligeForsorgerOvergangsstønadTiltakDto.yngsteBarnsFødselsdato())
+                .endObject()
                 .endObject();
 
         update(aktorId, content, "Update overgangsstønad");
@@ -289,7 +294,7 @@ public class OpensearchIndexerV2 {
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
         if (!oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId)) {
-            secureLog.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging, heler ikke for historiske identer: {}, med info {}", aktoerId, logInfo);
+            secureLog.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging, heller ikke for historiske identer: {}, med info {}", aktoerId, logInfo);
             return;
         }
         UpdateRequest updateRequest = new UpdateRequest();

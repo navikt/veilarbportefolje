@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.util;
 
 import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -11,6 +12,8 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +43,9 @@ public abstract class EndToEndTest {
 
     @Autowired
     protected OpensearchIndexerV2 opensearchIndexerV2;
+
+    @Autowired
+    protected PdlIdentRepository pdlIdentRepository;
 
     @Autowired
     protected IndexName indexName;
@@ -72,7 +78,7 @@ public abstract class EndToEndTest {
     public void populateOpensearch(NavKontor enhetId, VeilederId veilederId, String... aktoerIder) {
         List<OppfolgingsBruker> brukere = new ArrayList<>();
         for (String aktoerId : aktoerIder) {
-            oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(aktoerId), ZonedDateTime.now());
+
             brukere.add(new OppfolgingsBruker()
                     .setAktoer_id(aktoerId)
                     .setOppfolging(true)
@@ -81,6 +87,13 @@ public abstract class EndToEndTest {
             );
         }
         brukere.forEach(bruker -> opensearchTestClient.createUserInOpensearch(bruker));
+    }
+
+    public void insertOppfolgingsInformasjon(AktorId aktorId, Fnr fnr) {
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(fnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID)));
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
     }
 
     @SneakyThrows

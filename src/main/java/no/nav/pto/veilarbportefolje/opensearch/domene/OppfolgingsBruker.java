@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.opensearch.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 
@@ -114,4 +115,6 @@ public class OppfolgingsBruker {
     LocalDate neste_svarfrist_stilling_fra_nav;
 
     Avvik14aVedtak avvik14aVedtak;
+
+    EnsligeForsorgereOvergangsstonad ef_overgangsstonad;
 }

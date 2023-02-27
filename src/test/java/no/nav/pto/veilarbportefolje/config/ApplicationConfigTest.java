@@ -21,6 +21,7 @@ import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereRepository;
+import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
@@ -137,7 +138,8 @@ import static org.mockito.Mockito.when;
         PersonOpprinnelseService.class,
         PersonOpprinnelseRepository.class,
         Avvik14aVedtakService.class,
-        EnsligeForsorgereRepository.class
+        EnsligeForsorgereRepository.class,
+        EnsligeForsorgereService.class
 })
 public class ApplicationConfigTest {
 

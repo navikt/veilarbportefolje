@@ -216,6 +216,22 @@
       },
       "egen_ansatt": {
         "type": "boolean"
+      },
+      "ef_overgangsstonad": {
+        "properties": {
+          "vedtaksPeriodetype": {
+            "type": "keyword"
+          },
+          "aktivitetsType": {
+            "type": "keyword"
+          },
+          "til_dato": {
+            "type": "date"
+          },
+          "yngsteBarnsFødselsdato": {
+            "type": "date"
+          }
+        }
       }
     }
   }
