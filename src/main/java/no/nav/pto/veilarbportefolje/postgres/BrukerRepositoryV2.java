@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -174,7 +175,13 @@ public class BrukerRepositoryV2 {
 
         // ARENA DB LENKE: skal fjernes på sikt
         flettInnOppfolgingsbruker(bruker, utkast14aStatus, rs);
-        flettInnDataFraPDL(rs, bruker);
+
+        Date foedsels_dato = rs.getDate("foedselsdato");
+        if (foedsels_dato != null) {
+            flettInnDataFraPDL(rs, bruker);
+        } else if (isDevelopment().orElse(false)) {
+            bruker.setFnr(null); // Midlertidig forsikring for at brukere i q1 aldri har ekte data. Fjernes sammen med toggles, og bruk av inner join for brukerdata
+        }
         bruker.setEgen_ansatt(rs.getBoolean(ER_SKJERMET));
         bruker.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(SKJERMET_TIL)));
 
