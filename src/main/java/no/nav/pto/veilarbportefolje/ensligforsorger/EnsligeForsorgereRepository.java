@@ -204,7 +204,7 @@ public class EnsligeForsorgereRepository {
         }
     }
 
-    private Integer hentVettakAktivitetstype(String aktivitetsType) {
+    private Integer hentVedtakAktivitetstype(String aktivitetsType) {
         return tryCacheFirst(vettakAktivitetstypeCache, aktivitetsType, () -> this.hentVettakAktivitetstypeFraDB(aktivitetsType));
     }
 
