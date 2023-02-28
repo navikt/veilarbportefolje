@@ -15,7 +15,6 @@ import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.common.xcontent.XContentType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,6 +23,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
 @Slf4j
@@ -52,12 +52,8 @@ public class OpensearchIndexer {
             postgresOpensearchMapper.flettInnSisteEndringerData(List.of(bruker));
             postgresOpensearchMapper.flettInnStatsborgerskapData(List.of(bruker));
 
-            if(FeatureToggle.mapAvvik14aVedtak(unleashService)) {
-                StopWatch sw = new StopWatch();
-                sw.start();
+            if (FeatureToggle.mapAvvik14aVedtak(unleashService)) {
                 postgresOpensearchMapper.flettInnAvvik14aVedtak(List.of(bruker));
-                sw.stop();
-                log.info(sw.shortSummary());
             }
 
             syncronIndekseringsRequest(bruker);
@@ -86,9 +82,9 @@ public class OpensearchIndexer {
 
         try {
             restHighLevelClient.bulk(bulk, RequestOptions.DEFAULT);
-            log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
+            secureLog.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
         } catch (IOException e) {
-            log.error(String.format("Klart ikke å skrive til indeks: %s", aktoerIds), e);
+            secureLog.error(String.format("Klart ikke å skrive til indeks: %s", aktoerIds), e);
             throw e;
         }
     }

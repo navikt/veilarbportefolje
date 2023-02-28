@@ -9,6 +9,8 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 
 @Slf4j
 @Service
@@ -32,7 +34,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId);
         opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId);
-        log.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
+        secureLog.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
         final boolean harByttetNavKontor = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
         if (harByttetNavKontor) {

@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
@@ -37,6 +38,8 @@ import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensea
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class OpensearchServiceIntegrationTest extends EndToEndTest {
@@ -1912,6 +1915,106 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         assertThat(response.getBrukere()).hasSize(5);
     }
+
+	@Test
+	void skal_ikke_automatisk_sortere_nye_brukere_paa_top() {
+		when(unleashService.isEnabled(anyString())).thenReturn(true);
+		var nyBrukerForVeileder = new OppfolgingsBruker()
+				.setFnr(randomFnr().toString())
+				.setAktoer_id(randomAktorId().toString())
+				.setEnhet_id(TEST_ENHET)
+				.setOppfolging(true)
+				.setVeileder_id(TEST_VEILEDER_0)
+				.setNy_for_veileder(true)
+				.setEtternavn("A");
+		var brukerForVeileder1 = new OppfolgingsBruker()
+				.setFnr(randomFnr().toString())
+				.setAktoer_id(randomAktorId().toString())
+				.setEnhet_id(TEST_ENHET)
+				.setOppfolging(true)
+				.setVeileder_id(TEST_VEILEDER_0)
+				.setNy_for_veileder(false)
+				.setEtternavn("B");
+		var brukerForVeileder2 = new OppfolgingsBruker()
+				.setFnr(randomFnr().toString())
+				.setAktoer_id(randomAktorId().toString())
+				.setEnhet_id(TEST_ENHET)
+				.setOppfolging(true)
+				.setVeileder_id(TEST_VEILEDER_0)
+				.setNy_for_veileder(false)
+				.setEtternavn("C");
+
+		var liste = List.of(nyBrukerForVeileder, brukerForVeileder1, brukerForVeileder2);
+
+		skrivBrukereTilTestindeks(liste);
+
+		pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+		var filterValg = new Filtervalg();
+
+		var response = opensearchService.hentBrukere(
+				TEST_ENHET,
+				Optional.of(TEST_VEILEDER_0),
+				"descending",
+				"etternavn",
+				filterValg,
+				null,
+				null
+		);
+
+		assertThat(response.getBrukere()).hasSize(3);
+		assertThat(response.getBrukere().get(0).getEtternavn()).isEqualTo("C");
+		assertThat(response.getBrukere().get(2).getEtternavn()).isEqualTo("A");
+	}
+
+	@Test
+	void skal_ikke_automatisk_sortere_ufordelte_brukere_paa_top() {
+		when(unleashService.isEnabled(anyString())).thenReturn(true);
+		var ufordeltBruker = new OppfolgingsBruker()
+				.setFnr(randomFnr().toString())
+				.setAktoer_id(randomAktorId().toString())
+				.setEnhet_id(TEST_ENHET)
+				.setOppfolging(true)
+				.setVeileder_id(null)
+				.setEtternavn("A");
+		var bruker1 = new OppfolgingsBruker()
+				.setFnr(randomFnr().toString())
+				.setAktoer_id(randomAktorId().toString())
+				.setEnhet_id(TEST_ENHET)
+				.setOppfolging(true)
+				.setVeileder_id(TEST_VEILEDER_0)
+				.setEtternavn("B");
+		var bruker2 = new OppfolgingsBruker()
+				.setFnr(randomFnr().toString())
+				.setAktoer_id(randomAktorId().toString())
+				.setEnhet_id(TEST_ENHET)
+				.setOppfolging(true)
+				.setVeileder_id(TEST_VEILEDER_0)
+				.setEtternavn("C");
+
+		var liste = List.of(ufordeltBruker, bruker1, bruker2);
+
+		skrivBrukereTilTestindeks(liste);
+
+		pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+		var filterValg = new Filtervalg();
+
+		var response = opensearchService.hentBrukere(
+				TEST_ENHET,
+				empty(),
+				"descending",
+				"etternavn",
+				filterValg,
+				null,
+				null
+		);
+
+		assertThat(response.getBrukere()).hasSize(3);
+		assertThat(response.getBrukere().get(0).getEtternavn()).isEqualTo("C");
+		assertThat(response.getBrukere().get(2).getEtternavn()).isEqualTo("A");
+
+	}
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
         return brukere.getBrukere().stream().anyMatch(bruker -> veilederId.equals(bruker.getVeilederId()));

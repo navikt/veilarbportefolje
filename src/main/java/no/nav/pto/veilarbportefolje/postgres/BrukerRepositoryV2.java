@@ -32,6 +32,7 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.FodselsnummerUtils.lagFodselsdato;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -55,9 +56,9 @@ public class BrukerRepositoryV2 {
                         select OD.AKTOERID, OD.OPPFOLGING, ob.*,
                                ns.er_skjermet, ns.skjermet_til, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.mellomnavn as mellomnavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
-                               bd.foedeland,
-                               bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert,
-                               bd.bydelsnummer, bd.kommunenummer, bd.bostedsistoppdatert, bd.utenlandskadresse, bd.harUkjentBosted, 
+                               bd.foedeland, 
+                               bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert, bd.diskresjonkode as pdl_diskresjonkode,
+                               bd.bydelsnummer, bd.kommunenummer, bd.bostedsistoppdatert, bd.utenlandskadresse, bd.harUkjentBosted,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
                                BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
@@ -114,7 +115,7 @@ public class BrukerRepositoryV2 {
         long endTime = System.currentTimeMillis();
         log.info("Ytelse, søkte opp historisk arena data på: {}ms", endTime - startTime);
         if (brukerMedHistoriskData != null && brukerMedHistoriskData.getEnhet_id() != null) {
-            log.info("Bruker historisk ident i arena for aktor: {}", bruker.getAktoer_id());
+            secureLog.info("Bruker historisk ident i arena for aktor: {}", bruker.getAktoer_id());
         }
     }
 
@@ -280,26 +281,26 @@ public class BrukerRepositoryV2 {
         String aktoerId = rs.getString(AKTOERID);
         String fnr = rs.getString(FODSELSNR);
         if (foedsels_dato == null) {
-            log.info("Arena/PDL: Har ikke PDL data på aktoer: {}", aktoerId);
+            secureLog.info("Arena/PDL: Har ikke PDL data på aktoer: {}", aktoerId);
             return;
         }
         if (isDifferent(rs.getString("fornavn_pdl").toLowerCase(), rs.getString(FORNAVN).toLowerCase())) {
-            log.info("Arena/PDL: fornavn feil bruker: {}", aktoerId);
+            secureLog.info("Arena/PDL: fornavn feil bruker: {}", aktoerId);
         }
         if (isDifferent(rs.getString("etternavn_pdl").toLowerCase(), rs.getString(ETTERNAVN).toLowerCase())) {
-            log.info("Arena/PDL: etternavn feil bruker: {}", aktoerId);
+            secureLog.info("Arena/PDL: etternavn feil bruker: {}", aktoerId);
         }
         if (isDifferent(rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED))) {
-            log.info("Arena/PDL: er_doed_pdl feil bruker: {}, pdl: {}, arena: {}", aktoerId, rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED));
+            secureLog.info("Arena/PDL: er_doed_pdl feil bruker: {}, pdl: {}, arena: {}", aktoerId, rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED));
         }
         if (isDifferent(rs.getString("kjoenn").toLowerCase(), FodselsnummerUtils.lagKjonn(fnr).toLowerCase())) {
-            log.info("Arena/PDL: kjønn feil bruker: {}", aktoerId);
+            secureLog.info("Arena/PDL: kjønn feil bruker: {}", aktoerId);
         }
         if (isDifferent(lagFodselsdato(foedsels_dato.toLocalDate()), lagFodselsdato(fnr))) {
-            log.info("Arena/PDL: Fodselsdato feil bruker: {}", aktoerId);
+            secureLog.info("Arena/PDL: Fodselsdato feil bruker: {}", aktoerId);
         }
         if (isDifferent(foedsels_dato.toLocalDate().getDayOfMonth(), Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))) {
-            log.info("Arena/PDL: Fodselsdag_i_mnd feil bruker: {}", aktoerId);
+            secureLog.info("Arena/PDL: Fodselsdag_i_mnd feil bruker: {}", aktoerId);
         }
     }
 

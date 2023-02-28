@@ -9,15 +9,9 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.UTKAST_14A_STATUS.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.UTKAST_14A_STATUS.ANSVARLIG_VEILDERIDENT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.UTKAST_14A_STATUS.ANSVARLIG_VEILDERNAVN;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.UTKAST_14A_STATUS.ENDRET_TIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.UTKAST_14A_STATUS.HOVEDMAL;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.UTKAST_14A_STATUS.INNSATSGRUPPE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.UTKAST_14A_STATUS.ID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.UTKAST_14A_STATUS.STATUS;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.UTKAST_14A_STATUS.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -29,7 +23,7 @@ public class Utkast14aStatusRepository {
         if (aktorId == null) {
             return;
         }
-        log.info("Slettet vedtak og utkast pa bruker: {}", aktorId);
+        secureLog.info("Slettet vedtak og utkast pa bruker: {}", aktorId);
         db.update("DELETE FROM UTKAST_14A_STATUS WHERE AKTOERID = ?", aktorId);
     }
 
@@ -56,7 +50,7 @@ public class Utkast14aStatusRepository {
 
     public int update(Kafka14aStatusendring statusEndring) {
         if (erIkkeUtkast(statusEndring.getAktorId(), statusEndring.getVedtakId())) {
-            log.info("Oppdaterte IKKE vedtak: {} for bruker: {}", statusEndring.getVedtakId(), statusEndring.getAktorId());
+            secureLog.info("Oppdaterte IKKE vedtak: {} for bruker: {}", statusEndring.getVedtakId(), statusEndring.getAktorId());
             return 0;
         }
         return db.update("""
@@ -100,12 +94,12 @@ public class Utkast14aStatusRepository {
 
     public void oppdaterAnsvarligVeileder(Kafka14aStatusendring statusEndring) {
         if (erIkkeUtkast(statusEndring.getAktorId(), statusEndring.getVedtakId())) {
-            log.info("Oppdaterte IKKE vedtak: {} med ny ansvarlig veileder: {}, for bruker: {}", statusEndring.getVedtakId(), statusEndring.getVeilederIdent(), statusEndring.getAktorId());
+            secureLog.info("Oppdaterte IKKE vedtak: {} med ny ansvarlig veileder: {}, for bruker: {}", statusEndring.getVedtakId(), statusEndring.getVeilederIdent(), statusEndring.getAktorId());
             return;
         }
         String sql = "UPDATE UTKAST_14A_STATUS SET ANSVARLIG_VEILDERIDENT = ?, ANSVARLIG_VEILDERNAVN = ? WHERE AKTOERID = ?";
         int rows = db.update(sql, statusEndring.getVeilederIdent(), statusEndring.getVeilederNavn(), statusEndring.getAktorId());
-        log.info("Oppdaterte vedtak: {} med ny ansvarlig veileder: {}, for bruker: {}. Rader: {}", statusEndring.getVedtakId(), statusEndring.getVeilederIdent(), statusEndring.getAktorId(), rows);
+        secureLog.info("Oppdaterte vedtak: {} med ny ansvarlig veileder: {}, for bruker: {}. Rader: {}", statusEndring.getVedtakId(), statusEndring.getVeilederIdent(), statusEndring.getAktorId(), rows);
     }
 
     private boolean erIkkeUtkast(String aktorId, long vedtakId) {

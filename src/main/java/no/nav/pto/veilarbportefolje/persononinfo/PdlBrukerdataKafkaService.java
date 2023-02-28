@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -21,12 +20,12 @@ import java.util.List;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivAktor;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String> {
-    private final ObjectMapper objectMapper = new ObjectMapper();
+public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDokument> {
     private final PdlService pdlService;
     private final PdlIdentRepository pdlIdentRepository;
     private final PdlPersonRepository pdlPersonRepository;
@@ -35,22 +34,21 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
 
     @Override
     @SneakyThrows
-    public void behandleKafkaMeldingLogikk(String pdlDokumentJson) {
-        if (pdlDokumentJson == null) {
-            log.info("""
+    public void behandleKafkaMeldingLogikk(PdlDokument pdlDokument) {
+        if (pdlDokument == null) {
+            secureLog.info("""
                         Fikk tom endrings melding fra PDL.
                         Dette er en tombstone som ignoreres fordi alle historiske identer lenket til nye identer slettes ved en oppdatering.
                     """);
             return;
         }
 
-        PdlDokument pdlDokument = objectMapper.readValue(pdlDokumentJson, PdlDokument.class);
         List<PDLIdent> pdlIdenter = pdlDokument.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
-            log.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
+            secureLog.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
 
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
             handterIdentEndring(pdlIdenter);
@@ -67,11 +65,11 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<String
             PDLPerson person = PDLPerson.genererFraApiRespons(personFraKafka);
             pdlPersonRepository.upsertPerson(aktivFnr, person);
         } catch (PdlPersonValideringException e) {
-            if(isDevelopment().orElse(false)){
-                log.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivAktorId), e);
+            if (isDevelopment().orElse(false)) {
+                secureLog.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivAktorId), e);
                 return;
             }
-            log.warn(String.format("Fikk pdl validerings error på aktor: %s, prøver å laste inn data på REST", aktivAktorId), e);
+            secureLog.warn(String.format("Fikk pdl validerings error på aktor: %s, prøver å laste inn data på REST", aktivAktorId), e);
             pdlService.hentOgLagreBrukerData(aktivFnr);
         }
         List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);

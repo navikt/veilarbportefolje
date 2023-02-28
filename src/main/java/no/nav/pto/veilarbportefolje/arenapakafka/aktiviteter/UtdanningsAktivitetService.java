@@ -12,6 +12,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -23,7 +24,7 @@ public class UtdanningsAktivitetService {
 
     public void behandleKafkaRecord(ConsumerRecord<String, UtdanningsAktivitetDTO> kafkaMelding) {
         UtdanningsAktivitetDTO melding = kafkaMelding.value();
-        log.info(
+        secureLog.info(
                 "Behandler kafka-melding med key: {} og offset: {}, og partition: {} på topic {}",
                 kafkaMelding.key(),
                 kafkaMelding.offset(),
@@ -41,10 +42,10 @@ public class UtdanningsAktivitetService {
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
         if (skalSlettesGoldenGate(kafkaMelding) || skalSletteUtdanningsAktivitet(innhold)) {
-            log.info("Sletter aktivitet: {}", innhold.getAktivitetid());
+            secureLog.info("Sletter aktivitet: {}", innhold.getAktivitetid());
             aktivitetService.slettOgIndekserUtdanningsAktivitet(innhold.getAktivitetid(), aktorId);
         } else {
-            log.info("Lagrer aktivitet: {}", innhold.getAktivitetid());
+            secureLog.info("Lagrer aktivitet: {}", innhold.getAktivitetid());
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
             aktivitetService.upsertOgIndekserUtdanningsAktivitet(melding);
         }
@@ -60,10 +61,10 @@ public class UtdanningsAktivitetService {
         Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(innhold.getAktivitetid());
 
         if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), skalSlettesGoldenGate(kafkaMelding))) {
-            log.info("Fikk tilsendt gammel utdannings-aktivtet-melding hendelse: {}", innhold.getHendelseId());
+            secureLog.info("Fikk tilsendt gammel utdannings-aktivtet-melding hendelse: {}", innhold.getHendelseId());
             return true;
         }
-        log.info("Fikk ny hendelse: {}", innhold.getHendelseId());
+        secureLog.info("Fikk ny hendelse: {}", innhold.getHendelseId());
         return false;
     }
 

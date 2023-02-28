@@ -2,7 +2,6 @@
 
 # Beskrivelse
 
-
 Tjeneste som aggregerer data fra andre baksystemer og håndterer oppdatering av søkeindeks brukt i modia oversikten.
 
 Følgende data aggregeres:
@@ -83,3 +82,4 @@ Plugin kan lastes ned her: https://plugins.jetbrains.com/plugin/6317-lombok
 Opprett en issue i GitHub for eventuelle spørsmål.
 
 Er du ansatt i NAV kan du stille spørsmål på Slack i kanalen #produktområdet_arbeidsoppfølging.
+

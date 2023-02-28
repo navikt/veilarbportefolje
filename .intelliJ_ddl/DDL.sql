@@ -103,8 +103,6 @@ CREATE TABLE public.bruker_data (
     er_doed boolean,
     foedselsdato date,
     foedeland character varying(10),
-    innflyttingtilnorgefraland character varying(10),
-    angittflyttedato date,
     talespraaktolk character varying(20),
     tegnspraaktolk character varying(20),
     tolkbehovsistoppdatert date,
@@ -168,7 +166,23 @@ CREATE TABLE public.brukertiltak (
     personid character varying(20),
     tiltakskode character varying(10),
     tildato timestamp without time zone,
-    fradato timestamp without time zone
+    fradato timestamp without time zone,
+    version bigint
+);
+
+
+--
+-- Name: brukertiltak_v2; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.brukertiltak_v2 (
+    aktivitetid character varying(25) NOT NULL,
+    aktoerid character varying(20),
+    tiltakskode character varying(10),
+    tildato timestamp without time zone,
+    fradato timestamp without time zone,
+    version bigint,
+    status character varying(255)
 );
 
 
@@ -510,6 +524,14 @@ ALTER TABLE ONLY public.brukertiltak
 
 
 --
+-- Name: brukertiltak_v2 brukertiltak_v2_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.brukertiltak_v2
+    ADD CONSTRAINT brukertiltak_v2_pkey PRIMARY KEY (aktivitetid);
+
+
+--
 -- Name: dialog dialog_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -671,6 +693,13 @@ CREATE INDEX aktoerid_gruppe_aktiviter_idx ON public.gruppe_aktiviter USING btre
 --
 
 CREATE INDEX aktorid_ytelser_idx ON public.ytelsesvedtak USING btree (aktorid);
+
+
+--
+-- Name: brukertiltak_v2_aktoerid_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX brukertiltak_v2_aktoerid_index ON public.brukertiltak_v2 USING btree (aktoerid);
 
 
 --

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_STATSBORGERSKAP;
 import no.nav.pto.veilarbportefolje.domene.Kjonn;
+import no.nav.pto.veilarbportefolje.domene.Sikkerhetstiltak;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,6 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,26 +33,38 @@ public class PdlPersonRepository {
     private final JdbcTemplate dbReadOnly;
 
     public void upsertPerson(Fnr fnr, PDLPerson personData) {
+        String sikkerhetstiltak_type = personData.getSikkerhetstiltak() != null ? personData.getSikkerhetstiltak().getTiltakstype() : null;
+        String sikkerhetstiltak_beskrivelse = personData.getSikkerhetstiltak() != null ? personData.getSikkerhetstiltak().getBeskrivelse() : null;
+        LocalDate sikkerhetstiltak_gyldigfra = personData.getSikkerhetstiltak() != null ? personData.getSikkerhetstiltak().getGyldigFra() : null;
+        LocalDate sikkerhetstiltak_gyldigtil = personData.getSikkerhetstiltak() != null ? personData.getSikkerhetstiltak().getGyldigTil() : null;
+
         db.update("""
-                        INSERT INTO bruker_data (freg_ident, fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato, 
+                        INSERT INTO bruker_data (freg_ident, fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato,
                         foedeland, talespraaktolk, tegnspraaktolk, tolkBehovSistOppdatert,
-                        kommunenummer, bydelsnummer, utenlandskAdresse, bostedSistOppdatert, harUkjentBosted)
-                        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                        kommunenummer, bydelsnummer, utenlandskAdresse, bostedSistOppdatert, harUkjentBosted, diskresjonkode,
+                        sikkerhetstiltak_type, sikkerhetstiltak_beskrivelse, sikkerhetstiltak_gyldigfra,
+                        sikkerhetstiltak_gyldigtil)
+                        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                         on conflict (freg_ident)
-                        do update set (fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato, 
+                        do update set (fornavn, etternavn, mellomnavn, kjoenn, er_doed, foedselsdato,
                         foedeland, talespraaktolk, tegnspraaktolk, tolkBehovSistOppdatert,
-                        kommunenummer, bydelsnummer, utenlandskAdresse, bostedSistOppdatert, harUkjentBosted) =
-                        (excluded.fornavn, excluded.etternavn, excluded.mellomnavn, excluded.kjoenn, excluded.er_doed, excluded.foedselsdato, 
+                        kommunenummer, bydelsnummer, utenlandskAdresse, bostedSistOppdatert, harUkjentBosted, diskresjonkode,
+                        sikkerhetstiltak_type, sikkerhetstiltak_beskrivelse, sikkerhetstiltak_gyldigfra,
+                        sikkerhetstiltak_gyldigtil
+                        ) =
+                        (excluded.fornavn, excluded.etternavn, excluded.mellomnavn, excluded.kjoenn, excluded.er_doed, excluded.foedselsdato,
                         excluded.foedeland,
                         excluded.talespraaktolk, excluded.tegnspraaktolk, excluded.tolkBehovSistOppdatert,
-                        excluded.kommunenummer, excluded.bydelsnummer, excluded.utenlandskAdresse, excluded.bostedSistOppdatert, excluded.harUkjentBosted)
+                        excluded.kommunenummer, excluded.bydelsnummer, excluded.utenlandskAdresse, excluded.bostedSistOppdatert, excluded.harUkjentBosted, excluded.diskresjonkode,
+                        excluded.sikkerhetstiltak_type, excluded.sikkerhetstiltak_beskrivelse, excluded.sikkerhetstiltak_gyldigfra,
+                        excluded.sikkerhetstiltak_gyldigtil)
                         """,
                 fnr.get(), personData.getFornavn(), personData.getEtternavn(), personData.getMellomnavn(),
                 personData.getKjonn().name(), personData.isErDoed(), personData.getFoedsel(), personData.getFoedeland(),
-                personData.getTalespraaktolk(),
-                personData.getTegnspraaktolk(), personData.getTolkBehovSistOppdatert(),
+                personData.getTalespraaktolk(), personData.getTegnspraaktolk(), personData.getTolkBehovSistOppdatert(),
                 personData.getKommunenummer(), personData.getBydelsnummer(), personData.getUtenlandskAdresse(),
-                personData.getBostedSistOppdatert(), personData.isHarUkjentBosted());
+                personData.getBostedSistOppdatert(), personData.isHarUkjentBosted(), personData.getDiskresjonskode(),
+                sikkerhetstiltak_type, sikkerhetstiltak_beskrivelse, sikkerhetstiltak_gyldigfra, sikkerhetstiltak_gyldigtil);
 
         updateStatsborgerskap(fnr, personData.getStatsborgerskap());
     }
@@ -100,6 +114,14 @@ public class PdlPersonRepository {
                                 .setUtenlandskAdresse(rs.getString("utenlandskAdresse"))
                                 .setHarUkjentBosted(rs.getBoolean("harUkjentBosted"))
                                 .setBostedSistOppdatert(toLocalDateOrNull(rs.getString("bostedSistOppdatert")))
+                                .setDiskresjonskode(rs.getString("diskresjonkode"))
+                                .setSikkerhetstiltak(
+                                        new Sikkerhetstiltak(
+                                                rs.getString("sikkerhetstiltak_type"),
+                                                rs.getString("sikkerhetstiltak_beskrivelse"),
+                                                toLocalDateOrNull(rs.getString("sikkerhetstiltak_gyldigfra")),
+                                                toLocalDateOrNull(rs.getString("sikkerhetstiltak_gyldigtil"))
+                                        ))
                         , hentAktivFnr.get()));
     }
 

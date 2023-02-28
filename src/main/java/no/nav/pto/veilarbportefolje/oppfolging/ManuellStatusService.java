@@ -9,6 +9,8 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 
 @Slf4j
 @Service
@@ -26,7 +28,7 @@ public class ManuellStatusService extends KafkaCommonConsumerService<ManuellStat
 
         String manuellStatus = dto.isErManuell() ? ManuellBrukerStatus.MANUELL.name() : null;
         opensearchIndexerV2.settManuellStatus(aktorId, manuellStatus);
-        log.info("Oppdatert manuellstatus for bruker {}, ny status: {}", aktorId, manuellStatus);
+        secureLog.info("Oppdatert manuellstatus for bruker {}, ny status: {}", aktorId, manuellStatus);
     }
 
     private void kastErrorHvisBrukerSkalVaereUnderOppfolging(AktorId aktorId, ManuellStatusDTO dto) {

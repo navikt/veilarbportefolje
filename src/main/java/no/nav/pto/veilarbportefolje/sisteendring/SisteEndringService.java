@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -52,14 +53,14 @@ public class SisteEndringService {
                 opensearchIndexerV2.updateSisteEndring(sisteEndringDTO);
             } catch (Exception e) {
                 String message = String.format("Kunne ikke lagre eller indexere siste endring for aktoer id: %s", melding.getAktorId());
-                log.error(message, e);
+                secureLog.error(message, e);
             }
 
         }
     }
 
     public void behandleAktivitet(KafkaAktivitetMelding kafkaAktivitet) {
-        if (kafkaAktivitet.getLagtInnAv() == null || kafkaAktivitet.getLagtInnAv() == KafkaAktivitetMelding.InnsenderData.NAV) {
+        if (kafkaAktivitet.getLagtInnAv() == null || kafkaAktivitet.getLagtInnAv() != KafkaAktivitetMelding.InnsenderData.BRUKER) {
             return;
         }
 
@@ -75,7 +76,7 @@ public class SisteEndringService {
 
     private boolean hendelseErNyereEnnIPostgres(SisteEndringDTO sisteEndringDTO) {
         if (sisteEndringDTO.getTidspunkt() == null) {
-            log.error("Endringstidspunkt var null for aktoerId: " + sisteEndringDTO.getAktoerId());
+            secureLog.error("Endringstidspunkt var null for aktoerId: " + sisteEndringDTO.getAktoerId());
             return false;
         }
         Timestamp databaseVerdi = sisteEndringRepositoryV2.getSisteEndringTidspunkt(sisteEndringDTO.getAktoerId(), sisteEndringDTO.getKategori());

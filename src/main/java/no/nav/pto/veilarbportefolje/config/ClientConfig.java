@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.config;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.VeilarbPepFactory;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
 import no.nav.common.client.aktoroppslag.PdlAktorOppslagClient;
@@ -10,16 +11,10 @@ import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
-import no.nav.common.utils.EnvironmentUtils;
-import no.nav.common.utils.UrlUtils;
-import no.nav.poao_tilgang.client.TilgangClient;
-import no.nav.poao_tilgang.client.TilgangHttpClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
-import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
-import no.nav.pto.veilarbportefolje.client.CachedTilgangClient;
+import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
@@ -29,29 +24,15 @@ import org.springframework.context.annotation.Configuration;
 import java.net.http.HttpClient;
 
 import static no.nav.common.utils.NaisUtils.getCredentials;
-import static no.nav.common.utils.UrlUtils.createDevInternalIngressUrl;
-import static no.nav.common.utils.UrlUtils.createProdInternalIngressUrl;
-import static no.nav.common.utils.UrlUtils.createServiceUrl;
 
 
 @Configuration
 public class ClientConfig {
 
+
     @Bean
-    public TilgangClient tilgangClient(AzureAdMachineToMachineTokenClient tokenClient) {
-        String url = isProduction() ?
-                createProdInternalIngressUrl("poao-tilgang") :
-                createDevInternalIngressUrl("poao-tilgang");
-
-        String tokenScope = String.format("api://%s-gcp.poao.poao-tilgang/.default", isProduction() ? "prod" : "dev");
-
-        TilgangHttpClient tilgangClient = new TilgangHttpClient(
-                url,
-                () -> tokenClient.createMachineToMachineToken(tokenScope),
-                RestClient.baseClient()
-        );
-
-        return new CachedTilgangClient(tilgangClient);
+    public PoaoTilgangWrapper poaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
+        return new PoaoTilgangWrapper(authContextHolder, tokenClient, environmentProperties);
     }
 
     @Bean
@@ -60,34 +41,33 @@ public class ClientConfig {
     }
 
     @Bean
-    public VeilarbVeilederClient veilarbVeilederClient(AuthService authService) {
-        return new VeilarbVeilederClient(authService);
+    public VeilarbVeilederClient veilarbVeilederClient(AuthService authService, EnvironmentProperties environmentProperties) {
+        return new VeilarbVeilederClient(authService, environmentProperties);
     }
 
     @Bean
     public VedtaksstotteClient vedtaksstotteClient(
             AuthService authService,
-            AzureAdMachineToMachineTokenClient tokenClient
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties
     ) {
 
-        String tokenScope = String.format(
-                "api://%s-fss.pto.veilarbvedtaksstotte/.default",
-                isProduction() ? "prod" : "dev"
-        );
-
         return new VedtaksstotteClient(
-                createServiceUrl("veilarbvedtaksstotte", "pto", true),
+                environmentProperties.getVeilarbvedtaksstotteUrl(),
                 authService,
-                () -> tokenClient.createMachineToMachineToken(tokenScope),
-                new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbvedtaksstotte"));
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getVeilarbvedtaksstotteScope()),
+                environmentProperties
+        );
     }
 
     @Bean
     public Pep veilarbPep(EnvironmentProperties properties) {
         Credentials serviceUserCredentials = getCredentials("service_user");
         return VeilarbPepFactory.get(
-                properties.getAbacVeilarbUrl(), serviceUserCredentials.username,
-                serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
+                properties.getAbacVeilarbUrl(),
+                serviceUserCredentials.username,
+                serviceUserCredentials.password,
+                new SpringAuditRequestInfoSupplier()
         );
     }
 
@@ -104,23 +84,11 @@ public class ClientConfig {
     }
 
     @Bean
-    public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient) {
-        String tokenScop = String.format("api://%s-fss.pdl.pdl-api/.default",
-                isProduction() ? "prod" : "dev"
-        );
+    public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
         return new PdlClientImpl(
-                createServiceUrl("pdl-api", "pdl", false),
-                () -> tokenClient.createMachineToMachineToken(tokenScop)
+                environmentProperties.getPdlUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getPdlScope())
         );
     }
 
-    private static boolean isProduction() {
-        return EnvironmentUtils.isProduction().orElseThrow();
-    }
-
-    private String internalDevOrProdPdlIngress() {
-        return isProduction()
-                ? createProdInternalIngressUrl("pdl-api")
-                : createDevInternalIngressUrl("pdl-api-q1");
-    }
 }
