@@ -208,7 +208,7 @@ public class EnsligeForsorgereRepository {
         return tryCacheFirst(vettakAktivitetstypeCache, aktivitetsType, () -> this.hentVettakAktivitetstypeFraDB(aktivitetsType));
     }
 
-    private Integer hentVettakAktivitetstypeFraDB(String aktivitetsType) {
+    private Integer hentVedtakAktivitetstypeFraDB(String aktivitetsType) {
         String sql = "SELECT ID FROM ef_aktivitet_type WHERE aktivitet_type = :aktivitet_type::varchar";
         Optional<Integer> vedtakAktivitetstypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("aktivitet_type", aktivitetsType), Integer.class));
 
