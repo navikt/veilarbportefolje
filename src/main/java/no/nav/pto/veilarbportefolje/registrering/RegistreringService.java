@@ -8,6 +8,8 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 @RequiredArgsConstructor
 @Service
 @Slf4j
@@ -21,11 +23,11 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
         registreringRepositoryV2.upsertBrukerRegistrering(kafkaMelding);
 
         opensearchIndexerV2.updateRegistering(aktoerId, kafkaMelding);
-        log.info("Oppdatert brukerregistrering for bruker: {}", aktoerId);
+        secureLog.info("Oppdatert brukerregistrering for bruker: {}", aktoerId);
     }
 
     public void slettRegistering(AktorId aktoerId) {
         registreringRepositoryV2.slettBrukerRegistrering(aktoerId);
-        log.info("Slettet brukerregistrering for bruker: {}", aktoerId);
+        secureLog.info("Slettet brukerregistrering for bruker: {}", aktoerId);
     }
 }

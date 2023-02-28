@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 
 @Slf4j
 @Service
@@ -28,6 +30,6 @@ public class OppfolgingStartetService {
         siste14aVedtakService.hentOgLagreSiste14aVedtak(aktorId);
 
         opensearchIndexer.indekser(aktorId);
-        log.info("Bruker {} har startet oppfølging: {}", aktorId, oppfolgingStartetDate);
+        secureLog.info("Bruker {} har startet oppfølging: {}", aktorId, oppfolgingStartetDate);
     }
 }

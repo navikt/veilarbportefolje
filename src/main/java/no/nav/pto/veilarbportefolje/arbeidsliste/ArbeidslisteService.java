@@ -26,6 +26,7 @@ import java.util.Optional;
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
 @RequiredArgsConstructor
@@ -142,17 +143,17 @@ public class ArbeidslisteService {
         Optional<String> navKontorForArbeidsliste = arbeidslisteRepositoryPostgres.hentNavKontorForArbeidsliste(aktoerId);
 
         if (navKontorForArbeidsliste.isEmpty()) {
-            log.info("Bruker {} har ikke NAV-kontor på arbeidsliste", aktoerId.toString());
+            secureLog.info("Bruker {} har ikke NAV-kontor på arbeidsliste", aktoerId.toString());
             return false;
         }
 
         final Optional<String> navKontorForBruker = brukerServiceV2.hentNavKontor(aktoerId).map(NavKontor::getValue);
         if (navKontorForBruker.isEmpty()) {
-            log.error("Kunne ikke hente NAV-kontor fra db-link til arena for bruker {}", aktoerId.toString());
+            secureLog.error("Kunne ikke hente NAV-kontor fra db-link til arena for bruker {}", aktoerId.toString());
             return false;
         }
 
-        log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorForBruker.get(), navKontorForArbeidsliste.get());
+        secureLog.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorForBruker.get(), navKontorForArbeidsliste.get());
         return !navKontorForBruker.orElseThrow().equals(navKontorForArbeidsliste.orElseThrow());
     }
 }

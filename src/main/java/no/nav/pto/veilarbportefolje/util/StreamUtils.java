@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 @Slf4j
 public class StreamUtils {
 
@@ -20,7 +22,7 @@ public class StreamUtils {
     }
 
     public static Consumer<Throwable> log(String melding) {
-        return (throwable) -> log.error(melding, throwable);
+        return (throwable) -> secureLog.error(melding, throwable);
     }
 
     public static Consumer<Throwable> log(Logger logger, String melding) {

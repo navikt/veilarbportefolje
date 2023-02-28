@@ -210,6 +210,12 @@
       },
       "neste_svarfrist_stilling_fra_nav": {
         "type": "date"
+      },
+      "diskresjonskode": {
+        "type": "keyword"
+      },
+      "egen_ansatt": {
+        "type": "boolean"
       }
     }
   }

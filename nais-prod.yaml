@@ -48,6 +48,7 @@ spec:
     instance: veilarbportefolje
   azure:
     application:
+      allowAllUsers: true
       enabled: true
       claims:
         extra:
@@ -75,3 +76,25 @@ spec:
   env:
     - name: JAVA_OPTS
       value: "-Xms4096m -Xmx10144m --illegal-access=permit --add-opens=java.base/java.lang=ALL-UNNAMED"
+    - name: VEILARBOPPFOLGING_URL
+      value: "http://veilarboppfolging.pto.svc.nais.local/veilarboppfolging"
+    - name: VEILARBOPPFOLGING_TOKEN_SCOPE
+      value: "api://prod-fss.pto.veilarboppfolging/.default"
+    - name: VEILARBVEDTAKSSTOTTE_URL
+      value: "http://veilarbvedtaksstotte.pto.svc.nais.local/veilarbvedtaksstotte"
+    - name: VEILARBVEDTAKSSTOTTE_TOKEN_SCOPE
+      value: "api://prod-fss.pto.veilarbvedtaksstotte/.default"
+    - name: VEILARBVEILEDER_URL
+      value: "http://veilarbveileder.pto.svc.nais.local/veilarbveileder"
+    - name: VEILARBVEILEDER_TOKEN_SCOPE
+      value: "api://prod-fss.pto.veilarbveileder/.default"
+    - name: PDL_URL
+      value: "http://pdl-api.pdl.svc.nais.local"
+    - name: PDL_TOKEN_SCOPE
+      value: "api://prod-fss.pdl.pdl-api/.default"
+    - name: POAO_TILGANG_URL
+      value: "https://poao-tilgang.intern.nav.no"
+    - name: POAO_TILGANG_TOKEN_SCOPE
+      value: "api://prod-gcp.poao.poao-tilgang/.default"
+    - name: KODEVERK_URL
+      value: "http://kodeverk.default.svc.nais.local"

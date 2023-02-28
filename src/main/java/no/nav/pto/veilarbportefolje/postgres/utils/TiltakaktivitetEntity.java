@@ -15,4 +15,5 @@ public class TiltakaktivitetEntity {
     ArenaDato tilDato;
     ArenaDato fraDato;
     Long version;
+    String status;
 }
