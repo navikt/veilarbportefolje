@@ -7,7 +7,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
@@ -22,12 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
-import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukArenaSomBackup;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
@@ -40,7 +34,6 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class BrukerRepositoryV2 {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate db;
-    private final UnleashService unleashService;
 
     private final KodeverkService kodeverskService;
 
@@ -56,7 +49,7 @@ public class BrukerRepositoryV2 {
                         select OD.AKTOERID, OD.OPPFOLGING, ob.*,
                                ns.er_skjermet, ns.skjermet_til, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.mellomnavn as mellomnavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
-                               bd.foedeland, 
+                               bd.foedeland,
                                bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert, bd.diskresjonkode as pdl_diskresjonkode,
                                bd.bydelsnummer, bd.kommunenummer, bd.bostedsistoppdatert, bd.utenlandskadresse, bd.harUkjentBosted,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
@@ -181,16 +174,7 @@ public class BrukerRepositoryV2 {
 
         // ARENA DB LENKE: skal fjernes på sikt
         flettInnOppfolgingsbruker(bruker, utkast14aStatus, rs);
-
-        Date foedsels_dato = rs.getDate("foedselsdato");
-        if (brukPDLBrukerdata(unleashService) && foedsels_dato != null) {
-            flettInnDataFraPDL(rs, bruker);
-        } else if (brukArenaSomBackup(unleashService)) {
-            flettInnPersonDataFraArena(rs, bruker);
-        } else if (isDevelopment().orElse(false)) {
-            bruker.setFnr(null); // Midlertidig forsikring for at brukere i q1 aldri har ekte data. Fjernes sammen med toggles, og bruk av inner join for brukerdata
-        }
-
+        flettInnDataFraPDL(rs, bruker);
         bruker.setEgen_ansatt(rs.getBoolean(ER_SKJERMET));
         bruker.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(SKJERMET_TIL)));
 
@@ -202,9 +186,6 @@ public class BrukerRepositoryV2 {
         String fnr = rs.getString(FODSELSNR_ARENA);
         if (fnr == null) {
             return bruker;
-        }
-        if (!brukPDLBrukerdata(unleashService) && isProduction().orElse(false)) {
-            flettInnPersonDataFraArena(rs, bruker);
         }
 
         String formidlingsgruppekode = rs.getString(FORMIDLINGSGRUPPEKODE);
@@ -222,24 +203,6 @@ public class BrukerRepositoryV2 {
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, utkast14aStatus));
-    }
-
-    @SneakyThrows
-    private void flettInnPersonDataFraArena(ResultSet rs, OppfolgingsBruker bruker) {
-        String fnr = rs.getString(FODSELSNR_ARENA);
-        if (fnr == null) {
-            return;
-        }
-        String fornavn = rs.getString(FORNAVN);
-        String etternavn = rs.getString(ETTERNAVN);
-        bruker
-                .setFornavn(fornavn)
-                .setEtternavn(etternavn)
-                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
-                .setEr_doed(rs.getBoolean(ER_DOED))
-                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))
-                .setFodselsdato(lagFodselsdato(fnr))
-                .setKjonn(FodselsnummerUtils.lagKjonn(fnr));
     }
 
     @SneakyThrows
