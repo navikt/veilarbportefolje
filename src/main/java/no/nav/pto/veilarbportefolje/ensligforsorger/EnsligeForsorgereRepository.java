@@ -70,7 +70,7 @@ public class EnsligeForsorgereRepository {
         }
     }
 
-    public void lagreOvergangsstonad(VedtakOvergangsstønadArbeidsoppfølging vedtakOvergangsstønadArbeidsoppfølging) {
+    private void lagreOvergangsstonad(VedtakOvergangsstønadArbeidsoppfølging vedtakOvergangsstønadArbeidsoppfølging) {
 
         long vedtakId = vedtakOvergangsstønadArbeidsoppfølging.getVedtakId();
         Integer stonadstypeId = hentStonadstype(vedtakOvergangsstønadArbeidsoppfølging.getStønadstype().toString());
