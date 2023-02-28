@@ -209,7 +209,7 @@ public class OpensearchQueryBuilder {
 
         if (filtervalg.harEnsligeForsorgereFilter()) {
             if (filtervalg.getEnsligeForsorgere().contains(EnsligeForsorgere.OVERGANGSSTØNAD)) {
-                queryBuilder.must(existsQuery("ef_overgangsstonad"));
+                queryBuilder.must(existsQuery("enslige_forsorgere_overgangsstonad"));
             }
         }
     }

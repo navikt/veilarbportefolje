@@ -1,12 +1,12 @@
-CREATE TABLE ef_aktivitet_type
+CREATE TABLE enslige_forsorgere_aktivitet_type
 (
     id             SERIAL PRIMARY KEY,
     aktivitet_type VARCHAR(100) NOT NULL
 );
 
-CREATE INDEX aktivitet_ef_aktivitet_typeef_aktivitet_type_indx on ef_aktivitet_type (aktivitet_type);
+CREATE INDEX aktivitet_enslige_forsorgere_aktivitet_typeenslige_forsorgere_aktivitet_type_indx on enslige_forsorgere_aktivitet_type (aktivitet_type);
 
-INSERT INTO ef_aktivitet_type(aktivitet_type)
+INSERT INTO enslige_forsorgere_aktivitet_type(aktivitet_type)
 VALUES ('MIGRERING'),
        ('IKKE_AKTIVITETSPLIKT'),
        ('BARN_UNDER_ETT_ÅR'),
@@ -28,28 +28,28 @@ VALUES ('MIGRERING'),
        ('FORLENGELSE_STØNAD_PÅVENTE_UTDANNING'),
        ('FORLENGELSE_STØNAD_UT_SKOLEÅRET');
 
-CREATE TABLE ef_stonad_type
+CREATE TABLE enslige_forsorgere_stonad_type
 (
     id          SERIAL PRIMARY KEY,
     stonad_type VARCHAR(100) NOT NULL
 );
 
-CREATE INDEX stonad_ef_stonad_type_indx on ef_stonad_type (stonad_type);
+CREATE INDEX stonad_enslige_forsorgere_stonad_type_indx on enslige_forsorgere_stonad_type (stonad_type);
 
-INSERT INTO ef_stonad_type(stonad_type)
+INSERT INTO enslige_forsorgere_stonad_type(stonad_type)
 VALUES ('OVERGANGSSTØNAD'),
        ('BARNETILSYN'),
        ('SKOLEPENGER');
 
-CREATE TABLE ef_vedtaksperiode_type
+CREATE TABLE enslige_forsorgere_vedtaksperiode_type
 (
     id           SERIAL PRIMARY KEY,
     periode_type VARCHAR(100) NOT NULL
 );
 
-CREATE INDEX periode_ef_vedtaksperiode_type_indx on ef_vedtaksperiode_type (periode_type);
+CREATE INDEX periode_enslige_forsorgere_vedtaksperiode_type_indx on enslige_forsorgere_vedtaksperiode_type (periode_type);
 
-INSERT INTO ef_vedtaksperiode_type(periode_type)
+INSERT INTO enslige_forsorgere_vedtaksperiode_type(periode_type)
 VALUES ('MIGRERING'),
        ('FORLENGELSE'),
        ('HOVEDPERIODE'),
@@ -58,15 +58,15 @@ VALUES ('MIGRERING'),
        ('UTVIDELSE'),
        ('NY_PERIODE_FOR_NYTT_BARN');
 
-CREATE TABLE ef_vedtaksresultat_type
+CREATE TABLE enslige_forsorgere_vedtaksresultat_type
 (
     id                   SERIAL PRIMARY KEY,
     vedtaksresultat_type VARCHAR(100) NOT NULL
 );
 
-CREATE INDEX vedtaksresultat_ef_vedtaksresultat_type_indx on ef_vedtaksresultat_type (vedtaksresultat_type);
+CREATE INDEX vedtaksresultat_enslige_forsorgere_vedtaksresultat_type_indx on enslige_forsorgere_vedtaksresultat_type (vedtaksresultat_type);
 
-INSERT INTO ef_vedtaksresultat_type(vedtaksresultat_type)
+INSERT INTO enslige_forsorgere_vedtaksresultat_type(vedtaksresultat_type)
 VALUES ('INNVILGET'),
        ('OPPHØRT'),
        ('AVSLÅTT');
@@ -76,8 +76,8 @@ CREATE TABLE enslige_forsorgere
 (
     vedtakId        bigint primary key,
     personIdent     VARCHAR(30) not null,
-    stonadstype     integer REFERENCES ef_stonad_type (id),
-    vedtaksresultat integer REFERENCES ef_vedtaksresultat_type (id),
+    stonadstype     integer REFERENCES enslige_forsorgere_stonad_type (id),
+    vedtaksresultat integer REFERENCES enslige_forsorgere_vedtaksresultat_type (id),
     oppdatert       timestamp DEFAULT now()
 );
 
@@ -88,8 +88,8 @@ CREATE TABLE enslige_forsorgere_periode
     vedtakId       bigint REFERENCES enslige_forsorgere (vedtakId),
     fra_dato       TIMESTAMP,
     til_dato       TIMESTAMP,
-    periodetype    integer REFERENCES ef_vedtaksperiode_type (id),
-    aktivitetstype integer REFERENCES ef_aktivitet_type (id)
+    periodetype    integer REFERENCES enslige_forsorgere_vedtaksperiode_type (id),
+    aktivitetstype integer REFERENCES enslige_forsorgere_aktivitet_type (id)
 );
 
 CREATE TABLE enslige_forsorgere_barn

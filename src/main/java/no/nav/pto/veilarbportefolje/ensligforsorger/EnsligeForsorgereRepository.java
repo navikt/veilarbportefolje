@@ -85,11 +85,11 @@ public class EnsligeForsorgereRepository {
         db.update(sql, vedtakId, vedtakOvergangsstønadArbeidsoppfølging.getPersonIdent(),
                 stonadstypeId, vedtakResultatId);
 
-        List<EnsligeForsorgereVedtakPeriode> ensligeForsorgereVedtakPerioder = vedtakOvergangsstønadArbeidsoppfølging.getPeriode().stream().map(vedtakPeriode -> new EnsligeForsorgereVedtakPeriode(vedtakId, vedtakPeriode.getFom(), vedtakPeriode.getTom(), hentPeriodetype(vedtakPeriode.getPeriodetype().toString()), hentVettakAktivitetstype(vedtakPeriode.getAktivitetstype().toString()))).toList();
+        List<EnsligeForsorgereVedtakPeriode> ensligeForsorgereVedtakPerioder = vedtakOvergangsstønadArbeidsoppfølging.getPeriode().stream().map(vedtakPeriode -> new EnsligeForsorgereVedtakPeriode(vedtakId, vedtakPeriode.getFom(), vedtakPeriode.getTom(), hentPeriodetype(vedtakPeriode.getPeriodetype().toString()), hentVedtakAktivitetstype(vedtakPeriode.getAktivitetstype().toString()))).toList();
         lagreEnsligeForsorgereVedtakPerioder(vedtakId, ensligeForsorgereVedtakPerioder);
 
-        List<EnsligeForsorgereBarn> ef_barn = vedtakOvergangsstønadArbeidsoppfølging.getBarn().stream().map(ef_barn_dto -> new EnsligeForsorgereBarn(ef_barn_dto.getFødselsnummer(), ef_barn_dto.getTermindato())).collect(Collectors.toList());
-        lagreDataForEnsligeForsorgereBarn(vedtakId, ef_barn);
+        List<EnsligeForsorgereBarn> enslige_forsorgere_barn = vedtakOvergangsstønadArbeidsoppfølging.getBarn().stream().map(enslige_forsorgere_barn_dto -> new EnsligeForsorgereBarn(enslige_forsorgere_barn_dto.getFødselsnummer(), enslige_forsorgere_barn_dto.getTermindato())).collect(Collectors.toList());
+        lagreDataForEnsligeForsorgereBarn(vedtakId, enslige_forsorgere_barn);
     }
 
     private void lagreEnsligeForsorgereVedtakPerioder(long vedtakId, List<EnsligeForsorgereVedtakPeriode> vedtakPerioder) {
@@ -106,17 +106,17 @@ public class EnsligeForsorgereRepository {
         db.update(sql, vedtakid, period_fom, period_tom, periodeType, aktivitetsType);
     }
 
-    private void lagreDataForEnsligeForsorgereBarn(long vedtakId, List<EnsligeForsorgereBarn> ef_barn) {
-        if (ef_barn.isEmpty()) {
+    private void lagreDataForEnsligeForsorgereBarn(long vedtakId, List<EnsligeForsorgereBarn> enslige_forsorgere_barn) {
+        if (enslige_forsorgere_barn.isEmpty()) {
             return;
         }
         String sql = """
-                			DELETE FROM enslige_forsorgere_barn WHERE vedtakid = ?
+                DELETE FROM enslige_forsorgere_barn WHERE vedtakid = ?
                 """;
         db.update(sql, vedtakId);
 
-        ef_barn.forEach(ef_barnet ->
-                lagreDataForEnsligeForsorgereBarnIDB(vedtakId, ef_barnet.fnr(), ef_barnet.terminDato())
+        enslige_forsorgere_barn.forEach(enslige_forsorgere_barnet ->
+                lagreDataForEnsligeForsorgereBarnIDB(vedtakId, enslige_forsorgere_barnet.fnr(), enslige_forsorgere_barnet.terminDato())
         );
     }
 
@@ -134,7 +134,7 @@ public class EnsligeForsorgereRepository {
     }
 
     private Integer hentStonadstypeFraDB(String stonadTypeConst) {
-        String sql = "SELECT ID FROM EF_STONAD_TYPE WHERE STONAD_TYPE = :stonadType::varchar";
+        String sql = "SELECT ID FROM enslige_forsorgere_STONAD_TYPE WHERE STONAD_TYPE = :stonadType::varchar";
         Optional<Integer> stonadTypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("stonadType", stonadTypeConst), Integer.class));
 
         return stonadTypeIdOptional.orElse(lagreStonadstype(stonadTypeConst));
@@ -144,7 +144,7 @@ public class EnsligeForsorgereRepository {
         try {
             GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
             db.update(conn -> {
-                PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO ef_stonad_type(stonad_type) VALUES (?) RETURNING id", Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO enslige_forsorgere_stonad_type(stonad_type) VALUES (?) RETURNING id", Statement.RETURN_GENERATED_KEYS);
                 preparedStatement.setString(1, stonadTypeConst);
                 return preparedStatement;
             }, generatedKeyHolder);
@@ -159,7 +159,7 @@ public class EnsligeForsorgereRepository {
     }
 
     private Integer hentVedtakresultatFraDB(String vedtakResultatConst) {
-        String sql = "SELECT ID FROM ef_vedtaksresultat_type WHERE vedtaksresultat_type = :vedtaksresultat_type::varchar";
+        String sql = "SELECT ID FROM enslige_forsorgere_vedtaksresultat_type WHERE vedtaksresultat_type = :vedtaksresultat_type::varchar";
         Optional<Integer> vedtakResultatTypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("vedtaksresultat_type", vedtakResultatConst), Integer.class));
 
         return vedtakResultatTypeIdOptional.orElse(lagreVedtakresultat(vedtakResultatConst));
@@ -169,7 +169,7 @@ public class EnsligeForsorgereRepository {
         try {
             GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
             db.update(conn -> {
-                PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO ef_vedtaksresultat_type(vedtaksresultat_type) VALUES (?) RETURNING id", Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO enslige_forsorgere_vedtaksresultat_type(vedtaksresultat_type) VALUES (?) RETURNING id", Statement.RETURN_GENERATED_KEYS);
                 preparedStatement.setString(1, vedtakResultatTypeConst);
                 return preparedStatement;
             }, generatedKeyHolder);
@@ -184,7 +184,7 @@ public class EnsligeForsorgereRepository {
     }
 
     private Integer hentPeriodetypeFraDB(String periodeTypeConst) {
-        String sql = "SELECT ID FROM ef_vedtaksperiode_type WHERE periode_type = :periode_type::varchar";
+        String sql = "SELECT ID FROM enslige_forsorgere_vedtaksperiode_type WHERE periode_type = :periode_type::varchar";
         Optional<Integer> vedtakPeriodetypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("periode_type", periodeTypeConst), Integer.class));
 
         return vedtakPeriodetypeIdOptional.orElse(lagreVedtakperiodeType(periodeTypeConst));
@@ -194,7 +194,7 @@ public class EnsligeForsorgereRepository {
         try {
             GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
             db.update(conn -> {
-                PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO ef_vedtaksperiode_type(periode_type) VALUES (?) RETURNING id", Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO enslige_forsorgere_vedtaksperiode_type(periode_type) VALUES (?) RETURNING id", Statement.RETURN_GENERATED_KEYS);
                 preparedStatement.setString(1, periodeTypeConst);
                 return preparedStatement;
             }, generatedKeyHolder);
@@ -205,11 +205,11 @@ public class EnsligeForsorgereRepository {
     }
 
     private Integer hentVedtakAktivitetstype(String aktivitetsType) {
-        return tryCacheFirst(vettakAktivitetstypeCache, aktivitetsType, () -> this.hentVettakAktivitetstypeFraDB(aktivitetsType));
+        return tryCacheFirst(vettakAktivitetstypeCache, aktivitetsType, () -> this.hentVedtakAktivitetstypeFraDB(aktivitetsType));
     }
 
     private Integer hentVedtakAktivitetstypeFraDB(String aktivitetsType) {
-        String sql = "SELECT ID FROM ef_aktivitet_type WHERE aktivitet_type = :aktivitet_type::varchar";
+        String sql = "SELECT ID FROM enslige_forsorgere_aktivitet_type WHERE aktivitet_type = :aktivitet_type::varchar";
         Optional<Integer> vedtakAktivitetstypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("aktivitet_type", aktivitetsType), Integer.class));
 
         return vedtakAktivitetstypeIdOptional.orElse(lagreVedtakAktivitetstype(aktivitetsType));
@@ -219,7 +219,7 @@ public class EnsligeForsorgereRepository {
         try {
             GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
             db.update(conn -> {
-                PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO ef_aktivitet_type(aktivitet_type) VALUES (?) RETURNING id", Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO enslige_forsorgere_aktivitet_type(aktivitet_type) VALUES (?) RETURNING id", Statement.RETURN_GENERATED_KEYS);
                 preparedStatement.setString(1, aktivitetsType);
                 return preparedStatement;
             }, generatedKeyHolder);
@@ -237,10 +237,10 @@ public class EnsligeForsorgereRepository {
                        EAT.AKTIVITET_TYPE as aktivitetsType
                 FROM enslige_forsorgere ef
                 JOIN enslige_forsorgere_periode efp on ef.vedtakid = efp.vedtakid
-                LEFT JOIN EF_VEDTAKSPERIODE_TYPE vperiode_type on efp.PERIODETYPE = vperiode_type.ID
-                LEFT JOIN EF_AKTIVITET_TYPE EAT on efp.AKTIVITETSTYPE = EAT.ID
-                LEFT JOIN EF_VEDTAKSRESULTAT_TYPE EVT on ef.VEDTAKSRESULTAT = EVT.ID
-                LEFT JOIN EF_STONAD_TYPE EST on EST.ID = ef.STONADSTYPE
+                LEFT JOIN enslige_forsorgere_VEDTAKSPERIODE_TYPE vperiode_type on efp.PERIODETYPE = vperiode_type.ID
+                LEFT JOIN enslige_forsorgere_AKTIVITET_TYPE EAT on efp.AKTIVITETSTYPE = EAT.ID
+                LEFT JOIN enslige_forsorgere_VEDTAKSRESULTAT_TYPE EVT on ef.VEDTAKSRESULTAT = EVT.ID
+                LEFT JOIN enslige_forsorgere_STONAD_TYPE EST on EST.ID = ef.STONADSTYPE
                 WHERE est.STONAD_TYPE = 'OVERGANGSSTØNAD'
                   AND EVT.VEDTAKSRESULTAT_TYPE = 'INNVILGET'
                   AND ef.personIdent = ? LIMIT 1;
@@ -253,7 +253,7 @@ public class EnsligeForsorgereRepository {
 
     public Optional<LocalDate> hentYngsteBarn(Long vedtakId) {
         String sql = """
-                     SELECT fnr, termindato FROM enslige_forsorgere_barn WHERE vedtakid = ?
+                SELECT fnr, termindato FROM enslige_forsorgere_barn WHERE vedtakid = ?
                 """;
         return dbReadOnly.queryForList(sql, vedtakId).
                 stream().map(this::mapTilBarn)

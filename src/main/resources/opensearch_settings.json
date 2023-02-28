@@ -211,13 +211,7 @@
       "neste_svarfrist_stilling_fra_nav": {
         "type": "date"
       },
-      "diskresjonskode": {
-        "type": "keyword"
-      },
-      "egen_ansatt": {
-        "type": "boolean"
-      },
-      "ef_overgangsstonad": {
+      "enslige_forsorgere_overgangsstonad": {
         "properties": {
           "vedtaksPeriodetype": {
             "type": "keyword"
@@ -232,6 +226,12 @@
             "type": "date"
           }
         }
+      },
+      "diskresjonskode": {
+        "type": "keyword"
+      },
+      "egen_ansatt": {
+        "type": "boolean"
       }
     }
   }

@@ -212,10 +212,10 @@ CREATE TABLE public.dialog
 
 
 --
--- Name: ef_aktivitet_type; Type: TABLE; Schema: public; Owner: -
+-- Name: enslige_forsorgere_aktivitet_type; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.ef_aktivitet_type
+CREATE TABLE public.enslige_forsorgere_aktivitet_type
 (
     id             integer                NOT NULL,
     aktivitet_type character varying(100) NOT NULL
@@ -223,10 +223,10 @@ CREATE TABLE public.ef_aktivitet_type
 
 
 --
--- Name: ef_aktivitet_type_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: enslige_forsorgere_aktivitet_type_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.ef_aktivitet_type_id_seq
+CREATE SEQUENCE public.enslige_forsorgere_aktivitet_type_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -236,17 +236,17 @@ CREATE SEQUENCE public.ef_aktivitet_type_id_seq
 
 
 --
--- Name: ef_aktivitet_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: enslige_forsorgere_aktivitet_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.ef_aktivitet_type_id_seq OWNED BY public.ef_aktivitet_type.id;
+ALTER SEQUENCE public.enslige_forsorgere_aktivitet_type_id_seq OWNED BY public.enslige_forsorgere_aktivitet_type.id;
 
 
 --
--- Name: ef_stonad_type; Type: TABLE; Schema: public; Owner: -
+-- Name: enslige_forsorgere_stonad_type; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.ef_stonad_type
+CREATE TABLE public.enslige_forsorgere_stonad_type
 (
     id          integer                NOT NULL,
     stonad_type character varying(100) NOT NULL
@@ -254,10 +254,10 @@ CREATE TABLE public.ef_stonad_type
 
 
 --
--- Name: ef_stonad_type_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: enslige_forsorgere_stonad_type_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.ef_stonad_type_id_seq
+CREATE SEQUENCE public.enslige_forsorgere_stonad_type_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -267,17 +267,17 @@ CREATE SEQUENCE public.ef_stonad_type_id_seq
 
 
 --
--- Name: ef_stonad_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: enslige_forsorgere_stonad_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.ef_stonad_type_id_seq OWNED BY public.ef_stonad_type.id;
+ALTER SEQUENCE public.enslige_forsorgere_stonad_type_id_seq OWNED BY public.enslige_forsorgere_stonad_type.id;
 
 
 --
--- Name: ef_vedtaksperiode_type; Type: TABLE; Schema: public; Owner: -
+-- Name: enslige_forsorgere_vedtaksperiode_type; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.ef_vedtaksperiode_type
+CREATE TABLE public.enslige_forsorgere_vedtaksperiode_type
 (
     id           integer                NOT NULL,
     periode_type character varying(100) NOT NULL
@@ -285,10 +285,10 @@ CREATE TABLE public.ef_vedtaksperiode_type
 
 
 --
--- Name: ef_vedtaksperiode_type_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: enslige_forsorgere_vedtaksperiode_type_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.ef_vedtaksperiode_type_id_seq
+CREATE SEQUENCE public.enslige_forsorgere_vedtaksperiode_type_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -298,17 +298,17 @@ CREATE SEQUENCE public.ef_vedtaksperiode_type_id_seq
 
 
 --
--- Name: ef_vedtaksperiode_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: enslige_forsorgere_vedtaksperiode_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.ef_vedtaksperiode_type_id_seq OWNED BY public.ef_vedtaksperiode_type.id;
+ALTER SEQUENCE public.enslige_forsorgere_vedtaksperiode_type_id_seq OWNED BY public.enslige_forsorgere_vedtaksperiode_type.id;
 
 
 --
--- Name: ef_vedtaksresultat_type; Type: TABLE; Schema: public; Owner: -
+-- Name: enslige_forsorgere_vedtaksresultat_type; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.ef_vedtaksresultat_type
+CREATE TABLE public.enslige_forsorgere_vedtaksresultat_type
 (
     id                   integer                NOT NULL,
     vedtaksresultat_type character varying(100) NOT NULL
@@ -316,10 +316,10 @@ CREATE TABLE public.ef_vedtaksresultat_type
 
 
 --
--- Name: ef_vedtaksresultat_type_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: enslige_forsorgere_vedtaksresultat_type_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.ef_vedtaksresultat_type_id_seq
+CREATE SEQUENCE public.enslige_forsorgere_vedtaksresultat_type_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -329,10 +329,10 @@ CREATE SEQUENCE public.ef_vedtaksresultat_type_id_seq
 
 
 --
--- Name: ef_vedtaksresultat_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: enslige_forsorgere_vedtaksresultat_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.ef_vedtaksresultat_type_id_seq OWNED BY public.ef_vedtaksresultat_type.id;
+ALTER SEQUENCE public.enslige_forsorgere_vedtaksresultat_type_id_seq OWNED BY public.enslige_forsorgere_vedtaksresultat_type.id;
 
 
 --
@@ -653,35 +653,35 @@ CREATE TABLE public.ytelsesvedtak
 
 
 --
--- Name: ef_aktivitet_type id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: enslige_forsorgere_aktivitet_type id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.ef_aktivitet_type
-    ALTER COLUMN id SET DEFAULT nextval('public.ef_aktivitet_type_id_seq'::regclass);
-
-
---
--- Name: ef_stonad_type id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ef_stonad_type
-    ALTER COLUMN id SET DEFAULT nextval('public.ef_stonad_type_id_seq'::regclass);
+ALTER TABLE ONLY public.enslige_forsorgere_aktivitet_type
+    ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_aktivitet_type_id_seq'::regclass);
 
 
 --
--- Name: ef_vedtaksperiode_type id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: enslige_forsorgere_stonad_type id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.ef_vedtaksperiode_type
-    ALTER COLUMN id SET DEFAULT nextval('public.ef_vedtaksperiode_type_id_seq'::regclass);
+ALTER TABLE ONLY public.enslige_forsorgere_stonad_type
+    ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_stonad_type_id_seq'::regclass);
 
 
 --
--- Name: ef_vedtaksresultat_type id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: enslige_forsorgere_vedtaksperiode_type id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.ef_vedtaksresultat_type
-    ALTER COLUMN id SET DEFAULT nextval('public.ef_vedtaksresultat_type_id_seq'::regclass);
+ALTER TABLE ONLY public.enslige_forsorgere_vedtaksperiode_type
+    ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_vedtaksperiode_type_id_seq'::regclass);
+
+
+--
+-- Name: enslige_forsorgere_vedtaksresultat_type id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.enslige_forsorgere_vedtaksresultat_type
+    ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_vedtaksresultat_type_id_seq'::regclass);
 
 
 --
@@ -765,35 +765,35 @@ ALTER TABLE ONLY public.dialog
 
 
 --
--- Name: ef_aktivitet_type ef_aktivitet_type_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: enslige_forsorgere_aktivitet_type enslige_forsorgere_aktivitet_type_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.ef_aktivitet_type
-    ADD CONSTRAINT ef_aktivitet_type_pkey PRIMARY KEY (id);
-
-
---
--- Name: ef_stonad_type ef_stonad_type_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ef_stonad_type
-    ADD CONSTRAINT ef_stonad_type_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.enslige_forsorgere_aktivitet_type
+    ADD CONSTRAINT enslige_forsorgere_aktivitet_type_pkey PRIMARY KEY (id);
 
 
 --
--- Name: ef_vedtaksperiode_type ef_vedtaksperiode_type_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: enslige_forsorgere_stonad_type enslige_forsorgere_stonad_type_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.ef_vedtaksperiode_type
-    ADD CONSTRAINT ef_vedtaksperiode_type_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.enslige_forsorgere_stonad_type
+    ADD CONSTRAINT enslige_forsorgere_stonad_type_pkey PRIMARY KEY (id);
 
 
 --
--- Name: ef_vedtaksresultat_type ef_vedtaksresultat_type_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: enslige_forsorgere_vedtaksperiode_type enslige_forsorgere_vedtaksperiode_type_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.ef_vedtaksresultat_type
-    ADD CONSTRAINT ef_vedtaksresultat_type_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.enslige_forsorgere_vedtaksperiode_type
+    ADD CONSTRAINT enslige_forsorgere_vedtaksperiode_type_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: enslige_forsorgere_vedtaksresultat_type enslige_forsorgere_vedtaksresultat_type_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.enslige_forsorgere_vedtaksresultat_type
+    ADD CONSTRAINT enslige_forsorgere_vedtaksresultat_type_pkey PRIMARY KEY (id);
 
 
 --
@@ -1029,7 +1029,7 @@ ALTER TABLE ONLY public.enslige_forsorgere_barn
 --
 
 ALTER TABLE ONLY public.enslige_forsorgere_periode
-    ADD CONSTRAINT enslige_forsorgere_periode_aktivitetstype_fkey FOREIGN KEY (aktivitetstype) REFERENCES public.ef_aktivitet_type (id);
+    ADD CONSTRAINT enslige_forsorgere_periode_aktivitetstype_fkey FOREIGN KEY (aktivitetstype) REFERENCES public.enslige_forsorgere_aktivitet_type (id);
 
 
 --
@@ -1037,7 +1037,7 @@ ALTER TABLE ONLY public.enslige_forsorgere_periode
 --
 
 ALTER TABLE ONLY public.enslige_forsorgere_periode
-    ADD CONSTRAINT enslige_forsorgere_periode_periodetype_fkey FOREIGN KEY (periodetype) REFERENCES public.ef_vedtaksperiode_type (id);
+    ADD CONSTRAINT enslige_forsorgere_periode_periodetype_fkey FOREIGN KEY (periodetype) REFERENCES public.enslige_forsorgere_vedtaksperiode_type (id);
 
 
 --
@@ -1053,7 +1053,7 @@ ALTER TABLE ONLY public.enslige_forsorgere_periode
 --
 
 ALTER TABLE ONLY public.enslige_forsorgere
-    ADD CONSTRAINT "enslige_forsorgere_stønadstype_fkey" FOREIGN KEY ("stønadstype") REFERENCES public.ef_stonad_type (id);
+    ADD CONSTRAINT "enslige_forsorgere_stønadstype_fkey" FOREIGN KEY ("stønadstype") REFERENCES public.enslige_forsorgere_stonad_type (id);
 
 
 --
@@ -1061,7 +1061,7 @@ ALTER TABLE ONLY public.enslige_forsorgere
 --
 
 ALTER TABLE ONLY public.enslige_forsorgere
-    ADD CONSTRAINT enslige_forsorgere_vedtaksresultat_fkey FOREIGN KEY (vedtaksresultat) REFERENCES public.ef_vedtaksresultat_type (id);
+    ADD CONSTRAINT enslige_forsorgere_vedtaksresultat_fkey FOREIGN KEY (vedtaksresultat) REFERENCES public.enslige_forsorgere_vedtaksresultat_type (id);
 
 
 --

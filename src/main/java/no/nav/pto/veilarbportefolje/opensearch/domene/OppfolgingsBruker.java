@@ -116,5 +116,5 @@ public class OppfolgingsBruker {
 
     Avvik14aVedtak avvik14aVedtak;
 
-    EnsligeForsorgereOvergangsstonad ef_overgangsstonad;
+    EnsligeForsorgereOvergangsstonad enslige_forsorgere_overgangsstonad;
 }

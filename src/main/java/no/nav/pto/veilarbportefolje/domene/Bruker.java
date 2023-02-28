@@ -181,7 +181,7 @@ public class Bruker {
                 .setHarUkjentBosted(bruker.isHarUkjentBosted())
                 .setBostedSistOppdatert(bruker.getBostedSistOppdatert())
                 .setAvvik14aVedtak(bruker.getAvvik14aVedtak())
-                .setEnsligeForsorgereOvergangsstonad(bruker.getEf_overgangsstonad());
+                .setEnsligeForsorgereOvergangsstonad(bruker.getEnslige_forsorgere_overgangsstonad());
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {

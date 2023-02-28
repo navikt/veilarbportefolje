@@ -261,7 +261,7 @@ public class OpensearchIndexerV2 {
     public void updateOvergangsstonad(AktorId aktorId, EnsligeForsorgerOvergangsstønadTiltakDto ensligeForsorgerOvergangsstønadTiltakDto) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .startObject("ef_overgangsstonad")
+                .startObject("enslige_forsorgere_overgangsstonad")
                 .field("vedtaksPeriodetype", ensligeForsorgerOvergangsstønadTiltakDto.vedtaksPeriodetypeBeskrivelse())
                 .field("harAktivitetsplikt", ensligeForsorgerOvergangsstønadTiltakDto.aktivitsplikt())
                 .field("utlopsDato", ensligeForsorgerOvergangsstønadTiltakDto.utløpsDato())
@@ -276,7 +276,7 @@ public class OpensearchIndexerV2 {
     public void deleteOvergansstonad(AktorId aktorId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("ef_overgangsstonad", (String) null)
+                .field("enslige_forsorgere_overgangsstonad", (String) null)
                 .endObject();
 
         update(aktorId, content, "Fjern overgangsstønad");
