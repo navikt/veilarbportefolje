@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.familie.eksterne.kontrakter.arbeidsoppfolging.VedtakOvergangsstønadArbeidsoppfølging;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOvergangsstønadTiltak;
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Stønadstype;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.mapping.AktivitetsTypeTilAktivitetsplikt;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
@@ -30,8 +31,13 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
 
     @Override
     protected void behandleKafkaMeldingLogikk(VedtakOvergangsstønadArbeidsoppfølging melding) {
+        if (!melding.getStønadstype().toString().equals(Stønadstype.OVERGANGSSTØNAD)) {
+            log.info("Vi støtter kun overgangstønad for enslige forsorgere. Fått: " + melding.getStønadstype());
+            return;
+        }
+
         secureLog.info("Oppdatere enslige forsorgere stønad for bruker: {}", melding.getPersonIdent());
-        ensligeForsorgereRepository.lagreEnsligeForsorgereStonad(melding);
+        ensligeForsorgereRepository.lagreOvergangsstonad(melding);
 
         Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(melding.getPersonIdent());
         AktorId aktorId = aktorClient.hentAktorId(Fnr.of(melding.getPersonIdent()));

@@ -4,7 +4,7 @@ CREATE TABLE enslige_forsorgere_aktivitet_type
     aktivitet_type VARCHAR(100) NOT NULL
 );
 
-CREATE INDEX aktivitet_enslige_forsorgere_aktivitet_typeenslige_forsorgere_aktivitet_type_indx on enslige_forsorgere_aktivitet_type (aktivitet_type);
+CREATE INDEX enslige_forsorgere_aktivitet_type_indx on enslige_forsorgere_aktivitet_type (aktivitet_type);
 
 INSERT INTO enslige_forsorgere_aktivitet_type(aktivitet_type)
 VALUES ('MIGRERING'),

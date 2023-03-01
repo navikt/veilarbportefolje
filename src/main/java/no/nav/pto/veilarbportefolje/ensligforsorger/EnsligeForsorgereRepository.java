@@ -62,15 +62,7 @@ public class EnsligeForsorgereRepository {
             .maximumSize(10)
             .build();
 
-    public void lagreEnsligeForsorgereStonad(VedtakOvergangsstønadArbeidsoppfølging vedtakOvergangsstønadArbeidsoppfølging) {
-        if (vedtakOvergangsstønadArbeidsoppfølging.getStønadstype().toString().equals("OVERGANGSSTØNAD")) {
-            lagreOvergangsstonad(vedtakOvergangsstønadArbeidsoppfølging);
-        } else {
-            log.info("Vi støtter kun overgangstønad for enslige forsorgere. Fått: " + vedtakOvergangsstønadArbeidsoppfølging.getStønadstype());
-        }
-    }
-
-    private void lagreOvergangsstonad(VedtakOvergangsstønadArbeidsoppfølging vedtakOvergangsstønadArbeidsoppfølging) {
+    public void lagreOvergangsstonad(VedtakOvergangsstønadArbeidsoppfølging vedtakOvergangsstønadArbeidsoppfølging) {
 
         long vedtakId = vedtakOvergangsstønadArbeidsoppfølging.getVedtakId();
         Integer stonadstypeId = hentStonadstype(vedtakOvergangsstønadArbeidsoppfølging.getStønadstype().toString());
@@ -241,12 +233,12 @@ public class EnsligeForsorgereRepository {
                 LEFT JOIN enslige_forsorgere_AKTIVITET_TYPE EAT on efp.AKTIVITETSTYPE = EAT.ID
                 LEFT JOIN enslige_forsorgere_VEDTAKSRESULTAT_TYPE EVT on ef.VEDTAKSRESULTAT = EVT.ID
                 LEFT JOIN enslige_forsorgere_STONAD_TYPE EST on EST.ID = ef.STONADSTYPE
-                WHERE est.STONAD_TYPE = 'OVERGANGSSTØNAD'
-                  AND EVT.VEDTAKSRESULTAT_TYPE = 'INNVILGET'
+                WHERE est.STONAD_TYPE = ?
+                  AND EVT.VEDTAKSRESULTAT_TYPE = ?
                   AND ef.personIdent = ? LIMIT 1;
                  """;
 
-        return dbReadOnly.queryForList(sql, personIdent)
+        return dbReadOnly.queryForList(sql, Stønadstype.OVERGANGSSTØNAD.toString(), Vedtaksresultat.INNVILGET.toString(), personIdent)
                 .stream().map(this::mapTilTiltak)
                 .findFirst();
     }
