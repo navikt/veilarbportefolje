@@ -157,9 +157,9 @@ public class OppfolgingsbrukerRepositoryV3 {
     public List<String> finnSkjulteBrukere(List<String> fnrListe, BrukerInnsynTilganger brukerInnsynTilganger) {
         var params = new MapSqlParameterSource();
         params.addValue("fnrListe", fnrListe.stream().collect(Collectors.joining(",", "{", "}")));
-        params.addValue("tilgangTilKode6", brukerInnsynTilganger.tilgangTilKode6());
-        params.addValue("tilgangTilKode7", brukerInnsynTilganger.tilgangTilKode7());
-        params.addValue("tilgangTilEgenAnsatt", brukerInnsynTilganger.tilgangTilEgenAnsatt());
+        params.addValue("tilgangTilKode6", brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig());
+        params.addValue("tilgangTilKode7", brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig());
+        params.addValue("tilgangTilEgenAnsatt", brukerInnsynTilganger.tilgangTilSkjerming());
 
         return dbNamed.queryForList("""
                 SELECT fodselsnr from oppfolgingsbruker_arena_v2

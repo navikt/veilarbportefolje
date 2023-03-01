@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.lang3.ArrayUtils;
@@ -741,8 +742,8 @@ public class OpensearchQueryBuilder {
                 "adressebeskyttelseEllerSkjermingTotalt",
                 boolQuery()
                         .must(filtrereEnhet)
-                        .should(termQuery("diskresjonskode", "6"))
-                        .should(termQuery("diskresjonskode", "7"))
+                        .should(termQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode))
+                        .should(termQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode))
                         .should(termQuery("egen_ansatt", true))
         );
     }
@@ -752,8 +753,8 @@ public class OpensearchQueryBuilder {
                 "adressebeskyttelseEllerSkjermingUfordelte",
                 boolQuery()
                         .must(filtrereEnhet)
-                        .should(termQuery("diskresjonskode", "6"))
-                        .should(termQuery("diskresjonskode", "7"))
+                        .should(termQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode))
+                        .should(termQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode))
                         .should(termQuery("egen_ansatt", true))
                         .must(byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet))
         );

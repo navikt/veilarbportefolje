@@ -18,6 +18,7 @@ import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -98,10 +99,10 @@ public class AuthService {
 
         String diskresjonskode = bruker.getDiskresjonskode();
 
-        if ("6".equals(diskresjonskode) && !harVeilederTilgangTilKode6(NavIdent.of(veilederIdent))) {
+        if (Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode6(NavIdent.of(veilederIdent))) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
-        if ("7".equals(diskresjonskode) && !harVeilederTilgangTilKode7(NavIdent.of(veilederIdent))) {
+        if (Adressebeskyttelse.FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode7(NavIdent.of(veilederIdent))) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
         if (bruker.isEgenAnsatt() && !harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederIdent))) {

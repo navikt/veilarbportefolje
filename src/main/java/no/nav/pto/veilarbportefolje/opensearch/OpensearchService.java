@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.apache.commons.lang3.StringUtils;
@@ -92,16 +93,16 @@ public class OpensearchService {
         if (FeatureToggle.brukFilterForBrukerInnsynTilganger(unleashService)) {
             BrukerInnsynTilganger brukerInnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
 
-            if (!brukerInnsynTilganger.tilgangTilKode6()) {
-                boolQuery.mustNot(matchQuery("diskresjonskode", "6"));
+            if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig()) {
+                boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode));
             }
 
-            if (!brukerInnsynTilganger.tilgangTilKode7()) {
-                boolQuery.mustNot(matchQuery("diskresjonskode", "7"));
+            if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig()) {
+                boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode));
             }
 
-            if (!brukerInnsynTilganger.tilgangTilEgenAnsatt()) {
-                boolQuery.mustNot(matchQuery("egen_ansatt", "true"));
+            if (!brukerInnsynTilganger.tilgangTilSkjerming()) {
+                boolQuery.mustNot(matchQuery("egen_ansatt", true));
             }
         }
 
