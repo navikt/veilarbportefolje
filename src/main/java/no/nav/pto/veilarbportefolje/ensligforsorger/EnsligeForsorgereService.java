@@ -31,7 +31,7 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
 
     @Override
     protected void behandleKafkaMeldingLogikk(VedtakOvergangsstønadArbeidsoppfølging melding) {
-        if (!melding.getStønadstype().toString().equals(Stønadstype.OVERGANGSSTØNAD)) {
+        if (!melding.getStønadstype().toString().equals(Stønadstype.OVERGANGSSTØNAD.toString())) {
             log.info("Vi støtter kun overgangstønad for enslige forsorgere. Fått: " + melding.getStønadstype());
             return;
         }
