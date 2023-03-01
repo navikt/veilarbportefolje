@@ -2185,7 +2185,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_ikke_automatisk_sortere_nye_brukere_paa_top_feature_toggle_paa() {
+    void skal_ikke_automatisk_sortere_nye_brukere_paa_top() {
         when(unleashService.isEnabled(anyString())).thenReturn(true);
         var nyBrukerForVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2236,7 +2236,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_ikke_automatisk_sortere_ufordelte_brukere_paa_top_feature_toggle_paa() {
+    void skal_ikke_automatisk_sortere_ufordelte_brukere_paa_top() {
         when(unleashService.isEnabled(anyString())).thenReturn(true);
         var ufordeltBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2281,106 +2281,6 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getBrukere()).hasSize(3);
         assertThat(response.getBrukere().get(0).getEtternavn()).isEqualTo("C");
         assertThat(response.getBrukere().get(2).getEtternavn()).isEqualTo("A");
-
-    }
-
-    @Test
-    void skal_automatisk_sortere_nye_brukere_paa_top_feature_toggle_av() {
-        when(unleashService.isEnabled(anyString())).thenReturn(false);
-        var nyBrukerForVeileder = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setEnhet_id(TEST_ENHET)
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_veileder(true)
-                .setEtternavn("A");
-        var brukerForVeileder1 = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setEnhet_id(TEST_ENHET)
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_veileder(false)
-                .setEtternavn("B");
-        var brukerForVeileder2 = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setEnhet_id(TEST_ENHET)
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_veileder(false)
-                .setEtternavn("C");
-
-        var liste = List.of(nyBrukerForVeileder, brukerForVeileder1, brukerForVeileder2);
-
-        skrivBrukereTilTestindeks(liste);
-
-        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
-
-        var filterValg = new Filtervalg();
-
-        var response = opensearchService.hentBrukere(
-                TEST_ENHET,
-                Optional.of(TEST_VEILEDER_0),
-                "descending",
-                "etternavn",
-                filterValg,
-                null,
-                null
-        );
-
-        assertThat(response.getBrukere()).hasSize(3);
-        assertThat(response.getBrukere().get(0).getEtternavn()).isEqualTo("A");
-        assertThat(response.getBrukere().get(2).getEtternavn()).isEqualTo("B");
-    }
-
-    @Test
-    void skal_automatisk_sortere_ufordelte_brukere_paa_top_feature_toggle_av() {
-        when(unleashService.isEnabled(anyString())).thenReturn(false);
-        var ufordeltBruker = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setEnhet_id(TEST_ENHET)
-                .setOppfolging(true)
-                .setVeileder_id(null)
-                .setEtternavn("A");
-        var bruker1 = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setEnhet_id(TEST_ENHET)
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setEtternavn("B");
-        var bruker2 = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setEnhet_id(TEST_ENHET)
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setEtternavn("C");
-
-        var liste = List.of(ufordeltBruker, bruker1, bruker2);
-
-        skrivBrukereTilTestindeks(liste);
-
-        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
-
-        var filterValg = new Filtervalg();
-
-        var response = opensearchService.hentBrukere(
-                TEST_ENHET,
-                empty(),
-                "descending",
-                "etternavn",
-                filterValg,
-                null,
-                null
-        );
-
-        assertThat(response.getBrukere()).hasSize(3);
-        assertThat(response.getBrukere().get(0).getEtternavn()).isEqualTo("A");
-        assertThat(response.getBrukere().get(2).getEtternavn()).isEqualTo("B");
 
     }
 

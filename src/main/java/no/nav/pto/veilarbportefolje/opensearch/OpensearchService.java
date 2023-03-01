@@ -21,7 +21,6 @@ import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.index.query.BoolQueryBuilder;
 import org.opensearch.search.builder.SearchSourceBuilder;
-import org.opensearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -81,14 +80,6 @@ public class OpensearchService {
         }
 
         searchSourceBuilder.query(boolQuery);
-
-        if (!FeatureToggle.fjerneUfordeltEllerNyBrukerSortering(unleashService)) {
-            if (kallesFraMinOversikt) {
-                searchSourceBuilder.sort("ny_for_veileder", SortOrder.DESC);
-            } else {
-                sorterPaaNyForEnhet(searchSourceBuilder, veiledereMedTilgangTilEnhet);
-            }
-        }
 
         if (FeatureToggle.brukFilterForBrukerInnsynTilganger(unleashService)) {
             BrukerInnsynTilganger brukerInnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
