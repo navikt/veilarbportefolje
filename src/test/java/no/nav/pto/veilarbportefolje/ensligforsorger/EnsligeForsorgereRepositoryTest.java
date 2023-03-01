@@ -58,7 +58,7 @@ public class EnsligeForsorgereRepositoryTest {
 
         );
 
-        ensligeForsorgereRepository.lagreEnsligeForsorgereStonad(melding);
+        ensligeForsorgereRepository.lagreOvergangsstonad(melding);
         Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(melding.getPersonIdent());
         Optional<LocalDate> yngsteBarnFdato = ensligeForsorgereRepository.hentYngsteBarn(melding.getVedtakId());
 
@@ -86,7 +86,7 @@ public class EnsligeForsorgereRepositoryTest {
 
         );
 
-        ensligeForsorgereRepository.lagreEnsligeForsorgereStonad(melding);
+        ensligeForsorgereRepository.lagreOvergangsstonad(melding);
 
         Optional<LocalDate> yngsteBarnFdato = ensligeForsorgereRepository.hentYngsteBarn(melding.getVedtakId());
 
@@ -111,7 +111,7 @@ public class EnsligeForsorgereRepositoryTest {
 
         );
 
-        ensligeForsorgereRepository.lagreEnsligeForsorgereStonad(melding);
+        ensligeForsorgereRepository.lagreOvergangsstonad(melding);
         Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(melding.getPersonIdent());
 
         Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltakOptional.isEmpty());
@@ -132,7 +132,7 @@ public class EnsligeForsorgereRepositoryTest {
 
         );
 
-        ensligeForsorgereRepository.lagreEnsligeForsorgereStonad(melding);
+        ensligeForsorgereRepository.lagreOvergangsstonad(melding);
     }
 
 }
