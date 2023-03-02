@@ -15,7 +15,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <common.version>2.2023.01.10_13.49-81ddc732df3a</common.version>
+        <common.version>3.2023.02.24_13.46-3c88f74b064e</common.version>
         <confluent.version>5.5.1</confluent.version>
         <avro.version>1.11.1</avro.version>
         <veilarbregistrering.skjema.version>9a956c3</veilarbregistrering.skjema.version>
@@ -156,52 +156,52 @@
 
         <!-- Common -->
         <dependency>
-            <groupId>no.nav.common</groupId>
+            <groupId>com.github.navikt.common-java-modules</groupId>
             <artifactId>abac</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>no.nav.common</groupId>
+            <groupId>com.github.navikt.common-java-modules</groupId>
             <artifactId>rest</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>no.nav.common</groupId>
+            <groupId>com.github.navikt.common-java-modules</groupId>
             <artifactId>types</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>no.nav.common</groupId>
+            <groupId>com.github.navikt.common-java-modules</groupId>
             <artifactId>auth</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>no.nav.common</groupId>
+            <groupId>com.github.navikt.common-java-modules</groupId>
             <artifactId>metrics</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>no.nav.common</groupId>
+            <groupId>com.github.navikt.common-java-modules</groupId>
             <artifactId>feature-toggle</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>no.nav.common</groupId>
+            <groupId>com.github.navikt.common-java-modules</groupId>
             <artifactId>client</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>no.nav.common</groupId>
+            <groupId>com.github.navikt.common-java-modules</groupId>
             <artifactId>token-client</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>no.nav.common</groupId>
+            <groupId>com.github.navikt.common-java-modules</groupId>
             <artifactId>log</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>no.nav.common</groupId>
+            <groupId>com.github.navikt.common-java-modules</groupId>
             <artifactId>kafka</artifactId>
             <version>${common.version}</version>
         </dependency>
@@ -259,10 +259,6 @@
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc-template</artifactId>
             <version>4.44.0</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
         </dependency>
 
         <dependency>
