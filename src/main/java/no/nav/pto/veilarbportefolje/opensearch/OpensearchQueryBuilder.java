@@ -765,8 +765,8 @@ public class OpensearchQueryBuilder {
                 "adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV",
                 boolQuery()
                         .must(filtrereEnhet)
-                        .should(termQuery("diskresjonskode", "6"))
-                        .should(termQuery("diskresjonskode", "7"))
+                        .should(termQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode))
+                        .should(termQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode))
                         .should(termQuery("egen_ansatt", true))
                         .must(existsQuery("venterpasvarfranav"))
         );
