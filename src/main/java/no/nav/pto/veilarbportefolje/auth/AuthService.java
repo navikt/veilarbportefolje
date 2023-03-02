@@ -146,11 +146,11 @@ public class AuthService {
 
     public BrukerInnsynTilganger hentVeilederBrukerInnsynTilganger() {
         String veilederId = getInnloggetVeilederIdent().toString();
-        boolean tilgangTilKode6 = harVeilederTilgangTilKode6(NavIdent.of(veilederId));
-        boolean tilgangTilKode7 = harVeilederTilgangTilKode7(NavIdent.of(veilederId));
+        boolean tilgangTilAdressebeskyttelseStrengtFortrolig = harVeilederTilgangTilKode6(NavIdent.of(veilederId));
+        boolean tilgangTilAdressebeskyttelseFortrolig = harVeilederTilgangTilKode7(NavIdent.of(veilederId));
         boolean tilgangEgenAnsatt = harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederId));
 
-        return new BrukerInnsynTilganger(tilgangTilKode6, tilgangTilKode7, tilgangEgenAnsatt);
+        return new BrukerInnsynTilganger(tilgangTilAdressebeskyttelseStrengtFortrolig, tilgangTilAdressebeskyttelseFortrolig, tilgangEgenAnsatt);
     }
 
     public String getOboToken(String tokenScope) {
