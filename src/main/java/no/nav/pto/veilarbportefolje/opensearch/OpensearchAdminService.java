@@ -197,7 +197,7 @@ public class OpensearchAdminService {
         String url = createAbsoluteUrl(openSearchClientConfig);
         Request request = new Request.Builder()
                 .url(url)
-                .put(RequestBody.create(MEDIA_TYPE_JSON, """
+                .put(RequestBody.create("""
                         {
                           "index": {
                             "blocks": {
@@ -205,7 +205,7 @@ public class OpensearchAdminService {
                             }
                           }
                         }
-                        """))
+                        """, MEDIA_TYPE_JSON))
                 .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
                 .build();
 
@@ -218,7 +218,7 @@ public class OpensearchAdminService {
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
-                .post(RequestBody.create(MEDIA_TYPE_JSON, "{}"))
+                .post(RequestBody.create("{}", MEDIA_TYPE_JSON))
                 .header("Content-Length", "0")
                 .build();
 
