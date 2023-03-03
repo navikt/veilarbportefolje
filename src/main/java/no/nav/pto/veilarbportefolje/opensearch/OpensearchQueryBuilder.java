@@ -742,8 +742,10 @@ public class OpensearchQueryBuilder {
                 "adressebeskyttelseEllerSkjermingTotalt",
                 boolQuery()
                         .must(filtrereEnhet)
-                        .should(existsQuery("diskresjonskode"))
-                        .should(termQuery("egen_ansatt", true))
+                        .must(boolQuery()
+                                .should(existsQuery("diskresjonskode"))
+                                .should(termQuery("egen_ansatt", true))
+                        )
         );
     }
 
@@ -752,8 +754,10 @@ public class OpensearchQueryBuilder {
                 "adressebeskyttelseEllerSkjermingUfordelte",
                 boolQuery()
                         .must(filtrereEnhet)
-                        .should(existsQuery("diskresjonskode"))
-                        .should(termQuery("egen_ansatt", true))
+                        .must(boolQuery()
+                                .should(existsQuery("diskresjonskode"))
+                                .should(termQuery("egen_ansatt", true))
+                        )
                         .must(byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet))
         );
     }
@@ -763,8 +767,10 @@ public class OpensearchQueryBuilder {
                 "adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV",
                 boolQuery()
                         .must(filtrereEnhet)
-                        .should(existsQuery("diskresjonskode"))
-                        .should(termQuery("egen_ansatt", true))
+                        .must(boolQuery()
+                                .should(existsQuery("diskresjonskode"))
+                                .should(termQuery("egen_ansatt", true))
+                        )
                         .must(existsQuery("venterpasvarfranav"))
         );
     }

@@ -602,6 +602,10 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "7", true);
         OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
+        OppfolgingsBruker fordelt_bruker_som_ikke_skal_inkluderes = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, null, false);
+        OppfolgingsBruker ufordelt_bruker_som_ikke_skal_inkluderes = genererRandomBruker(true, TEST_ENHET, null, null, false);
+        OppfolgingsBruker bruker_som_venter_pa_svar_fra_nav_som_ikke_skal_inkluderes = genererRandomBruker(true, TEST_ENHET, null, null, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
         List<OppfolgingsBruker> brukere = List.of(
                 kode_6_bruker,
                 kode_6_bruker_med_tilordnet_veileder,
@@ -614,7 +618,10 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 egen_ansatt_bruker_som_venter_pa_svar_fra_nav,
                 egen_ansatt_og_kode_7_bruker,
                 egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder,
-                egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav
+                egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav,
+                fordelt_bruker_som_ikke_skal_inkluderes,
+                ufordelt_bruker_som_ikke_skal_inkluderes,
+                bruker_som_venter_pa_svar_fra_nav_som_ikke_skal_inkluderes
         );
 
         skrivBrukereTilTestindeks(brukere);
