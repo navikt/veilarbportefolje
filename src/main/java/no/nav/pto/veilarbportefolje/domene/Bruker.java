@@ -33,6 +33,9 @@ public class Bruker {
     String etternavn;
     String veilederId;
     List<String> sikkerhetstiltak;
+    String sikkerhetstiltak_gyldig_fra;
+    String sikkerhetstiltak_gyldig_til;
+    String sikkerhetstiltak_beskrivelse;
     String diskresjonskode;
     boolean egenAnsatt;
     LocalDateTime skjermetTil;
@@ -122,6 +125,9 @@ public class Bruker {
                 .setSkjermetTil(bruker.getSkjermet_til())
                 .setErDoed(bruker.isEr_doed())
                 .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak)) //TODO: Hvorfor er dette en liste?
+                .setSikkerhetstiltak_gyldig_fra(bruker.getSikkerhetstiltak_gyldig_fra())
+                .setSikkerhetstiltak_gyldig_til(bruker.getSikkerhetstiltak_gyldig_til())
+                .setSikkerhetstiltak_beskrivelse(bruker.getSikkerhetstiltak_beskrivelse())
                 .setFodselsdagIMnd(bruker.getFodselsdag_i_mnd())
                 .setFodselsdato(toLocalDateTimeOrNull(bruker.getFodselsdato()))
                 .setFoedeland(bruker.getFoedelandFulltNavn())
