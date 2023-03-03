@@ -199,7 +199,7 @@ public class PDLPerson {
         var adressebeskyttelseAktiv = adressebeskyttelse.stream().filter(x -> !x.getMetadata().isHistorisk()).toList();
         return adressebeskyttelseAktiv.stream().findFirst()
                 .map(PdlPersonResponse.PdlPersonResponseData.Adressebeskyttelse::getGradering)
-                .map(Diskresjonskode::mapKodeTilTall)
+                .map(Adressebeskyttelse::mapKodeTilTall)
                 .orElse(null);
     }
 

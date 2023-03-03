@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
-import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
+import no.nav.pto.veilarbportefolje.auth.BrukerInnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -97,17 +97,17 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         );
     }
 
-    public List<Moteplan> hentMoteplan(VeilederId veilederIdent, EnhetId enhet, Skjermettilgang skjermettilgang) {
+    public List<Moteplan> hentMoteplan(VeilederId veilederIdent, EnhetId enhet, BrukerInnsynTilganger brukerInnsynTilganger) {
         List<Moteplan> moteplans = aktiviteterRepositoryV2.hentFremtidigeMoter(veilederIdent, enhet);
 
-        return sensurerMoteplaner(moteplans, skjermettilgang);
+        return sensurerMoteplaner(moteplans, brukerInnsynTilganger);
     }
 
-    private List<Moteplan> sensurerMoteplaner(List<Moteplan> moteplans, Skjermettilgang skjermettilgang) {
+    private List<Moteplan> sensurerMoteplaner(List<Moteplan> moteplans, BrukerInnsynTilganger brukerInnsynTilganger) {
         List<Moteplan> sensurertListe = new ArrayList<>();
 
         List<String> fnrs = moteplans.stream().map(Moteplan::deltaker).map(Motedeltaker::fnr).toList();
-        List<String> skjermedeFnrs = oppfolgingsbrukerRepository.finnSkjulteBrukere(fnrs, skjermettilgang);
+        List<String> skjermedeFnrs = oppfolgingsbrukerRepository.finnSkjulteBrukere(fnrs, brukerInnsynTilganger);
 
         moteplans.forEach(plan -> {
             if (skjermedeFnrs.stream().anyMatch(skjermetFnr -> skjermetFnr.equals(plan.deltaker().fnr()))) {

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.auth.Skjermettilgang;
+import no.nav.pto.veilarbportefolje.auth.BrukerInnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -154,12 +154,12 @@ public class OppfolgingsbrukerRepositoryV3 {
                 rs.getBoolean(SPERRET_ANSATT), rs.getBoolean(ER_DOED), toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
 
-    public List<String> finnSkjulteBrukere(List<String> fnrListe, Skjermettilgang skjermettilgang) {
+    public List<String> finnSkjulteBrukere(List<String> fnrListe, BrukerInnsynTilganger brukerInnsynTilganger) {
         var params = new MapSqlParameterSource();
         params.addValue("fnrListe", fnrListe.stream().collect(Collectors.joining(",", "{", "}")));
-        params.addValue("tilgangTilKode6", skjermettilgang.tilgangTilKode6());
-        params.addValue("tilgangTilKode7", skjermettilgang.tilgangTilKode7());
-        params.addValue("tilgangTilEgenAnsatt", skjermettilgang.tilgangTilEgenAnsatt());
+        params.addValue("tilgangTilKode6", brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig());
+        params.addValue("tilgangTilKode7", brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig());
+        params.addValue("tilgangTilEgenAnsatt", brukerInnsynTilganger.tilgangTilSkjerming());
 
         return dbNamed.queryForList("""
                 SELECT fodselsnr from oppfolgingsbruker_arena_v2

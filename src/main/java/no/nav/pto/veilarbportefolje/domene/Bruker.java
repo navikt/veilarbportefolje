@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
@@ -120,7 +121,7 @@ public class Bruker {
                 .setFornavn(bruker.getFornavn())
                 .setEtternavn(bruker.getEtternavn())
                 .setVeilederId(bruker.getVeileder_id())
-                .setDiskresjonskode(("7".equals(diskresjonskode) || "6".equals(diskresjonskode)) ? diskresjonskode : null)
+                .setDiskresjonskode((Adressebeskyttelse.FORTROLIG.diskresjonskode.equals(diskresjonskode) || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode.equals(diskresjonskode)) ? diskresjonskode : null)
                 .setEgenAnsatt(bruker.isEgen_ansatt())
                 .setSkjermetTil(bruker.getSkjermet_til())
                 .setErDoed(bruker.isEr_doed())

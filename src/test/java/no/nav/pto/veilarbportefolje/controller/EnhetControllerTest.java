@@ -1,13 +1,5 @@
 package no.nav.pto.veilarbportefolje.controller;
 
-import com.nimbusds.jose.JOSEObjectType;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jwt.JWT;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTParser;
-import com.nimbusds.jwt.SignedJWT;
 import lombok.SneakyThrows;
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContext;
@@ -28,15 +20,13 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.persononinfo.bosted.BostedService;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.SecureRandom;
 import java.util.Collections;
 
 import static org.mockito.Mockito.*;
@@ -72,7 +62,7 @@ public class EnhetControllerTest {
         when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
 
         authContextHolder.withContext(
-                new AuthContext(UserRole.INTERN, generateMockJWT()),
+                new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
                 () -> enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg())
         );
         verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
@@ -85,7 +75,7 @@ public class EnhetControllerTest {
         when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
 
         authContextHolder.withContext(
-                new AuthContext(UserRole.INTERN, generateMockJWT()),
+                new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
                 () -> enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", "ikke_satt", new Filtervalg())
         );
         verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
@@ -98,7 +88,7 @@ public class EnhetControllerTest {
         when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
         authContextHolder
                 .withContext(
-                        new AuthContext(UserRole.INTERN, generateMockJWT()),
+                        new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
                         () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
                 );
 
@@ -109,23 +99,8 @@ public class EnhetControllerTest {
     public void skal_ikke_hente_noe_hvis_mangler_tilgang() {
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(new Decision.Deny("", ""));
         authContextHolder.withContext(
-                new AuthContext(UserRole.INTERN, generateMockJWT()),
+                new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
                 () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
         );
-    }
-
-    @SneakyThrows
-    private JWT generateMockJWT() {
-        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().claim("NAVident", "A111111").build();
-        JWSHeader header = new JWSHeader.Builder(new JWSAlgorithm("RS256"))
-                .type(JOSEObjectType.JWT)
-                .build();
-        SignedJWT jwt = new SignedJWT(header, claimsSet);
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-        generator.initialize(2048, new SecureRandom("mock_key".getBytes()));
-        KeyPair keyPair = generator.generateKeyPair();
-        jwt.sign(new RSASSASigner(keyPair.getPrivate()));
-
-        return JWTParser.parse(jwt.serialize());
     }
 }

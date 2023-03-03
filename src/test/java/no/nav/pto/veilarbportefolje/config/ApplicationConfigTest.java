@@ -1,11 +1,15 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import no.nav.common.abac.Pep;
+import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.common.auth.context.UserRole;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
+import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
@@ -14,6 +18,8 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
+import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
@@ -24,24 +30,9 @@ import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
-import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
-import no.nav.pto.veilarbportefolje.opensearch.IndexName;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.opensearch.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
-import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
-import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingRepository;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingService;
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
@@ -68,8 +59,9 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
+import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.opensearch.client.RestHighLevelClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -83,12 +75,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.UUID;
 
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchUtils.createClient;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -150,7 +142,8 @@ import static org.mockito.Mockito.when;
         KodeverkService.class,
         PersonOpprinnelseService.class,
         PersonOpprinnelseRepository.class,
-        Avvik14aVedtakService.class
+        Avvik14aVedtakService.class,
+        AuthService.class,
 })
 public class ApplicationConfigTest {
 
@@ -271,7 +264,12 @@ public class ApplicationConfigTest {
 
     @Bean
     public AuthContextHolder authContextHolder() {
-        return AuthContextHolderThreadLocal.instance();
+        AuthContextHolder authContextHolder = AuthContextHolderThreadLocal.instance();
+        authContextHolder.setContext(
+                new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT(randomVeilederId().getValue(), UUID.randomUUID().toString()))
+        );
+
+        return authContextHolder;
     }
 
     @Bean
@@ -299,5 +297,33 @@ public class ApplicationConfigTest {
     @Bean
     public AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient() {
         return mock(AzureAdMachineToMachineTokenClient.class);
+    }
+
+    @Bean
+    public Pep pep() {
+        Pep pep = mock(Pep.class);
+        when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(false);
+        when(pep.harTilgangTilEnhet(any(), any())).thenReturn(false);
+        when(pep.harTilgangTilEnhetMedSperre(any(), any())).thenReturn(false);
+        when(pep.harVeilederTilgangTilPerson(any(), any(), any())).thenReturn(false);
+        when(pep.harTilgangTilPerson(any(), any(), any())).thenReturn(false);
+        when(pep.harTilgangTilOppfolging(any())).thenReturn(false);
+        when(pep.harVeilederTilgangTilModia(any())).thenReturn(false);
+        when(pep.harVeilederTilgangTilKode6(any())).thenReturn(false);
+        when(pep.harVeilederTilgangTilKode7(any())).thenReturn(false);
+        when(pep.harVeilederTilgangTilEgenAnsatt(any())).thenReturn(false);
+        return mock(Pep.class);
+    }
+
+    @Bean
+    public PoaoTilgangWrapper poaoTilgangWrapper() {
+        PoaoTilgangWrapper poaoTilgangWrapper = mock(PoaoTilgangWrapper.class);
+        when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(new Decision.Deny("", ""));
+        when(poaoTilgangWrapper.harVeilederTilgangTilEnhet(any())).thenReturn(new Decision.Deny("", ""));
+        when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(new Decision.Deny("", ""));
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
+        when(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(new Decision.Deny("", ""));
+        return poaoTilgangWrapper;
     }
 }

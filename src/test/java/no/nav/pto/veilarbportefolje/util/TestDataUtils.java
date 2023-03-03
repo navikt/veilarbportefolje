@@ -1,5 +1,14 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.SignedJWT;
+import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
@@ -9,6 +18,9 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.SecureRandom;
 import java.time.*;
 import java.util.Random;
 import java.util.UUID;
@@ -122,5 +134,28 @@ public class TestDataUtils {
 
     public static Hovedmal randomHovedmal() {
         return Hovedmal.values()[random.nextInt(Hovedmal.values().length)];
+    }
+
+    @SneakyThrows
+    public static JWT generateJWT(String navIdent) {
+        return generateJWT(navIdent, null);
+    }
+
+    @SneakyThrows
+    public static JWT generateJWT(String navIdent, String oid) {
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .claim("NAVident", navIdent)
+                .claim("oid", oid)
+                .build();
+        JWSHeader header = new JWSHeader.Builder(new JWSAlgorithm("RS256"))
+                .type(JOSEObjectType.JWT)
+                .build();
+        SignedJWT jwt = new SignedJWT(header, claimsSet);
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        generator.initialize(2048, new SecureRandom("mock_key".getBytes()));
+        KeyPair keyPair = generator.generateKeyPair();
+        jwt.sign(new RSASSASigner(keyPair.getPrivate()));
+
+        return JWTParser.parse(jwt.serialize());
     }
 }
