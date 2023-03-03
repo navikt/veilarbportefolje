@@ -15,7 +15,9 @@ public class FeatureToggle {
     public static final String OPPFOLGINGS_BRUKER = "veilarbportefolje.oppfolgingsbruker_pa_postgres";
     public static final String MAP_AVVIK_14A_VEDTAK = "veilarbportefolje.map_avvik_14a_vedtak";
     public static final String STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER = "veilarbportefolje.stopp_indeksering_av_tiltaksaktiviteter";
-    private static final String POAO_TILGANG_ENABLED = "veilarbportefolje.poao-tilgang-enabled";
+    public static final String POAO_TILGANG_ENABLED = "veilarbportefolje.poao-tilgang-enabled";
+
+    public static final String BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER = "veilarbportefolje.bruk_filter_for_brukerinnsyn_tilganger";
 
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
@@ -34,5 +36,9 @@ public class FeatureToggle {
     }
     public static boolean stoppIndekseringAvTiltaksaktiviteter(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER);
+    }
+
+    public static boolean brukFilterForBrukerInnsynTilganger(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
     }
 }

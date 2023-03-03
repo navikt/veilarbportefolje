@@ -6,7 +6,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.Statust
 
 @Data
 @Accessors(chain = true)
-public class StatusTall {
+public class VeilederPortefoljeStatusTall {
     public long totalt;
     public long ufordelteBrukere;
     public long trengerVurdering;
@@ -27,7 +27,7 @@ public class StatusTall {
     public long minArbeidslisteGronn;
     public long minArbeidslisteGul;
 
-    public StatusTall(StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
+    public VeilederPortefoljeStatusTall(StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
         this.totalt = buckets.getTotalt().getDoc_count();
         this.ufordelteBrukere = buckets.getUfordelteBrukere().getDoc_count();
         this.trengerVurdering = buckets.getTrengerVurdering().getDoc_count();

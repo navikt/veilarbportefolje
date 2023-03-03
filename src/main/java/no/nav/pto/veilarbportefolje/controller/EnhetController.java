@@ -78,7 +78,7 @@ public class EnhetController {
     }
 
     @GetMapping("/{enhet}/statustall")
-    public StatusTall hentStatusTall(@PathVariable("enhet") String enhet) {
+    public EnhetPortefoljeStatusTall hentStatusTall(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 

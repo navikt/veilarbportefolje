@@ -4,10 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.auth.BrukerInnsynTilganger;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.apache.commons.lang3.StringUtils;
 import org.opensearch.action.search.SearchRequest;
@@ -33,8 +38,18 @@ public class OpensearchService {
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final VedtaksstotteClient vedtaksstotteClient;
     private final IndexName indexName;
-    public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder,
-										String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
+    private final UnleashService unleashService;
+    private final AuthService authService;
+
+    public BrukereMedAntall hentBrukere(
+            String enhetId,
+            Optional<String> veilederIdent,
+            String sortOrder,
+            String sortField,
+            Filtervalg filtervalg,
+            Integer fra,
+            Integer antall
+    ) {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         int from = Optional.ofNullable(fra).orElse(0);
@@ -66,6 +81,22 @@ public class OpensearchService {
 
         searchSourceBuilder.query(boolQuery);
 
+        if (FeatureToggle.brukFilterForBrukerInnsynTilganger(unleashService)) {
+            BrukerInnsynTilganger brukerInnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
+
+            if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig()) {
+                boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode));
+            }
+
+            if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig()) {
+                boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode));
+            }
+
+            if (!brukerInnsynTilganger.tilgangTilSkjerming()) {
+                boolQuery.mustNot(matchQuery("egen_ansatt", true));
+            }
+        }
+
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
         OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
@@ -79,7 +110,7 @@ public class OpensearchService {
         return new BrukereMedAntall(totalHits, brukere);
     }
 
-    public StatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
+    public VeilederPortefoljeStatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
         SearchSourceBuilder request =
@@ -87,10 +118,10 @@ public class OpensearchService {
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return new StatusTall(buckets, vedtakstottePilotErPa);
+        return new VeilederPortefoljeStatusTall(buckets, vedtakstottePilotErPa);
     }
 
-    public StatusTall hentStatusTallForEnhet(String enhetId) {
+    public EnhetPortefoljeStatusTall hentStatusTallForEnhet(String enhetId) {
         List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
@@ -100,7 +131,7 @@ public class OpensearchService {
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return new StatusTall(buckets, vedtakstottePilotErPa);
+        return new EnhetPortefoljeStatusTall(buckets, vedtakstottePilotErPa);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {

@@ -18,6 +18,7 @@ import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,6 @@ public class AuthService {
     private final PoaoTilgangWrapper poaoTilgangWrapper;
     private final Pep veilarbPep;
     private final Cache<VeilederPaEnhet, Boolean> harVeilederTilgangTilEnhetCache;
-
     private final UnleashService unleashService;
     private final MetricsClient metricsClient;
 
@@ -99,10 +99,10 @@ public class AuthService {
 
         String diskresjonskode = bruker.getDiskresjonskode();
 
-        if ("6".equals(diskresjonskode) && !harVeilederTilgangTilKode6(NavIdent.of(veilederIdent))) {
+        if (Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode6(NavIdent.of(veilederIdent))) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
-        if ("7".equals(diskresjonskode) && !harVeilederTilgangTilKode7(NavIdent.of(veilederIdent))) {
+        if (Adressebeskyttelse.FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode7(NavIdent.of(veilederIdent))) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
         if (bruker.isEgenAnsatt() && !harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederIdent))) {
@@ -111,7 +111,7 @@ public class AuthService {
         return bruker;
     }
 
-    private boolean harVeilederTilgangTilKode6(NavIdent veilederIdent) {
+    public boolean harVeilederTilgangTilKode6(NavIdent veilederIdent) {
         boolean abacResponse = veilarbPep.harVeilederTilgangTilKode6(veilederIdent);
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode6();
@@ -122,7 +122,7 @@ public class AuthService {
         return abacResponse;
     }
 
-    private boolean harVeilederTilgangTilKode7(NavIdent veilederIdent) {
+    public boolean harVeilederTilgangTilKode7(NavIdent veilederIdent) {
         boolean abacResponse = veilarbPep.harVeilederTilgangTilKode7(veilederIdent);
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode7();
@@ -133,7 +133,7 @@ public class AuthService {
         return abacResponse;
     }
 
-    private boolean harVeilederTilgangTilEgenAnsatt(NavIdent veilederIdent) {
+    public boolean harVeilederTilgangTilEgenAnsatt(NavIdent veilederIdent) {
         boolean abacResponse = veilarbPep.harVeilederTilgangTilEgenAnsatt(veilederIdent);
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt();
@@ -144,13 +144,13 @@ public class AuthService {
         return abacResponse;
     }
 
-    public Skjermettilgang hentVeilederTilgangTilSkjermet() {
+    public BrukerInnsynTilganger hentVeilederBrukerInnsynTilganger() {
         String veilederId = getInnloggetVeilederIdent().toString();
-        boolean tilgangTilKode6 = harVeilederTilgangTilKode6(NavIdent.of(veilederId));
-        boolean tilgangTilKode7 = harVeilederTilgangTilKode7(NavIdent.of(veilederId));
+        boolean tilgangTilAdressebeskyttelseStrengtFortrolig = harVeilederTilgangTilKode6(NavIdent.of(veilederId));
+        boolean tilgangTilAdressebeskyttelseFortrolig = harVeilederTilgangTilKode7(NavIdent.of(veilederId));
         boolean tilgangEgenAnsatt = harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederId));
 
-        return new Skjermettilgang(tilgangTilKode6, tilgangTilKode7, tilgangEgenAnsatt);
+        return new BrukerInnsynTilganger(tilgangTilAdressebeskyttelseStrengtFortrolig, tilgangTilAdressebeskyttelseFortrolig, tilgangEgenAnsatt);
     }
 
     public String getOboToken(String tokenScope) {
