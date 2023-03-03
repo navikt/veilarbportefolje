@@ -165,13 +165,6 @@ public class DateUtils {
         return date.toLocalDate().atStartOfDay();
     }
 
-	public static LocalDate toLocalDateOrNull(java.sql.Date date) {
-		if (date == null) {
-			return null;
-		}
-		return date.toLocalDate();
-	}
-
     public static LocalDate toLocalDateOrNull(String date) {
         if (date == null) {
             return null;
@@ -181,11 +174,6 @@ public class DateUtils {
 
     public static String nowToStr() {
         return ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS).format(ISO_ZONED_DATE_TIME);
-    }
-
-    public static LocalDate fnrToDate(String fnr) throws ParseException {
-        SimpleDateFormat formatter = new SimpleDateFormat("ddMMyy");
-        return LocalDate.ofInstant(formatter.parse(fnr.substring(0, 6)).toInstant(), ZoneId.systemDefault());
     }
 
     public static ZonedDateTime now() {

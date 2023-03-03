@@ -8,7 +8,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
@@ -258,31 +257,6 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void updateOvergangsstonad(AktorId aktorId, EnsligeForsorgerOvergangsstønadTiltakDto ensligeForsorgerOvergangsstønadTiltakDto) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .startObject("enslige_forsorgere_overgangsstonad")
-                .field("vedtaksPeriodetype", ensligeForsorgerOvergangsstønadTiltakDto.vedtaksPeriodetypeBeskrivelse())
-                .field("harAktivitetsplikt", ensligeForsorgerOvergangsstønadTiltakDto.aktivitsplikt())
-                .field("utlopsDato", ensligeForsorgerOvergangsstønadTiltakDto.utløpsDato())
-                .field("yngsteBarnsFødselsdato", ensligeForsorgerOvergangsstønadTiltakDto.yngsteBarnsFødselsdato())
-                .endObject()
-                .endObject();
-
-        update(aktorId, content, "Update overgangsstønad");
-    }
-
-    @SneakyThrows
-    public void deleteOvergansstonad(AktorId aktorId) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .field("enslige_forsorgere_overgangsstonad", (String) null)
-                .endObject();
-
-        update(aktorId, content, "Fjern overgangsstønad");
-    }
-
-    @SneakyThrows
     public void slettDokumenter(List<AktorId> aktorIds) {
         secureLog.info("Sletter gamle aktorIder {}", aktorIds);
         for (AktorId aktorId : aktorIds) {
@@ -294,7 +268,7 @@ public class OpensearchIndexerV2 {
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
         if (!oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId)) {
-            secureLog.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging, heller ikke for historiske identer: {}, med info {}", aktoerId, logInfo);
+            secureLog.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging, heler ikke for historiske identer: {}, med info {}", aktoerId, logInfo);
             return;
         }
         UpdateRequest updateRequest = new UpdateRequest();
@@ -334,6 +308,5 @@ public class OpensearchIndexerV2 {
             }
         }
     }
-
 
 }

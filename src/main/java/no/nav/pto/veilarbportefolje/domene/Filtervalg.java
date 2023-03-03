@@ -52,8 +52,6 @@ public class Filtervalg {
     public List<String> geografiskBosted;
     public List<Avvik14aVedtak> avvik14aVedtak;
 
-    public List<EnsligeForsorgere> ensligeForsorgere;
-
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
                 harYtelsefilter() ||
@@ -85,12 +83,7 @@ public class Filtervalg {
                 harStillingFraNavFilter() ||
                 harLandgruppeFilter() ||
                 harBostedFilter() ||
-                harAvvik14aVedtakFilter() ||
-                harEnsligeForsorgereFilter();
-    }
-
-    public boolean harEnsligeForsorgereFilter() {
-        return ensligeForsorgere != null && !ensligeForsorgere.isEmpty();
+                harAvvik14aVedtakFilter();
     }
 
     public boolean harCvFilter() {
@@ -157,9 +150,7 @@ public class Filtervalg {
         return landgruppe != null && !landgruppe.isEmpty();
     }
 
-    public boolean harStillingFraNavFilter() {
-        return stillingFraNavFilter != null && !stillingFraNavFilter.isEmpty();
-    }
+    public boolean harStillingFraNavFilter() { return stillingFraNavFilter != null && !stillingFraNavFilter.isEmpty(); }
 
     public boolean harBostedFilter() {
         return geografiskBosted != null && !geografiskBosted.isEmpty();
@@ -204,7 +195,7 @@ public class Filtervalg {
         return (aBoolean, aBoolean2) -> aBoolean && aBoolean2;
     }
 
-    public static boolean erGyldigAldersSpenn(String fraTilAlderIput) {
+    public static boolean erGyldigAldersSpenn(String fraTilAlderIput){
         String[] fraTilAlder = fraTilAlderIput.split("-");
         return fraTilAlder.length == 2 && parseInt(fraTilAlder[0]) <= parseInt(fraTilAlder[1]);
     }
