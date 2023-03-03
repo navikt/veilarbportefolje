@@ -2,10 +2,7 @@ package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
-import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
-import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.opensearch.index.query.BoolQueryBuilder;
@@ -208,6 +205,10 @@ public class OpensearchQueryBuilder {
                     avvik14aVedtakSubQuery.should(matchQuery("avvik14aVedtak", avvik14aVedtak))
             );
             queryBuilder.must(avvik14aVedtakSubQuery);
+        }
+
+        if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.getEnsligeForsorgere().contains(EnsligeForsorgere.OVERGANGSSTØNAD)) {
+            queryBuilder.must(existsQuery("enslige_forsorgere_overgangsstonad"));
         }
     }
 
