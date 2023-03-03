@@ -57,7 +57,8 @@ public class BrukerRepositoryV2 {
                                ns.er_skjermet, ns.skjermet_til, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.mellomnavn as mellomnavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
                                bd.foedeland, 
-                               bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert, bd.diskresjonkode as pdl_diskresjonkode,
+                               bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert, bd.diskresjonkode,
+                               bd.sikkerhetstiltak_type, bd.sikkerhetstiltak_gyldigfra, bd.sikkerhetstiltak_gyldigtil, bd.sikkerhetstiltak_beskrivelse, 
                                bd.bydelsnummer, bd.kommunenummer, bd.bostedsistoppdatert, bd.utenlandskadresse, bd.harUkjentBosted,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
@@ -215,8 +216,6 @@ public class BrukerRepositoryV2 {
                 .setIserv_fra_dato(toIsoUTC(rs.getTimestamp(ISERV_FRA_DATO)))
                 .setRettighetsgruppekode(rs.getString(RETTIGHETSGRUPPEKODE))
                 .setHovedmaalkode(rs.getString(HOVEDMAALKODE))
-                .setSikkerhetstiltak(rs.getString(SIKKERHETSTILTAK_TYPE_KODE))
-                .setDiskresjonskode(rs.getString(DISKRESJONSKODE))
                 .setFormidlingsgruppekode(formidlingsgruppekode)
                 .setKvalifiseringsgruppekode(kvalifiseringsgruppekode)
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
@@ -272,7 +271,12 @@ public class BrukerRepositoryV2 {
                 .setKommunenummer(rs.getString("kommunenummer"))
                 .setUtenlandskAdresse(rs.getString("utenlandskAdresse"))
                 .setHarUkjentBosted(rs.getBoolean("harUkjentBosted"))
-                .setBostedSistOppdatert(toLocalDateOrNull(rs.getString("bostedSistOppdatert")));
+                .setBostedSistOppdatert(toLocalDateOrNull(rs.getString("bostedSistOppdatert")))
+                .setSikkerhetstiltak(rs.getString("sikkerhetstiltak_type"))
+                .setSikkerhetstiltak_gyldig_fra(rs.getString("sikkerhetstiltak_gyldigfra"))
+                .setSikkerhetstiltak_gyldig_til(rs.getString("sikkerhetstiltak_gyldigtil"))
+                .setSikkerhetstiltak_beskrivelse(rs.getString("sikkerhetstiltak_beskrivelse"))
+                .setDiskresjonskode(rs.getString("diskresjonkode"));
     }
 
     @SneakyThrows
