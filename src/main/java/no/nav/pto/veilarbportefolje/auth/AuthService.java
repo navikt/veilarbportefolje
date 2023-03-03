@@ -138,7 +138,7 @@ public class AuthService {
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt();
             if (decision.isPermit() != abacResponse) {
-                secureLog.warn("Diff between abac and poao-tilgang for veileder: " + veilederIdent);
+                secureLog.warn("Diff between abac and poao-tilgang for veileder: " + veilederIdent + ". Poao-tilgang decision is: " + decision.isPermit());
             }
         }
         return abacResponse;

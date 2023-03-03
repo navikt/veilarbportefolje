@@ -43,7 +43,7 @@ public class BrukerRepositoryV2Test {
         final UnleashService unleashService = mock(UnleashService.class);
         final KodeverkService kodeverkService = mock(KodeverkService.class);
         when(unleashService.isEnabled(anyString())).thenReturn(true);
-        this.brukerRepositoryV2 = new BrukerRepositoryV2(db, unleashService, kodeverkService);
+        this.brukerRepositoryV2 = new BrukerRepositoryV2(db, kodeverkService);
         this.pdlIdentRepository = new PdlIdentRepository(db);
         this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
         this.pdlPersonRepository = new PdlPersonRepository(db, db);

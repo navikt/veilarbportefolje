@@ -12,7 +12,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -22,7 +21,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukPDLBrukerdata;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
 
@@ -33,7 +31,6 @@ public class PostgresOpensearchMapper {
     private final AktivitetOpensearchService aktivitetOpensearchService;
     private final SisteEndringService sisteEndringService;
     private final PdlService pdlService;
-    private final UnleashService unleashService;
 
     private final KodeverkService kodeverkService;
     private final Avvik14aVedtakService avvik14aService;
@@ -63,9 +60,7 @@ public class PostgresOpensearchMapper {
     public void flettInnSisteEndringerData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
         Map<AktorId, Map<String, Endring>> sisteEndringerDataPostgres = sisteEndringService.hentSisteEndringerFraPostgres(aktoerIder);
-        brukere.forEach(bruker -> {
-            bruker.setSiste_endringer(sisteEndringerDataPostgres.getOrDefault(AktorId.of(bruker.getAktoer_id()), new HashMap<>()));
-        });
+        brukere.forEach(bruker -> bruker.setSiste_endringer(sisteEndringerDataPostgres.getOrDefault(AktorId.of(bruker.getAktoer_id()), new HashMap<>())));
     }
 
     private void flettInnAktivitetData(AktivitetEntity aktivitetData, OppfolgingsBruker bruker) {
@@ -104,16 +99,15 @@ public class PostgresOpensearchMapper {
     }
 
     public void flettInnStatsborgerskapData(List<OppfolgingsBruker> brukere) {
-        if (brukPDLBrukerdata(unleashService)) {
-            List<Fnr> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).map(Fnr::of).collect(Collectors.toList());
-            Map<Fnr, List<Statsborgerskap>> statsborgerskaps = pdlService.hentStatsborgerskap(fnrs);
-            brukere.forEach(bruker -> {
-                List<Statsborgerskap> statsborgerskapList = statsborgerskaps.getOrDefault(Fnr.of(bruker.getFnr()), Collections.emptyList());
-                bruker.setHarFlereStatsborgerskap(statsborgerskapList.size() > 1);
-                bruker.setHovedStatsborgerskap(getHovedStatsborgerskap(statsborgerskapList));
+        List<Fnr> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).map(Fnr::of).collect(Collectors.toList());
+        Map<Fnr, List<Statsborgerskap>> statsborgerskaps = pdlService.hentStatsborgerskap(fnrs);
+        brukere.forEach(bruker -> {
+            List<Statsborgerskap> statsborgerskapList = statsborgerskaps.getOrDefault(Fnr.of(bruker.getFnr()), Collections.emptyList());
+            bruker.setHarFlereStatsborgerskap(statsborgerskapList.size() > 1);
+            bruker.setHovedStatsborgerskap(getHovedStatsborgerskap(statsborgerskapList));
             });
         }
-    }
+
 
     private Statsborgerskap getHovedStatsborgerskap(List<Statsborgerskap> statsborgerskaps) {
 
@@ -147,8 +141,6 @@ public class PostgresOpensearchMapper {
 
     public void flettInnAvvik14aVedtak(List<OppfolgingsBruker> brukere) {
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik14aVedtakList = avvik14aService.hentAvvik(brukere.stream().map(GjeldendeIdenter::of).collect(Collectors.toSet()));
-        brukere.forEach(bruker -> {
-            bruker.setAvvik14aVedtak(avvik14aVedtakList.get(GjeldendeIdenter.of(bruker)));
-        });
+        brukere.forEach(bruker -> bruker.setAvvik14aVedtak(avvik14aVedtakList.get(GjeldendeIdenter.of(bruker))));
     }
 }

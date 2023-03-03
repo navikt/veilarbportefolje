@@ -28,6 +28,9 @@ public class OppfolgingsBruker {
     String rettighetsgruppekode;
     String hovedmaalkode;
     String sikkerhetstiltak;
+    String sikkerhetstiltak_gyldig_fra;
+    String sikkerhetstiltak_gyldig_til;
+    String sikkerhetstiltak_beskrivelse;
     String diskresjonskode;
     boolean har_delt_cv;
     boolean cv_eksistere;
