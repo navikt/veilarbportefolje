@@ -149,6 +149,7 @@ import static org.mockito.Mockito.when;
         Avvik14aVedtakService.class,
         EnsligeForsorgereRepository.class,
         EnsligeForsorgereService.class,
+        AuthService.class
 })
 public class ApplicationConfigTest {
 
