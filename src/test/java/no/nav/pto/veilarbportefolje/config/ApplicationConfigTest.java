@@ -74,6 +74,8 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -153,6 +155,7 @@ public class ApplicationConfigTest {
 
     static {
         OPENSEARCH_CONTAINER = new OpenSearchContainer();
+        OPENSEARCH_CONTAINER.withStartupTimeout(Duration.of(5, ChronoUnit.MINUTES));
         OPENSEARCH_CONTAINER.start();
     }
 
