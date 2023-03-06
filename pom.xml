@@ -144,7 +144,7 @@
         <dependency>
             <groupId>no.nav.familie.eksterne.kontrakter</groupId>
             <artifactId>arbeidsoppfolging</artifactId>
-            <version>2.0_20230203094245_a4a6d4d</version>
+            <version>2.0_20230214104704_706e9c0</version>
         </dependency>
 
         <!-- Funksjonell programmering-->
@@ -345,10 +345,6 @@
                 <repository>
                     <id>jitpack</id>
                     <url>https://jitpack.io</url>
-                </repository>
-                <repository>
-                    <id>github</id>
-                    <url>https://maven.pkg.github.com/navikt/familie-eksterne-kontrakter</url>
                 </repository>
             </repositories>
         </profile>
