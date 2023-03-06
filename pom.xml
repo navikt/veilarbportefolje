@@ -348,8 +348,7 @@
                 </repository>
                 <repository>
                     <id>github</id>
-                    <name>github-package-registry-navikt</name>
-                    <url>https://maven.pkg.github.com/navikt/maven-release</url>
+                    <url>https://maven.pkg.github.com/navikt/familie-felles</url>
                 </repository>
             </repositories>
         </profile>
