@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.ensligforsorger.dto;
+package no.nav.pto.veilarbportefolje.ensligforsorger.dto.output;
 
 import java.time.LocalDate;
 

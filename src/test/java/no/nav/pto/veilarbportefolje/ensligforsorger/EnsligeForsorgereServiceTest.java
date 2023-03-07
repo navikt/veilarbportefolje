@@ -2,12 +2,12 @@ package no.nav.pto.veilarbportefolje.ensligforsorger;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.familie.eksterne.kontrakter.arbeidsoppfolging.*;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,7 +79,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         setInitialState();
 
         List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, 5, 4)));
-        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, 4, 4), LocalDate.of(2024, 4, 4), no.nav.familie.eksterne.kontrakter.arbeidsoppfolging.Periodetype.NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, 4, 4), LocalDate.of(2024, 4, 4), Periodetype.NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
         ensligeForsorgereService.behandleKafkaMeldingLogikk(
                 new VedtakOvergangsstønadArbeidsoppfølging(
                         54321L,
@@ -128,7 +128,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         populateOpensearch(navKontor, veilederId, bruker1_aktorId.get(), bruker2_aktorId.get(), bruker3_aktorId.get());
 
         List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, 5, 4)));
-        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, 4, 4), LocalDate.of(2024, 4, 4), no.nav.familie.eksterne.kontrakter.arbeidsoppfolging.Periodetype.NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, 4, 4), LocalDate.of(2024, 4, 4), Periodetype.NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
         ensligeForsorgereService.behandleKafkaMeldingLogikk(
                 new VedtakOvergangsstønadArbeidsoppfølging(
                         54321L,

@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.ensligforsorger;
 
-import no.nav.familie.eksterne.kontrakter.arbeidsoppfolging.*;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOvergangsstønadTiltak;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static no.nav.familie.eksterne.kontrakter.arbeidsoppfolging.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.domain.Aktivitetstype.BARN_UNDER_ETT_ÅR;
+import static no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
 
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -59,8 +59,8 @@ public class EnsligeForsorgereRepositoryTest {
         );
 
         ensligeForsorgereRepository.lagreOvergangsstonad(melding);
-        Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(melding.getPersonIdent());
-        Optional<LocalDate> yngsteBarnFdato = ensligeForsorgereRepository.hentYngsteBarn(melding.getVedtakId());
+        Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(melding.personIdent());
+        Optional<LocalDate> yngsteBarnFdato = ensligeForsorgereRepository.hentYngsteBarn(melding.vedtakId());
 
         Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltakOptional.isPresent());
         Assert.assertEquals(54321L, ensligeForsorgerOvergangsstønadTiltakOptional.get().vedtakid().longValue());
@@ -88,7 +88,7 @@ public class EnsligeForsorgereRepositoryTest {
 
         ensligeForsorgereRepository.lagreOvergangsstonad(melding);
 
-        Optional<LocalDate> yngsteBarnFdato = ensligeForsorgereRepository.hentYngsteBarn(melding.getVedtakId());
+        Optional<LocalDate> yngsteBarnFdato = ensligeForsorgereRepository.hentYngsteBarn(melding.vedtakId());
 
         Assert.assertTrue(yngsteBarnFdato.isPresent());
         Assert.assertEquals(LocalDate.of(2023, 5, 14), yngsteBarnFdato.get());
@@ -112,7 +112,7 @@ public class EnsligeForsorgereRepositoryTest {
         );
 
         ensligeForsorgereRepository.lagreOvergangsstonad(melding);
-        Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(melding.getPersonIdent());
+        Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(melding.personIdent());
 
         Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltakOptional.isEmpty());
 

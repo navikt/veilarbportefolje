@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.familie.eksterne.kontrakter.arbeidsoppfolging.VedtakOvergangsstønadArbeidsoppfølging;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOvergangsstønadTiltak;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Stønadstype;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.EnsligeForsorgerOvergangsstønadTiltakDto;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsstønadArbeidsoppfølging;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.mapping.AktivitetsTypeTilAktivitetsplikt;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -31,16 +31,16 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
 
     @Override
     protected void behandleKafkaMeldingLogikk(VedtakOvergangsstønadArbeidsoppfølging melding) {
-        if (!melding.getStønadstype().toString().equals(Stønadstype.OVERGANGSSTØNAD.toString())) {
-            log.info("Vi støtter kun overgangstønad for enslige forsorgere. Fått: " + melding.getStønadstype());
+        if (!melding.stønadstype().toString().equals(Stønadstype.OVERGANGSSTØNAD.toString())) {
+            log.info("Vi støtter kun overgangstønad for enslige forsorgere. Fått: " + melding.stønadstype());
             return;
         }
 
-        secureLog.info("Oppdatere enslige forsorgere stønad for bruker: {}", melding.getPersonIdent());
+        secureLog.info("Oppdatere enslige forsorgere stønad for bruker: {}", melding.personIdent());
         ensligeForsorgereRepository.lagreOvergangsstonad(melding);
 
-        Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(melding.getPersonIdent());
-        AktorId aktorId = aktorClient.hentAktorId(Fnr.of(melding.getPersonIdent()));
+        Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(melding.personIdent());
+        AktorId aktorId = aktorClient.hentAktorId(Fnr.of(melding.personIdent()));
 
         if (ensligeForsorgerOvergangsstønadTiltakOptional.isPresent()) {
             EnsligeForsorgerOvergangsstønadTiltak ensligeForsorgerOvergangsstønadTiltak = ensligeForsorgerOvergangsstønadTiltakOptional.get();
@@ -53,12 +53,13 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
             Optional<Boolean> harAktivitetsplikt = AktivitetsTypeTilAktivitetsplikt.harAktivitetsplikt(ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype(), ensligeForsorgerOvergangsstønadTiltak.aktivitetsType());
             String vedtakPeriodeBeskrivelse = mapPeriodetypeTilBeskrivelse(ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype());
 
-            opensearchIndexerV2.updateOvergangsstonad(aktorId, new EnsligeForsorgerOvergangsstønadTiltakDto(
-                    vedtakPeriodeBeskrivelse,
-                    harAktivitetsplikt.orElse(null),
-                    ensligeForsorgerOvergangsstønadTiltak.til_dato(),
-                    yngsteBarn.orElse(null)
-            ));
+            opensearchIndexerV2.updateOvergangsstonad(aktorId,
+                    new EnsligeForsorgerOvergangsstønadTiltakDto(
+                            vedtakPeriodeBeskrivelse,
+                            harAktivitetsplikt.orElse(null),
+                            ensligeForsorgerOvergangsstønadTiltak.til_dato(),
+                            yngsteBarn.orElse(null)
+                    ));
         } else {
             opensearchIndexerV2.deleteOvergansstonad(aktorId);
         }

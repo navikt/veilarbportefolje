@@ -5,8 +5,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.familie.eksterne.kontrakter.arbeidsoppfolging.VedtakOvergangsstønadArbeidsoppfølging;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.*;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsstønadArbeidsoppfølging;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -64,9 +64,9 @@ public class EnsligeForsorgereRepository {
 
     public void lagreOvergangsstonad(VedtakOvergangsstønadArbeidsoppfølging vedtakOvergangsstønadArbeidsoppfølging) {
 
-        long vedtakId = vedtakOvergangsstønadArbeidsoppfølging.getVedtakId();
-        Integer stonadstypeId = hentStonadstype(vedtakOvergangsstønadArbeidsoppfølging.getStønadstype().toString());
-        Integer vedtakResultatId = hentVedtakresultat(vedtakOvergangsstønadArbeidsoppfølging.getVedtaksresultat().toString());
+        long vedtakId = vedtakOvergangsstønadArbeidsoppfølging.vedtakId();
+        Integer stonadstypeId = hentStonadstype(vedtakOvergangsstønadArbeidsoppfølging.stønadstype().toString());
+        Integer vedtakResultatId = hentVedtakresultat(vedtakOvergangsstønadArbeidsoppfølging.vedtaksresultat().toString());
 
         String sql = """
                 INSERT INTO ENSLIGE_FORSORGERE(VEDTAKID, PERSONIDENT, STONADSTYPE, VEDTAKSRESULTAT)
@@ -74,13 +74,13 @@ public class EnsligeForsorgereRepository {
                 DO UPDATE SET(PERSONIDENT, STONADSTYPE, VEDTAKSRESULTAT)
                 = (excluded.PERSONIDENT, excluded.STONADSTYPE, excluded.VEDTAKSRESULTAT);
                 """;
-        db.update(sql, vedtakId, vedtakOvergangsstønadArbeidsoppfølging.getPersonIdent(),
+        db.update(sql, vedtakId, vedtakOvergangsstønadArbeidsoppfølging.personIdent(),
                 stonadstypeId, vedtakResultatId);
 
-        List<EnsligeForsorgereVedtakPeriode> ensligeForsorgereVedtakPerioder = vedtakOvergangsstønadArbeidsoppfølging.getPeriode().stream().map(vedtakPeriode -> new EnsligeForsorgereVedtakPeriode(vedtakId, vedtakPeriode.getFom(), vedtakPeriode.getTom(), hentPeriodetype(vedtakPeriode.getPeriodetype().toString()), hentVedtakAktivitetstype(vedtakPeriode.getAktivitetstype().toString()))).toList();
+        List<EnsligeForsorgereVedtakPeriode> ensligeForsorgereVedtakPerioder = vedtakOvergangsstønadArbeidsoppfølging.periode().stream().map(vedtakPeriode -> new EnsligeForsorgereVedtakPeriode(vedtakId, vedtakPeriode.fom(), vedtakPeriode.tom(), hentPeriodetype(vedtakPeriode.periodetype().toString()), hentVedtakAktivitetstype(vedtakPeriode.aktivitetstype().toString()))).toList();
         lagreEnsligeForsorgereVedtakPerioder(vedtakId, ensligeForsorgereVedtakPerioder);
 
-        List<EnsligeForsorgereBarn> enslige_forsorgere_barn = vedtakOvergangsstønadArbeidsoppfølging.getBarn().stream().map(enslige_forsorgere_barn_dto -> new EnsligeForsorgereBarn(enslige_forsorgere_barn_dto.getFødselsnummer(), enslige_forsorgere_barn_dto.getTermindato())).collect(Collectors.toList());
+        List<EnsligeForsorgereBarn> enslige_forsorgere_barn = vedtakOvergangsstønadArbeidsoppfølging.barn().stream().map(enslige_forsorgere_barn_dto -> new EnsligeForsorgereBarn(enslige_forsorgere_barn_dto.fødselsnummer(), enslige_forsorgere_barn_dto.termindato())).collect(Collectors.toList());
         lagreDataForEnsligeForsorgereBarn(vedtakId, enslige_forsorgere_barn);
     }
 
