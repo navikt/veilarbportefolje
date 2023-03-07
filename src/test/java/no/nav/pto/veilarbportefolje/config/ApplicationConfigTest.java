@@ -26,6 +26,8 @@ import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereRepository;
+import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
@@ -74,6 +76,8 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -143,7 +147,9 @@ import static org.mockito.Mockito.when;
         PersonOpprinnelseService.class,
         PersonOpprinnelseRepository.class,
         Avvik14aVedtakService.class,
-        AuthService.class,
+        EnsligeForsorgereRepository.class,
+        EnsligeForsorgereService.class,
+        AuthService.class
 })
 public class ApplicationConfigTest {
 
@@ -153,6 +159,7 @@ public class ApplicationConfigTest {
 
     static {
         OPENSEARCH_CONTAINER = new OpenSearchContainer();
+        OPENSEARCH_CONTAINER.withStartupTimeout(Duration.of(5, ChronoUnit.MINUTES));
         OPENSEARCH_CONTAINER.start();
     }
 
