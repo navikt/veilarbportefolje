@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.*;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsstønadArbeidsoppfølging;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -224,7 +225,7 @@ public class EnsligeForsorgereRepository {
 
     public Optional<EnsligeForsorgerOvergangsstønadTiltak> hentOvergangsstønadForEnsligeForsorger(String personIdent) {
         String sql = """
-                 SELECT ef.vedtakId, efp.fra_dato, efp.til_dato,
+                 SELECT ef.personIdent, ef.vedtakId, efp.fra_dato, efp.til_dato,
                        vperiode_type.PERIODE_TYPE as vedtaksPeriodeType,
                        EAT.AKTIVITET_TYPE as aktivitetsType
                 FROM enslige_forsorgere ef
@@ -241,6 +242,28 @@ public class EnsligeForsorgereRepository {
         return dbReadOnly.queryForList(sql, Stønadstype.OVERGANGSSTØNAD.toString(), Vedtaksresultat.INNVILGET.toString(), personIdent)
                 .stream().map(this::mapTilTiltak)
                 .findFirst();
+    }
+
+    public List<EnsligeForsorgerOvergangsstønadTiltak> hentOvergangsstønadForEnsligeForsorger(List<Fnr> personIdenter) {
+        String personIdenterStr = personIdenter.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
+        String sql = """
+                 SELECT ef.personIdent, ef.vedtakId, efp.fra_dato, efp.til_dato,
+                       vperiode_type.PERIODE_TYPE as vedtaksPeriodeType,
+                       EAT.AKTIVITET_TYPE as aktivitetsType
+                FROM enslige_forsorgere ef
+                JOIN enslige_forsorgere_periode efp on ef.vedtakid = efp.vedtakid
+                LEFT JOIN enslige_forsorgere_VEDTAKSPERIODE_TYPE vperiode_type on efp.PERIODETYPE = vperiode_type.ID
+                LEFT JOIN enslige_forsorgere_AKTIVITET_TYPE EAT on efp.AKTIVITETSTYPE = EAT.ID
+                LEFT JOIN enslige_forsorgere_VEDTAKSRESULTAT_TYPE EVT on ef.VEDTAKSRESULTAT = EVT.ID
+                LEFT JOIN enslige_forsorgere_STONAD_TYPE EST on EST.ID = ef.STONADSTYPE
+                WHERE est.STONAD_TYPE = ?
+                  AND EVT.VEDTAKSRESULTAT_TYPE = ?
+                  AND ef.personIdent = ANY (?::varchar[]);
+                 """;
+
+        return dbReadOnly.queryForList(sql, Stønadstype.OVERGANGSSTØNAD.toString(), Vedtaksresultat.INNVILGET.toString(), personIdenterStr)
+                .stream().map(this::mapTilTiltak)
+                .collect(Collectors.toList());
     }
 
     public Optional<LocalDate> hentYngsteBarn(Long vedtakId) {
@@ -273,7 +296,9 @@ public class EnsligeForsorgereRepository {
 
     @SneakyThrows
     private EnsligeForsorgerOvergangsstønadTiltak mapTilTiltak(Map<String, Object> rs) {
-        return new EnsligeForsorgerOvergangsstønadTiltak((Long) rs.get("vedtakId"),
+        return new EnsligeForsorgerOvergangsstønadTiltak(
+                Fnr.of((String) rs.get("personIdent")),
+                (Long) rs.get("vedtakId"),
                 Periodetype.valueOf((String) rs.get("vedtaksPeriodeType")),
                 Aktivitetstype.valueOf((String) rs.get("aktivitetsType")),
                 toLocalDateOrNull(String.valueOf(rs.get("fra_dato"))),
