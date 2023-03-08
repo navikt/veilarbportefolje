@@ -130,7 +130,7 @@ public class EnsligeForsorgereRepository {
         String sql = "SELECT ID FROM enslige_forsorgere_STONAD_TYPE WHERE STONAD_TYPE = :stonadType::varchar";
         Optional<Integer> stonadTypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("stonadType", stonadTypeConst), Integer.class));
 
-        return stonadTypeIdOptional.orElse(lagreStonadstype(stonadTypeConst));
+        return stonadTypeIdOptional.orElseGet(() -> lagreStonadstype(stonadTypeConst));
     }
 
     public Integer lagreStonadstype(String stonadTypeConst) {
@@ -155,7 +155,7 @@ public class EnsligeForsorgereRepository {
         String sql = "SELECT ID FROM enslige_forsorgere_vedtaksresultat_type WHERE vedtaksresultat_type = :vedtaksresultat_type::varchar";
         Optional<Integer> vedtakResultatTypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("vedtaksresultat_type", vedtakResultatConst), Integer.class));
 
-        return vedtakResultatTypeIdOptional.orElse(lagreVedtakresultat(vedtakResultatConst));
+        return vedtakResultatTypeIdOptional.orElseGet(() -> lagreVedtakresultat(vedtakResultatConst));
     }
 
     public Integer lagreVedtakresultat(String vedtakResultatTypeConst) {
@@ -180,7 +180,7 @@ public class EnsligeForsorgereRepository {
         String sql = "SELECT ID FROM enslige_forsorgere_vedtaksperiode_type WHERE periode_type = :periode_type::varchar";
         Optional<Integer> vedtakPeriodetypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("periode_type", periodeTypeConst), Integer.class));
 
-        return vedtakPeriodetypeIdOptional.orElse(lagreVedtakperiodeType(periodeTypeConst));
+        return vedtakPeriodetypeIdOptional.orElseGet(() -> lagreVedtakperiodeType(periodeTypeConst));
     }
 
     public Integer lagreVedtakperiodeType(String periodeTypeConst) {
@@ -205,7 +205,7 @@ public class EnsligeForsorgereRepository {
         String sql = "SELECT ID FROM enslige_forsorgere_aktivitet_type WHERE aktivitet_type = :aktivitet_type::varchar";
         Optional<Integer> vedtakAktivitetstypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("aktivitet_type", aktivitetsType), Integer.class));
 
-        return vedtakAktivitetstypeIdOptional.orElse(lagreVedtakAktivitetstype(aktivitetsType));
+        return vedtakAktivitetstypeIdOptional.orElseGet(() -> lagreVedtakAktivitetstype(aktivitetsType));
     }
 
     public Integer lagreVedtakAktivitetstype(String aktivitetsType) {
