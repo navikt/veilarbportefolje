@@ -211,6 +211,22 @@
       "neste_svarfrist_stilling_fra_nav": {
         "type": "date"
       },
+      "enslige_forsorgere_overgangsstonad": {
+        "properties": {
+          "vedtaksPeriodetype": {
+            "type": "keyword"
+          },
+          "harAktivitetsplikt": {
+            "type": "keyword"
+          },
+          "utlopsDato": {
+            "type": "date"
+          },
+          "yngsteBarnsFødselsdato": {
+            "type": "date"
+          }
+        }
+      },
       "diskresjonskode": {
         "type": "keyword"
       },

@@ -29,6 +29,8 @@ import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
+import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsstønadArbeidsoppfølging;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.AivenAvroDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
@@ -71,32 +73,50 @@ public class KafkaConfigCommon {
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
         SISTE_14A_VEDTAK_TOPIC("pto.siste-14a-vedtak-v1"),
+        ARBEIDSOPPFOLGING_VEDTAK_TOPIC("teamfamilie.aapen-ensligforsorger-vedtak-arbeidsoppfolging"),
 
         DIALOG_CONSUMER_TOPIC("dab.endring-paa-dialog-v1"),
+
         ENDRING_PAA_MANUELL_STATUS("pto.endring-paa-manuell-status-v1"),
+
         VEILEDER_TILORDNET("pto.veileder-tilordnet-v1"),
+
         ENDRING_PAA_NY_FOR_VEILEDER("pto.endring-paa-ny-for-veileder-v1"),
+
         ENDRING_PA_MAL("pto.endring-paa-maal-v1"),
+
         SIST_LEST("pto.veileder-har-lest-aktivitetsplanen-v1"),
+
         ENDRING_PAA_OPPFOLGINGSBRUKER("pto.endring-paa-oppfolgingsbruker-v2"),
 
         CV_ENDRET_V2("teampam.cv-endret-ekstern-v2"),
+
         CV_TOPIC("teampam.samtykke-status-1"),
+
         OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
 
         AIVEN_REGISTRERING_TOPIC("paw.arbeidssoker-registrert-v1"),
+
         AIVEN_PROFILERING_TOPIC("paw.arbeidssoker-profilert-v1"),
 
         AIVEN_AKTIVITER_TOPIC("pto.aktivitet-portefolje-v1"),
 
         TILTAK_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
+
         UTDANNINGS_AKTIVITET_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix()),
+
         GRUPPE_AKTIVITET_TOPIC("teamarenanais.aapen-arena-gruppeaktivitetendret-v1-" + requireKafkaTopicPostfix()),
+
         AAP_TOPIC("teamarenanais.aapen-arena-aapvedtakendret-v1-" + requireKafkaTopicPostfix()),
+
         DAGPENGE_TOPIC("teamarenanais.aapen-arena-dagpengevedtakendret-v1-" + requireKafkaTopicPostfix()),
+
         TILTAKSPENGER_TOPIC("teamarenanais.aapen-arena-tiltakspengevedtakendret-v1-" + requireKafkaTopicPostfix()),
+
         NOM_SKJERMING_STATUS("nom.skjermede-personer-status-v1"),
+
         NOM_SKJERMEDE_PERSONER("nom.skjermede-personer-v1"),
+
         PDL_BRUKERDATA("pdl.pdl-persondokument-v1");
 
         @Getter
@@ -120,7 +140,8 @@ public class KafkaConfigCommon {
                              MalService malService, OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2, TiltakService tiltakService,
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
                              YtelsesService ytelsesService, OppfolgingPeriodeService oppfolgingPeriodeService, SkjermingService skjermingService,
-                             JdbcTemplate jdbcTemplate, UnleashService unleashService, PdlBrukerdataKafkaService pdlBrukerdataKafkaService) {
+                             JdbcTemplate jdbcTemplate, UnleashService unleashService, PdlBrukerdataKafkaService pdlBrukerdataKafkaService,
+                             EnsligeForsorgereService ensligeForsorgereService) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
@@ -360,6 +381,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(PdlDokument.class),
                                         pdlBrukerdataKafkaService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, VedtakOvergangsstønadArbeidsoppfølging>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.ARBEIDSOPPFOLGING_VEDTAK_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(VedtakOvergangsstønadArbeidsoppfølging.class),
+                                        ensligeForsorgereService::behandleKafkaRecord
                                 )
                 );
 

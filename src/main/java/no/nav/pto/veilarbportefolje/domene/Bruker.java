@@ -99,6 +99,8 @@ public class Bruker {
 
     Avvik14aVedtak avvik14aVedtak;
 
+    EnsligeForsorgereOvergangsstonad ensligeForsorgereOvergangsstonad;
+
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
@@ -185,7 +187,8 @@ public class Bruker {
                 .setHarUtelandsAddresse(harUtelandsAddresse)
                 .setHarUkjentBosted(bruker.isHarUkjentBosted())
                 .setBostedSistOppdatert(bruker.getBostedSistOppdatert())
-                .setAvvik14aVedtak(bruker.getAvvik14aVedtak());
+                .setAvvik14aVedtak(bruker.getAvvik14aVedtak())
+                .setEnsligeForsorgereOvergangsstonad(bruker.getEnslige_forsorgere_overgangsstonad());
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {
