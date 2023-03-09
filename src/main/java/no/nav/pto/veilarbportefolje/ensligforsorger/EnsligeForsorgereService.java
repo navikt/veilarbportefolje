@@ -15,6 +15,9 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.ensligforsorger.mapping.PeriodetypeTilBeskrivelse.mapPeriodetypeTilBeskrivelse;
@@ -39,29 +42,50 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
         secureLog.info("Oppdatere enslige forsorgere stønad for bruker: {}", melding.personIdent());
         ensligeForsorgereRepository.lagreOvergangsstonad(melding);
 
-        Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(melding.personIdent());
+        Optional<EnsligeForsorgerOvergangsstønadTiltakDto> ensligeForsorgerOvergangsstønadTiltakDto = hentEnsligeForsorgerOvergangsstønadTiltak(melding.personIdent());
         AktorId aktorId = aktorClient.hentAktorId(Fnr.of(melding.personIdent()));
 
-        if (ensligeForsorgerOvergangsstønadTiltakOptional.isPresent()) {
-            EnsligeForsorgerOvergangsstønadTiltak ensligeForsorgerOvergangsstønadTiltak = ensligeForsorgerOvergangsstønadTiltakOptional.get();
-            Optional<LocalDate> yngsteBarn = ensligeForsorgereRepository.hentYngsteBarn(ensligeForsorgerOvergangsstønadTiltak.vedtakid());
-
-            if (yngsteBarn.isEmpty()) {
-                secureLog.warn("Kan ikke finne ef barn for vedtakId: " + ensligeForsorgerOvergangsstønadTiltak.vedtakid());
-            }
-
-            Optional<Boolean> harAktivitetsplikt = AktivitetsTypeTilAktivitetsplikt.harAktivitetsplikt(ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype(), ensligeForsorgerOvergangsstønadTiltak.aktivitetsType());
-            String vedtakPeriodeBeskrivelse = mapPeriodetypeTilBeskrivelse(ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype());
-
-            opensearchIndexerV2.updateOvergangsstonad(aktorId,
-                    new EnsligeForsorgerOvergangsstønadTiltakDto(
-                            vedtakPeriodeBeskrivelse,
-                            harAktivitetsplikt.orElse(null),
-                            ensligeForsorgerOvergangsstønadTiltak.til_dato(),
-                            yngsteBarn.orElse(null)
-                    ));
+        if (ensligeForsorgerOvergangsstønadTiltakDto.isPresent()) {
+            opensearchIndexerV2.updateOvergangsstonad(aktorId, ensligeForsorgerOvergangsstønadTiltakDto.get());
         } else {
             opensearchIndexerV2.deleteOvergansstonad(aktorId);
         }
+    }
+
+    public Optional<EnsligeForsorgerOvergangsstønadTiltakDto> hentEnsligeForsorgerOvergangsstønadTiltak(String personIdent) {
+        Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(personIdent);
+
+        if (ensligeForsorgerOvergangsstønadTiltakOptional.isPresent()) {
+            EnsligeForsorgerOvergangsstønadTiltak ensligeForsorgerOvergangsstønadTiltak = ensligeForsorgerOvergangsstønadTiltakOptional.get();
+
+            return Optional.of(getEnsligeForsorgereDto(ensligeForsorgerOvergangsstønadTiltak));
+        }
+        return Optional.empty();
+    }
+
+    public Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> hentEnsligeForsorgerOvergangsstønadTiltak(List<Fnr> personIdents) {
+        Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> result = new HashMap<>();
+        List<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltaks = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(personIdents);
+        ensligeForsorgerOvergangsstønadTiltaks.forEach(tiltak -> {
+            result.put(tiltak.personIdent(), getEnsligeForsorgereDto(tiltak));
+        });
+        return result;
+    }
+
+    private EnsligeForsorgerOvergangsstønadTiltakDto getEnsligeForsorgereDto(EnsligeForsorgerOvergangsstønadTiltak ensligeForsorgerOvergangsstønadTiltak) {
+        Optional<LocalDate> yngsteBarn = ensligeForsorgereRepository.hentYngsteBarn(ensligeForsorgerOvergangsstønadTiltak.vedtakid());
+
+        if (yngsteBarn.isEmpty()) {
+            secureLog.warn("Kan ikke finne ef barn for vedtakId: " + ensligeForsorgerOvergangsstønadTiltak.vedtakid());
+        }
+
+        Optional<Boolean> harAktivitetsplikt = AktivitetsTypeTilAktivitetsplikt.harAktivitetsplikt(ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype(), ensligeForsorgerOvergangsstønadTiltak.aktivitetsType());
+        String vedtakPeriodeBeskrivelse = mapPeriodetypeTilBeskrivelse(ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype());
+        return new EnsligeForsorgerOvergangsstønadTiltakDto(
+                vedtakPeriodeBeskrivelse,
+                harAktivitetsplikt.orElse(null),
+                ensligeForsorgerOvergangsstønadTiltak.til_dato(),
+                yngsteBarn.orElse(null)
+        );
     }
 }
