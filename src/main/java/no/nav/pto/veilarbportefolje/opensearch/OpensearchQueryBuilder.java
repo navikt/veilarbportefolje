@@ -354,11 +354,11 @@ public class OpensearchQueryBuilder {
 
 
     private static void sorterEnsligeForsorgereVedtaksPeriode(SearchSourceBuilder builder, SortOrder order) {
-        builder.sort("enslige_forsorgere_overgangsstonad.vedtaksPeriodetype");
+        builder.sort("enslige_forsorgere_overgangsstonad.vedtaksPeriodetype", order);
     }
 
     private static void sorterEnsligeForsorgereAktivitetsPlikt(SearchSourceBuilder builder, SortOrder order) {
-        builder.sort("enslige_forsorgere_overgangsstonad.harAktivitetsplikt");
+        builder.sort("enslige_forsorgere_overgangsstonad.harAktivitetsplikt", order);
     }
 
 
