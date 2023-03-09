@@ -6,6 +6,8 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
+import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
@@ -34,6 +36,7 @@ public class PostgresOpensearchMapper {
 
     private final KodeverkService kodeverkService;
     private final Avvik14aVedtakService avvik14aService;
+    private final EnsligeForsorgereService ensligeForsorgereService;
 
     public List<OppfolgingsBruker> flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -105,8 +108,8 @@ public class PostgresOpensearchMapper {
             List<Statsborgerskap> statsborgerskapList = statsborgerskaps.getOrDefault(Fnr.of(bruker.getFnr()), Collections.emptyList());
             bruker.setHarFlereStatsborgerskap(statsborgerskapList.size() > 1);
             bruker.setHovedStatsborgerskap(getHovedStatsborgerskap(statsborgerskapList));
-            });
-        }
+        });
+    }
 
 
     private Statsborgerskap getHovedStatsborgerskap(List<Statsborgerskap> statsborgerskaps) {
@@ -142,5 +145,14 @@ public class PostgresOpensearchMapper {
     public void flettInnAvvik14aVedtak(List<OppfolgingsBruker> brukere) {
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik14aVedtakList = avvik14aService.hentAvvik(brukere.stream().map(GjeldendeIdenter::of).collect(Collectors.toSet()));
         brukere.forEach(bruker -> bruker.setAvvik14aVedtak(avvik14aVedtakList.get(GjeldendeIdenter.of(bruker))));
+    }
+
+    public void flettInnEnsligeForsorgereData(List<OppfolgingsBruker> brukere) {
+        Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(brukere.stream().map(bruker -> Fnr.of(bruker.getFnr())).collect(Collectors.toList()));
+        brukere.forEach(bruker -> {
+            if (fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(Fnr.of(bruker.getFnr()))) {
+                bruker.setEnslige_forsorgere_overgangsstonad(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.get(Fnr.of(bruker.getFnr())).toEnsligeForsorgereOpensearchDto());
+            }
+        });
     }
 }
