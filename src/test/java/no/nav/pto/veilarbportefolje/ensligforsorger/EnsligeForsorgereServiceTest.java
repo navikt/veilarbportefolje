@@ -10,10 +10,12 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -22,13 +24,16 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.EnsligeForsorgere.OVERGANGSSTØNAD;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomLocalDate;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class EnsligeForsorgereServiceTest extends EndToEndTest {
@@ -42,6 +47,10 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
 
     @Autowired
     private EnsligeForsorgereService ensligeForsorgereService;
+
+    @Autowired
+    private EnsligeForsorgereRepository ensligeForsorgereRepository;
+
     @Autowired
     private AktorClient aktorClient;
 
@@ -176,6 +185,39 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         Assertions.assertThat(response.getAntall()).isEqualTo(2);
         Assertions.assertThat(response.getBrukere().get(0).getFnr().equals(bruker2.getFnr()));
         Assertions.assertThat(response.getBrukere().get(1).getFnr().equals(bruker3.getFnr()));
+
+    public void testHentingAvAlleBrukere() {
+        List<Fnr> fnrList = List.of(Fnr.of("11018012321"), Fnr.of("12018012321"), Fnr.of("13018012321"),
+                Fnr.of("14018012321"), Fnr.of("15018012321"));
+        lagreRandomVedtakIdatabase(fnrList.get(0));
+        lagreRandomVedtakIdatabase(fnrList.get(1));
+        lagreRandomVedtakIdatabase(fnrList.get(2));
+        lagreRandomVedtakIdatabase(fnrList.get(3));
+        lagreRandomVedtakIdatabase(fnrList.get(4));
+
+        Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(fnrList);
+        Assert.assertEquals(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size(), 5);
+        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(0)));
+        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(1)));
+        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(2)));
+        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(3)));
+        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(4)));
+    }
+
+    private void lagreRandomVedtakIdatabase(Fnr fnr) {
+        List<Barn> barn = List.of(new Barn(randomFnr().toString(), null));
+        List<Periode> periodeType = List.of(new Periode(randomLocalDate(), randomLocalDate(), NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        VedtakOvergangsstønadArbeidsoppfølging melding = new VedtakOvergangsstønadArbeidsoppfølging(
+                new Random().nextLong(10000l),
+                fnr.toString(),
+                barn,
+                Stønadstype.OVERGANGSSTØNAD,
+                periodeType,
+                Vedtaksresultat.INNVILGET
+
+        );
+
+        ensligeForsorgereRepository.lagreOvergangsstonad(melding);
     }
 
     private void setInitialState() {

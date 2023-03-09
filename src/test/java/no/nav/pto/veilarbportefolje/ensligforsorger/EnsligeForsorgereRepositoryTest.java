@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.ensligforsorger;
 
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOvergangsstønadTiltak;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
@@ -13,10 +14,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Stream;
 
 import static no.nav.pto.veilarbportefolje.ensligforsorger.domain.Aktivitetstype.BARN_UNDER_ETT_ÅR;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomLocalDate;
 
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -135,4 +139,39 @@ public class EnsligeForsorgereRepositoryTest {
         ensligeForsorgereRepository.lagreOvergangsstonad(melding);
     }
 
+    private void lagreRandomVedtakIdatabase(Fnr fnr) {
+        List<Barn> barn = List.of(new Barn(randomFnr().toString(), null));
+        List<Periode> periodeType = List.of(new Periode(randomLocalDate(), randomLocalDate(), NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        VedtakOvergangsstønadArbeidsoppfølging melding = new VedtakOvergangsstønadArbeidsoppfølging(
+                new Random().nextLong(10000l),
+                fnr.toString(),
+                barn,
+                Stønadstype.OVERGANGSSTØNAD,
+                periodeType,
+                Vedtaksresultat.INNVILGET
+
+        );
+
+        ensligeForsorgereRepository.lagreOvergangsstonad(melding);
+    }
+
+
+    @Test
+    void testHentOvergangsstønadForEnsligeForsorgere() {
+        List<Fnr> fnrList = List.of(Fnr.of("11018012321"), Fnr.of("12018012321"), Fnr.of("13018012321"),
+                Fnr.of("14018012321"), Fnr.of("15018012321"));
+        lagreRandomVedtakIdatabase(fnrList.get(0));
+        lagreRandomVedtakIdatabase(fnrList.get(1));
+        lagreRandomVedtakIdatabase(fnrList.get(2));
+        lagreRandomVedtakIdatabase(fnrList.get(3));
+        lagreRandomVedtakIdatabase(fnrList.get(4));
+
+        List<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltaks = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(fnrList);
+        Assert.assertEquals(ensligeForsorgerOvergangsstønadTiltaks.size(), 5);
+        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(0))));
+        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(1))));
+        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(2))));
+        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(3))));
+        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(4))));
+    }
 }
