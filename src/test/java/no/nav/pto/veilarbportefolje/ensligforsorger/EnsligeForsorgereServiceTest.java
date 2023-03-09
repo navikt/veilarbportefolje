@@ -30,10 +30,9 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.EnsligeForsorgere.OVERGANGSSTØNAD;
-import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomLocalDate;
+import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class EnsligeForsorgereServiceTest extends EndToEndTest {
@@ -185,6 +184,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         Assertions.assertThat(response.getAntall()).isEqualTo(2);
         Assertions.assertThat(response.getBrukere().get(0).getFnr().equals(bruker2.getFnr()));
         Assertions.assertThat(response.getBrukere().get(1).getFnr().equals(bruker3.getFnr()));
+    }
 
     public void testHentingAvAlleBrukere() {
         List<Fnr> fnrList = List.of(Fnr.of("11018012321"), Fnr.of("12018012321"), Fnr.of("13018012321"),
