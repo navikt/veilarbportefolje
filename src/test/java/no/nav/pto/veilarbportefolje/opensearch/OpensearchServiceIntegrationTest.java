@@ -2288,6 +2288,119 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getBrukere()).hasSize(3);
         assertThat(response.getBrukere().get(0).getEtternavn()).isEqualTo("C");
         assertThat(response.getBrukere().get(2).getEtternavn()).isEqualTo("A");
+    }
+
+    @Test
+    public void test_sortering_enslige_forsorgere() {
+        var bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Hovedperiode", true, LocalDate.now().plusMonths(4), LocalDate.now().minusMonths(2)));
+
+        var bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Forlengelse", false, LocalDate.now().plusMonths(3), LocalDate.now().plusMonths(7)));
+
+        var bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Utvidelse", false, LocalDate.now().plusMonths(1), LocalDate.now().minusMonths(3)));
+
+        var bruker4 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Periode før fødsel", true, LocalDate.now().plusMonths(7), LocalDate.now().minusMonths(1)));
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setEnsligeForsorgere(List.of(EnsligeForsorgere.OVERGANGSSTØNAD));
+
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "enslige_forsorgere_utlop_ytelse",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(4);
+        assertThat(response.getBrukere().get(0).getFnr().equals(bruker3.getFnr()));
+        assertThat(response.getBrukere().get(1).getFnr().equals(bruker2.getFnr()));
+        assertThat(response.getBrukere().get(2).getFnr().equals(bruker1.getFnr()));
+        assertThat(response.getBrukere().get(3).getFnr().equals(bruker4.getFnr()));
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "enslige_forsorgere_vedtaksperiodetype",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(4);
+        assertThat(response.getBrukere().get(0).getFnr().equals(bruker2.getFnr()));
+        assertThat(response.getBrukere().get(1).getFnr().equals(bruker1.getFnr()));
+        assertThat(response.getBrukere().get(2).getFnr().equals(bruker4.getFnr()));
+        assertThat(response.getBrukere().get(3).getFnr().equals(bruker3.getFnr()));
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "enslige_forsorgere_aktivitetsplikt",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(4);
+        assertThat(response.getBrukere().get(0).getFnr().equals(bruker1.getFnr()));
+        assertThat(response.getBrukere().get(1).getFnr().equals(bruker4.getFnr()));
+        assertThat(response.getBrukere().get(2).getFnr().equals(bruker2.getFnr()));
+        assertThat(response.getBrukere().get(3).getFnr().equals(bruker3.getFnr()));
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "enslige_forsorgere_oppfolging",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(4);
+        assertThat(response.getBrukere().get(0).getFnr().equals(bruker3.getFnr()));
+        assertThat(response.getBrukere().get(1).getFnr().equals(bruker1.getFnr()));
+        assertThat(response.getBrukere().get(2).getFnr().equals(bruker4.getFnr()));
+        assertThat(response.getBrukere().get(3).getFnr().equals(bruker2.getFnr()));
 
     }
 

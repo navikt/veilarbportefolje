@@ -1,15 +1,19 @@
 package no.nav.pto.veilarbportefolje.ensligforsorger;
 
+import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
+import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -22,6 +26,9 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.EnsligeForsorgere.OVERGANGSSTØNAD;
+import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class EnsligeForsorgereServiceTest extends EndToEndTest {
@@ -110,6 +117,67 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         );
     }
 
+    @Test
+    public void test_filtrering_enslige_forsorgere() {
+        var bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(veilederId.toString())
+                .setEnhet_id(navKontor.toString());
+
+        var bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(veilederId.toString())
+                .setNy_for_veileder(false)
+                .setEnhet_id(navKontor.toString())
+                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Forlengelse", false, LocalDate.now().plusMonths(3), LocalDate.now().plusMonths(7)));
+
+        var bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(veilederId.toString())
+                .setNy_for_veileder(false)
+                .setEnhet_id(navKontor.toString())
+                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Utvidelse", false, LocalDate.now().plusMonths(1), LocalDate.now().minusMonths(3)));
+
+        var bruker4 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(veilederId.toString())
+                .setNy_for_veileder(false)
+                .setEnhet_id(navKontor.toString());
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setEnsligeForsorgere(List.of(OVERGANGSSTØNAD));
+
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                navKontor.toString(),
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+
+        Assertions.assertThat(response.getAntall()).isEqualTo(2);
+        Assertions.assertThat(response.getBrukere().get(0).getFnr().equals(bruker2.getFnr()));
+        Assertions.assertThat(response.getBrukere().get(1).getFnr().equals(bruker3.getFnr()));
+    }
+
     private void setInitialState() {
         Fnr bruker1_fnr = hoved_fnr;
         Fnr bruker2_fnr = Fnr.of("2911883838");
@@ -139,5 +207,15 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                         Vedtaksresultat.INNVILGET
                 )
         );
+    }
+
+    private void skrivBrukereTilTestindeks(List<OppfolgingsBruker> brukere) {
+        OppfolgingsBruker[] array = new OppfolgingsBruker[brukere.size()];
+        skrivBrukereTilTestindeks(brukere.toArray(array));
+    }
+
+    @SneakyThrows
+    private void skrivBrukereTilTestindeks(OppfolgingsBruker... brukere) {
+        opensearchIndexer.skrivTilIndeks(indexName.getValue(), List.of(brukere));
     }
 }
