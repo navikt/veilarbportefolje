@@ -2,11 +2,6 @@ package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
-import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
-import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
@@ -304,11 +299,19 @@ public class OpensearchQueryBuilder {
             case "statsborgerskap_gyldig_fra" -> sorterStatsborgerskapGyldigFra(searchSourceBuilder, order);
             case "tolkespraak" -> sorterTolkeSpraak(filtervalg, searchSourceBuilder, order);
             case "tolkebehov_sistoppdatert" -> searchSourceBuilder.sort("tolkBehovSistOppdatert", order);
+            case "enslige_forsorgere_utlop_ytelse" -> sorterEnsligeForsorgereUtlopsDato(searchSourceBuilder, order);
+            case "enslige_forsorgere_vedtaksperiodetype" ->
+                    sorterEnsligeForsorgereVedtaksPeriode(searchSourceBuilder, order);
+            case "enslige_forsorgere_aktivitetsplikt" ->
+                    sorterEnsligeForsorgereAktivitetsPlikt(searchSourceBuilder, order);
+            case "enslige_forsorgere_oppfolging" ->
+                    sorterEnsligeForsorgereOppfolgingStartet(searchSourceBuilder, order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
         return searchSourceBuilder;
     }
+
 
     private static void defaultSort(String sortField, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
         if (ValideringsRegler.sortFields.contains(sortField)) {
@@ -317,6 +320,40 @@ public class OpensearchQueryBuilder {
             throw new IllegalStateException();
         }
     }
+
+    private static void sorterEnsligeForsorgereUtlopsDato(SearchSourceBuilder builder, SortOrder order) {
+        String expresion = "doc['enslige_forsorgere_overgangsstonad.utlopsDato']?.value.toInstant().toEpochMilli()";
+        Script script = new Script(expresion);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+    }
+
+    private static void sorterEnsligeForsorgereOppfolgingStartet(SearchSourceBuilder builder, SortOrder order) {
+        String expresion = "doc['enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato']?.value.toInstant().toEpochMilli()";
+        Script script = new Script(expresion);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+    }
+
+
+    private static void sorterEnsligeForsorgereVedtaksPeriode(SearchSourceBuilder builder, SortOrder order) {
+        String expresion = "doc['enslige_forsorgere_overgangsstonad.vedtaksPeriodetype']?.value";
+        Script script = new Script(expresion);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, STRING);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+    }
+
+    private static void sorterEnsligeForsorgereAktivitetsPlikt(SearchSourceBuilder builder, SortOrder order) {
+        String expresion = "doc['enslige_forsorgere_overgangsstonad.harAktivitetsplikt']?.value";
+        Script script = new Script(expresion);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, STRING);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+    }
+
 
     static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         if (filtervalg.sisteEndringKategori.size() == 0) {

@@ -63,7 +63,11 @@ public class ValideringsRegler {
             "kommunenummer",
             "bydelsnummer",
             "bostedSistOppdatert",
-            "neste_svarfrist_stilling_fra_nav"
+            "neste_svarfrist_stilling_fra_nav",
+            "enslige_forsorgere_utlop_ytelse",
+            "enslige_forsorgere_vedtaksperiodetype",
+            "enslige_forsorgere_aktivitetsplikt",
+            "enslige_forsorgere_oppfolging"
     );
 
     public static void sjekkEnhet(String enhet) {
