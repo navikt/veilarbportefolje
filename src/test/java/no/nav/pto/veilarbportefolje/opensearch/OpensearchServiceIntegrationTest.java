@@ -2327,7 +2327,15 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Periode før fødsel", true, LocalDate.now().plusMonths(7), LocalDate.now().minusMonths(1)));
 
-        var liste = List.of(bruker1, bruker2, bruker3, bruker4);
+        var bruker5 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET);
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5);
 
         skrivBrukereTilTestindeks(liste);
 
@@ -2335,8 +2343,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
 
         Filtervalg filterValg = new Filtervalg()
-                .setFerdigfilterListe(List.of())
-                .setEnsligeForsorgere(List.of(EnsligeForsorgere.OVERGANGSSTØNAD));
+                .setFerdigfilterListe(List.of());
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -2348,43 +2355,11 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
 
-        assertThat(response.getAntall()).isEqualTo(4);
+        assertThat(response.getAntall()).isEqualTo(5);
         assertThat(response.getBrukere().get(0).getFnr().equals(bruker3.getFnr()));
         assertThat(response.getBrukere().get(1).getFnr().equals(bruker2.getFnr()));
         assertThat(response.getBrukere().get(2).getFnr().equals(bruker1.getFnr()));
         assertThat(response.getBrukere().get(3).getFnr().equals(bruker4.getFnr()));
-
-        response = opensearchService.hentBrukere(
-                TEST_ENHET,
-                empty(),
-                "ascending",
-                "enslige_forsorgere_vedtaksperiodetype",
-                filterValg,
-                null,
-                null
-        );
-
-        assertThat(response.getAntall()).isEqualTo(4);
-        assertThat(response.getBrukere().get(0).getFnr().equals(bruker2.getFnr()));
-        assertThat(response.getBrukere().get(1).getFnr().equals(bruker1.getFnr()));
-        assertThat(response.getBrukere().get(2).getFnr().equals(bruker4.getFnr()));
-        assertThat(response.getBrukere().get(3).getFnr().equals(bruker3.getFnr()));
-
-        response = opensearchService.hentBrukere(
-                TEST_ENHET,
-                empty(),
-                "ascending",
-                "enslige_forsorgere_aktivitetsplikt",
-                filterValg,
-                null,
-                null
-        );
-
-        assertThat(response.getAntall()).isEqualTo(4);
-        assertThat(response.getBrukere().get(0).getFnr().equals(bruker1.getFnr()));
-        assertThat(response.getBrukere().get(1).getFnr().equals(bruker4.getFnr()));
-        assertThat(response.getBrukere().get(2).getFnr().equals(bruker2.getFnr()));
-        assertThat(response.getBrukere().get(3).getFnr().equals(bruker3.getFnr()));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -2396,12 +2371,43 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
 
-        assertThat(response.getAntall()).isEqualTo(4);
+        assertThat(response.getAntall()).isEqualTo(5);
         assertThat(response.getBrukere().get(0).getFnr().equals(bruker3.getFnr()));
         assertThat(response.getBrukere().get(1).getFnr().equals(bruker1.getFnr()));
         assertThat(response.getBrukere().get(2).getFnr().equals(bruker4.getFnr()));
         assertThat(response.getBrukere().get(3).getFnr().equals(bruker2.getFnr()));
 
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "enslige_forsorgere_aktivitetsplikt",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(5);
+        assertThat(response.getBrukere().get(0).getFnr().equals(bruker1.getFnr()));
+        assertThat(response.getBrukere().get(1).getFnr().equals(bruker4.getFnr()));
+        assertThat(response.getBrukere().get(2).getFnr().equals(bruker2.getFnr()));
+        assertThat(response.getBrukere().get(3).getFnr().equals(bruker3.getFnr()));
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "enslige_forsorgere_vedtaksperiodetype",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(5);
+        assertThat(response.getBrukere().get(0).getFnr().equals(bruker2.getFnr()));
+        assertThat(response.getBrukere().get(1).getFnr().equals(bruker1.getFnr()));
+        assertThat(response.getBrukere().get(2).getFnr().equals(bruker4.getFnr()));
+        assertThat(response.getBrukere().get(3).getFnr().equals(bruker3.getFnr()));
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {

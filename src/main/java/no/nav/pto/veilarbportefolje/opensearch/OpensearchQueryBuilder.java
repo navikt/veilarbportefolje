@@ -322,15 +322,30 @@ public class OpensearchQueryBuilder {
     }
 
     private static void sorterEnsligeForsorgereUtlopsDato(SearchSourceBuilder builder, SortOrder order) {
-        String expresion = "doc['enslige_forsorgere_overgangsstonad.utlopsDato']?.value.toInstant().toEpochMilli()";
+        String expresion = """
+                if (doc.containsKey('enslige_forsorgere_overgangsstonad.utlopsDato') && !doc['enslige_forsorgere_overgangsstonad.utlopsDato'].empty) {
+                    return doc['enslige_forsorgere_overgangsstonad.utlopsDato'].value.toInstant().toEpochMilli();
+                }
+                else {
+                  return 0;
+                }
+                """;
         Script script = new Script(expresion);
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
+
     }
 
     private static void sorterEnsligeForsorgereOppfolgingStartet(SearchSourceBuilder builder, SortOrder order) {
-        String expresion = "doc['enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato']?.value.toInstant().toEpochMilli()";
+        String expresion = """
+                if (doc.containsKey('enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato') && !doc['enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato'].empty) {
+                    return doc['enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato'].value.toInstant().toEpochMilli();
+                }
+                else {
+                    return 0;
+                }
+                """;
         Script script = new Script(expresion);
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
@@ -339,19 +354,11 @@ public class OpensearchQueryBuilder {
 
 
     private static void sorterEnsligeForsorgereVedtaksPeriode(SearchSourceBuilder builder, SortOrder order) {
-        String expresion = "doc['enslige_forsorgere_overgangsstonad.vedtaksPeriodetype']?.value";
-        Script script = new Script(expresion);
-        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, STRING);
-        scriptBuilder.order(order);
-        builder.sort(scriptBuilder);
+        builder.sort("enslige_forsorgere_overgangsstonad.vedtaksPeriodetype");
     }
 
     private static void sorterEnsligeForsorgereAktivitetsPlikt(SearchSourceBuilder builder, SortOrder order) {
-        String expresion = "doc['enslige_forsorgere_overgangsstonad.harAktivitetsplikt']?.value";
-        Script script = new Script(expresion);
-        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, STRING);
-        scriptBuilder.order(order);
-        builder.sort(scriptBuilder);
+        builder.sort("enslige_forsorgere_overgangsstonad.harAktivitetsplikt");
     }
 
 
