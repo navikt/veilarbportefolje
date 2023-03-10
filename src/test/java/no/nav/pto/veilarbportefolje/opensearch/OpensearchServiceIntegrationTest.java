@@ -2365,7 +2365,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "enslige_forsorgere_oppfolging",
+                "enslige_forsorgere_om_barnet",
                 filterValg,
                 null,
                 null

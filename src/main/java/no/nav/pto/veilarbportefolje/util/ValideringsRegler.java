@@ -67,7 +67,7 @@ public class ValideringsRegler {
             "enslige_forsorgere_utlop_ytelse",
             "enslige_forsorgere_vedtaksperiodetype",
             "enslige_forsorgere_aktivitetsplikt",
-            "enslige_forsorgere_oppfolging"
+            "enslige_forsorgere_om_barnet"
     );
 
     public static void sjekkEnhet(String enhet) {
