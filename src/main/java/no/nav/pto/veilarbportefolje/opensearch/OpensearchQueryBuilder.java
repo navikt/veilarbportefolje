@@ -304,8 +304,7 @@ public class OpensearchQueryBuilder {
                     sorterEnsligeForsorgereVedtaksPeriode(searchSourceBuilder, order);
             case "enslige_forsorgere_aktivitetsplikt" ->
                     sorterEnsligeForsorgereAktivitetsPlikt(searchSourceBuilder, order);
-            case "enslige_forsorgere_oppfolging" ->
-                    sorterEnsligeForsorgereOppfolgingStartet(searchSourceBuilder, order);
+            case "enslige_forsorgere_om_barnet" -> sorterEnsligeForsorgereOmBarnet(searchSourceBuilder, order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
@@ -337,7 +336,7 @@ public class OpensearchQueryBuilder {
 
     }
 
-    private static void sorterEnsligeForsorgereOppfolgingStartet(SearchSourceBuilder builder, SortOrder order) {
+    private static void sorterEnsligeForsorgereOmBarnet(SearchSourceBuilder builder, SortOrder order) {
         String expresion = """
                 if (doc.containsKey('enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato') && !doc['enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato'].empty) {
                     return doc['enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato'].value.toInstant().toEpochMilli();
