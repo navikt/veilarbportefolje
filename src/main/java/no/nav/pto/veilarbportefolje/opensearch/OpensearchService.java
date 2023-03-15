@@ -119,8 +119,13 @@ public class OpensearchService {
     public VeilederPortefoljeStatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
+        BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
+                .must(termQuery("oppfolging", true))
+                .must(termQuery("enhet_id", enhetId))
+                .must(termQuery("veileder_id", veilederId));
+
         SearchSourceBuilder request =
-                byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
+                byggStatusTallQuery(getVeilederStatusTallFiltre(veilederOgEnhetQuery, emptyList(), vedtakstottePilotErPa));
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
@@ -132,8 +137,12 @@ public class OpensearchService {
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
+        BoolQueryBuilder enhetQuery = boolQuery()
+                .must(termQuery("oppfolging", true))
+                .must(termQuery("enhet_id", enhetId));
+
         SearchSourceBuilder request =
-                byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
+                byggStatusTallQuery(getEnhetStatusTallFiltre(enhetQuery, veilederPaaEnhet, vedtakstottePilotErPa));
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();

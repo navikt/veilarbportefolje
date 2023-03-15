@@ -616,31 +616,14 @@ public class OpensearchQueryBuilder {
                 );
     }
 
-    static SearchSourceBuilder byggStatusTallForEnhetQuery(String enhetId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
-        BoolQueryBuilder enhetQuery = boolQuery()
-                .must(termQuery("oppfolging", true))
-                .must(termQuery("enhet_id", enhetId));
-
-        return byggStatusTallQuery(getEnhetStatusTallFiltre(enhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa));
-    }
-
-    static SearchSourceBuilder byggStatusTallForVeilederQuery(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
-        BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
-                .must(termQuery("oppfolging", true))
-                .must(termQuery("enhet_id", enhetId))
-                .must(termQuery("veileder_id", veilederId));
-
-        return byggStatusTallQuery(getVeilederStatusTallFiltre(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa));
-    }
-
-    private static SearchSourceBuilder byggStatusTallQuery(FiltersAggregator.KeyedFilter[] statusTallFiltre) {
+    static SearchSourceBuilder byggStatusTallQuery(FiltersAggregator.KeyedFilter[] statusTallFiltre) {
         return new SearchSourceBuilder()
                 .size(0)
                 .aggregation(filters("statustall", statusTallFiltre));
     }
 
     @NotNull
-    private static FiltersAggregator.KeyedFilter[] getEnhetStatusTallFiltre(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+    static FiltersAggregator.KeyedFilter[] getEnhetStatusTallFiltre(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
         return ArrayUtils.addAll(
                 getVeilederStatusTallFiltre(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa),
                 adressebeskyttelseEllerSkjermingTotalt(filtrereVeilederOgEnhet),
@@ -650,7 +633,7 @@ public class OpensearchQueryBuilder {
     }
 
     @NotNull
-    private static FiltersAggregator.KeyedFilter[] getVeilederStatusTallFiltre(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+    static FiltersAggregator.KeyedFilter[] getVeilederStatusTallFiltre(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
         return new FiltersAggregator.KeyedFilter[]{
                 erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
                 mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
