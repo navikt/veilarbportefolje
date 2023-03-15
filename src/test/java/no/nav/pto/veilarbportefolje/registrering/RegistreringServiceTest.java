@@ -7,6 +7,10 @@ import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvarDto;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvarDto;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvarDto;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvarDto;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
@@ -66,8 +70,8 @@ class RegistreringServiceTest extends EndToEndTest {
 
         assertThat(utdanning).isEqualTo(UtdanningSvar.GRUNNSKOLE.toString());
         assertThat(situasjon).isEqualTo("Permittert");
-        assertThat(utdanningBestatt).isEqualTo(UtdanningBestattSvar.INGEN_SVAR.toString());
-        assertThat(utdanningGodkjent).isEqualTo(UtdanningGodkjentSvar.JA.toString());
+        assertThat(utdanningBestatt).isEqualTo(UtdanningBestattSvarDto.INGEN_SVAR.toString());
+        assertThat(utdanningGodkjent).isEqualTo(UtdanningGodkjentSvarDto.JA.toString());
     }
 
     @Test
@@ -99,7 +103,7 @@ class RegistreringServiceTest extends EndToEndTest {
                             null,
                             null);
 
-                    assertThat(responseBrukere3.getAntall()).isEqualTo(2);
+                    assertThat(responseBrukere3.getAntall()).isEqualTo(3);
                 }
         );
 
@@ -130,35 +134,166 @@ class RegistreringServiceTest extends EndToEndTest {
                     assertThat(responseBrukere5.getAntall()).isEqualTo(1);
                 }
         );
+
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    var responseBrukere6 = opensearchService.hentBrukere(
+                            testEnhet,
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            getFiltervalgIngenUtdanningBestattData(),
+                            null,
+                            null);
+
+                    assertThat(responseBrukere6.getAntall()).isEqualTo(3);
+                }
+        );
+
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    var responseBrukere7 = opensearchService.hentBrukere(
+                            testEnhet,
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            getFiltervalgIngenSituasjonsData(),
+                            null,
+                            null);
+
+                    assertThat(responseBrukere7.getAntall()).isEqualTo(4);
+                }
+        );
+
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    var responseBrukere7 = opensearchService.hentBrukere(
+                            testEnhet,
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            getFiltervalgIngenUtdanningGodkjentData(),
+                            null,
+                            null);
+
+                    assertThat(responseBrukere7.getAntall()).isEqualTo(3);
+                }
+        );
+
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    var responseBrukere8 = opensearchService.hentBrukere(
+                            testEnhet,
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            getFiltervalgIngenUtdanningData(),
+                            null,
+                            null);
+
+                    assertThat(responseBrukere8.getAntall()).isEqualTo(4);
+                }
+        );
+
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    var responseBrukere9 = opensearchService.hentBrukere(
+                            testEnhet,
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            getFiltervalgSituasjonsDataMix(),
+                            null,
+                            null);
+
+                    assertThat(responseBrukere9.getAntall()).isEqualTo(6);
+                }
+        );
+
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    var responseBrukere10 = opensearchService.hentBrukere(
+                            testEnhet,
+                            empty(),
+                            "asc",
+                            "ikke_satt",
+                            getFiltervalgUtdanningMix(),
+                            null,
+                            null);
+
+                    assertThat(responseBrukere10.getAntall()).isEqualTo(6);
+                }
+        );
+
+
     }
 
     private static Filtervalg getFiltervalgBestatt() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanningBestatt.add(UtdanningBestattSvar.JA);
+        filtervalg.utdanningBestatt.add(UtdanningBestattSvarDto.JA);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgGodkjent() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvar.JA);
+        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvarDto.JA);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgUtdanning() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanning.add(UtdanningSvar.GRUNNSKOLE);
+        filtervalg.utdanning.add(UtdanningSvarDto.GRUNNSKOLE);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgMix() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanning.add(UtdanningSvar.GRUNNSKOLE);
-        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvar.JA);
-        filtervalg.utdanningBestatt.add(UtdanningBestattSvar.NEI);
+        filtervalg.utdanning.add(UtdanningSvarDto.GRUNNSKOLE);
+        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvarDto.JA);
+        filtervalg.utdanningBestatt.add(UtdanningBestattSvarDto.NEI);
+        return filtervalg;
+    }
+
+    private static Filtervalg getFiltervalgIngenUtdanningData() {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.setFerdigfilterListe(new ArrayList<>());
+        filtervalg.utdanning.add(UtdanningSvarDto.INGEN_DATA);
+        return filtervalg;
+    }
+
+    private static Filtervalg getFiltervalgIngenUtdanningGodkjentData() {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.setFerdigfilterListe(new ArrayList<>());
+        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvarDto.INGEN_DATA);
+        return filtervalg;
+    }
+
+    private static Filtervalg getFiltervalgIngenUtdanningBestattData() {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.setFerdigfilterListe(new ArrayList<>());
+        filtervalg.utdanningBestatt.add(UtdanningBestattSvarDto.INGEN_DATA);
+        return filtervalg;
+    }
+
+    private static Filtervalg getFiltervalgIngenSituasjonsData() {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.setFerdigfilterListe(new ArrayList<>());
+        filtervalg.registreringstype.add(DinSituasjonSvarDto.INGEN_DATA);
+        return filtervalg;
+    }
+
+    private static Filtervalg getFiltervalgSituasjonsDataMix() {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.setFerdigfilterListe(new ArrayList<>());
+        filtervalg.registreringstype.add(DinSituasjonSvarDto.MISTET_JOBBEN);
+        filtervalg.registreringstype.add(DinSituasjonSvarDto.INGEN_DATA);
+        return filtervalg;
+    }
+
+    private static Filtervalg getFiltervalgUtdanningMix() {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.setFerdigfilterListe(new ArrayList<>());
+        filtervalg.utdanning.add(UtdanningSvarDto.GRUNNSKOLE);
+        filtervalg.utdanning.add(UtdanningSvarDto.INGEN_UTDANNING);
+        filtervalg.utdanning.add(UtdanningSvarDto.INGEN_DATA);
         return filtervalg;
     }
 
@@ -166,6 +301,10 @@ class RegistreringServiceTest extends EndToEndTest {
         final AktorId aktoerId1 = randomAktorId();
         final AktorId aktoerId2 = randomAktorId();
         final AktorId aktoerId3 = randomAktorId();
+        final AktorId aktoerId4 = randomAktorId();
+        final AktorId aktoerId5 = randomAktorId();
+        final AktorId aktoerId6 = randomAktorId();
+        final AktorId aktoerId7 = randomAktorId();
 
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
@@ -173,15 +312,17 @@ class RegistreringServiceTest extends EndToEndTest {
                         .setOppfolging(true)
                         .setEnhet_id(enhet)
                         .setUtdanning_bestatt("NEI")
-                        .setUtdanning_godkjent("NEI"),
+                        .setUtdanning_godkjent("NEI")
+                        .setBrukers_situasjon("MISTET_JOBBEN"),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId2.get())
                         .setOppfolging(true)
                         .setEnhet_id(enhet)
-                        .setUtdanning_bestatt("JA")
+                        .setUtdanning_bestatt("NEI")
                         .setUtdanning_godkjent("JA")
-                        .setUtdanning("GRUNNSKOLE"),
+                        .setUtdanning("GRUNNSKOLE")
+                        .setBrukers_situasjon("ALDRI_HATT_JOBB"),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId3.get())
@@ -189,7 +330,31 @@ class RegistreringServiceTest extends EndToEndTest {
                         .setEnhet_id(enhet)
                         .setUtdanning_bestatt("NEI")
                         .setUtdanning_godkjent("JA")
-                        .setUtdanning("GRUNNSKOLE")
+                        .setUtdanning("VIDEREGAENDE_GRUNNUTDANNING")
+                        .setBrukers_situasjon("MISTET_JOBBEN"),
+
+                new OppfolgingsBruker()
+                        .setAktoer_id(aktoerId4.get())
+                        .setOppfolging(true)
+                        .setEnhet_id(enhet)
+                        .setUtdanning("GRUNNSKOLE"),
+
+                new OppfolgingsBruker()
+                        .setAktoer_id(aktoerId5.get())
+                        .setOppfolging(true)
+                        .setEnhet_id(enhet)
+                        .setUtdanning_godkjent("JA"),
+
+                new OppfolgingsBruker()
+                        .setAktoer_id(aktoerId6.get())
+                        .setOppfolging(true)
+                        .setEnhet_id(enhet)
+                        .setUtdanning_bestatt("JA"),
+
+                new OppfolgingsBruker()
+                        .setAktoer_id(aktoerId7.get())
+                        .setOppfolging(true)
+                        .setEnhet_id(enhet)
         );
 
         brukere.forEach(bruker -> {
