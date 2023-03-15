@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.BrukerInnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.opensearch.InnsynsrettFilterType;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
@@ -62,7 +63,7 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
         authService.tilgangTilEnhet(enhet);
 
-        return opensearchService.hentStatusTallForVeileder(veilederIdent, enhet);
+        return opensearchService.hentStatusTallForVeileder(veilederIdent, enhet, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
     }
 
     @GetMapping("/{veilederident}/hentArbeidslisteForVeileder")

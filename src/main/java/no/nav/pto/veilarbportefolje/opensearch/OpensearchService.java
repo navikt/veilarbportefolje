@@ -99,13 +99,17 @@ public class OpensearchService {
         return new BrukereMedAntall(totalHits, brukere);
     }
 
-    public VeilederPortefoljeStatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
+    public VeilederPortefoljeStatusTall hentStatusTallForVeileder(String veilederId, String enhetId, InnsynsrettFilterType innsynsrettFilterType) {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
         BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
                 .must(termQuery("oppfolging", true))
                 .must(termQuery("enhet_id", enhetId))
                 .must(termQuery("veileder_id", veilederId));
+
+        if (FeatureToggle.brukFilterForBrukerInnsynTilganger(unleashService)) {
+            leggTilInnsynsrettFilter(veilederOgEnhetQuery, authService.hentVeilederBrukerInnsynTilganger(), innsynsrettFilterType);
+        }
 
         SearchSourceBuilder request =
                 byggStatusTallQuery(getVeilederStatusTallFiltre(veilederOgEnhetQuery, emptyList(), vedtakstottePilotErPa));
