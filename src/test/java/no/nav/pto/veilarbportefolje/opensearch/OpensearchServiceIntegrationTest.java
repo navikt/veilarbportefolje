@@ -317,8 +317,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 new Filtervalg(),
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(brukereMedAntall.getAntall()).isEqualTo(2);
     }
@@ -355,8 +355,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filtervalg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
 
         assertThat(response.getAntall()).isEqualTo(2);
@@ -407,7 +407,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
-        var response = opensearchService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
+        var response = opensearchService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(2);
     }
@@ -446,7 +446,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
         var filtervalg = new Filtervalg().setFerdigfilterListe(List.of(UFORDELTE_BRUKERE));
-        var response = opensearchService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
+        var response = opensearchService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         assertThat(response.getAntall()).isEqualTo(2);
     }
 
@@ -563,8 +563,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 new Filtervalg().setFerdigfilterListe(List.of()),
                 null,
-                null
-        ).getAntall() == liste.size());
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ).getAntall() == liste.size());
 
         var statustall = opensearchService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET);
         assertThat(statustall.erSykmeldtMedArbeidsgiver).isEqualTo(0);
@@ -696,8 +696,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "arbeidslistekategori",
                 new Filtervalg(),
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         List<Bruker> brukere = brukereMedAntall.getBrukere();
 
@@ -756,8 +756,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "valgteaktiviteter",
                 filtervalg1,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         BrukereMedAntall brukereMedAntall2 = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.empty(),
@@ -765,8 +765,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "valgteaktiviteter",
                 filtervalg2,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         List<Bruker> brukere1 = brukereMedAntall.getBrukere();
         List<Bruker> brukere2 = brukereMedAntall2.getBrukere();
@@ -813,8 +813,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 new Filtervalg().setFerdigfilterListe(List.of(TRENGER_VURDERING)),
                 null,
-                null
-        ).getAntall() == liste.size());
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ).getAntall() == liste.size());
 
         List<Brukerstatus> ferdigFiltere = List.of(
                 UFORDELTE_BRUKERE,
@@ -828,8 +828,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 new Filtervalg().setFerdigfilterListe(ferdigFiltere),
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(userExistsInResponse(nyForEnhet, response)).isTrue();
@@ -862,8 +862,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 new Filtervalg(),
                 null,
-                null
-        ).getAntall() == 1);
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ).getAntall() == 1);
 
 
         var response = opensearchService.hentBrukere(
@@ -873,8 +873,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 new Filtervalg(),
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(userExistsInResponse(brukerVeilederHarTilgangTil, response)).isTrue();
@@ -912,8 +912,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 new Filtervalg().setFerdigfilterListe(List.of(UFORDELTE_BRUKERE)),
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(veilederExistsInResponse(LITE_PRIVILEGERT_VEILEDER, response)).isTrue();
@@ -957,9 +957,9 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
+                null,
 
-        );
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(response.getBrukere().stream().anyMatch(it -> it.getFodselsdagIMnd() == 7)).isTrue();
@@ -999,8 +999,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(response.getBrukere().stream().anyMatch(bruker -> "K".equals(bruker.getKjonn()))).isTrue();
@@ -1041,8 +1041,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(userExistsInResponse(brukerMedAAP, response)).isTrue();
@@ -1106,8 +1106,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(2);
         assertThat(userExistsInResponse(brukerMedDagpengerMedPermittering, response)).isTrue();
@@ -1157,8 +1157,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(userExistsInResponse(brukerMedSokeAvtale, response)).isTrue();
@@ -1206,8 +1206,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(2);
         assertThat(userExistsInResponse(brukerMedBehandling, response)).isTrue();
@@ -1257,8 +1257,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(userExistsInResponse(brukerMedTiltak, response)).isTrue();
@@ -1309,8 +1309,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(2);
         assertThat(userExistsInResponse(brukerMedBehandling, response)).isTrue();
@@ -1384,8 +1384,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "utkast_14a_ansvarlig_veileder",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(4);
         assertThat(userExistsInResponse(brukerMedVedtak, response)).isTrue();
@@ -1459,8 +1459,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(2);
         assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")));
@@ -1478,8 +1478,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2021-03-23")));
 
@@ -1494,8 +1494,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(2);
         assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")));
@@ -1514,8 +1514,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")));
 
@@ -1531,8 +1531,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")));
     }
@@ -1615,8 +1615,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(2);
         assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Aserbajdsjan")).findFirst().isPresent());
@@ -1634,8 +1634,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Norge")).findFirst().isPresent());
 
@@ -1651,8 +1651,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(response.getBrukere().stream().noneMatch(x -> x.getFoedeland() != null));
 
@@ -1667,8 +1667,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         assertThat(response.getAntall()).isEqualTo(3);
         assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland() != null).anyMatch(x -> x.getFoedeland().equals("SGP")));
         assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland() != null).anyMatch(x -> x.getFoedeland().equals("AZE")));
@@ -1759,8 +1759,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "fodeland",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(6);
         assertThat(response.getBrukere().get(0).getFoedeland().equals("Aserbajdsjan"));
@@ -1777,8 +1777,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "fodeland",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(6);
         assertThat(response.getBrukere().get(0).getFoedeland().equals("Singapore"));
@@ -1795,8 +1795,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "statsborgerskap",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(6);
         assertThat(response.getBrukere().get(0).getHovedStatsborgerskap().getStatsborgerskap().equals("Estland"));
@@ -1870,8 +1870,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(2);
         assertThat(response.getBrukere().stream().allMatch(x -> x.getBostedKommune().equals("10")));
@@ -1888,8 +1888,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(response.getBrukere().stream().allMatch(x -> x.getBostedBydel().equals("1233")));
 
@@ -1905,8 +1905,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         assertThat(response.getAntall()).isEqualTo(3);
         assertThat(response.getBrukere().stream().filter(x -> x.getBostedKommune().equalsIgnoreCase("10")).count()).isEqualTo(2);
         assertThat(response.getBrukere().stream().anyMatch(x -> x.getBostedBydel().equalsIgnoreCase("1233")));
@@ -1978,8 +1978,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "kommunenummer",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(5);
         assertThat(response.getBrukere().get(0).getBostedKommune().equals("10"));
@@ -1995,8 +1995,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "bydelsnummer",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(5);
         assertThat(response.getBrukere().get(0).getBostedBydel().equals("1010"));
@@ -2061,8 +2061,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getBrukere())
                 .hasSize(2)
@@ -2124,8 +2124,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getBrukere())
                 .hasSize(5)
@@ -2185,8 +2185,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getBrukere()).hasSize(5);
     }
@@ -2234,8 +2234,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "etternavn",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getBrukere()).hasSize(3);
         assertThat(response.getBrukere().get(0).getEtternavn()).isEqualTo("C");
@@ -2282,8 +2282,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "etternavn",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getBrukere()).hasSize(3);
         assertThat(response.getBrukere().get(0).getEtternavn()).isEqualTo("C");
@@ -2352,8 +2352,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "enslige_forsorgere_utlop_ytelse",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(5);
         assertThat(response.getBrukere().get(0).getFnr().equals(bruker3.getFnr()));
@@ -2368,8 +2368,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "enslige_forsorgere_om_barnet",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(5);
         assertThat(response.getBrukere().get(0).getFnr().equals(bruker3.getFnr()));
@@ -2384,8 +2384,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "enslige_forsorgere_aktivitetsplikt",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(5);
         assertThat(response.getBrukere().get(0).getFnr().equals(bruker1.getFnr()));
@@ -2400,8 +2400,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 "enslige_forsorgere_vedtaksperiodetype",
                 filterValg,
                 null,
-                null
-        );
+                null,
+                InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(response.getAntall()).isEqualTo(5);
         assertThat(response.getBrukere().get(0).getFnr().equals(bruker2.getFnr()));
@@ -2442,8 +2442,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                         "ikke_satt",
                         new Filtervalg(),
                         null,
-                        null
-                )
+                        null,
+                        InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ)
         );
     }
 
@@ -2457,8 +2457,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                         "ikke_satt",
                         new Filtervalg(),
                         null,
-                        null
-                )
+                        null,
+                        InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ)
         );
     }
 

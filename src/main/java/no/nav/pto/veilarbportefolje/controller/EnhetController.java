@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
+import static no.nav.pto.veilarbportefolje.opensearch.InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 
 @RestController
 @RequiredArgsConstructor
@@ -60,7 +61,7 @@ public class EnhetController {
         authService.tilgangTilOppfolging();
         authService.tilgangTilEnhet(enhet);
 
-        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         return PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),

@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
+import no.nav.pto.veilarbportefolje.opensearch.InnsynsrettFilterType;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import no.nav.pto.veilarbportefolje.postgres.utils.TiltakaktivitetEntity;
@@ -200,7 +201,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             "ikke_satt",
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(response1.getAntall()).isEqualTo(1);
 
@@ -211,7 +212,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             "ikke_satt",
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(response2.getAntall()).isEqualTo(0);
                 }
@@ -308,7 +309,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             "ikke_satt",
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(response1.getAntall()).isEqualTo(1);
 
@@ -319,7 +320,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             "ikke_satt",
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(response2.getAntall()).isEqualTo(1);
                 }
@@ -361,7 +362,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             "ikke_satt",
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(response1.getAntall()).isEqualTo(1);
                 }
@@ -458,7 +459,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             "ikke_satt",
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(response1.getAntall()).isEqualTo(0);
 
@@ -469,7 +470,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             "ikke_satt",
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(response2.getAntall()).isEqualTo(1);
                 }
@@ -815,7 +816,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             "ikke_satt",
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     BrukereMedAntall responseBrukereLONNTILS = opensearchService.hentBrukere(
                             navKontor.getValue(),
@@ -824,7 +825,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             "ikke_satt",
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(responseBrukereMIDLONTIL.getAntall()).isEqualTo(1);
                     assertThat(responseBrukereLONNTILS.getAntall()).isEqualTo(0);

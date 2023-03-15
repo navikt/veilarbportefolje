@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.StillingFraNAVFilter;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.opensearch.InnsynsrettFilterType;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
@@ -83,7 +84,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                             "ikke_satt",
                             new Filtervalg().setFerdigfilterListe(List.of(I_AKTIVITET)),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(1);
                 }
@@ -117,7 +118,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                             "ikke_satt",
                             new Filtervalg().setNavnEllerFnrQuery(fodselsnummer.toString()).setFerdigfilterListe(new ArrayList<>()),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(1);
                     assertThat(responseBrukere.getBrukere().get(0).getNesteCvKanDelesStatus()).isEqualTo("JA");
@@ -168,7 +169,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                     "ikke_satt",
                     new Filtervalg().setFerdigfilterListe(List.of(I_AKTIVITET)),
                     null,
-                    null);
+                    null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
             assertThat(responseBrukere.getAntall()).isEqualTo(2);
         });
@@ -182,7 +183,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 "ikke_satt",
                 new Filtervalg().setStillingFraNavFilter(List.of(StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA)).setFerdigfilterListe(new ArrayList<>()),
                 null,
-                null);
+                null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         System.out.println(JsonUtils.toJson( new Filtervalg().setStillingFraNavFilter(List.of(StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA)).setFerdigfilterListe(new ArrayList<>())));
         assertThat(responseBrukere.getAntall()).isEqualTo(1);

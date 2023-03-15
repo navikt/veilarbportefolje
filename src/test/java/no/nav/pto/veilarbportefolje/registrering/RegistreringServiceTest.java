@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.opensearch.InnsynsrettFilterType;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
@@ -83,7 +84,7 @@ class RegistreringServiceTest extends EndToEndTest {
                             "ikke_satt",
                             getFiltervalgBestatt(),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(responseBrukere2.getAntall()).isEqualTo(1);
                 }
@@ -97,7 +98,7 @@ class RegistreringServiceTest extends EndToEndTest {
                             "ikke_satt",
                             getFiltervalgGodkjent(),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(responseBrukere3.getAntall()).isEqualTo(2);
                 }
@@ -111,7 +112,7 @@ class RegistreringServiceTest extends EndToEndTest {
                             "ikke_satt",
                             getFiltervalgUtdanning(),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(responseBrukere4.getAntall()).isEqualTo(2);
                 }
@@ -125,7 +126,7 @@ class RegistreringServiceTest extends EndToEndTest {
                             "ikke_satt",
                             getFiltervalgMix(),
                             null,
-                            null);
+                            null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
                     assertThat(responseBrukere5.getAntall()).isEqualTo(1);
                 }

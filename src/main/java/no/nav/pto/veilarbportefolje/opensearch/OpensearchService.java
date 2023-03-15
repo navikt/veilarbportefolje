@@ -28,7 +28,6 @@ import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.opensearch.InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.*;
 import static org.opensearch.index.query.QueryBuilders.*;
 
@@ -49,7 +48,8 @@ public class OpensearchService {
             String sortField,
             Filtervalg filtervalg,
             Integer fra,
-            Integer antall
+            Integer antall,
+            InnsynsrettFilterType innsynsrettFilterType
     ) {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
@@ -83,7 +83,7 @@ public class OpensearchService {
         searchSourceBuilder.query(boolQuery);
 
         if (FeatureToggle.brukFilterForBrukerInnsynTilganger(unleashService)) {
-            leggTilInnsynsrettFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+            leggTilInnsynsrettFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), innsynsrettFilterType);
         }
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
@@ -97,48 +97,6 @@ public class OpensearchService {
                 .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
-    }
-
-    private BoolQueryBuilder leggTilInnsynsrettFilter(BoolQueryBuilder boolQuery, BrukerInnsynTilganger brukerInnsynTilganger, InnsynsrettFilterType filterType) {
-        return switch (filterType) {
-            case ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ -> {
-                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig()) {
-                    boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode));
-                }
-
-                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig()) {
-                    boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode));
-                }
-
-                if (!brukerInnsynTilganger.tilgangTilSkjerming()) {
-                    boolQuery.mustNot(matchQuery("egen_ansatt", true));
-                }
-
-                yield boolQuery;
-            }
-
-            case BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ -> {
-                BoolQueryBuilder shouldBoolQuery = boolQuery();
-
-                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig()) {
-                    shouldBoolQuery.should(matchQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode));
-                }
-
-                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig()) {
-                    shouldBoolQuery.should(matchQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode));
-                }
-
-                if (!brukerInnsynTilganger.tilgangTilSkjerming()) {
-                    shouldBoolQuery.should(matchQuery("egen_ansatt", true));
-                }
-
-                boolQuery.must(shouldBoolQuery);
-
-                yield boolQuery;
-            }
-
-            case ALLE_BRUKERE -> boolQuery;
-        };
     }
 
     public VeilederPortefoljeStatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
@@ -218,5 +176,47 @@ public class OpensearchService {
 
     private boolean erVedtakstottePilotPa(EnhetId enhetId) {
         return vedtaksstotteClient.erVedtakstottePilotPa(enhetId);
+    }
+
+    private BoolQueryBuilder leggTilInnsynsrettFilter(BoolQueryBuilder boolQuery, BrukerInnsynTilganger brukerInnsynTilganger, InnsynsrettFilterType filterType) {
+        return switch (filterType) {
+            case ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ -> {
+                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig()) {
+                    boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode));
+                }
+
+                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig()) {
+                    boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode));
+                }
+
+                if (!brukerInnsynTilganger.tilgangTilSkjerming()) {
+                    boolQuery.mustNot(matchQuery("egen_ansatt", true));
+                }
+
+                yield boolQuery;
+            }
+
+            case BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ -> {
+                BoolQueryBuilder shouldBoolQuery = boolQuery();
+
+                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig()) {
+                    shouldBoolQuery.should(matchQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode));
+                }
+
+                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig()) {
+                    shouldBoolQuery.should(matchQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode));
+                }
+
+                if (!brukerInnsynTilganger.tilgangTilSkjerming()) {
+                    shouldBoolQuery.should(matchQuery("egen_ansatt", true));
+                }
+
+                boolQuery.must(shouldBoolQuery);
+
+                yield boolQuery;
+            }
+
+            case ALLE_BRUKERE -> boolQuery;
+        };
     }
 }
