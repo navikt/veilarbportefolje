@@ -81,6 +81,22 @@ public class OpensearchService {
 
         searchSourceBuilder.query(boolQuery);
 
+        leggTilBrukerinnsynTilgangerFilter(boolQuery);
+
+        sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
+
+        OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
+        int totalHits = response.hits().getTotal().getValue();
+
+        List<Bruker> brukere = response.hits().getHits().stream()
+                .map(Hit::get_source)
+                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg, enhetId))
+                .collect(toList());
+
+        return new BrukereMedAntall(totalHits, brukere);
+    }
+
+    private BoolQueryBuilder leggTilBrukerinnsynTilgangerFilter(BoolQueryBuilder boolQuery) {
         if (FeatureToggle.brukFilterForBrukerInnsynTilganger(unleashService)) {
             BrukerInnsynTilganger brukerInnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
 
@@ -97,17 +113,7 @@ public class OpensearchService {
             }
         }
 
-        sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
-
-        OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
-        int totalHits = response.hits().getTotal().getValue();
-
-        List<Bruker> brukere = response.hits().getHits().stream()
-                .map(Hit::get_source)
-                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg, enhetId))
-                .collect(toList());
-
-        return new BrukereMedAntall(totalHits, brukere);
+        return boolQuery;
     }
 
     public VeilederPortefoljeStatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
