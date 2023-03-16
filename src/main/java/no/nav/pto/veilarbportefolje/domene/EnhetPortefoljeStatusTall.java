@@ -26,9 +26,6 @@ public class EnhetPortefoljeStatusTall {
     public long minArbeidslisteLilla;
     public long minArbeidslisteGronn;
     public long minArbeidslisteGul;
-    public long adressebeskyttelseEllerSkjermingTotalt;
-    public long adressebeskyttelseEllerSkjermingUfordelte;
-    public long adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV;
 
     public EnhetPortefoljeStatusTall(StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
         this.totalt = buckets.getTotalt().getDoc_count();
@@ -50,8 +47,5 @@ public class EnhetPortefoljeStatusTall {
         this.minArbeidslisteGronn = buckets.getMinArbeidslisteGronn().getDoc_count();
         this.minArbeidslisteGul = buckets.getMinArbeidslisteGul().getDoc_count();
         this.underVurdering = vedtakstottePilotErPa ? buckets.getUnderVurdering().getDoc_count() : 0;
-        this.adressebeskyttelseEllerSkjermingTotalt = buckets.getAdressebeskyttelseEllerSkjermingTotalt().getDoc_count();
-        this.adressebeskyttelseEllerSkjermingUfordelte = buckets.getAdressebeskyttelseEllerSkjermingUfordelte().getDoc_count();
-        this.adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV = buckets.getAdressebeskyttelseEllerSkjermingVenterPaSvarFraNAV().getDoc_count();
     }
 }

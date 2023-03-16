@@ -36,7 +36,8 @@ import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
-import static no.nav.pto.veilarbportefolje.opensearch.InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
+import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
+import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggArbeidslisteQuery;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
@@ -579,11 +580,14 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void skal_hente_riktige_statustall_for_enhet_for_brukere_med_adresse_beskyttelse_eller_skjerming() {
+    public void skal_hente_riktige_statustall_for_enhet_nar_veileder_ikke_har_spesiell_brukerinnsyn_tilgang() {
         List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
         doReturn(false).when(unleashService).isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
+        doReturn(false).when(pep).harVeilederTilgangTilKode6(any());
+        doReturn(false).when(pep).harVeilederTilgangTilKode7(any());
+        doReturn(false).when(pep).harVeilederTilgangTilEgenAnsatt(any());
 
         OppfolgingsBruker kode_6_bruker = genererRandomBruker(true, TEST_ENHET, null, "6", false);
         OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false);
@@ -627,11 +631,69 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
-        EnhetPortefoljeStatusTall respons = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
+        Statustall respons = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ);
 
-        assertThat(respons.adressebeskyttelseEllerSkjermingTotalt).isEqualTo(12);
-        assertThat(respons.adressebeskyttelseEllerSkjermingUfordelte).isEqualTo(4);
-        assertThat(respons.adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV).isEqualTo(4);
+        assertThat(respons.totalt()).isEqualTo(12);
+        assertThat(respons.ufordelteBrukere()).isEqualTo(4);
+        assertThat(respons.venterPaSvarFraNAV()).isEqualTo(4);
+    }
+
+    @Test
+    public void skal_hente_riktige_statustall_for_veileder_naar_veileder_har_brukerinnsyn_tilgang_til_kode_7_brukere() {
+        List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
+
+        doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
+        doReturn(false).when(unleashService).isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
+        doReturn(false).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_0));
+        doReturn(true).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_0));
+        doReturn(false).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_0));
+
+        OppfolgingsBruker kode_6_bruker = genererRandomBruker(true, TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false);
+        OppfolgingsBruker kode_6_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "6", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
+        OppfolgingsBruker kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", false);
+        OppfolgingsBruker kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
+        OppfolgingsBruker egen_ansatt_bruker = genererRandomBruker(true, TEST_ENHET, null, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
+        OppfolgingsBruker tilfeldig_fordelt_bruker = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, false);
+        OppfolgingsBruker tilfeldig_ufordelt_bruker = genererRandomBruker(true, TEST_ENHET, null, null, false);
+        OppfolgingsBruker tilfeldig_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
+        List<OppfolgingsBruker> brukere = List.of(
+                kode_6_bruker,
+                kode_6_bruker_med_tilordnet_veileder,
+                kode_6_bruker_som_venter_pa_svar_fra_nav,
+                kode_7_bruker,
+                kode_7_bruker_med_tilordnet_veileder,
+                kode_7_bruker_som_venter_pa_svar_fra_nav,
+                egen_ansatt_bruker,
+                egen_ansatt_bruker_med_tilordnet_veileder,
+                egen_ansatt_bruker_som_venter_pa_svar_fra_nav,
+                egen_ansatt_og_kode_7_bruker,
+                egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder,
+                egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav,
+                tilfeldig_fordelt_bruker,
+                tilfeldig_ufordelt_bruker,
+                tilfeldig_bruker_som_venter_pa_svar_fra_nav
+        );
+
+        skrivBrukereTilTestindeks(brukere);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
+
+        Statustall respons = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+
+        assertThat(respons.totalt()).isEqualTo(3);
+        assertThat(respons.venterPaSvarFraNAV()).isEqualTo(1);
     }
 
     @Test
@@ -660,7 +722,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
         var statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
-        assertThat(statustall.getUfordelteBrukere()).isEqualTo(1);
+        assertThat(statustall.ufordelteBrukere()).isEqualTo(1);
     }
 
     @Test
@@ -917,8 +979,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(veilederExistsInResponse(LITE_PRIVILEGERT_VEILEDER, response)).isTrue();
 
-        EnhetPortefoljeStatusTall statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
-        assertThat(statustall.ufordelteBrukere).isEqualTo(1);
+        Statustall statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
+        assertThat(statustall.ufordelteBrukere()).isEqualTo(1);
     }
 
     @Test

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
-import no.nav.pto.veilarbportefolje.auth.BrukerInnsynTilganger;
+import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -97,13 +97,13 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         );
     }
 
-    public List<Moteplan> hentMoteplan(VeilederId veilederIdent, EnhetId enhet, BrukerInnsynTilganger brukerInnsynTilganger) {
+    public List<Moteplan> hentMoteplan(VeilederId veilederIdent, EnhetId enhet, BrukerinnsynTilganger brukerInnsynTilganger) {
         List<Moteplan> moteplans = aktiviteterRepositoryV2.hentFremtidigeMoter(veilederIdent, enhet);
 
         return sensurerMoteplaner(moteplans, brukerInnsynTilganger);
     }
 
-    private List<Moteplan> sensurerMoteplaner(List<Moteplan> moteplans, BrukerInnsynTilganger brukerInnsynTilganger) {
+    private List<Moteplan> sensurerMoteplaner(List<Moteplan> moteplans, BrukerinnsynTilganger brukerInnsynTilganger) {
         List<Moteplan> sensurertListe = new ArrayList<>();
 
         List<String> fnrs = moteplans.stream().map(Moteplan::deltaker).map(Motedeltaker::fnr).toList();

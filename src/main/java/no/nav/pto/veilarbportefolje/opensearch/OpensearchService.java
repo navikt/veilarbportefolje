@@ -5,13 +5,11 @@ import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
-import no.nav.pto.veilarbportefolje.auth.BrukerInnsynTilganger;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +47,7 @@ public class OpensearchService {
             Filtervalg filtervalg,
             Integer fra,
             Integer antall,
-            InnsynsrettFilterType innsynsrettFilterType
+            BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType
     ) {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
@@ -82,8 +80,8 @@ public class OpensearchService {
 
         searchSourceBuilder.query(boolQuery);
 
-        if (FeatureToggle.brukFilterForBrukerInnsynTilganger(unleashService)) {
-            leggTilInnsynsrettFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), innsynsrettFilterType);
+        if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
+            leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), brukerinnsynTilgangFilterType);
         }
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
@@ -99,7 +97,7 @@ public class OpensearchService {
         return new BrukereMedAntall(totalHits, brukere);
     }
 
-    public VeilederPortefoljeStatusTall hentStatusTallForVeileder(String veilederId, String enhetId, InnsynsrettFilterType innsynsrettFilterType) {
+    public VeilederPortefoljeStatusTall hentStatusTallForVeileder(String veilederId, String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
         BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
@@ -107,19 +105,39 @@ public class OpensearchService {
                 .must(termQuery("enhet_id", enhetId))
                 .must(termQuery("veileder_id", veilederId));
 
-        if (FeatureToggle.brukFilterForBrukerInnsynTilganger(unleashService)) {
-            leggTilInnsynsrettFilter(veilederOgEnhetQuery, authService.hentVeilederBrukerInnsynTilganger(), innsynsrettFilterType);
+        if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
+            leggTilBrukerinnsynTilgangFilter(veilederOgEnhetQuery, authService.hentVeilederBrukerInnsynTilganger(), brukerinnsynTilgangFilterType);
         }
 
         SearchSourceBuilder request =
-                byggStatusTallQuery(getVeilederStatusTallFiltre(veilederOgEnhetQuery, emptyList(), vedtakstottePilotErPa));
+                byggStatustallQuery(veilederOgEnhetQuery, emptyList(), vedtakstottePilotErPa);
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new VeilederPortefoljeStatusTall(buckets, vedtakstottePilotErPa);
     }
 
-    public EnhetPortefoljeStatusTall hentStatusTallForEnhet(String enhetId) {
+    public Statustall hentStatustallForVeilederPortefolje(String veilederId, String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
+        boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
+
+        BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
+                .must(termQuery("oppfolging", true))
+                .must(termQuery("enhet_id", enhetId))
+                .must(termQuery("veileder_id", veilederId));
+
+        if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
+            leggTilBrukerinnsynTilgangFilter(veilederOgEnhetQuery, authService.hentVeilederBrukerInnsynTilganger(), brukerinnsynTilgangFilterType);
+        }
+
+        SearchSourceBuilder request =
+                byggStatustallQuery(veilederOgEnhetQuery, emptyList(), vedtakstottePilotErPa);
+
+        StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
+        StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
+        return Statustall.of(buckets, vedtakstottePilotErPa);
+    }
+
+    public Statustall hentStatusTallForEnhet(String enhetId) {
         List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
@@ -129,11 +147,32 @@ public class OpensearchService {
                 .must(termQuery("enhet_id", enhetId));
 
         SearchSourceBuilder request =
-                byggStatusTallQuery(getEnhetStatusTallFiltre(enhetQuery, veilederPaaEnhet, vedtakstottePilotErPa));
+                byggStatustallQuery(enhetQuery, veilederPaaEnhet, vedtakstottePilotErPa);
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return new EnhetPortefoljeStatusTall(buckets, vedtakstottePilotErPa);
+        return Statustall.of(buckets, vedtakstottePilotErPa);
+    }
+
+    public Statustall hentStatusTallForEnhetPortefolje(String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
+        List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
+
+        boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
+
+        BoolQueryBuilder enhetQuery = boolQuery()
+                .must(termQuery("oppfolging", true))
+                .must(termQuery("enhet_id", enhetId));
+
+        if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
+            leggTilBrukerinnsynTilgangFilter(enhetQuery, authService.hentVeilederBrukerInnsynTilganger(), brukerinnsynTilgangFilterType);
+        }
+
+        SearchSourceBuilder request =
+                byggStatustallQuery(enhetQuery, veilederPaaEnhet, vedtakstottePilotErPa);
+
+        StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
+        StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
+        return Statustall.of(buckets, vedtakstottePilotErPa);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
@@ -180,47 +219,5 @@ public class OpensearchService {
 
     private boolean erVedtakstottePilotPa(EnhetId enhetId) {
         return vedtaksstotteClient.erVedtakstottePilotPa(enhetId);
-    }
-
-    private BoolQueryBuilder leggTilInnsynsrettFilter(BoolQueryBuilder boolQuery, BrukerInnsynTilganger brukerInnsynTilganger, InnsynsrettFilterType filterType) {
-        return switch (filterType) {
-            case ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ -> {
-                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig()) {
-                    boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode));
-                }
-
-                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig()) {
-                    boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode));
-                }
-
-                if (!brukerInnsynTilganger.tilgangTilSkjerming()) {
-                    boolQuery.mustNot(matchQuery("egen_ansatt", true));
-                }
-
-                yield boolQuery;
-            }
-
-            case BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ -> {
-                BoolQueryBuilder shouldBoolQuery = boolQuery();
-
-                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig()) {
-                    shouldBoolQuery.should(matchQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode));
-                }
-
-                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig()) {
-                    shouldBoolQuery.should(matchQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode));
-                }
-
-                if (!brukerInnsynTilganger.tilgangTilSkjerming()) {
-                    shouldBoolQuery.should(matchQuery("egen_ansatt", true));
-                }
-
-                boolQuery.must(shouldBoolQuery);
-
-                yield boolQuery;
-            }
-
-            case ALLE_BRUKERE -> boolQuery;
-        };
     }
 }

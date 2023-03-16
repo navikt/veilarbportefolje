@@ -7,10 +7,10 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
-import no.nav.pto.veilarbportefolje.auth.BrukerInnsynTilganger;
+import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.opensearch.InnsynsrettFilterType;
+import no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.opensearch.InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
+import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 
 @Slf4j
 @RestController
@@ -63,7 +63,20 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
         authService.tilgangTilEnhet(enhet);
 
-        return opensearchService.hentStatusTallForVeileder(veilederIdent, enhet, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        return opensearchService.hentStatusTallForVeileder(veilederIdent, enhet, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+    }
+
+    @GetMapping("/{veilederident}/portefolje/statustall")
+    public VeilederPortefoljeStatustallRespons hentVeilederportefoljeStatustall(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
+        ValideringsRegler.sjekkEnhet(enhet);
+        ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
+        authService.tilgangTilEnhet(enhet);
+
+        return new VeilederPortefoljeStatustallRespons(
+                opensearchService.hentStatustallForVeilederPortefolje(
+                        veilederIdent, enhet, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ
+                )
+        );
     }
 
     @GetMapping("/{veilederident}/hentArbeidslisteForVeileder")
@@ -81,7 +94,7 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
 
         authService.tilgangTilEnhet(enhet.get());
-        BrukerInnsynTilganger tilgangTilSkjermeteBrukere = authService.hentVeilederBrukerInnsynTilganger();
+        BrukerinnsynTilganger tilgangTilSkjermeteBrukere = authService.hentVeilederBrukerInnsynTilganger();
 
         return aktivitetService.hentMoteplan(veilederIdent, enhet, tilgangTilSkjermeteBrukere);
     }

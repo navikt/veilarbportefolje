@@ -7,7 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.opensearch.InnsynsrettFilterType;
+import no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -80,7 +80,7 @@ public class ArbeidslistaSorteringOpensearch extends EndToEndTest {
                     "ikke_satt",
                     getArbeidslisteFilter(),
                     null,
-                    null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                    null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
             return brukereMedAntall.getAntall() == 3;
         });
@@ -92,7 +92,7 @@ public class ArbeidslistaSorteringOpensearch extends EndToEndTest {
                 "arbeidsliste_overskrift",
                 getArbeidslisteFilter(),
                 null,
-                null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         var sortertResponsDescending = opensearchService.hentBrukere(
                 enhetId.getValue(),
@@ -101,7 +101,7 @@ public class ArbeidslistaSorteringOpensearch extends EndToEndTest {
                 "arbeidsliste_overskrift",
                 getArbeidslisteFilter(),
                 null,
-                null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(sortertResponsAscending.getBrukere().get(0).getArbeidsliste().getKategori())
                 .isEqualTo(arbeidsliste2_kategori);
