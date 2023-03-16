@@ -12,7 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
-import no.nav.pto.veilarbportefolje.opensearch.InnsynsrettFilterType;
+import no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
@@ -166,7 +166,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     "ikke_satt",
                     getFiltervalg(FULLFORT_IJOBB),
                     null,
-                    null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                    null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
             return brukereMedAntall.getAntall() == 1;
         });
         verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
@@ -178,7 +178,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     "ikke_satt",
                     getFiltervalg(FULLFORT_IJOBB),
                     null,
-                    null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                    null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
             assertThat(responseBrukere.getAntall()).isEqualTo(1);
             assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt()).isEqualTo(zonedDateTime.toLocalDateTime());
@@ -199,7 +199,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     "ikke_satt",
                     new Filtervalg(),
                     null,
-                    null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                    null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
             return brukereMedAntall.getAntall() == 1;
         });
@@ -211,7 +211,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 getFiltervalg(FULLFORT_IJOBB, true),
                 null,
-                null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(responseBrukere.getAntall()).isEqualTo(0);
     }
@@ -234,7 +234,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     "ikke_satt",
                     new Filtervalg(),
                     null,
-                    null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                    null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
             return brukereMedAntall.getAntall() == 1;
         });
@@ -256,7 +256,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     "ikke_satt",
                     getFiltervalg(NY_IJOBB),
                     null,
-                    null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                    null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
             return brukereMedAntall.getAntall() == 1;
         });
 
@@ -270,7 +270,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     "ikke_satt",
                     getFiltervalg(FULLFORT_IJOBB, true),
                     null,
-                    null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                    null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
             return brukereMedAntall.getAntall() == 0;
         });
 
@@ -281,7 +281,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 getFiltervalg(NY_IJOBB, true),
                 null,
-                null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(responseBrukere1.getAntall()).isEqualTo(1);
 
@@ -292,7 +292,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "ikke_satt",
                 getFiltervalg(FULLFORT_IJOBB, true),
                 null,
-                null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(responseBrukere2.getAntall()).isEqualTo(0);
     }
@@ -322,7 +322,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     "ikke_satt",
                     new Filtervalg(),
                     null,
-                    null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                    null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
             return brukereMedAntall.getAntall() == 3;
         });
@@ -355,7 +355,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     "ikke_satt",
                     getFiltervalg(FULLFORT_IJOBB),
                     null,
-                    null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                    null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
             return brukereMedAntall.getAntall() == 2;
         });
@@ -368,7 +368,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     "ikke_satt",
                     getFiltervalg(FULLFORT_EGEN),
                     null,
-                    null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                    null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
             return brukereMedAntall.getAntall() == 3;
         });
@@ -380,7 +380,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "siste_endring_tidspunkt",
                 getFiltervalg(FULLFORT_IJOBB),
                 null,
-                null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(responseSortertFULLFORT_IJOBB.getAntall()).isEqualTo(2);
         assertThat(responseSortertFULLFORT_IJOBB.getBrukere().get(0).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_IJOBB_bruker_2_i_2025.getYear());
@@ -393,7 +393,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "siste_endring_tidspunkt",
                 getFiltervalg(FULLFORT_EGEN),
                 null,
-                null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(responseSortertFULLFORT_EGEN.getAntall()).isEqualTo(3);
         assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(0).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_3_i_2019.getYear());
@@ -407,7 +407,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "siste_endring_tidspunkt",
                 getFiltervalg(NY_IJOBB),
                 null,
-                null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         assertThat(responseSortertTomRes1.getAntall()).isEqualTo(0);
     }
 
@@ -421,7 +421,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                         "siste_endring_tidspunkt",
                         getFiltervalg(FULLFORT_IJOBB, FULLFORT_EGEN),
                         null,
-                        null, InnsynsrettFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ));
+                        null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ));
         assertThat(exception).isNotNull();
     }
 

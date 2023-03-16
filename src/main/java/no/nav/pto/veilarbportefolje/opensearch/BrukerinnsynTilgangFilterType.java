@@ -1,5 +1,5 @@
 package no.nav.pto.veilarbportefolje.opensearch;
-public enum InnsynsrettFilterType {
+public enum BrukerinnsynTilgangFilterType {
     /**
      * Alle brukere som veileder har innsynsrett på
      */

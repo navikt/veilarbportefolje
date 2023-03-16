@@ -16,7 +16,6 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.opensearch.InnsynsrettFilterType;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.persononinfo.bosted.BostedService;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
