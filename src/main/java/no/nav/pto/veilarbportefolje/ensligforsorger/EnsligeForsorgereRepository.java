@@ -94,9 +94,7 @@ public class EnsligeForsorgereRepository {
     private void lagreEnsligeForsorgereVedtakPeriod(long vedtakid, LocalDate period_fom, LocalDate period_tom, Integer periodeType, Integer aktivitetsType) {
         String sql = """
                 INSERT INTO enslige_forsorgere_periode(VEDTAKID, FRA_DATO, TIL_DATO, PERIODETYPE, AKTIVITETSTYPE)
-                VALUES (?, ?, ?, ?, ?) ON CONFLICT (VEDTAKID)
-                DO UPDATE SET(FRA_DATO, TIL_DATO, PERIODETYPE, AKTIVITETSTYPE) =
-                (excluded.fra_dato, excluded.til_dato, excluded.periodetype, excluded.aktivitetstype)
+                VALUES (?, ?, ?, ?, ?)
                 """;
         db.update(sql, vedtakid, period_fom, period_tom, periodeType, aktivitetsType);
     }
