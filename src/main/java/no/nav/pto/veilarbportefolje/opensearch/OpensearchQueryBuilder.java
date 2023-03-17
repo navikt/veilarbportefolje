@@ -3,10 +3,10 @@ package no.nav.pto.veilarbportefolje.opensearch;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvarDto;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvarDto;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvarDto;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvarDto;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.lang3.ArrayUtils;
@@ -216,7 +216,7 @@ public class OpensearchQueryBuilder {
         if (filtervalg.harDinSituasjonSvar()) {
             BoolQueryBuilder brukerensSituasjonSubQuery = boolQuery();
             filtervalg.registreringstype.forEach(dinSituasjonSvar -> {
-                if (dinSituasjonSvar.equals(DinSituasjonSvarDto.INGEN_DATA)) {
+                if (dinSituasjonSvar == DinSituasjonSvar.INGEN_DATA) {
                     brukerensSituasjonSubQuery.should(boolQuery().mustNot(existsQuery("brukers_situasjon")));
                 } else {
                     brukerensSituasjonSubQuery.should(matchQuery("brukers_situasjon", dinSituasjonSvar));
@@ -229,7 +229,7 @@ public class OpensearchQueryBuilder {
         if (filtervalg.harUtdanningSvar()) {
             BoolQueryBuilder brukerensUtdanningSubQuery = boolQuery();
             filtervalg.utdanning.forEach(utdanningSvar -> {
-                if (utdanningSvar.equals(UtdanningSvarDto.INGEN_DATA)) {
+                if (utdanningSvar == UtdanningSvar.INGEN_DATA) {
                     brukerensUtdanningSubQuery.should(boolQuery().mustNot(existsQuery("utdanning")));
                 } else {
                     brukerensUtdanningSubQuery.should(matchQuery("utdanning", utdanningSvar));
@@ -242,7 +242,7 @@ public class OpensearchQueryBuilder {
         if (filtervalg.harUtdanningBestattSvar()) {
             BoolQueryBuilder brukerensUtdanningSubQuery = boolQuery();
             filtervalg.utdanningBestatt.forEach(utdanningSvar -> {
-                if (utdanningSvar.equals(UtdanningBestattSvarDto.INGEN_DATA)) {
+                if (utdanningSvar == UtdanningBestattSvar.INGEN_DATA) {
                     brukerensUtdanningSubQuery.should(boolQuery().mustNot(existsQuery("utdanning_bestatt")));
                 } else {
                     brukerensUtdanningSubQuery.should(matchQuery("utdanning_bestatt", utdanningSvar));
@@ -255,7 +255,7 @@ public class OpensearchQueryBuilder {
         if (filtervalg.harUtdanningGodkjentSvar()) {
             BoolQueryBuilder brukerensUtdanningSubQuery = boolQuery();
             filtervalg.utdanningGodkjent.forEach(utdanningSvar -> {
-                if (utdanningSvar.equals(UtdanningGodkjentSvarDto.INGEN_DATA)) {
+                if (utdanningSvar == UtdanningGodkjentSvar.INGEN_DATA) {
                     brukerensUtdanningSubQuery.should(boolQuery().mustNot(existsQuery("utdanning_godkjent")));
                 } else {
                     brukerensUtdanningSubQuery.should(matchQuery("utdanning_godkjent", utdanningSvar));

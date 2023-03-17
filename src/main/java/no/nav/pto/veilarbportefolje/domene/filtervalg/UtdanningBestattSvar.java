@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene.filtervalg;
 
-public enum UtdanningBestattSvarDto {
+public enum UtdanningBestattSvar {
     JA,
     NEI,
     INGEN_SVAR,

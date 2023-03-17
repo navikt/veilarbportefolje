@@ -1,16 +1,13 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
-import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
-import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
-import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvarDto;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvarDto;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvarDto;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvarDto;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
@@ -51,9 +48,9 @@ class RegistreringServiceTest extends EndToEndTest {
         ArbeidssokerRegistrertEvent kafkaMessage = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(aktoerId.toString())
                 .setBrukersSituasjon("Permittert")
-                .setUtdanning(UtdanningSvar.GRUNNSKOLE)
-                .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
-                .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
+                .setUtdanning(no.nav.arbeid.soker.registrering.UtdanningSvar.GRUNNSKOLE)
+                .setUtdanningBestatt(no.nav.arbeid.soker.registrering.UtdanningBestattSvar.INGEN_SVAR)
+                .setUtdanningGodkjent(no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar.JA)
                 .setRegistreringOpprettet(ZonedDateTime.now().format(ISO_ZONED_DATE_TIME))
                 .build();
 
@@ -68,10 +65,10 @@ class RegistreringServiceTest extends EndToEndTest {
         String utdanningBestatt = (String) getResponse.getSourceAsMap().get("utdanning_bestatt");
         String utdanningGodkjent = (String) getResponse.getSourceAsMap().get("utdanning_godkjent");
 
-        assertThat(utdanning).isEqualTo(UtdanningSvar.GRUNNSKOLE.toString());
+        assertThat(utdanning).isEqualTo(no.nav.arbeid.soker.registrering.UtdanningSvar.GRUNNSKOLE.toString());
         assertThat(situasjon).isEqualTo("Permittert");
-        assertThat(utdanningBestatt).isEqualTo(UtdanningBestattSvarDto.INGEN_SVAR.toString());
-        assertThat(utdanningGodkjent).isEqualTo(UtdanningGodkjentSvarDto.JA.toString());
+        assertThat(utdanningBestatt).isEqualTo(UtdanningBestattSvar.INGEN_SVAR.toString());
+        assertThat(utdanningGodkjent).isEqualTo(UtdanningGodkjentSvar.JA.toString());
     }
 
     @Test
@@ -225,75 +222,75 @@ class RegistreringServiceTest extends EndToEndTest {
     private static Filtervalg getFiltervalgBestatt() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanningBestatt.add(UtdanningBestattSvarDto.JA);
+        filtervalg.utdanningBestatt.add(UtdanningBestattSvar.JA);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgGodkjent() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvarDto.JA);
+        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvar.JA);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgUtdanning() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanning.add(UtdanningSvarDto.GRUNNSKOLE);
+        filtervalg.utdanning.add(UtdanningSvar.GRUNNSKOLE);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgMix() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanning.add(UtdanningSvarDto.GRUNNSKOLE);
-        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvarDto.JA);
-        filtervalg.utdanningBestatt.add(UtdanningBestattSvarDto.NEI);
+        filtervalg.utdanning.add(UtdanningSvar.GRUNNSKOLE);
+        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvar.JA);
+        filtervalg.utdanningBestatt.add(UtdanningBestattSvar.NEI);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgIngenUtdanningData() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanning.add(UtdanningSvarDto.INGEN_DATA);
+        filtervalg.utdanning.add(UtdanningSvar.INGEN_DATA);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgIngenUtdanningGodkjentData() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvarDto.INGEN_DATA);
+        filtervalg.utdanningGodkjent.add(UtdanningGodkjentSvar.INGEN_DATA);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgIngenUtdanningBestattData() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanningBestatt.add(UtdanningBestattSvarDto.INGEN_DATA);
+        filtervalg.utdanningBestatt.add(UtdanningBestattSvar.INGEN_DATA);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgIngenSituasjonsData() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.registreringstype.add(DinSituasjonSvarDto.INGEN_DATA);
+        filtervalg.registreringstype.add(DinSituasjonSvar.INGEN_DATA);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgSituasjonsDataMix() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.registreringstype.add(DinSituasjonSvarDto.MISTET_JOBBEN);
-        filtervalg.registreringstype.add(DinSituasjonSvarDto.INGEN_DATA);
+        filtervalg.registreringstype.add(DinSituasjonSvar.MISTET_JOBBEN);
+        filtervalg.registreringstype.add(DinSituasjonSvar.INGEN_DATA);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgUtdanningMix() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.utdanning.add(UtdanningSvarDto.GRUNNSKOLE);
-        filtervalg.utdanning.add(UtdanningSvarDto.INGEN_UTDANNING);
-        filtervalg.utdanning.add(UtdanningSvarDto.INGEN_DATA);
+        filtervalg.utdanning.add(UtdanningSvar.GRUNNSKOLE);
+        filtervalg.utdanning.add(UtdanningSvar.INGEN_UTDANNING);
+        filtervalg.utdanning.add(UtdanningSvar.INGEN_DATA);
         return filtervalg;
     }
 

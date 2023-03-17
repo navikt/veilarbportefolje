@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene.filtervalg;
 
-public enum UtdanningSvarDto {
+public enum UtdanningSvar {
     INGEN_UTDANNING,
     GRUNNSKOLE,
     VIDEREGAENDE_GRUNNUTDANNING,

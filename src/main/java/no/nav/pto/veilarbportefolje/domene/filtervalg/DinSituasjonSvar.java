@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene.filtervalg;
 
-public enum DinSituasjonSvarDto {
+public enum DinSituasjonSvar {
     MISTET_JOBBEN,
     ALDRI_HATT_JOBB,
     HAR_SAGT_OPP,
