@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX enslige_forsorgere_periode_vedtak_indx on enslige_forsorgere_periode (vedtakid);
