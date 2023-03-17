@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
@@ -121,13 +122,54 @@ public class EnsligeForsorgereRepository {
         db.update(sql, vedtakId, fnr, terminDato);
     }
 
+    public int fjernTidligereOvergangsstønadVedtak(String fnr) {
+        AtomicReference<Integer> affectedRows = new AtomicReference<>(0);
+        List<Long> vedtakForBruker = hentOvergangsstønadVedtakForBruker(fnr);
+        vedtakForBruker.forEach(vedtakId -> {
+            affectedRows.updateAndGet(v -> v + fjernVedtakForBruker(vedtakId));
+        });
+        return affectedRows.get();
+    }
+
+    private List<Long> hentOvergangsstønadVedtakForBruker(String fnr) {
+        String sql = """
+                SELECT ef.vedtakId FROM enslige_forsorgere ef, enslige_forsorgere_stonad_type est
+                WHERE est.id = ef.stonadstype AND est.stonad_type = ? AND ef.personIdent = ?;
+                """;
+
+        return dbReadOnly.queryForList(sql, Long.class, Stønadstype.OVERGANGSSTØNAD.toString(), fnr);
+    }
+
+    private int fjernVedtakForBruker(Long vedtakId) {
+        String sqlPeriode = """
+                DELETE FROM enslige_forsorgere_periode
+                WHERE vedtakId = ?;
+                """;
+
+        db.update(sqlPeriode, vedtakId);
+
+        String sqlBarn = """
+                DELETE FROM enslige_forsorgere_barn
+                WHERE vedtakId = ?;
+                """;
+
+        db.update(sqlBarn, vedtakId);
+
+        String sql = """
+                DELETE FROM enslige_forsorgere ef
+                WHERE ef.vedtakid = ?;
+                """;
+
+        return db.update(sql, vedtakId);
+    }
+
     private Integer hentStonadstype(String stonadTypeConst) {
         return tryCacheFirst(stonadstypeCache, stonadTypeConst,
                 () -> this.hentStonadstypeFraDB(stonadTypeConst));
     }
 
     private Integer hentStonadstypeFraDB(String stonadTypeConst) {
-        String sql = "SELECT ID FROM enslige_forsorgere_STONAD_TYPE WHERE STONAD_TYPE = :stonadType::varchar";
+        String sql = "SELECT ID FROM enslige_forsorgere_stonad_type WHERE STONAD_TYPE = :stonadType::varchar";
         Optional<Integer> stonadTypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("stonadType", stonadTypeConst), Integer.class));
 
         return stonadTypeIdOptional.orElseGet(() -> lagreStonadstype(stonadTypeConst));
@@ -226,17 +268,19 @@ public class EnsligeForsorgereRepository {
     public Optional<EnsligeForsorgerOvergangsstønadTiltak> hentOvergangsstønadForEnsligeForsorger(String personIdent) {
         String sql = """
                  SELECT ef.personIdent, ef.vedtakId, efp.fra_dato, efp.til_dato,
-                       vperiode_type.PERIODE_TYPE as vedtaksPeriodeType,
-                       EAT.AKTIVITET_TYPE as aktivitetsType
+                       vperiode_type.periode_type as vedtaksPeriodeType,
+                       eat.aktivitet_type as aktivitetsType
                 FROM enslige_forsorgere ef
                 JOIN enslige_forsorgere_periode efp on ef.vedtakid = efp.vedtakid
-                LEFT JOIN enslige_forsorgere_VEDTAKSPERIODE_TYPE vperiode_type on efp.PERIODETYPE = vperiode_type.ID
-                LEFT JOIN enslige_forsorgere_AKTIVITET_TYPE EAT on efp.AKTIVITETSTYPE = EAT.ID
-                LEFT JOIN enslige_forsorgere_VEDTAKSRESULTAT_TYPE EVT on ef.VEDTAKSRESULTAT = EVT.ID
-                LEFT JOIN enslige_forsorgere_STONAD_TYPE EST on EST.ID = ef.STONADSTYPE
-                WHERE est.STONAD_TYPE = ?
-                  AND EVT.VEDTAKSRESULTAT_TYPE = ?
-                  AND ef.personIdent = ? LIMIT 1;
+                LEFT JOIN enslige_forsorgere_vedtaksperiode_type vperiode_type on efp.PERIODETYPE = vperiode_type.ID
+                LEFT JOIN enslige_forsorgere_aktivitet_type eat on efp.AKTIVITETSTYPE = EAT.ID
+                LEFT JOIN enslige_forsorgere_vedtaksresultat_type evt on ef.VEDTAKSRESULTAT = EVT.ID
+                LEFT JOIN enslige_forsorgere_stonad_type est on est.ID = ef.STONADSTYPE
+                WHERE est.stonad_type = ?
+                  AND evt.vedtaksresultat_type = ?
+                  AND ef.personIdent = ?
+                  AND now() BETWEEN efp.fra_dato and efp.til_dato
+                  LIMIT 1;
                  """;
 
         return dbReadOnly.queryForList(sql, Stønadstype.OVERGANGSSTØNAD.toString(), Vedtaksresultat.INNVILGET.toString(), personIdent)
@@ -252,13 +296,14 @@ public class EnsligeForsorgereRepository {
                        EAT.AKTIVITET_TYPE as aktivitetsType
                 FROM enslige_forsorgere ef
                 JOIN enslige_forsorgere_periode efp on ef.vedtakid = efp.vedtakid
-                LEFT JOIN enslige_forsorgere_VEDTAKSPERIODE_TYPE vperiode_type on efp.PERIODETYPE = vperiode_type.ID
-                LEFT JOIN enslige_forsorgere_AKTIVITET_TYPE EAT on efp.AKTIVITETSTYPE = EAT.ID
-                LEFT JOIN enslige_forsorgere_VEDTAKSRESULTAT_TYPE EVT on ef.VEDTAKSRESULTAT = EVT.ID
-                LEFT JOIN enslige_forsorgere_STONAD_TYPE EST on EST.ID = ef.STONADSTYPE
-                WHERE est.STONAD_TYPE = ?
-                  AND EVT.VEDTAKSRESULTAT_TYPE = ?
-                  AND ef.personIdent = ANY (?::varchar[]);
+                LEFT JOIN enslige_forsorgere_vedtaksperiode_type vperiode_type on efp.periodetype = vperiode_type.ID
+                LEFT JOIN enslige_forsorgere_aktivitet_type eat on efp.aktivitetstype = eat.ID
+                LEFT JOIN enslige_forsorgere_vedtaksresultat_type evt on ef.vedtaksresultat = evt.ID
+                LEFT JOIN enslige_forsorgere_stonad_type est on est.id = ef.stonadstype
+                WHERE est.stonad_type = ?
+                  AND evt.vedtaksresultat_type = ?
+                  AND ef.personIdent = ANY (?::varchar[])
+                  AND now() BETWEEN efp.fra_dato and efp.til_dato
                  """;
 
         return dbReadOnly.queryForList(sql, Stønadstype.OVERGANGSSTØNAD.toString(), Vedtaksresultat.INNVILGET.toString(), personIdenterStr)

@@ -25,6 +25,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +33,8 @@ import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.EnsligeForsorgere.OVERGANGSSTØNAD;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class EnsligeForsorgereServiceTest extends EndToEndTest {
@@ -83,7 +85,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                     assertThat(responseBrukere.getAntall()).isEqualTo(1);
                     assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().vedtaksPeriodetype()).isEqualTo("Ny periode for nytt barn");
                     assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().harAktivitetsplikt()).isEqualTo(false);
-                    assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().utlopsDato()).isEqualTo(LocalDate.of(2024, 4, 4));
+                    assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().utlopsDato()).isEqualTo(LocalDate.now().plusDays(20));
                     assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().yngsteBarnsFødselsdato()).isEqualTo(LocalDate.of(2023, 5, 4));
                 }
         );
@@ -186,14 +188,24 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         Assertions.assertThat(response.getBrukere().get(1).getFnr().equals(bruker3.getFnr()));
     }
 
+    @Test
     public void testHentingAvAlleBrukere() {
         List<Fnr> fnrList = List.of(Fnr.of("11018012321"), Fnr.of("12018012321"), Fnr.of("13018012321"),
                 Fnr.of("14018012321"), Fnr.of("15018012321"));
-        lagreRandomVedtakIdatabase(fnrList.get(0));
-        lagreRandomVedtakIdatabase(fnrList.get(1));
-        lagreRandomVedtakIdatabase(fnrList.get(2));
-        lagreRandomVedtakIdatabase(fnrList.get(3));
-        lagreRandomVedtakIdatabase(fnrList.get(4));
+        List<Long> vedtakIds = List.of(new Random().nextLong(10000l), new Random().nextLong(10000l), new Random().nextLong(10000l),
+                new Random().nextLong(10000l), new Random().nextLong(10000l));
+
+        Mockito.when(aktorClient.hentAktorId(fnrList.get(0))).thenReturn(randomAktorId());
+        Mockito.when(aktorClient.hentAktorId(fnrList.get(1))).thenReturn(randomAktorId());
+        Mockito.when(aktorClient.hentAktorId(fnrList.get(2))).thenReturn(randomAktorId());
+        Mockito.when(aktorClient.hentAktorId(fnrList.get(3))).thenReturn(randomAktorId());
+        Mockito.when(aktorClient.hentAktorId(fnrList.get(4))).thenReturn(randomAktorId());
+
+        lagreRandomVedtakIdatabase(vedtakIds.get(0), fnrList.get(0), LocalDate.now().minusDays(4), LocalDate.now().plusMonths(1));
+        lagreRandomVedtakIdatabase(vedtakIds.get(1), fnrList.get(1), LocalDate.now().minusDays(10), LocalDate.now().plusMonths(1));
+        lagreRandomVedtakIdatabase(vedtakIds.get(2), fnrList.get(2), LocalDate.now().minusDays(20), LocalDate.now().plusMonths(1));
+        lagreRandomVedtakIdatabase(vedtakIds.get(3), fnrList.get(3), LocalDate.now().minusDays(30), LocalDate.now().plusMonths(1));
+        lagreRandomVedtakIdatabase(vedtakIds.get(4), fnrList.get(4), LocalDate.now().minusDays(13), LocalDate.now().plusMonths(1));
 
         Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(fnrList);
         Assert.assertEquals(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size(), 5);
@@ -204,20 +216,64 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(4)));
     }
 
-    private void lagreRandomVedtakIdatabase(Fnr fnr) {
+    @Test
+    public void testHentingAvAlleBrukereMedAktivVedtakPeriode() {
+        List<Fnr> fnrList = List.of(Fnr.of("11018012321"), Fnr.of("12018012321"), Fnr.of("13018012321"),
+                Fnr.of("14018012321"), Fnr.of("15018012321"));
+        List<Long> vedtakIds = List.of(new Random().nextLong(10000l), new Random().nextLong(10000l), new Random().nextLong(10000l),
+                new Random().nextLong(10000l), new Random().nextLong(10000l));
+
+        Mockito.when(aktorClient.hentAktorId(fnrList.get(0))).thenReturn(randomAktorId());
+        Mockito.when(aktorClient.hentAktorId(fnrList.get(1))).thenReturn(randomAktorId());
+        Mockito.when(aktorClient.hentAktorId(fnrList.get(2))).thenReturn(randomAktorId());
+        Mockito.when(aktorClient.hentAktorId(fnrList.get(3))).thenReturn(randomAktorId());
+        Mockito.when(aktorClient.hentAktorId(fnrList.get(4))).thenReturn(randomAktorId());
+
+        lagreRandomVedtakIdatabase(vedtakIds.get(0), fnrList.get(0), LocalDate.now().plusMonths(4), LocalDate.now().plusMonths(10));
+        lagreRandomVedtakIdatabase(vedtakIds.get(1), fnrList.get(1), LocalDate.now().plusDays(3), LocalDate.now().plusMonths(1));
+        lagreRandomVedtakIdatabase(vedtakIds.get(2), fnrList.get(2), LocalDate.now().minusDays(20), LocalDate.now().plusMonths(1));
+        lagreRandomVedtakIdatabase(vedtakIds.get(3), fnrList.get(3), LocalDate.now().minusDays(30), LocalDate.now().minusDays(2));
+        lagreRandomVedtakIdatabase(vedtakIds.get(4), fnrList.get(4), LocalDate.now().minusDays(13), LocalDate.now().plusMonths(1));
+
+        Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(fnrList);
+        Assert.assertEquals(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size(), 2);
+        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(2)));
+        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(4)));
+    }
+
+    @Test
+    public void testVedtakOppdatering() {
+        Long vedtakId = new Random().nextLong(10000l);
+        Fnr fnr = Fnr.of("11018012321");
+        Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(randomAktorId());
+        lagreRandomVedtakIdatabase(vedtakId, fnr, LocalDate.now().minusDays(10), LocalDate.now().plusDays(20));
+
+        Optional<EnsligeForsorgerOvergangsstønadTiltakDto> ensligeForsorgerOvergangsstønadTiltakDto = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(fnr.get());
+        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltakDto.isPresent());
+        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltakDto.get().utløpsDato().equals(LocalDate.now().plusDays(20)));
+
+        lagreRandomVedtakIdatabase(vedtakId, fnr, LocalDate.now().minusDays(3), LocalDate.now().plusDays(80));
+        ensligeForsorgerOvergangsstønadTiltakDto = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(fnr.get());
+        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltakDto.isPresent());
+        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltakDto.get().utløpsDato().equals(LocalDate.now().plusDays(80)));
+    }
+
+    private void lagreRandomVedtakIdatabase(Long vedtakId, Fnr fnr, LocalDate vedtakPeriodeFra, LocalDate vedtakPeriodeTil) {
+
+
         List<Barn> barn = List.of(new Barn(randomFnr().toString(), null));
-        List<Periode> periodeType = List.of(new Periode(randomLocalDate(), randomLocalDate(), NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
-        VedtakOvergangsstønadArbeidsoppfølging melding = new VedtakOvergangsstønadArbeidsoppfølging(
-                new Random().nextLong(10000l),
-                fnr.toString(),
-                barn,
-                Stønadstype.OVERGANGSSTØNAD,
-                periodeType,
-                Vedtaksresultat.INNVILGET
+        List<Periode> periodeType = List.of(new Periode(vedtakPeriodeFra, vedtakPeriodeTil, NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        ensligeForsorgereService.behandleKafkaMeldingLogikk(
+                new VedtakOvergangsstønadArbeidsoppfølging(
+                        vedtakId,
+                        fnr.toString(),
+                        barn,
+                        Stønadstype.OVERGANGSSTØNAD,
+                        periodeType,
+                        Vedtaksresultat.INNVILGET
 
+                )
         );
-
-        ensligeForsorgereRepository.lagreOvergangsstonad(melding);
     }
 
     private void setInitialState() {
@@ -238,7 +294,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         populateOpensearch(navKontor, veilederId, bruker1_aktorId.get(), bruker2_aktorId.get(), bruker3_aktorId.get());
 
         List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, 5, 4)));
-        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, 4, 4), LocalDate.of(2024, 4, 4), Periodetype.NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.now().minusDays(10), LocalDate.now().plusDays(20), Periodetype.NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
         ensligeForsorgereService.behandleKafkaMeldingLogikk(
                 new VedtakOvergangsstønadArbeidsoppfølging(
                         54321L,
