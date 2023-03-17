@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
+import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -30,6 +31,8 @@ public class OppfolgingAvsluttetService {
     private final SisteEndringService sisteEndringService;
     private final Siste14aVedtakService siste14aVedtakService;
 
+    private final EnsligeForsorgereService ensligeForsorgereService;
+
     public void avsluttOppfolging(AktorId aktoerId) {
         oppfolgingRepositoryV2.slettOppfolgingData(aktoerId);
         registreringService.slettRegistering(aktoerId);
@@ -38,6 +41,7 @@ public class OppfolgingAvsluttetService {
         cvRepositoryV2.resetHarDeltCV(aktoerId);
         siste14aVedtakService.slettSiste14aVedtak(aktoerId.get());
         pdlService.slettPdlData(aktoerId);
+        ensligeForsorgereService.slettEnsligeForsorgereData(aktoerId);
 
         opensearchIndexerV2.slettDokumenter(List.of(aktoerId));
         secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);

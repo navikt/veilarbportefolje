@@ -39,7 +39,7 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
             return;
         }
 
-        int fjernTidligereVedtak = ensligeForsorgereRepository.fjernTidligereVedtak(melding.personIdent());
+        int fjernTidligereVedtak = ensligeForsorgereRepository.fjernTidligereOvergangsstønadVedtak(melding.personIdent());
         if (fjernTidligereVedtak > 0) {
             secureLog.info("Fjernet tidligere vedtak for bruker: {}", melding.personIdent());
         }
@@ -75,6 +75,14 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
             result.put(tiltak.personIdent(), getEnsligeForsorgereDto(tiltak));
         });
         return result;
+    }
+
+    public void slettEnsligeForsorgereData(AktorId aktorId) {
+        Fnr fnr = aktorClient.hentFnr(aktorId);
+
+        if (fnr != null) {
+            ensligeForsorgereRepository.fjernTidligereOvergangsstønadVedtak(fnr.get());
+        }
     }
 
     private EnsligeForsorgerOvergangsstønadTiltakDto getEnsligeForsorgereDto(EnsligeForsorgerOvergangsstønadTiltak ensligeForsorgerOvergangsstønadTiltak) {

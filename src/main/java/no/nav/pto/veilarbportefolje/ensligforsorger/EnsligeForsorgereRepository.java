@@ -122,22 +122,22 @@ public class EnsligeForsorgereRepository {
         db.update(sql, vedtakId, fnr, terminDato);
     }
 
-    public int fjernTidligereVedtak(String fnr) {
+    public int fjernTidligereOvergangsstønadVedtak(String fnr) {
         AtomicReference<Integer> affectedRows = new AtomicReference<>(0);
-        List<Long> vedtakForBruker = hentVedtakForBruker(fnr);
+        List<Long> vedtakForBruker = hentOvergangsstønadVedtakForBruker(fnr);
         vedtakForBruker.forEach(vedtakId -> {
             affectedRows.updateAndGet(v -> v + fjernVedtakForBruker(vedtakId));
         });
         return affectedRows.get();
     }
 
-    private List<Long> hentVedtakForBruker(String fnr) {
+    private List<Long> hentOvergangsstønadVedtakForBruker(String fnr) {
         String sql = """
-                SELECT ef.vedtakId FROM enslige_forsorgere ef
-                WHERE ef.personIdent = ?;
+                SELECT ef.vedtakId FROM enslige_forsorgere ef, enslige_forsorgere_stonad_type est
+                WHERE est.id = ef.stonadstype AND est.stonad_type = ? AND ef.personIdent = ?;
                 """;
 
-        return dbReadOnly.queryForList(sql, Long.class, fnr);
+        return dbReadOnly.queryForList(sql, Long.class, Stønadstype.OVERGANGSSTØNAD.toString(), fnr);
     }
 
     private int fjernVedtakForBruker(Long vedtakId) {
