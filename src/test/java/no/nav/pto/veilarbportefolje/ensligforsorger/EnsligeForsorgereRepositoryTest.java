@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.domain.Aktivitetstype.BARN_UNDER_ETT_ÅR;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomLocalDate;
 
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -51,7 +50,7 @@ public class EnsligeForsorgereRepositoryTest {
     @Test
     public void lagreOgHenteOvergangsstønadVedMotattKafkamelding() {
         List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, 5, 4)));
-        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, 4, 4), LocalDate.of(2024, 4, 4), NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.now().minusDays(10), LocalDate.now().plusDays(20), NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
         VedtakOvergangsstønadArbeidsoppfølging melding = new VedtakOvergangsstønadArbeidsoppfølging(
                 54321L,
                 "12345678910",
@@ -141,7 +140,7 @@ public class EnsligeForsorgereRepositoryTest {
 
     private void lagreRandomVedtakIdatabase(Fnr fnr) {
         List<Barn> barn = List.of(new Barn(randomFnr().toString(), null));
-        List<Periode> periodeType = List.of(new Periode(randomLocalDate(), randomLocalDate(), NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.now().minusDays(10), LocalDate.now().plusDays(12), NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
         VedtakOvergangsstønadArbeidsoppfølging melding = new VedtakOvergangsstønadArbeidsoppfølging(
                 new Random().nextLong(10000l),
                 fnr.toString(),
