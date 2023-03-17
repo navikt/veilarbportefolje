@@ -1,0 +1,1 @@
+DROP INDEX enslige_forsorgere_periode_vedtak_indx;
