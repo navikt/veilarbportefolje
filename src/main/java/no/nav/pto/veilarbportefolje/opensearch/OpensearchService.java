@@ -137,7 +137,7 @@ public class OpensearchService {
         return Statustall.of(buckets, vedtakstottePilotErPa);
     }
 
-    public Statustall hentStatusTallForEnhet(String enhetId) {
+    public Statustall hentStatusTallForEnhet(String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
         List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
@@ -145,6 +145,10 @@ public class OpensearchService {
         BoolQueryBuilder enhetQuery = boolQuery()
                 .must(termQuery("oppfolging", true))
                 .must(termQuery("enhet_id", enhetId));
+
+        if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
+            leggTilBrukerinnsynTilgangFilter(enhetQuery, authService.hentVeilederBrukerInnsynTilganger(), brukerinnsynTilgangFilterType);
+        }
 
         SearchSourceBuilder request =
                 byggStatustallQuery(enhetQuery, veilederPaaEnhet, vedtakstottePilotErPa);

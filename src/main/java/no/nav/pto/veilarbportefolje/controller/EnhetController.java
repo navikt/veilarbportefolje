@@ -84,7 +84,7 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return opensearchService.hentStatusTallForEnhet(enhet);
+        return opensearchService.hentStatusTallForEnhet(enhet, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
     }
 
     @GetMapping("/{enhet}/portefolje/statustall")

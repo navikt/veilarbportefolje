@@ -721,7 +721,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
-        var statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
+        var statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         assertThat(statustall.ufordelteBrukere()).isEqualTo(1);
     }
 
@@ -979,7 +979,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(veilederExistsInResponse(LITE_PRIVILEGERT_VEILEDER, response)).isTrue();
 
-        Statustall statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
+        Statustall statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         assertThat(statustall.ufordelteBrukere()).isEqualTo(1);
     }
 
