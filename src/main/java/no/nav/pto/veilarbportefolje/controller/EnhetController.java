@@ -19,6 +19,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
+import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
+import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
 
 @RestController
 @RequiredArgsConstructor
@@ -60,7 +62,7 @@ public class EnhetController {
         authService.tilgangTilOppfolging();
         authService.tilgangTilEnhet(enhet);
 
-        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         return PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
@@ -78,11 +80,22 @@ public class EnhetController {
     }
 
     @GetMapping("/{enhet}/statustall")
-    public EnhetPortefoljeStatusTall hentStatusTall(@PathVariable("enhet") String enhet) {
+    public Statustall hentStatusTall(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return opensearchService.hentStatusTallForEnhet(enhet);
+        return opensearchService.hentStatusTallForEnhet(enhet, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+    }
+
+    @GetMapping("/{enhet}/portefolje/statustall")
+    public EnhetPortefoljeStatustallRespons hentEnhetPortefoljeStatustall(@PathVariable("enhet") String enhet) {
+        ValideringsRegler.sjekkEnhet(enhet);
+        authService.tilgangTilEnhet(enhet);
+
+        return new EnhetPortefoljeStatustallRespons(
+                opensearchService.hentStatusTallForEnhetPortefolje(enhet, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ),
+                opensearchService.hentStatusTallForEnhetPortefolje(enhet, BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ)
+        );
     }
 
     @GetMapping("/{enhet}/tiltak")
