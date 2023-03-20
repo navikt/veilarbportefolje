@@ -2,11 +2,11 @@ package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
-import org.apache.commons.lang3.ArrayUtils;
-import org.jetbrains.annotations.NotNull;
 import org.opensearch.index.query.BoolQueryBuilder;
 import org.opensearch.index.query.QueryBuilder;
 import org.opensearch.index.query.QueryBuilders;
@@ -42,6 +42,57 @@ import static org.opensearch.search.sort.SortMode.MIN;
 
 @Slf4j
 public class OpensearchQueryBuilder {
+
+    static String byggVeilederPaaEnhetScript(List<String> veilederePaaEnhet) {
+        String veiledere = veilederePaaEnhet.stream()
+                .map(id -> format("\"%s\"", id))
+                .collect(joining(","));
+
+        String veilederListe = format("[%s]", veiledere);
+        return format("(doc.veileder_id.size() != 0 && %s.contains(doc.veileder_id.value)).toString()", veilederListe);
+    }
+
+    static BoolQueryBuilder leggTilBrukerinnsynTilgangFilter(BoolQueryBuilder boolQuery, BrukerinnsynTilganger brukerInnsynTilganger, BrukerinnsynTilgangFilterType filterType) {
+        return switch (filterType) {
+            case ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ -> {
+                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig()) {
+                    boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode));
+                }
+
+                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig()) {
+                    boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode));
+                }
+
+                if (!brukerInnsynTilganger.tilgangTilSkjerming()) {
+                    boolQuery.mustNot(matchQuery("egen_ansatt", true));
+                }
+
+                yield boolQuery;
+            }
+
+            case BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ -> {
+                BoolQueryBuilder shouldBoolQuery = boolQuery();
+
+                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig()) {
+                    shouldBoolQuery.should(matchQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode));
+                }
+
+                if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig()) {
+                    shouldBoolQuery.should(matchQuery("diskresjonskode", Adressebeskyttelse.FORTROLIG.diskresjonskode));
+                }
+
+                if (!brukerInnsynTilganger.tilgangTilSkjerming()) {
+                    shouldBoolQuery.should(matchQuery("egen_ansatt", true));
+                }
+
+                boolQuery.must(shouldBoolQuery);
+
+                yield boolQuery;
+            }
+
+            case ALLE_BRUKERE -> boolQuery;
+        };
+    }
 
     static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg) {
         if (!filtervalg.alder.isEmpty()) {
@@ -214,34 +265,6 @@ public class OpensearchQueryBuilder {
         }
     }
 
-    private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
-        if (sisteEndringKategori != null && sisteEndringKategori.size() > 1) {
-            log.error("Det ble filtrert på flere ulike siste endringer (ulest): {}", sisteEndringKategori.size());
-            throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
-        }
-        List<String> relvanteKategorier = sisteEndringKategori;
-        if (sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
-            relvanteKategorier = (Arrays.stream(SisteEndringsKategori.values()).map(SisteEndringsKategori::name)).collect(toList());
-        }
-
-        BoolQueryBuilder orQuery = boolQuery();
-        relvanteKategorier.forEach(kategori -> orQuery.should(
-                QueryBuilders.matchQuery("siste_endringer." + kategori + ".er_sett", "N")
-        ));
-        queryBuilder.must(orQuery);
-    }
-
-    private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
-        if (sisteEndringKategori.size() == 0) {
-            return;
-        }
-        if (sisteEndringKategori.size() != 1) {
-            log.error("Det ble filtrert på flere ulike siste endringer: {}", sisteEndringKategori.size());
-            throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
-        }
-        queryBuilder.must(existsQuery("siste_endringer." + sisteEndringKategori.get(0)));
-    }
-
     static List<BoolQueryBuilder> byggAktivitetFilterQuery(Filtervalg filtervalg, BoolQueryBuilder queryBuilder) {
         return filtervalg.aktiviteter.entrySet().stream()
                 .map(
@@ -311,56 +334,6 @@ public class OpensearchQueryBuilder {
         return searchSourceBuilder;
     }
 
-
-    private static void defaultSort(String sortField, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
-        if (ValideringsRegler.sortFields.contains(sortField)) {
-            searchSourceBuilder.sort(sortField, order);
-        } else {
-            throw new IllegalStateException();
-        }
-    }
-
-    private static void sorterEnsligeForsorgereUtlopsDato(SearchSourceBuilder builder, SortOrder order) {
-        String expresion = """
-                if (doc.containsKey('enslige_forsorgere_overgangsstonad.utlopsDato') && !doc['enslige_forsorgere_overgangsstonad.utlopsDato'].empty) {
-                    return doc['enslige_forsorgere_overgangsstonad.utlopsDato'].value.toInstant().toEpochMilli();
-                }
-                else {
-                  return 0;
-                }
-                """;
-        Script script = new Script(expresion);
-        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
-        scriptBuilder.order(order);
-        builder.sort(scriptBuilder);
-
-    }
-
-    private static void sorterEnsligeForsorgereOmBarnet(SearchSourceBuilder builder, SortOrder order) {
-        String expresion = """
-                if (doc.containsKey('enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato') && !doc['enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato'].empty) {
-                    return doc['enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato'].value.toInstant().toEpochMilli();
-                }
-                else {
-                    return 0;
-                }
-                """;
-        Script script = new Script(expresion);
-        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
-        scriptBuilder.order(order);
-        builder.sort(scriptBuilder);
-    }
-
-
-    private static void sorterEnsligeForsorgereVedtaksPeriode(SearchSourceBuilder builder, SortOrder order) {
-        builder.sort("enslige_forsorgere_overgangsstonad.vedtaksPeriodetype", order);
-    }
-
-    private static void sorterEnsligeForsorgereAktivitetsPlikt(SearchSourceBuilder builder, SortOrder order) {
-        builder.sort("enslige_forsorgere_overgangsstonad.harAktivitetsplikt", order);
-    }
-
-
     static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         if (filtervalg.sisteEndringKategori.size() == 0) {
             return;
@@ -402,7 +375,6 @@ public class OpensearchQueryBuilder {
             searchSourceBuilder.sort("tegnspraaktolk", order);
         }
     }
-
 
     static SearchSourceBuilder sorterPaaNyForEnhet(SearchSourceBuilder builder, List<String> veilederePaaEnhet) {
         Script script = new Script(byggVeilederPaaEnhetScript(veilederePaaEnhet));
@@ -498,13 +470,6 @@ public class OpensearchQueryBuilder {
         return queryBuilder;
     }
 
-    private static RangeQueryBuilder byggMoteMedNavIdag() {
-        LocalDate localDate = LocalDate.now();
-        return rangeQuery("alle_aktiviteter_mote_startdato")
-                .gte(toIsoUTC(localDate.atStartOfDay()))
-                .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
-    }
-
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
     static QueryBuilder byggTrengerVurderingFilter(boolean erVedtakstottePilotPa) {
         if (erVedtakstottePilotPa) {
@@ -527,7 +492,6 @@ public class OpensearchQueryBuilder {
         return matchQuery("er_sykmeldt_med_arbeidsgiver", true);
 
     }
-
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
     static BoolQueryBuilder byggUfordeltBrukereQuery(List<String> veiledereMedTilgangTilEnhet) {
@@ -596,7 +560,6 @@ public class OpensearchQueryBuilder {
         );
     }
 
-
     static SearchSourceBuilder byggPortefoljestorrelserQuery(String enhetId) {
         String name = "portefoljestorrelser";
 
@@ -616,42 +579,8 @@ public class OpensearchQueryBuilder {
                 );
     }
 
-    static SearchSourceBuilder byggStatusTallForEnhetQuery(String enhetId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
-        BoolQueryBuilder enhetQuery = boolQuery()
-                .must(termQuery("oppfolging", true))
-                .must(termQuery("enhet_id", enhetId));
-
-        return byggStatusTallQuery(getEnhetStatusTallFiltre(enhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa));
-    }
-
-    static SearchSourceBuilder byggStatusTallForVeilederQuery(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
-        BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
-                .must(termQuery("oppfolging", true))
-                .must(termQuery("enhet_id", enhetId))
-                .must(termQuery("veileder_id", veilederId));
-
-        return byggStatusTallQuery(getVeilederStatusTallFiltre(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa));
-    }
-
-    private static SearchSourceBuilder byggStatusTallQuery(FiltersAggregator.KeyedFilter[] statusTallFiltre) {
-        return new SearchSourceBuilder()
-                .size(0)
-                .aggregation(filters("statustall", statusTallFiltre));
-    }
-
-    @NotNull
-    private static FiltersAggregator.KeyedFilter[] getEnhetStatusTallFiltre(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
-        return ArrayUtils.addAll(
-                getVeilederStatusTallFiltre(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa),
-                adressebeskyttelseEllerSkjermingTotalt(filtrereVeilederOgEnhet),
-                adressebeskyttelseEllerSkjermingUfordelte(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
-                adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV(filtrereVeilederOgEnhet)
-        );
-    }
-
-    @NotNull
-    private static FiltersAggregator.KeyedFilter[] getVeilederStatusTallFiltre(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
-        return new FiltersAggregator.KeyedFilter[]{
+    static SearchSourceBuilder byggStatustallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+        FiltersAggregator.KeyedFilter[] filtre = new FiltersAggregator.KeyedFilter[]{
                 erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
                 mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
                 mustExistFilter(filtrereVeilederOgEnhet, "iAktivitet", "alleAktiviteter"),
@@ -673,6 +602,92 @@ public class OpensearchQueryBuilder {
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name())
         };
+
+        return new SearchSourceBuilder()
+                .size(0)
+                .aggregation(filters("statustall", filtre));
+    }
+
+    private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
+        if (sisteEndringKategori != null && sisteEndringKategori.size() > 1) {
+            log.error("Det ble filtrert på flere ulike siste endringer (ulest): {}", sisteEndringKategori.size());
+            throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
+        }
+        List<String> relvanteKategorier = sisteEndringKategori;
+        if (sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
+            relvanteKategorier = (Arrays.stream(SisteEndringsKategori.values()).map(SisteEndringsKategori::name)).collect(toList());
+        }
+
+        BoolQueryBuilder orQuery = boolQuery();
+        relvanteKategorier.forEach(kategori -> orQuery.should(
+                QueryBuilders.matchQuery("siste_endringer." + kategori + ".er_sett", "N")
+        ));
+        queryBuilder.must(orQuery);
+    }
+
+    private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
+        if (sisteEndringKategori.size() == 0) {
+            return;
+        }
+        if (sisteEndringKategori.size() != 1) {
+            log.error("Det ble filtrert på flere ulike siste endringer: {}", sisteEndringKategori.size());
+            throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
+        }
+        queryBuilder.must(existsQuery("siste_endringer." + sisteEndringKategori.get(0)));
+    }
+
+    private static void defaultSort(String sortField, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        if (ValideringsRegler.sortFields.contains(sortField)) {
+            searchSourceBuilder.sort(sortField, order);
+        } else {
+            throw new IllegalStateException();
+        }
+    }
+
+    private static void sorterEnsligeForsorgereUtlopsDato(SearchSourceBuilder builder, SortOrder order) {
+        String expresion = """
+                if (doc.containsKey('enslige_forsorgere_overgangsstonad.utlopsDato') && !doc['enslige_forsorgere_overgangsstonad.utlopsDato'].empty) {
+                    return doc['enslige_forsorgere_overgangsstonad.utlopsDato'].value.toInstant().toEpochMilli();
+                }
+                else {
+                  return 0;
+                }
+                """;
+        Script script = new Script(expresion);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+
+    }
+
+    private static void sorterEnsligeForsorgereOmBarnet(SearchSourceBuilder builder, SortOrder order) {
+        String expresion = """
+                if (doc.containsKey('enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato') && !doc['enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato'].empty) {
+                    return doc['enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato'].value.toInstant().toEpochMilli();
+                }
+                else {
+                    return 0;
+                }
+                """;
+        Script script = new Script(expresion);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+    }
+
+    private static void sorterEnsligeForsorgereVedtaksPeriode(SearchSourceBuilder builder, SortOrder order) {
+        builder.sort("enslige_forsorgere_overgangsstonad.vedtaksPeriodetype", order);
+    }
+
+    private static void sorterEnsligeForsorgereAktivitetsPlikt(SearchSourceBuilder builder, SortOrder order) {
+        builder.sort("enslige_forsorgere_overgangsstonad.harAktivitetsplikt", order);
+    }
+
+    private static RangeQueryBuilder byggMoteMedNavIdag() {
+        LocalDate localDate = LocalDate.now();
+        return rangeQuery("alle_aktiviteter_mote_startdato")
+                .gte(toIsoUTC(localDate.atStartOfDay()))
+                .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
     }
 
     private static FiltersAggregator.KeyedFilter trengerVurderingFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
@@ -783,53 +798,6 @@ public class OpensearchQueryBuilder {
                         .must(filtrereVeilederOgEnhet)
                         .must(existsQuery(value))
         );
-    }
-
-    private static FiltersAggregator.KeyedFilter adressebeskyttelseEllerSkjermingTotalt(BoolQueryBuilder filtrereEnhet) {
-        return new FiltersAggregator.KeyedFilter(
-                "adressebeskyttelseEllerSkjermingTotalt",
-                boolQuery()
-                        .must(filtrereEnhet)
-                        .must(boolQuery()
-                                .should(existsQuery("diskresjonskode"))
-                                .should(termQuery("egen_ansatt", true))
-                        )
-        );
-    }
-
-    private static FiltersAggregator.KeyedFilter adressebeskyttelseEllerSkjermingUfordelte(BoolQueryBuilder filtrereEnhet, List<String> veiledereMedTilgangTilEnhet) {
-        return new FiltersAggregator.KeyedFilter(
-                "adressebeskyttelseEllerSkjermingUfordelte",
-                boolQuery()
-                        .must(filtrereEnhet)
-                        .must(boolQuery()
-                                .should(existsQuery("diskresjonskode"))
-                                .should(termQuery("egen_ansatt", true))
-                        )
-                        .must(byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet))
-        );
-    }
-
-    private static FiltersAggregator.KeyedFilter adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV(BoolQueryBuilder filtrereEnhet) {
-        return new FiltersAggregator.KeyedFilter(
-                "adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV",
-                boolQuery()
-                        .must(filtrereEnhet)
-                        .must(boolQuery()
-                                .should(existsQuery("diskresjonskode"))
-                                .should(termQuery("egen_ansatt", true))
-                        )
-                        .must(existsQuery("venterpasvarfranav"))
-        );
-    }
-
-    public static String byggVeilederPaaEnhetScript(List<String> veilederePaaEnhet) {
-        String veiledere = veilederePaaEnhet.stream()
-                .map(id -> format("\"%s\"", id))
-                .collect(joining(","));
-
-        String veilederListe = format("[%s]", veiledere);
-        return format("(doc.veileder_id.size() != 0 && %s.contains(doc.veileder_id.value)).toString()", veilederListe);
     }
 
     private static void addSecondarySort(SearchSourceBuilder searchSourceBuilder) {

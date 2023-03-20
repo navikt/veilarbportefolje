@@ -59,40 +59,40 @@ public class EnhetControllerTest {
     public void skal_hent_portefolje_fra_indeks_dersom_tilgang() {
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
         when(pep.harVeilederTilgangTilEnhet(any(NavIdent.class), any(EnhetId.class))).thenReturn(true);
-        when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
+        when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
 
         authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
                 () -> enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg())
         );
-        verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
+        verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
     public void skal_hente_hele_portefolje_fra_indeks_dersom_man_mangle_antall() {
         when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
-        when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
+        when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
 
         authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
                 () -> enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", "ikke_satt", new Filtervalg())
         );
-        verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
+        verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
     public void skal_hente_hele_portefolje_fra_indeks_dersom_man_mangle_fra() {
         when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
-        when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
+        when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
         authContextHolder
                 .withContext(
                         new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
                         () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
                 );
 
-        verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), isNull(), any());
+        verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), isNull(), any(), any());
     }
 
     @Test(expected = ResponseStatusException.class)

@@ -38,7 +38,7 @@ public class FeatureToggle {
         return unleashService.isEnabled(FeatureToggle.STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER);
     }
 
-    public static boolean brukFilterForBrukerInnsynTilganger(UnleashService unleashService) {
+    public static boolean brukFilterForBrukerinnsynTilganger(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
     }
 }

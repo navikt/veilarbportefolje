@@ -144,13 +144,13 @@ public class AuthService {
         return abacResponse;
     }
 
-    public BrukerInnsynTilganger hentVeilederBrukerInnsynTilganger() {
+    public BrukerinnsynTilganger hentVeilederBrukerInnsynTilganger() {
         String veilederId = getInnloggetVeilederIdent().toString();
         boolean tilgangTilAdressebeskyttelseStrengtFortrolig = harVeilederTilgangTilKode6(NavIdent.of(veilederId));
         boolean tilgangTilAdressebeskyttelseFortrolig = harVeilederTilgangTilKode7(NavIdent.of(veilederId));
         boolean tilgangEgenAnsatt = harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederId));
 
-        return new BrukerInnsynTilganger(tilgangTilAdressebeskyttelseStrengtFortrolig, tilgangTilAdressebeskyttelseFortrolig, tilgangEgenAnsatt);
+        return new BrukerinnsynTilganger(tilgangTilAdressebeskyttelseStrengtFortrolig, tilgangTilAdressebeskyttelseFortrolig, tilgangEgenAnsatt);
     }
 
     public String getOboToken(String tokenScope) {
