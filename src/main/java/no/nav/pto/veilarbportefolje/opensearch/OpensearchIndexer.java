@@ -56,6 +56,8 @@ public class OpensearchIndexer {
                 postgresOpensearchMapper.flettInnAvvik14aVedtak(List.of(bruker));
             }
 
+            postgresOpensearchMapper.flettInnEnsligeForsorgereData(List.of(bruker));
+
             syncronIndekseringsRequest(bruker);
         } else {
             opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
