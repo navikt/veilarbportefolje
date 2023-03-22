@@ -134,7 +134,7 @@ public class OpensearchService {
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return Statustall.of(buckets, vedtakstottePilotErPa);
+        return new Statustall(buckets, vedtakstottePilotErPa);
     }
 
     public Statustall hentStatusTallForEnhet(String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
@@ -155,7 +155,7 @@ public class OpensearchService {
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return Statustall.of(buckets, vedtakstottePilotErPa);
+        return new Statustall(buckets, vedtakstottePilotErPa);
     }
 
     public Statustall hentStatusTallForEnhetPortefolje(String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
@@ -176,7 +176,7 @@ public class OpensearchService {
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return Statustall.of(buckets, vedtakstottePilotErPa);
+        return new Statustall(buckets, vedtakstottePilotErPa);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {

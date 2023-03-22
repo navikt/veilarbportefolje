@@ -1,49 +1,51 @@
 package no.nav.pto.veilarbportefolje.domene;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse;
 
-public record Statustall(
-        long totalt,
-        long ufordelteBrukere,
-        long trengerVurdering,
-        long nyeBrukereForVeileder,
-        long inaktiveBrukere,
-        long venterPaSvarFraNAV,
-        long venterPaSvarFraBruker,
-        long iavtaltAktivitet,
-        long iAktivitet,
-        long ikkeIavtaltAktivitet,
-        long utlopteAktiviteter,
-        long minArbeidsliste,
-        long erSykmeldtMedArbeidsgiver,
-        long moterMedNAVIdag,
-        long underVurdering,
-        long minArbeidslisteBla,
-        long minArbeidslisteLilla,
-        long minArbeidslisteGronn,
-        long minArbeidslisteGul
-) {
-    public static Statustall of(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
-        return new Statustall(
-                buckets.getTotalt().getDoc_count(),
-                buckets.getUfordelteBrukere().getDoc_count(),
-                buckets.getTrengerVurdering().getDoc_count(),
-                buckets.getNyeBrukereForVeileder().getDoc_count(),
-                buckets.getInaktiveBrukere().getDoc_count(),
-                buckets.getVenterPaSvarFraNAV().getDoc_count(),
-                buckets.getVenterPaSvarFraBruker().getDoc_count(),
-                buckets.getIavtaltAktivitet().getDoc_count(),
-                buckets.getIAktivitet().getDoc_count(),
-                buckets.getIkkeIavtaltAktivitet().getDoc_count(),
-                buckets.getUtlopteAktiviteter().getDoc_count(),
-                buckets.getMinArbeidsliste().getDoc_count(),
-                buckets.getErSykmeldtMedArbeidsgiver().getDoc_count(),
-                buckets.getMoterMedNAVIdag().getDoc_count(),
-                buckets.getMinArbeidslisteBla().getDoc_count(),
-                buckets.getMinArbeidslisteLilla().getDoc_count(),
-                buckets.getMinArbeidslisteGronn().getDoc_count(),
-                buckets.getMinArbeidslisteGul().getDoc_count(),
-                vedtakstottePilotErPa ? buckets.getUnderVurdering().getDoc_count() : 0
-        );
+@Data
+@Accessors(chain = true)
+public class Statustall {
+    private long totalt;
+    private long ufordelteBrukere;
+    private long trengerVurdering;
+    private long nyeBrukereForVeileder;
+    private long inaktiveBrukere;
+    private long venterPaSvarFraNAV;
+    private long venterPaSvarFraBruker;
+    private long iavtaltAktivitet;
+    private long iAktivitet;
+    private long ikkeIavtaltAktivitet;
+    private long utlopteAktiviteter;
+    private long minArbeidsliste;
+    private long erSykmeldtMedArbeidsgiver;
+    private long moterMedNAVIdag;
+    private long underVurdering;
+    private long minArbeidslisteBla;
+    private long minArbeidslisteLilla;
+    private long minArbeidslisteGronn;
+    private long minArbeidslisteGul;
+
+    public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
+        this.totalt = buckets.getTotalt().getDoc_count();
+        this.ufordelteBrukere = buckets.getUfordelteBrukere().getDoc_count();
+        this.trengerVurdering = buckets.getTrengerVurdering().getDoc_count();
+        this.nyeBrukereForVeileder = buckets.getNyeBrukereForVeileder().getDoc_count();
+        this.inaktiveBrukere = buckets.getInaktiveBrukere().getDoc_count();
+        this.venterPaSvarFraNAV = buckets.getVenterPaSvarFraNAV().getDoc_count();
+        this.venterPaSvarFraBruker = buckets.getVenterPaSvarFraBruker().getDoc_count();
+        this.iavtaltAktivitet = buckets.getIavtaltAktivitet().getDoc_count();
+        this.iAktivitet = buckets.getIAktivitet().getDoc_count();
+        this.ikkeIavtaltAktivitet = buckets.getIkkeIavtaltAktivitet().getDoc_count();
+        this.utlopteAktiviteter = buckets.getUtlopteAktiviteter().getDoc_count();
+        this.minArbeidsliste = buckets.getMinArbeidsliste().getDoc_count();
+        this.erSykmeldtMedArbeidsgiver = buckets.getErSykmeldtMedArbeidsgiver().getDoc_count();
+        this.moterMedNAVIdag = buckets.getMoterMedNAVIdag().getDoc_count();
+        this.minArbeidslisteBla = buckets.getMinArbeidslisteBla().getDoc_count();
+        this.minArbeidslisteLilla = buckets.getMinArbeidslisteLilla().getDoc_count();
+        this.minArbeidslisteGronn = buckets.getMinArbeidslisteGronn().getDoc_count();
+        this.minArbeidslisteGul = buckets.getMinArbeidslisteGul().getDoc_count();
+        this.underVurdering = vedtakstottePilotErPa ? buckets.getUnderVurdering().getDoc_count() : 0;
     }
 }
