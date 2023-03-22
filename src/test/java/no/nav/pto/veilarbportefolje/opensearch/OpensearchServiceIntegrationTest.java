@@ -633,9 +633,9 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Statustall respons = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ);
 
-        assertThat(respons.totalt()).isEqualTo(12);
-        assertThat(respons.ufordelteBrukere()).isEqualTo(4);
-        assertThat(respons.venterPaSvarFraNAV()).isEqualTo(4);
+        assertThat(respons.getTotalt()).isEqualTo(12);
+        assertThat(respons.getUfordelteBrukere()).isEqualTo(4);
+        assertThat(respons.getVenterPaSvarFraNAV()).isEqualTo(4);
     }
 
     @Test
@@ -692,8 +692,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Statustall respons = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
-        assertThat(respons.totalt()).isEqualTo(3);
-        assertThat(respons.venterPaSvarFraNAV()).isEqualTo(1);
+        assertThat(respons.getTotalt()).isEqualTo(3);
+        assertThat(respons.getVenterPaSvarFraNAV()).isEqualTo(1);
     }
 
     @Test
@@ -722,7 +722,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
         var statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
-        assertThat(statustall.ufordelteBrukere()).isEqualTo(1);
+        assertThat(statustall.getUfordelteBrukere()).isEqualTo(1);
     }
 
     @Test
@@ -980,7 +980,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(veilederExistsInResponse(LITE_PRIVILEGERT_VEILEDER, response)).isTrue();
 
         Statustall statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
-        assertThat(statustall.ufordelteBrukere()).isEqualTo(1);
+        assertThat(statustall.getUfordelteBrukere()).isEqualTo(1);
     }
 
     @Test
