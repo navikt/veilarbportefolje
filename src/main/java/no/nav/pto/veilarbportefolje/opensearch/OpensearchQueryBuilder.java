@@ -54,7 +54,7 @@ public class OpensearchQueryBuilder {
 
     static BoolQueryBuilder leggTilBrukerinnsynTilgangFilter(BoolQueryBuilder boolQuery, BrukerinnsynTilganger brukerInnsynTilganger, BrukerinnsynTilgangFilterType filterType) {
         return switch (filterType) {
-            case ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ -> {
+            case BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ -> {
                 if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig()) {
                     boolQuery.mustNot(matchQuery("diskresjonskode", Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode));
                 }
@@ -89,8 +89,6 @@ public class OpensearchQueryBuilder {
 
                 yield boolQuery;
             }
-
-            case ALLE_BRUKERE -> boolQuery;
         };
     }
 

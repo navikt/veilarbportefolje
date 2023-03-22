@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
@@ -18,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
-import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 
 @Slf4j
 @RestController
@@ -48,7 +45,7 @@ public class VeilederController {
         authService.tilgangTilOppfolging();
         authService.tilgangTilEnhet(enhet);
 
-        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         return PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
@@ -63,7 +60,7 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
         authService.tilgangTilEnhet(enhet);
 
-        return opensearchService.hentStatusTallForVeileder(veilederIdent, enhet, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        return opensearchService.hentStatusTallForVeileder(veilederIdent, enhet);
     }
 
     @GetMapping("/{veilederident}/portefolje/statustall")
@@ -73,9 +70,7 @@ public class VeilederController {
         authService.tilgangTilEnhet(enhet);
 
         return new VeilederPortefoljeStatustallRespons(
-                opensearchService.hentStatustallForVeilederPortefolje(
-                        veilederIdent, enhet, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ
-                )
+                opensearchService.hentStatustallForVeilederPortefolje(veilederIdent, enhet)
         );
     }
 

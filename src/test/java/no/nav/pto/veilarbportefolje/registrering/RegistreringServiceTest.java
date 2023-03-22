@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
@@ -84,7 +83,7 @@ class RegistreringServiceTest extends EndToEndTest {
                             "ikke_satt",
                             getFiltervalgBestatt(),
                             null,
-                            null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                            null);
 
                     assertThat(responseBrukere2.getAntall()).isEqualTo(1);
                 }
@@ -98,7 +97,7 @@ class RegistreringServiceTest extends EndToEndTest {
                             "ikke_satt",
                             getFiltervalgGodkjent(),
                             null,
-                            null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                            null);
 
                     assertThat(responseBrukere3.getAntall()).isEqualTo(2);
                 }
@@ -112,7 +111,7 @@ class RegistreringServiceTest extends EndToEndTest {
                             "ikke_satt",
                             getFiltervalgUtdanning(),
                             null,
-                            null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                            null);
 
                     assertThat(responseBrukere4.getAntall()).isEqualTo(2);
                 }
@@ -126,7 +125,7 @@ class RegistreringServiceTest extends EndToEndTest {
                             "ikke_satt",
                             getFiltervalgMix(),
                             null,
-                            null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                            null);
 
                     assertThat(responseBrukere5.getAntall()).isEqualTo(1);
                 }
