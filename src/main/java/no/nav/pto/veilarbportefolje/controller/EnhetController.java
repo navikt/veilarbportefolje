@@ -62,7 +62,7 @@ public class EnhetController {
         authService.tilgangTilOppfolging();
         authService.tilgangTilEnhet(enhet);
 
-        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         return PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),

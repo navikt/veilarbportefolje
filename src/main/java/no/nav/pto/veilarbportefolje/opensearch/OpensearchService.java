@@ -27,6 +27,7 @@ import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.*;
 import static org.opensearch.index.query.QueryBuilders.*;
 
@@ -47,15 +48,8 @@ public class OpensearchService {
             String sortField,
             Filtervalg filtervalg,
             Integer fra,
-            Integer antall,
-            BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType
+            Integer antall
     ) {
-        BrukerinnsynTilganger brukerInnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
-
-        if (brukerInnsynTilganger.harAlle() && BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType) {
-            return new BrukereMedAntall(0, emptyList());
-        }
-
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         int from = Optional.ofNullable(fra).orElse(0);
@@ -88,7 +82,7 @@ public class OpensearchService {
         searchSourceBuilder.query(boolQuery);
 
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
-            leggTilBrukerinnsynTilgangFilter(boolQuery, brukerInnsynTilganger, brukerinnsynTilgangFilterType);
+            leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);

@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
-import no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -81,7 +80,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                             "ikke_satt",
                             filtervalg,
                             null,
-                            null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                            null);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(1);
                     assertThat(responseBrukere.getBrukere().get(0).getEnsligeForsorgereOvergangsstonad().vedtaksPeriodetype()).isEqualTo("Ny periode for nytt barn");
@@ -121,7 +120,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                             "ikke_satt",
                             filtervalg,
                             null,
-                            null, BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                            null);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(0);
                 }
@@ -181,8 +180,8 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+                null
+        );
 
         Assertions.assertThat(response.getAntall()).isEqualTo(2);
         Assertions.assertThat(response.getBrukere().get(0).getFnr().equals(bruker2.getFnr()));
