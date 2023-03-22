@@ -36,7 +36,7 @@ import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
-import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
+import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggArbeidslisteQuery;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
@@ -567,7 +567,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
-        var statustall = opensearchService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        var statustall = opensearchService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET);
         assertThat(statustall.erSykmeldtMedArbeidsgiver).isEqualTo(0);
         assertThat(statustall.iavtaltAktivitet).isEqualTo(1);
         assertThat(statustall.ikkeIavtaltAktivitet).isEqualTo(2);
@@ -690,7 +690,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
-        Statustall respons = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        Statustall respons = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
         assertThat(respons.getTotalt()).isEqualTo(3);
         assertThat(respons.getVenterPaSvarFraNAV()).isEqualTo(1);
@@ -756,7 +756,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Statustall responsMedBrukerinnsyn = authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDER_0)),
-                () -> opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ)
+                () -> opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ)
         );
 
         assertThat(responsMedBrukerinnsyn.getTotalt()).isEqualTo(15);
@@ -790,7 +790,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
-        var statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        var statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
         assertThat(statustall.getUfordelteBrukere()).isEqualTo(1);
     }
 
@@ -1048,7 +1048,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(veilederExistsInResponse(LITE_PRIVILEGERT_VEILEDER, response)).isTrue();
 
-        Statustall statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET, ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        Statustall statustall = opensearchService.hentStatusTallForEnhet(TEST_ENHET);
         assertThat(statustall.getUfordelteBrukere()).isEqualTo(1);
     }
 

@@ -3,12 +3,7 @@ public enum BrukerinnsynTilgangFilterType {
     /**
      * Alle brukere som veileder har innsynsrett på
      */
-    ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ,
-
-    /**
-     * Alle brukere inkludert de som veileder eventuelt ikke har innsynsrett på
-     */
-    ALLE_BRUKERE,
+    BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ,
 
     /**
      * Kun brukere som veileder eventuelt ikke har innsynsrett på

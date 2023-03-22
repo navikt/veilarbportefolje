@@ -27,7 +27,7 @@ import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
+import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.*;
 import static org.opensearch.index.query.QueryBuilders.*;
 
@@ -82,7 +82,7 @@ public class OpensearchService {
         searchSourceBuilder.query(boolQuery);
 
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
-            leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), ALLE_BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+            leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
@@ -98,7 +98,7 @@ public class OpensearchService {
         return new BrukereMedAntall(totalHits, brukere);
     }
 
-    public VeilederPortefoljeStatusTall hentStatusTallForVeileder(String veilederId, String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
+    public VeilederPortefoljeStatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
         BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
@@ -107,7 +107,7 @@ public class OpensearchService {
                 .must(termQuery("veileder_id", veilederId));
 
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
-            leggTilBrukerinnsynTilgangFilter(veilederOgEnhetQuery, authService.hentVeilederBrukerInnsynTilganger(), brukerinnsynTilgangFilterType);
+            leggTilBrukerinnsynTilgangFilter(veilederOgEnhetQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
         SearchSourceBuilder request =
@@ -118,13 +118,7 @@ public class OpensearchService {
         return new VeilederPortefoljeStatusTall(buckets, vedtakstottePilotErPa);
     }
 
-    public Statustall hentStatustallForVeilederPortefolje(String veilederId, String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
-        BrukerinnsynTilganger brukerInnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
-
-        if (brukerInnsynTilganger.harAlle() && BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType) {
-            return new Statustall();
-        }
-
+    public Statustall hentStatustallForVeilederPortefolje(String veilederId, String enhetId) {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
         BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
@@ -133,7 +127,7 @@ public class OpensearchService {
                 .must(termQuery("veileder_id", veilederId));
 
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
-            leggTilBrukerinnsynTilgangFilter(veilederOgEnhetQuery, brukerInnsynTilganger, brukerinnsynTilgangFilterType);
+            leggTilBrukerinnsynTilgangFilter(veilederOgEnhetQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
         SearchSourceBuilder request =
@@ -144,7 +138,7 @@ public class OpensearchService {
         return new Statustall(buckets, vedtakstottePilotErPa);
     }
 
-    public Statustall hentStatusTallForEnhet(String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
+    public Statustall hentStatusTallForEnhet(String enhetId) {
         List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
@@ -154,7 +148,7 @@ public class OpensearchService {
                 .must(termQuery("enhet_id", enhetId));
 
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
-            leggTilBrukerinnsynTilgangFilter(enhetQuery, authService.hentVeilederBrukerInnsynTilganger(), brukerinnsynTilgangFilterType);
+            leggTilBrukerinnsynTilgangFilter(enhetQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
         SearchSourceBuilder request =
