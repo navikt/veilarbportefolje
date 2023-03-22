@@ -27,6 +27,28 @@ public class Statustall {
     private long minArbeidslisteGronn;
     private long minArbeidslisteGul;
 
+    public Statustall() {
+        this.totalt = 0;
+        this.ufordelteBrukere = 0;
+        this.trengerVurdering = 0;
+        this.nyeBrukereForVeileder = 0;
+        this.inaktiveBrukere = 0;
+        this.venterPaSvarFraNAV = 0;
+        this.venterPaSvarFraBruker = 0;
+        this.iavtaltAktivitet = 0;
+        this.iAktivitet = 0;
+        this.ikkeIavtaltAktivitet = 0;
+        this.utlopteAktiviteter = 0;
+        this.minArbeidsliste = 0;
+        this.erSykmeldtMedArbeidsgiver = 0;
+        this.moterMedNAVIdag = 0;
+        this.minArbeidslisteBla = 0;
+        this.minArbeidslisteLilla = 0;
+        this.minArbeidslisteGronn = 0;
+        this.minArbeidslisteGul = 0;
+        this.underVurdering = 0;
+    }
+
     public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
         this.totalt = buckets.getTotalt().getDoc_count();
         this.ufordelteBrukere = buckets.getUfordelteBrukere().getDoc_count();
