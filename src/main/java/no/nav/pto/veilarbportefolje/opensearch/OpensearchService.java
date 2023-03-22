@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -49,6 +50,12 @@ public class OpensearchService {
             Integer antall,
             BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType
     ) {
+        BrukerinnsynTilganger brukerInnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
+
+        if (brukerInnsynTilganger.harAlle() && BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType) {
+            return new BrukereMedAntall(0, emptyList());
+        }
+
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         int from = Optional.ofNullable(fra).orElse(0);
@@ -81,7 +88,7 @@ public class OpensearchService {
         searchSourceBuilder.query(boolQuery);
 
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
-            leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), brukerinnsynTilgangFilterType);
+            leggTilBrukerinnsynTilgangFilter(boolQuery, brukerInnsynTilganger, brukerinnsynTilgangFilterType);
         }
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
@@ -118,6 +125,12 @@ public class OpensearchService {
     }
 
     public Statustall hentStatustallForVeilederPortefolje(String veilederId, String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
+        BrukerinnsynTilganger brukerInnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
+
+        if (brukerInnsynTilganger.harAlle() && BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType) {
+            return new Statustall();
+        }
+
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
         BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
@@ -126,7 +139,7 @@ public class OpensearchService {
                 .must(termQuery("veileder_id", veilederId));
 
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
-            leggTilBrukerinnsynTilgangFilter(veilederOgEnhetQuery, authService.hentVeilederBrukerInnsynTilganger(), brukerinnsynTilgangFilterType);
+            leggTilBrukerinnsynTilgangFilter(veilederOgEnhetQuery, brukerInnsynTilganger, brukerinnsynTilgangFilterType);
         }
 
         SearchSourceBuilder request =
@@ -159,6 +172,12 @@ public class OpensearchService {
     }
 
     public Statustall hentStatusTallForEnhetPortefolje(String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
+        BrukerinnsynTilganger brukerInnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
+
+        if (brukerInnsynTilganger.harAlle() && BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType) {
+            return new Statustall();
+        }
+
         List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
@@ -168,7 +187,7 @@ public class OpensearchService {
                 .must(termQuery("enhet_id", enhetId));
 
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
-            leggTilBrukerinnsynTilgangFilter(enhetQuery, authService.hentVeilederBrukerInnsynTilganger(), brukerinnsynTilgangFilterType);
+            leggTilBrukerinnsynTilgangFilter(enhetQuery, brukerInnsynTilganger, brukerinnsynTilgangFilterType);
         }
 
         SearchSourceBuilder request =
