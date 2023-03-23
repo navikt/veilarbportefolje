@@ -79,14 +79,6 @@ public class EnhetController {
         return opensearchService.hentPortefoljestorrelser(enhet);
     }
 
-    @GetMapping("/{enhet}/statustall")
-    public Statustall hentStatusTall(@PathVariable("enhet") String enhet) {
-        ValideringsRegler.sjekkEnhet(enhet);
-        authService.tilgangTilEnhet(enhet);
-
-        return opensearchService.hentStatusTallForEnhet(enhet);
-    }
-
     @GetMapping("/{enhet}/portefolje/statustall")
     public EnhetPortefoljeStatustallRespons hentEnhetPortefoljeStatustall(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
