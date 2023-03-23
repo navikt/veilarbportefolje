@@ -28,6 +28,7 @@ import java.util.Optional;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
+import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.*;
 import static org.opensearch.index.query.QueryBuilders.*;
 
@@ -162,7 +163,8 @@ public class OpensearchService {
     public Statustall hentStatusTallForEnhetPortefolje(String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
         BrukerinnsynTilganger brukerInnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
 
-        if (brukerInnsynTilganger.harAlle() && BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType) {
+        if ((brukerInnsynTilganger.harAlle() && BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType) ||
+                (!FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService) && BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType)) {
             return new Statustall();
         }
 
