@@ -13,7 +13,6 @@ public class FeatureToggle {
     public static final String KAFKA_AIVEN_CONSUMERS_STOP = "veilarbportefolje.kafka_aiven_consumers_stop";
     public static final String KAFKA_SISTE_14A_STOP = "veilarbportefolje.kafka_siste_14a_stop";
     public static final String OPPFOLGINGS_BRUKER = "veilarbportefolje.oppfolgingsbruker_pa_postgres";
-    public static final String MAP_AVVIK_14A_VEDTAK = "veilarbportefolje.map_avvik_14a_vedtak";
     public static final String STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER = "veilarbportefolje.stopp_indeksering_av_tiltaksaktiviteter";
     public static final String POAO_TILGANG_ENABLED = "veilarbportefolje.poao-tilgang-enabled";
 
@@ -25,10 +24,6 @@ public class FeatureToggle {
 
     public static boolean brukOppfolgingsbrukerPaPostgres(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.OPPFOLGINGS_BRUKER);
-    }
-
-    public static boolean mapAvvik14aVedtak(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.MAP_AVVIK_14A_VEDTAK);
     }
 
     public static boolean brukPoaoTilgang(UnleashService unleashService) {
