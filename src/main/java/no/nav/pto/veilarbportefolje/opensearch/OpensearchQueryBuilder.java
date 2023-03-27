@@ -4,6 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
@@ -110,10 +114,6 @@ public class OpensearchQueryBuilder {
         byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker");
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
-        byggManuellFilter(filtervalg.registreringstype, queryBuilder, "brukers_situasjon");
-        byggManuellFilter(filtervalg.utdanning, queryBuilder, "utdanning");
-        byggManuellFilter(filtervalg.utdanningBestatt, queryBuilder, "utdanning_bestatt");
-        byggManuellFilter(filtervalg.utdanningGodkjent, queryBuilder, "utdanning_godkjent");
         byggManuellFilter(filtervalg.arbeidslisteKategori, queryBuilder, "arbeidsliste_kategori");
         byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter");
         byggManuellFilter(filtervalg.alleAktiviteter, queryBuilder, "alleAktiviteter");
@@ -260,6 +260,58 @@ public class OpensearchQueryBuilder {
 
         if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.getEnsligeForsorgere().contains(EnsligeForsorgere.OVERGANGSSTØNAD)) {
             queryBuilder.must(existsQuery("enslige_forsorgere_overgangsstonad"));
+        }
+
+        if (filtervalg.harDinSituasjonSvar()) {
+            BoolQueryBuilder brukerensSituasjonSubQuery = boolQuery();
+            filtervalg.registreringstype.forEach(dinSituasjonSvar -> {
+                if (dinSituasjonSvar == DinSituasjonSvar.INGEN_DATA) {
+                    brukerensSituasjonSubQuery.should(boolQuery().mustNot(existsQuery("brukers_situasjon")));
+                } else {
+                    brukerensSituasjonSubQuery.should(matchQuery("brukers_situasjon", dinSituasjonSvar));
+                }
+
+            });
+            queryBuilder.must(brukerensSituasjonSubQuery);
+        }
+
+        if (filtervalg.harUtdanningSvar()) {
+            BoolQueryBuilder brukerensUtdanningSubQuery = boolQuery();
+            filtervalg.utdanning.forEach(utdanningSvar -> {
+                if (utdanningSvar == UtdanningSvar.INGEN_DATA) {
+                    brukerensUtdanningSubQuery.should(boolQuery().mustNot(existsQuery("utdanning")));
+                } else {
+                    brukerensUtdanningSubQuery.should(matchQuery("utdanning", utdanningSvar));
+                }
+
+            });
+            queryBuilder.must(brukerensUtdanningSubQuery);
+        }
+
+        if (filtervalg.harUtdanningBestattSvar()) {
+            BoolQueryBuilder brukerensUtdanningSubQuery = boolQuery();
+            filtervalg.utdanningBestatt.forEach(utdanningSvar -> {
+                if (utdanningSvar == UtdanningBestattSvar.INGEN_DATA) {
+                    brukerensUtdanningSubQuery.should(boolQuery().mustNot(existsQuery("utdanning_bestatt")));
+                } else {
+                    brukerensUtdanningSubQuery.should(matchQuery("utdanning_bestatt", utdanningSvar));
+                }
+
+            });
+            queryBuilder.must(brukerensUtdanningSubQuery);
+        }
+
+        if (filtervalg.harUtdanningGodkjentSvar()) {
+            BoolQueryBuilder brukerensUtdanningSubQuery = boolQuery();
+            filtervalg.utdanningGodkjent.forEach(utdanningSvar -> {
+                if (utdanningSvar == UtdanningGodkjentSvar.INGEN_DATA) {
+                    brukerensUtdanningSubQuery.should(boolQuery().mustNot(existsQuery("utdanning_godkjent")));
+                } else {
+                    brukerensUtdanningSubQuery.should(matchQuery("utdanning_godkjent", utdanningSvar));
+                }
+
+            });
+            queryBuilder.must(brukerensUtdanningSubQuery);
         }
     }
 

@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.registrering;
+package no.nav.pto.veilarbportefolje.domene.filtervalg;
 
 public enum DinSituasjonSvar {
     MISTET_JOBBEN,
@@ -11,5 +11,6 @@ public enum DinSituasjonSvar {
     VIL_FORTSETTE_I_JOBB,
     AKKURAT_FULLFORT_UTDANNING,
     DELTIDSJOBB_VIL_MER,
-}
+    INGEN_DATA
 
+}
