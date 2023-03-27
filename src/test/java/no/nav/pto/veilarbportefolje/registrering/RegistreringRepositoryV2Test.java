@@ -30,7 +30,7 @@ public class RegistreringRepositoryV2Test {
                 .setBrukersSituasjon("Permittert")
                 .setUtdanning(UtdanningSvar.GRUNNSKOLE)
                 .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
-                .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
+                .setUtdanningGodkjent(no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar.JA)
                 .setRegistreringOpprettet(DateUtils.nowToStr())
                 .build();
 

@@ -2,10 +2,10 @@ package no.nav.pto.veilarbportefolje.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
-import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
-import no.nav.arbeid.soker.registrering.UtdanningSvar;
-import no.nav.pto.veilarbportefolje.registrering.DinSituasjonSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.apache.commons.lang3.StringUtils;
@@ -169,6 +169,22 @@ public class Filtervalg {
         return avvik14aVedtak != null && !avvik14aVedtak.isEmpty();
     }
 
+    public boolean harDinSituasjonSvar() {
+        return registreringstype != null && !registreringstype.isEmpty();
+    }
+
+    public boolean harUtdanningSvar() {
+        return utdanning != null && !utdanning.isEmpty();
+    }
+
+    public boolean harUtdanningBestattSvar() {
+        return utdanningBestatt != null && !utdanningBestatt.isEmpty();
+    }
+
+    public boolean harUtdanningGodkjentSvar() {
+        return utdanningGodkjent != null && !utdanningGodkjent.isEmpty();
+    }
+
     public boolean valider() {
         if (!harAktiveFilter()) {
             return true;
@@ -208,4 +224,6 @@ public class Filtervalg {
         String[] fraTilAlder = fraTilAlderIput.split("-");
         return fraTilAlder.length == 2 && parseInt(fraTilAlder[0]) <= parseInt(fraTilAlder[1]);
     }
+
+
 }
