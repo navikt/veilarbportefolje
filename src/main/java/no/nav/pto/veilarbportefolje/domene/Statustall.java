@@ -2,32 +2,54 @@ package no.nav.pto.veilarbportefolje.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
+import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse;
 
 @Data
 @Accessors(chain = true)
-public class EnhetPortefoljeStatusTall {
-    public long totalt;
-    public long ufordelteBrukere;
-    public long trengerVurdering;
-    public long nyeBrukereForVeileder;
-    public long inaktiveBrukere;
-    public long venterPaSvarFraNAV;
-    public long venterPaSvarFraBruker;
-    public long iavtaltAktivitet;
-    public long iAktivitet;
-    public long ikkeIavtaltAktivitet;
-    public long utlopteAktiviteter;
-    public long minArbeidsliste;
-    public long erSykmeldtMedArbeidsgiver;
-    public long moterMedNAVIdag;
-    public long underVurdering;
-    public long minArbeidslisteBla;
-    public long minArbeidslisteLilla;
-    public long minArbeidslisteGronn;
-    public long minArbeidslisteGul;
+public class Statustall {
+    private long totalt;
+    private long ufordelteBrukere;
+    private long trengerVurdering;
+    private long nyeBrukereForVeileder;
+    private long inaktiveBrukere;
+    private long venterPaSvarFraNAV;
+    private long venterPaSvarFraBruker;
+    private long iavtaltAktivitet;
+    private long iAktivitet;
+    private long ikkeIavtaltAktivitet;
+    private long utlopteAktiviteter;
+    private long minArbeidsliste;
+    private long erSykmeldtMedArbeidsgiver;
+    private long moterMedNAVIdag;
+    private long underVurdering;
+    private long minArbeidslisteBla;
+    private long minArbeidslisteLilla;
+    private long minArbeidslisteGronn;
+    private long minArbeidslisteGul;
 
-    public EnhetPortefoljeStatusTall(StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
+    public Statustall() {
+        this.totalt = 0;
+        this.ufordelteBrukere = 0;
+        this.trengerVurdering = 0;
+        this.nyeBrukereForVeileder = 0;
+        this.inaktiveBrukere = 0;
+        this.venterPaSvarFraNAV = 0;
+        this.venterPaSvarFraBruker = 0;
+        this.iavtaltAktivitet = 0;
+        this.iAktivitet = 0;
+        this.ikkeIavtaltAktivitet = 0;
+        this.utlopteAktiviteter = 0;
+        this.minArbeidsliste = 0;
+        this.erSykmeldtMedArbeidsgiver = 0;
+        this.moterMedNAVIdag = 0;
+        this.minArbeidslisteBla = 0;
+        this.minArbeidslisteLilla = 0;
+        this.minArbeidslisteGronn = 0;
+        this.minArbeidslisteGul = 0;
+        this.underVurdering = 0;
+    }
+
+    public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
         this.totalt = buckets.getTotalt().getDoc_count();
         this.ufordelteBrukere = buckets.getUfordelteBrukere().getDoc_count();
         this.trengerVurdering = buckets.getTrengerVurdering().getDoc_count();

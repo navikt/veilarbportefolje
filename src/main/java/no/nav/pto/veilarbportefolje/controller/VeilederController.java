@@ -7,7 +7,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
-import no.nav.pto.veilarbportefolje.auth.BrukerInnsynTilganger;
+import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
@@ -63,6 +63,17 @@ public class VeilederController {
         return opensearchService.hentStatusTallForVeileder(veilederIdent, enhet);
     }
 
+    @GetMapping("/{veilederident}/portefolje/statustall")
+    public VeilederPortefoljeStatustallRespons hentVeilederportefoljeStatustall(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
+        ValideringsRegler.sjekkEnhet(enhet);
+        ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
+        authService.tilgangTilEnhet(enhet);
+
+        return new VeilederPortefoljeStatustallRespons(
+                opensearchService.hentStatustallForVeilederPortefolje(veilederIdent, enhet)
+        );
+    }
+
     @GetMapping("/{veilederident}/hentArbeidslisteForVeileder")
     public List<Arbeidsliste> hentArbeidslisteForVeileder(@PathVariable("veilederident") VeilederId veilederIdent, @RequestParam("enhet") EnhetId enhet) {
         ValideringsRegler.sjekkEnhet(enhet.get());
@@ -78,7 +89,7 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
 
         authService.tilgangTilEnhet(enhet.get());
-        BrukerInnsynTilganger tilgangTilSkjermeteBrukere = authService.hentVeilederBrukerInnsynTilganger();
+        BrukerinnsynTilganger tilgangTilSkjermeteBrukere = authService.hentVeilederBrukerInnsynTilganger();
 
         return aktivitetService.hentMoteplan(veilederIdent, enhet, tilgangTilSkjermeteBrukere);
     }

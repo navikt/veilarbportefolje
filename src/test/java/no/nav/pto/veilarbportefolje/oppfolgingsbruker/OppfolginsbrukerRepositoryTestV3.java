@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.auth.BrukerInnsynTilganger;
+import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,10 +74,10 @@ public class OppfolginsbrukerRepositoryTestV3 {
         settSperretAnsatt(sperretAnsattFnr, true);
         settSperretAnsatt(kontrollFnr, false);
 
-        List<String> medTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(sperretAnsattFnr, kontrollFnr), new BrukerInnsynTilganger(
+        List<String> medTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(sperretAnsattFnr, kontrollFnr), new BrukerinnsynTilganger(
                 false, false, true));
         List<String> utenTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(sperretAnsattFnr, kontrollFnr),
-                new BrukerInnsynTilganger(false, false, false));
+                new BrukerinnsynTilganger(false, false, false));
         assertThat(medTilgang.size()).isEqualTo(0);
         assertThat(utenTilgang.size()).isEqualTo(1);
         assertThat(utenTilgang.stream().anyMatch(x -> x.equals(sperretAnsattFnr))).isTrue();
@@ -94,13 +94,13 @@ public class OppfolginsbrukerRepositoryTestV3 {
         settDiskresjonskode(kontrollFnr, null);
 
         List<String> medAlleTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
-                new BrukerInnsynTilganger(true, true, false));
+                new BrukerinnsynTilganger(true, true, false));
         List<String> medKode6Tilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
-                new BrukerInnsynTilganger(true, false, false));
+                new BrukerinnsynTilganger(true, false, false));
         List<String> medKode7Tilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
-                new BrukerInnsynTilganger(false, true, false));
+                new BrukerinnsynTilganger(false, true, false));
         List<String> utenTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
-                new BrukerInnsynTilganger(false, false, false));
+                new BrukerinnsynTilganger(false, false, false));
 
         assertThat(medAlleTilgang.size()).isEqualTo(0);
         assertThat(medKode6Tilgang.size()).isEqualTo(1);

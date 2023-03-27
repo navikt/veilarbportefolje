@@ -4,7 +4,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.auth.BrukerInnsynTilganger;
+import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
@@ -229,8 +229,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setVersion(1L)
                 .setAvtalt(true));
-        List<Moteplan> moteplaner = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerInnsynTilganger(false, false, false));
-        List<Moteplan> ingenMotePlaner = aktivitetService.hentMoteplan(annenVeileder, EnhetId.of(navKontor.getValue()), new BrukerInnsynTilganger(false, false, false));
+        List<Moteplan> moteplaner = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, false, false));
+        List<Moteplan> ingenMotePlaner = aktivitetService.hentMoteplan(annenVeileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, false, false));
 
         assertThat(moteplaner.size()).isEqualTo(2);
         assertThat(ingenMotePlaner.size()).isEqualTo(0);
@@ -254,8 +254,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setVersion(1L)
                 .setAvtalt(false));
-        List<Moteplan> medTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerInnsynTilganger(false, false, true));
-        List<Moteplan> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerInnsynTilganger(false, false, false));
+        List<Moteplan> medTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, false, true));
+        List<Moteplan> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, false, false));
 
         assertThat(medTilgang.stream().noneMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
         assertThat(utenTilgang.stream().allMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
@@ -295,10 +295,10 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setVersion(1L)
                 .setAvtalt(false));
-        List<Moteplan> medTilgang_alt = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerInnsynTilganger(true, true, false));
-        List<Moteplan> medTilgang_6 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerInnsynTilganger(true, false, false));
-        List<Moteplan> medTilgang_7 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerInnsynTilganger(false, true, false));
-        List<Moteplan> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerInnsynTilganger(false, false, false));
+        List<Moteplan> medTilgang_alt = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(true, true, false));
+        List<Moteplan> medTilgang_6 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(true, false, false));
+        List<Moteplan> medTilgang_7 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, true, false));
+        List<Moteplan> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, false, false));
 
         assertThat(medTilgang_alt.stream().noneMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
         assertThat(medTilgang_6.stream().filter(moteplan -> moteplan.deltaker().equals(skjermetDeltaker)).toList().size()).isEqualTo(1);

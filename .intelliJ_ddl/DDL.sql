@@ -343,7 +343,7 @@ CREATE TABLE public.enslige_forsorgere
 (
     vedtakid        bigint                NOT NULL,
     personident     character varying(30) NOT NULL,
-    "stønadstype"   integer,
+    stonadstype     integer,
     vedtaksresultat integer
 );
 
