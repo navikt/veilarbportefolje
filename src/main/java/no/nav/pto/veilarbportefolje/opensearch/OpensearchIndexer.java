@@ -51,11 +51,7 @@ public class OpensearchIndexer {
             postgresOpensearchMapper.flettInnAktivitetsData(List.of(bruker));
             postgresOpensearchMapper.flettInnSisteEndringerData(List.of(bruker));
             postgresOpensearchMapper.flettInnStatsborgerskapData(List.of(bruker));
-
-            if (FeatureToggle.mapAvvik14aVedtak(unleashService)) {
-                postgresOpensearchMapper.flettInnAvvik14aVedtak(List.of(bruker));
-            }
-
+            postgresOpensearchMapper.flettInnAvvik14aVedtak(List.of(bruker));
             postgresOpensearchMapper.flettInnEnsligeForsorgereData(List.of(bruker));
 
             syncronIndekseringsRequest(bruker);
@@ -120,10 +116,7 @@ public class OpensearchIndexer {
 
         List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
 
-        if (FeatureToggle.mapAvvik14aVedtak(unleashService)) {
-            postgresOpensearchMapper.flettInnAvvik14aVedtak(brukere);
-        }
-
+        postgresOpensearchMapper.flettInnAvvik14aVedtak(brukere);
         postgresOpensearchMapper.flettInnAktivitetsData(brukere);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
         postgresOpensearchMapper.flettInnStatsborgerskapData(brukere);
