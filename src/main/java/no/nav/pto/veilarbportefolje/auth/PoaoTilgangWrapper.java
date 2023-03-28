@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class PoaoTilgangWrapper {
     private final PoaoTilgangClient poaoTilgangClient;
@@ -38,7 +39,7 @@ public class PoaoTilgangWrapper {
                 new PoaoTilgangHttpClient(
                         url,
                         () -> tokenClient.createMachineToMachineToken(tokenScope),
-                        RestClient.baseClient()),
+                        RestClient.baseClientBuilder().callTimeout(1, TimeUnit.SECONDS).build()),
                 policyInputToDecisionCache,
                 navAnsattIdToAzureAdGrupperCache,
                 norskIdentToErSkjermetCache
