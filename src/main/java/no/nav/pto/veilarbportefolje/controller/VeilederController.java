@@ -54,15 +54,6 @@ public class VeilederController {
                 Optional.ofNullable(fra).orElse(0));
     }
 
-    @GetMapping("/{veilederident}/statustall")
-    public VeilederPortefoljeStatusTall hentStatusTall(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
-        ValideringsRegler.sjekkEnhet(enhet);
-        ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
-        authService.tilgangTilEnhet(enhet);
-
-        return opensearchService.hentStatusTallForVeileder(veilederIdent, enhet);
-    }
-
     @GetMapping("/{veilederident}/portefolje/statustall")
     public VeilederPortefoljeStatustallRespons hentVeilederportefoljeStatustall(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);

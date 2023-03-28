@@ -99,26 +99,6 @@ public class OpensearchService {
         return new BrukereMedAntall(totalHits, brukere);
     }
 
-    public VeilederPortefoljeStatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
-        boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
-
-        BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
-                .must(termQuery("oppfolging", true))
-                .must(termQuery("enhet_id", enhetId))
-                .must(termQuery("veileder_id", veilederId));
-
-        if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
-            leggTilBrukerinnsynTilgangFilter(veilederOgEnhetQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
-        }
-
-        SearchSourceBuilder request =
-                byggStatustallQuery(veilederOgEnhetQuery, emptyList(), vedtakstottePilotErPa);
-
-        StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
-        StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return new VeilederPortefoljeStatusTall(buckets, vedtakstottePilotErPa);
-    }
-
     public Statustall hentStatustallForVeilederPortefolje(String veilederId, String enhetId) {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
@@ -133,27 +113,6 @@ public class OpensearchService {
 
         SearchSourceBuilder request =
                 byggStatustallQuery(veilederOgEnhetQuery, emptyList(), vedtakstottePilotErPa);
-
-        StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
-        StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return new Statustall(buckets, vedtakstottePilotErPa);
-    }
-
-    public Statustall hentStatusTallForEnhet(String enhetId) {
-        List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
-
-        boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
-
-        BoolQueryBuilder enhetQuery = boolQuery()
-                .must(termQuery("oppfolging", true))
-                .must(termQuery("enhet_id", enhetId));
-
-        if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
-            leggTilBrukerinnsynTilgangFilter(enhetQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
-        }
-
-        SearchSourceBuilder request =
-                byggStatustallQuery(enhetQuery, veilederPaaEnhet, vedtakstottePilotErPa);
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
