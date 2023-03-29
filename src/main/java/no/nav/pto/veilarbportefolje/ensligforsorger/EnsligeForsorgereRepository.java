@@ -265,7 +265,11 @@ public class EnsligeForsorgereRepository {
     }
 
 
-    public Optional<EnsligeForsorgerOvergangsstønadTiltak> hentOvergangsstønadForEnsligeForsorger(String personIdent) {
+    public Optional<EnsligeForsorgerOvergangsstønadTiltak> hentOvergangsstønadForEnsligeForsorger(String personIdent, boolean inkludereKommendeVedtakPeriode) {
+        String vedtakPeriode = "now() BETWEEN efp.fra_dato and efp.til_dato";
+        if (inkludereKommendeVedtakPeriode) {
+            vedtakPeriode = "now() BETWEEN efp.fra_dato - interval '6 months' and efp.til_dato";
+        }
         String sql = """
                  SELECT ef.personIdent, ef.vedtakId, efp.fra_dato, efp.til_dato,
                        vperiode_type.periode_type as vedtaksPeriodeType,
@@ -279,16 +283,21 @@ public class EnsligeForsorgereRepository {
                 WHERE est.stonad_type = ?
                   AND evt.vedtaksresultat_type = ?
                   AND ef.personIdent = ?
-                  AND now() BETWEEN efp.fra_dato - interval '6 months' and efp.til_dato
+                  AND %s
                   LIMIT 1;
-                 """;
+                 """.formatted(vedtakPeriode);
 
         return dbReadOnly.queryForList(sql, Stønadstype.OVERGANGSSTØNAD.toString(), Vedtaksresultat.INNVILGET.toString(), personIdent)
                 .stream().map(this::mapTilTiltak)
                 .findFirst();
     }
 
-    public List<EnsligeForsorgerOvergangsstønadTiltak> hentOvergangsstønadForEnsligeForsorger(List<Fnr> personIdenter) {
+    public List<EnsligeForsorgerOvergangsstønadTiltak> hentOvergangsstønadForEnsligeForsorger(List<Fnr> personIdenter, boolean inkludereKommendeVedtakPeriode) {
+        String vedtakPeriode = "now() BETWEEN efp.fra_dato and efp.til_dato";
+        if (inkludereKommendeVedtakPeriode) {
+            vedtakPeriode = "now() BETWEEN efp.fra_dato - interval '6 months' and efp.til_dato";
+        }
+
         String personIdenterStr = personIdenter.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
         String sql = """
                  SELECT ef.personIdent, ef.vedtakId, efp.fra_dato, efp.til_dato,
@@ -303,8 +312,8 @@ public class EnsligeForsorgereRepository {
                 WHERE est.stonad_type = ?
                   AND evt.vedtaksresultat_type = ?
                   AND ef.personIdent = ANY (?::varchar[])
-                  AND now() BETWEEN efp.fra_dato - interval '6 months' and efp.til_dato
-                 """;
+                  AND %s
+                 """.formatted(vedtakPeriode);
 
         return dbReadOnly.queryForList(sql, Stønadstype.OVERGANGSSTØNAD.toString(), Vedtaksresultat.INNVILGET.toString(), personIdenterStr)
                 .stream().map(this::mapTilTiltak)

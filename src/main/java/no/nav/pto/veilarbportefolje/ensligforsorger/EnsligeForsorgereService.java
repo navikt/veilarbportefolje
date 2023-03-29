@@ -58,7 +58,7 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
     }
 
     public Optional<EnsligeForsorgerOvergangsstønadTiltakDto> hentEnsligeForsorgerOvergangsstønadTiltak(String personIdent) {
-        Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(personIdent);
+        Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(personIdent, true);
 
         if (ensligeForsorgerOvergangsstønadTiltakOptional.isPresent()) {
             EnsligeForsorgerOvergangsstønadTiltak ensligeForsorgerOvergangsstønadTiltak = ensligeForsorgerOvergangsstønadTiltakOptional.get();
@@ -70,7 +70,7 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
 
     public Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> hentEnsligeForsorgerOvergangsstønadTiltak(List<Fnr> personIdents) {
         Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> result = new HashMap<>();
-        List<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltaks = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(personIdents);
+        List<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltaks = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(personIdents, true);
         ensligeForsorgerOvergangsstønadTiltaks.forEach(tiltak -> {
             result.put(tiltak.personIdent(), getEnsligeForsorgereDto(tiltak));
         });
