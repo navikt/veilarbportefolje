@@ -157,15 +157,24 @@ public class EnsligeForsorgereRepositoryTest {
 
     @Test
     void testHentOvergangsstønadForEnsligeForsorgere() {
-        List<Long> vedtakIds = List.of(new Random().nextLong(10000l), new Random().nextLong(10000l), new Random().nextLong(10000l),
-                new Random().nextLong(10000l), new Random().nextLong(10000l));
-        List<Fnr> fnrList = List.of(Fnr.of("11018012321"), Fnr.of("12018012321"), Fnr.of("13018012321"),
-                Fnr.of("14018012321"), Fnr.of("15018012321"));
+        List<Fnr> fnrList = List.of(Fnr.of("11018012321"),
+                Fnr.of("12018012321"),
+                Fnr.of("13018012321"),
+                Fnr.of("14018012321"),
+                Fnr.of("15018012321"),
+                Fnr.of("18048012321"));
+        List<Long> vedtakIds = List.of(new Random().nextLong(10000l),
+                new Random().nextLong(10000l),
+                new Random().nextLong(10000l),
+                new Random().nextLong(10000l),
+                new Random().nextLong(10000l),
+                new Random().nextLong(10000l));
         lagreRandomVedtakIdatabase(vedtakIds.get(0), fnrList.get(0), LocalDate.now().plusMonths(4), LocalDate.now().plusMonths(10));
         lagreRandomVedtakIdatabase(vedtakIds.get(1), fnrList.get(1), LocalDate.now().plusDays(3), LocalDate.now().plusMonths(1));
         lagreRandomVedtakIdatabase(vedtakIds.get(2), fnrList.get(2), LocalDate.now().minusDays(20), LocalDate.now().plusMonths(1));
         lagreRandomVedtakIdatabase(vedtakIds.get(3), fnrList.get(3), LocalDate.now().minusDays(30), LocalDate.now().minusDays(2));
         lagreRandomVedtakIdatabase(vedtakIds.get(4), fnrList.get(4), LocalDate.now().minusDays(13), LocalDate.now().plusMonths(1));
+        lagreRandomVedtakIdatabase(vedtakIds.get(5), fnrList.get(5), LocalDate.now().plusMonths(7), LocalDate.now().plusMonths(10));
 
         List<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltaks = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(fnrList, true);
         Assert.assertEquals(ensligeForsorgerOvergangsstønadTiltaks.size(), 4);
