@@ -279,7 +279,7 @@ public class EnsligeForsorgereRepository {
                 WHERE est.stonad_type = ?
                   AND evt.vedtaksresultat_type = ?
                   AND ef.personIdent = ?
-                  AND now() BETWEEN efp.fra_dato and efp.til_dato
+                  AND now() BETWEEN efp.fra_dato - interval '6 months' and efp.til_dato
                   LIMIT 1;
                  """;
 
@@ -303,7 +303,7 @@ public class EnsligeForsorgereRepository {
                 WHERE est.stonad_type = ?
                   AND evt.vedtaksresultat_type = ?
                   AND ef.personIdent = ANY (?::varchar[])
-                  AND now() BETWEEN efp.fra_dato and efp.til_dato
+                  AND now() BETWEEN efp.fra_dato - interval '6 months' and efp.til_dato
                  """;
 
         return dbReadOnly.queryForList(sql, Stønadstype.OVERGANGSSTØNAD.toString(), Vedtaksresultat.INNVILGET.toString(), personIdenterStr)

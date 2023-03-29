@@ -217,7 +217,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     }
 
     @Test
-    public void testHentingAvAlleBrukereMedAktivVedtakPeriode() {
+    public void testHentingAvAlleBrukereMedAktiveEllerKommendeVedtakPeriode() {
         List<Fnr> fnrList = List.of(Fnr.of("11018012321"), Fnr.of("12018012321"), Fnr.of("13018012321"),
                 Fnr.of("14018012321"), Fnr.of("15018012321"));
         List<Long> vedtakIds = List.of(new Random().nextLong(10000l), new Random().nextLong(10000l), new Random().nextLong(10000l),
@@ -236,7 +236,9 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         lagreRandomVedtakIdatabase(vedtakIds.get(4), fnrList.get(4), LocalDate.now().minusDays(13), LocalDate.now().plusMonths(1));
 
         Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(fnrList);
-        Assert.assertEquals(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size(), 2);
+        Assert.assertEquals(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size(), 4);
+        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(0)));
+        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(1)));
         Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(2)));
         Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(4)));
     }
