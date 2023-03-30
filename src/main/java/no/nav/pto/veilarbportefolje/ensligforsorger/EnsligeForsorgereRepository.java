@@ -284,6 +284,7 @@ public class EnsligeForsorgereRepository {
                   AND evt.vedtaksresultat_type = ?
                   AND ef.personIdent = ?
                   AND %s
+                  ORDER BY efp.fra_dato ASC
                   LIMIT 1;
                  """.formatted(vedtakPeriode);
 

@@ -72,7 +72,7 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
         Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> result = new HashMap<>();
         List<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltaks = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(personIdents, true);
         ensligeForsorgerOvergangsstønadTiltaks.forEach(tiltak -> {
-            result.put(tiltak.personIdent(), getEnsligeForsorgereDto(tiltak));
+            result.putIfAbsent(tiltak.personIdent(), getEnsligeForsorgereDto(tiltak));
         });
         return result;
     }
