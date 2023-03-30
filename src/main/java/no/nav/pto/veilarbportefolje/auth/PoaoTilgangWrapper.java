@@ -39,7 +39,7 @@ public class PoaoTilgangWrapper {
                 new PoaoTilgangHttpClient(
                         url,
                         () -> tokenClient.createMachineToMachineToken(tokenScope),
-                        RestClient.baseClientBuilder().callTimeout(1, TimeUnit.SECONDS).build()),
+                        RestClient.baseClientBuilder().readTimeout(1, TimeUnit.SECONDS).writeTimeout(1, TimeUnit.SECONDS).callTimeout(1, TimeUnit.SECONDS).build()),
                 policyInputToDecisionCache,
                 navAnsattIdToAzureAdGrupperCache,
                 norskIdentToErSkjermetCache
