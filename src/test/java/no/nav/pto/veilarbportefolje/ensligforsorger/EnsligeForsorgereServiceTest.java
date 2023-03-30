@@ -217,6 +217,26 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     }
 
     @Test
+    public void testHentingAvBrukerMedFlereTiltak() {
+        Fnr fnr = Fnr.of("11018012321");
+        List<Long> vedtakIds = List.of(
+                new Random().nextLong(10000l),
+                new Random().nextLong(10000l),
+                new Random().nextLong(10000l));
+
+        Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(randomAktorId());
+
+        lagreRandomVedtakIdatabase(vedtakIds.get(0), fnr, LocalDate.now().minusDays(4), LocalDate.now().plusMonths(2));
+        lagreRandomVedtakIdatabase(vedtakIds.get(1), fnr, LocalDate.now().minusDays(10), LocalDate.now().plusMonths(1));
+        lagreRandomVedtakIdatabase(vedtakIds.get(2), fnr, LocalDate.now().plusDays(20), LocalDate.now().plusMonths(1));
+
+        Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(List.of(fnr));
+        Assert.assertEquals(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size(), 1);
+        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnr));
+        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.get(fnr).utløpsDato().equals(LocalDate.now().plusMonths(1)));
+    }
+
+    @Test
     public void testHentingAvAlleBrukereMedAktiveEllerKommendeVedtakPeriode() {
         List<Fnr> fnrList = List.of(Fnr.of("11018012321"),
                 Fnr.of("12018012321"),
