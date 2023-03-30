@@ -314,6 +314,7 @@ public class EnsligeForsorgereRepository {
                   AND evt.vedtaksresultat_type = ?
                   AND ef.personIdent = ANY (?::varchar[])
                   AND %s
+                  ORDER BY efp.fra_dato ASC
                  """.formatted(vedtakPeriode);
 
         return dbReadOnly.queryForList(sql, Stønadstype.OVERGANGSSTØNAD.toString(), Vedtaksresultat.INNVILGET.toString(), personIdenterStr)
