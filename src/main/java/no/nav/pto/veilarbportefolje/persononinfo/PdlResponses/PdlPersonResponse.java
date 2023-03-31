@@ -68,15 +68,7 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private String gyldigTilOgMed;
             private Metadata metadata;
         }
-
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class InnflyttingTilNorge {
-            private String fraflyttingsland;
-            private Metadata metadata;
-        }
-
-
+        
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class TilrettelagtKommunikasjon {
