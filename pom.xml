@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.2</version>
+        <version>3.0.5</version>
         <relativePath/>
     </parent>
 
@@ -16,7 +16,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <common.version>3.2023.02.28_14.59-ff398ca0d33e</common.version>
+        <common.version>3.2023.04.03_13.09-15bb53f1d80e</common.version>
         <confluent.version>5.5.1</confluent.version>
         <avro.version>1.11.1</avro.version>
         <veilarbregistrering.skjema.version>9a956c3</veilarbregistrering.skjema.version>
