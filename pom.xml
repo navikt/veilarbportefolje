@@ -16,7 +16,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <common.version>3.2023.04.03_13.09-15bb53f1d80e</common.version>
+        <common.version>3.2023.04.11_09.05-411b59915166</common.version>
         <confluent.version>5.5.1</confluent.version>
         <avro.version>1.11.1</avro.version>
         <veilarbregistrering.skjema.version>9a956c3</veilarbregistrering.skjema.version>
