@@ -10,9 +10,11 @@ import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.Avvik14aStatistikk;
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
@@ -45,6 +47,7 @@ public class AdminController {
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchAdminService opensearchAdminService;
     private final PdlService pdlService;
+    private final OpensearchService opensearchService;
 
     @DeleteMapping("/oppfolgingsbruker")
     public String slettOppfolgingsbruker(@RequestBody String aktoerId) {
@@ -189,6 +192,12 @@ public class AdminController {
         List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
         opensearchIndexer.dryrunAvPostgresTilOpensearchMapping(brukereUnderOppfolging);
         log.info("ferdig med dryrun");
+    }
+
+    @GetMapping("/opensearch/hentAvvik14aStatistikk")
+    public Avvik14aStatistikk hentAvvik14aStatistikk() {
+        sjekkTilgangTilAdmin();
+        return opensearchService.hentAvvik14aStatistikk();
     }
 
     private void sjekkTilgangTilAdmin() {
