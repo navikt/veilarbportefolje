@@ -23,7 +23,7 @@ public class KodeverkService {
     private final KodeverkClient kodeverkClient;
 
     public String getBeskrivelseForLandkode(String kode) {
-        if (kode.equals("XXA")) return "statsløs";
+        if (kode != null && kode.equals("XXA")) return "statsløs";
         return finnBeskrivelse(KODEVERK_LANDKODER, kode);
     }
 
