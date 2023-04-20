@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPersonResponseData> {
@@ -28,6 +29,7 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private List<TilrettelagtKommunikasjon> tilrettelagtKommunikasjon;
             private List<Adressebeskyttelse> adressebeskyttelse;
             private List<Sikkerhetstiltak> sikkerhetstiltak;
+            private List<ForelderBarnRelasjon> forelderBarnRelasjon;
         }
 
         @Data
@@ -68,7 +70,7 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private String gyldigTilOgMed;
             private Metadata metadata;
         }
-        
+
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class TilrettelagtKommunikasjon {
@@ -146,6 +148,19 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Endringer {
             private String registrert;
+        }
+
+        @Data
+        public static class ForelderBarnRelasjon {
+            private String relatertPersonsRolle;
+            private String relatertPersonsIdent;
+            private RelatertPersonUtenFolkeregisteridentifikator relatertPersonUtenFolkeregisteridentifikator;
+            private Metadata metadata;
+        }
+
+        @Data
+        public static class RelatertPersonUtenFolkeregisteridentifikator {
+            private LocalDate foedselsdato;
         }
     }
 
