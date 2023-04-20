@@ -10,7 +10,7 @@ jobs:
     name: Trello update
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Get trello card id
         id: card
         uses: navikt/veilarbtrelloactions/get-card@v2.0
@@ -33,14 +33,14 @@ jobs:
     if: github.ref != 'refs/heads/master'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up JDK 17
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           java-version: 17
           distribution: 'temurin'
       - name: Set up cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
