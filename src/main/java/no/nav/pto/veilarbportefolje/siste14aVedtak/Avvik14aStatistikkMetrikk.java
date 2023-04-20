@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.Avvik14aStatistikk;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,13 +38,19 @@ public class Avvik14aStatistikkMetrikk implements MeterBinder {
         this.antallMedInnsatsgruppeManglerINyKilde = meterRegistry.gauge("veilarbportefolje_avvik14astatistikk_innsatsgruppe_mangler", new AtomicLong(avvik14aStatistikk.antallMedInnsatsgruppeManglerINyKilde()));
     }
 
+    // Kjøres klokken 3 hver natt
+    @Scheduled(cron = "0 3 * * * ?")
     public void oppdaterMetrikk() {
-        log.info("Oppdaterer metrikker for avvik 14 a statistikk");
-        Avvik14aStatistikk avvik14aStatistikk = opensearchService.hentAvvik14aStatistikk();
+        log.info("Kjører schedulert jobb \"Oppdaterer metrikker for avvik 14 a statistikk\" ");
 
-        this.antallMedInnsatsgruppeUlik.set(avvik14aStatistikk.antallMedInnsatsgruppeUlik());
-        this.antallMedHovedmaalUlik.set(avvik14aStatistikk.antallMedHovedmaalUlik());
-        this.antallMedInnsatsgruppeOgHovedmaalUlik.set(avvik14aStatistikk.antallMedInnsatsgruppeOgHovedmaalUlik());
-        this.antallMedInnsatsgruppeManglerINyKilde.set(avvik14aStatistikk.antallMedInnsatsgruppeManglerINyKilde());
+        try {
+            Avvik14aStatistikk avvik14aStatistikk = opensearchService.hentAvvik14aStatistikk();
+            this.antallMedInnsatsgruppeUlik.set(avvik14aStatistikk.antallMedInnsatsgruppeUlik());
+            this.antallMedHovedmaalUlik.set(avvik14aStatistikk.antallMedHovedmaalUlik());
+            this.antallMedInnsatsgruppeOgHovedmaalUlik.set(avvik14aStatistikk.antallMedInnsatsgruppeOgHovedmaalUlik());
+            this.antallMedInnsatsgruppeManglerINyKilde.set(avvik14aStatistikk.antallMedInnsatsgruppeManglerINyKilde());
+        } catch (RuntimeException e) {
+            log.warn("Schedulert jobb \"Oppdaterer metrikker for avvik 14 a statistikk\" feilet");
+        }
     }
 }

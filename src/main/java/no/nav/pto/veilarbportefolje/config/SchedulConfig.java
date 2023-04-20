@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aStatistikkMetrikk;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,10 +17,8 @@ import javax.sql.DataSource;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 
-import static com.github.kagkarlsson.scheduler.task.schedule.Schedules.fixedDelay;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
@@ -34,20 +31,15 @@ public class SchedulConfig {
     private final Scheduler scheduler;
 
     @Autowired
-    public SchedulConfig(
-            DataSource dataSource,
-            HovedIndekserer hovedIndekserer,
-            AktivitetService aktivitetService,
-            YtelsesService ytelsesService,
-            Avvik14aStatistikkMetrikk avvik14aStatistikkMetrikk
-    ) {
+    public SchedulConfig(DataSource dataSource,
+                         HovedIndekserer hovedIndekserer,
+                         AktivitetService aktivitetService,
+                         YtelsesService ytelsesService) {
         this.hovedIndekserer = hovedIndekserer;
         this.aktivitetService = aktivitetService;
         this.ytelsesService = ytelsesService;
 
-        List<RecurringTask<?>> jobber = new ArrayList<>();
-        jobber.addAll(nattligeJobber());
-        jobber.add(oppdaterAvvik14aStatistikkMetrikkerJobb(avvik14aStatistikkMetrikk));
+        List<RecurringTask<?>> jobber = nattligeJobber();
         scheduler = Scheduler
                 .create(dataSource)
                 .deleteUnresolvedAfter(Duration.of(1, HOURS))
@@ -71,15 +63,6 @@ public class SchedulConfig {
                         }))
                         .execute((instance, ctx) -> hovedIndekserer.hovedIndeksering())
         );
-    }
-
-    private RecurringTask<Void> oppdaterAvvik14aStatistikkMetrikkerJobb(Avvik14aStatistikkMetrikk avvik14aStatistikkMetrikk) {
-        return Tasks
-                .recurring("oppdater_avvik14astatistikk_metrikker", fixedDelay(Duration.ofHours(1)))
-                .execute((instance, ctx) -> {
-                    log.info("Utfører schedulert jobb oppdater_avvik14astatistikk_metrikker");
-                    avvik14aStatistikkMetrikk.oppdaterMetrikk();
-                });
     }
 
     @PostConstruct
