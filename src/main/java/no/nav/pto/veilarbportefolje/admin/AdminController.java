@@ -183,6 +183,20 @@ public class AdminController {
         return "ferdig";
     }
 
+    @PutMapping("/pdl/lastInnDataFraPdl")
+    public String lastInnPDLBrukerData(@RequestParam String fnr) {
+        sjekkTilgangTilAdmin();
+        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
+        try {
+            pdlService.hentOgLagrePdlData(AktorId.of(aktorId));
+        } catch (Exception e) {
+            secureLog.info("pdl brukerdata: feil under innlastning av pdl data på bruker: {}", aktorId, e);
+        }
+        log.info("pdl brukerdata: ferdig med innlastning");
+        return "ferdig";
+    }
+
+
     @PostMapping("/test/postgresIndeksering")
     public void testHentUnderOppfolging() {
         sjekkTilgangTilAdmin();
