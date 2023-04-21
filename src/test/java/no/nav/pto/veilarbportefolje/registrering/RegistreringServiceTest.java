@@ -100,7 +100,7 @@ class RegistreringServiceTest extends EndToEndTest {
                             null,
                             null);
 
-                    assertThat(responseBrukere3.getAntall()).isEqualTo(3);
+                    assertThat(responseBrukere3.getAntall()).isEqualTo(4);
                 }
         );
 
@@ -184,7 +184,7 @@ class RegistreringServiceTest extends EndToEndTest {
                             null,
                             null);
 
-                    assertThat(responseBrukere8.getAntall()).isEqualTo(4);
+                    assertThat(responseBrukere8.getAntall()).isEqualTo(5);
                 }
         );
 
@@ -212,7 +212,7 @@ class RegistreringServiceTest extends EndToEndTest {
                             null,
                             null);
 
-                    assertThat(responseBrukere10.getAntall()).isEqualTo(6);
+                    assertThat(responseBrukere10.getAntall()).isEqualTo(7);
                 }
         );
 
@@ -302,6 +302,7 @@ class RegistreringServiceTest extends EndToEndTest {
         final AktorId aktoerId5 = randomAktorId();
         final AktorId aktoerId6 = randomAktorId();
         final AktorId aktoerId7 = randomAktorId();
+        final AktorId aktoerId8 = randomAktorId();
 
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
@@ -351,7 +352,16 @@ class RegistreringServiceTest extends EndToEndTest {
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId7.get())
                         .setOppfolging(true)
+                        .setEnhet_id(enhet),
+
+                new OppfolgingsBruker()
+                        .setAktoer_id(aktoerId8.get())
+                        .setOppfolging(true)
                         .setEnhet_id(enhet)
+                        .setUtdanning("INGEN_SVAR")
+                        .setUtdanning_bestatt("NEI")
+                        .setUtdanning_godkjent("JA")
+                        .setBrukers_situasjon("ALDRI_HATT_JOBB")
         );
 
         brukere.forEach(bruker -> {
