@@ -10,8 +10,10 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.*;
+import no.nav.pto.veilarbportefolje.opensearch.domene.Avvik14aStatistikkResponse.Avvik14aStatistikkAggregation.Avvik14aStatistikkFilter.Avvik14aStatistikkBuckets;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.apache.commons.lang3.StringUtils;
 import org.opensearch.action.search.SearchRequest;
@@ -19,6 +21,7 @@ import org.opensearch.action.search.SearchResponse;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.index.query.BoolQueryBuilder;
+import org.opensearch.search.aggregations.bucket.filter.FiltersAggregator;
 import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +34,7 @@ import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterT
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.*;
 import static org.opensearch.index.query.QueryBuilders.*;
+import static org.opensearch.search.aggregations.AggregationBuilders.filters;
 
 @Service
 @RequiredArgsConstructor
@@ -152,6 +156,39 @@ public class OpensearchService {
         PortefoljestorrelserResponse response = search(request, indexName.getValue(), PortefoljestorrelserResponse.class);
         List<Bucket> buckets = response.getAggregations().getFilter().getSterms().getBuckets();
         return new FacetResults(buckets);
+    }
+
+    public Avvik14aStatistikk hentAvvik14aStatistikk() {
+        FiltersAggregator.KeyedFilter[] filtre = new FiltersAggregator.KeyedFilter[]{
+                new FiltersAggregator.KeyedFilter(
+                        "innsatsgruppeUlik",
+                        boolQuery()
+                                .must(matchQuery("avvik14aVedtak", Avvik14aVedtak.INNSATSGRUPPE_ULIK))
+                ),
+                new FiltersAggregator.KeyedFilter(
+                        "hovedmaalUlik",
+                        boolQuery()
+                                .must(matchQuery("avvik14aVedtak", Avvik14aVedtak.HOVEDMAAL_ULIK))
+                ),
+                new FiltersAggregator.KeyedFilter(
+                        "innsatsgruppeOgHovedmaalUlik",
+                        boolQuery()
+                                .must(matchQuery("avvik14aVedtak", Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK))
+                ),
+                new FiltersAggregator.KeyedFilter(
+                        "innsatsgruppeManglerINyKilde",
+                        boolQuery()
+                                .must(matchQuery("avvik14aVedtak", Avvik14aVedtak.INNSATSGRUPPE_MANGLER_I_NY_KILDE))
+                )
+        };
+
+        SearchSourceBuilder request = new SearchSourceBuilder()
+                .size(0)
+                .aggregation(filters("avvik14astatistikk", filtre));
+
+        Avvik14aStatistikkResponse response = search(request, indexName.getValue(), Avvik14aStatistikkResponse.class);
+        Avvik14aStatistikkBuckets buckets = response.getAggregations().getFilters().getBuckets();
+        return Avvik14aStatistikk.of(buckets);
     }
 
     @SneakyThrows
