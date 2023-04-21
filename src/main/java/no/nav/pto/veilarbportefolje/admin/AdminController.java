@@ -183,12 +183,11 @@ public class AdminController {
         return "ferdig";
     }
 
-    @PostMapping("/pdl/lastInnDataFraPdl")
+    @PutMapping("/pdl/lastInnDataFraPdl")
     public String lastInnPDLBrukerData(@RequestParam String fnr) {
         sjekkTilgangTilAdmin();
         String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
         try {
-
             pdlService.hentOgLagrePdlData(AktorId.of(aktorId));
         } catch (Exception e) {
             secureLog.info("pdl brukerdata: feil under innlastning av pdl data på bruker: {}", aktorId, e);
