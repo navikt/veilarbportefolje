@@ -8,7 +8,6 @@ import java.time.*;
 import java.time.temporal.WeekFields;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 
 import static java.time.Duration.ofSeconds;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -130,18 +129,19 @@ public class DateUtilsTest {
 
     @Test
     public void testAddWeeksToTodayAndGetNthDay() {
+        WeekFields weekFields = WeekFields.of(DayOfWeek.MONDAY, 1);
         LocalDate dateInFuture = addWeeksToTodayAndGetNthDay(5, 3);
         assertThat(dateInFuture.getDayOfWeek().getValue()).isEqualTo(3);
-        assertThat(dateInFuture.minusWeeks(5).get(WeekFields.of(Locale.getDefault()).weekOfYear())).isEqualTo(LocalDate.now().get(WeekFields.of(Locale.getDefault()).weekOfYear()));
+        assertThat(dateInFuture.minusWeeks(5).get(weekFields.weekOfYear())).isEqualTo(LocalDate.now().get(weekFields.weekOfYear()));
 
 
         dateInFuture = addWeeksToTodayAndGetNthDay(45, 1);
         assertThat(dateInFuture.getDayOfWeek().getValue()).isEqualTo(1);
-        assertThat(dateInFuture.minusWeeks(45).get(WeekFields.of(Locale.getDefault()).weekOfYear())).isEqualTo(LocalDate.now().get(WeekFields.of(Locale.getDefault()).weekOfYear()));
+        assertThat(dateInFuture.minusWeeks(45).get(weekFields.weekOfYear())).isEqualTo(LocalDate.now().get(weekFields.weekOfYear()));
 
 
         dateInFuture = addWeeksToTodayAndGetNthDay(123, 7);
         assertThat(dateInFuture.getDayOfWeek().getValue()).isEqualTo(7);
-        assertThat(dateInFuture.minusWeeks(123).get(WeekFields.of(Locale.getDefault()).weekOfYear())).isEqualTo(LocalDate.now().get(WeekFields.of(Locale.getDefault()).weekOfYear()));
+        assertThat(dateInFuture.minusWeeks(123).get(weekFields.weekOfYear())).isEqualTo(LocalDate.now().get(weekFields.weekOfYear()));
     }
 }

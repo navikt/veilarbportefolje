@@ -8,7 +8,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalField;
 import java.time.temporal.WeekFields;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Optional;
 
 import static java.lang.Math.abs;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
@@ -195,7 +198,8 @@ public class DateUtils {
         if (weeksNumber == null || dayNumber == null) {
             return null;
         }
-        TemporalField dayOfWeek = WeekFields.of(Locale.getDefault()).dayOfWeek();
+        WeekFields weekFields = WeekFields.of(DayOfWeek.MONDAY, 1);
+        TemporalField dayOfWeek = weekFields.dayOfWeek();
         return (LocalDate.now().plusWeeks(weeksNumber)).with(dayOfWeek, 1).plusDays(dayNumber - 1);
     }
 
