@@ -6,10 +6,9 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.temporal.TemporalField;
+import java.time.temporal.WeekFields;
+import java.util.*;
 
 import static java.lang.Math.abs;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
@@ -158,19 +157,19 @@ public class DateUtils {
         return date.toLocalDateTime();
     }
 
-    public static LocalDateTime toLocalDateTimeOrNull(java.sql.Date date) {
+    public static LocalDate toLocalDate(Timestamp date) {
         if (date == null) {
             return null;
         }
-        return date.toLocalDate().atStartOfDay();
+        return date.toLocalDateTime().toLocalDate();
     }
 
-	public static LocalDate toLocalDateOrNull(java.sql.Date date) {
-		if (date == null) {
-			return null;
-		}
-		return date.toLocalDate();
-	}
+    public static LocalDate toLocalDateOrNull(java.sql.Date date) {
+        if (date == null) {
+            return null;
+        }
+        return date.toLocalDate();
+    }
 
     public static LocalDate toLocalDateOrNull(String date) {
         if (date == null) {
@@ -190,6 +189,14 @@ public class DateUtils {
 
     public static ZonedDateTime now() {
         return ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS);
+    }
+
+    public static LocalDate addWeeksToTodayAndGetNthDay(Integer weeksNumber, Integer dayNumber) {
+        if (weeksNumber == null || dayNumber == null) {
+            return null;
+        }
+        TemporalField dayOfWeek = WeekFields.of(Locale.getDefault()).dayOfWeek();
+        return (LocalDate.now().plusWeeks(weeksNumber)).with(dayOfWeek, 1).plusDays(dayNumber - 1);
     }
 
     public static Comparator<LocalDate> closestToTodayComparator() {

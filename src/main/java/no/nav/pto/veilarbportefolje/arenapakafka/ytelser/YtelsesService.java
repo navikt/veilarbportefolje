@@ -210,7 +210,8 @@ public class YtelsesService {
         } else if (ytelse.getType() == AAP) {
             ytelsesTilstand
                     .setAapmaxtidUke(ytelse.getAntallUkerIgjen())
-                    .setAapUnntakDagerIgjen(ytelse.getAntallDagerIgjenUnntak());
+                    .setAapUnntakDagerIgjen(ytelse.getAntallDagerIgjenUnntak())
+                    .setAapmaxtidFrist(ytelse.getAapMaxtidFrist());
         }
 
         ytelsesStatusRepositoryV2.upsertYtelseStatus(ytelsesTilstand);

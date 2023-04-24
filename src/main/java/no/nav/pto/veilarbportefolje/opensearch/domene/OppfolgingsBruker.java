@@ -50,6 +50,8 @@ public class OppfolgingsBruker {
     Integer permutlopuke;
     Integer aapmaxtiduke;
     Integer aapunntakukerigjen;
+
+    LocalDate maxaapfrist;
     boolean oppfolging;
     boolean ny_for_veileder;
     boolean trenger_vurdering;
