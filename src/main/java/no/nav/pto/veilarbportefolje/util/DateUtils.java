@@ -200,7 +200,7 @@ public class DateUtils {
         }
         WeekFields weekFields = WeekFields.of(DayOfWeek.MONDAY, 1);
         TemporalField dayOfWeek = weekFields.dayOfWeek();
-        return (LocalDate.now().plusWeeks(weeksNumber)).with(dayOfWeek, 1).plusDays(dayNumber - 1);
+        return (LocalDate.now().plusWeeks(weeksNumber)).with(dayOfWeek, 1).plusDays(dayNumber - 1l);
     }
 
     public static Comparator<LocalDate> closestToTodayComparator() {
