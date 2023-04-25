@@ -1,10 +1,11 @@
 package no.nav.pto.veilarbportefolje.persononinfo.PdlResponses;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Bostedsadresse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -86,14 +87,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private Metadata metadata;
         }
 
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Bostedsadresse {
-            private Vegadresse vegadresse;
-            private UtenlandskAdresse utenlandskAdresse;
-            private UkjentBosted ukjentBosted;
-            private Metadata metadata;
-        }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
@@ -111,24 +104,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private Metadata metadata;
         }
 
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Vegadresse {
-            private final String kommunenummer;
-            private final String bydelsnummer;
-        }
-
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class UtenlandskAdresse {
-            private String landkode;
-        }
-
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class UkjentBosted {
-            private String bostedskommune;
-        }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
@@ -136,13 +111,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private String spraak;
         }
 
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Metadata {
-            private boolean historisk;
-            private PdlMaster master;
-            private List<Endringer> endringer;
-        }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
@@ -161,27 +129,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         @Data
         public static class RelatertPersonUtenFolkeregisteridentifikator {
             private LocalDate foedselsdato;
-        }
-    }
-
-    public enum PdlMaster {
-        PDL(1),
-        FREG(2),
-        UVIST(3);
-
-        public final int prioritet;
-
-        PdlMaster(int i) {
-            prioritet = i;
-        }
-
-        @JsonCreator
-        public static PdlMaster fromString(String string) {
-            try {
-                return PdlMaster.valueOf(string);
-            } catch (IllegalArgumentException e) {
-                return UVIST;
-            }
         }
     }
 }

@@ -34,10 +34,30 @@ query($ident: ID!) {
     }
     bostedsadresse {
       vegadresse {
+        matrikkelId
+        husbokstav
+        husnummer
+        adressenavn
+        bruksenhetsnummer
+        tilleggsnavn
+        postnummer
         kommunenummer
         bydelsnummer
       }
+      matrikkeladresse {
+        matrikkelId
+        bruksenhetsnummer
+        tilleggsnavn
+        postnummer
+        kommunenummer
+      }
       utenlandskAdresse {
+        adressenavnNummer
+        bygningEtasjeLeilighet
+        postboksNummerNavn
+        postkode
+        bySted
+        regionDistriktOmraade
         landkode
       }
       ukjentBosted {

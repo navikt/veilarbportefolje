@@ -35,6 +35,10 @@ public class PdlService {
         pdlPersonRepository.upsertPerson(fnr, personData);
     }
 
+    public void hentOgLagrePdlDataForBrukerBarn(Fnr fnr) {
+        PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnr);
+    }
+
     private List<PDLIdent> hentOgLagreIdenter(AktorId aktorId) {
         secureLog.info("Oppdaterer ident mapping for aktor: {}", aktorId);
 
