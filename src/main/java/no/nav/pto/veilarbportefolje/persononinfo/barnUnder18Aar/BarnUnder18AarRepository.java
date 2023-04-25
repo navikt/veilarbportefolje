@@ -6,11 +6,10 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.Period;
 import java.util.List;
 import java.util.Map;
 
@@ -26,11 +25,6 @@ public class BarnUnder18AarRepository {
 
     private final JdbcTemplate db;
 
-    @Qualifier("PostgresNamedJdbcReadOnly")
-    private final NamedParameterJdbcTemplate namedDb;
-
-    List<BarnUnder18AarData> data = new ArrayList<>();
-
     public List<BarnUnder18AarData> hentBarnUnder18Aar(String fnr) {
         List<BarnUnder18AarData> barn = dbReadOnly.queryForList("""
                             SELECT * FROM BRUKER_DATA_BARN WHERE FORESATT_IDENT = ?
@@ -41,24 +35,27 @@ public class BarnUnder18AarRepository {
         return barn;
     }
 
+    //TODO Legg til fnr_barn i tabellen. Slett "id". Legg da også til ON CONFLICT (FNR_BARN) DO UPDATE SET
+    //TODO Ta inn PDLPerson her og hent ut data derfra
     public void upsert(Fnr fnr, Boolean borMedForesatt, LocalDate barnFoedselsdato, String diskresjonskode){
           db.update("""
-                        INSERT INTO bruker_data_barn (id, foresatt_ident , bor_med_foresatt, barn_foedselsdato, barn_diskresjonkode)
-                        VALUES(?,?,?,?,?) ON CONFLICT (id) DO UPDATE SET
-                        (id, foresatt_ident, bor_med_foresatt, barn_foedselsdato , barn_diskresjonkode) =
-                        (excluded.foresatt_ident, excluded.bor_med_foresatt, excluded.barn_foedselsdato, excluded.barn_diskresjonkode)
-                        """,
-                fnr.get(), borMedForesatt, barnFoedselsdato, diskresjonskode);
+                        INSERT INTO bruker_data_barn (foresatt_ident, bor_med_foresatt, barn_foedselsdato, barn_diskresjonkode)
+                        VALUES(?,?,?,?) """,
+                 fnr.get(), borMedForesatt, barnFoedselsdato, diskresjonskode);
     }
 
 
 
 
     private BarnUnder18AarData mapTilBarnUnder18(Map<String, Object> rs) {
-        return new BarnUnder18AarData((Long) alderFraFDato(toLocalDateOrNull((java.sql.Date) rs.get("BARN_FOEDSELSDATO"))), (boolean) rs.get("BOR_MED_FORESATT"), (String) rs.get("BARN_DISKRESJONKODE"));
+        return new BarnUnder18AarData((Long) alderFraFodselsdato(toLocalDateOrNull((java.sql.Date) rs.get("BARN_FOEDSELSDATO")), LocalDate.now()), (boolean) rs.get("BOR_MED_FORESATT"), (String) rs.get("BARN_DISKRESJONKODE"));
     }
 
-    public static Long alderFraFDato(LocalDate date) {
-        return 15L;
+    public static Long alderFraFodselsdato(LocalDate date, LocalDate now) {
+        Integer age = Period.between(date, now).getYears();
+        return age.longValue();
     }
+
 }
+
+
