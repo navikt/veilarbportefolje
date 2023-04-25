@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Bostedsadresse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPersonResponseData> {
@@ -28,9 +28,9 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private List<Statsborgerskap> statsborgerskap;
             private List<Bostedsadresse> bostedsadresse;
             private List<TilrettelagtKommunikasjon> tilrettelagtKommunikasjon;
-            private List<AdressebeskyttelseDto> adressebeskyttelse;
+            private List<Adressebeskyttelse> adressebeskyttelse;
             private List<Sikkerhetstiltak> sikkerhetstiltak;
-            private List<Foreldreansvar> foreldreansvar;
+            private List<ForelderBarnRelasjon> forelderBarnRelasjon;
         }
 
         @Data
@@ -87,14 +87,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private Metadata metadata;
         }
 
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Bostedsadresse {
-            private Vegadresse vegadresse;
-            private UtenlandskAdresse utenlandskAdresse;
-            private UkjentBosted ukjentBosted;
-            private Metadata metadata;
-        }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
@@ -112,24 +104,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private Metadata metadata;
         }
 
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Vegadresse {
-            private final String kommunenummer;
-            private final String bydelsnummer;
-        }
-
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class UtenlandskAdresse {
-            private String landkode;
-        }
-
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class UkjentBosted {
-            private String bostedskommune;
-        }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
@@ -139,9 +113,22 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
 
 
         @Data
-        public static class Foreldreansvar {
-            private String ansvarssubjekt;
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Endringer {
+            private String registrert;
+        }
+
+        @Data
+        public static class ForelderBarnRelasjon {
+            private String relatertPersonsRolle;
+            private String relatertPersonsIdent;
+            private RelatertPersonUtenFolkeregisteridentifikator relatertPersonUtenFolkeregisteridentifikator;
             private Metadata metadata;
+        }
+
+        @Data
+        public static class RelatertPersonUtenFolkeregisteridentifikator {
+            private LocalDate foedselsdato;
         }
     }
 }
