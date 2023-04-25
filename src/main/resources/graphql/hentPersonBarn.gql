@@ -1,0 +1,21 @@
+query($ident: ID!) {
+  hentPerson(ident: $ident) {
+    forelderBarnRelasjon {
+        relatertPersonsIdent
+        relatertPersonsRolle
+        relatertPersonUtenFolkeregisteridentifikator {
+            foedselsdato
+        }
+        metadata {
+            ...metadataDetails
+        }
+    }
+}
+
+fragment metadataDetails on Metadata {
+  master
+  historisk
+  endringer {
+    registrert
+  }
+}
