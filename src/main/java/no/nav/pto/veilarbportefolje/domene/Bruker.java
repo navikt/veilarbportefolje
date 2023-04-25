@@ -57,7 +57,7 @@ public class Bruker {
     Integer aapmaxtidUke;
     Integer aapUnntakUkerIgjen;
 
-    LocalDate maxaapfrist;
+    LocalDate aapordinerutlopsdato;
     Arbeidsliste arbeidsliste;
     LocalDateTime venterPaSvarFraNAV;
     LocalDateTime venterPaSvarFraBruker;
@@ -143,7 +143,7 @@ public class Bruker {
                 .setPermutlopUke(bruker.getPermutlopuke())
                 .setAapmaxtidUke(bruker.getAapmaxtiduke())
                 .setAapUnntakUkerIgjen(bruker.getAapunntakukerigjen())
-                .setMaxaapfrist(bruker.getMaxaapfrist())
+                .setAapordinerutlopsdato(bruker.getAapordinerutlopsdato())
                 .setArbeidsliste(Arbeidsliste.of(bruker))
                 .setVenterPaSvarFraNAV(toLocalDateTimeOrNull(bruker.getVenterpasvarfranav()))
                 .setVenterPaSvarFraBruker(toLocalDateTimeOrNull(bruker.getVenterpasvarfrabruker()))

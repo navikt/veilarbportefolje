@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -58,7 +59,7 @@ public class BrukerRepositoryV2 {
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
                                U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
                                BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
-                               YB.DAGPUTLOPUKE, YB.PERMUTLOPUKE, YB.UTLOPSDATO as YTELSE_UTLOPSDATO, YB.MAXAAP,
+                               YB.DAGPUTLOPUKE, YB.PERMUTLOPUKE, YB.UTLOPSDATO as YTELSE_UTLOPSDATO, YB.ANTALLDAGERIGJEN,
                                U.ANSVARLIG_VEILDERNAVN          as VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN,
                                U.ENDRET_TIDSPUNKT               as VEDTAKSTATUS_ENDRET_TIDSPUNKT,
                                ARB.SIST_ENDRET_AV_VEILEDERIDENT as ARB_SIST_ENDRET_AV_VEILEDERIDENT,
@@ -123,6 +124,9 @@ public class BrukerRepositoryV2 {
 
         String fnr = rs.getString(FODSELSNR);
         String utkast14aStatus = rs.getString(UTKAST_14A_STATUS);
+
+        LocalDate aapordinerutlopsdato = DateUtils.addWeeksToTodayAndGetNthDay(rs.getInt(AAPMAXTIDUKE), rs.getInt(ANTALLDAGERIGJEN));
+
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setFnr(fnr)
                 .setAktoer_id(rs.getString(AKTOERID))
@@ -151,7 +155,7 @@ public class BrukerRepositoryV2 {
                 .setDagputlopuke(rs.getObject(DAGPUTLOPUKE, Integer.class))
                 .setPermutlopuke(rs.getObject(PERMUTLOPUKE, Integer.class))
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
-                .setMaxaapfrist(toLocalDate(rs.getTimestamp(AAPMAXTIDFRIST)))
+                .setAapordinerutlopsdato(aapordinerutlopsdato)
                 .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)));
 
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));

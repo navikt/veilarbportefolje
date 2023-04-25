@@ -24,5 +24,5 @@ public class YtelseDAO {
     Integer antallUkerIgjenPermittert;
     Integer antallDagerIgjenUnntak;
 
-    Timestamp aapMaxtidFrist;
+    Integer antallDagerIgjen;
 }

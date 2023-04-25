@@ -34,7 +34,8 @@ public class PostgresTable {
         public static final String YTELSE = "YTELSE";
         public static final String AAPMAXTIDUKE = "AAPMAXTIDUKE";
 
-        public static final String AAPMAXTIDFRIST = "MAXAAP";
+        public static final String ANTALLDAGERIGJEN = "ANTALLDAGERIGJEN";
+
         public static final String AAPUNNTAKDAGERIGJEN = "AAPUNNTAKDAGERIGJEN";
         public static final String DAGPUTLOPUKE = "DAGPUTLOPUKE";
         public static final String PERMUTLOPUKE = "PERMUTLOPUKE";

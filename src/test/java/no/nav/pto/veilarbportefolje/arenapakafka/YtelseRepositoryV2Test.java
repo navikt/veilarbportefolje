@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,7 +103,7 @@ public class YtelseRepositoryV2Test {
         assertThat(ytelse.getUtlopsDato()).isEqualTo(Timestamp.valueOf("2100-07-13 23:59:59"));
         assertThat(ytelse.getAntallUkerIgjenPermittert()).isEqualTo(4);
         assertThat(ytelse.getAntallDagerIgjenUnntak()).isEqualTo(8);
-        assertThat(ytelse.getAapMaxtidFrist()).isEqualTo(Timestamp.valueOf(DateUtils.addWeeksToTodayAndGetNthDay(2, 6).atStartOfDay()));
+        assertThat(ytelse.getAntallDagerIgjen()).isEqualTo(6);
     }
 
     @Test
@@ -118,7 +117,7 @@ public class YtelseRepositoryV2Test {
         assertThat(ytelser.get(0).getAntallUkerIgjen()).isEqualTo(2);
         assertThat(ytelser.get(0).getAntallUkerIgjenPermittert()).isEqualTo(4);
         assertThat(ytelser.get(0).getAntallDagerIgjenUnntak()).isEqualTo(8);
-        assertThat(ytelser.get(0).getAapMaxtidFrist()).isEqualTo(Timestamp.valueOf(DateUtils.addWeeksToTodayAndGetNthDay(2, 6).atStartOfDay()));
+        assertThat(ytelser.get(0).getAntallDagerIgjen()).isEqualTo(6);
     }
 
     @Test

@@ -211,7 +211,7 @@ public class YtelsesService {
             ytelsesTilstand
                     .setAapmaxtidUke(ytelse.getAntallUkerIgjen())
                     .setAapUnntakDagerIgjen(ytelse.getAntallDagerIgjenUnntak())
-                    .setAapmaxtidFrist(ytelse.getAapMaxtidFrist());
+                    .setAapmaxtidDager(ytelse.getAntallDagerIgjen());
         }
 
         ytelsesStatusRepositoryV2.upsertYtelseStatus(ytelsesTilstand);

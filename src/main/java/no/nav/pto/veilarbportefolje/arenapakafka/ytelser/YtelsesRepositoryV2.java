@@ -4,12 +4,10 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,17 +29,17 @@ public class YtelsesRepositoryV2 {
         db.update("""
                         INSERT INTO YTELSESVEDTAK
                         (VEDTAKSID, AKTORID, PERSONID, YTELSESTYPE, SAKSID, SAKSTYPEKODE, RETTIGHETSTYPEKODE,
-                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLUKERIGJENUNNTAK, MAXAAP)
+                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLUKERIGJENUNNTAK, ANTALLDAGERIGJEN)
                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT (VEDTAKSID)
                         DO UPDATE SET (AKTORID, PERSONID, YTELSESTYPE, SAKSID, SAKSTYPEKODE, RETTIGHETSTYPEKODE,
-                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLUKERIGJENUNNTAK, MAXAAP) =
+                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLUKERIGJENUNNTAK, ANTALLDAGERIGJEN) =
                         (EXCLUDED.AKTORID, EXCLUDED.PERSONID, EXCLUDED.YTELSESTYPE, EXCLUDED.SAKSID, EXCLUDED.SAKSTYPEKODE, EXCLUDED.RETTIGHETSTYPEKODE,
-                        EXCLUDED.STARTDATO, EXCLUDED.UTLOPSDATO, EXCLUDED.ANTALLUKERIGJEN, EXCLUDED.ANTALLPERMITTERINGSUKER, EXCLUDED.ANTALLUKERIGJENUNNTAK, EXCLUDED.MAXAAP)
+                        EXCLUDED.STARTDATO, EXCLUDED.UTLOPSDATO, EXCLUDED.ANTALLUKERIGJEN, EXCLUDED.ANTALLPERMITTERINGSUKER, EXCLUDED.ANTALLUKERIGJENUNNTAK, EXCLUDED.ANTALLDAGERIGJEN)
                         """,
                 innhold.getVedtakId(), aktorId.get(), innhold.getPersonId(),
                 type.toString(), innhold.getSaksId(), innhold.getSakstypeKode(), innhold.getRettighetstypeKode(), startdato, utlopsdato,
-                innhold.getAntallUkerIgjen(), innhold.getAntallUkerIgjenUnderPermittering(), innhold.getAntallDagerIgjenUnntak(), maxAapFristTimestamp)
+                innhold.getAntallUkerIgjen(), innhold.getAntallUkerIgjenUnderPermittering(), innhold.getAntallDagerIgjenUnntak(), innhold.getAntallDagerIgjen())
         ;
     }
 
@@ -69,6 +67,8 @@ public class YtelsesRepositoryV2 {
                 .setStartDato((Timestamp) row.get(STARTDATO))
                 .setAntallUkerIgjen((Integer) row.get(ANTALLUKERIGJEN))
                 .setAntallUkerIgjenPermittert((Integer) row.get(ANTALLPERMITTERINGSUKER))
+                .setAntallDagerIgjenUnntak((Integer) row.get(ANTALLUKERIGJENUNNTAK))
+                .setAntallDagerIgjen((Integer) row.get(ANTALLDAGERIGJEN));
                 .setAntallDagerIgjenUnntak((Integer) row.get(ANTALLDAGERIGJENUNNTAK));
     }
 

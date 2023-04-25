@@ -1,8 +1,8 @@
 ALTER TABLE ytelsesvedtak
-    ADD COLUMN maxaap timestamp without time zone;
+    ADD COLUMN ANTALLDAGERIGJEN INTEGER;
 
 ALTER TABLE YTELSE_STATUS_FOR_BRUKER
-    ADD COLUMN maxaap timestamp without time zone;
+    ADD COLUMN ANTALLDAGERIGJEN INTEGER;
 
 
 

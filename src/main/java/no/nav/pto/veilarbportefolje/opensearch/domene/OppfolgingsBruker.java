@@ -51,7 +51,7 @@ public class OppfolgingsBruker {
     Integer aapmaxtiduke;
     Integer aapunntakukerigjen;
 
-    LocalDate maxaapfrist;
+    LocalDate aapordinerutlopsdato;
     boolean oppfolging;
     boolean ny_for_veileder;
     boolean trenger_vurdering;

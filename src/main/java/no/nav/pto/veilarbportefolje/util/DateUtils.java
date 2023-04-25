@@ -198,9 +198,10 @@ public class DateUtils {
         if (weeksNumber == null || dayNumber == null) {
             return null;
         }
-        WeekFields weekFields = WeekFields.of(DayOfWeek.MONDAY, 1);
+
+        WeekFields weekFields = WeekFields.ISO;
         TemporalField dayOfWeek = weekFields.dayOfWeek();
-        return (LocalDate.now().plusWeeks(weeksNumber)).with(dayOfWeek, 1).plusDays(dayNumber - 1l);
+        return (LocalDate.now().plusWeeks(weeksNumber)).with(dayOfWeek, 1).plusDays(dayNumber - 1L);
     }
 
     public static Comparator<LocalDate> closestToTodayComparator() {
