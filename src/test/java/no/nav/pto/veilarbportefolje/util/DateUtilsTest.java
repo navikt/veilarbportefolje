@@ -129,18 +129,18 @@ public class DateUtilsTest {
 
     @Test
     public void testAddWeeksToTodayAndGetNthDay() {
-        WeekFields weekFields = WeekFields.of(DayOfWeek.MONDAY, 1);
-        LocalDate dateInFuture = addWeeksToTodayAndGetNthDay(5, 3);
+        WeekFields weekFields = WeekFields.ISO;
+        LocalDate dateInFuture = addWeeksToTodayAndGetNthDay(Timestamp.from(Instant.now()), 5, 3);
         assertThat(dateInFuture.getDayOfWeek().getValue()).isEqualTo(3);
         assertThat(dateInFuture.minusWeeks(5).get(weekFields.weekOfYear())).isEqualTo(LocalDate.now().get(weekFields.weekOfYear()));
 
 
-        dateInFuture = addWeeksToTodayAndGetNthDay(45, 1);
+        dateInFuture = addWeeksToTodayAndGetNthDay(Timestamp.from(Instant.now()), 45, 1);
         assertThat(dateInFuture.getDayOfWeek().getValue()).isEqualTo(1);
         assertThat(dateInFuture.minusWeeks(45).get(weekFields.weekOfYear())).isEqualTo(LocalDate.now().get(weekFields.weekOfYear()));
 
 
-        dateInFuture = addWeeksToTodayAndGetNthDay(123, 7);
+        dateInFuture = addWeeksToTodayAndGetNthDay(Timestamp.from(Instant.now()), 123, 7);
         assertThat(dateInFuture.getDayOfWeek().getValue()).isEqualTo(7);
         assertThat(dateInFuture.minusWeeks(123).get(weekFields.weekOfYear())).isEqualTo(LocalDate.now().get(weekFields.weekOfYear()));
     }

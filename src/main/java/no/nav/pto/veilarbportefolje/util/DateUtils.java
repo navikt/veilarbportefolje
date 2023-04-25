@@ -194,14 +194,14 @@ public class DateUtils {
         return ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS);
     }
 
-    public static LocalDate addWeeksToTodayAndGetNthDay(Integer weeksNumber, Integer dayNumber) {
+    public static LocalDate addWeeksToTodayAndGetNthDay(Timestamp initialDay, Integer weeksNumber, Integer dayNumber) {
         if (weeksNumber == null || dayNumber == null) {
             return null;
         }
 
         WeekFields weekFields = WeekFields.ISO;
         TemporalField dayOfWeek = weekFields.dayOfWeek();
-        return (LocalDate.now().plusWeeks(weeksNumber)).with(dayOfWeek, 1).plusDays(dayNumber - 1L);
+        return (DateUtils.toLocalDate(initialDay).plusWeeks(weeksNumber)).with(dayOfWeek, 1).plusDays(dayNumber - 1L);
     }
 
     public static Comparator<LocalDate> closestToTodayComparator() {
