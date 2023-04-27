@@ -31,6 +31,11 @@ public class PepMock implements Pep {
     }
 
     @Override
+    public boolean harTilgangTilEnhetMedSperre(NavIdent ident, EnhetId enhetId) {
+        return false;
+    }
+
+    @Override
     public boolean harVeilederTilgangTilPerson(NavIdent navIdent, ActionId actionId, EksternBrukerId eksternBrukerId) {
         return false;
     }
