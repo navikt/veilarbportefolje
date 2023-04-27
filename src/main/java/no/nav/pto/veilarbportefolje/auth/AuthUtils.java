@@ -4,8 +4,11 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
