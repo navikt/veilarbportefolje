@@ -195,7 +195,7 @@ public class DateUtils {
     }
 
     public static LocalDate addWeeksToTodayAndGetNthDay(Timestamp initialDay, Integer weeksNumber, Integer dayNumber) {
-        if (weeksNumber == null || dayNumber == null) {
+        if (initialDay == null || weeksNumber == null || dayNumber == null) {
             return null;
         }
 
