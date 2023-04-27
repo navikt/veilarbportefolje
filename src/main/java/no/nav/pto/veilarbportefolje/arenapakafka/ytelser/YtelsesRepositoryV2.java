@@ -15,6 +15,7 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.ANTALLDAGERIGJEN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.*;
 
 @Repository
@@ -29,13 +30,13 @@ public class YtelsesRepositoryV2 {
         db.update("""
                         INSERT INTO YTELSESVEDTAK
                         (VEDTAKSID, AKTORID, PERSONID, YTELSESTYPE, SAKSID, SAKSTYPEKODE, RETTIGHETSTYPEKODE,
-                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLUKERIGJENUNNTAK, ANTALLDAGERIGJEN)
+                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLDAGERIGJENUNNTAK, ANTALLDAGERIGJEN)
                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT (VEDTAKSID)
                         DO UPDATE SET (AKTORID, PERSONID, YTELSESTYPE, SAKSID, SAKSTYPEKODE, RETTIGHETSTYPEKODE,
-                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLUKERIGJENUNNTAK, ANTALLDAGERIGJEN) =
+                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLDAGERIGJENUNNTAK, ANTALLDAGERIGJEN) =
                         (EXCLUDED.AKTORID, EXCLUDED.PERSONID, EXCLUDED.YTELSESTYPE, EXCLUDED.SAKSID, EXCLUDED.SAKSTYPEKODE, EXCLUDED.RETTIGHETSTYPEKODE,
-                        EXCLUDED.STARTDATO, EXCLUDED.UTLOPSDATO, EXCLUDED.ANTALLUKERIGJEN, EXCLUDED.ANTALLPERMITTERINGSUKER, EXCLUDED.ANTALLUKERIGJENUNNTAK, EXCLUDED.ANTALLDAGERIGJEN)
+                        EXCLUDED.STARTDATO, EXCLUDED.UTLOPSDATO, EXCLUDED.ANTALLUKERIGJEN, EXCLUDED.ANTALLPERMITTERINGSUKER, EXCLUDED.ANTALLDAGERIGJENUNNTAK, EXCLUDED.ANTALLDAGERIGJEN)
                         """,
                 innhold.getVedtakId(), aktorId.get(), innhold.getPersonId(),
                 type.toString(), innhold.getSaksId(), innhold.getSakstypeKode(), innhold.getRettighetstypeKode(), startdato, utlopsdato,
@@ -67,9 +68,8 @@ public class YtelsesRepositoryV2 {
                 .setStartDato((Timestamp) row.get(STARTDATO))
                 .setAntallUkerIgjen((Integer) row.get(ANTALLUKERIGJEN))
                 .setAntallUkerIgjenPermittert((Integer) row.get(ANTALLPERMITTERINGSUKER))
-                .setAntallDagerIgjenUnntak((Integer) row.get(ANTALLUKERIGJENUNNTAK))
+                .setAntallDagerIgjenUnntak((Integer) row.get(ANTALLDAGERIGJENUNNTAK))
                 .setAntallDagerIgjen((Integer) row.get(ANTALLDAGERIGJEN));
-                .setAntallDagerIgjenUnntak((Integer) row.get(ANTALLDAGERIGJENUNNTAK));
     }
 
     public void slettYtelse(String vedtaksId) {
