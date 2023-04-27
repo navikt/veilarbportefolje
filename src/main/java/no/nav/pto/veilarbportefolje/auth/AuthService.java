@@ -18,7 +18,7 @@ import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
+import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,13 +94,6 @@ public class AuthService {
     }
 
     public Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String veilederIdent) {
-
-        if (bruker.getBarnUnder18AarData() != null) {
-            bruker.setBarnUnder18AarData(bruker.getBarnUnder18AarData().stream().filter(barnUnder18AarData ->
-                    harVeilederTilgangTilBarn(barnUnder18AarData, veilederIdent)
-            ).toList());
-        }
-
         if (!bruker.erKonfidensiell()) {
             return bruker;
         }
