@@ -16,7 +16,7 @@ public class PDLPersonBarn {
     private LocalDate fodselsdato;
     private String gradering;
 
-    private boolean erLiv;
+    private boolean erIlive;
     private Bostedsadresse bostedsadresse;
 
     public static PDLPersonBarn genererFraApiRespons(PdlBarnResponse.PdlBarnResponseData.HentPersonResponsData response) {
@@ -24,9 +24,17 @@ public class PDLPersonBarn {
 
         barn.setBostedsadresse(hentBostedAdresse(response.getBostedsadresse()));
         barn.setFodselsdato(hentFodselsdato(response.getFoedsel()));
-        barn.setErLiv()
+        barn.setErIlive(hentErILive(response.getDoedsfall()));
 
         return barn;
+    }
+
+    private static boolean hentErILive(List<PdlBarnResponse.PdlBarnResponseData.Doedsfall> doedsfall) {
+        if (doedsfall == null) {
+            return true;
+        }
+        return doedsfall.stream()
+                .noneMatch(d -> d.getDoedsdato() != null);
     }
 
     private static LocalDate hentFodselsdato(List<PdlBarnResponse.PdlBarnResponseData.Foedsel> foedsel) {
