@@ -15,17 +15,7 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.AKTORID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.ANTALLPERMITTERINGSUKER;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.ANTALLUKERIGJEN;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.ANTALLUKERIGJENUNNTAK;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.PERSONID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.RETTIGHETSTYPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.SAKSID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.SAKSTYPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.STARTDATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.UTLOPSDATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.YTELSESTYPE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -39,13 +29,13 @@ public class YtelsesRepositoryV2 {
         db.update("""
                         INSERT INTO YTELSESVEDTAK
                         (VEDTAKSID, AKTORID, PERSONID, YTELSESTYPE, SAKSID, SAKSTYPEKODE, RETTIGHETSTYPEKODE,
-                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLUKERIGJENUNNTAK)
+                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLDAGERIGJENUNNTAK)
                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT (VEDTAKSID)
                         DO UPDATE SET (AKTORID, PERSONID, YTELSESTYPE, SAKSID, SAKSTYPEKODE, RETTIGHETSTYPEKODE,
-                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLUKERIGJENUNNTAK) =
+                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLDAGERIGJENUNNTAK) =
                         (EXCLUDED.AKTORID, EXCLUDED.PERSONID, EXCLUDED.YTELSESTYPE, EXCLUDED.SAKSID, EXCLUDED.SAKSTYPEKODE, EXCLUDED.RETTIGHETSTYPEKODE,
-                        EXCLUDED.STARTDATO, EXCLUDED.UTLOPSDATO, EXCLUDED.ANTALLUKERIGJEN, EXCLUDED.ANTALLPERMITTERINGSUKER, EXCLUDED.ANTALLUKERIGJENUNNTAK)
+                        EXCLUDED.STARTDATO, EXCLUDED.UTLOPSDATO, EXCLUDED.ANTALLUKERIGJEN, EXCLUDED.ANTALLPERMITTERINGSUKER, EXCLUDED.ANTALLDAGERIGJENUNNTAK)
                         """,
                 innhold.getVedtakId(), aktorId.get(), innhold.getPersonId(),
                 type.toString(), innhold.getSaksId(), innhold.getSakstypeKode(), innhold.getRettighetstypeKode(), startdato, utlopsdato,
@@ -76,7 +66,7 @@ public class YtelsesRepositoryV2 {
                 .setStartDato((Timestamp) row.get(STARTDATO))
                 .setAntallUkerIgjen((Integer) row.get(ANTALLUKERIGJEN))
                 .setAntallUkerIgjenPermittert((Integer) row.get(ANTALLPERMITTERINGSUKER))
-                .setAntallDagerIgjenUnntak((Integer) row.get(ANTALLUKERIGJENUNNTAK));
+                .setAntallDagerIgjenUnntak((Integer) row.get(ANTALLDAGERIGJENUNNTAK));
     }
 
     public void slettYtelse(String vedtaksId) {

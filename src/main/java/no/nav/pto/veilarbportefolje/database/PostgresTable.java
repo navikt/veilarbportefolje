@@ -137,7 +137,7 @@ public class PostgresTable {
         public static final String UTLOPSDATO = "UTLOPSDATO";
         public static final String ANTALLUKERIGJEN = "ANTALLUKERIGJEN";
         public static final String ANTALLPERMITTERINGSUKER = "ANTALLPERMITTERINGSUKER";
-        public static final String ANTALLUKERIGJENUNNTAK = "ANTALLUKERIGJENUNNTAK";
+        public static final String ANTALLDAGERIGJENUNNTAK = "ANTALLDAGERIGJENUNNTAK";
     }
 
     public static final class LEST_ARENA_HENDELSE_YTELSER {
