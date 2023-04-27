@@ -95,11 +95,14 @@ query($ident: ID!) {
         ...metadataDetails
       }
     }
-    foreldreansvar {
-      ansvarssubjekt
-
+    forelderBarnRelasjon {
+      relatertPersonsIdent
+      relatertPersonsRolle
+      relatertPersonUtenFolkeregisteridentifikator {
+        foedselsdato
+      }
       metadata {
-        ...metadataDetails
+              ...metadataDetails
       }
     }
   }

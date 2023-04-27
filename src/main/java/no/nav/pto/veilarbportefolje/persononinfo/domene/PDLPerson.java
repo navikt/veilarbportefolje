@@ -8,7 +8,10 @@ import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.domene.Sikkerhetstiltak;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Bostedsadresse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.UtenlandskAdresse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Vegadresse;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.time.LocalDate;
@@ -39,7 +42,10 @@ public class PDLPerson {
     private LocalDate bostedSistOppdatert;
     private String diskresjonskode;
     private Sikkerhetstiltak sikkerhetstiltak;
-    private List<Familiemedlem> barn;
+    private List<Barn> barnUtenFnr;
+    private List<Fnr> barnMedFnr;
+
+    private Bostedsadresse bostedsadresse;
 
 
     public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
@@ -64,7 +70,10 @@ public class PDLPerson {
                 .setTolkBehovSistOppdatert(hentTolkBehovSistOppdatert(response.getTilrettelagtKommunikasjon()))
                 .setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()))
                 .setSikkerhetstiltak(hentSikkerhetstiltak(response.getSikkerhetstiltak()))
-                .setBarn(hentBarn(response.getForelderBarnRelasjon(), hentBostedAdresse(response.getBostedsadresse())));
+                .setBarnMedFnr(hentBarnFnr(response.getForelderBarnRelasjon()))
+                .setBarnUtenFnr(hentBarnUtenFnr(response.getForelderBarnRelasjon()))
+                .setBostedsadresse(hentBostedAdresse(response.getBostedsadresse()).orElse(null));
+
     }
 
 
@@ -198,13 +207,13 @@ public class PDLPerson {
     }
 
 
-    private static String hentDiskresjonkode(List<PdlPersonResponse.PdlPersonResponseData.Adressebeskyttelse> adressebeskyttelse) {
-        if (adressebeskyttelse == null) {
+    private static String hentDiskresjonkode(List<AdressebeskyttelseDto> adressebeskyttelseDto) {
+        if (adressebeskyttelseDto == null) {
             return null;
         }
-        var adressebeskyttelseAktiv = adressebeskyttelse.stream().filter(x -> !x.getMetadata().isHistorisk()).toList();
+        var adressebeskyttelseAktiv = adressebeskyttelseDto.stream().filter(x -> !x.getMetadata().isHistorisk()).toList();
         return adressebeskyttelseAktiv.stream().findFirst()
-                .map(PdlPersonResponse.PdlPersonResponseData.Adressebeskyttelse::getGradering)
+                .map(AdressebeskyttelseDto::getGradering)
                 .map(Adressebeskyttelse::mapKodeTilTall)
                 .orElse(null);
     }
@@ -235,19 +244,10 @@ public class PDLPerson {
         }).map(PDLStatsborgerskap::toStatsborgerskap).collect(Collectors.toList());
     }
 
-    private static List<Familiemedlem> hentBarn(List<PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon> forelderBarnRelasjon, Optional<Bostedsadresse> foreldreBostedadresse) {
+    private static List<Fnr> hentBarnFnr(List<PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon> forelderBarnRelasjon) {
         var forelderBarnRelasjonAktiv = forelderBarnRelasjon.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
 
-        List<Fnr> barnFnrListe = hentBarnaFnr(forelderBarnRelasjonAktiv);
-        List<Familiemedlem> barnInfo = hentFamiliemedlemOpplysninger(barnFnrListe, foreldreBostedadresse);
-        List<Familiemedlem> barnUtenFnrInfo = hentBarnUtenFnr(forelderBarnRelasjonAktiv);
-        barnInfo.addAll(barnUtenFnrInfo);
-
-        return barnInfo;
-    }
-
-    public static List<Fnr> hentBarnaFnr(List<PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon> familierelasjoner) {
-        return familierelasjoner.stream()
+        return forelderBarnRelasjonAktiv.stream()
                 .filter(familierelasjon -> "BARN".equals(familierelasjon.getRelatertPersonsRolle()))
                 .map(PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon::getRelatertPersonsIdent)
                 .filter(Objects::nonNull)
@@ -255,41 +255,19 @@ public class PDLPerson {
                 .collect(Collectors.toList());
     }
 
-    private static List<Familiemedlem> hentBarnUtenFnr(List<PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon> forelderBarnRelasjoner) {
-        return forelderBarnRelasjoner.stream()
+    private static List<Barn> hentBarnUtenFnr(List<PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon> forelderBarnRelasjon) {
+        var forelderBarnRelasjonAktiv = forelderBarnRelasjon.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
+
+        return forelderBarnRelasjonAktiv.stream()
                 .filter(familierelasjon -> "BARN".equals(familierelasjon.getRelatertPersonsRolle()))
                 .filter(barn -> barn.getRelatertPersonsIdent() == null)
                 .map(PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon::getRelatertPersonUtenFolkeregisteridentifikator)
                 .filter(Objects::nonNull)
-                .map(barn -> new Familiemedlem()
+                .map(barn -> new Barn()
                         .setFodselsdato(barn.getFoedselsdato())
                         .setRelasjonsBosted(UKJENT_BOSTED))
                 .collect(Collectors.toList());
     }
-
-    public static List<Familiemedlem> hentFamiliemedlemOpplysninger(List<Fnr> familemedlemFnr, Optional<Bostedsadresse> foreldreBostedadresse) {
-        List<HentPerson.PersonFraBolk> familiemedlemInfo = pdlClient.hentPersonBolk(familemedlemFnr);
-
-        return familiemedlemInfo
-                .stream()
-                .filter(medlemInfo -> medlemInfo.getCode().equals("ok"))
-                .map(HentPerson.PersonFraBolk::getPerson)
-                .filter(PersonV2DataMapper::harGyldigIdent)
-                .map(familiemedlem -> mapFamiliemedlem(familiemedlem, foreldreBostedadresse))
-                .collect(Collectors.toList());
-    }
-
-    public Familiemedlem mapFamiliemedlem(Familiemedlem familiemedlem, Bostedsadresse bostedsadresse) {
-        Fnr familiemedlemFnr = PersonV2DataMapper.hentFamiliemedlemFnr(familiemedlem);
-
-        return PersonV2DataMapper.familiemedlemMapper(
-                familiemedlem,
-                erSkjermet(familiemedlemFnr),
-                bostedsadresse,
-                authService
-        );
-    }
-
 
     private static Optional<Bostedsadresse> hentBostedAdresse(List<Bostedsadresse> response) {
         if (response == null) {

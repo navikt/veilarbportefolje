@@ -1,14 +1,53 @@
 query($ident: ID!) {
   hentPerson(ident: $ident) {
-    forelderBarnRelasjon {
-        relatertPersonsIdent
-        relatertPersonsRolle
-        relatertPersonUtenFolkeregisteridentifikator {
-            foedselsdato
-        }
-        metadata {
-            ...metadataDetails
-        }
+    foedsel {
+      foedselsdato
+      metadata {
+        ...metadataDetails
+      }
+    }
+    bostedsadresse {
+      vegadresse {
+        matrikkelId
+        husbokstav
+        husnummer
+        adressenavn
+        bruksenhetsnummer
+        tilleggsnavn
+        postnummer
+        kommunenummer
+        bydelsnummer
+      }
+      matrikkeladresse {
+        matrikkelId
+        bruksenhetsnummer
+        tilleggsnavn
+        postnummer
+        kommunenummer
+      }
+      utenlandskAdresse {
+        adressenavnNummer
+        bygningEtasjeLeilighet
+        postboksNummerNavn
+        postkode
+        bySted
+        regionDistriktOmraade
+        landkode
+      }
+      ukjentBosted {
+        bostedskommune
+      }
+
+      metadata {
+        ...metadataDetails
+      }
+    }
+    adressebeskyttelse {
+      gradering
+
+      metadata {
+        ...metadataDetails
+      }
     }
     doedsfall {
         doedsdato

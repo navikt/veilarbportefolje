@@ -287,60 +287,6 @@
             "historisk": false
           }
         }
-      ],
-      "foreldreansvar": [
-        {
-          "ansvarssubjekt": "123",
-          "metadata": {
-            "endringer": [
-              {
-                "kilde": "Dolly",
-                "registrert": "2023-04-19T16:52:28",
-                "registrertAv": "Folkeregisteret",
-                "systemkilde": "FREG",
-                "type": "OPPRETT"
-              }
-            ],
-            "master": "FREG",
-            "opplysningsId": "a71664e8-a0fe-4f6b-8553-ebbd6d928821",
-            "historisk": false
-          }
-        },
-        {
-          "ansvarssubjekt": "456",
-          "metadata": {
-            "endringer": [
-              {
-                "kilde": "Dolly",
-                "registrert": "2023-04-19T16:52:28",
-                "registrertAv": "Folkeregisteret",
-                "systemkilde": "FREG",
-                "type": "OPPRETT"
-              }
-            ],
-            "master": "FREG",
-            "opplysningsId": "a71664e8-a0fe-4f6b-8553-ebbd6d928821",
-            "historisk": false
-          }
-        },
-        {
-          "ansvarssubjekt": "789",
-          "metadata": {
-            "endringer": [
-              {
-                "kilde": "Dolly",
-                "registrert": "2023-04-19T16:52:28",
-                "registrertAv": "Folkeregisteret",
-                "systemkilde": "FREG",
-                "type": "OPPRETT"
-              }
-            ],
-            "master": "FREG",
-            "opplysningsId": "a71664e8-a0fe-4f6b-8553-ebbd6d928821",
-            "historisk": false
-          }
-        }
-
       ]
     }
   }
