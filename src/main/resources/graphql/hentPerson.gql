@@ -68,7 +68,7 @@ query($ident: ID!) {
         ...metadataDetails
       }
     }
-    adressebeskyttelse {
+    adressebeskyttelseDto {
       gradering
 
       metadata {

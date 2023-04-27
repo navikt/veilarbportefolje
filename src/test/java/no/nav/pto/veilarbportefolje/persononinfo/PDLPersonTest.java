@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.PdlMaster;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -15,15 +17,15 @@ public class PDLPersonTest {
         String pdlNavn = "pdl_F";
         String fregNavn = "freg_F";
         String annetNavn = "annet_F";
-        PdlPersonResponse.PdlPersonResponseData.Metadata pdlMeta = new PdlPersonResponse.PdlPersonResponseData.Metadata()
+        Metadata pdlMeta = new Metadata()
                 .setHistorisk(false)
-                .setMaster(PdlPersonResponse.PdlMaster.PDL);
-        PdlPersonResponse.PdlPersonResponseData.Metadata fregMeta = new PdlPersonResponse.PdlPersonResponseData.Metadata()
+                .setMaster(PdlMaster.PDL);
+        Metadata fregMeta = new Metadata()
                 .setHistorisk(false)
-                .setMaster(PdlPersonResponse.PdlMaster.FREG);
-        PdlPersonResponse.PdlPersonResponseData.Metadata annetMeta = new PdlPersonResponse.PdlPersonResponseData.Metadata()
+                .setMaster(PdlMaster.FREG);
+        Metadata annetMeta = new Metadata()
                 .setHistorisk(false)
-                .setMaster(PdlPersonResponse.PdlMaster.UVIST);
+                .setMaster(PdlMaster.UVIST);
 
         List<PdlPersonResponse.PdlPersonResponseData.Navn> pdl_freg_og_annet = List.of(
                 new PdlPersonResponse.PdlPersonResponseData.Navn().setFornavn(pdlNavn).setMetadata(pdlMeta),
@@ -50,9 +52,9 @@ public class PDLPersonTest {
         String pdlNavn1 = "pdl_1";
         String pdlNavn2 = "pdl_2";
 
-        PdlPersonResponse.PdlPersonResponseData.Metadata pdlMeta = new PdlPersonResponse.PdlPersonResponseData.Metadata()
+        Metadata pdlMeta = new Metadata()
                 .setHistorisk(false)
-                .setMaster(PdlPersonResponse.PdlMaster.PDL);
+                .setMaster(PdlMaster.PDL);
         List<PdlPersonResponse.PdlPersonResponseData.Navn> navn = List.of(
                 new PdlPersonResponse.PdlPersonResponseData.Navn().setFornavn(pdlNavn1).setMetadata(pdlMeta),
                 new PdlPersonResponse.PdlPersonResponseData.Navn().setFornavn(pdlNavn2).setMetadata(pdlMeta)
@@ -61,5 +63,5 @@ public class PDLPersonTest {
         assertThat(kontrollerResponseOgHentNavn(navn).getFornavn()).isEqualTo(pdlNavn1);
     }
 
-    
+
 }
