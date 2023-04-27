@@ -8,6 +8,7 @@ import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
+import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +16,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -52,6 +57,7 @@ public class SensurerBrukerTest {
     public void skalIkkeSeKode7Bruker() {
         when(pep.harVeilederTilgangTilKode7(eq(NavIdent.of("X123456")))).thenReturn(false);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
+        sjekkAtKonfidensiellDataErVasket(kode7Bruker());
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker(), "X123456");
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
@@ -102,6 +108,14 @@ public class SensurerBrukerTest {
         assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvIkkeKonfidensiellBruker");
     }
 
+    @Test
+    public void skalIkkeSeKode6Barn() {
+        when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(false);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6Barn(), "X123456");
+        sjekkAtKonfidensiellDataPaBarnErVasket(filtrerteBrukere);
+    }
+
 
     private void sjekkAtKonfidensiellDataErVasket(Bruker bruker) {
         assertThat(bruker.getFnr()).isEqualTo("");
@@ -117,6 +131,14 @@ public class SensurerBrukerTest {
         assertThat(bruker.getBostedKommune()).isNull();
         assertThat(bruker.isHarUtelandsAddresse()).isEqualTo(false);
     }
+
+    private void sjekkAtKonfidensiellDataPaBarnErVasket(Bruker bruker) {
+                Boolean b = bruker.getBarnUnder18AarData().stream().noneMatch(
+                barnUnder18AarData ->
+                        barnUnder18AarData.getDiskresjonskode().equals("6"));
+                assertTrue(b);
+    }
+
 
     private Bruker kode6Bruker() {
         return new Bruker()
@@ -147,6 +169,14 @@ public class SensurerBrukerTest {
                 .setFnr("11111111111")
                 .setEtternavn("etternanvIkkeKonfidensiellBruker")
                 .setFornavn("fornavnIkkeKonfidensiellBruker");
+    }
+
+    private Bruker brukerMedKode6Barn() {
+        return new Bruker()
+                .setFnr("11111111111")
+                .setBarnUnder18AarData(List.of(new BarnUnder18AarData(
+                        15L, true, "6"
+                )));
     }
 
 
