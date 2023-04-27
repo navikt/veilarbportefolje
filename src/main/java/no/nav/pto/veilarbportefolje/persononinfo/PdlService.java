@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Familiemedlem;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,10 +35,19 @@ public class PdlService {
     public void hentOgLagreBrukerData(Fnr fnr) {
         PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnr);
         pdlPersonRepository.upsertPerson(fnr, personData);
-    }
 
-    public void hentOgLagrePdlDataForBrukerBarn(Fnr fnr) {
-        PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnr);
+        List<Familiemedlem> brukerBarn = personData.getBarnUtenFnr();
+
+        personData.getBarnMedFnr().forEach(barnFnr -> {
+            PDLPersonBarn personBarnData = pdlClient.hentBrukerBarnDataFraPdl(fnr);
+            Familiemedlem familiemedlem = Familiemedlem.of(barnFnr, personBarnData, personData.getBostedsadresse());
+            if (familiemedlem != null) {
+                brukerBarn.add(familiemedlem);
+            }
+
+        });
+        pdlPersonRepository.upsertPersonBarn(fnr, brukerBarn);
+
     }
 
     private List<PDLIdent> hentOgLagreIdenter(AktorId aktorId) {
