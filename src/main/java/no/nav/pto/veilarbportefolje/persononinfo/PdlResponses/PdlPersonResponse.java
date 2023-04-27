@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Bostedsadresse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
 
@@ -28,7 +29,7 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private List<Statsborgerskap> statsborgerskap;
             private List<Bostedsadresse> bostedsadresse;
             private List<TilrettelagtKommunikasjon> tilrettelagtKommunikasjon;
-            private List<Adressebeskyttelse> adressebeskyttelse;
+            private List<AdressebeskyttelseDto> adressebeskyttelse;
             private List<Sikkerhetstiltak> sikkerhetstiltak;
             private List<ForelderBarnRelasjon> forelderBarnRelasjon;
         }
@@ -89,13 +90,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
 
 
         @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Adressebeskyttelse {
-            private String gradering;
-            private Metadata metadata;
-        }
-
-        @Data
         public static class Sikkerhetstiltak {
             private String tiltakstype;
             private String beskrivelse;
@@ -111,12 +105,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private String spraak;
         }
 
-
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Endringer {
-            private String registrert;
-        }
 
         @Data
         public static class ForelderBarnRelasjon {
