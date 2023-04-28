@@ -95,6 +95,15 @@ query($ident: ID!) {
         ...metadataDetails
       }
     }
+    forelderBarnRelasjon {
+      relatertPersonsIdent
+      relatertPersonsRolle
+      relatertPersonUtenFolkeregisteridentifikator {
+        foedselsdato
+        kjoenn
+        statsborgerskap
+      }
+    }
   }
 }
 

@@ -15,15 +15,15 @@ import static no.nav.pto.veilarbportefolje.persononinfo.domene.RelasjonsBosted.*
 
 @Data
 @Accessors(chain = true)
-public class Familiemedlem {
+public class Barn {
     Fnr fnr;
     LocalDate fodselsdato;
     String gradering;       //diskresjonskode
     RelasjonsBosted relasjonsBosted;
 
-    public static Familiemedlem of(Fnr barnFrn, PDLPersonBarn pdlPersonBarn, Bostedsadresse foreldreBostedadresse) {
+    public static Barn of(Fnr barnFrn, PDLPersonBarn pdlPersonBarn, Bostedsadresse foreldreBostedadresse) {
         if (pdlPersonBarn.isErIlive()) {
-            return new Familiemedlem()
+            return new Barn()
                     .setFnr(barnFrn)
                     .setGradering(pdlPersonBarn.getDiskresjonskode())
                     .setFodselsdato(pdlPersonBarn.getFodselsdato())
