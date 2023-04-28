@@ -42,7 +42,7 @@ public class PDLPerson {
     private LocalDate bostedSistOppdatert;
     private String diskresjonskode;
     private Sikkerhetstiltak sikkerhetstiltak;
-    private List<Familiemedlem> barnUtenFnr;
+    private List<Barn> barnUtenFnr;
     private List<Fnr> barnMedFnr;
 
     private Bostedsadresse bostedsadresse;
@@ -255,7 +255,7 @@ public class PDLPerson {
                 .collect(Collectors.toList());
     }
 
-    private static List<Familiemedlem> hentBarnUtenFnr(List<PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon> forelderBarnRelasjon) {
+    private static List<Barn> hentBarnUtenFnr(List<PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon> forelderBarnRelasjon) {
         var forelderBarnRelasjonAktiv = forelderBarnRelasjon.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
 
         return forelderBarnRelasjonAktiv.stream()
@@ -263,7 +263,7 @@ public class PDLPerson {
                 .filter(barn -> barn.getRelatertPersonsIdent() == null)
                 .map(PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon::getRelatertPersonUtenFolkeregisteridentifikator)
                 .filter(Objects::nonNull)
-                .map(barn -> new Familiemedlem()
+                .map(barn -> new Barn()
                         .setFodselsdato(barn.getFoedselsdato())
                         .setRelasjonsBosted(UKJENT_BOSTED))
                 .collect(Collectors.toList());
