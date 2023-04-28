@@ -192,7 +192,8 @@ public class YtelsesService {
 
     private void oppdaterAktivYtelse(AktorId aktorId, YtelseDAO ytelse) {
         Brukerdata ytelsesTilstand = new Brukerdata()
-                .setAktoerid(aktorId.get());
+                .setAktoerid(aktorId.get())
+                .setEndretDato(ytelse.getEndretDato());
         if (ytelse == null) {
             ytelsesStatusRepositoryV2.slettYtelseStatus(aktorId);
             return;

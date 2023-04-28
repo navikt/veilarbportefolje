@@ -26,21 +26,23 @@ public class YtelsesRepositoryV2 {
     public void upsert(AktorId aktorId, TypeKafkaYtelse type, YtelsesInnhold innhold) {
         LocalDateTime startdato = getLocalDateTimeOrNull(innhold.getFraOgMedDato(), false);
         LocalDateTime utlopsdato = getLocalDateTimeOrNull(innhold.getTilOgMedDato(), true);
+        Timestamp endretDato = Timestamp.valueOf(getLocalDateTimeOrNull(innhold.getEndretDato(), true));
 
         db.update("""
                         INSERT INTO YTELSESVEDTAK
                         (VEDTAKSID, AKTORID, PERSONID, YTELSESTYPE, SAKSID, SAKSTYPEKODE, RETTIGHETSTYPEKODE,
-                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLDAGERIGJENUNNTAK, ANTALLDAGERIGJEN)
-                        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLDAGERIGJENUNNTAK, ANTALLDAGERIGJEN, ENDRET_DATO)
+                        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT (VEDTAKSID)
                         DO UPDATE SET (AKTORID, PERSONID, YTELSESTYPE, SAKSID, SAKSTYPEKODE, RETTIGHETSTYPEKODE,
-                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLDAGERIGJENUNNTAK, ANTALLDAGERIGJEN) =
+                        STARTDATO, UTLOPSDATO, ANTALLUKERIGJEN, ANTALLPERMITTERINGSUKER, ANTALLDAGERIGJENUNNTAK, ANTALLDAGERIGJEN, ENDRET_DATO) =
                         (EXCLUDED.AKTORID, EXCLUDED.PERSONID, EXCLUDED.YTELSESTYPE, EXCLUDED.SAKSID, EXCLUDED.SAKSTYPEKODE, EXCLUDED.RETTIGHETSTYPEKODE,
-                        EXCLUDED.STARTDATO, EXCLUDED.UTLOPSDATO, EXCLUDED.ANTALLUKERIGJEN, EXCLUDED.ANTALLPERMITTERINGSUKER, EXCLUDED.ANTALLDAGERIGJENUNNTAK, EXCLUDED.ANTALLDAGERIGJEN)
+                        EXCLUDED.STARTDATO, EXCLUDED.UTLOPSDATO, EXCLUDED.ANTALLUKERIGJEN, EXCLUDED.ANTALLPERMITTERINGSUKER, EXCLUDED.ANTALLDAGERIGJENUNNTAK, EXCLUDED.ANTALLDAGERIGJEN,
+                        EXCLUDED.ENDRET_DATO)
                         """,
                 innhold.getVedtakId(), aktorId.get(), innhold.getPersonId(),
                 type.toString(), innhold.getSaksId(), innhold.getSakstypeKode(), innhold.getRettighetstypeKode(), startdato, utlopsdato,
-                innhold.getAntallUkerIgjen(), innhold.getAntallUkerIgjenUnderPermittering(), innhold.getAntallDagerIgjenUnntak(), innhold.getAntallDagerIgjen())
+                innhold.getAntallUkerIgjen(), innhold.getAntallUkerIgjenUnderPermittering(), innhold.getAntallDagerIgjenUnntak(), innhold.getAntallDagerIgjen(), endretDato)
         ;
     }
 
@@ -69,7 +71,8 @@ public class YtelsesRepositoryV2 {
                 .setAntallUkerIgjen((Integer) row.get(ANTALLUKERIGJEN))
                 .setAntallUkerIgjenPermittert((Integer) row.get(ANTALLPERMITTERINGSUKER))
                 .setAntallDagerIgjenUnntak((Integer) row.get(ANTALLDAGERIGJENUNNTAK))
-                .setAntallDagerIgjen((Integer) row.get(ANTALLDAGERIGJEN));
+                .setAntallDagerIgjen((Integer) row.get(ANTALLDAGERIGJEN))
+                .setEndretDato((Timestamp) row.get(ENDRET_DATO));
     }
 
     public void slettYtelse(String vedtaksId) {

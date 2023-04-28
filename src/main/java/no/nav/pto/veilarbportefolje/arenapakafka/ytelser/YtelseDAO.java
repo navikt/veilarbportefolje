@@ -25,4 +25,6 @@ public class YtelseDAO {
     Integer antallDagerIgjenUnntak;
 
     Integer antallDagerIgjen;
+
+    Timestamp endretDato;
 }
