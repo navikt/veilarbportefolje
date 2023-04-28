@@ -23,4 +23,6 @@ public class Brukerdata {
     private Timestamp nesteAktivitetStart;
     private Timestamp forrigeAktivitetStart;
 
+    private Timestamp endretDato;
+
 }

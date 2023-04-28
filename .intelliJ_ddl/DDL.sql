@@ -627,7 +627,7 @@ CREATE TABLE public.ytelse_status_for_bruker (
     aapunntakdagerigjen integer,
     ytelse character varying(40),
     antalldagerigjen integer,
-    oppdatert timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    endret_dato timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -647,9 +647,9 @@ CREATE TABLE public.ytelsesvedtak (
     utlopsdato timestamp without time zone,
     antallukerigjen integer,
     antallpermitteringsuker integer,
-    antallukerigjenunntak integer,
+    antalldagerigjenunntak integer,
     antalldagerigjen integer,
-    oppdatert timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    endret_dato timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 

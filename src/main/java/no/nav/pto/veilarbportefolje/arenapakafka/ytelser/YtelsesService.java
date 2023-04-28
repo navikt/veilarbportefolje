@@ -201,8 +201,10 @@ public class YtelsesService {
                 .setUtlopsdato(Optional.ofNullable(ytelse.getUtlopsDato())
                         .map(Timestamp::toLocalDateTime)
                         .orElse(null))
+                .setEndretDato(ytelse.getEndretDato())
                 .setYtelse(YtelseMapping.of(ytelse)
                         .orElseThrow(() -> new RuntimeException("Feil i ytelses mapping! Pa vedtak: " + ytelse.getSaksId())));
+
         if (ytelse.getType() == DAGPENGER) {
             ytelsesTilstand
                     .setDagputlopUke(ytelse.getAntallUkerIgjen())
