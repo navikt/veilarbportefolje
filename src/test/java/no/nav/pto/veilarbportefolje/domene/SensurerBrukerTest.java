@@ -113,7 +113,27 @@ public class SensurerBrukerTest {
         when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(false);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6Barn(), "X123456");
-        sjekkAtKonfidensiellDataPaBarnErVasket(filtrerteBrukere);
+        sjekkAtBarnMedKode6ErFjernet(filtrerteBrukere);
+    }
+
+    @Test
+    public void skalIkkeSeKode7Barn() {
+        when(pep.harVeilederTilgangTilKode7(eq(NavIdent.of("X123456")))).thenReturn(false);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode7Barn(), "X123456");
+        sjekkAtBarnMedKode7ErFjernet(filtrerteBrukere);
+    }
+
+    @Test
+    public void skalFjerneKode7BarnMenIkkeKode6() {
+        when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(true);
+        when(pep.harVeilederTilgangTilKode7(eq(NavIdent.of("X123456")))).thenReturn(false);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
+        Bruker filtrertBruker = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6og7Barn(), "X123456");
+        sjekkAtBarnMedKode7ErFjernet(filtrertBruker);
+        sjekkAtBarnMedKode6IkkeErFjernet(filtrertBruker);
+        assertTrue(filtrertBruker.barnUnder18AarData.size() == 2);
     }
 
 
@@ -132,11 +152,28 @@ public class SensurerBrukerTest {
         assertThat(bruker.isHarUtelandsAddresse()).isEqualTo(false);
     }
 
-    private void sjekkAtKonfidensiellDataPaBarnErVasket(Bruker bruker) {
-                Boolean b = bruker.getBarnUnder18AarData().stream().noneMatch(
+    private void sjekkAtBarnMedKode6ErFjernet(Bruker bruker) {
+        assertTrue(bruker.getBarnUnder18AarData().stream().noneMatch(
                 barnUnder18AarData ->
-                        barnUnder18AarData.getDiskresjonskode().equals("6"));
-                assertTrue(b);
+                        barnUnder18AarData.getDiskresjonskode().equals("6")));
+    }
+
+    private void sjekkAtBarnMedKode7ErFjernet(Bruker bruker) {
+        assertTrue(bruker.getBarnUnder18AarData().stream().noneMatch(
+                barnUnder18AarData ->
+                        barnUnder18AarData.getDiskresjonskode().equals("7")));
+    }
+
+    private void sjekkAtBarnMedKode6IkkeErFjernet(Bruker bruker) {
+        assertTrue(bruker.getBarnUnder18AarData().stream().anyMatch(
+                barnUnder18AarData ->
+                        barnUnder18AarData.getDiskresjonskode().equals("6")));
+    }
+
+    private void sjekkAtBarnMedKode7IkkeErFjernet(Bruker bruker) {
+        assertTrue(bruker.getBarnUnder18AarData().stream().anyMatch(
+                barnUnder18AarData ->
+                        barnUnder18AarData.getDiskresjonskode().equals("7")));
     }
 
 
@@ -176,7 +213,27 @@ public class SensurerBrukerTest {
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(new BarnUnder18AarData(
                         15L, true, "6"
+                ), new BarnUnder18AarData(
+                        12L, false, "6"
                 )));
+    }
+
+    private Bruker brukerMedKode7Barn() {
+        return new Bruker()
+                .setFnr("11111111111")
+                .setBarnUnder18AarData(List.of(new BarnUnder18AarData(
+                        15L, true, "7"
+                )));
+    }
+
+    private Bruker brukerMedKode6og7Barn() {
+        return new Bruker()
+                .setFnr("11111111111")
+                .setBarnUnder18AarData(List.of(
+                        new BarnUnder18AarData(15L, true, "6"),
+                        new BarnUnder18AarData(15L, true, "7"),
+                        new BarnUnder18AarData(15L, true, ""))
+                );
     }
 
 
