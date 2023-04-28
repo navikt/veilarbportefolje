@@ -42,7 +42,6 @@ import static no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe.STANDARD_I
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -105,14 +104,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         List<String> lagredeIdenter = pdlIdentRepository.hentIdenterForBruker(aktorId.get()).identer();
         assertThat(lagredeIdenter).containsExactlyInAnyOrderElementsOf(List.of(aktorId.get(), fnr.get()));
-        PDLPerson pdlPersonFraDB = pdlPersonRepository.hentPerson(fnr);
-        assertThat(pdlPersonFraDB.getFoedsel()).isEqualTo(pdlPerson.getFoedsel());
-        assertThat(pdlPersonFraDB.getFornavn()).isEqualTo(pdlPerson.getFornavn());
-        assertThat(pdlPersonFraDB.getEtternavn()).isEqualTo(pdlPerson.getEtternavn());
-        assertThat(pdlPersonFraDB.getBydelsnummer()).isEqualTo(pdlPerson.getBydelsnummer());
-        assertThat(pdlPersonFraDB.getDiskresjonskode()).isEqualTo(pdlPerson.getDiskresjonskode());
-        assertThat(pdlPersonFraDB.getSikkerhetstiltak()).isEqualTo(pdlPerson.getSikkerhetstiltak());
-        assertThat(pdlPersonFraDB.getStatsborgerskap()).isEqualTo(pdlPerson.getStatsborgerskap());
+        assertThat(pdlPersonRepository.hentPerson(fnr)).isEqualTo(pdlPerson);
     }
 
     @Test
@@ -268,7 +260,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
                 JsonUtils.fromJson(file, PdlBarnResponse.class).getData().getHentPerson()
         );
 
-        when(pdlPortefoljeClient.hentBrukerBarnDataFraPdl(any())).thenReturn(pdlPersonBarn);
+        when(pdlPortefoljeClient.hentBrukerBarnDataFraPdl(fnr)).thenReturn(pdlPersonBarn);
 
         return pdlPersonBarn;
     }
