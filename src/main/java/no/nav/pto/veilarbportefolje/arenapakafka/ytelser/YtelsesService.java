@@ -192,8 +192,7 @@ public class YtelsesService {
 
     private void oppdaterAktivYtelse(AktorId aktorId, YtelseDAO ytelse) {
         Brukerdata ytelsesTilstand = new Brukerdata()
-                .setAktoerid(aktorId.get())
-                .setEndretDato(ytelse.getEndretDato());
+                .setAktoerid(aktorId.get());
         if (ytelse == null) {
             ytelsesStatusRepositoryV2.slettYtelseStatus(aktorId);
             return;
@@ -202,8 +201,10 @@ public class YtelsesService {
                 .setUtlopsdato(Optional.ofNullable(ytelse.getUtlopsDato())
                         .map(Timestamp::toLocalDateTime)
                         .orElse(null))
+                .setEndretDato(ytelse.getEndretDato())
                 .setYtelse(YtelseMapping.of(ytelse)
                         .orElseThrow(() -> new RuntimeException("Feil i ytelses mapping! Pa vedtak: " + ytelse.getSaksId())));
+
         if (ytelse.getType() == DAGPENGER) {
             ytelsesTilstand
                     .setDagputlopUke(ytelse.getAntallUkerIgjen())

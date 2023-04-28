@@ -17,6 +17,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.ANTALLDAGERIGJEN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,7 +27,7 @@ public class YtelsesRepositoryV2 {
     public void upsert(AktorId aktorId, TypeKafkaYtelse type, YtelsesInnhold innhold) {
         LocalDateTime startdato = getLocalDateTimeOrNull(innhold.getFraOgMedDato(), false);
         LocalDateTime utlopsdato = getLocalDateTimeOrNull(innhold.getTilOgMedDato(), true);
-        Timestamp endretDato = Timestamp.valueOf(getLocalDateTimeOrNull(innhold.getEndretDato(), true));
+        Timestamp endretDato = toTimestamp(getLocalDateTimeOrNull(innhold.getEndretDato(), true));
 
         db.update("""
                         INSERT INTO YTELSESVEDTAK
