@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Familiemedlem;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Barn;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
@@ -36,15 +36,14 @@ public class PdlService {
         PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnr);
         pdlPersonRepository.upsertPerson(fnr, personData);
 
-        List<Familiemedlem> brukerBarn = personData.getBarnUtenFnr();
+        List<Barn> brukerBarn = personData.getBarnUtenFnr();
 
         personData.getBarnMedFnr().forEach(barnFnr -> {
             PDLPersonBarn personBarnData = pdlClient.hentBrukerBarnDataFraPdl(fnr);
-            Familiemedlem familiemedlem = Familiemedlem.of(barnFnr, personBarnData, personData.getBostedsadresse());
-            if (familiemedlem != null) {
-                brukerBarn.add(familiemedlem);
+            Barn barn = Barn.of(barnFnr, personBarnData, personData.getBostedsadresse());
+            if (barn != null) {
+                brukerBarn.add(barn);
             }
-
         });
         pdlPersonRepository.upsertPersonBarn(fnr, brukerBarn);
 
