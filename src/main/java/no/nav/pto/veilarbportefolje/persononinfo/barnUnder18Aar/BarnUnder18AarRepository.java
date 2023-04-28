@@ -40,9 +40,9 @@ public class BarnUnder18AarRepository {
     public void upsert(Integer fnrBarn, Fnr fnrForesatt, Boolean borMedForesatt, LocalDate barnFoedselsdato, String diskresjonskode) {
         db.update("""
                         INSERT INTO bruker_data_barn (id, foresatt_ident, bor_med_foresatt, barn_foedselsdato, barn_diskresjonkode)
-                        VALUES(?,?,?,?,?) ON CONFLICT (id) DO UPDATE SET
-                         (foresatt_ident, bor_med_foresatt, barn_foedselsdato, barn_diskresjonkode) =
-                         (excluded.foresatt_ident, excluded.bor_med_foresatt, excluded.barn_foedselsdato, excluded.barn_diskresjonkode)
+                        VALUES(?,?,?,?,?) ON CONFLICT (id, foresatt_ident) DO UPDATE SET
+                         (bor_med_foresatt, barn_foedselsdato, barn_diskresjonkode) =
+                         (excluded.bor_med_foresatt, excluded.barn_foedselsdato, excluded.barn_diskresjonkode)
                          """,
                 fnrBarn, fnrForesatt.get(), borMedForesatt, barnFoedselsdato, diskresjonskode);
     }

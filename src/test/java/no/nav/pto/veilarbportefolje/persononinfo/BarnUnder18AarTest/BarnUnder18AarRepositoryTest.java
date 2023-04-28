@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
+import static no.nav.pto.veilarbportefolje.domene.Kjonn.M;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -64,6 +65,22 @@ public class BarnUnder18AarRepositoryTest {
         Assertions.assertTrue(!barn.isEmpty());
         Assertions.assertTrue(barn.get(fnr1).get(0).getAlder().equals(12L));
     }
+
+    @Test
+    public void barnBlirInsertedPaToUlikeForeldre() {
+        Fnr foresatt1 = randomFnr();
+        Fnr foresatt2 = randomFnr();
+        Integer fnrBarn = 1234;
+        LocalDate fDato = LocalDate.of(2010, 10, 10);
+        pdlPersonRepository.upsertPerson(foresatt1, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        pdlPersonRepository.upsertPerson(foresatt2, new PDLPerson().setKjonn(M).setFoedsel(LocalDate.now()));
+        barnUnder18AarRepository.upsert(fnrBarn, foresatt1, true, fDato, "");
+        barnUnder18AarRepository.upsert(fnrBarn, foresatt2, false, fDato, "");
+        Map<Fnr, List<BarnUnder18AarData>> barn = barnUnder18AarService.hentBarnUnder18AarAlle(List.of(foresatt1));
+        Assertions.assertTrue(barn.size()==2);
+        Assertions.assertTrue(barn.get(foresatt1).get(0).getAlder().equals(12L));
+    }
+
 
     @Test
     public void girRiktigAlder_alderFraFodselsdato() {
