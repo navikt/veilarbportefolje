@@ -21,13 +21,13 @@ public class YtelsesStatusRepositoryV2 {
 
         db.update("""
                         INSERT INTO YTELSE_STATUS_FOR_BRUKER
-                        (AKTOERID, YTELSE, UTLOPSDATO, DAGPUTLOPUKE, PERMUTLOPUKE, AAPMAXTIDUKE, AAPUNNTAKDAGERIGJEN)
-                        VALUES(?, ?, ?, ?, ?, ?, ?)
+                        (AKTOERID, YTELSE, UTLOPSDATO, DAGPUTLOPUKE, PERMUTLOPUKE, AAPMAXTIDUKE, AAPUNNTAKDAGERIGJEN, ANTALLDAGERIGJEN)
+                        VALUES(?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT (AKTOERID)
-                        DO UPDATE SET (YTELSE, UTLOPSDATO, DAGPUTLOPUKE, PERMUTLOPUKE, AAPMAXTIDUKE, AAPUNNTAKDAGERIGJEN) = (?, ?, ?, ?, ?, ?)
+                        DO UPDATE SET (YTELSE, UTLOPSDATO, DAGPUTLOPUKE, PERMUTLOPUKE, AAPMAXTIDUKE, AAPUNNTAKDAGERIGJEN, ANTALLDAGERIGJEN) = (?, ?, ?, ?, ?, ?, ?)
                         """,
-                brukerdata.getAktoerid(), ytelse, brukerdata.getUtlopsdato(), brukerdata.getDagputlopUke(), brukerdata.getPermutlopUke(), brukerdata.getAapmaxtidUke(), brukerdata.getAapUnntakDagerIgjen(),
-                ytelse, brukerdata.getUtlopsdato(), brukerdata.getDagputlopUke(), brukerdata.getPermutlopUke(), brukerdata.getAapmaxtidUke(), brukerdata.getAapUnntakDagerIgjen()
+                brukerdata.getAktoerid(), ytelse, brukerdata.getUtlopsdato(), brukerdata.getDagputlopUke(), brukerdata.getPermutlopUke(), brukerdata.getAapmaxtidUke(), brukerdata.getAapUnntakDagerIgjen(), brukerdata.getAapmaxtidDager(),
+                ytelse, brukerdata.getUtlopsdato(), brukerdata.getDagputlopUke(), brukerdata.getPermutlopUke(), brukerdata.getAapmaxtidUke(), brukerdata.getAapUnntakDagerIgjen(), brukerdata.getAapmaxtidDager()
         );
     }
 
