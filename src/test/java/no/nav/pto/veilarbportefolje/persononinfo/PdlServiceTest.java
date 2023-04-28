@@ -26,6 +26,8 @@ public class PdlServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final String pdlIdentResponsFraFil = readFileAsJsonString("/identer_pdl.json", getClass());
     private final String pdlPersonRespnsFraFil = readFileAsJsonString("/person_pdl.json", getClass());
+
+    private final String pdlPersonBarnRespnsFraFil = readFileAsJsonString("/person_barn_pdl.json", getClass());
     private final JdbcTemplate db;
     private final PdlPersonRepository pdlPersonRepository;
     private PdlService pdlService;
@@ -54,6 +56,14 @@ public class PdlServiceTest {
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(pdlPersonRespnsFraFil))
+                .whenScenarioStateIs("hent person")
+        );
+
+        server.stubFor(post(anyUrl())
+                .inScenario("PDL test")
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(pdlPersonBarnRespnsFraFil))
                 .whenScenarioStateIs("hent person")
         );
         server.start();
