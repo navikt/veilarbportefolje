@@ -55,17 +55,18 @@ public class BarnUnder18AarRepositoryTest {
 
     @Test
     public void sjekkAtBarnBlirRiktigInsertedITabellen() {
-    Fnr fnr1 = randomFnr();
-    LocalDate fDato = LocalDate.of(2010, 10, 10);
+        Fnr fnr1 = randomFnr();
+        Integer fnrBarn = 123;
+        LocalDate fDato = LocalDate.of(2010, 10, 10);
         pdlPersonRepository.upsertPerson(fnr1, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
-        barnUnder18AarRepository.upsert(fnr1, true, fDato, "");
+        barnUnder18AarRepository.upsert(fnrBarn, fnr1, true, fDato, "");
         Map<Fnr, List<BarnUnder18AarData>> barn = barnUnder18AarService.hentBarnUnder18AarAlle(List.of(fnr1));
         Assertions.assertTrue(!barn.isEmpty());
         Assertions.assertTrue(barn.get(fnr1).get(0).getAlder().equals(12L));
     }
 
     @Test
-    public void girRiktigAlder_alderFraFodselsdato(){
+    public void girRiktigAlder_alderFraFodselsdato() {
         LocalDate referenceDate = LocalDate.of(2023, 5, 5);
         LocalDate fodselsdatoFylt12Aar = LocalDate.of(2010, 6, 5);
         LocalDate fodselsdatoFylt13Aar = LocalDate.of(2010, 4, 5);
