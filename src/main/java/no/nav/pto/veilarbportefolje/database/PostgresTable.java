@@ -141,6 +141,7 @@ public class PostgresTable {
         public static final String ANTALLUKERIGJEN = "ANTALLUKERIGJEN";
         public static final String ANTALLPERMITTERINGSUKER = "ANTALLPERMITTERINGSUKER";
         public static final String ANTALLDAGERIGJENUNNTAK = "ANTALLDAGERIGJENUNNTAK";
+        public static final String ANTALLDAGERIGJEN = "ANTALLDAGERIGJEN";
         public static final String ENDRET_DATO = "ENDRET_DATO";
     }
 
