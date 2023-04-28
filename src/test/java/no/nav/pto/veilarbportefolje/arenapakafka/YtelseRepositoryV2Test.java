@@ -32,7 +32,7 @@ public class YtelseRepositoryV2Test {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public YtelseRepositoryV2Test(YtelsesRepositoryV2 ytelsesRepositoryV2,  JdbcTemplate jdbcTemplate) {
+    public YtelseRepositoryV2Test(YtelsesRepositoryV2 ytelsesRepositoryV2, JdbcTemplate jdbcTemplate) {
         this.ytelsesRepositoryV2 = ytelsesRepositoryV2;
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -90,7 +90,7 @@ public class YtelseRepositoryV2Test {
     @Test
     public void skalMappeYtelserDAO() {
         LocalDate iDag = ZonedDateTime.now().toLocalDate();
-        ytelsesRepositoryV2.upsert(bruker1, TypeKafkaYtelse.AAP, lagInnhold("1", iDag, "Sak1", fnr, personId, 2, 4, 8));
+        ytelsesRepositoryV2.upsert(bruker1, TypeKafkaYtelse.AAP, lagInnhold("1", iDag, "Sak1", fnr, personId, 2, 6, 4, 8));
 
         YtelseDAO ytelse = ytelsesRepositoryV2.getYtelser(bruker1).get(0);
         assertThat(ytelse.getAktorId()).isEqualTo(bruker1);
@@ -103,19 +103,21 @@ public class YtelseRepositoryV2Test {
         assertThat(ytelse.getUtlopsDato()).isEqualTo(Timestamp.valueOf("2100-07-13 23:59:59"));
         assertThat(ytelse.getAntallUkerIgjenPermittert()).isEqualTo(4);
         assertThat(ytelse.getAntallDagerIgjenUnntak()).isEqualTo(8);
+        assertThat(ytelse.getAntallDagerIgjen()).isEqualTo(6);
     }
 
     @Test
     public void skalOppdatereYtelsesvedtak() {
         LocalDate iDag = ZonedDateTime.now().toLocalDate();
         ytelsesRepositoryV2.upsert(bruker1, TypeKafkaYtelse.AAP, lagInnhold("1", iDag));
-        ytelsesRepositoryV2.upsert(bruker1, TypeKafkaYtelse.AAP, lagInnhold("1", iDag, "Sak1", fnr, personId, 2, 4, 8));
+        ytelsesRepositoryV2.upsert(bruker1, TypeKafkaYtelse.AAP, lagInnhold("1", iDag, "Sak1", fnr, personId, 2, 6, 4, 8));
 
         List<YtelseDAO> ytelser = ytelsesRepositoryV2.getYtelser(bruker1);
         assertThat(ytelser.size()).isEqualTo(1);
         assertThat(ytelser.get(0).getAntallUkerIgjen()).isEqualTo(2);
         assertThat(ytelser.get(0).getAntallUkerIgjenPermittert()).isEqualTo(4);
         assertThat(ytelser.get(0).getAntallDagerIgjenUnntak()).isEqualTo(8);
+        assertThat(ytelser.get(0).getAntallDagerIgjen()).isEqualTo(6);
     }
 
     @Test
@@ -130,10 +132,10 @@ public class YtelseRepositoryV2Test {
 
 
     private YtelsesInnhold lagInnhold(String vedtaksId, LocalDate startDato) {
-        return lagInnhold(vedtaksId, startDato, "Sak1", fnr, personId, 0, 0, 0);
+        return lagInnhold(vedtaksId, startDato, "Sak1", fnr, personId, 0, 5, 0, 0);
     }
 
-    public static YtelsesInnhold lagInnhold(String vedtaksId, LocalDate startDato, String saksId, Fnr fnr, PersonId personId, Integer ukerIgjen, Integer ukerIgjenPermittert, Integer dagerIgjenUnntak) {
+    public static YtelsesInnhold lagInnhold(String vedtaksId, LocalDate startDato, String saksId, Fnr fnr, PersonId personId, Integer ukerIgjen, Integer dagerIgjen, Integer ukerIgjenPermittert, Integer dagerIgjenUnntak) {
         YtelsesInnhold innhold = new YtelsesInnhold();
         innhold.setFnr(fnr.get());
         innhold.setVedtakId(vedtaksId);
@@ -145,6 +147,7 @@ public class YtelseRepositoryV2Test {
         innhold.setTilOgMedDato(new ArenaDato("2100-07-13 00:00:00"));
         innhold.setHendelseId(1L);
         innhold.setAntallUkerIgjen(ukerIgjen);
+        innhold.setAntallDagerIgjen(dagerIgjen);
         innhold.setAntallUkerIgjenUnderPermittering(ukerIgjenPermittert);
         innhold.setAntallDagerIgjenUnntak(dagerIgjenUnntak);
 

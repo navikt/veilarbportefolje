@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.*;
+import java.time.temporal.WeekFields;
 import java.util.Comparator;
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class DateUtilsTest {
     }
 
     @Test
-    public void liste_av_datoer_som_inneholder_i_dag_skal_returnere_i_dag_som_naermeste_dag(){
+    public void liste_av_datoer_som_inneholder_i_dag_skal_returnere_i_dag_som_naermeste_dag() {
         LocalDate Idag = LocalDate.now();
         LocalDate Imorgen = Idag.plusDays(1);
         LocalDate Igaar = Idag.minusDays(1);
@@ -92,7 +93,7 @@ public class DateUtilsTest {
     }
 
     @Test
-    public void liste_av_datoer_som_inneholder_femti_dager_frem_og_forti_dager_siden_skal_returnere_forti_dager_siden_som_naermeste_dag(){
+    public void liste_av_datoer_som_inneholder_femti_dager_frem_og_forti_dager_siden_skal_returnere_forti_dager_siden_som_naermeste_dag() {
         LocalDate idag = LocalDate.now();
         LocalDate femtiDagerFrem = idag.plusDays(50);
         LocalDate fortiDagerSiden = idag.minusDays(40);
@@ -104,7 +105,7 @@ public class DateUtilsTest {
     }
 
     @Test
-    public void liste_av_datoer_som_inneholder_ti_dager_frem_og_fjorten_dager_siden_skal_returnere_ti_dager_frem_som_naermeste_dag(){
+    public void liste_av_datoer_som_inneholder_ti_dager_frem_og_fjorten_dager_siden_skal_returnere_ti_dager_frem_som_naermeste_dag() {
         LocalDate Idag = LocalDate.now();
         LocalDate TiDagerFrem = Idag.plusDays(10);
         LocalDate FjortenDagerSiden = Idag.minusDays(14);
@@ -116,7 +117,7 @@ public class DateUtilsTest {
     }
 
     @Test
-    public void liste_av_datoer_som_inneholder_kun_en_dato_skal_returnere_den_datoen(){
+    public void liste_av_datoer_som_inneholder_kun_en_dato_skal_returnere_den_datoen() {
         LocalDate Idag = LocalDate.now();
         LocalDate SekstiDagerFrem = Idag.plusDays(60);
         List<LocalDate> datoliste = List.of(SekstiDagerFrem);
@@ -124,5 +125,23 @@ public class DateUtilsTest {
         LocalDate datoNaermestIdag = datoliste.stream().min(Comparator.comparing(dato -> dato, closestToTodayComparator())).get();
 
         assertThat(datoNaermestIdag).isEqualTo(SekstiDagerFrem);
+    }
+
+    @Test
+    public void testAddWeeksToTodayAndGetNthDay() {
+        WeekFields weekFields = WeekFields.ISO;
+        LocalDate dateInFuture = addWeeksToTodayAndGetNthDay(Timestamp.from(Instant.now()), 5, 3);
+        assertThat(dateInFuture.getDayOfWeek().getValue()).isEqualTo(3);
+        assertThat(dateInFuture.minusWeeks(5).get(weekFields.weekOfYear())).isEqualTo(LocalDate.now().get(weekFields.weekOfYear()));
+
+
+        dateInFuture = addWeeksToTodayAndGetNthDay(Timestamp.from(Instant.now()), 45, 1);
+        assertThat(dateInFuture.getDayOfWeek().getValue()).isEqualTo(1);
+        assertThat(dateInFuture.minusWeeks(45).get(weekFields.weekOfYear())).isEqualTo(LocalDate.now().get(weekFields.weekOfYear()));
+
+
+        dateInFuture = addWeeksToTodayAndGetNthDay(Timestamp.from(Instant.now()), 123, 7);
+        assertThat(dateInFuture.getDayOfWeek().getValue()).isEqualTo(7);
+        assertThat(dateInFuture.minusWeeks(123).get(weekFields.weekOfYear())).isEqualTo(LocalDate.now().get(weekFields.weekOfYear()));
     }
 }

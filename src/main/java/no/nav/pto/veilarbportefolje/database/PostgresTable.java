@@ -33,6 +33,9 @@ public class PostgresTable {
 
         public static final String YTELSE = "YTELSE";
         public static final String AAPMAXTIDUKE = "AAPMAXTIDUKE";
+
+        public static final String ANTALLDAGERIGJEN = "ANTALLDAGERIGJEN";
+
         public static final String AAPUNNTAKDAGERIGJEN = "AAPUNNTAKDAGERIGJEN";
         public static final String DAGPUTLOPUKE = "DAGPUTLOPUKE";
         public static final String PERMUTLOPUKE = "PERMUTLOPUKE";
@@ -137,7 +140,9 @@ public class PostgresTable {
         public static final String UTLOPSDATO = "UTLOPSDATO";
         public static final String ANTALLUKERIGJEN = "ANTALLUKERIGJEN";
         public static final String ANTALLPERMITTERINGSUKER = "ANTALLPERMITTERINGSUKER";
-        public static final String ANTALLUKERIGJENUNNTAK = "ANTALLUKERIGJENUNNTAK";
+        public static final String ANTALLDAGERIGJENUNNTAK = "ANTALLDAGERIGJENUNNTAK";
+        public static final String ANTALLDAGERIGJEN = "ANTALLDAGERIGJEN";
+        public static final String ENDRET_DATO = "ENDRET_DATO";
     }
 
     public static final class LEST_ARENA_HENDELSE_YTELSER {
