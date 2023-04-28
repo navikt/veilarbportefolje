@@ -68,7 +68,7 @@ query($ident: ID!) {
         ...metadataDetails
       }
     }
-    adressebeskyttelseDto {
+    adressebeskyttelse {
       gradering
 
       metadata {
@@ -100,8 +100,9 @@ query($ident: ID!) {
       relatertPersonsRolle
       relatertPersonUtenFolkeregisteridentifikator {
         foedselsdato
-        kjoenn
-        statsborgerskap
+      }
+      metadata {
+              ...metadataDetails
       }
     }
   }
