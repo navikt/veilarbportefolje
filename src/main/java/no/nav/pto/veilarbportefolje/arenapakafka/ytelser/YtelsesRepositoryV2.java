@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.arenapakafka.ytelser;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
+import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -15,7 +16,6 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.ANTALLDAGERIGJEN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSESVEDTAK.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
@@ -72,7 +72,7 @@ public class YtelsesRepositoryV2 {
                 .setAntallUkerIgjen((Integer) row.get(ANTALLUKERIGJEN))
                 .setAntallUkerIgjenPermittert((Integer) row.get(ANTALLPERMITTERINGSUKER))
                 .setAntallDagerIgjenUnntak((Integer) row.get(ANTALLDAGERIGJENUNNTAK))
-                .setAntallDagerIgjen((Integer) row.get(ANTALLDAGERIGJEN))
+                .setAntallDagerIgjen((Integer) row.get(PostgresTable.OpensearchData.ANTALLDAGERIGJEN))
                 .setEndretDato((Timestamp) row.get(ENDRET_DATO));
     }
 
