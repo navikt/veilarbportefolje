@@ -35,20 +35,24 @@ public class BarnUnder18AarRepository {
         return barn;
     }
 
-    //TODO Legg til fnr_barn i tabellen. Slett "id". Legg da også til ON CONFLICT (FNR_BARN) DO UPDATE SET
+    //TODO Legg til fnr_barn i tabellen. Slett "id".
     //TODO Ta inn PDLPerson her og hent ut data derfra
-    public void upsert(Fnr fnr, Boolean borMedForesatt, LocalDate barnFoedselsdato, String diskresjonskode){
-          db.update("""
-                        INSERT INTO bruker_data_barn (foresatt_ident, bor_med_foresatt, barn_foedselsdato, barn_diskresjonkode)
-                        VALUES(?,?,?,?) """,
-                 fnr.get(), borMedForesatt, barnFoedselsdato, diskresjonskode);
+    public void upsert(Integer fnrBarn, Fnr fnrForesatt, Boolean borMedForesatt, LocalDate barnFoedselsdato, String diskresjonskode) {
+        db.update("""
+                        INSERT INTO bruker_data_barn (id, foresatt_ident, bor_med_foresatt, barn_foedselsdato, barn_diskresjonkode)
+                        VALUES(?,?,?,?,?) ON CONFLICT (id) DO UPDATE SET
+                         (foresatt_ident, bor_med_foresatt, barn_foedselsdato, barn_diskresjonkode) =
+                         (excluded.foresatt_ident, excluded.bor_med_foresatt, excluded.barn_foedselsdato, excluded.barn_diskresjonkode)
+                         """,
+                fnrBarn, fnrForesatt.get(), borMedForesatt, barnFoedselsdato, diskresjonskode);
     }
 
 
-
-
     private BarnUnder18AarData mapTilBarnUnder18(Map<String, Object> rs) {
-        return new BarnUnder18AarData((Long) alderFraFodselsdato(toLocalDateOrNull((java.sql.Date) rs.get("BARN_FOEDSELSDATO")), LocalDate.now()), (boolean) rs.get("BOR_MED_FORESATT"), (String) rs.get("BARN_DISKRESJONKODE"));
+        return new BarnUnder18AarData(
+                (Long) alderFraFodselsdato(toLocalDateOrNull((java.sql.Date) rs.get("BARN_FOEDSELSDATO")),
+                LocalDate.now()), (boolean) rs.get("BOR_MED_FORESATT"),
+                (String) rs.get("BARN_DISKRESJONKODE"));
     }
 
     public static Long alderFraFodselsdato(LocalDate date, LocalDate now) {
