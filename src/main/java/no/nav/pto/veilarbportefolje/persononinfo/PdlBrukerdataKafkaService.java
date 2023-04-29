@@ -55,6 +55,10 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
             oppdaterOpensearch(aktivAktorId, pdlIdenter);
         }
+
+        if (pdlIdentRepository.erEndringForBarnAvBrukerUnderOppfolging(aktorIder)) {
+            //todo: update logic
+        }
     }
 
     private void handterBrukerDataEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka,

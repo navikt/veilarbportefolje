@@ -1,33 +1,7 @@
 query($ident: ID!) {
   hentPerson(ident: $ident) {
-    navn {
-      fornavn
-      mellomnavn
-      etternavn
-      metadata {
-        ...metadataDetails
-      }
-    }
     foedsel {
       foedselsdato
-      foedeland
-      metadata {
-        ...metadataDetails
-      }
-    }
-    kjoenn {
-      kjoenn
-      metadata {
-        ...metadataDetails
-      }
-    }
-    doedsfall {
-      doedsdato
-    }
-    statsborgerskap {
-      land
-      gyldigFraOgMed
-      gyldigTilOgMed
       metadata {
         ...metadataDetails
       }
@@ -75,37 +49,9 @@ query($ident: ID!) {
         ...metadataDetails
       }
     }
-    sikkerhetstiltak {
-      tiltakstype
-      beskrivelse
-      gyldigFraOgMed
-      gyldigTilOgMed
-      metadata {
-        ...metadataDetails
-      }
+    doedsfall {
+        doedsdato
     }
-    tilrettelagtKommunikasjon {
-      talespraaktolk {
-        spraak
-      }
-      tegnspraaktolk {
-        spraak
-      }
-      metadata {
-        ...metadataDetails
-      }
-    }
-    forelderBarnRelasjon {
-      relatertPersonsIdent
-      relatertPersonsRolle
-      relatertPersonUtenFolkeregisteridentifikator {
-        foedselsdato
-      }
-      metadata {
-              ...metadataDetails
-      }
-    }
-  }
 }
 
 fragment metadataDetails on Metadata {

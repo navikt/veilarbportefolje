@@ -3,15 +3,22 @@ package no.nav.pto.veilarbportefolje.persononinfo.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.domene.Sikkerhetstiltak;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Bostedsadresse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.UtenlandskAdresse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Vegadresse;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.RelasjonsBosted.UKJENT_BOSTED;
 
 @Data
 @Slf4j
@@ -35,6 +42,10 @@ public class PDLPerson {
     private LocalDate bostedSistOppdatert;
     private String diskresjonskode;
     private Sikkerhetstiltak sikkerhetstiltak;
+    private List<Barn> barnUtenFnr;
+    private List<Fnr> barnMedFnr;
+
+    private Bostedsadresse bostedsadresse;
 
 
     public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
@@ -58,7 +69,11 @@ public class PDLPerson {
                 .setTegnspraaktolk(hentTegnspraaktolk(response.getTilrettelagtKommunikasjon()))
                 .setTolkBehovSistOppdatert(hentTolkBehovSistOppdatert(response.getTilrettelagtKommunikasjon()))
                 .setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()))
-                .setSikkerhetstiltak(hentSikkerhetstiltak(response.getSikkerhetstiltak()));
+                .setSikkerhetstiltak(hentSikkerhetstiltak(response.getSikkerhetstiltak()))
+                .setBarnMedFnr(hentBarnFnr(response.getForelderBarnRelasjon()))
+                .setBarnUtenFnr(hentBarnUtenFnr(response.getForelderBarnRelasjon()))
+                .setBostedsadresse(hentBostedAdresse(response.getBostedsadresse()).orElse(null));
+
     }
 
 
@@ -113,24 +128,24 @@ public class PDLPerson {
                 .orElse("");
     }
 
-    private static String hentBydel(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
+    private static String hentBydel(List<Bostedsadresse> response) {
         return hentBostedAdresse(response)
-                .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getVegadresse)
-                .map(PdlPersonResponse.PdlPersonResponseData.Vegadresse::getBydelsnummer)
+                .map(Bostedsadresse::getVegadresse)
+                .map(Vegadresse::getBydelsnummer)
                 .orElse(null);
     }
 
-    private static String hentUtenlandskAdresse(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
+    private static String hentUtenlandskAdresse(List<Bostedsadresse> response) {
         return hentBostedAdresse(response)
-                .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getUtenlandskAdresse)
-                .map(PdlPersonResponse.PdlPersonResponseData.UtenlandskAdresse::getLandkode)
+                .map(Bostedsadresse::getUtenlandskAdresse)
+                .map(UtenlandskAdresse::getLandkode)
                 .orElse(null);
     }
 
-    private static String hentBostedKommune(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
+    private static String hentBostedKommune(List<Bostedsadresse> response) {
         return hentBostedAdresse(response)
-                .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getVegadresse)
-                .map(PdlPersonResponse.PdlPersonResponseData.Vegadresse::getKommunenummer)
+                .map(Bostedsadresse::getVegadresse)
+                .map(Vegadresse::getKommunenummer)
                 .orElse(null);
     }
 
@@ -173,7 +188,7 @@ public class PDLPerson {
                 .get();
     }
 
-    private static boolean hentHarUkjentBosted(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
+    private static boolean hentHarUkjentBosted(List<Bostedsadresse> response) {
         if (response == null) {
             return false;
         }
@@ -183,7 +198,7 @@ public class PDLPerson {
                 .orElse(false);
     }
 
-    private static LocalDate hentBostedSisteOppdatert(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
+    private static LocalDate hentBostedSisteOppdatert(List<Bostedsadresse> response) {
         return hentBostedAdresse(response)
                 .map(bostedsadresse -> bostedsadresse.getMetadata().getEndringer())
                 .map(endringers -> endringers.get(0))
@@ -192,13 +207,13 @@ public class PDLPerson {
     }
 
 
-    private static String hentDiskresjonkode(List<PdlPersonResponse.PdlPersonResponseData.Adressebeskyttelse> adressebeskyttelse) {
-        if (adressebeskyttelse == null) {
+    private static String hentDiskresjonkode(List<AdressebeskyttelseDto> adressebeskyttelseDto) {
+        if (adressebeskyttelseDto == null) {
             return null;
         }
-        var adressebeskyttelseAktiv = adressebeskyttelse.stream().filter(x -> !x.getMetadata().isHistorisk()).toList();
+        var adressebeskyttelseAktiv = adressebeskyttelseDto.stream().filter(x -> !x.getMetadata().isHistorisk()).toList();
         return adressebeskyttelseAktiv.stream().findFirst()
-                .map(PdlPersonResponse.PdlPersonResponseData.Adressebeskyttelse::getGradering)
+                .map(AdressebeskyttelseDto::getGradering)
                 .map(Adressebeskyttelse::mapKodeTilTall)
                 .orElse(null);
     }
@@ -229,7 +244,32 @@ public class PDLPerson {
         }).map(PDLStatsborgerskap::toStatsborgerskap).collect(Collectors.toList());
     }
 
-    private static Optional<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> hentBostedAdresse(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
+    private static List<Fnr> hentBarnFnr(List<PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon> forelderBarnRelasjon) {
+        var forelderBarnRelasjonAktiv = forelderBarnRelasjon.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
+
+        return forelderBarnRelasjonAktiv.stream()
+                .filter(familierelasjon -> "BARN".equals(familierelasjon.getRelatertPersonsRolle()))
+                .map(PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon::getRelatertPersonsIdent)
+                .filter(Objects::nonNull)
+                .map(Fnr::of)
+                .collect(Collectors.toList());
+    }
+
+    private static List<Barn> hentBarnUtenFnr(List<PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon> forelderBarnRelasjon) {
+        var forelderBarnRelasjonAktiv = forelderBarnRelasjon.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
+
+        return forelderBarnRelasjonAktiv.stream()
+                .filter(familierelasjon -> "BARN".equals(familierelasjon.getRelatertPersonsRolle()))
+                .filter(barn -> barn.getRelatertPersonsIdent() == null)
+                .map(PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon::getRelatertPersonUtenFolkeregisteridentifikator)
+                .filter(Objects::nonNull)
+                .map(barn -> new Barn()
+                        .setFodselsdato(barn.getFoedselsdato())
+                        .setRelasjonsBosted(UKJENT_BOSTED))
+                .collect(Collectors.toList());
+    }
+
+    private static Optional<Bostedsadresse> hentBostedAdresse(List<Bostedsadresse> response) {
         if (response == null) {
             return Optional.empty();
         }
