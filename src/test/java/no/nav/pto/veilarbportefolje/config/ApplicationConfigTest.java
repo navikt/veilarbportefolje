@@ -41,6 +41,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseRepository;
@@ -149,6 +151,8 @@ import static org.mockito.Mockito.when;
         Avvik14aVedtakService.class,
         EnsligeForsorgereRepository.class,
         EnsligeForsorgereService.class,
+        BarnUnder18AarRepository.class,
+        BarnUnder18AarService.class,
         AuthService.class
 })
 public class ApplicationConfigTest {

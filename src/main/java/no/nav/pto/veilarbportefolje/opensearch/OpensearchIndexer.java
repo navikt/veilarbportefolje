@@ -53,6 +53,7 @@ public class OpensearchIndexer {
             postgresOpensearchMapper.flettInnStatsborgerskapData(List.of(bruker));
             postgresOpensearchMapper.flettInnAvvik14aVedtak(List.of(bruker));
             postgresOpensearchMapper.flettInnEnsligeForsorgereData(List.of(bruker));
+            postgresOpensearchMapper.flettInnBarnUnder18Aar(List.of(bruker));
 
             syncronIndekseringsRequest(bruker);
         } else {

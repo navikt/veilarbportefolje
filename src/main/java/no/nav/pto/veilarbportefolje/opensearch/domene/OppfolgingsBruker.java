@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -114,6 +115,7 @@ public class OppfolgingsBruker {
     String neste_cv_kan_deles_status;
     LocalDate neste_svarfrist_stilling_fra_nav;
     Avvik14aVedtak avvik14aVedtak;
+    List<BarnUnder18AarData> barnUnder18AarData;
 
     EnsligeForsorgereOvergangsstonad enslige_forsorgere_overgangsstonad;
 }
