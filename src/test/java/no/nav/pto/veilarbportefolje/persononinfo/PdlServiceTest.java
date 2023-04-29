@@ -59,13 +59,6 @@ public class PdlServiceTest {
                 .whenScenarioStateIs("hent person")
         );
 
-        server.stubFor(post(anyUrl())
-                .inScenario("PDL test")
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(pdlPersonBarnRespnsFraFil))
-                .whenScenarioStateIs("hent person")
-        );
         server.start();
 
         this.pdlService = new PdlService(

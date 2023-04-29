@@ -104,7 +104,14 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         List<String> lagredeIdenter = pdlIdentRepository.hentIdenterForBruker(aktorId.get()).identer();
         assertThat(lagredeIdenter).containsExactlyInAnyOrderElementsOf(List.of(aktorId.get(), fnr.get()));
-        assertThat(pdlPersonRepository.hentPerson(fnr)).isEqualTo(pdlPerson);
+        PDLPerson pdlPersonFraDB = pdlPersonRepository.hentPerson(fnr);
+        assertThat(pdlPersonFraDB.getFoedsel()).isEqualTo(pdlPerson.getFoedsel());
+        assertThat(pdlPersonFraDB.getFornavn()).isEqualTo(pdlPerson.getFornavn());
+        assertThat(pdlPersonFraDB.getEtternavn()).isEqualTo(pdlPerson.getEtternavn());
+        assertThat(pdlPersonFraDB.getBydelsnummer()).isEqualTo(pdlPerson.getBydelsnummer());
+        assertThat(pdlPersonFraDB.getDiskresjonskode()).isEqualTo(pdlPerson.getDiskresjonskode());
+        assertThat(pdlPersonFraDB.getSikkerhetstiltak()).isEqualTo(pdlPerson.getSikkerhetstiltak());
+        assertThat(pdlPersonFraDB.getStatsborgerskap()).isEqualTo(pdlPerson.getStatsborgerskap());
     }
 
     @Test

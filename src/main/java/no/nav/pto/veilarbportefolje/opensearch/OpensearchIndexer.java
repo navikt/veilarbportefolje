@@ -7,7 +7,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.opensearch.action.bulk.BulkRequest;
 import org.opensearch.action.index.IndexRequest;
 import org.opensearch.client.RequestOptions;
@@ -37,7 +36,6 @@ public class OpensearchIndexer {
     private final IndexName alias;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final UnleashService unleashService;
 
     public void indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;

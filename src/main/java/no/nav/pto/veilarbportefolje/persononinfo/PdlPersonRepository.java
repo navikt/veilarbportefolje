@@ -91,6 +91,7 @@ public class PdlPersonRepository {
         String identerParam = identer.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
         db.update("DELETE from bruker_data where freg_ident = any (?::varchar[])", identerParam);
         db.update("DELETE FROM BRUKER_STATSBORGERSKAP WHERE FREG_IDENT = any (?::varchar[]) ", identerParam);
+        db.update("DELETE from BRUKER_DATA_BARN where foresatt_ident = any (?::varchar[])", identerParam);
     }
 
     @SneakyThrows
