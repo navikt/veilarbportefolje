@@ -57,7 +57,6 @@ public class SensurerBrukerTest {
     public void skalIkkeSeKode7Bruker() {
         when(pep.harVeilederTilgangTilKode7(eq(NavIdent.of("X123456")))).thenReturn(false);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
-        sjekkAtKonfidensiellDataErVasket(kode7Bruker());
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker(), "X123456");
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
