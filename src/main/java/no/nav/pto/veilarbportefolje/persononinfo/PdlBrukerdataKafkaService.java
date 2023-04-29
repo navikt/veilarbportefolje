@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PdlPersonValideringException;
@@ -27,8 +28,10 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RequiredArgsConstructor
 public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDokument> {
     private final PdlService pdlService;
+
     private final PdlIdentRepository pdlIdentRepository;
     private final PdlPersonRepository pdlPersonRepository;
+    private final BarnUnder18AarRepository barnUnder18AarRepository;
     private final OpensearchIndexer opensearchIndexer;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
@@ -45,6 +48,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
         List<PDLIdent> pdlIdenter = pdlDokument.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
+        List<Fnr> fnrS = hentFnrs(pdlIdenter);
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
@@ -53,12 +57,13 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
             handterIdentEndring(pdlIdenter);
 
+            if (barnUnder18AarRepository.erEndringForBarnAvBrukerUnderOppfolging(fnrS)) {
+                handterBrukerBarnDataEndring(pdlDokument.getHentPerson());
+            }
+
             oppdaterOpensearch(aktivAktorId, pdlIdenter);
         }
 
-        if (pdlIdentRepository.erEndringForBarnAvBrukerUnderOppfolging(aktorIder)) {
-            //todo: update logic
-        }
     }
 
     private void handterBrukerDataEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka,
@@ -80,6 +85,10 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         pdlPersonRepository.slettLagretBrukerData(inaktiveFnr);
     }
 
+    private void handterBrukerBarnDataEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka) {
+        
+    }
+
     private void handterIdentEndring(List<PDLIdent> pdlIdenter) {
         pdlIdentRepository.upsertIdenter(pdlIdenter);
     }
@@ -96,6 +105,15 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
                 .filter(pdlIdent -> PDLIdent.Gruppe.AKTORID.equals(pdlIdent.getGruppe()))
                 .map(PDLIdent::getIdent)
                 .map(AktorId::new)
+                .toList();
+    }
+
+    private static List<Fnr> hentFnrs(List<PDLIdent> identer) {
+        return identer.stream()
+                .filter(pdlIdent -> PDLIdent.Gruppe.FOLKEREGISTERIDENT.equals(pdlIdent.getGruppe()))
+                .filter(x -> !x.isHistorisk())
+                .map(PDLIdent::getIdent)
+                .map(Fnr::new)
                 .toList();
     }
 

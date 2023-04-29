@@ -96,7 +96,7 @@ public class AuthService {
 
     public Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String veilederIdent) {
 
-        if (!bruker.getBarnUnder18AarData().isEmpty()) {
+        if (bruker.getBarnUnder18AarData() != null) {
             bruker.setBarnUnder18AarData(bruker.getBarnUnder18AarData().stream().filter(barnUnder18AarData ->
                     harVeilederTilgangTilBarn(barnUnder18AarData, veilederIdent)
             ).toList());

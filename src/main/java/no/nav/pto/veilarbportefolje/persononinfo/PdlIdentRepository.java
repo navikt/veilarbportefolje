@@ -117,9 +117,4 @@ public class PdlIdentRepository {
         secureLog.info("Sletter lokal ident: {}", person);
         db.update("delete from bruker_identer where person = ?", person);
     }
-
-    // TODO: 24/04/2023 : implement logic for this function
-    public boolean erEndringForBarnAvBrukerUnderOppfolging(List<AktorId> aktorIder) {
-        return true;
-    }
 }

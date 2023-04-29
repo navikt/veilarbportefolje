@@ -6,11 +6,13 @@ import lombok.SneakyThrows;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
@@ -25,9 +27,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class PdlServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final String pdlIdentResponsFraFil = readFileAsJsonString("/identer_pdl.json", getClass());
-    private final String pdlPersonRespnsFraFil = readFileAsJsonString("/person_pdl.json", getClass());
+    private final String pdlPersonResponsFraFil = readFileAsJsonString("/person_pdl.json", getClass());
 
-    private final String pdlPersonBarnRespnsFraFil = readFileAsJsonString("/person_barn_pdl.json", getClass());
+    private final String pdlPersonBarnResponsFraFil = readFileAsJsonString("/person_barn_pdl.json", getClass());
+
+    private BarnUnder18AarRepository barnUnder18AarRepository;
     private final JdbcTemplate db;
     private final PdlPersonRepository pdlPersonRepository;
     private PdlService pdlService;
@@ -55,7 +59,7 @@ public class PdlServiceTest {
                 .inScenario("PDL test")
                 .willReturn(aResponse()
                         .withStatus(200)
-                        .withBody(pdlPersonRespnsFraFil))
+                        .withBody(pdlPersonResponsFraFil))
                 .whenScenarioStateIs("hent person")
         );
 
@@ -63,14 +67,16 @@ public class PdlServiceTest {
                 .inScenario("PDL test")
                 .willReturn(aResponse()
                         .withStatus(200)
-                        .withBody(pdlPersonBarnRespnsFraFil))
-                .whenScenarioStateIs("hent person")
+                        .withBody(pdlPersonBarnResponsFraFil))
+                .whenScenarioStateIs("hent personBarn")
         );
+
         server.start();
 
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
                 new PdlPersonRepository(db, db),
+                new BarnUnder18AarRepository(db,db),
                 new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
         );
     }
@@ -78,10 +84,12 @@ public class PdlServiceTest {
     @Test
     @SneakyThrows
     public void hentOgLagrePdlData() {
+        Fnr fnrBarn1 = Fnr.of("24461770297");
         var identerFraFil = mapper.readValue(pdlIdentResponsFraFil, PdlIdentResponse.class)
                 .getData()
                 .getHentIdenter()
                 .getIdenter();
+        //Mockito.when(Integer.valueOf(fnrBarn1.toString())).thenReturn(1234);
 
         pdlService.hentOgLagrePdlData(randomAktorId());
         List<PDLIdent> identerFraPostgres = db.queryForList("select * from bruker_identer")
