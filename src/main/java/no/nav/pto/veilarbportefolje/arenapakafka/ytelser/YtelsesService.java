@@ -201,10 +201,8 @@ public class YtelsesService {
                 .setUtlopsdato(Optional.ofNullable(ytelse.getUtlopsDato())
                         .map(Timestamp::toLocalDateTime)
                         .orElse(null))
-                .setEndretDato(ytelse.getEndretDato())
                 .setYtelse(YtelseMapping.of(ytelse)
                         .orElseThrow(() -> new RuntimeException("Feil i ytelses mapping! Pa vedtak: " + ytelse.getSaksId())));
-
         if (ytelse.getType() == DAGPENGER) {
             ytelsesTilstand
                     .setDagputlopUke(ytelse.getAntallUkerIgjen())
@@ -212,8 +210,7 @@ public class YtelsesService {
         } else if (ytelse.getType() == AAP) {
             ytelsesTilstand
                     .setAapmaxtidUke(ytelse.getAntallUkerIgjen())
-                    .setAapUnntakDagerIgjen(ytelse.getAntallDagerIgjenUnntak())
-                    .setAapmaxtidDager(ytelse.getAntallDagerIgjen());
+                    .setAapUnntakDagerIgjen(ytelse.getAntallDagerIgjenUnntak());
         }
 
         ytelsesStatusRepositoryV2.upsertYtelseStatus(ytelsesTilstand);
