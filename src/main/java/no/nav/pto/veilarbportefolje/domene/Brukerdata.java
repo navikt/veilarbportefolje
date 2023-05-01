@@ -16,13 +16,9 @@ public class Brukerdata {
     private Integer dagputlopUke;
     private Integer permutlopUke;
     private Integer aapmaxtidUke;
-    private Integer aapmaxtidDager;
     private Integer aapUnntakDagerIgjen;
     private Timestamp nyesteUtlopteAktivitet;
     private Timestamp aktivitetStart;
     private Timestamp nesteAktivitetStart;
     private Timestamp forrigeAktivitetStart;
-
-    private Timestamp endretDato;
-
 }
