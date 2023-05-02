@@ -92,6 +92,7 @@ public class PdlPersonRepository {
         db.update("DELETE from bruker_data where freg_ident = any (?::varchar[])", identerParam);
         db.update("DELETE FROM BRUKER_STATSBORGERSKAP WHERE FREG_IDENT = any (?::varchar[]) ", identerParam);
         db.update("DELETE from BRUKER_DATA_BARN where foresatt_ident = any (?::varchar[])", identerParam);
+        //TODO: Er det egentlig nødvendig med en slette-statement her i og med at det skal slettes automatisk fra bruker_data_barn når fnr slettes fra bruker_data?
     }
 
     @SneakyThrows
