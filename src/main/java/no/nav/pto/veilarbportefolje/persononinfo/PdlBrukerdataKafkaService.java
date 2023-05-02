@@ -57,12 +57,13 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
             handterIdentEndring(pdlIdenter);
 
+            if (barnUnder18AarRepository.erEndringForBarnAvBrukerUnderOppfolging(fnrS)) {
+                handterBrukerBarnDataEndring(pdlDokument.getHentPerson());
+            }
+
             oppdaterOpensearch(aktivAktorId, pdlIdenter);
         }
 
-        if (barnUnder18AarRepository.erEndringForBarnAvBrukerUnderOppfolging(fnrS)) {
-            handterBrukerBarnDataEndring(pdlDokument.getHentPerson());
-        }
     }
 
     private void handterBrukerDataEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka,
