@@ -54,7 +54,7 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import jakarta.annotation.PostConstruct;
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -433,7 +433,7 @@ public class KafkaConfigCommon {
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(
                         Stream.concat(topicConfigsAiven.stream(), Stream.of(siste14aTopicConfig)).collect(Collectors.toList())))
-                .withBackoffStrategy(new LinearBackoffStrategy(0, 2 * 60 * 60, 144))
+                .withBackoffStrategy(new LinearBackoffStrategy(0, 1 * 60 * 60, 200))
                 .build();
     }
 
