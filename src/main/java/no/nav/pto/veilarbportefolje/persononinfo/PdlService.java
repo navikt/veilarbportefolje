@@ -42,9 +42,9 @@ public class PdlService {
         pdlPersonRepository.upsertPerson(fnrPerson, personData);
 
         List<Barn> brukerBarn = new ArrayList<>();
-        if (personData.getBarnUtenFnr() != null) {
-            brukerBarn.addAll(personData.getBarnUtenFnr());
-        }
+       // if (personData.getBarnUtenFnr() != null) {
+       //     brukerBarn.addAll(personData.getBarnUtenFnr());
+       // }
 
         if (personData.getBarnMedFnr() != null) {
             personData.getBarnMedFnr().forEach(barnFnr -> {
@@ -57,7 +57,8 @@ public class PdlService {
         }
 
         brukerBarn.forEach(barn -> {
-            barnUnder18AarRepository.upsert(barn.getFnr(), fnrPerson, barn.getRelasjonsBosted().equals(SAMME_BOSTED), barn.getFodselsdato(), barn.getGradering());
+            //TODO: Sjekk at UKJENT_BOSTED ikke mappes om til false her? Eller er det ok?
+            barnUnder18AarRepository.upsert2(Integer.valueOf(barn.getFnr().toString().substring(1,3)), fnrPerson, barn.getRelasjonsBosted().equals(SAMME_BOSTED), barn.getFodselsdato(), barn.getGradering());
         });
     }
 
