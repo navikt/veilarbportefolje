@@ -18,12 +18,7 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin'
-      - name: Set up cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
+          cache: 'maven'
       - name: Build maven artifacts
         run: mvn -Dgithub.token=${{ secrets.GITHUB_TOKEN }} -B package -D skipTests
       - name: Login to Docker
