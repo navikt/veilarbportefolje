@@ -433,7 +433,7 @@ public class KafkaConfigCommon {
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(
                         Stream.concat(topicConfigsAiven.stream(), Stream.of(siste14aTopicConfig)).collect(Collectors.toList())))
-                .withBackoffStrategy(new LinearBackoffStrategy(0, 2 * 60 * 60, 144))
+                .withBackoffStrategy(new LinearBackoffStrategy(0, 1 * 60 * 60, 200))
                 .build();
     }
 
