@@ -42,12 +42,9 @@ public class PdlService {
         pdlPersonRepository.upsertPerson(fnrPerson, personData);
 
         List<Barn> brukerBarn = new ArrayList<>();
-       // if (personData.getBarnUtenFnr() != null) {
-       //     brukerBarn.addAll(personData.getBarnUtenFnr());
-       // }
 
-        if (personData.getBarnMedFnr() != null) {
-            personData.getBarnMedFnr().forEach(barnFnr -> {
+        if (personData.getBarn() != null) {
+            personData.getBarn().forEach(barnFnr -> {
                 PDLPersonBarn personBarnData = pdlClient.hentBrukerBarnDataFraPdl(fnrPerson);
                 Barn barn = Barn.of(barnFnr, personBarnData, personData.getBostedsadresse());
                 if (barn != null) {

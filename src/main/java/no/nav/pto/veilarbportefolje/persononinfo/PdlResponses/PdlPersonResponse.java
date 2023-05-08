@@ -110,13 +110,7 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         public static class ForelderBarnRelasjon {
             private String relatertPersonsRolle;
             private String relatertPersonsIdent;
-            private RelatertPersonUtenFolkeregisteridentifikator relatertPersonUtenFolkeregisteridentifikator;
             private Metadata metadata;
-        }
-
-        @Data
-        public static class RelatertPersonUtenFolkeregisteridentifikator {
-            private LocalDate foedselsdato;
         }
     }
 }

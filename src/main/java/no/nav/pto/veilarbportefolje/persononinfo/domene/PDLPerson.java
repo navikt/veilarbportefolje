@@ -18,8 +18,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.persononinfo.domene.RelasjonsBosted.UKJENT_BOSTED;
-
 @Data
 @Slf4j
 @Accessors(chain = true)
@@ -42,8 +40,7 @@ public class PDLPerson {
     private LocalDate bostedSistOppdatert;
     private String diskresjonskode;
     private Sikkerhetstiltak sikkerhetstiltak;
-    private List<Barn> barnUtenFnr;
-    private List<Fnr> barnMedFnr;
+    private List<Fnr> barn;
 
     private Bostedsadresse bostedsadresse;
 
@@ -70,8 +67,7 @@ public class PDLPerson {
                 .setTolkBehovSistOppdatert(hentTolkBehovSistOppdatert(response.getTilrettelagtKommunikasjon()))
                 .setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()))
                 .setSikkerhetstiltak(hentSikkerhetstiltak(response.getSikkerhetstiltak()))
-                .setBarnMedFnr(hentBarnFnr(response.getForelderBarnRelasjon()))
-                .setBarnUtenFnr(hentBarnUtenFnr(response.getForelderBarnRelasjon()))
+                .setBarn(hentBarnFnr(response.getForelderBarnRelasjon()))
                 .setBostedsadresse(hentBostedAdresse(response.getBostedsadresse()).orElse(null));
 
     }
@@ -252,20 +248,6 @@ public class PDLPerson {
                 .map(PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon::getRelatertPersonsIdent)
                 .filter(Objects::nonNull)
                 .map(Fnr::of)
-                .collect(Collectors.toList());
-    }
-
-    private static List<Barn> hentBarnUtenFnr(List<PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon> forelderBarnRelasjon) {
-        var forelderBarnRelasjonAktiv = forelderBarnRelasjon.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
-
-        return forelderBarnRelasjonAktiv.stream()
-                .filter(familierelasjon -> "BARN".equals(familierelasjon.getRelatertPersonsRolle()))
-                .filter(barn -> barn.getRelatertPersonsIdent() == null)
-                .map(PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon::getRelatertPersonUtenFolkeregisteridentifikator)
-                .filter(Objects::nonNull)
-                .map(barn -> new Barn()
-                        .setFodselsdato(barn.getFoedselsdato())
-                        .setRelasjonsBosted(UKJENT_BOSTED))
                 .collect(Collectors.toList());
     }
 
