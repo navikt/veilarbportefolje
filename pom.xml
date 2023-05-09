@@ -235,19 +235,19 @@
         <dependency>
             <groupId>org.opensearch</groupId>
             <artifactId>opensearch</artifactId>
-            <version>2.5.0</version>
+            <version>2.7.0</version>
         </dependency>
         <dependency>
             <groupId>org.opensearch.client</groupId>
             <artifactId>opensearch-rest-high-level-client</artifactId>
-            <version>2.5.0</version>
+            <version>2.7.0</version>
         </dependency>
 
         <!--Diverse-->
         <dependency>
             <groupId>com.github.kagkarlsson</groupId>
             <artifactId>db-scheduler</artifactId>
-            <version>11.6</version>
+            <version>11.7</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -281,7 +281,7 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.10.5</version>
+            <version>1.10.6</version>
         </dependency>
 
         <!--TEST-->
