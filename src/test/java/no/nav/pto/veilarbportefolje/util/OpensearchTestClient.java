@@ -15,8 +15,8 @@ import org.opensearch.action.index.IndexResponse;
 import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
-import org.opensearch.common.xcontent.XContentBuilder;
 import org.opensearch.common.xcontent.XContentType;
+import org.opensearch.core.xcontent.XContentBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
