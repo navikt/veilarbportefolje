@@ -67,7 +67,7 @@ public class PDLPerson {
                 .setTolkBehovSistOppdatert(hentTolkBehovSistOppdatert(response.getTilrettelagtKommunikasjon()))
                 .setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()))
                 .setSikkerhetstiltak(hentSikkerhetstiltak(response.getSikkerhetstiltak()))
-                .setBarn(hentBarnFnr(response.getForelderBarnRelasjon()))
+                .setBarn(hentForeldreansvar(response.getForeldreansvar()))
                 .setBostedsadresse(hentBostedAdresse(response.getBostedsadresse()).orElse(null));
 
     }
@@ -240,12 +240,11 @@ public class PDLPerson {
         }).map(PDLStatsborgerskap::toStatsborgerskap).collect(Collectors.toList());
     }
 
-    private static List<Fnr> hentBarnFnr(List<PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon> forelderBarnRelasjon) {
-        var forelderBarnRelasjonAktiv = forelderBarnRelasjon.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
+    private static List<Fnr> hentForeldreansvar(List<PdlPersonResponse.PdlPersonResponseData.Foreldreansvar> foreldreansvar) {
+        var foreldreansvarAktivt = foreldreansvar.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
 
-        return forelderBarnRelasjonAktiv.stream()
-                .filter(familierelasjon -> "BARN".equals(familierelasjon.getRelatertPersonsRolle()))
-                .map(PdlPersonResponse.PdlPersonResponseData.ForelderBarnRelasjon::getRelatertPersonsIdent)
+        return foreldreansvarAktivt.stream()
+                .map(PdlPersonResponse.PdlPersonResponseData.Foreldreansvar::getAnsvarssubjekt)
                 .filter(Objects::nonNull)
                 .map(Fnr::of)
                 .collect(Collectors.toList());

@@ -35,13 +35,37 @@ public class BarnUnder18AarRepository {
         return barn;
     }
 
-    public void lagreBrukerBarnData(Fnr fnrForesatt, Boolean foresattErAnsvarlig, LocalDate barnFoedselsdato, String diskresjonskode) {
-        db.update("""
-                        INSERT INTO bruker_data_barn (foresatt_ident, foresatt_er_ansvarlig, barn_foedselsdato, barn_diskresjonkode)
-                        VALUES(?,?,?,?)
-                         """,
-                fnrForesatt.get(), foresattErAnsvarlig, barnFoedselsdato, diskresjonskode);
+
+    public List<Fnr> hentForeldreansvarForPerson(Fnr fnrForesatt) {
+        List<Fnr> barn = dbReadOnly.queryForList("""
+                            SELECT barn_ident FROM foreldreansvar WHERE FORESATT_IDENT = ?
+                        """, String.class, fnrForesatt.get()).stream()
+                .map(Fnr::of)
+                .toList();
+
+        return barn;
     }
+
+    public void lagreBarnData(Fnr barnIdent, LocalDate barnFoedselsdato, String diskresjonskode) {
+        db.update("""
+                        INSERT INTO bruker_data_barn (barn_ident, barn_foedselsdato, barn_diskresjonkode)
+                        VALUES(?,?,?) ON CONFLICT (barn_ident) DO UPDATE SET (barn_foedselsdato, barn_diskresjonkode) = (excluded.barn_foedselsdato, excluded.barn_diskresjonkode)
+                         """,
+                barnIdent.get(), barnFoedselsdato, diskresjonskode);
+    }
+
+    public void lagreForeldreansvar(Fnr foresattIdent, Fnr barnIdent) {
+        db.update("""
+                        INSERT INTO foreldreansvar (foresatt_ident, barn_ident)
+                        VALUES(?,?) ON CONFLICT (foresatt_ident, barn_ident) DO NOTHING 
+                         """,
+                foresattIdent.get(), barnIdent.get());
+    }
+
+
+
+
+
 
     public void slettBrukerBarnData(Fnr fnrForesatt) {
         db.update("""
