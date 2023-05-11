@@ -1,0 +1,15 @@
+package no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import no.nav.common.types.identer.Fnr;
+
+import java.time.LocalDate;
+
+@Data
+@AllArgsConstructor
+public class BarnUnder18Aar {
+    Fnr fnr;
+    LocalDate fodselsdato;
+    String diskresjonskode;
+}
