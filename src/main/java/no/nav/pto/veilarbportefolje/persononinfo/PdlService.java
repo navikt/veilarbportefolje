@@ -45,9 +45,11 @@ public class PdlService {
             List<BarnUnder18Aar> barn = new ArrayList<>();
             personData.getBarn().forEach(barnFnr -> {
                 PDLPersonBarn barnPdl = pdlClient.hentBrukerBarnDataFraPdl(fnrPerson);
-                barn.add(new BarnUnder18Aar(barnFnr, barnPdl.getFodselsdato(), barnPdl.getDiskresjonskode()));
-            });
 
+                if (barnPdl.isErIlive()){
+                    barn.add(new BarnUnder18Aar(barnFnr, barnPdl.getFodselsdato(), barnPdl.getDiskresjonskode()));
+                }
+            });
             barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barn);
         }
     }

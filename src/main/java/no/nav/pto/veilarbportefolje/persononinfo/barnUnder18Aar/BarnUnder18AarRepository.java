@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
-import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 
@@ -25,17 +24,6 @@ public class BarnUnder18AarRepository {
 
     private final JdbcTemplate db;
 
-    public List<BarnUnder18AarData> hentBarnUnder18Aar(String fnr) {
-        List<BarnUnder18AarData> barn = dbReadOnly.queryForList("""
-                            SELECT * FROM BRUKER_DATA_BARN WHERE FORESATT_IDENT = ?
-                        """, fnr).stream()
-                .map(this::mapTilBarnUnder18)
-                .toList();
-
-        return barn;
-    }
-
-
     public List<Fnr> hentForeldreansvarForPerson(Fnr fnrForesatt) {
         List<Fnr> barn = dbReadOnly.queryForList("""
                             SELECT barn_ident FROM foreldreansvar WHERE FORESATT_IDENT = ?
@@ -44,6 +32,14 @@ public class BarnUnder18AarRepository {
                 .toList();
 
         return barn;
+    }
+
+    public Boolean finnesBarnIForeldreansvar(Fnr fnrBarn) {
+        Integer numOfRows = dbReadOnly.queryForObject("""
+                            SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = ?
+                        """, Integer.class, fnrBarn.get());
+
+        return numOfRows > 0;
     }
 
     public void lagreBarnData(Fnr barnIdent, LocalDate barnFoedselsdato, String diskresjonskode) {
@@ -62,24 +58,27 @@ public class BarnUnder18AarRepository {
                 foresattIdent.get(), barnIdent.get());
     }
 
-
-
-
-
-
-    public void slettBrukerBarnData(Fnr fnrForesatt) {
+    public void slettForeldreansvar(Fnr fnrForesatt, Fnr fnrBarn) {
         db.update("""
-                        DELETE FROM bruker_data_barn WHERE foresatt_ident = ?
+                        DELETE FROM foreldreansvar WHERE foresatt_ident = ? AND barn_ident = ?
                          """,
-                fnrForesatt.get());
+                fnrForesatt.get(), fnrBarn.get());
     }
 
+    public void slettBarnData(Fnr fnrBarn) {
+        db.update("""
+                        DELETE FROM bruker_data_barn WHERE barn_ident = ?
+                         """,
+                fnrBarn.get());
+    }
 
-    private BarnUnder18AarData mapTilBarnUnder18(Map<String, Object> rs) {
-        return new BarnUnder18AarData(
-                alderFraFodselsdato(toLocalDateOrNull((java.sql.Date) rs.get("BARN_FOEDSELSDATO")),
-                        LocalDate.now()), (boolean) rs.get("BOR_MED_FORESATT"),
-                (String) rs.get("BARN_DISKRESJONKODE"));
+    public BarnUnder18AarData hentInfoOmBarn(Fnr fnrBarn) {
+        return dbReadOnly.queryForObject(
+                            "SELECT * FROM bruker_data_barn WHERE barn_ident = ?",
+                          (rs, row) -> new BarnUnder18AarData(
+                                  alderFraFodselsdato(toLocalDateOrNull((java.sql.Date) rs.getDate("BARN_FOEDSELSDATO")),
+                                          LocalDate.now()),
+                                  (String) rs.getString("BARN_DISKRESJONKODE")), fnrBarn.get());
     }
 
     public static Long alderFraFodselsdato(LocalDate date, LocalDate now) {
