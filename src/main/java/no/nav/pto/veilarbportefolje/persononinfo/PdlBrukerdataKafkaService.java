@@ -48,7 +48,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
         List<PDLIdent> pdlIdenter = pdlDokument.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
-        List<Fnr> fnrS = hentFnrs(pdlIdenter);
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
@@ -56,10 +55,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
             handterIdentEndring(pdlIdenter);
-
-            if (barnUnder18AarRepository.erEndringForBarnAvBrukerUnderOppfolging(fnrS)) {
-                handterBrukerBarnDataEndring(pdlDokument.getHentPerson());
-            }
 
             oppdaterOpensearch(aktivAktorId, pdlIdenter);
         }
@@ -83,10 +78,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         }
         List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);
         pdlPersonRepository.slettLagretBrukerData(inaktiveFnr);
-    }
-
-    private void handterBrukerBarnDataEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka) {
-        
     }
 
     private void handterIdentEndring(List<PDLIdent> pdlIdenter) {
