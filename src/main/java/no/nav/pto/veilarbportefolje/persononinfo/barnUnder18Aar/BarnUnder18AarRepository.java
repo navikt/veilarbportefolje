@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
-import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 
@@ -24,17 +23,6 @@ public class BarnUnder18AarRepository {
     private final JdbcTemplate dbReadOnly;
 
     private final JdbcTemplate db;
-
-    public List<BarnUnder18AarData> hentBarnUnder18Aar(String fnr) {
-        List<BarnUnder18AarData> barn = dbReadOnly.queryForList("""
-                            SELECT * FROM BRUKER_DATA_BARN WHERE FORESATT_IDENT = ?
-                        """, fnr).stream()
-                .map(this::mapTilBarnUnder18)
-                .toList();
-
-        return barn;
-    }
-
 
     public List<Fnr> hentForeldreansvarForPerson(Fnr fnrForesatt) {
         List<Fnr> barn = dbReadOnly.queryForList("""
@@ -84,12 +72,13 @@ public class BarnUnder18AarRepository {
                 fnrBarn.get());
     }
 
-
-    private BarnUnder18AarData mapTilBarnUnder18(Map<String, Object> rs) {
-        return new BarnUnder18AarData(
-                alderFraFodselsdato(toLocalDateOrNull((java.sql.Date) rs.get("BARN_FOEDSELSDATO")),
-                        LocalDate.now()), (boolean) rs.get("BOR_MED_FORESATT"),
-                (String) rs.get("BARN_DISKRESJONKODE"));
+    public BarnUnder18AarData hentInfoOmBarn(Fnr fnrBarn) {
+        return dbReadOnly.queryForObject(
+                            "SELECT * FROM bruker_data_barn WHERE barn_ident = ?",
+                          (rs, row) -> new BarnUnder18AarData(
+                                  alderFraFodselsdato(toLocalDateOrNull((java.sql.Date) rs.getDate("BARN_FOEDSELSDATO")),
+                                          LocalDate.now()),
+                                  (String) rs.getString("BARN_DISKRESJONKODE")), fnrBarn.get());
     }
 
     public static Long alderFraFodselsdato(LocalDate date, LocalDate now) {
