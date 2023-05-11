@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -28,7 +26,6 @@ public class BarnUnder18AarService {
 }
 
     public void lagreBarnOgForeldreansvar(Fnr foresattIdent, List<BarnUnder18Aar> barn){
-        // Get existing barn in table foreldreansvar for foresatt
         List<Fnr> lagredeBarn = barnUnder18AarRepository.hentForeldreansvarForPerson(foresattIdent);
 
         List<Fnr> barnFnrFraPdl = barn.stream().map(BarnUnder18Aar::getFnr).toList();
@@ -47,7 +44,7 @@ public class BarnUnder18AarService {
             barnUnder18AarRepository.lagreBarnData(barnUnder18Aar.getFnr(), barnUnder18Aar.getFodselsdato(), barnUnder18Aar.getDiskresjonskode());
             barnUnder18AarRepository.lagreForeldreansvar(foresattIdent, barnUnder18Aar.getFnr());
         });
-        // Log it with warning
+        // Log it with warning?
     }
 
 }
