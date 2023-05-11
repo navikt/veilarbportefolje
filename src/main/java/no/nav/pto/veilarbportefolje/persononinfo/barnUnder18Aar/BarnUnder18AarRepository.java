@@ -12,10 +12,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 
 @Slf4j
@@ -38,33 +35,19 @@ public class BarnUnder18AarRepository {
         return barn;
     }
 
-    //TODO Legg til fnr_barn i tabellen. Slett "id".
-    //TODO Ta inn PDLPerson her og hent ut data derfra
-    public void upsert(Integer fnrBarn, Fnr fnrForesatt, Boolean borMedForesatt, LocalDate barnFoedselsdato, String diskresjonskode) {
+    public void lagreBrukerBarnData(Fnr fnrForesatt, Boolean foresattErAnsvarlig, LocalDate barnFoedselsdato, String diskresjonskode) {
         db.update("""
-                        INSERT INTO bruker_data_barn (id, foresatt_ident, bor_med_foresatt, barn_foedselsdato, barn_diskresjonkode)
-                        VALUES(?,?,?,?,?) ON CONFLICT (id, foresatt_ident) DO UPDATE SET
-                         (bor_med_foresatt, barn_foedselsdato, barn_diskresjonkode) =
-                         (excluded.bor_med_foresatt, excluded.barn_foedselsdato, excluded.barn_diskresjonkode)
+                        INSERT INTO bruker_data_barn (foresatt_ident, foresatt_er_ansvarlig, barn_foedselsdato, barn_diskresjonkode)
+                        VALUES(?,?,?,?)
                          """,
-                fnrBarn, fnrForesatt.get(), borMedForesatt, barnFoedselsdato, diskresjonskode);
+                fnrForesatt.get(), foresattErAnsvarlig, barnFoedselsdato, diskresjonskode);
     }
 
-    public void upsert2(Integer fnrBarn, Fnr fnrForesatt, Boolean borMedForesatt, LocalDate barnFoedselsdato, String diskresjonskode) {
+    public void slettBrukerBarnData(Fnr fnrForesatt) {
         db.update("""
-                        INSERT INTO bruker_data_barn (id, foresatt_ident, bor_med_foresatt, barn_foedselsdato, barn_diskresjonkode)
-                        VALUES(?,?,?,?,?)
+                        DELETE FROM bruker_data_barn WHERE foresatt_ident = ?
                          """,
-                fnrBarn, fnrForesatt.get(), borMedForesatt, barnFoedselsdato, diskresjonskode);
-    }
-
-    public boolean erEndringForBarnAvBrukerUnderOppfolging(List<Fnr> fnrs) {
-        String identerParam = fnrs.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
-        return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject("""
-                        SELECT COUNT(*) as barnAntall FROM BRUKER_DATA_BARN WHERE id = any (?::varchar[])
-                        """, (rs, row) -> rs.getInt("barnAntall") > 0, identerParam))
-        ).orElse(false);
+                fnrForesatt.get());
     }
 
 
