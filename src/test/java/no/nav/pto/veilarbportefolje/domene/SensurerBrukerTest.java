@@ -19,7 +19,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -210,18 +209,17 @@ public class SensurerBrukerTest {
     private Bruker brukerMedKode6Barn() {
         return new Bruker()
                 .setFnr("11111111111")
-                .setBarnUnder18AarData(List.of(new BarnUnder18AarData(
-                        15L, true, "6"
-                ), new BarnUnder18AarData(
-                        12L, false, "6"
-                )));
+                .setBarnUnder18AarData(List.of(
+                        new BarnUnder18AarData(15L, "6"),
+                        new BarnUnder18AarData(12L, "6")
+                ));
     }
 
     private Bruker brukerMedKode7Barn() {
         return new Bruker()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(new BarnUnder18AarData(
-                        15L, true, "7"
+                        1L, "7"
                 )));
     }
 
@@ -229,10 +227,10 @@ public class SensurerBrukerTest {
         return new Bruker()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(
-                        new BarnUnder18AarData(15L, true, "6"),
-                        new BarnUnder18AarData(15L, true, "7"),
-                        new BarnUnder18AarData(15L, true, ""))
-                );
+                        new BarnUnder18AarData(11L, "6"),
+                        new BarnUnder18AarData(15L, "7"),
+                        new BarnUnder18AarData(3L, "")
+                ));
     }
 
 

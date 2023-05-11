@@ -10,4 +10,5 @@ import lombok.Value;
 public class PdlDokument {
     PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData hentPerson;
     PdlIdentResponse.HentIdenterResponseData.HentIdenterResponsData hentIdenter;
+    PdlBarnResponse.PdlBarnResponseData.HentPersonResponsData hentPersonBarn;
 }

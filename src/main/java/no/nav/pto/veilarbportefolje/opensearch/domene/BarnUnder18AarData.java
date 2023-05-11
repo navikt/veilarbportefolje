@@ -4,13 +4,11 @@ import lombok.Data;
 
 @Data
 public class BarnUnder18AarData {
-    Long alder;
-    Boolean bor_med_foresatt;
+    Integer alder;
     String diskresjonskode;
 
-    public BarnUnder18AarData(long l, boolean b, String s) {
-        this.alder = l;
-        this.bor_med_foresatt = b;
+    public BarnUnder18AarData(Integer alder, String s) {
+        this.alder = alder;
         this.diskresjonskode = s;
     }
 }

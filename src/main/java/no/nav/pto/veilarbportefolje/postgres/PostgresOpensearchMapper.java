@@ -152,7 +152,7 @@ public class PostgresOpensearchMapper {
     }
 
     public void flettInnBarnUnder18Aar(List<OppfolgingsBruker> brukere){
-        Map<Fnr,List<BarnUnder18AarData>> barnUnder18AarMap = barnUnder18AarService.hentBarnUnder18AarAlle(brukere.stream().map(bruker -> Fnr.of(bruker.getFnr())).collect(Collectors.toList()));
+        Map<Fnr,List<BarnUnder18AarData>> barnUnder18AarMap = barnUnder18AarService.hentBarnUnder18Aar(brukere.stream().map(bruker -> Fnr.of(bruker.getFnr())).collect(Collectors.toList()));
         brukere.forEach(bruker -> bruker.setBarnUnder18AarData(barnUnder18AarMap.get(bruker.getFnr())));
     }
 
