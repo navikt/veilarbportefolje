@@ -65,6 +65,16 @@ public class BarnUnder18AarRepository {
         return barn;
     }
 
+    public List<Fnr> hentAlleBarnOver18() {
+        List<Fnr> barn = dbReadOnly.queryForList("""
+                            SELECT barn_ident  FROM bruker_data_barn WHERE BARN_FOEDSELSDATO <= NOW() - INTERVAL '18 YEARS';
+                        """, String.class).stream()
+                .map(Fnr::of)
+                .toList();
+
+        return barn;
+    }
+
     public Boolean finnesBarnIForeldreansvar(Fnr fnrBarn) {
         Integer numOfRows = dbReadOnly.queryForObject("""
                     SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = ?
@@ -122,6 +132,13 @@ public class BarnUnder18AarRepository {
         db.update("""
                 DELETE FROM foreldreansvar WHERE barn_ident = ?
                  """, fnrBarn.get());
+    }
+
+    public void slettForeldreansvar(Fnr fnrBarn) {
+        db.update("""
+                        DELETE FROM foreldreansvar WHERE barn_ident = ?
+                         """
+                , fnrBarn.get());
     }
 
     public void slettForeldreansvar(Fnr fnrBarn) {

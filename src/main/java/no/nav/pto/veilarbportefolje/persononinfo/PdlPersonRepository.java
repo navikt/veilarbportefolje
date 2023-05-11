@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_STATSBORGERSKA
 import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.domene.Sikkerhetstiltak;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Barn;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -157,8 +156,5 @@ public class PdlPersonRepository {
                     }
                     return results;
                 });
-    }
-
-    public void upsertPersonBarn(Fnr foreldreFnr, List<Barn> personBarn) {
     }
 }

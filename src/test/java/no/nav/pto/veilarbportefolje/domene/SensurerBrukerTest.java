@@ -211,8 +211,8 @@ public class SensurerBrukerTest {
         return new Bruker()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(
-                        new BarnUnder18AarData(15L, "6"),
-                        new BarnUnder18AarData(12L, "6")
+                        new BarnUnder18AarData(15, "6"),
+                        new BarnUnder18AarData(12, "6")
                 ));
     }
 
@@ -220,7 +220,7 @@ public class SensurerBrukerTest {
         return new Bruker()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(new BarnUnder18AarData(
-                        1L, "7"
+                        1, "7"
                 )));
     }
 
@@ -228,9 +228,9 @@ public class SensurerBrukerTest {
         return new Bruker()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(
-                        new BarnUnder18AarData(11L, "6"),
-                        new BarnUnder18AarData(15L, "7"),
-                        new BarnUnder18AarData(3L, "")
+                        new BarnUnder18AarData(11, "6"),
+                        new BarnUnder18AarData(15, "7"),
+                        new BarnUnder18AarData(3, "")
                 ));
     }
 
