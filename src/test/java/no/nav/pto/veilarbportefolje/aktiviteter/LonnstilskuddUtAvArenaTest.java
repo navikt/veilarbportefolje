@@ -86,7 +86,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
 
     @Test
     public void skal_ikke_returnere_tiltaksdata_naar_status_er_av_type_AktivitetIkkeAktivStatuser() {
-        Mockito.when(unleashService.isEnabled(FeatureToggle.STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER)).thenReturn(false);
         NavKontor navKontor = randomNavKontor();
         AktorId aktorId1 = randomAktorId();
         AktorId aktorId2 = randomAktorId();
@@ -135,7 +134,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
 
     @Test
     public void skal_ikke_indeksere_bruker_med_tiltaksaktivitet_data_naar_status_er_av_type_AktivitetIkkeAktivStatuser() {
-        Mockito.when(unleashService.isEnabled(FeatureToggle.STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER)).thenReturn(false);
         NavKontor navKontor = randomNavKontor();
         AktorId aktorId1 = randomAktorId();
         AktorId aktorId2 = randomAktorId();
@@ -220,7 +218,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
 
     @Test
     public void skal_indeksere_bruker_naar_vi_faar_lonnstilskudd_fra_DAB() {
-        Mockito.when(unleashService.isEnabled(FeatureToggle.STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER)).thenReturn(false);
         NavKontor navKontor = randomNavKontor();
         AktorId aktorId1 = randomAktorId();
         AktorId aktorId2 = randomAktorId();
@@ -328,7 +325,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
 
     @Test
     public void skal_lese_melding_og_indeksere_bruker_naar_fraDato_og_tilDato_er_null() {
-        Mockito.when(unleashService.isEnabled(FeatureToggle.STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER)).thenReturn(false);
         NavKontor navKontor = randomNavKontor();
         AktorId aktorId1 = randomAktorId();
         Fnr fnr1 = randomFnr();
@@ -370,7 +366,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
 
     @Test
     public void skal_ikke_indeksere_lonnstilskudd_fra_DAB_naar_featuretoggle_er_enabled() {
-        Mockito.when(unleashService.isEnabled(FeatureToggle.STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER)).thenReturn(true);
         NavKontor navKontor = randomNavKontor();
         AktorId aktorId1 = randomAktorId();
         AktorId aktorId2 = randomAktorId();
@@ -781,7 +776,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         AktorId aktoer = randomAktorId();
         Fnr fodselsnummer = randomFnr();
         NavKontor navKontor = randomNavKontor();
-        Mockito.when(unleashService.isEnabled(FeatureToggle.STOPP_INDEKSERING_AV_TILTAKSAKTIVITETER)).thenReturn(false);
 
         testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
