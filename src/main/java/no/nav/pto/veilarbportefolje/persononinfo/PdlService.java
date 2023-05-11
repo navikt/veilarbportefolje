@@ -5,8 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18Aar;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Barn;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static no.nav.pto.veilarbportefolje.persononinfo.domene.RelasjonsBosted.SAMME_BOSTED;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
@@ -27,7 +27,7 @@ public class PdlService {
     private final PdlIdentRepository pdlIdentRepository;
     private final PdlPersonRepository pdlPersonRepository;
 
-    private final BarnUnder18AarRepository barnUnder18AarRepository;
+    private final BarnUnder18AarService barnUnder18AarService;
     private final PdlPortefoljeClient pdlClient;
 
     public void hentOgLagrePdlData(AktorId aktorId) {
@@ -41,13 +41,14 @@ public class PdlService {
         PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnrPerson);
         pdlPersonRepository.upsertPerson(fnrPerson, personData);
 
-        List<PDLPersonBarn> brukerBarn = new ArrayList<>();
-
         if (personData.getBarn() != null) {
+            List<BarnUnder18Aar> barn = new ArrayList<>();
             personData.getBarn().forEach(barnFnr -> {
-                PDLPersonBarn barn = pdlClient.hentBrukerBarnDataFraPdl(fnrPerson);
-                barnUnder18AarRepository.upsert2(barnFnr, fnrPerson, barn.getFodselsdato(), barn.getDiskresjonskode());
+                PDLPersonBarn barnPdl = pdlClient.hentBrukerBarnDataFraPdl(fnrPerson);
+                barn.add(new BarnUnder18Aar(barnFnr, barnPdl.getFodselsdato(), barnPdl.getDiskresjonskode()));
             });
+
+            barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barn);
         }
     }
 
