@@ -291,6 +291,7 @@ public class OpensearchQueryBuilder {
             filtervalg.utdanning.forEach(utdanningSvar -> {
                 if (utdanningSvar == UtdanningSvar.INGEN_DATA) {
                     brukerensUtdanningSubQuery.should(boolQuery().mustNot(existsQuery("utdanning")));
+                    brukerensUtdanningSubQuery.should(matchQuery("utdanning", "INGEN_SVAR"));
                 } else {
                     brukerensUtdanningSubQuery.should(matchQuery("utdanning", utdanningSvar));
                 }
@@ -304,6 +305,7 @@ public class OpensearchQueryBuilder {
             filtervalg.utdanningBestatt.forEach(utdanningSvar -> {
                 if (utdanningSvar == UtdanningBestattSvar.INGEN_DATA) {
                     brukerensUtdanningSubQuery.should(boolQuery().mustNot(existsQuery("utdanning_bestatt")));
+                    brukerensUtdanningSubQuery.should(matchQuery("utdanning_bestatt", "INGEN_SVAR"));
                 } else {
                     brukerensUtdanningSubQuery.should(matchQuery("utdanning_bestatt", utdanningSvar));
                 }
@@ -317,6 +319,7 @@ public class OpensearchQueryBuilder {
             filtervalg.utdanningGodkjent.forEach(utdanningSvar -> {
                 if (utdanningSvar == UtdanningGodkjentSvar.INGEN_DATA) {
                     brukerensUtdanningSubQuery.should(boolQuery().mustNot(existsQuery("utdanning_godkjent")));
+                    brukerensUtdanningSubQuery.should(matchQuery("utdanning_godkjent", "INGEN_SVAR"));
                 } else {
                     brukerensUtdanningSubQuery.should(matchQuery("utdanning_godkjent", utdanningSvar));
                 }

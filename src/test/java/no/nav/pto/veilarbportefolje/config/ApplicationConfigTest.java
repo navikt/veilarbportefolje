@@ -8,6 +8,8 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
+import no.nav.common.types.identer.EnhetId;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
@@ -315,7 +317,8 @@ public class ApplicationConfigTest {
         Pep pep = mock(Pep.class);
         when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(false);
         when(pep.harTilgangTilEnhet(any(), any())).thenReturn(false);
-        when(pep.harTilgangTilEnhetMedSperre(any(), any())).thenReturn(false);
+        when(pep.harTilgangTilEnhetMedSperre(anyString(), any())).thenReturn(false);
+        when(pep.harTilgangTilEnhetMedSperre(any(NavIdent.class), any())).thenReturn(false);
         when(pep.harVeilederTilgangTilPerson(any(), any(), any())).thenReturn(false);
         when(pep.harTilgangTilPerson(any(), any(), any())).thenReturn(false);
         when(pep.harTilgangTilOppfolging(any())).thenReturn(false);

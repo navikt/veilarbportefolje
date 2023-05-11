@@ -625,7 +625,9 @@ CREATE TABLE public.ytelse_status_for_bruker (
     permutlopuke integer,
     aapmaxtiduke integer,
     aapunntakdagerigjen integer,
-    ytelse character varying(40)
+    ytelse character varying(40),
+    antalldagerigjen integer,
+    endret_dato timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -645,8 +647,17 @@ CREATE TABLE public.ytelsesvedtak (
     utlopsdato timestamp without time zone,
     antallukerigjen integer,
     antallpermitteringsuker integer,
-    antallukerigjenunntak integer
+    antalldagerigjenunntak integer,
+    antalldagerigjen integer,
+    endret_dato timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+
+
+--
+-- Name: bruker_data_barn id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bruker_data_barn ALTER COLUMN id SET DEFAULT nextval('public.bruker_data_barn_id_seq'::regclass);
 
 
 --

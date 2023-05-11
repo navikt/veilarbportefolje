@@ -39,7 +39,7 @@ public class Avvik14aStatistikkMetrikk implements MeterBinder {
     }
 
     // Kjøres klokken 3 hver natt
-    @Scheduled(cron = "0 3 * * * ?")
+    @Scheduled(cron = "0 0 3 * * ?")
     public void oppdaterMetrikk() {
         log.info("Kjører schedulert jobb \"Oppdaterer metrikker for avvik 14 a statistikk\" ");
 
