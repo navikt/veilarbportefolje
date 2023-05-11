@@ -18,12 +18,10 @@ public class PDLPersonBarn {
     private String diskresjonskode;
 
     private boolean erIlive;
-    private Bostedsadresse bostedsadresse;
 
     public static PDLPersonBarn genererFraApiRespons(PdlBarnResponse.PdlBarnResponseData.HentPersonResponsData response) {
         PDLPersonBarn barn = new PDLPersonBarn();
 
-        barn.setBostedsadresse(hentBostedAdresse(response.getBostedsadresse()));
         barn.setFodselsdato(hentFodselsdato(response.getFoedsel()));
         barn.setErIlive(hentErILive(response.getDoedsfall()));
         barn.setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()));
@@ -47,16 +45,6 @@ public class PDLPersonBarn {
                 .findFirst()
                 .map(PdlBarnResponse.PdlBarnResponseData.Foedsel::getFoedselsdato)
                 .map(LocalDate::parse)
-                .orElse(null);
-    }
-
-    private static Bostedsadresse hentBostedAdresse(List<Bostedsadresse> response) {
-        if (response == null) {
-            return null;
-        }
-        return response.stream()
-                .filter(bostedsadresse -> !bostedsadresse.getMetadata().isHistorisk())
-                .findFirst()
                 .orElse(null);
     }
 

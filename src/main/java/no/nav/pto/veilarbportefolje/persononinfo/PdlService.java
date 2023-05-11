@@ -41,22 +41,14 @@ public class PdlService {
         PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnrPerson);
         pdlPersonRepository.upsertPerson(fnrPerson, personData);
 
-        List<Barn> brukerBarn = new ArrayList<>();
+        List<PDLPersonBarn> brukerBarn = new ArrayList<>();
 
         if (personData.getBarn() != null) {
             personData.getBarn().forEach(barnFnr -> {
-                PDLPersonBarn personBarnData = pdlClient.hentBrukerBarnDataFraPdl(fnrPerson);
-                Barn barn = Barn.of(barnFnr, personBarnData, personData.getBostedsadresse());
-                if (barn != null) {
-                    brukerBarn.add(barn);
-                }
+                PDLPersonBarn barn = pdlClient.hentBrukerBarnDataFraPdl(fnrPerson);
+                barnUnder18AarRepository.upsert2(barnFnr, fnrPerson, barn.getFodselsdato(), barn.getDiskresjonskode());
             });
         }
-
-        brukerBarn.forEach(barn -> {
-            //TODO: Sjekk at UKJENT_BOSTED ikke mappes om til false her? Eller er det ok?
-            barnUnder18AarRepository.upsert2(Integer.valueOf(barn.getFnr().toString().substring(1,3)), fnrPerson, barn.getRelasjonsBosted().equals(SAMME_BOSTED), barn.getFodselsdato(), barn.getGradering());
-        });
     }
 
     private List<PDLIdent> hentOgLagreIdenter(AktorId aktorId) {
