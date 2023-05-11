@@ -46,6 +46,14 @@ public class BarnUnder18AarRepository {
         return barn;
     }
 
+    public Boolean finnesBarnIForeldreansvar(Fnr fnrBarn) {
+        Integer numOfRows = dbReadOnly.queryForObject("""
+                            SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = ?
+                        """, Integer.class, fnrBarn.get());
+
+        return numOfRows > 0;
+    }
+
     public void lagreBarnData(Fnr barnIdent, LocalDate barnFoedselsdato, String diskresjonskode) {
         db.update("""
                         INSERT INTO bruker_data_barn (barn_ident, barn_foedselsdato, barn_diskresjonkode)
@@ -62,16 +70,18 @@ public class BarnUnder18AarRepository {
                 foresattIdent.get(), barnIdent.get());
     }
 
-
-
-
-
-
-    public void slettBrukerBarnData(Fnr fnrForesatt) {
+    public void slettForeldreansvar(Fnr fnrForesatt, Fnr fnrBarn) {
         db.update("""
-                        DELETE FROM bruker_data_barn WHERE foresatt_ident = ?
+                        DELETE FROM foreldreansvar WHERE foresatt_ident = ? AND barn_ident = ?
                          """,
-                fnrForesatt.get());
+                fnrForesatt.get(), fnrBarn.get());
+    }
+
+    public void slettBarnData(Fnr fnrBarn) {
+        db.update("""
+                        DELETE FROM bruker_data_barn WHERE barn_ident = ?
+                         """,
+                fnrBarn.get());
     }
 
 
