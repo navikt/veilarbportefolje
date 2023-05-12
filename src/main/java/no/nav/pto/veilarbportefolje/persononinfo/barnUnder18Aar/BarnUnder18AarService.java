@@ -23,7 +23,6 @@ public class BarnUnder18AarService {
         fnrPersoner.forEach(fnrPerson -> {
                     barnUnder18AarRepository.hentForeldreansvarForPerson(fnrPerson).forEach(fnrBarn ->
                             {
-                                barnUnder18AarRepository.hentInfoOmBarn(fnrBarn);
                                 barnListe.add(barnUnder18AarRepository.hentInfoOmBarn(fnrBarn));
                             }
                     );
