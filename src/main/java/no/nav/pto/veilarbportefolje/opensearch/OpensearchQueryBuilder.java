@@ -366,6 +366,7 @@ public class OpensearchQueryBuilder {
             case "utlopteaktiviteter" -> searchSourceBuilder.sort("nyesteutlopteaktivitet", order);
             case "arbeidslistefrist" -> searchSourceBuilder.sort("arbeidsliste_frist", order);
             case "aaprettighetsperiode" -> sorterAapRettighetsPeriode(searchSourceBuilder, order);
+            case "aap_vurderingsfrist" -> sorterAapVurderingsfrist(searchSourceBuilder, order);
             case "utkast_14a_status" -> searchSourceBuilder.sort("utkast_14a_status", order);
             case "arbeidslistekategori" -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
             case "siste_endring_tidspunkt" -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
@@ -442,6 +443,21 @@ public class OpensearchQueryBuilder {
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
         return builder;
+    }
+
+    static void sorterAapVurderingsfrist(SearchSourceBuilder builder, SortOrder order) {
+        String expression = """
+                if (doc.ytelse == AAP_MAXTID) {
+                    return doc.aapmaxtiduke
+                } else if (doc.ytelse == AAP_UNNTAK) {
+                    return doc.aapunntakukerigjen
+                }
+                """;
+
+        Script script = new Script(expression);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
     }
 
     static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder builder, SortOrder order) {
