@@ -449,9 +449,9 @@ public class OpensearchQueryBuilder {
     static void sorterAapVurderingsfrist(SearchSourceBuilder builder, SortOrder order) {
         String expression = """
                 if (doc.ytelse == 'AAP_MAXTID') {
-                    return doc.aapmaxtiduke
+                    return doc.aapmaxtiduke.value;
                 } else if (doc.ytelse == 'AAP_UNNTAK') {
-                    return doc.aapunntakukerigjen
+                    return doc.aapunntakukerigjen.value;
                 }
                 """;
 
