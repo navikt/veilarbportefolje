@@ -4,7 +4,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arenapakafka.ArenaDato;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
@@ -43,7 +42,6 @@ import static org.mockito.Mockito.when;
 public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
 
     private final JdbcTemplate jdbcTemplatePostgres;
-    private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final TiltakRepositoryV3 tiltakRepositoryV3;
     private final TiltakService tiltakService;
     private final AktorClient aktorClient;
@@ -54,7 +52,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
     @Autowired
     public LonnstilskuddUtAvArenaTest(
             JdbcTemplate jdbcTemplatePostgres,
-            TiltakRepositoryV2 tiltakRepositoryV2,
             TiltakRepositoryV3 tiltakRepositoryV3,
             TiltakService tiltakService,
             UnleashService unleashService,
@@ -63,7 +60,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
             OpensearchService opensearchService
     ) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
-        this.tiltakRepositoryV2 = tiltakRepositoryV2;
         this.tiltakRepositoryV3 = tiltakRepositoryV3;
         this.tiltakService = tiltakService;
         this.aktorClient = aktorClient;
@@ -568,7 +564,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
                 .setAktivitetid("TA-456789101");
-        tiltakRepositoryV2.upsert(m1, aktorId1);
+        tiltakRepositoryV3.upsert(m1, aktorId1);
 
         TiltakInnhold m2 = new TiltakInnhold()
                 .setTiltakstype(til3.getKey())
@@ -576,7 +572,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAktivitetperiodeFra(new ArenaDato("2016-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2022-11-01"))
                 .setAktivitetid("TA-323456789");
-        tiltakRepositoryV2.upsert(m2, aktorId3);
+        tiltakRepositoryV3.upsert(m2, aktorId3);
 
         TiltakaktivitetEntity d1a = new TiltakaktivitetEntity()
                 .setTiltakskode(til1.getKey())
@@ -622,7 +618,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
                 .setAktivitetid("TA-456789101");
-        tiltakRepositoryV2.upsert(bruker1Tiltakinnhold, bruker1);
+        tiltakRepositoryV3.upsert(bruker1Tiltakinnhold, bruker1);
 
         TiltakaktivitetEntity bruker1Tiltakinnholdaktivitet = new TiltakaktivitetEntity()
                 .setTiltakskode(tiltak1.getKey())
@@ -637,7 +633,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAktivitetperiodeFra(new ArenaDato("2016-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2022-11-01"))
                 .setAktivitetid("TA-323456789");
-        tiltakRepositoryV2.upsert(bruker3Tiltakinnhold, bruker3);
+        tiltakRepositoryV3.upsert(bruker3Tiltakinnhold, bruker3);
 
         TiltakaktivitetEntity bruker2Tiltakaktivitet = new TiltakaktivitetEntity()
                 .setTiltakskode(tiltak2.getKey())
@@ -696,14 +692,14 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
                 .setAktivitetid("TA-456789101");
-        tiltakRepositoryV2.upsert(m1, a1);
+        tiltakRepositoryV3.upsert(m1, a1);
 
         TiltakInnhold m2 = new TiltakInnhold()
                 .setTiltakstype(til3.getKey())
                 .setAktivitetperiodeFra(new ArenaDato("2016-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2022-11-01"))
                 .setAktivitetid("TA-323456789");
-        tiltakRepositoryV2.upsert(m2, a1);
+        tiltakRepositoryV3.upsert(m2, a1);
 
         TiltakaktivitetEntity d1 = new TiltakaktivitetEntity()
                 .setTiltakskode(til1.getKey())

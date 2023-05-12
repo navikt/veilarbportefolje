@@ -86,7 +86,7 @@ public class TiltakPostgresTest {
                 .setAktivitetperiodeFra(new ArenaDato("1989-01-01"))
                 .setAktivitetperiodeTil(new ArenaDato("1990-01-01"))
                 .setAktivitetid("TA-123456789");
-        tiltakRepositoryV2.upsert(innhold, aktorId);
+        tiltakRepositoryV3.upsert(innhold, aktorId);
 
         AvtaltAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
                 .hentAvtaltAktivitetData(List.of(aktorId))
@@ -129,8 +129,8 @@ public class TiltakPostgresTest {
                 .setAktivitetperiodeTil(new ArenaDato(igarTid.toString().substring(0, 10)))
                 .setAktivitetid("TA-321");
 
-        tiltakRepositoryV2.upsert(idag, aktorId);
-        tiltakRepositoryV2.upsert(igar, aktorId);
+        tiltakRepositoryV3.upsert(idag, aktorId);
+        tiltakRepositoryV3.upsert(igar, aktorId);
 
         AvtaltAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
                 .hentAvtaltAktivitetData(List.of(aktorId))
@@ -156,7 +156,7 @@ public class TiltakPostgresTest {
                 .setTiltakstype(tiltaksType)
                 .setDeltakerStatus("GJENN")
                 .setAktivitetid(id);
-        tiltakRepositoryV2.upsert(innhold, aktorId);
+        tiltakRepositoryV3.upsert(innhold, aktorId);
         tiltakRepositoryV2.delete(id);
 
         Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
@@ -198,8 +198,8 @@ public class TiltakPostgresTest {
                 .setDeltakerStatus("GJENN")
                 .setAktivitetid("T-321");
 
-        tiltakRepositoryV2.upsert(tiltak1, aktorId);
-        tiltakRepositoryV2.upsert(tiltak2, aktorId);
+        tiltakRepositoryV3.upsert(tiltak1, aktorId);
+        tiltakRepositoryV3.upsert(tiltak2, aktorId);
 
         EnhetTiltak enhetTiltak = tiltakRepositoryV3.hentTiltakPaEnhet(EnhetId.of(navKontor));
         assertThat(enhetTiltak.getTiltak().size()).isEqualTo(2);

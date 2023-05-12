@@ -1,32 +1,15 @@
 package no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EnhetId;
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
-import no.nav.pto.veilarbportefolje.database.PostgresTable;
-import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
-import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
-import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toMap;
-import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
-import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
-import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapTiltakTilEntity;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -40,26 +23,6 @@ public class TiltakRepositoryV2 {
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate namedDb;
 
-    public void upsert(TiltakInnhold innhold, AktorId aktorId) {
-        LocalDateTime fraDato = getLocalDateTimeOrNull(innhold.getAktivitetperiodeFra(), false);
-        LocalDateTime tilDato = getLocalDateTimeOrNull(innhold.getAktivitetperiodeTil(), true);
-
-        secureLog.info("Lagrer tiltak: {}", innhold.getAktivitetid());
-
-        if (skalOppdatereTiltakskodeVerk(innhold.getTiltakstype(), innhold.getTiltaksnavn())) {
-            upsertTiltakKodeVerk(innhold);
-        }
-        db.update("""
-                        INSERT INTO brukertiltak
-                        (aktivitetid, personid, aktoerid, tiltakskode, fradato, tildato) VALUES (?, ?, ?, ?, ?, ?)
-                        ON CONFLICT (aktivitetid) DO UPDATE SET (personid, aktoerid, tiltakskode, fradato, tildato)
-                        = (excluded.personid, excluded.aktoerid, excluded.tiltakskode, excluded.fradato, excluded.tildato)
-                        """,
-                innhold.getAktivitetid(),
-                String.valueOf(innhold.getPersonId()), aktorId.get(), innhold.getTiltakstype(), fraDato, tilDato
-        );
-    }
-
     public void delete(String tiltakId) {
         secureLog.info("Sletter tiltak: {}", tiltakId);
         db.update("DELETE FROM brukertiltak WHERE aktivitetid = ?", tiltakId);
@@ -70,20 +33,6 @@ public class TiltakRepositoryV2 {
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, String.class, kode))
         );
-    }
-
-    private void upsertTiltakKodeVerk(TiltakInnhold innhold) {
-        db.update("""
-                        INSERT INTO tiltakkodeverket (kode, verdi) VALUES (?, ?)
-                        ON CONFLICT (kode) DO UPDATE SET verdi = excluded.verdi
-                        """,
-                innhold.getTiltakstype(), innhold.getTiltaksnavn()
-        );
-    }
-
-    private boolean skalOppdatereTiltakskodeVerk(String tiltaksKode, String verdiFraKafka) {
-        Optional<String> verdiITiltakskodeVerk = hentVerdiITiltakskodeVerk(tiltaksKode);
-        return verdiITiltakskodeVerk.map(lagretVerdi -> !lagretVerdi.equals(verdiFraKafka)).orElse(true);
     }
 
 }

@@ -71,7 +71,7 @@ public class TiltakService {
             tiltakRepositoryV2.delete(innhold.getAktivitetid());
         } else {
             secureLog.info("Lagrer tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
-            tiltakRepositoryV2.upsert(innhold, aktorId);
+            tiltakRepositoryV3.upsert(innhold, aktorId);
         }
 
         arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
