@@ -68,7 +68,7 @@ public class TiltakService {
 
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
             secureLog.info("Sletter tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
-            tiltakRepositoryV2.delete(innhold.getAktivitetid());
+            tiltakRepositoryV3.deleteTiltaksaktivitetFraArena(innhold.getAktivitetid());
         } else {
             secureLog.info("Lagrer tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
             tiltakRepositoryV3.upsert(innhold, aktorId);
@@ -97,7 +97,7 @@ public class TiltakService {
 
         if (kafkaMelding.isHistorisk()) {
             secureLog.info("Sletter tiltaksaktivitet fra ny kilde: {} med tiltakskode {}, pa aktoer: {}", aktivitetId, kafkaMelding.getTiltakskode(), aktorId);
-            tiltakRepositoryV3.delete(aktivitetId);
+            tiltakRepositoryV3.deleteTiltaksaktivitetFraAktivitetsplanen(aktivitetId);
             return true;
         } else if (erNyVersjonAvAktivitet(kafkaMelding)) {
             secureLog.info("Lagrer tiltaksaktivitet fra ny kilde: {} med tiltakskode {}, pa aktoer: {}", aktivitetId, kafkaMelding.getTiltakskode(), aktorId);

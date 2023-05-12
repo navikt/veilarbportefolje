@@ -23,10 +23,6 @@ public class TiltakRepositoryV2 {
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate namedDb;
 
-    public void delete(String tiltakId) {
-        secureLog.info("Sletter tiltak: {}", tiltakId);
-        db.update("DELETE FROM brukertiltak WHERE aktivitetid = ?", tiltakId);
-    }
 
     public Optional<String> hentVerdiITiltakskodeVerk(String kode) {
         String sql = "SELECT verdi FROM tiltakkodeverket WHERE kode = ?";

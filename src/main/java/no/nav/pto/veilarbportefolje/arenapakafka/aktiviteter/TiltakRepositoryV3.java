@@ -83,10 +83,16 @@ public class TiltakRepositoryV3 {
         );
     }
 
-    public void delete(String tiltakaktivitetId) {
-        secureLog.info("Sletter tiltak: {}", tiltakaktivitetId);
-        db.update("DELETE FROM brukertiltak_v2 WHERE aktivitetid = ?", tiltakaktivitetId);
+    public void deleteTiltaksaktivitetFraAktivitetsplanen(String tiltaksaktivitetId) {
+        secureLog.info("Sletter tiltak: {}", tiltaksaktivitetId);
+        db.update("DELETE FROM brukertiltak_v2 WHERE aktivitetid = ?", tiltaksaktivitetId);
     }
+
+    public void deleteTiltaksaktivitetFraArena(String tiltaksaktivitetId) {
+        secureLog.info("Sletter tiltak: {}", tiltaksaktivitetId);
+        db.update("DELETE FROM brukertiltak WHERE aktivitetid = ?", tiltaksaktivitetId);
+    }
+
 
     public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
         final String hentTiltakPaEnhetSql = """

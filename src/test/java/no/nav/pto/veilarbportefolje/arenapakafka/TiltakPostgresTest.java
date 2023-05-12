@@ -92,7 +92,7 @@ public class TiltakPostgresTest {
                 .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
-        Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
+        Optional<String> kodeVerkNavn = tiltakRepositoryV3.hentTiltaksnavn(tiltaksType);
 
         assertThat(kodeVerkNavn.isPresent()).isTrue();
         assertThat(kodeVerkNavn.get()).isEqualTo(tiltaksNavn);
@@ -157,7 +157,7 @@ public class TiltakPostgresTest {
                 .setDeltakerStatus("GJENN")
                 .setAktivitetid(id);
         tiltakRepositoryV3.upsert(innhold, aktorId);
-        tiltakRepositoryV2.delete(id);
+        tiltakRepositoryV3.deleteTiltaksaktivitetFraArena(id);
 
         Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
 
