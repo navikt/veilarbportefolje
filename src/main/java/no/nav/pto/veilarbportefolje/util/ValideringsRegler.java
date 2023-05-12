@@ -35,7 +35,7 @@ public class ValideringsRegler {
             "permutlopuke",
             "aapmaxtiduke",
             "aapunntakukerigjen",
-            "aap_vurderingsfrist",
+            "aap_type",
             "arbeidslistefrist",
             "venterpasvarfranav",
             "venterpasvarfrabruker",
