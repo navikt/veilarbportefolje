@@ -48,7 +48,8 @@ public class BarnUnder18AarRepositoryTest {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
         final UnleashService unleashService = mock(UnleashService.class);
         when(unleashService.isEnabled(anyString())).thenReturn(true);
-        this.barnUnder18AarRepository = new BarnUnder18AarRepository(null, db);
+        this.barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
+        this.barnUnder18AarService = new BarnUnder18AarService(new BarnUnder18AarRepository(db, db));
         this.pdlPersonRepository = new PdlPersonRepository(db, null);
     }
 
@@ -61,26 +62,29 @@ public class BarnUnder18AarRepositoryTest {
         Fnr fnrPerson = randomFnr();
         Fnr fnrBarn = randomFnr();
         LocalDate fDato = LocalDate.of(2010, 10, 10);
+        //when(barnUnder18AarRepository.hentInfoOmBarn(fnrBarn)).thenReturn(new BarnUnder18AarData(15, "" ));
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn());
         barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barnFraPdl);
-        Map<Fnr, List<BarnUnder18AarData>> barn = barnUnder18AarService.hentBarnUnder18AarAlle(List.of(fnrPerson));
-        Assertions.assertTrue(!barn.isEmpty());
-        Assertions.assertTrue(barn.get(fnrPerson).get(0).getAlder().equals(15L));
+        Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18AarAlle(List.of(fnrPerson));
+        Assertions.assertFalse(forelderBarnMap.isEmpty());
+        Assertions.assertTrue(forelderBarnMap.get(fnrPerson).get(0).getAlder().equals(15L));
     }
 
     @Test
     public void barnBlirInsertedPaToUlikeForeldreSkalKunneVæreEnITabellen() {
         Fnr foresatt1 = randomFnr();
         Fnr foresatt2 = randomFnr();
+        Fnr fnrBarn = Fnr.of("12312312312");
         LocalDate fDato = LocalDate.of(2010, 10, 10);
         pdlPersonRepository.upsertPerson(foresatt1, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         pdlPersonRepository.upsertPerson(foresatt2, new PDLPerson().setKjonn(M).setFoedsel(LocalDate.now()));
+        //when(barnUnder18AarRepository.hentInfoOmBarn(fnrBarn)).thenReturn(new BarnUnder18AarData(15, "" ));
         List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn());
         barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt1, barnFraPdl);
         barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt2, barnFraPdl);
-        Map<Fnr, List<BarnUnder18AarData>> barn = barnUnder18AarService.hentBarnUnder18AarAlle(List.of(foresatt1));
-        Assertions.assertTrue(barn.size()==1);
+        Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18AarAlle(List.of(foresatt1));
+        Assertions.assertTrue(forelderBarnMap.size()==1);
     }
 
 
@@ -98,6 +102,13 @@ public class BarnUnder18AarRepositoryTest {
     }
 
     private BarnUnder18Aar pdlBarn() {
+        return new BarnUnder18Aar()
+                .setFnr(Fnr.of("12312312312"))
+                .setFodselsdato(LocalDate.of(2004, 12, 12))
+                .setDiskresjonskode("6");
+    }
+
+    private BarnUnder18Aar pdlBarn15Aar() {
         return new BarnUnder18Aar()
                 .setFnr(Fnr.of("12312312312"))
                 .setFodselsdato(LocalDate.of(2004, 12, 12))
