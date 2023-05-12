@@ -65,45 +65,11 @@ public class TiltakRepositoryV2 {
         db.update("DELETE FROM brukertiltak WHERE aktivitetid = ?", tiltakId);
     }
 
-    public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
-        final String hentTiltakPaEnhetSql = """
-                SELECT * FROM tiltakkodeverket WHERE
-                kode IN (SELECT DISTINCT tiltakskode FROM brukertiltak BT
-                INNER JOIN aktive_identer ai on ai.aktorid = BT.aktoerid
-                INNER JOIN oppfolgingsbruker_arena_v2 OP ON OP.fodselsnr = ai.fnr
-                WHERE OP.nav_kontor = ?)
-                """;
-
-        return new EnhetTiltak().setTiltak(
-                dbReadOnly.queryForList(hentTiltakPaEnhetSql, enhetId.get())
-                        .stream().map(this::mapTilTiltak)
-                        .collect(toMap(Tiltakkodeverk::getKode, Tiltakkodeverk::getVerdi))
-        );
-    }
-
     public Optional<String> hentVerdiITiltakskodeVerk(String kode) {
         String sql = "SELECT verdi FROM tiltakkodeverket WHERE kode = ?";
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, String.class, kode))
         );
-    }
-
-    public void leggTilTiltak(String aktoerIder, HashMap<AktorId, List<AktivitetEntityDto>> result) {
-        namedDb.query("""
-                        SELECT aktoerid, tildato, fradato, tiltakskode FROM brukertiltak
-                        WHERE aktoerid = ANY (:ids::varchar[])
-                        """,
-                new MapSqlParameterSource("ids", aktoerIder),
-                (ResultSet rs) -> {
-                    while (rs.next()) {
-                        AktorId aktoerId = AktorId.of(rs.getString("aktoerid"));
-                        AktivitetEntityDto aktivitet = mapTiltakTilEntity(rs);
-
-                        List<AktivitetEntityDto> list = result.get(aktoerId);
-                        result.put(aktoerId, leggTilAktivitetPaResultat(aktivitet, list));
-                    }
-                    return result;
-                });
     }
 
     private void upsertTiltakKodeVerk(TiltakInnhold innhold) {
@@ -120,8 +86,4 @@ public class TiltakRepositoryV2 {
         return verdiITiltakskodeVerk.map(lagretVerdi -> !lagretVerdi.equals(verdiFraKafka)).orElse(true);
     }
 
-    @SneakyThrows
-    private Tiltakkodeverk mapTilTiltak(Map<String, Object> rs) {
-        return Tiltakkodeverk.of((String) rs.get(PostgresTable.TILTAKKODEVERK.KODE), (String) rs.get(PostgresTable.TILTAKKODEVERK.VERDI));
-    }
 }

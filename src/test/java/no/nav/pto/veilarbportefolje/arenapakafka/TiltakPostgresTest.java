@@ -5,6 +5,7 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
@@ -42,6 +43,7 @@ public class TiltakPostgresTest {
     private final JdbcTemplate jdbcTemplatePostgres;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final TiltakRepositoryV2 tiltakRepositoryV2;
+    private final TiltakRepositoryV3 tiltakRepositoryV3;
     private final AktivitetOpensearchService aktivitetOpensearchService;
     private final PdlIdentRepository pdlIdentRepository;
 
@@ -49,11 +51,12 @@ public class TiltakPostgresTest {
     private final Fnr fnr = randomFnr();
 
     @Autowired
-    public TiltakPostgresTest( JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, PdlIdentRepository pdlIdentRepository) {
+    public TiltakPostgresTest(JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, TiltakRepositoryV3 tiltakRepositoryV3, AktivitetOpensearchService aktivitetOpensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, PdlIdentRepository pdlIdentRepository) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.tiltakRepositoryV2 = tiltakRepositoryV2;
+        this.tiltakRepositoryV3  = tiltakRepositoryV3;
         this.pdlIdentRepository = pdlIdentRepository;
     }
 
@@ -171,13 +174,13 @@ public class TiltakPostgresTest {
     public void skal_lagre_tiltak_pa_enhet() {
         String navKontor = "0007";
         pdlIdentRepository.upsertIdenter(List.of(
-                        new PDLIdent(aktorId.get(), false, AKTORID),
-                        new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
-                ));
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
+        ));
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null, "" +
                         "Tester", "Testerson", navKontor, null, null, null, null,
-                        "1234",  true, false, ZonedDateTime.now()));
+                        "1234", true, false, ZonedDateTime.now()));
         String tiltaksType1 = "T123";
         String tiltaksType2 = "T321";
         String tiltaksNavn1 = "test1";
@@ -198,7 +201,7 @@ public class TiltakPostgresTest {
         tiltakRepositoryV2.upsert(tiltak1, aktorId);
         tiltakRepositoryV2.upsert(tiltak2, aktorId);
 
-        EnhetTiltak enhetTiltak = tiltakRepositoryV2.hentTiltakPaEnhet(EnhetId.of(navKontor));
+        EnhetTiltak enhetTiltak = tiltakRepositoryV3.hentTiltakPaEnhet(EnhetId.of(navKontor));
         assertThat(enhetTiltak.getTiltak().size()).isEqualTo(2);
         assertThat(enhetTiltak.getTiltak().get(tiltaksType1)).isEqualTo(tiltaksNavn1);
         assertThat(enhetTiltak.getTiltak().get(tiltaksType2)).isEqualTo(tiltaksNavn2);

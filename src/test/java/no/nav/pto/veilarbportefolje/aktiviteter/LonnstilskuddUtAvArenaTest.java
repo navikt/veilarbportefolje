@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
@@ -23,10 +22,10 @@ import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
+import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
 import static no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic.TILTAK_TOPIC;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -562,41 +562,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         Map.Entry<String, String> til2 = Map.entry("MIDLONTIL", "Midlertidig lønnstilskudd");
         Map.Entry<String, String> til3 = Map.entry("MENTOR", "Mentor");
 
-        TiltakInnhold i1a = new TiltakInnhold()
-                .setTiltakstype(til1.getKey())
-                .setTiltaksnavn(til1.getValue())
-                .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
-                .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
-                .setAktivitetid("TA-123456789");
-        tiltakRepositoryV2.upsert(i1a, aktorId1);
-
-        TiltakInnhold i1b = new TiltakInnhold()
-                .setTiltakstype(til3.getKey())
-                .setTiltaksnavn(til3.getValue())
-                .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
-                .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
-                .setAktivitetid("TA-456789101");
-        tiltakRepositoryV2.upsert(i1b, aktorId1);
-
-        TiltakInnhold i2 = new TiltakInnhold()
-                .setTiltakstype(til2.getKey())
-                .setTiltaksnavn(til2.getValue())
-                .setAktivitetperiodeFra(new ArenaDato("2017-10-03"))
-                .setAktivitetperiodeTil(new ArenaDato("2023-11-01"))
-                .setAktivitetid("TA-223456789");
-        tiltakRepositoryV2.upsert(i2, aktorId2);
-
-        TiltakInnhold i3 = new TiltakInnhold()
-                .setTiltakstype(til3.getKey())
-                .setTiltaksnavn(til3.getValue())
-                .setAktivitetperiodeFra(new ArenaDato("2016-10-03"))
-                .setAktivitetperiodeTil(new ArenaDato("2022-11-01"))
-                .setAktivitetid("TA-323456789");
-        tiltakRepositoryV2.upsert(i3, aktorId3);
-
-        EnhetTiltak et1 = tiltakRepositoryV2.hentTiltakPaEnhet(EnhetId.of(navKontor.getValue()));
-        jdbcTemplatePostgres.update("TRUNCATE brukertiltak");
-
         TiltakInnhold m1 = new TiltakInnhold()
                 .setTiltakstype(til3.getKey())
                 .setTiltaksnavn(til3.getValue())
@@ -631,96 +596,86 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setStatus("GJENNOMFORES");
         tiltakRepositoryV3.upsert(d2, aktorId2);
 
-        EnhetTiltak et2 = tiltakRepositoryV3.hentTiltakPaEnhet(EnhetId.of(navKontor.getValue()));
+        EnhetTiltak et = tiltakRepositoryV3.hentTiltakPaEnhet(EnhetId.of(navKontor.getValue()));
 
         Map<String, String> forventedeTiltakPaaEnhet = Map.ofEntries(til1, til2, til3);
-        assertThat(et1.getTiltak().size()).isEqualTo(et2.getTiltak().size());
-        assertThat(et1.getTiltak()).containsExactlyInAnyOrderEntriesOf(forventedeTiltakPaaEnhet);
-        assertThat(et2.getTiltak()).containsExactlyInAnyOrderEntriesOf(forventedeTiltakPaaEnhet);
+        assertThat(et.getTiltak()).containsExactlyInAnyOrderEntriesOf(forventedeTiltakPaaEnhet);
+        assertThat(et.getTiltak()).containsExactlyInAnyOrderEntriesOf(forventedeTiltakPaaEnhet);
     }
 
     @Test
     public void skal_flette_sammen_data_fra_brukertiltak_og_brukertiltakv2_riktig() {
-        AktorId a1 = randomAktorId();
-        AktorId a2 = randomAktorId();
-        AktorId a3 = randomAktorId();
-        List<AktorId> aktorIdListe = List.of(a1, a2, a3);
+        AktorId bruker1 = randomAktorId();
+        AktorId bruker2 = randomAktorId();
+        AktorId bruker3 = randomAktorId();
+        List<AktorId> brukere = List.of(bruker1, bruker2, bruker3);
 
-        Map.Entry<String, String> til1 = Map.entry("VARLONTIL", "Lønnstilskudd");
-        Map.Entry<String, String> til2 = Map.entry("MIDLONTIL", "Midlertidig lønnstilskudd");
-        Map.Entry<String, String> til3 = Map.entry("MENTOR", "Mentor");
+        Map.Entry<String, String> tiltak1 = Map.entry("VARLONTIL", "Lønnstilskudd");
+        Map.Entry<String, String> tiltak2 = Map.entry("MIDLONTIL", "Midlertidig lønnstilskudd");
+        Map.Entry<String, String> tiltak3 = Map.entry("MENTOR", "Mentor");
 
-        String aktoerIder = aktorIdListe.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
-        HashMap<AktorId, List<AktivitetEntityDto>> result1 = new HashMap<>(aktorIdListe.size());
-        HashMap<AktorId, List<AktivitetEntityDto>> result2 = new HashMap<>(aktorIdListe.size());
+        String aktoerIder = brukere.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
+        HashMap<AktorId, List<AktivitetEntityDto>> result = new HashMap<>(brukere.size());
 
-        TiltakInnhold i1a = new TiltakInnhold()
-                .setTiltakstype(til1.getKey())
-                .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
-                .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
-                .setAktivitetid("TA-123456789");
-        tiltakRepositoryV2.upsert(i1a, a1);
-
-        TiltakInnhold i1b = new TiltakInnhold()
-                .setTiltakstype(til3.getKey())
+        TiltakInnhold bruker1Tiltakinnhold = new TiltakInnhold()
+                .setTiltakstype(tiltak3.getKey())
                 .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
                 .setAktivitetid("TA-456789101");
-        tiltakRepositoryV2.upsert(i1b, a1);
+        tiltakRepositoryV2.upsert(bruker1Tiltakinnhold, bruker1);
 
-        TiltakInnhold i2 = new TiltakInnhold()
-                .setTiltakstype(til2.getKey())
-                .setAktivitetperiodeFra(new ArenaDato("2017-10-03"))
-                .setAktivitetperiodeTil(new ArenaDato("2023-11-01"))
-                .setAktivitetid("TA-223456789");
-        tiltakRepositoryV2.upsert(i2, a2);
-
-        TiltakInnhold i3 = new TiltakInnhold()
-                .setTiltakstype(til3.getKey())
-                .setAktivitetperiodeFra(new ArenaDato("2016-10-03"))
-                .setAktivitetperiodeTil(new ArenaDato("2022-11-01"))
-                .setAktivitetid("TA-323456789");
-        tiltakRepositoryV2.upsert(i3, a3);
-
-        tiltakRepositoryV2.leggTilTiltak(aktoerIder, result1);
-        jdbcTemplatePostgres.update("TRUNCATE brukertiltak");
-
-        TiltakInnhold m1 = new TiltakInnhold()
-                .setTiltakstype(til3.getKey())
-                .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
-                .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
-                .setAktivitetid("TA-456789101");
-        tiltakRepositoryV2.upsert(m1, a1);
-
-        TiltakInnhold m2 = new TiltakInnhold()
-                .setTiltakstype(til3.getKey())
-                .setAktivitetperiodeFra(new ArenaDato("2016-10-03"))
-                .setAktivitetperiodeTil(new ArenaDato("2022-11-01"))
-                .setAktivitetid("TA-323456789");
-        tiltakRepositoryV2.upsert(m2, a3);
-
-        TiltakaktivitetEntity d1a = new TiltakaktivitetEntity()
-                .setTiltakskode(til1.getKey())
+        TiltakaktivitetEntity bruker1Tiltakinnholdaktivitet = new TiltakaktivitetEntity()
+                .setTiltakskode(tiltak1.getKey())
                 .setFraDato(new ArenaDato("2018-10-03"))
                 .setTilDato(new ArenaDato("2024-11-01"))
                 .setAktivitetId("TA-123456789")
                 .setStatus("GJENNOMFORES");
-        tiltakRepositoryV3.upsert(d1a, a1);
+        tiltakRepositoryV3.upsert(bruker1Tiltakinnholdaktivitet, bruker1);
 
-        TiltakaktivitetEntity d2 = new TiltakaktivitetEntity()
-                .setTiltakskode(til2.getKey())
+        TiltakInnhold bruker3Tiltakinnhold = new TiltakInnhold()
+                .setTiltakstype(tiltak3.getKey())
+                .setAktivitetperiodeFra(new ArenaDato("2016-10-03"))
+                .setAktivitetperiodeTil(new ArenaDato("2022-11-01"))
+                .setAktivitetid("TA-323456789");
+        tiltakRepositoryV2.upsert(bruker3Tiltakinnhold, bruker3);
+
+        TiltakaktivitetEntity bruker2Tiltakaktivitet = new TiltakaktivitetEntity()
+                .setTiltakskode(tiltak2.getKey())
                 .setFraDato(new ArenaDato("2017-10-03"))
                 .setTilDato(new ArenaDato("2023-11-01"))
                 .setAktivitetId("TA-223456789")
                 .setStatus("GJENNOMFORES");
-        tiltakRepositoryV3.upsert(d2, a2);
+        tiltakRepositoryV3.upsert(bruker2Tiltakaktivitet, bruker2);
 
-        tiltakRepositoryV3.leggTilTiltak(aktoerIder, result2);
+        tiltakRepositoryV3.leggTilTiltak(aktoerIder, result);
 
-        assertThat(result1).hasSameSizeAs(result2);
-        assertThat(result1.get(a1)).hasSameElementsAs(result2.get(a1));
-        assertThat(result1.get(a2)).hasSameElementsAs(result2.get(a2));
-        assertThat(result1.get(a3)).hasSameElementsAs(result2.get(a3));
+        AktivitetEntityDto bruker1AktivitetEntityDto1 = new AktivitetEntityDto()
+                .setStart(Timestamp.valueOf(getLocalDateTimeOrNull(new ArenaDato("2018-10-03"), false)))
+                .setUtlop(Timestamp.valueOf(getLocalDateTimeOrNull(new ArenaDato("2024-11-01"), true)))
+                .setAktivitetsType(AktivitetsType.tiltak)
+                .setMuligTiltaksNavn("VARLONTIL");
+
+        AktivitetEntityDto bruker1AktivitetEntityDto2 = new AktivitetEntityDto()
+                .setStart(Timestamp.valueOf(getLocalDateTimeOrNull(new ArenaDato("2018-10-03"), false)))
+                .setUtlop(Timestamp.valueOf(getLocalDateTimeOrNull(new ArenaDato("2024-11-01"), true)))
+                .setAktivitetsType(AktivitetsType.tiltak)
+                .setMuligTiltaksNavn("MENTOR");
+
+        AktivitetEntityDto bruker2AktivitetEntityDto = new AktivitetEntityDto()
+                .setStart(Timestamp.valueOf(getLocalDateTimeOrNull(new ArenaDato("2017-10-03"), false)))
+                .setUtlop(Timestamp.valueOf(getLocalDateTimeOrNull(new ArenaDato("2023-11-01"), true)))
+                .setAktivitetsType(AktivitetsType.tiltak)
+                .setMuligTiltaksNavn("MIDLONTIL");
+
+        AktivitetEntityDto bruker3AktivitetEntityDto = new AktivitetEntityDto()
+                .setStart(Timestamp.valueOf(getLocalDateTimeOrNull(new ArenaDato("2016-10-03"), false)))
+                .setUtlop(Timestamp.valueOf(getLocalDateTimeOrNull(new ArenaDato("2022-11-01"), true)))
+                .setAktivitetsType(AktivitetsType.tiltak)
+                .setMuligTiltaksNavn("MENTOR");
+
+        assertThat(result.get(bruker1)).hasSameElementsAs(List.of(bruker1AktivitetEntityDto1, bruker1AktivitetEntityDto2));
+        assertThat(result.get(bruker2)).hasSameElementsAs(List.of(bruker2AktivitetEntityDto));
+        assertThat(result.get(bruker3)).hasSameElementsAs(List.of(bruker3AktivitetEntityDto));
     }
 
     @Test
