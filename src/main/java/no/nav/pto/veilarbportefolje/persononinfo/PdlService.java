@@ -41,6 +41,11 @@ public class PdlService {
         lagreBrukerData(fnrPerson, personData);
     }
 
+    public void hentOgLagreBrukerDataPaBarn(Fnr fnrPerson) {
+        PDLPersonBarn personData = pdlClient.hentBrukerBarnDataFraPdl(fnrPerson);
+        barnUnder18AarService.oppdaterEndringPaBarn(fnrPerson, personData.getFodselsdato(), personData.getDiskresjonskode());
+    }
+
     public void lagreBrukerData(Fnr fnrPerson, PDLPerson personData) {
         pdlPersonRepository.upsertPerson(fnrPerson, personData);
 
@@ -55,6 +60,10 @@ public class PdlService {
             });
             barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barn);
         }
+    }
+
+    public void lagreBrukerDataPaBarn(Fnr fnrPerson) {
+        barnUnder18AarService.oppdaterEndringPaBarn(fnrPerson, personData.getFodselsdato(), personData.getDiskresjonskode());
     }
 
     private List<PDLIdent> hentOgLagreIdenter(AktorId aktorId) {
