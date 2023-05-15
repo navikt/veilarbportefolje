@@ -66,9 +66,9 @@ public class BarnUnder18AarService {
         });
     }
 
-    public void oppdaterEndringPaBarn(Fnr fnrBarn, LocalDate fodselsdato, String diskresjonskode) {
+    public void oppdaterEndringPaBarn(Fnr fnrBarn, PDLPersonBarn pdlPersonBarn) {
         List<BarnUnder18Aar> barn = new ArrayList<>();
-        barnUnder18AarRepository.lagreBarnData(fnrBarn, );
+        barnUnder18AarRepository.lagreBarnData(fnrBarn, pdlPersonBarn.getFodselsdato(), pdlPersonBarn.getDiskresjonskode());
     }
 
 
