@@ -6,7 +6,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18Aar;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
@@ -39,19 +38,32 @@ public class PdlService {
 
     public void hentOgLagreBrukerData(Fnr fnrPerson) {
         PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnrPerson);
+        lagreBrukerData(fnrPerson, personData);
+    }
+
+    public void hentOgLagreBrukerDataPaBarn(Fnr fnrPerson) {
+        PDLPersonBarn barnData = pdlClient.hentBrukerBarnDataFraPdl(fnrPerson);
+        barnUnder18AarService.oppdaterEndringPaBarn(fnrPerson, barnData);
+    }
+
+    public void lagreBrukerData(Fnr fnrPerson, PDLPerson personData) {
         pdlPersonRepository.upsertPerson(fnrPerson, personData);
 
-        if (personData.getBarn() != null) {
+        if (personData.getForeldreansvar() != null) {
             List<BarnUnder18Aar> barn = new ArrayList<>();
-            personData.getBarn().forEach(barnFnr -> {
+            personData.getForeldreansvar().forEach(barnFnr -> {
                 PDLPersonBarn barnPdl = pdlClient.hentBrukerBarnDataFraPdl(fnrPerson);
 
-                if (barnPdl.isErIlive()){
+                if (barnPdl.isErIlive()) {
                     barn.add(new BarnUnder18Aar(barnFnr, barnPdl.getFodselsdato(), barnPdl.getDiskresjonskode()));
                 }
             });
             barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barn);
         }
+    }
+
+    public void lagreBrukerDataPaBarn(Fnr fnrBarn, PDLPersonBarn pdlPersonBarn) {
+        barnUnder18AarService.oppdaterEndringPaBarn(fnrBarn, pdlPersonBarn);
     }
 
     private List<PDLIdent> hentOgLagreIdenter(AktorId aktorId) {
@@ -81,11 +93,16 @@ public class PdlService {
                             Da en eller flere relaterte identer på person: {} er under oppfolging.
                             """,
                     aktorId, lokalIdent);
-            return;
         }
         secureLog.info("Sletter identer og brukerdata for aktor: {}", aktorId);
-        pdlPersonRepository.slettLagretBrukerData(fnrs);
         pdlIdentRepository.slettLagretePerson(lokalIdent);
+        slettPDLBrukerData(fnrs);
+    }
+
+    public void slettPDLBrukerData(List<Fnr> fnrs) {
+        List<Fnr> barnFnrsForForeldre = barnUnder18AarService.hentBarnFnrsForForeldre(fnrs);
+        pdlPersonRepository.slettLagretBrukerData(fnrs);
+        barnUnder18AarService.slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnrsForForeldre);
     }
 
     public static AktorId hentAktivAktor(List<PDLIdent> identer) {

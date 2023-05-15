@@ -40,7 +40,7 @@ public class PDLPerson {
     private LocalDate bostedSistOppdatert;
     private String diskresjonskode;
     private Sikkerhetstiltak sikkerhetstiltak;
-    private List<Fnr> barn;
+    private List<Fnr> foreldreansvar;
 
     private Bostedsadresse bostedsadresse;
 
@@ -67,7 +67,7 @@ public class PDLPerson {
                 .setTolkBehovSistOppdatert(hentTolkBehovSistOppdatert(response.getTilrettelagtKommunikasjon()))
                 .setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()))
                 .setSikkerhetstiltak(hentSikkerhetstiltak(response.getSikkerhetstiltak()))
-                .setBarn(hentForeldreansvar(response.getForeldreansvar()))
+                .setForeldreansvar(hentForeldreansvar(response.getForeldreansvar()))
                 .setBostedsadresse(hentBostedAdresse(response.getBostedsadresse()).orElse(null));
 
     }

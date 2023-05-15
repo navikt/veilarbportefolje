@@ -8,14 +8,18 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlBarnResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PdlPersonValideringException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
@@ -31,7 +35,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
     private final PdlIdentRepository pdlIdentRepository;
     private final PdlPersonRepository pdlPersonRepository;
-    private final BarnUnder18AarRepository barnUnder18AarRepository;
+    private final BarnUnder18AarService barnUnder18AarService;
     private final OpensearchIndexer opensearchIndexer;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
@@ -48,6 +52,8 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
         List<PDLIdent> pdlIdenter = pdlDokument.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
+        List<Fnr> fnrs = hentFnrs(pdlIdenter);
+        //TODO Dobbeltsjekk at alle (også små barn) har aktørId, så de ikke "forsvinner" her
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
@@ -59,6 +65,23 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             oppdaterOpensearch(aktivAktorId, pdlIdenter);
         }
 
+        if(barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)){
+            Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
+            handterBarnEndring(pdlDokument.getHentPersonBarn(), pdlIdenter);
+            //Lage egen for getHentPersonBarn så vi ikke henter inn så mye unødvendig?
+            //Update data about children in db
+            //get parents, index parents (opensearch)
+
+            List<Fnr> foreldreTilBarn = new ArrayList<>();
+            // getForeldreTilBarn fra barnunder18AarService
+
+            foreldreTilBarn.forEach( fnr -> {
+                        // oppdaterOpensearch(aktivAktorId, pdlIdenter);
+                    }
+             );
+        }
+
+
     }
 
     private void handterBrukerDataEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka,
@@ -67,7 +90,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
         try {
             PDLPerson person = PDLPerson.genererFraApiRespons(personFraKafka);
-            pdlPersonRepository.upsertPerson(aktivFnr, person);
+            pdlService.lagreBrukerData(aktivFnr, person);
         } catch (PdlPersonValideringException e) {
             if (isDevelopment().orElse(false)) {
                 secureLog.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivAktorId), e);
@@ -77,8 +100,26 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             pdlService.hentOgLagreBrukerData(aktivFnr);
         }
         List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);
-        pdlPersonRepository.slettLagretBrukerData(inaktiveFnr);
+        pdlService.slettPDLBrukerData(inaktiveFnr);
     }
+
+    private void handterBarnEndring(PdlBarnResponse.PdlBarnResponseData.HentPersonResponsData barnFraKafka, List<PDLIdent> pdlIdenter){
+        Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
+        try {
+            PDLPersonBarn personBarn = PDLPersonBarn.genererFraApiRespons(barnFraKafka);
+            pdlService.lagreBrukerDataPaBarn(aktivtFnrBarn, personBarn);
+        } catch (PdlPersonValideringException e) {
+            if (isDevelopment().orElse(false)) {
+                secureLog.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivtFnrBarn), e);
+                return;
+            }
+            secureLog.warn(String.format("Fikk pdl validerings error på aktor: %s, prøver å laste inn data på REST", aktivtFnrBarn), e);
+            pdlService.hentOgLagreBrukerDataPaBarn(aktivtFnrBarn);
+        }
+
+
+    }
+
 
     private void handterIdentEndring(List<PDLIdent> pdlIdenter) {
         pdlIdentRepository.upsertIdenter(pdlIdenter);

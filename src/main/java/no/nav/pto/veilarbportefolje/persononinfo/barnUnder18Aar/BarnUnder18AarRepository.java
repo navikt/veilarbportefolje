@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 
 @Slf4j
@@ -36,8 +40,18 @@ public class BarnUnder18AarRepository {
 
     public Boolean finnesBarnIForeldreansvar(Fnr fnrBarn) {
         Integer numOfRows = dbReadOnly.queryForObject("""
-                            SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = ?
-                        """, Integer.class, fnrBarn.get());
+                    SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = ?
+                """, Integer.class, fnrBarn.get());
+
+        return numOfRows > 0;
+    }
+
+    public Boolean finnesBarnIForeldreansvar(List<Fnr> fnrBarn) {
+        String fnrsparam = fnrBarn.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
+        Integer numOfRows = dbReadOnly.queryForObject("""
+                    SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = any (?::varchar[])
+                """, Integer.class, fnrsparam);
+
 
         return numOfRows > 0;
     }
@@ -74,11 +88,11 @@ public class BarnUnder18AarRepository {
 
     public BarnUnder18AarData hentInfoOmBarn(Fnr fnrBarn) {
         return dbReadOnly.queryForObject(
-                            "SELECT * FROM bruker_data_barn WHERE barn_ident = ?",
-                          (rs, row) -> new BarnUnder18AarData(
-                                  alderFraFodselsdato(toLocalDateOrNull((java.sql.Date) rs.getDate("BARN_FOEDSELSDATO")),
-                                          LocalDate.now()),
-                                  (String) rs.getString("BARN_DISKRESJONKODE")), fnrBarn.get());
+                "SELECT * FROM bruker_data_barn WHERE barn_ident = ?",
+                (rs, row) -> new BarnUnder18AarData(
+                        alderFraFodselsdato(toLocalDateOrNull(rs.getDate("BARN_FOEDSELSDATO")),
+                                LocalDate.now()),
+                        rs.getString("BARN_DISKRESJONKODE")), fnrBarn.get());
     }
 
     public static Long alderFraFodselsdato(LocalDate date, LocalDate now) {
