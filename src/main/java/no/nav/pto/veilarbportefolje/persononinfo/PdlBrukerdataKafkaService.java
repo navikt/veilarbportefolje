@@ -16,11 +16,14 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PdlPersonValideringException;
+import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
+import no.nav.pto.veilarbportefolje.util.SecureLog;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivAktor;
@@ -35,6 +38,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
     private final PdlIdentRepository pdlIdentRepository;
     private final PdlPersonRepository pdlPersonRepository;
+    private final BrukerServiceV2 brukerService;
     private final BarnUnder18AarService barnUnder18AarService;
     private final OpensearchIndexer opensearchIndexer;
     private final OpensearchIndexerV2 opensearchIndexerV2;
@@ -68,15 +72,16 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         if(barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)){
             Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
             handterBarnEndring(pdlDokument.getHentPersonBarn(), pdlIdenter);
-            //Lage egen for getHentPersonBarn så vi ikke henter inn så mye unødvendig?
-            //Update data about children in db
-            //get parents, index parents (opensearch)
 
-            List<Fnr> foreldreTilBarn = new ArrayList<>();
-            // getForeldreTilBarn fra barnunder18AarService
+            List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnrBarn);
 
-            foreldreTilBarn.forEach( fnr -> {
-                        // oppdaterOpensearch(aktivAktorId, pdlIdenter);
+            foreldreTilBarn.forEach( fnrForelder -> {
+                    Optional<AktorId> aktorIdForelder = brukerService.hentAktorId(fnrForelder);
+                    if(aktorIdForelder.isPresent()) {
+                        opensearchIndexer.indekser(aktorIdForelder.get());
+                    }else{
+                        secureLog.warn("Kunne ikke indeksere forelder med fnr {} til barn med fnr {}", fnrForelder, aktivtFnrBarn);
+                    }
                     }
              );
         }
