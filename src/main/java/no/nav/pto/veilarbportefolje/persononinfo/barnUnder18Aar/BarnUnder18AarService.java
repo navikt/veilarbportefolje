@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +66,12 @@ public class BarnUnder18AarService {
         });
     }
 
+    public void oppdaterEndringPaBarn(Fnr fnrBarn, LocalDate fodselsdato, String diskresjonskode) {
+        List<BarnUnder18Aar> barn = new ArrayList<>();
+        barnUnder18AarRepository.lagreBarnData(fnrBarn, );
+    }
+
+
     public void slettBarnDataHvisIngenForeldreErUnderOppfolging(List<Fnr> barnIdenter) {
         barnIdenter.forEach(this::slettBarnDataHvisIngenForeldreErUnderOppfolging);
     }
@@ -72,6 +80,10 @@ public class BarnUnder18AarService {
         if (!barnUnder18AarRepository.finnesBarnIForeldreansvar(barnFnr)) {
             barnUnder18AarRepository.slettBarnData(barnFnr);
         }
+    }
+
+    public boolean erFnrBarnAvForelderUnderOppfolging(List<Fnr> fnrs) {
+        return barnUnder18AarRepository.finnesBarnIForeldreansvar(fnrs);
     }
 
 }
