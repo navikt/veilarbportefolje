@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetIkkeAktivStatuser;
+import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
@@ -50,7 +51,7 @@ public class TiltakRepositoryV3 {
         secureLog.info("Lagrer tiltak: {}", tiltakaktivitet.getAktivitetId());
 
         if (skalOppdatereTiltakskodeVerk(tiltakaktivitet.getTiltakskode(), tiltakaktivitet.getTiltaksnavn())) {
-            upsertTiltakKodeVerk(tiltakaktivitet);
+            upsertTiltakKodeVerk(tiltakaktivitet.getTiltakskode(), tiltakaktivitet.getTiltaksnavn());
         }
         db.update("""
                         INSERT INTO brukertiltak_v2
@@ -62,10 +63,36 @@ public class TiltakRepositoryV3 {
         );
     }
 
-    public void delete(String tiltakaktivitetId) {
-        secureLog.info("Sletter tiltak: {}", tiltakaktivitetId);
-        db.update("DELETE FROM brukertiltak_v2 WHERE aktivitetid = ?", tiltakaktivitetId);
+    public void upsert(TiltakInnhold innhold, AktorId aktorId) {
+        LocalDateTime fraDato = getLocalDateTimeOrNull(innhold.getAktivitetperiodeFra(), false);
+        LocalDateTime tilDato = getLocalDateTimeOrNull(innhold.getAktivitetperiodeTil(), true);
+
+        secureLog.info("Lagrer tiltak: {}", innhold.getAktivitetid());
+
+        if (skalOppdatereTiltakskodeVerk(innhold.getTiltakstype(), innhold.getTiltaksnavn())) {
+            upsertTiltakKodeVerk(innhold.getTiltakstype(), innhold.getTiltaksnavn());
+        }
+        db.update("""
+                        INSERT INTO brukertiltak
+                        (aktivitetid, personid, aktoerid, tiltakskode, fradato, tildato) VALUES (?, ?, ?, ?, ?, ?)
+                        ON CONFLICT (aktivitetid) DO UPDATE SET (personid, aktoerid, tiltakskode, fradato, tildato)
+                        = (excluded.personid, excluded.aktoerid, excluded.tiltakskode, excluded.fradato, excluded.tildato)
+                        """,
+                innhold.getAktivitetid(),
+                String.valueOf(innhold.getPersonId()), aktorId.get(), innhold.getTiltakstype(), fraDato, tilDato
+        );
     }
+
+    public void deleteTiltaksaktivitetFraAktivitetsplanen(String tiltaksaktivitetId) {
+        secureLog.info("Sletter tiltak: {}", tiltaksaktivitetId);
+        db.update("DELETE FROM brukertiltak_v2 WHERE aktivitetid = ?", tiltaksaktivitetId);
+    }
+
+    public void deleteTiltaksaktivitetFraArena(String tiltaksaktivitetId) {
+        secureLog.info("Sletter tiltak: {}", tiltaksaktivitetId);
+        db.update("DELETE FROM brukertiltak WHERE aktivitetid = ?", tiltaksaktivitetId);
+    }
+
 
     public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
         final String hentTiltakPaEnhetSql = """
@@ -120,12 +147,12 @@ public class TiltakRepositoryV3 {
                 });
     }
 
-    public void upsertTiltakKodeVerk(TiltakaktivitetEntity innhold) {
+    public void upsertTiltakKodeVerk(String tiltakskode, String tiltaksnavn) {
         db.update("""
                         INSERT INTO tiltakkodeverket (kode, verdi) VALUES (?, ?)
                         ON CONFLICT (kode) DO UPDATE SET verdi = excluded.verdi
                         """,
-                innhold.getTiltakskode(), innhold.getTiltaksnavn()
+                tiltakskode, tiltaksnavn
         );
     }
 
