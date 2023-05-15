@@ -91,8 +91,8 @@ spec:
     - name: PDL_TOKEN_SCOPE
       value: "api://dev-fss.pdl.pdl-api/.default"
     - name: POAO_TILGANG_URL
-      value: "https://poao-tilgang.intern.dev.nav.no"
+      value: "http://poao-tilgang.poao.svc.nais.local"
     - name: POAO_TILGANG_TOKEN_SCOPE
-      value: "api://dev-gcp.poao.poao-tilgang/.default"
+      value: "api://dev-fss.poao.poao-tilgang/.default"
     - name: KODEVERK_URL
       value: "http://kodeverk.default.svc.nais.local"

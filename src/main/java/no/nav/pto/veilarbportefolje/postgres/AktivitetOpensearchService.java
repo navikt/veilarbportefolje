@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -20,11 +17,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class AktivitetOpensearchService {
-    private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final TiltakRepositoryV3 tiltakRepositoryV3;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
-    private final UnleashService unleashService;
 
     public Map<AktorId, List<AktivitetEntityDto>> hentAvtaltAktivitetData(List<AktorId> brukere) {
         String aktoerIder = brukere.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
