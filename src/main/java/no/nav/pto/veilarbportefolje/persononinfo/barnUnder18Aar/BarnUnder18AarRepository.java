@@ -36,8 +36,8 @@ public class BarnUnder18AarRepository {
 
     public Boolean finnesBarnIForeldreansvar(Fnr fnrBarn) {
         Integer numOfRows = dbReadOnly.queryForObject("""
-                            SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = ?
-                        """, Integer.class, fnrBarn.get());
+                    SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = ?
+                """, Integer.class, fnrBarn.get());
 
         return numOfRows > 0;
     }
@@ -74,11 +74,11 @@ public class BarnUnder18AarRepository {
 
     public BarnUnder18AarData hentInfoOmBarn(Fnr fnrBarn) {
         return dbReadOnly.queryForObject(
-                            "SELECT * FROM bruker_data_barn WHERE barn_ident = ?",
-                          (rs, row) -> new BarnUnder18AarData(
-                                  alderFraFodselsdato(toLocalDateOrNull((java.sql.Date) rs.getDate("BARN_FOEDSELSDATO")),
-                                          LocalDate.now()),
-                                  (String) rs.getString("BARN_DISKRESJONKODE")), fnrBarn.get());
+                "SELECT * FROM bruker_data_barn WHERE barn_ident = ?",
+                (rs, row) -> new BarnUnder18AarData(
+                        alderFraFodselsdato(toLocalDateOrNull(rs.getDate("BARN_FOEDSELSDATO")),
+                                LocalDate.now()),
+                        rs.getString("BARN_DISKRESJONKODE")), fnrBarn.get());
     }
 
     public static Long alderFraFodselsdato(LocalDate date, LocalDate now) {

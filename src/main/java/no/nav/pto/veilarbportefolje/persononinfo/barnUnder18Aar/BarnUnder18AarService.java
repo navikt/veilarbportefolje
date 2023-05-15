@@ -4,10 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
 @Slf4j
@@ -18,16 +22,23 @@ public class BarnUnder18AarService {
 
     public Map<Fnr, List<BarnUnder18AarData>> hentBarnUnder18AarAlle(List<Fnr> fnrPersoner) {
         Map<Fnr, List<BarnUnder18AarData>> result = new HashMap<>();
-        List<BarnUnder18AarData> barnListe = new ArrayList();
 
         fnrPersoner.forEach(fnrPerson -> {
-                    barnListe.clear();
+                    List<BarnUnder18AarData> barnListe = new ArrayList<>();
                     barnUnder18AarRepository.hentForeldreansvarForPerson(fnrPerson).forEach(fnrBarn ->
-                            {
-                                barnListe.add(barnUnder18AarRepository.hentInfoOmBarn(fnrBarn));
-                            }
+                            barnListe.add(barnUnder18AarRepository.hentInfoOmBarn(fnrBarn))
                     );
                     result.put(fnrPerson, barnListe);
+                }
+        );
+        return result;
+    }
+
+    public List<Fnr> hentBarnFnrsForForeldre(List<Fnr> fnrPersoner) {
+        List<Fnr> result = new ArrayList<>();
+
+        fnrPersoner.forEach(fnrPerson -> {
+                    result.addAll(barnUnder18AarRepository.hentForeldreansvarForPerson(fnrPerson));
                 }
         );
         return result;
@@ -41,9 +52,8 @@ public class BarnUnder18AarService {
         lagredeBarn.forEach(barnFnr -> {
                     if (!barnFnrFraPdl.contains(barnFnr)) {
                         barnUnder18AarRepository.slettForeldreansvar(foresattIdent, barnFnr);
-                        if (!barnUnder18AarRepository.finnesBarnIForeldreansvar(barnFnr)) {
-                            barnUnder18AarRepository.slettBarnData(barnFnr);
-                        }
+                        slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnr);
+                        secureLog.warn(String.format("Barn fjernet fra PDL for foreldre %s og barn %s", foresattIdent, barnFnr));
                     }
                 }
         );
@@ -52,7 +62,16 @@ public class BarnUnder18AarService {
             barnUnder18AarRepository.lagreBarnData(barnUnder18Aar.getFnr(), barnUnder18Aar.getFodselsdato(), barnUnder18Aar.getDiskresjonskode());
             barnUnder18AarRepository.lagreForeldreansvar(foresattIdent, barnUnder18Aar.getFnr());
         });
-        // Log it with warning?
+    }
+
+    public void slettBarnDataHvisIngenForeldreErUnderOppfolging(List<Fnr> barnIdenter) {
+        barnIdenter.forEach(this::slettBarnDataHvisIngenForeldreErUnderOppfolging);
+    }
+
+    private void slettBarnDataHvisIngenForeldreErUnderOppfolging(Fnr barnFnr) {
+        if (!barnUnder18AarRepository.finnesBarnIForeldreansvar(barnFnr)) {
+            barnUnder18AarRepository.slettBarnData(barnFnr);
+        }
     }
 
 }
