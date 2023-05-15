@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlBarnResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
@@ -66,7 +67,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
         if(barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)){
             Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
-            handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
+            handterBarnEndring(pdlDokument.getHentPersonBarn(), pdlIdenter);
             //Lage egen for getHentPersonBarn så vi ikke henter inn så mye unødvendig?
             //Update data about children in db
             //get parents, index parents (opensearch)
@@ -102,15 +103,11 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         pdlService.slettPDLBrukerData(inaktiveFnr);
     }
 
-    private void handterBarnEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka, List<PDLIdent> pdlIdenter){
+    private void handterBarnEndring(PdlBarnResponse.PdlBarnResponseData.HentPersonResponsData barnFraKafka, List<PDLIdent> pdlIdenter){
         Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
-        LocalDate falskFdato = LocalDate.now();
-        //TODO: Remove falskDato. Reason it is there is because PDLperson does not have fdato
         try {
-            PDLPerson person = PDLPerson.genererFraApiRespons(personFraKafka);
-            //Lage egen for getHentPersonBarn så vi ikke henter inn så mye unødvendig
-            //PDLPerson har ikke fodselsdato, så da må vi eventuelt hente inn et nytt felt med fdato på vanlig PDLPerson
-            pdlService.lagreBrukerDataPaBarn();
+            PDLPersonBarn personBarn = PDLPersonBarn.genererFraApiRespons(barnFraKafka);
+            pdlService.lagreBrukerDataPaBarn(aktivtFnrBarn, personBarn);
         } catch (PdlPersonValideringException e) {
             if (isDevelopment().orElse(false)) {
                 secureLog.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivtFnrBarn), e);
