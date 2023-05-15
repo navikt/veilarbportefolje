@@ -77,9 +77,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             pdlService.hentOgLagreBrukerData(aktivFnr);
         }
         List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);
-        List<Fnr> barnFnrsForForeldre = barnUnder18AarService.hentBarnFnrsForForeldre(inaktiveFnr);
-        pdlPersonRepository.slettLagretBrukerData(inaktiveFnr);
-        barnUnder18AarService.slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnrsForForeldre);
+        pdlService.slettPDLBrukerData(inaktiveFnr);
     }
 
     private void handterIdentEndring(List<PDLIdent> pdlIdenter) {

@@ -84,12 +84,15 @@ public class PdlService {
                             Da en eller flere relaterte identer på person: {} er under oppfolging.
                             """,
                     aktorId, lokalIdent);
-            return;
         }
         secureLog.info("Sletter identer og brukerdata for aktor: {}", aktorId);
+        pdlIdentRepository.slettLagretePerson(lokalIdent);
+        slettPDLBrukerData(fnrs);
+    }
+
+    public void slettPDLBrukerData(List<Fnr> fnrs) {
         List<Fnr> barnFnrsForForeldre = barnUnder18AarService.hentBarnFnrsForForeldre(fnrs);
         pdlPersonRepository.slettLagretBrukerData(fnrs);
-        pdlIdentRepository.slettLagretePerson(lokalIdent);
         barnUnder18AarService.slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnrsForForeldre);
     }
 
