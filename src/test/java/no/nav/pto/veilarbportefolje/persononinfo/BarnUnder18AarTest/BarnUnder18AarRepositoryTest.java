@@ -64,7 +64,7 @@ public class BarnUnder18AarRepositoryTest {
         LocalDate fDato = LocalDate.of(2010, 10, 10);
         //when(barnUnder18AarRepository.hentInfoOmBarn(fnrBarn)).thenReturn(new BarnUnder18AarData(15, "" ));
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
-        List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn());
+        List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn15Aar());
         barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barnFraPdl);
         Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18AarAlle(List.of(fnrPerson));
         Assertions.assertFalse(forelderBarnMap.isEmpty());
@@ -83,8 +83,9 @@ public class BarnUnder18AarRepositoryTest {
         List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn());
         barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt1, barnFraPdl);
         barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt2, barnFraPdl);
-        Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18AarAlle(List.of(foresatt1));
-        Assertions.assertTrue(forelderBarnMap.size()==1);
+        Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18AarAlle(List.of(foresatt1, foresatt2));
+        Assertions.assertTrue(forelderBarnMap.size()==2);
+        Assertions.assertTrue(forelderBarnMap.get(foresatt1).equals(forelderBarnMap.get(foresatt2)));
     }
 
 
@@ -109,9 +110,11 @@ public class BarnUnder18AarRepositoryTest {
     }
 
     private BarnUnder18Aar pdlBarn15Aar() {
+        LocalDate iDag = LocalDate.now();
+        LocalDate fodselsdato15Aar = iDag.minusYears(15).minusMonths(1);
         return new BarnUnder18Aar()
                 .setFnr(Fnr.of("12312312312"))
-                .setFodselsdato(LocalDate.of(2004, 12, 12))
+                .setFodselsdato(fodselsdato15Aar)
                 .setDiskresjonskode("6");
     }
 
