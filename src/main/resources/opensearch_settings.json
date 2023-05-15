@@ -232,9 +232,6 @@
       },
       "egen_ansatt": {
         "type": "boolean"
-      },
-      "aap_type": {
-        "type": "keyword"
       }
     }
   }

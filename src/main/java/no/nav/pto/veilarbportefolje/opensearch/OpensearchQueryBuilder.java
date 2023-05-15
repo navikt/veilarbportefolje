@@ -366,8 +366,8 @@ public class OpensearchQueryBuilder {
             case "utlopteaktiviteter" -> searchSourceBuilder.sort("nyesteutlopteaktivitet", order);
             case "arbeidslistefrist" -> searchSourceBuilder.sort("arbeidsliste_frist", order);
             case "aap_type" -> searchSourceBuilder.sort("ytelse", order);
-            case "aaprettighetsperiode" -> sorterAapRettighetsPeriode(searchSourceBuilder, order);
             case "aap_vurderingsfrist" -> sorterAapVurderingsfrist(searchSourceBuilder, order);
+            case "aaprettighetsperiode" -> sorterAapRettighetsPeriode(searchSourceBuilder, order);
             case "utkast_14a_status" -> searchSourceBuilder.sort("utkast_14a_status", order);
             case "arbeidslistekategori" -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
             case "siste_endring_tidspunkt" -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
