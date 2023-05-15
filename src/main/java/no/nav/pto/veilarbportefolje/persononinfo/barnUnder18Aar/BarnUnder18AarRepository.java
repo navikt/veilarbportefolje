@@ -38,6 +38,16 @@ public class BarnUnder18AarRepository {
         return barn;
     }
 
+    public List<Fnr> hentForeldreTilBarn(Fnr fnrBarn) {
+        List<Fnr> foreldre = dbReadOnly.queryForList("""
+                            SELECT FORESATT_IDENT FROM foreldreansvar WHERE BARN_IDENT = ?
+                        """, String.class, fnrBarn.get()).stream()
+                .map(Fnr::of)
+                .toList();
+
+        return foreldre;
+    }
+
     public Boolean finnesBarnIForeldreansvar(Fnr fnrBarn) {
         Integer numOfRows = dbReadOnly.queryForObject("""
                     SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = ?

@@ -86,4 +86,8 @@ public class BarnUnder18AarService {
         return barnUnder18AarRepository.finnesBarnIForeldreansvar(fnrs);
     }
 
+    public List<Fnr> finnForeldreTilBarn(Fnr fnrBarn){
+        return barnUnder18AarRepository.hentForeldreTilBarn(fnrBarn);
+    }
+
 }
