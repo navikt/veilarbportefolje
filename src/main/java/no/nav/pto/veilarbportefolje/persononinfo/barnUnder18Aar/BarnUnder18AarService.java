@@ -21,13 +21,13 @@ public class BarnUnder18AarService {
         List<BarnUnder18AarData> barnListe = new ArrayList();
 
         fnrPersoner.forEach(fnrPerson -> {
+                    barnListe.clear();
                     barnUnder18AarRepository.hentForeldreansvarForPerson(fnrPerson).forEach(fnrBarn ->
                             {
                                 barnListe.add(barnUnder18AarRepository.hentInfoOmBarn(fnrBarn));
                             }
                     );
                     result.put(fnrPerson, barnListe);
-                    barnListe.clear();
                 }
         );
         return result;
