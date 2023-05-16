@@ -449,7 +449,8 @@ public class OpensearchQueryBuilder {
     static void sorterAapVurderingsfrist(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
             builder.sort("aapmaxtiduke", order);
-        } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_UNNTAK)) {
+        }
+        if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_UNNTAK)) {
             builder.sort("aapunntakukerigjen", order);
         }
     }
