@@ -56,7 +56,6 @@ public class Bruker {
     Integer permutlopUke;
     Integer aapmaxtidUke;
     Integer aapUnntakUkerIgjen;
-
     LocalDate aapordinerutlopsdato;
     Arbeidsliste arbeidsliste;
     LocalDateTime venterPaSvarFraNAV;
@@ -83,7 +82,6 @@ public class Bruker {
     String sisteEndringKategori;
     LocalDateTime sisteEndringTidspunkt;
     String sisteEndringAktivitetId;
-
     String talespraaktolk;
     String tegnspraaktolk;
     LocalDate tolkBehovSistOppdatert;

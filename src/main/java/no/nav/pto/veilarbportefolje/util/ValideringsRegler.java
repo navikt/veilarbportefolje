@@ -33,6 +33,8 @@ public class ValideringsRegler {
             "utlopsdato",
             "dagputlopuke",
             "permutlopuke",
+            "aap_type",
+            "aap_vurderingsfrist",
             "aapmaxtiduke",
             "aapunntakukerigjen",
             "arbeidslistefrist",
