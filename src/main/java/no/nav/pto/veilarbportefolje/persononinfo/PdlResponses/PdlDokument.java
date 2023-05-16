@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.persononinfo.PdlResponses;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Value;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 
 @Value
 @Builder

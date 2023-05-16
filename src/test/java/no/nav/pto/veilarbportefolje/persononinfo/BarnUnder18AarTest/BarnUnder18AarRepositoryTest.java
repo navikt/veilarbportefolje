@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.persononinfo.BarnUnder18AarTest;
 
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18Aar;
@@ -53,37 +52,28 @@ public class BarnUnder18AarRepositoryTest {
         this.pdlPersonRepository = new PdlPersonRepository(db, null);
     }
 
-    private final static String AKTORID = randomAktorId().get();
-    private final static String FNR = randomFnr().get();
-
 
     @Test
     public void sjekkAtBarnBlirRiktigInsertedITabellen() {
         Fnr fnrPerson = randomFnr();
-        Fnr fnrBarn = randomFnr();
-        LocalDate fDato = LocalDate.of(2010, 10, 10);
-        //when(barnUnder18AarRepository.hentInfoOmBarn(fnrBarn)).thenReturn(new BarnUnder18AarData(15, "" ));
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn15Aar());
         barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barnFraPdl);
-        Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18AarAlle(List.of(fnrPerson));
+        Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrPerson));
         Assertions.assertFalse(forelderBarnMap.isEmpty());
         Assertions.assertTrue(forelderBarnMap.get(fnrPerson).get(0).getAlder().equals(15L));
     }
 
     @Test
-    public void barnBlirInsertedPaToUlikeForeldreSkalKunneVæreEnITabellen() {
+    public void barnBlirInsertedPaToUlikeForeldre() {
         Fnr foresatt1 = randomFnr();
         Fnr foresatt2 = randomFnr();
-        Fnr fnrBarn = Fnr.of("12312312312");
-        LocalDate fDato = LocalDate.of(2010, 10, 10);
         pdlPersonRepository.upsertPerson(foresatt1, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         pdlPersonRepository.upsertPerson(foresatt2, new PDLPerson().setKjonn(M).setFoedsel(LocalDate.now()));
-        //when(barnUnder18AarRepository.hentInfoOmBarn(fnrBarn)).thenReturn(new BarnUnder18AarData(15, "" ));
         List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn());
         barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt1, barnFraPdl);
         barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt2, barnFraPdl);
-        Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18AarAlle(List.of(foresatt1, foresatt2));
+        Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18Aar(List.of(foresatt1, foresatt2));
         Assertions.assertTrue(forelderBarnMap.size()==2);
         Assertions.assertTrue(forelderBarnMap.get(foresatt1).equals(forelderBarnMap.get(foresatt2)));
     }
