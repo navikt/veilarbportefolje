@@ -14,8 +14,9 @@ query($ident: ID!) {
       }
     }
     doedsfall {
-        doedsdato
+      doedsdato
     }
+  }
 }
 
 fragment metadataDetails on Metadata {
