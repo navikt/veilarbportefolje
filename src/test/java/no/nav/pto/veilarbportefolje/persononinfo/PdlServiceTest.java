@@ -84,12 +84,10 @@ public class PdlServiceTest {
     @Test
     @SneakyThrows
     public void hentOgLagrePdlData() {
-        Fnr fnrBarn1 = Fnr.of("24461770297");
         var identerFraFil = mapper.readValue(pdlIdentResponsFraFil, PdlIdentResponse.class)
                 .getData()
                 .getHentIdenter()
                 .getIdenter();
-        //Mockito.when(Integer.valueOf(fnrBarn1.toString())).thenReturn(1234);
 
         pdlService.hentOgLagrePdlData(randomAktorId());
         List<PDLIdent> identerFraPostgres = db.queryForList("select * from bruker_identer")
