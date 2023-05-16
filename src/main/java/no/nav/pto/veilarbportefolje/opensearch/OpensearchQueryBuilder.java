@@ -469,10 +469,10 @@ public class OpensearchQueryBuilder {
 
         } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP)) {
             expression = """
-                    if (doc['ytelse'] == 'AAP_UNNTAK' && !doc['utlopsdato'].empty) {
+                    if (doc['ytelse'] == 'AAP_UNNTAK' && !doc['utlopsdato'].empty && doc['utlopsdato'] != 0) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
                     }
-                    if (doc['ytelse'] == 'AAP_MAXTID' && !doc['aapordinerutlopsdato'].empty) {
+                    if (doc['ytelse'] == 'AAP_MAXTID' && !doc['aapordinerutlopsdato'].empty && doc['aapordinerutlopsdato'] != 0) {
                         return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
                     }
                                         
