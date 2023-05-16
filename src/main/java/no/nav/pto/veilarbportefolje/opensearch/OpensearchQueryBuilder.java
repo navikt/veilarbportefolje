@@ -447,13 +447,45 @@ public class OpensearchQueryBuilder {
     }
 
     static void sorterAapVurderingsfrist(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
+        String expression = "";
         if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
-            builder.sort("aapmaxtiduke", order);
+            expression = """
+                    if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
+                        return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
+                    }
+                    else {
+                        return 0;
+                    }
+                    """;
         } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_UNNTAK)) {
-            builder.sort("aapunntakukerigjen", order);
+            expression = """
+                    if (doc.containsKey('utlopsdato') && !doc['utlopsdato'].empty) {
+                        return doc['utlopsdato'].value.toInstant().toEpochMilli();
+                    }
+                    else {
+                        return 0;
+                    }
+                    """;
+
         } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP)) {
-            builder.sort("aapunntakukerigjen", order);
-            builder.sort("aapmaxtiduke", order);
+            expression = """
+                    if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty && !doc['utlopsdato'].empty) {
+                        return doc['utlopsdato'].value.toInstant().toEpochMilli();
+                    }
+                    else if ((!doc.containsKey('aapunntakukerigjen') || doc['aapunntakukerigjen'].empty) && !doc['aapordinerutlopsdato'].empty) {
+                        return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
+                    }
+                    else {
+                        return 0;
+                    }
+                    """;
+        }
+
+        if (!expression.isEmpty()) {
+            Script script = new Script(expression);
+            ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+            scriptBuilder.order(order);
+            builder.sort(scriptBuilder);
         }
     }
 
