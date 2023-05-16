@@ -175,6 +175,7 @@ public class AdminController {
             }
             try {
                 pdlService.hentOgLagrePdlData(bruker);
+                //TODO:: Må vi hensynta barn her?
             } catch (Exception e) {
                 secureLog.info("pdl brukerdata: feil under innlastning av pdl data på bruker: {}", bruker, e);
             }
