@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Bostedsadresse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
 
 import java.util.List;
@@ -22,7 +21,6 @@ public class PdlBarnResponse extends GraphqlResponse<PdlBarnResponse.PdlBarnResp
         public static class HentPersonResponsData {
             private List<Foedsel> foedsel;
             private List<Doedsfall> doedsfall;
-            private List<Bostedsadresse> bostedsadresse;
             private List<AdressebeskyttelseDto> adressebeskyttelse;
         }
 
