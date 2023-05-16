@@ -221,7 +221,7 @@ public class SensurerBrukerTest {
         return new Bruker()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(new BarnUnder18AarData(
-                        1L, "6"
+                        1L, "7"
                 )));
     }
 
