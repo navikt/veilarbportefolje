@@ -2685,6 +2685,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
                 .setYtelse(YtelseFilter.AAP_MAXTID.name())
+                .setAapmaxtiduke(43)
                 .setAapordinerutlopsdato(DateUtils.toLocalDateOrNull("2023-04-20"));
 
         var bruker3 = new OppfolgingsBruker()
@@ -2721,6 +2722,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setYtelse(YtelseFilter.AAP_MAXTID.name())
+                .setAapmaxtiduke(12)
                 .setAapordinerutlopsdato(DateUtils.toLocalDateOrNull("2023-04-12"));
 
         var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5, bruker6);

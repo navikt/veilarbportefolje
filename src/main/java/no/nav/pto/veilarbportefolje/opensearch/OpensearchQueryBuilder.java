@@ -450,8 +450,8 @@ public class OpensearchQueryBuilder {
         String expression = "";
         if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
             expression = """
-                    if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
-                        return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
+                    if (doc.containsKey('aapmaxtiduke') && !doc['aapmaxtiduke'].empty) {
+                        return doc['aapmaxtiduke'].value;
                     }
                     else {
                         return 0;
@@ -469,10 +469,10 @@ public class OpensearchQueryBuilder {
 
         } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP)) {
             expression = """
-                    if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty && !doc['utlopsdato'].empty) {
+                    if (doc['ytelse'] == 'AAP_UNNTAK' && !doc['utlopsdato'].empty) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
                     }
-                    else if ((!doc.containsKey('aapunntakukerigjen') || doc['aapunntakukerigjen'].empty) && !doc['aapordinerutlopsdato'].empty) {
+                    else if (doc['ytelse'] == 'AAP_MAXTID' && !doc['aapordinerutlopsdato'].empty) {
                         return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
                     }
                     else {
