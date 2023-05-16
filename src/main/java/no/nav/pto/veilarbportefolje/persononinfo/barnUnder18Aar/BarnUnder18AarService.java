@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,10 +23,10 @@ public class BarnUnder18AarService {
 
     private final BarnUnder18AarRepository barnUnder18AarRepository;
 
-    public Map<Fnr, List<BarnUnder18AarData>> hentBarnUnder18AarAlle(List<Fnr> fnrPersoner) {
+    public Map<Fnr, List<BarnUnder18AarData>> hentBarnUnder18Aar(List<Fnr> fnrForeldre) {
         Map<Fnr, List<BarnUnder18AarData>> result = new HashMap<>();
 
-        fnrPersoner.forEach(fnrPerson -> {
+        fnrForeldre.forEach(fnrPerson -> {
                     List<BarnUnder18AarData> barnListe = new ArrayList<>();
                     barnUnder18AarRepository.hentForeldreansvarForPerson(fnrPerson).forEach(fnrBarn ->
                             barnListe.add(barnUnder18AarRepository.hentInfoOmBarn(fnrBarn))
@@ -61,13 +62,18 @@ public class BarnUnder18AarService {
         );
 
         barnFraPdl.forEach(barnUnder18Aar -> {
-            barnUnder18AarRepository.lagreBarnData(barnUnder18Aar.getFnr(), barnUnder18Aar.getFodselsdato(), barnUnder18Aar.getDiskresjonskode());
-            barnUnder18AarRepository.lagreForeldreansvar(foresattIdent, barnUnder18Aar.getFnr());
+            if(erUnder18Aar(barnUnder18Aar.getFodselsdato())) {
+                barnUnder18AarRepository.lagreBarnData(barnUnder18Aar.getFnr(), barnUnder18Aar.getFodselsdato(), barnUnder18Aar.getDiskresjonskode());
+                barnUnder18AarRepository.lagreForeldreansvar(foresattIdent, barnUnder18Aar.getFnr());
+            }
         });
     }
 
+    public boolean erUnder18Aar(LocalDate fodselsdato){
+        return (Period.between(fodselsdato, LocalDate.now()).getYears() < 18);
+    }
+
     public void oppdaterEndringPaBarn(Fnr fnrBarn, PDLPersonBarn pdlPersonBarn) {
-        List<BarnUnder18Aar> barn = new ArrayList<>();
         barnUnder18AarRepository.lagreBarnData(fnrBarn, pdlPersonBarn.getFodselsdato(), pdlPersonBarn.getDiskresjonskode());
     }
 
@@ -82,8 +88,8 @@ public class BarnUnder18AarService {
         }
     }
 
-    public boolean erFnrBarnAvForelderUnderOppfolging(List<Fnr> fnrs) {
-        return barnUnder18AarRepository.finnesBarnIForeldreansvar(fnrs);
+    public boolean erFnrBarnAvForelderUnderOppfolging(List<Fnr> fnrBarn) {
+        return barnUnder18AarRepository.finnesBarnIForeldreansvar(fnrBarn);
     }
 
     public List<Fnr> finnForeldreTilBarn(Fnr fnrBarn){

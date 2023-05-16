@@ -17,11 +17,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PdlPersonValideringException;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.util.SecureLog;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,21 +66,23 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             oppdaterOpensearch(aktivAktorId, pdlIdenter);
         }
 
-        if(barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)){
+        if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
             Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
             handterBarnEndring(pdlDokument.getHentPersonBarn(), pdlIdenter);
 
+            //TODO: handterIdentEndring for barn?
+
             List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnrBarn);
 
-            foreldreTilBarn.forEach( fnrForelder -> {
-                    Optional<AktorId> aktorIdForelder = brukerService.hentAktorId(fnrForelder);
-                    if(aktorIdForelder.isPresent()) {
-                        opensearchIndexer.indekser(aktorIdForelder.get());
-                    }else{
-                        secureLog.warn("Kunne ikke indeksere forelder med fnr {} til barn med fnr {}", fnrForelder, aktivtFnrBarn);
+            foreldreTilBarn.forEach(fnrForelder -> {
+                        Optional<AktorId> aktorIdForelder = brukerService.hentAktorId(fnrForelder);
+                        if (aktorIdForelder.isPresent()) {
+                            opensearchIndexer.indekser(aktorIdForelder.get());
+                        } else {
+                            secureLog.warn("Kunne ikke indeksere forelder med fnr {} til barn med fnr {}", fnrForelder, aktivtFnrBarn);
+                        }
                     }
-                    }
-             );
+            );
         }
 
 
@@ -108,7 +107,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         pdlService.slettPDLBrukerData(inaktiveFnr);
     }
 
-    private void handterBarnEndring(PdlBarnResponse.PdlBarnResponseData.HentPersonResponsData barnFraKafka, List<PDLIdent> pdlIdenter){
+    private void handterBarnEndring(PdlBarnResponse.PdlBarnResponseData.HentPersonResponsData barnFraKafka, List<PDLIdent> pdlIdenter) {
         Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
         try {
             PDLPersonBarn personBarn = PDLPersonBarn.genererFraApiRespons(barnFraKafka);
