@@ -68,7 +68,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
             Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
-            handterBarnEndring(pdlDokument.getHentPersonBarn(), pdlIdenter);
+            handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
             //TODO: handterIdentEndring for barn?
 
@@ -107,11 +107,15 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         pdlService.slettPDLBrukerData(inaktiveFnr);
     }
 
-    private void handterBarnEndring(PdlBarnResponse.PdlBarnResponseData.HentPersonResponsData barnFraKafka, List<PDLIdent> pdlIdenter) {
+    private void handterBarnEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka, List<PDLIdent> pdlIdenter) {
         Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
         try {
-            PDLPersonBarn personBarn = PDLPersonBarn.genererFraApiRespons(barnFraKafka);
-            pdlService.lagreBrukerDataPaBarn(aktivtFnrBarn, personBarn);
+            PDLPerson person = PDLPerson.genererFraApiRespons(personFraKafka);
+            PDLPersonBarn barn = new PDLPersonBarn();
+            barn.setErIlive(!person.isErDoed());
+            barn.setFodselsdato(person.getFoedsel());
+            barn.setDiskresjonskode(person.getDiskresjonskode());
+            pdlService.lagreBrukerDataPaBarn(aktivtFnrBarn, barn);
         } catch (PdlPersonValideringException e) {
             if (isDevelopment().orElse(false)) {
                 secureLog.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivtFnrBarn), e);

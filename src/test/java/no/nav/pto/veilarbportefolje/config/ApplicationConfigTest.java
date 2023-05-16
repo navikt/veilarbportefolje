@@ -46,6 +46,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRe
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
@@ -80,6 +81,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -297,6 +299,8 @@ public class ApplicationConfigTest {
         ));
         when(pdlClient.hentBrukerDataFraPdl(any())).thenReturn(
                 new PDLPerson().setKjonn(K));
+        when(pdlClient.hentBrukerBarnDataFraPdl(any())).thenReturn(
+                new PDLPersonBarn().setFodselsdato(LocalDate.of(2014, 12, 11)));
         return pdlClient;
     }
 
