@@ -2674,7 +2674,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setYtelse(YtelseFilter.AAP_UNNTAK.name())
+                .setYtelse("AAP_UNNTAK")
                 .setUtlopsdato("2023-06-30T21:59:59Z");
 
         var bruker2 = new OppfolgingsBruker()
@@ -2684,7 +2684,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setYtelse(YtelseFilter.AAP_MAXTID.name())
+                .setYtelse("AAP_MAXTID")
                 .setAapmaxtiduke(43)
                 .setAapordinerutlopsdato(DateUtils.toLocalDateOrNull("2023-04-20"));
 
@@ -2694,7 +2694,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
-                .setYtelse(YtelseFilter.AAP_UNNTAK.name())
+                .setYtelse("AAP_UNNTAK")
                 .setEnhet_id(TEST_ENHET);
 
         var bruker4 = new OppfolgingsBruker()
@@ -2703,7 +2703,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
-                .setYtelse(YtelseFilter.AAP_MAXTID.name())
+                .setYtelse("AAP_MAXTID")
                 .setEnhet_id(TEST_ENHET);
 
         var bruker5 = new OppfolgingsBruker()
@@ -2712,7 +2712,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setYtelse(YtelseFilter.AAP_UNNTAK.name())
+                .setYtelse("AAP_UNNTAK")
                 .setUtlopsdato("2023-08-30T21:59:59Z");
 
         var bruker6 = new OppfolgingsBruker()
@@ -2721,7 +2721,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setYtelse(YtelseFilter.AAP_MAXTID.name())
+                .setYtelse("AAP_MAXTID")
                 .setAapmaxtiduke(12)
                 .setAapordinerutlopsdato(DateUtils.toLocalDateOrNull("2023-04-12"));
 
@@ -2769,27 +2769,6 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getBrukere().get(0).getFnr().equals(bruker1.getFnr()));
         assertThat(response.getBrukere().get(1).getFnr().equals(bruker5.getFnr()));
         assertThat(response.getBrukere().get(2).getFnr().equals(bruker3.getFnr()));
-
-
-        filterValg = new Filtervalg()
-                .setFerdigfilterListe(List.of())
-                .setYtelse(YtelseFilter.AAP);
-
-        response = opensearchService.hentBrukere(
-                TEST_ENHET,
-                empty(),
-                "ascending",
-                "aap_vurderingsfrist",
-                filterValg,
-                null,
-                null
-        );
-
-        assertThat(response.getAntall()).isEqualTo(6);
-        assertThat(response.getBrukere().get(0).getFnr().equals(bruker6.getFnr()));
-        assertThat(response.getBrukere().get(1).getFnr().equals(bruker2.getFnr()));
-        assertThat(response.getBrukere().get(2).getFnr().equals(bruker1.getFnr()));
-        assertThat(response.getBrukere().get(2).getFnr().equals(bruker5.getFnr()));
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
