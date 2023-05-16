@@ -472,12 +472,12 @@ public class OpensearchQueryBuilder {
                     if (doc['ytelse'] == 'AAP_UNNTAK' && !doc['utlopsdato'].empty) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
                     }
-                    else if (doc['ytelse'] == 'AAP_MAXTID' && !doc['aapordinerutlopsdato'].empty) {
+                    if (doc['ytelse'] == 'AAP_MAXTID' && !doc['aapordinerutlopsdato'].empty) {
                         return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
                     }
-                    else {
-                        return 0;
-                    }
+                                        
+                    return 0;
+                                       
                     """;
         }
 
