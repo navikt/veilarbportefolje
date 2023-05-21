@@ -5,13 +5,11 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import lombok.SneakyThrows;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlBarnResponse;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
+import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,12 +20,16 @@ import java.time.Period;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PDLPersonBarnTest {
     private final ObjectMapper mapper = new ObjectMapper();
+    private final String pdlIdentResponsFraFil = readFileAsJsonString("/identer_pdl.json", getClass());
+    private final String pdlIdentBarnResponsFraFil = readFileAsJsonString("/identer_barn_pdl.json", getClass());
+    private final String pdlPersonResponsFraFil = readFileAsJsonString("/person_pdl.json", getClass());
     private final String pdlPersonBarnResponsFraFil = readFileAsJsonString("/person_barn_pdl.json", getClass());
 
     private BarnUnder18AarRepository barnUnder18AarRepository;
@@ -35,8 +37,6 @@ public class PDLPersonBarnTest {
     private final PdlPersonRepository pdlPersonRepository;
 
     private PdlService pdlService;
-
-    private WireMockServer server = new WireMockServer();
 
     public PDLPersonBarnTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
@@ -46,7 +46,8 @@ public class PDLPersonBarnTest {
 
     @BeforeEach
     public void setup() {
-        db.update("truncate bruker_identer cascade ");
+        WireMockServer server = new WireMockServer();
+        db.update("truncate bruker_identer");
 
         server.stubFor(
                 post(anyUrl())
@@ -57,36 +58,39 @@ public class PDLPersonBarnTest {
                                 .withBody(pdlPersonBarnResponsFraFil))
                         .willSetStateTo("hent barn")
         );
-
+/*
+        server.stubFor(post(anyUrl())
+                .inScenario("PDL test")
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(pdlPersonBarnResponsFraFil))
+                .whenScenarioStateIs("hent barn")
+        );
+*/
         server.start();
 
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
-                pdlPersonRepository,
+                new PdlPersonRepository(db, db),
                 new BarnUnder18AarService(new BarnUnder18AarRepository(db, db)),
                 new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
         );
     }
 
-    @AfterEach
-    public void stopServer(){
-        server.stop();
-    }
-
     @Test
     @SneakyThrows
     public void hentOgLagreBrukerDataPaBarnTest() {
-        Fnr fnrtest = randomFnr();
-        pdlService.hentOgLagreBrukerDataPaBarn(fnrtest);
-        BarnUnder18AarData barn = barnUnder18AarRepository.hentInfoOmBarn(fnrtest);
-        String fodselsdato = mapper.readValue(pdlPersonBarnResponsFraFil, PdlBarnResponse.class)
+        var identerFraFil = mapper.readValue(pdlIdentResponsFraFil, PdlIdentResponse.class)
                 .getData()
-                .getHentPerson()
-                .getFoedsel()
-                .get(0)
-                .getFoedselsdato();
+                .getHentIdenter()
+                .getIdenter();
 
-        LocalDate fDato = LocalDate.parse(fodselsdato);
+       //pdlService.hentOgLagreIdenter(randomAktorId());
+
+        Fnr fnr = hentAktivFnr(identerFraFil);
+        pdlService.hentOgLagreBrukerDataPaBarn(fnr);
+        BarnUnder18AarData barn = barnUnder18AarRepository.hentInfoOmBarn(fnr);
+        LocalDate fDato = LocalDate.of(2014, 07, 07);
         Integer alder = Period.between(fDato, LocalDate.now()).getYears();
 
         assertThat(barn.getAlder()).isEqualTo(alder.longValue());

@@ -5,41 +5,29 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import lombok.SneakyThrows;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentResponse;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18Aar;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.LOCAL_DATE;
 
 public class PdlServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final String pdlIdentResponsFraFil = readFileAsJsonString("/identer_pdl.json", getClass());
-    private final String pdlIdentBarnResponsFraFil = readFileAsJsonString("/identer_barn_pdl.json", getClass());
     private final String pdlPersonResponsFraFil = readFileAsJsonString("/person_pdl.json", getClass());
-
-    private final String pdlPersonBarnResponsFraFil = readFileAsJsonString("/person_barn_pdl.json", getClass());
-
-    private BarnUnder18AarRepository barnUnder18AarRepository;
     private final JdbcTemplate db;
     private final PdlPersonRepository pdlPersonRepository;
     private PdlService pdlService;
@@ -62,31 +50,12 @@ public class PdlServiceTest {
                                 .withBody(pdlIdentResponsFraFil))
                         .willSetStateTo("hent person")
         );
-/*
-        server.stubFor(
-                post(anyUrl())
-                        .inScenario("PDL test")
-                        .whenScenarioStateIs(STARTED)
-                        .willReturn(aResponse()
-                                .withStatus(200)
-                                .withBody(pdlIdentBarnResponsFraFil))
-                        .willSetStateTo("hent personBarn")
-        );
-*/
         server.stubFor(post(anyUrl())
                 .inScenario("PDL test")
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(pdlPersonResponsFraFil))
                 .whenScenarioStateIs("hent person")
-        );
-
-        server.stubFor(post(anyUrl())
-                .inScenario("PDL test")
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(pdlPersonBarnResponsFraFil))
-                .whenScenarioStateIs("hent personBarn")
         );
 
         server.start();
@@ -130,23 +99,5 @@ public class PdlServiceTest {
         assertThat(pdlPerson.getSikkerhetstiltak().getBeskrivelse().equals("Fysisk utestengelse"));
         assertThat(pdlPerson.getSikkerhetstiltak().getGyldigFra().toString().equals("2022-05-12"));
         assertThat(pdlPerson.getSikkerhetstiltak().getGyldigTil().toString().equals("2022-08-05"));
-    }
-
-    @Test
-    @SneakyThrows
-    public void handterBarnEndringOppførerSeg() {
-        var identerFraFil = mapper.readValue(pdlIdentResponsFraFil, PdlIdentResponse.class)
-                .getData()
-                .getHentIdenter()
-                .getIdenter();
-
-        Fnr fnr = hentAktivFnr(identerFraFil);
-        pdlService.hentOgLagreBrukerDataPaBarn(fnr);
-        BarnUnder18AarData barn = barnUnder18AarRepository.hentInfoOmBarn(fnr);
-        LocalDate fDato = LocalDate.of(2014,07, 07);
-        Integer alder = Period.between(fDato, LocalDate.now()).getYears();
-
-        assertThat(barn.getAlder()).isEqualTo(alder.longValue());
-        assertThat(barn.getDiskresjonskode()).isEqualTo("");
     }
 }
