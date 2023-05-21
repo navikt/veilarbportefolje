@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,6 +19,7 @@ import static java.lang.Math.abs;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static java.time.temporal.ChronoUnit.DAYS;
 
+@Slf4j
 public class DateUtils {
 
     public static final String FAR_IN_THE_FUTURE_DATE = "3017-10-07T00:00:00Z";
@@ -207,5 +210,18 @@ public class DateUtils {
     public static Comparator<LocalDate> closestToTodayComparator() {
         LocalDate today = LocalDate.now();
         return Comparator.comparing(dato -> abs(DAYS.between(today, dato)));
+    }
+
+    public static boolean erUnder18Aar(LocalDate fodselsdato) {
+        return (Period.between(fodselsdato, LocalDate.now()).getYears() < 18);
+    }
+
+    public static Integer alderFraFodselsdato(LocalDate date) {
+        if (date == null) {
+            log.warn("Input data i alderFraFodselsdato er null!");
+            return null;
+        }
+        LocalDate now = LocalDate.now();
+        return Period.between(date, now).getYears();
     }
 }

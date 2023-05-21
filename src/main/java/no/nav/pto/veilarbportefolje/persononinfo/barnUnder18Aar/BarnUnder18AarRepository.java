@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,12 +9,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.alderFraFodselsdato;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 
 @Slf4j
@@ -46,6 +44,16 @@ public class BarnUnder18AarRepository {
                 .toList();
 
         return foreldre;
+    }
+
+    public List<Fnr> hentAlleBarnOver18() {
+        List<Fnr> barn = dbReadOnly.queryForList("""
+                            SELECT barn_ident  FROM bruker_data_barn WHERE BARN_FOEDSELSDATO <= NOW() - INTERVAL '18 YEARS';
+                        """, String.class).stream()
+                .map(Fnr::of)
+                .toList();
+
+        return barn;
     }
 
     public Boolean finnesBarnIForeldreansvar(Fnr fnrBarn) {
@@ -89,6 +97,13 @@ public class BarnUnder18AarRepository {
                 fnrForesatt.get(), fnrBarn.get());
     }
 
+    public void slettForeldreansvar(Fnr fnrBarn) {
+        db.update("""
+                        DELETE FROM foreldreansvar WHERE barn_ident = ?
+                         """
+                , fnrBarn.get());
+    }
+
     public void slettBarnData(Fnr fnrBarn) {
         db.update("""
                         DELETE FROM bruker_data_barn WHERE barn_ident = ?
@@ -97,18 +112,14 @@ public class BarnUnder18AarRepository {
     }
 
     public BarnUnder18AarData hentInfoOmBarn(Fnr fnrBarn) {
-        return dbReadOnly.queryForObject(
-                "SELECT * FROM bruker_data_barn WHERE barn_ident = ?",
-                (rs, row) -> new BarnUnder18AarData(
-                        alderFraFodselsdato(toLocalDateOrNull(rs.getDate("BARN_FOEDSELSDATO")),
-                                LocalDate.now()),
-                        rs.getString("BARN_DISKRESJONKODE")), fnrBarn.get());
+        return queryForObjectOrNull(
+                () -> dbReadOnly.queryForObject(
+                        "SELECT * FROM bruker_data_barn WHERE barn_ident = ?",
+                        (rs, row) -> new BarnUnder18AarData(
+                                alderFraFodselsdato(toLocalDateOrNull(rs.getDate("BARN_FOEDSELSDATO"))),
+                                rs.getString("BARN_DISKRESJONKODE")), fnrBarn.get()));
     }
 
-    public static Long alderFraFodselsdato(LocalDate date, LocalDate now) {
-        Integer age = Period.between(date, now).getYears();
-        return age.longValue();
-    }
 }
 
 

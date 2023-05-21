@@ -4,7 +4,6 @@ package no.nav.pto.veilarbportefolje.domene;
 import no.nav.common.abac.Pep;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
-import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
@@ -17,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -212,8 +210,8 @@ public class SensurerBrukerTest {
         return new Bruker()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(
-                        new BarnUnder18AarData(15L, "6"),
-                        new BarnUnder18AarData(12L, "6")
+                        new BarnUnder18AarData(15, "6"),
+                        new BarnUnder18AarData(12, "6")
                 ));
     }
 
@@ -221,7 +219,7 @@ public class SensurerBrukerTest {
         return new Bruker()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(new BarnUnder18AarData(
-                        1L, "7"
+                        1, "7"
                 )));
     }
 
@@ -229,9 +227,9 @@ public class SensurerBrukerTest {
         return new Bruker()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(
-                        new BarnUnder18AarData(11L, "6"),
-                        new BarnUnder18AarData(15L, "7"),
-                        new BarnUnder18AarData(3L, "")
+                        new BarnUnder18AarData(11, "6"),
+                        new BarnUnder18AarData(15, "7"),
+                        new BarnUnder18AarData(3, "")
                 ));
     }
 
