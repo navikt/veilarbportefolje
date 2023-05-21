@@ -41,9 +41,9 @@ public class PdlService {
         lagreBrukerData(fnrPerson, personData);
     }
 
-    public void hentOgLagreBrukerDataPaBarn(Fnr fnrPerson) {
-        PDLPersonBarn barnData = pdlClient.hentBrukerBarnDataFraPdl(fnrPerson);
-        barnUnder18AarService.oppdaterEndringPaBarn(fnrPerson, barnData);
+    public void hentOgLagreBrukerDataPaBarn(Fnr fnrBarn) {
+        PDLPersonBarn barnData = pdlClient.hentBrukerBarnDataFraPdl(fnrBarn);
+        barnUnder18AarService.oppdaterEndringPaBarn(fnrBarn, barnData);
     }
 
     public void lagreBrukerData(Fnr fnrPerson, PDLPerson personData) {
@@ -68,7 +68,7 @@ public class PdlService {
         barnUnder18AarService.oppdaterEndringPaBarn(fnrBarn, pdlPersonBarn);
     }
 
-    private List<PDLIdent> hentOgLagreIdenter(AktorId aktorId) {
+    public List<PDLIdent> hentOgLagreIdenter(AktorId aktorId) {
         secureLog.info("Oppdaterer ident mapping for aktor: {}", aktorId);
 
         List<PDLIdent> identer = pdlClient.hentIdenterFraPdl(aktorId);
