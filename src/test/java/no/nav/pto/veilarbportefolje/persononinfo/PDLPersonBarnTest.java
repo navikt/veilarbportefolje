@@ -55,10 +55,10 @@ public class PDLPersonBarnTest {
                         .whenScenarioStateIs(STARTED)
                         .willReturn(aResponse()
                                 .withStatus(200)
-                                .withBody(pdlIdentResponsFraFil))
+                                .withBody(pdlPersonBarnResponsFraFil))
                         .willSetStateTo("hent barn")
         );
-
+/*
         server.stubFor(post(anyUrl())
                 .inScenario("PDL test")
                 .willReturn(aResponse()
@@ -66,7 +66,7 @@ public class PDLPersonBarnTest {
                         .withBody(pdlPersonBarnResponsFraFil))
                 .whenScenarioStateIs("hent barn")
         );
-
+*/
         server.start();
 
         this.pdlService = new PdlService(
@@ -85,7 +85,7 @@ public class PDLPersonBarnTest {
                 .getHentIdenter()
                 .getIdenter();
 
-       pdlService.hentOgLagreIdenter(randomAktorId());
+       //pdlService.hentOgLagreIdenter(randomAktorId());
 
         Fnr fnr = hentAktivFnr(identerFraFil);
         pdlService.hentOgLagreBrukerDataPaBarn(fnr);
