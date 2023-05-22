@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -144,4 +145,31 @@ public class DateUtilsTest {
         assertThat(dateInFuture.getDayOfWeek().getValue()).isEqualTo(7);
         assertThat(dateInFuture.minusWeeks(123).get(weekFields.weekOfYear())).isEqualTo(LocalDate.now().get(weekFields.weekOfYear()));
     }
+
+    @Test
+    public void girRiktigAlder_alderFraFodselsdato() {
+        LocalDate fodselsdatoFylt12Aar = LocalDate.now().minusYears(12).minusMonths(3);
+        LocalDate fodselsdatoFylt13Aar = LocalDate.now().minusYears(13)
+                .minusMonths(2)
+                .plusDays(3);
+
+        Integer age12 = alderFraFodselsdato(fodselsdatoFylt12Aar);
+        Integer age13 = alderFraFodselsdato(fodselsdatoFylt13Aar);
+
+        Assertions.assertTrue(age12.equals(12));
+        Assertions.assertTrue(age13.equals(13));
+    }
+
+    @Test
+    public void testErUnder18Aar() {
+        LocalDate fodselsdatoFylt18Aar = LocalDate.now().minusYears(18).minusDays(1);
+        LocalDate fodselsdatoFylt17Aar = LocalDate.now().minusYears(17)
+                .minusMonths(11)
+                .minusDays(22);
+
+        Assertions.assertFalse(DateUtils.erUnder18Aar(fodselsdatoFylt18Aar));
+        Assertions.assertTrue(DateUtils.erUnder18Aar(fodselsdatoFylt17Aar));
+
+    }
+
 }

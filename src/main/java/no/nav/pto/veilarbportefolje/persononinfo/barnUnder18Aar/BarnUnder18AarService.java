@@ -7,13 +7,12 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static no.nav.pto.veilarbportefolje.util.DateUtils.erUnder18Aar;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
@@ -28,8 +27,12 @@ public class BarnUnder18AarService {
 
         fnrForeldre.forEach(fnrPerson -> {
                     List<BarnUnder18AarData> barnListe = new ArrayList<>();
-                    barnUnder18AarRepository.hentForeldreansvarForPerson(fnrPerson).forEach(fnrBarn ->
-                            barnListe.add(barnUnder18AarRepository.hentInfoOmBarn(fnrBarn))
+                    barnUnder18AarRepository.hentForeldreansvarForPerson(fnrPerson).forEach(fnrBarn -> {
+                                BarnUnder18AarData barnUnder18AarData = barnUnder18AarRepository.hentInfoOmBarn(fnrBarn);
+                                if (barnUnder18AarData != null) {
+                                    barnListe.add(barnUnder18AarData);
+                                }
+                            }
                     );
                     result.put(fnrPerson, barnListe);
                 }
@@ -37,11 +40,11 @@ public class BarnUnder18AarService {
         return result;
     }
 
-    public List<Fnr> hentBarnFnrsForForeldre(List<Fnr> fnrPersoner) {
+    public List<Fnr> hentBarnFnrsForForeldre(List<Fnr> fnrForeldre) {
         List<Fnr> result = new ArrayList<>();
 
-        fnrPersoner.forEach(fnrPerson -> {
-                    result.addAll(barnUnder18AarRepository.hentForeldreansvarForPerson(fnrPerson));
+        fnrForeldre.forEach(fnrForelder -> {
+                    result.addAll(barnUnder18AarRepository.hentForeldreansvarForPerson(fnrForelder));
                 }
         );
         return result;
@@ -62,21 +65,17 @@ public class BarnUnder18AarService {
         );
 
         barnFraPdl.forEach(barnUnder18Aar -> {
-            if(erUnder18Aar(barnUnder18Aar.getFodselsdato())) {
+            if (erUnder18Aar(barnUnder18Aar.getFodselsdato())) {
                 barnUnder18AarRepository.lagreBarnData(barnUnder18Aar.getFnr(), barnUnder18Aar.getFodselsdato(), barnUnder18Aar.getDiskresjonskode());
                 barnUnder18AarRepository.lagreForeldreansvar(foresattIdent, barnUnder18Aar.getFnr());
             }
         });
     }
 
-    public boolean erUnder18Aar(LocalDate fodselsdato){
-        return (Period.between(fodselsdato, LocalDate.now()).getYears() < 18);
-    }
 
     public void oppdaterEndringPaBarn(Fnr fnrBarn, PDLPersonBarn pdlPersonBarn) {
         barnUnder18AarRepository.lagreBarnData(fnrBarn, pdlPersonBarn.getFodselsdato(), pdlPersonBarn.getDiskresjonskode());
     }
-
 
     public void slettBarnDataHvisIngenForeldreErUnderOppfolging(List<Fnr> barnIdenter) {
         barnIdenter.forEach(this::slettBarnDataHvisIngenForeldreErUnderOppfolging);
@@ -92,7 +91,7 @@ public class BarnUnder18AarService {
         return barnUnder18AarRepository.finnesBarnIForeldreansvar(fnrBarn);
     }
 
-    public List<Fnr> finnForeldreTilBarn(Fnr fnrBarn){
+    public List<Fnr> finnForeldreTilBarn(Fnr fnrBarn) {
         return barnUnder18AarRepository.hentForeldreTilBarn(fnrBarn);
     }
 
