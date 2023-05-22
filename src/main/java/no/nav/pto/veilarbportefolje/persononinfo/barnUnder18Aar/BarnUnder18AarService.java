@@ -95,4 +95,13 @@ public class BarnUnder18AarService {
         return barnUnder18AarRepository.hentForeldreTilBarn(fnrBarn);
     }
 
+    public void slettDataForBarnSomErOver18() {
+        List<Fnr> fnrBarnOver18 = barnUnder18AarRepository.hentAlleBarnOver18();
+        
+        fnrBarnOver18.forEach(fnrBarn -> {
+            barnUnder18AarRepository.slettForeldreansvar(fnrBarn);
+            barnUnder18AarRepository.slettBarnData(fnrBarn);
+        });
+
+    }
 }
