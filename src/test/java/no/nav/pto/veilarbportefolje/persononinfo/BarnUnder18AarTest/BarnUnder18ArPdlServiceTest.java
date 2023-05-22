@@ -7,19 +7,18 @@ import lombok.SneakyThrows;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlBarnResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -49,8 +48,6 @@ public class BarnUnder18ArPdlServiceTest {
     private final BarnUnder18AarService barnUnder18AarService;
     private PdlService pdlService;
 
-    private WireMockServer server = new WireMockServer();
-
     public BarnUnder18ArPdlServiceTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
         pdlPersonRepository = new PdlPersonRepository(db, db);
@@ -59,7 +56,8 @@ public class BarnUnder18ArPdlServiceTest {
 
     @BeforeEach
     public void setup() {
-        db.update("truncate bruker_identer cascade ");
+        WireMockServer server = new WireMockServer();
+        db.update("truncate bruker_identer");
         server.stubFor(
                 post(anyUrl())
                         .inScenario("PDL test")
@@ -149,10 +147,6 @@ public class BarnUnder18ArPdlServiceTest {
         );
     }
 
-    @AfterEach
-    public void stopServer(){
-        server.stop();
-    }
     @Test
     @SneakyThrows
     public void sjekkAtLagretBarnIkkeFjernes() {
