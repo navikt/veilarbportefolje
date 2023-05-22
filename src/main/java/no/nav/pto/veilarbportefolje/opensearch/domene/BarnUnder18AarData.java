@@ -4,11 +4,11 @@ import lombok.Data;
 
 @Data
 public class BarnUnder18AarData {
-    Long alder;
+    Integer alder;
     String diskresjonskode;
 
-    public BarnUnder18AarData(long l, String s) {
-        this.alder = l;
+    public BarnUnder18AarData(Integer alder, String s) {
+        this.alder = alder;
         this.diskresjonskode = s;
     }
 }
