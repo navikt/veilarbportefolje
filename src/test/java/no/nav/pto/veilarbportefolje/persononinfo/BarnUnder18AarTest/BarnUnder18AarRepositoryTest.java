@@ -108,19 +108,35 @@ public class BarnUnder18AarRepositoryTest {
 
     @Test
     public void testSlettBarnDataHvisIngenForeldreErUnderOppfolging() {
+        BarnUnder18Aar barnOver18Aar = pdlBarn18Aar();
+        BarnUnder18Aar barnUnder18Aar = pdlBarn15Aar();
+        barnUnder18AarRepository.lagreBarnData(barnOver18Aar.getFnr(), barnOver18Aar.getFodselsdato(), barnOver18Aar.getDiskresjonskode());
+        barnUnder18AarRepository.lagreBarnData(barnUnder18Aar.getFnr(), barnUnder18Aar.getFodselsdato(), barnUnder18Aar.getDiskresjonskode());
+
+        BarnUnder18AarData lagretDataForBarn18Ar = barnUnder18AarRepository.hentInfoOmBarn(barnOver18Aar.getFnr());
+        BarnUnder18AarData lagretDataForBarn15Ar = barnUnder18AarRepository.hentInfoOmBarn(barnUnder18Aar.getFnr());
+        Assertions.assertNotNull(lagretDataForBarn15Ar);
+        Assertions.assertNotNull(lagretDataForBarn18Ar);
+        Assertions.assertEquals(lagretDataForBarn15Ar.getAlder(), DateUtils.alderFraFodselsdato(barnUnder18Aar.getFodselsdato()));
+        Assertions.assertEquals(lagretDataForBarn18Ar.getAlder(), DateUtils.alderFraFodselsdato(barnOver18Aar.getFodselsdato()));
+
+        barnUnder18AarService.slettDataForBarnSomErOver18();
+
+        lagretDataForBarn18Ar = barnUnder18AarRepository.hentInfoOmBarn(barnOver18Aar.getFnr());
+        lagretDataForBarn15Ar = barnUnder18AarRepository.hentInfoOmBarn(barnUnder18Aar.getFnr());
+        Assertions.assertNull(lagretDataForBarn18Ar);
+        Assertions.assertNotNull(lagretDataForBarn15Ar);
+    }
+
+    @Test
+    public void testSlettDataForBarnSomErOver18(){
         BarnUnder18Aar barnUnder18Aar = pdlBarn();
         barnUnder18AarRepository.lagreBarnData(barnUnder18Aar.getFnr(), barnUnder18Aar.getFodselsdato(), barnUnder18Aar.getDiskresjonskode());
 
-        BarnUnder18AarData lagretDataForBarn = barnUnder18AarRepository.hentInfoOmBarn(pdlBarn().getFnr());
-        Assertions.assertNotNull(lagretDataForBarn);
-        Assertions.assertEquals(lagretDataForBarn.getAlder(), DateUtils.alderFraFodselsdato(barnUnder18Aar.getFodselsdato()));
-
-        barnUnder18AarService.slettBarnDataHvisIngenForeldreErUnderOppfolging(List.of(barnUnder18Aar.getFnr()));
-
-        lagretDataForBarn = barnUnder18AarRepository.hentInfoOmBarn(pdlBarn().getFnr());
-        Assertions.assertNull(lagretDataForBarn);
 
     }
+
+
 
     private BarnUnder18Aar pdlBarn() {
         return new BarnUnder18Aar()
@@ -133,9 +149,18 @@ public class BarnUnder18AarRepositoryTest {
         LocalDate iDag = LocalDate.now();
         LocalDate fodselsdato15Aar = iDag.minusYears(15).minusMonths(1);
         return new BarnUnder18Aar()
-                .setFnr(Fnr.of("12312312312"))
+                .setFnr(Fnr.of("12312312311"))
                 .setFodselsdato(fodselsdato15Aar)
                 .setDiskresjonskode("6");
+    }
+
+    private BarnUnder18Aar pdlBarn18Aar() {
+        LocalDate iDag = LocalDate.now();
+        LocalDate fodselsdato15Aar = iDag.minusYears(18).minusMonths(1);
+        return new BarnUnder18Aar()
+                .setFnr(Fnr.of("12312312315"))
+                .setFodselsdato(fodselsdato15Aar)
+                .setDiskresjonskode("");
     }
 
     private PDLPersonBarn pdlPersonBarn() {
