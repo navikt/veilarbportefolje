@@ -8,7 +8,9 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18Aar;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +25,7 @@ import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.M;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.alderFraFodselsdato;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -50,6 +52,9 @@ public class BarnUnder18AarRepositoryTest {
         this.barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
         this.barnUnder18AarService = new BarnUnder18AarService(new BarnUnder18AarRepository(db, db));
         this.pdlPersonRepository = new PdlPersonRepository(db, null);
+
+        db.update("TRUNCATE foreldreansvar");
+        db.update("TRUNCATE bruker_data_barn");
     }
 
 
@@ -61,7 +66,7 @@ public class BarnUnder18AarRepositoryTest {
         barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barnFraPdl);
         Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrPerson));
         Assertions.assertFalse(forelderBarnMap.isEmpty());
-        Assertions.assertTrue(forelderBarnMap.get(fnrPerson).get(0).getAlder().equals(15L));
+        Assertions.assertTrue(forelderBarnMap.get(fnrPerson).get(0).getAlder().equals(15));
     }
 
     @Test
@@ -74,22 +79,47 @@ public class BarnUnder18AarRepositoryTest {
         barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt1, barnFraPdl);
         barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt2, barnFraPdl);
         Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18Aar(List.of(foresatt1, foresatt2));
-        Assertions.assertTrue(forelderBarnMap.size()==2);
+        Assertions.assertTrue(forelderBarnMap.size() == 2);
         Assertions.assertTrue(forelderBarnMap.get(foresatt1).equals(forelderBarnMap.get(foresatt2)));
     }
 
 
     @Test
-    public void girRiktigAlder_alderFraFodselsdato() {
-        LocalDate referenceDate = LocalDate.of(2023, 5, 5);
-        LocalDate fodselsdatoFylt12Aar = LocalDate.of(2010, 6, 5);
-        LocalDate fodselsdatoFylt13Aar = LocalDate.of(2010, 4, 5);
+    public void testOppdaterEndringPaBarn() {
+        Fnr barnFnr = randomFnr();
+        PDLPersonBarn pdlPersonBarn = pdlPersonBarn();
+        barnUnder18AarService.oppdaterEndringPaBarn(barnFnr, pdlPersonBarn);
 
-        Long age12 = barnUnder18AarRepository.alderFraFodselsdato(fodselsdatoFylt12Aar, referenceDate);
-        Long age13 = barnUnder18AarRepository.alderFraFodselsdato(fodselsdatoFylt13Aar, referenceDate);
+        BarnUnder18AarData barnUnder18AarData = barnUnder18AarRepository.hentInfoOmBarn(barnFnr);
+        Assertions.assertEquals(barnUnder18AarData.getDiskresjonskode(), pdlPersonBarn.getDiskresjonskode());
+        Assertions.assertEquals(barnUnder18AarData.getAlder(), alderFraFodselsdato(pdlPersonBarn.getFodselsdato()));
+    }
 
-        Assertions.assertTrue(age12.equals(12L));
-        Assertions.assertTrue(age13.equals(13L));
+    @Test
+    public void testErFnrBarnAvForelderUnderOppfolging() {
+        Fnr fnrPerson = randomFnr();
+        List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn15Aar());
+        pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barnFraPdl);
+
+        boolean erFnrBarnAvForelderUnderOppfolging = barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(List.of(barnFraPdl.get(0).getFnr()));
+        Assertions.assertTrue(erFnrBarnAvForelderUnderOppfolging);
+    }
+
+    @Test
+    public void testSlettBarnDataHvisIngenForeldreErUnderOppfolging() {
+        BarnUnder18Aar barnUnder18Aar = pdlBarn();
+        barnUnder18AarRepository.lagreBarnData(barnUnder18Aar.getFnr(), barnUnder18Aar.getFodselsdato(), barnUnder18Aar.getDiskresjonskode());
+
+        BarnUnder18AarData lagretDataForBarn = barnUnder18AarRepository.hentInfoOmBarn(pdlBarn().getFnr());
+        Assertions.assertNotNull(lagretDataForBarn);
+        Assertions.assertEquals(lagretDataForBarn.getAlder(), DateUtils.alderFraFodselsdato(barnUnder18Aar.getFodselsdato()));
+
+        barnUnder18AarService.slettBarnDataHvisIngenForeldreErUnderOppfolging(List.of(barnUnder18Aar.getFnr()));
+
+        lagretDataForBarn = barnUnder18AarRepository.hentInfoOmBarn(pdlBarn().getFnr());
+        Assertions.assertNull(lagretDataForBarn);
+
     }
 
     private BarnUnder18Aar pdlBarn() {
@@ -106,6 +136,15 @@ public class BarnUnder18AarRepositoryTest {
                 .setFnr(Fnr.of("12312312312"))
                 .setFodselsdato(fodselsdato15Aar)
                 .setDiskresjonskode("6");
+    }
+
+    private PDLPersonBarn pdlPersonBarn() {
+        LocalDate iDag = LocalDate.now();
+        LocalDate fodselsdato15Aar = iDag.minusYears(15).minusMonths(1);
+        return new PDLPersonBarn()
+                .setFodselsdato(fodselsdato15Aar)
+                .setDiskresjonskode("6")
+                .setErIlive(true);
     }
 
 }
