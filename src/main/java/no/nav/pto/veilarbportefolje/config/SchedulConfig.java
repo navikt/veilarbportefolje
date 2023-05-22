@@ -5,14 +5,15 @@ import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
-import jakarta.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.time.Duration;
 import java.time.Instant;
@@ -28,16 +29,19 @@ public class SchedulConfig {
     private final HovedIndekserer hovedIndekserer;
     private final AktivitetService aktivitetService;
     private final YtelsesService ytelsesService;
+
+    private final BarnUnder18AarService barnUnder18AarService;
     private final Scheduler scheduler;
 
     @Autowired
     public SchedulConfig(DataSource dataSource,
                          HovedIndekserer hovedIndekserer,
                          AktivitetService aktivitetService,
-                         YtelsesService ytelsesService) {
+                         YtelsesService ytelsesService, BarnUnder18AarService barnUnder18AarService) {
         this.hovedIndekserer = hovedIndekserer;
         this.aktivitetService = aktivitetService;
         this.ytelsesService = ytelsesService;
+        this.barnUnder18AarService = barnUnder18AarService;
 
         List<RecurringTask<?>> jobber = nattligeJobber();
         scheduler = Scheduler
@@ -61,7 +65,9 @@ public class SchedulConfig {
                                     executionComplete.getExecution().consecutiveFailures + 1);
                             executionOperations.reschedule(executionComplete, Instant.now().plus(5, MINUTES));
                         }))
-                        .execute((instance, ctx) -> hovedIndekserer.hovedIndeksering())
+                        .execute((instance, ctx) -> hovedIndekserer.hovedIndeksering()),
+                Tasks.recurring("slett_data_for_barn_som_er_over_18", Schedules.daily(LocalTime.of(1, 1)))
+                        .execute((instance, ctx) -> barnUnder18AarService.slettDataForBarnSomErOver18())
         );
     }
 
