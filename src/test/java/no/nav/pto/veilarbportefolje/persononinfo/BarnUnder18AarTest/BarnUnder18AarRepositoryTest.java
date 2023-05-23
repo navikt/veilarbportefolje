@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarSe
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
-import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -117,8 +116,8 @@ public class BarnUnder18AarRepositoryTest {
         BarnUnder18AarData lagretDataForBarn15Ar = barnUnder18AarRepository.hentInfoOmBarn(barnUnder18Aar.getFnr());
         Assertions.assertNotNull(lagretDataForBarn15Ar);
         Assertions.assertNotNull(lagretDataForBarn18Ar);
-        Assertions.assertEquals(lagretDataForBarn15Ar.getAlder(), DateUtils.alderFraFodselsdato(barnUnder18Aar.getFodselsdato()));
-        Assertions.assertEquals(lagretDataForBarn18Ar.getAlder(), DateUtils.alderFraFodselsdato(barnOver18Aar.getFodselsdato()));
+        Assertions.assertEquals(lagretDataForBarn15Ar.getAlder(), alderFraFodselsdato(barnUnder18Aar.getFodselsdato()));
+        Assertions.assertEquals(lagretDataForBarn18Ar.getAlder(), alderFraFodselsdato(barnOver18Aar.getFodselsdato()));
 
         barnUnder18AarService.slettDataForBarnSomErOver18();
 
@@ -129,13 +128,20 @@ public class BarnUnder18AarRepositoryTest {
     }
 
     @Test
-    public void testSlettDataForBarnSomErOver18(){
-        BarnUnder18Aar barnUnder18Aar = pdlBarn();
-        barnUnder18AarRepository.lagreBarnData(barnUnder18Aar.getFnr(), barnUnder18Aar.getFodselsdato(), barnUnder18Aar.getDiskresjonskode());
+    public void testOppdatereBarnIdent() {
+        Fnr fnrPerson = randomFnr();
+        pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn15Aar());
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barnFraPdl);
 
+        Fnr nyFnr = randomFnr();
+        barnUnder18AarRepository.oppdatereBarnIdent(nyFnr, List.of(barnFraPdl.get(0).getFnr(), randomFnr()));
+        BarnUnder18AarData barnMedNyIdent = barnUnder18AarRepository.hentInfoOmBarn(nyFnr);
 
+        Assertions.assertNotNull(barnMedNyIdent);
+        Assertions.assertEquals(barnMedNyIdent.getAlder(), alderFraFodselsdato(barnFraPdl.get(0).getFodselsdato()));
+        Assertions.assertEquals(barnMedNyIdent.getDiskresjonskode(), barnFraPdl.get(0).getDiskresjonskode());
     }
-
 
 
     private BarnUnder18Aar pdlBarn() {

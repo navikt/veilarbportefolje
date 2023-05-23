@@ -82,6 +82,17 @@ public class BarnUnder18AarRepository {
                 barnIdent.get(), barnFoedselsdato, diskresjonskode);
     }
 
+    public void oppdatereBarnIdent(Fnr nyBarnIdent, List<Fnr> gamleBarnIdent) {
+        if (gamleBarnIdent.isEmpty()) {
+            return;
+        }
+        String gamleBarnIdentStr = gamleBarnIdent.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
+        db.update("""
+                        UPDATE bruker_data_barn SET barn_ident = ? WHERE barn_ident = ANY (?::varchar[])
+                         """,
+                nyBarnIdent.get(), gamleBarnIdentStr);
+    }
+
     public void lagreForeldreansvar(Fnr foresattIdent, Fnr barnIdent) {
         db.update("""
                         INSERT INTO foreldreansvar (foresatt_ident, barn_ident)
