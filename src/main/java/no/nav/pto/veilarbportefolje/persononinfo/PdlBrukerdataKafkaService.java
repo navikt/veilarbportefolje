@@ -53,33 +53,35 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         List<PDLIdent> pdlIdenter = pdlDokument.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
         List<Fnr> fnrs = hentFnrs(pdlIdenter);
+        List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);
+        Fnr aktivtFnr = hentAktivFnr(pdlIdenter);
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
+
             secureLog.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
 
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
             handterIdentEndring(pdlIdenter);
 
+            barnUnder18AarService.handterForeldreIdentEndring(aktivtFnr, inaktiveFnr);
+
             oppdaterOpensearch(aktivAktorId, pdlIdenter);
         }
 
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
-            List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);
-            Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
-
-            barnUnder18AarService.handterBarnIdentEndring(aktivtFnrBarn, inaktiveFnr);
+            barnUnder18AarService.handterBarnIdentEndring(aktivtFnr, inaktiveFnr);
 
             handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-            List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnrBarn);
+            List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnr);
 
             foreldreTilBarn.forEach(fnrForelder -> {
                         Optional<AktorId> aktorIdForelder = brukerService.hentAktorId(fnrForelder);
                         if (aktorIdForelder.isPresent()) {
                             opensearchIndexer.indekser(aktorIdForelder.get());
                         } else {
-                            secureLog.warn("Kunne ikke indeksere forelder med fnr {} til barn med fnr {}", fnrForelder, aktivtFnrBarn);
+                            secureLog.warn("Kunne ikke indeksere forelder med fnr {} til barn med fnr {}", fnrForelder, aktivtFnr);
                         }
                     }
             );
