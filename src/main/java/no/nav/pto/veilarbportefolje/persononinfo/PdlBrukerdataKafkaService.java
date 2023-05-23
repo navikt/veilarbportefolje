@@ -8,7 +8,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlBarnResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
@@ -54,7 +53,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         List<PDLIdent> pdlIdenter = pdlDokument.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
         List<Fnr> fnrs = hentFnrs(pdlIdenter);
-        //TODO Dobbeltsjekk at alle (også små barn) har aktørId, så de ikke "forsvinner" her
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
@@ -67,10 +65,12 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         }
 
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
+            List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);
             Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
-            handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-            //TODO: handterIdentEndring for barn?
+            barnUnder18AarService.handterBarnIdentEndring(aktivtFnrBarn, inaktiveFnr);
+
+            handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
             List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnrBarn);
 
@@ -84,8 +84,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
                     }
             );
         }
-
-
     }
 
     private void handterBrukerDataEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka,
@@ -121,11 +119,9 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
                 secureLog.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivtFnrBarn), e);
                 return;
             }
-            secureLog.warn(String.format("Fikk pdl validerings error på aktor: %s, prøver å laste inn data på REST", aktivtFnrBarn), e);
+            secureLog.warn(String.format("Fikk pdl validerings error på fnr: %s, prøver å laste inn data på REST", aktivtFnrBarn), e);
             pdlService.hentOgLagreBrukerDataPaBarn(aktivtFnrBarn);
         }
-
-
     }
 
 
@@ -151,7 +147,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
     private static List<Fnr> hentFnrs(List<PDLIdent> identer) {
         return identer.stream()
                 .filter(pdlIdent -> PDLIdent.Gruppe.FOLKEREGISTERIDENT.equals(pdlIdent.getGruppe()))
-                .filter(x -> !x.isHistorisk())
                 .map(PDLIdent::getIdent)
                 .map(Fnr::new)
                 .toList();
