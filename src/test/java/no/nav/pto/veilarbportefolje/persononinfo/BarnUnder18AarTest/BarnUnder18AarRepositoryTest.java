@@ -3,10 +3,12 @@ package no.nav.pto.veilarbportefolje.persononinfo.BarnUnder18AarTest;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18Aar;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
@@ -24,7 +26,10 @@ import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.M;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.alderFraFodselsdato;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -43,6 +48,9 @@ public class BarnUnder18AarRepositoryTest {
     @Autowired
     private PdlPersonRepository pdlPersonRepository;
 
+    @Autowired
+    private PdlIdentRepository pdlIdentRepository;
+
     @BeforeEach
     public void setUp() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
@@ -52,15 +60,22 @@ public class BarnUnder18AarRepositoryTest {
         this.barnUnder18AarService = new BarnUnder18AarService(new BarnUnder18AarRepository(db, db));
         this.pdlPersonRepository = new PdlPersonRepository(db, null);
 
-        db.update("TRUNCATE foreldreansvar");
-        db.update("TRUNCATE bruker_data_barn");
+        db.update("TRUNCATE bruker_identer CASCADE ");
+        db.update("TRUNCATE foreldreansvar CASCADE ");
+        db.update("TRUNCATE bruker_data_barn CASCADE");
     }
 
 
     @Test
     public void sjekkAtBarnBlirRiktigInsertedITabellen() {
         Fnr fnrPerson = randomFnr();
+        List<PDLIdent> identerBruker = List.of(
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(fnrPerson.get(), false, FOLKEREGISTERIDENT)
+        );
+
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        pdlIdentRepository.upsertIdenter(identerBruker);
         List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn15Aar());
         barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barnFraPdl);
         Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrPerson));
@@ -97,8 +112,14 @@ public class BarnUnder18AarRepositoryTest {
     @Test
     public void testErFnrBarnAvForelderUnderOppfolging() {
         Fnr fnrPerson = randomFnr();
+        List<PDLIdent> identerBruker = List.of(
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(fnrPerson.get(), false, FOLKEREGISTERIDENT)
+        );
+
         List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn15Aar());
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        pdlIdentRepository.upsertIdenter(identerBruker);
         barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barnFraPdl);
 
         boolean erFnrBarnAvForelderUnderOppfolging = barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(List.of(barnFraPdl.get(0).getFnr()));
@@ -128,19 +149,55 @@ public class BarnUnder18AarRepositoryTest {
     }
 
     @Test
-    public void testOppdatereBarnIdent() {
+    public void testOppdateringAvBarnIdent() {
         Fnr fnrPerson = randomFnr();
+        List<PDLIdent> identerBruker = List.of(
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(fnrPerson.get(), false, FOLKEREGISTERIDENT)
+        );
+
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        pdlIdentRepository.upsertIdenter(identerBruker);
         List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn15Aar());
         barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barnFraPdl);
 
         Fnr nyFnr = randomFnr();
         barnUnder18AarRepository.oppdatereBarnIdent(nyFnr, List.of(barnFraPdl.get(0).getFnr(), randomFnr()));
         BarnUnder18AarData barnMedNyIdent = barnUnder18AarRepository.hentInfoOmBarn(nyFnr);
+        Boolean finnesNyIdentIForeldreansvar = barnUnder18AarRepository.finnesBarnIForeldreansvar(nyFnr);
+        Boolean finnesGamelIdentIForeldreansvar = barnUnder18AarRepository.finnesBarnIForeldreansvar(barnFraPdl.get(0).getFnr());
 
         Assertions.assertNotNull(barnMedNyIdent);
         Assertions.assertEquals(barnMedNyIdent.getAlder(), alderFraFodselsdato(barnFraPdl.get(0).getFodselsdato()));
         Assertions.assertEquals(barnMedNyIdent.getDiskresjonskode(), barnFraPdl.get(0).getDiskresjonskode());
+        Assertions.assertTrue(finnesNyIdentIForeldreansvar);
+        Assertions.assertFalse(finnesGamelIdentIForeldreansvar);
+    }
+
+    @Test
+    public void testOppdateringAvForeldreIdent() {
+        Fnr fnrPerson = randomFnr();
+        List<PDLIdent> identerBruker = List.of(
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(fnrPerson.get(), false, FOLKEREGISTERIDENT)
+        );
+
+        pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        pdlIdentRepository.upsertIdenter(identerBruker);
+        List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn15Aar());
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barnFraPdl);
+
+        Fnr nyFnr = randomFnr();
+        pdlIdentRepository.upsertIdenter(List.of(new PDLIdent(nyFnr.get(), false, FOLKEREGISTERIDENT)));
+        barnUnder18AarRepository.oppdatereForeldreIdent(nyFnr, List.of(fnrPerson, randomFnr()));
+
+        List<Fnr> fnrBarnMedNyIdent = barnUnder18AarRepository.hentForeldreansvarForPerson(nyFnr);
+        List<Fnr> fnrBarnMedGamelIdent = barnUnder18AarRepository.hentForeldreansvarForPerson(fnrPerson);
+
+
+        Assertions.assertNotNull(fnrBarnMedNyIdent);
+        Assertions.assertTrue(fnrBarnMedGamelIdent.isEmpty());
+        Assertions.assertTrue(fnrBarnMedNyIdent.stream().anyMatch(x -> x.equals(barnFraPdl.get(0).getFnr())));
     }
 
 
