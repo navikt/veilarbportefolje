@@ -97,11 +97,17 @@ public class BarnUnder18AarService {
 
     public void slettDataForBarnSomErOver18() {
         List<Fnr> fnrBarnOver18 = barnUnder18AarRepository.hentAlleBarnOver18();
-        
+
         fnrBarnOver18.forEach(fnrBarn -> {
             barnUnder18AarRepository.slettForeldreansvar(fnrBarn);
             barnUnder18AarRepository.slettBarnData(fnrBarn);
         });
 
+    }
+
+    public void handterBarnIdentEndring(Fnr aktivtFnrBarn, List<Fnr> inaktiveFnrs) {
+        if (!inaktiveFnrs.isEmpty()) {
+            barnUnder18AarRepository.oppdatereBarnIdent(aktivtFnrBarn, inaktiveFnrs);
+        }
     }
 }
