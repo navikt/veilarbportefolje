@@ -138,7 +138,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         opensearchIndexer.indekser(aktivAktorId);
     }
 
-    private static List<AktorId> hentAktorider(List<PDLIdent> identer) {
+    public static List<AktorId> hentAktorider(List<PDLIdent> identer) {
         return identer.stream()
                 .filter(pdlIdent -> PDLIdent.Gruppe.AKTORID.equals(pdlIdent.getGruppe()))
                 .map(PDLIdent::getIdent)
