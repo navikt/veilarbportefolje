@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlBarnResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
@@ -20,16 +21,12 @@ import java.time.Period;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
-import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PDLPersonBarnTest {
     private final ObjectMapper mapper = new ObjectMapper();
-    private final String pdlIdentResponsFraFil = readFileAsJsonString("/identer_pdl.json", getClass());
-    private final String pdlIdentBarnResponsFraFil = readFileAsJsonString("/identer_barn_pdl.json", getClass());
-    private final String pdlPersonResponsFraFil = readFileAsJsonString("/person_pdl.json", getClass());
     private final String pdlPersonBarnResponsFraFil = readFileAsJsonString("/person_barn_pdl.json", getClass());
 
     private BarnUnder18AarRepository barnUnder18AarRepository;
@@ -63,7 +60,7 @@ public class PDLPersonBarnTest {
 
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
-                new PdlPersonRepository(db, db),
+                pdlPersonRepository,
                 new BarnUnder18AarService(new BarnUnder18AarRepository(db, db)),
                 new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
         );
@@ -72,15 +69,17 @@ public class PDLPersonBarnTest {
     @Test
     @SneakyThrows
     public void hentOgLagreBrukerDataPaBarnTest() {
-        var identerFraFil = mapper.readValue(pdlIdentResponsFraFil, PdlIdentResponse.class)
+        Fnr fnrtest = randomFnr();
+        pdlService.hentOgLagreBrukerDataPaBarn(fnrtest);
+        BarnUnder18AarData barn = barnUnder18AarRepository.hentInfoOmBarn(fnrtest);
+        String fodselsdato = mapper.readValue(pdlPersonBarnResponsFraFil, PdlBarnResponse.class)
                 .getData()
-                .getHentIdenter()
-                .getIdenter();
+                .getHentPerson()
+                .getFoedsel()
+                .get(0)
+                .getFoedselsdato();
 
-        Fnr fnr = hentAktivFnr(identerFraFil);
-        pdlService.hentOgLagreBrukerDataPaBarn(fnr);
-        BarnUnder18AarData barn = barnUnder18AarRepository.hentInfoOmBarn(fnr);
-        LocalDate fDato = LocalDate.of(2014, 07, 07);
+        LocalDate fDato = LocalDate.parse(fodselsdato);
         Integer alder = Period.between(fDato, LocalDate.now()).getYears();
 
         assertThat(barn.getAlder()).isEqualTo(alder.longValue());
