@@ -18,7 +18,9 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarSe
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -58,12 +60,15 @@ public class BarnUnder18AarKafkaTest {
     private OpensearchIndexerV2 opensearchIndexerV2;
     private final String pdlDokumentAsString = readFileAsJsonString("/pdl_dokument.json", getClass());
     private final String pdlDokumentBarn1MedDiskresjonskodeAsString = readFileAsJsonString("/pdl_dokument_barn1_med_diskresjonskode.json", getClass());
+    private final String pdlIdentResponsFraFil = readFileAsJsonString("/identer_pdl.json", getClass());
+    private final String pdlPersonResponsFraFil = readFileAsJsonString("/person_pdl.json", getClass());
+
+    private final String pdlPersonMed3BarnResponsFraFil = readFileAsJsonString("/person_pdl_3barn.json", getClass());
+    private final String pdlPersonMed2BarnResponsFraFil = readFileAsJsonString("/person_pdl_2barn.json", getClass());
     private final String pdlPersonBarn1ResponsFraFil = readFileAsJsonString("/person_barn_pdl.json", getClass());
     private final String pdlPersonBarn2ResponsFraFil = readFileAsJsonString("/person_barn2_pdl.json", getClass());
     private final String pdlPersonBarn3ResponsFraFil = readFileAsJsonString("/person_barn3_pdl.json", getClass());
     private final JdbcTemplate db;
-
-    private WireMockServer server = new WireMockServer();
 
 
     public BarnUnder18AarKafkaTest() {
@@ -78,7 +83,8 @@ public class BarnUnder18AarKafkaTest {
 
     @BeforeEach
     public void setup() {
-        db.update("truncate bruker_identer cascade ");
+        WireMockServer server = new WireMockServer();
+        db.update("truncate bruker_identer");
         server.stubFor(
                 post(anyUrl())
                         .inScenario("PDL test")
@@ -88,7 +94,25 @@ public class BarnUnder18AarKafkaTest {
                                 .withBody(pdlPersonBarn1ResponsFraFil))
                         .willSetStateTo("hent barn 2")
         );
-
+   /*
+        server.stubFor(post(anyUrl())
+                .inScenario("PDL test")
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(pdlPersonBarn1ResponsFraFil))
+                .whenScenarioStateIs("hent person")
+                .willSetStateTo("hent barn 1")
+        );
+*/
+      /*  server.stubFor(post(anyUrl())
+                .inScenario("PDL test")
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(pdlPersonBarn1ResponsFraFil))
+                .whenScenarioStateIs("hent barn 1")
+                .willSetStateTo("hent barn 2")
+        );
+*/
         server.stubFor(post(anyUrl())
                 .inScenario("PDL test")
                 .willReturn(aResponse()
@@ -123,17 +147,18 @@ public class BarnUnder18AarKafkaTest {
                 );
     }
 
-
-    @AfterEach
-    public void stopServer(){
-        server.stop();
-    }
-
     @Test
     public void testHentBarnUnder18Aar() throws JsonProcessingException {
+        List<Fnr> foreldre = List.of(randomFnr(), randomFnr());
+        List<Fnr> barn = List.of(randomFnr(), randomFnr(), randomFnr(), randomFnr(), randomFnr());
+
+        //PdlDokument pdlDokument = PdlDokument.builder().build();
+
+
         var pdlDokForelder = mapper.readValue(pdlDokumentAsString, PdlDokument.class);
         var pdlDokBarn1MedDiskresjonskode = mapper.readValue(pdlDokumentBarn1MedDiskresjonskodeAsString, PdlDokument.class);
 
+        //upsert identer for brukeren i pdlIdentRepository slik at den er under oppfølging
         List<PDLIdent> pdlIdenter = pdlDokForelder.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
         Fnr fnrForelder = hentAktivFnr(pdlIdenter);
@@ -145,9 +170,19 @@ public class BarnUnder18AarKafkaTest {
 
         pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(pdlDokForelder);
         String diskresjonskode_barn1 = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrForelder)).get(fnrForelder).get(0).getDiskresjonskode();
+        // hente ut diskresjonskode for barnet
+        // sende inn pdlDokBarn her med samme barn men update
         pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(pdlDokBarn1MedDiskresjonskode);
         String diskresjonskode_barn1_etter_update = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrForelder)).get(fnrForelder).get(0).getDiskresjonskode();
         Assertions.assertTrue(diskresjonskode_barn1 == null);
         Assertions.assertTrue(Objects.equals(diskresjonskode_barn1_etter_update, "7"));
+        // Sjekke at barnet blir endret (feks endret diskresjonskode)
+        // Gjøre et av barnene død (pdlDokBarn2)
+        // Endre fnr på et av barnene?
+
+
+
+
+
     }
 }
