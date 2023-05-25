@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import org.springframework.stereotype.Service;
 
