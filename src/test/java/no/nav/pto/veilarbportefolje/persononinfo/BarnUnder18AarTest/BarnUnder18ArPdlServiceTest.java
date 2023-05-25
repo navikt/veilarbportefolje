@@ -19,6 +19,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarSe
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,6 +49,8 @@ public class BarnUnder18ArPdlServiceTest {
     private final BarnUnder18AarService barnUnder18AarService;
     private PdlService pdlService;
 
+    private WireMockServer server = new WireMockServer();
+
     public BarnUnder18ArPdlServiceTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
         pdlPersonRepository = new PdlPersonRepository(db, db);
@@ -56,8 +59,7 @@ public class BarnUnder18ArPdlServiceTest {
 
     @BeforeEach
     public void setup() {
-        WireMockServer server = new WireMockServer();
-        db.update("truncate bruker_identer");
+        db.update("truncate bruker_identer cascade ");
         server.stubFor(
                 post(anyUrl())
                         .inScenario("PDL test")
@@ -147,6 +149,10 @@ public class BarnUnder18ArPdlServiceTest {
         );
     }
 
+    @AfterEach
+    public void stopServer(){
+        server.stop();
+    }
     @Test
     @SneakyThrows
     public void sjekkAtLagretBarnIkkeFjernes() {
