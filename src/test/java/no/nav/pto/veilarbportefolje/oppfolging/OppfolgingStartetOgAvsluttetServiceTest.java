@@ -42,6 +42,7 @@ import static no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe.STANDARD_I
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -267,7 +268,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
                 JsonUtils.fromJson(file, PdlBarnResponse.class).getData().getHentPerson()
         );
 
-        when(pdlPortefoljeClient.hentBrukerBarnDataFraPdl(fnr)).thenReturn(pdlPersonBarn);
+        when(pdlPortefoljeClient.hentBrukerBarnDataFraPdl(any())).thenReturn(pdlPersonBarn);
 
         return pdlPersonBarn;
     }
