@@ -61,10 +61,10 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
             secureLog.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
 
-            handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
             handterIdentEndring(pdlIdenter);
-
             barnUnder18AarService.handterForeldreIdentEndring(aktivtFnr, inaktiveFnr);
+
+            handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
             oppdaterOpensearch(aktivAktorId, pdlIdenter);
         }
