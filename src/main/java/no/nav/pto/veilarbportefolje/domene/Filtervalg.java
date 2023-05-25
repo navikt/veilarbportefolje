@@ -49,7 +49,7 @@ public class Filtervalg {
     public List<String> tolkebehov;
     public List<String> tolkBehovSpraak;
     public List<StillingFraNAVFilter> stillingFraNavFilter;
-    public List<BarnUnder18AarFilter> barnUnder18Aar;
+    public List<BarnUnder18Aar> barnUnder18Aar;
     public List<String> geografiskBosted;
     public List<Avvik14aVedtak> avvik14aVedtak;
 
@@ -84,7 +84,7 @@ public class Filtervalg {
                 harTalespraaktolkFilter() ||
                 harFoedelandFilter() ||
                 harStillingFraNavFilter() ||
-                harBarnUnder18Aar() ||
+                harBarnUnder18AarFilter() ||
                 harLandgruppeFilter() ||
                 harBostedFilter() ||
                 harAvvik14aVedtakFilter() ||
@@ -163,7 +163,7 @@ public class Filtervalg {
         return stillingFraNavFilter != null && !stillingFraNavFilter.isEmpty();
     }
 
-    public boolean harBarnUnder18Aar() {
+    public boolean harBarnUnder18AarFilter() {
         return barnUnder18Aar != null && !barnUnder18Aar.isEmpty();
     }
     public boolean harBostedFilter() {
