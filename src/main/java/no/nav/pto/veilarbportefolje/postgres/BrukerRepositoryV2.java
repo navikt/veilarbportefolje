@@ -125,7 +125,11 @@ public class BrukerRepositoryV2 {
         String fnr = rs.getString(FODSELSNR);
         String utkast14aStatus = rs.getString(UTKAST_14A_STATUS);
 
-        LocalDate aapordinerutlopsdato = DateUtils.addWeeksToTodayAndGetNthDay(rs.getTimestamp("YTELSE_ENDRET_DATO"), rs.getInt(AAPMAXTIDUKE), rs.getInt(ANTALLDAGERIGJEN));
+        LocalDate aapordinerutlopsdato = null;
+        boolean erSpesieltTilpassetInnsats = (rs.getString(KVALIFISERINGSGRUPPEKODE) != null && rs.getString(KVALIFISERINGSGRUPPEKODE).equals("BATT"));
+        if (erSpesieltTilpassetInnsats) {
+            aapordinerutlopsdato = DateUtils.addWeeksToTodayAndGetNthDay(rs.getTimestamp("YTELSE_ENDRET_DATO"), rs.getInt(AAPMAXTIDUKE), rs.getInt(ANTALLDAGERIGJEN));
+        }
 
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setFnr(fnr)
