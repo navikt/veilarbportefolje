@@ -49,7 +49,7 @@ public class Filtervalg {
     public List<String> tolkebehov;
     public List<String> tolkBehovSpraak;
     public List<StillingFraNAVFilter> stillingFraNavFilter;
-    public List<BarnUnder18AarFilter> barnUnder18Aar;
+    public List<BarnUnder18Aar> barnUnder18Aar;
     public List<String> geografiskBosted;
     public List<Avvik14aVedtak> avvik14aVedtak;
 

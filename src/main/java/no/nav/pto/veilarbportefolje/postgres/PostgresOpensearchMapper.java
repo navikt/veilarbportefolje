@@ -151,9 +151,15 @@ public class PostgresOpensearchMapper {
         brukere.forEach(bruker -> bruker.setAvvik14aVedtak(avvik14aVedtakList.get(GjeldendeIdenter.of(bruker))));
     }
 
-    public void flettInnBarnUnder18Aar(List<OppfolgingsBruker> brukere){
-        Map<Fnr,List<BarnUnder18AarData>> barnUnder18AarMap = barnUnder18AarService.hentBarnUnder18Aar(brukere.stream().map(bruker -> Fnr.of(bruker.getFnr())).collect(Collectors.toList()));
-        brukere.forEach(bruker -> bruker.setBarnUnder18AarData(barnUnder18AarMap.get(bruker.getFnr())));
+    public void flettInnBarnUnder18Aar(List<OppfolgingsBruker> brukere) {
+        List<Fnr> brukereFnr = brukere.stream().map(bruker -> Fnr.of(bruker.getFnr())).toList();
+        Map<Fnr, List<BarnUnder18AarData>> barnUnder18AarMap = barnUnder18AarService.hentBarnUnder18Aar(brukereFnr);
+        brukere.forEach(bruker -> {
+            Fnr brukerFnr = Fnr.of(bruker.getFnr());
+            if (barnUnder18AarMap.containsKey(brukerFnr)) {
+                bruker.setBarnUnder18AarData(barnUnder18AarMap.get(brukerFnr));
+            }
+        });
     }
 
     public void flettInnEnsligeForsorgereData(List<OppfolgingsBruker> brukere) {
