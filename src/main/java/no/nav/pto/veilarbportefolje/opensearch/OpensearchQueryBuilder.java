@@ -152,12 +152,14 @@ public class OpensearchQueryBuilder {
                     });
         }
 
-        if (filtervalg.harBarnUnder18Aar()) {
+        if (filtervalg.harBarnUnder18AarFilter()) {
             filtervalg.barnUnder18Aar.forEach(
                     harBarnUnder18Aar -> {
                         switch (harBarnUnder18Aar) {
-                            case HAR_BARN_UNDER_18_AAR ->
-                                    queryBuilder.must(matchQuery("har_barn_under_18_aar", "JA"));
+                            case HAR_BARN_UNDER_18_AAR -> {
+                                BoolQueryBuilder harBarnUnder18SubQuery = boolQuery();
+                                queryBuilder.must(existsQuery("barn_under_18_aar"));
+                            }
                             default -> throw new IllegalStateException("Ingen barn under 18 aar funnet");
                         }
                     });
