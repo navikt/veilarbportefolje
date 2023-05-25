@@ -9,10 +9,10 @@ import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
-import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
@@ -157,7 +157,7 @@ public class PostgresOpensearchMapper {
         brukere.forEach(bruker -> {
             Fnr brukerFnr = Fnr.of(bruker.getFnr());
             if (barnUnder18AarMap.containsKey(brukerFnr)) {
-                bruker.setBarnUnder18AarData(barnUnder18AarMap.get(brukerFnr));
+                bruker.setBarn_under_18_aar(barnUnder18AarMap.get(brukerFnr));
             }
         });
     }

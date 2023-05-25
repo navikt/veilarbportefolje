@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 
@@ -117,7 +119,7 @@ public class OppfolgingsBruker {
     String neste_cv_kan_deles_status;
     LocalDate neste_svarfrist_stilling_fra_nav;
     Avvik14aVedtak avvik14aVedtak;
-    List<BarnUnder18AarData> barnUnder18AarData;
+    List<BarnUnder18AarData> barn_under_18_aar = emptyList();
 
     EnsligeForsorgereOvergangsstonad enslige_forsorgere_overgangsstonad;
 }
