@@ -1101,11 +1101,19 @@ ALTER TABLE ONLY public.enslige_forsorgere
 
 
 --
+-- Name: foreldreansvar fk_barn_ident; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.foreldreansvar
+    ADD CONSTRAINT fk_barn_ident FOREIGN KEY (barn_ident) REFERENCES public.bruker_data_barn(barn_ident) ON UPDATE CASCADE;
+
+
+--
 -- Name: foreldreansvar fk_foresatt_ident; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.foreldreansvar
-    ADD CONSTRAINT fk_foresatt_ident FOREIGN KEY (foresatt_ident) REFERENCES public.bruker_data(freg_ident) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_foresatt_ident FOREIGN KEY (foresatt_ident) REFERENCES public.bruker_identer(ident) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
