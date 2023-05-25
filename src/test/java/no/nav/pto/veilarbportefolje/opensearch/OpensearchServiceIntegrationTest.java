@@ -13,9 +13,9 @@ import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
-import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
@@ -2667,15 +2668,14 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void test_sortering_AAP() {
+    public void test_filtrering_barn_under_18() {
         var bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setYtelse("AAP_UNNTAK")
-                .setUtlopsdato("2023-06-30T21:59:59Z");
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(8, null)));
 
         var bruker2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2684,9 +2684,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setYtelse("AAP_MAXTID")
-                .setAapmaxtiduke(43)
-                .setAapordinerutlopsdato(DateUtils.toLocalDateOrNull("2023-04-20"));
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(1, null), new BarnUnder18AarData(12, null)));
 
         var bruker3 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2694,8 +2692,9 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
-                .setYtelse("AAP_UNNTAK")
-                .setEnhet_id(TEST_ENHET);
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(5, "7"), new BarnUnder18AarData(11, null)));
+
 
         var bruker4 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2703,29 +2702,18 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
-                .setYtelse("AAP_MAXTID")
-                .setEnhet_id(TEST_ENHET);
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(emptyList());
 
         var bruker5 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
-                .setEnhet_id(TEST_ENHET)
-                .setYtelse("AAP_UNNTAK")
-                .setUtlopsdato("2023-08-30T21:59:59Z");
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET);
 
-        var bruker6 = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setEnhet_id(TEST_ENHET)
-                .setYtelse("AAP_MAXTID")
-                .setAapmaxtiduke(12)
-                .setAapordinerutlopsdato(DateUtils.toLocalDateOrNull("2023-04-12"));
-
-        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5, bruker6);
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5);
 
         skrivBrukereTilTestindeks(liste);
 
@@ -2734,41 +2722,32 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setYtelse(YtelseFilter.AAP_MAXTID);
+                .setBarnUnder18Aar(List.of(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR));
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "aap_vurderingsfrist",
+                "ikke_satt",
                 filterValg,
                 null,
                 null
         );
 
         assertThat(response.getAntall()).isEqualTo(3);
-        assertThat(response.getBrukere().get(0).getFnr().equals(bruker6.getFnr()));
-        assertThat(response.getBrukere().get(1).getFnr().equals(bruker2.getFnr()));
-        assertThat(response.getBrukere().get(2).getFnr().equals(bruker4.getFnr()));
+        assertThat(response.getBrukere().stream().map(Bruker::getFnr).toList().containsAll(List.of(bruker1.getFnr(), bruker2.getFnr(), bruker3.getFnr())));
 
-        filterValg = new Filtervalg()
-                .setFerdigfilterListe(List.of())
-                .setYtelse(YtelseFilter.AAP_UNNTAK);
-
-        response = opensearchService.hentBrukere(
-                TEST_ENHET,
-                empty(),
-                "ascending",
-                "aap_vurderingsfrist",
-                filterValg,
-                null,
-                null
+        response.getBrukere().forEach(bruker -> {
+                    if (bruker.getFnr().equals(bruker1.getFnr())) {
+                        assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(1);
+                    } else if (bruker.getFnr().equals(bruker2.getFnr())) {
+                        assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(2);
+                    } else if (bruker.getFnr().equals(bruker3.getFnr())) {
+                        assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(2);
+                    }
+                }
         );
 
-        assertThat(response.getAntall()).isEqualTo(3);
-        assertThat(response.getBrukere().get(0).getFnr().equals(bruker1.getFnr()));
-        assertThat(response.getBrukere().get(1).getFnr().equals(bruker5.getFnr()));
-        assertThat(response.getBrukere().get(2).getFnr().equals(bruker3.getFnr()));
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
