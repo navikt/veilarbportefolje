@@ -5,12 +5,13 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import lombok.SneakyThrows;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.opensearch.domene.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlBarnResponse;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -35,6 +36,8 @@ public class PDLPersonBarnTest {
 
     private PdlService pdlService;
 
+    private WireMockServer server = new WireMockServer();
+
     public PDLPersonBarnTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
         pdlPersonRepository = new PdlPersonRepository(db, db);
@@ -43,8 +46,7 @@ public class PDLPersonBarnTest {
 
     @BeforeEach
     public void setup() {
-        WireMockServer server = new WireMockServer();
-        db.update("truncate bruker_identer");
+        db.update("truncate bruker_identer cascade ");
 
         server.stubFor(
                 post(anyUrl())
@@ -64,6 +66,11 @@ public class PDLPersonBarnTest {
                 new BarnUnder18AarService(new BarnUnder18AarRepository(db, db)),
                 new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
         );
+    }
+
+    @AfterEach
+    public void stopServer(){
+        server.stop();
     }
 
     @Test
