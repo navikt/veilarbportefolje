@@ -44,23 +44,32 @@ public class StatsReporter implements MeterBinder {
 
     private Long indeksererAktivitetEndringerLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
-        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElseThrow(() -> new IllegalStateException("Scheduled task failed to run lately"));
+        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElse(null);
 
-        return DateUtils.now().toInstant().toEpochMilli() - sisteKjorte.toInstant().toEpochMilli();
+        if (sisteKjorte != null) {
+            return DateUtils.now().toInstant().toEpochMilli() - sisteKjorte.toInstant().toEpochMilli();
+        }
+        return null;
     }
 
     private Long deaktiverUtgatteUtdanningsAktivteterLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
-        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "deaktiver_utgatte_utdannings_aktivteter"), Timestamp.class)).orElseThrow(() -> new IllegalStateException("Scheduled task failed to run lately"));
+        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "deaktiver_utgatte_utdannings_aktivteter"), Timestamp.class)).orElse(null);
 
-        return DateUtils.now().toInstant().toEpochMilli() - sisteKjorte.toInstant().toEpochMilli();
+        if (sisteKjorte != null) {
+            return DateUtils.now().toInstant().toEpochMilli() - sisteKjorte.toInstant().toEpochMilli();
+        }
+        return null;
     }
 
     private Long indeksererYtelseEndringerLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
-        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElseThrow(() -> new IllegalStateException("Scheduled task failed to run lately"));
+        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElse(null);
 
-        return DateUtils.now().toInstant().toEpochMilli() - sisteKjorte.toInstant().toEpochMilli();
+        if (sisteKjorte != null) {
+            return DateUtils.now().toInstant().toEpochMilli() - sisteKjorte.toInstant().toEpochMilli();
+        }
+        return null;
     }
 
     private Integer compareOpensearchVersions() {
