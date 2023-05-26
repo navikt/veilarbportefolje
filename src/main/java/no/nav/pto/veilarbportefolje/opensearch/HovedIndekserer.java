@@ -75,13 +75,22 @@ public class HovedIndekserer implements MeterBinder {
 
     @Override
     public void bindTo(MeterRegistry meterRegistry) {
-        Gauge.builder("veilarbportefolje.hovedindeksering.siste_kjorte", this::tidSidenSisteHovedindeksering)
+        Gauge.builder("veilarbportefolje.hovedindeksering.siste_kjorte", this::sisteHovedindeksering)
+                .register(meterRegistry);
+        Gauge.builder("veilarbportefolje.hovedindeksering.duration", this::getSisteHovedindekseringDuration)
                 .register(meterRegistry);
     }
 
-    private long tidSidenSisteHovedindeksering() {
+    private long sisteHovedindeksering() {
         if (sisteHovedindekseringTimestamp != null) {
-            return now().toInstant().toEpochMilli() - sisteHovedindekseringTimestamp.get();
+            return sisteHovedindekseringTimestamp.get();
+        }
+        return 0L;
+    }
+
+    private long getSisteHovedindekseringDuration() {
+        if (sisteHovedindekseringDuration != null) {
+            return sisteHovedindekseringDuration.get();
         }
         return 0L;
     }
