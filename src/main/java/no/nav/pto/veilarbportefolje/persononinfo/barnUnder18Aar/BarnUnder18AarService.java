@@ -110,9 +110,4 @@ public class BarnUnder18AarService {
         }
     }
 
-    public void handterForeldreIdentEndring(Fnr aktivtFnr, List<Fnr> inaktiveFnr) {
-        if (!inaktiveFnr.isEmpty()) {
-            barnUnder18AarRepository.oppdatereForeldreIdent(aktivtFnr, inaktiveFnr);
-        }
-    }
 }
