@@ -30,17 +30,11 @@ public class StatsReporter implements MeterBinder {
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
         Gauge.builder("veilarbportefolje.hovedindeksering.indekserer_aktivitet_endringer.last_run", this::indeksererAktivitetEndringerLastRun)
                 .register(meterRegistry);
-        Gauge.builder("veilarbportefolje.hovedindeksering.indekserer_aktivitet_endringer.duration", this::indeksererAktivitetEndringerDuration)
-                .register(meterRegistry);
 
         Gauge.builder("veilarbportefolje.hovedindeksering.deaktiver_utgatte_utdannings_aktivteter.last_run", this::deaktiverUtgatteUtdanningsAktivteterLastRun)
                 .register(meterRegistry);
-        Gauge.builder("veilarbportefolje.hovedindeksering.deaktiver_utgatte_utdannings_aktivteter.duration", this::deaktiverUtgatteUtdanningsAktivteterDuration)
-                .register(meterRegistry);
 
         Gauge.builder("veilarbportefolje.hovedindeksering.indekserer_ytelse_endringer.last_run", this::indeksererYtelseEndringerLastRun)
-                .register(meterRegistry);
-        Gauge.builder("veilarbportefolje.hovedindeksering.indekserer_ytelse_endringer.duration", this::indeksererYtelseEndringerDuration)
                 .register(meterRegistry);
 
         Gauge.builder("veilarbportefolje.opensearch.difference_in_versions", this::compareOpensearchVersions)
@@ -54,13 +48,6 @@ public class StatsReporter implements MeterBinder {
         return sisteKjorte.toInstant().toEpochMilli();
     }
 
-    private Long indeksererAktivitetEndringerDuration() {
-        String sql = "SELECT execution_time FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
-        Timestamp sisteDuration = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElseThrow(() -> new IllegalStateException("Scheduled task failed to run lately"));
-
-        return sisteDuration.toInstant().toEpochMilli();
-    }
-
     private Long deaktiverUtgatteUtdanningsAktivteterLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
         Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "deaktiver_utgatte_utdannings_aktivteter"), Timestamp.class)).orElseThrow(() -> new IllegalStateException("Scheduled task failed to run lately"));
@@ -68,25 +55,11 @@ public class StatsReporter implements MeterBinder {
         return sisteKjorte.toInstant().toEpochMilli();
     }
 
-    private Long deaktiverUtgatteUtdanningsAktivteterDuration() {
-        String sql = "SELECT execution_time FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
-        Timestamp sisteDuration = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "deaktiver_utgatte_utdannings_aktivteter"), Timestamp.class)).orElseThrow(() -> new IllegalStateException("Scheduled task failed to run lately"));
-
-        return sisteDuration.toInstant().toEpochMilli();
-    }
-
     private Long indeksererYtelseEndringerLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
         Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElseThrow(() -> new IllegalStateException("Scheduled task failed to run lately"));
 
         return sisteKjorte.toInstant().toEpochMilli();
-    }
-
-    private Long indeksererYtelseEndringerDuration() {
-        String sql = "SELECT execution_time FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
-        Timestamp sisteDuration = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElseThrow(() -> new IllegalStateException("Scheduled task failed to run lately"));
-
-        return sisteDuration.toInstant().toEpochMilli();
     }
 
     private Integer compareOpensearchVersions() {
