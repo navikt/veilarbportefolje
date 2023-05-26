@@ -22,13 +22,13 @@ jobs:
       - name: Build maven artifacts
         run: mvn -Dgithub.token=${{ secrets.GITHUB_TOKEN }} -B package -D skipTests
       - name: Login to Docker
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push Docker image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: true
