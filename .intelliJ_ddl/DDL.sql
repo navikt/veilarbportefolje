@@ -1113,7 +1113,7 @@ ALTER TABLE ONLY public.foreldreansvar
 --
 
 ALTER TABLE ONLY public.foreldreansvar
-    ADD CONSTRAINT fk_foresatt_ident FOREIGN KEY (foresatt_ident) REFERENCES public.bruker_identer(ident) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT fk_foresatt_ident FOREIGN KEY (foresatt_ident) REFERENCES public.bruker_data(freg_ident) ON DELETE CASCADE;
 
 
 --
