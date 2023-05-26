@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.opensearch.client.OpenSearchClient;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
@@ -45,21 +46,21 @@ public class StatsReporter implements MeterBinder {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
         Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElseThrow(() -> new IllegalStateException("Scheduled task failed to run lately"));
 
-        return sisteKjorte.toInstant().toEpochMilli();
+        return DateUtils.now().toInstant().toEpochMilli() - sisteKjorte.toInstant().toEpochMilli();
     }
 
     private Long deaktiverUtgatteUtdanningsAktivteterLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
         Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "deaktiver_utgatte_utdannings_aktivteter"), Timestamp.class)).orElseThrow(() -> new IllegalStateException("Scheduled task failed to run lately"));
 
-        return sisteKjorte.toInstant().toEpochMilli();
+        return DateUtils.now().toInstant().toEpochMilli() - sisteKjorte.toInstant().toEpochMilli();
     }
 
     private Long indeksererYtelseEndringerLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
         Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElseThrow(() -> new IllegalStateException("Scheduled task failed to run lately"));
 
-        return sisteKjorte.toInstant().toEpochMilli();
+        return DateUtils.now().toInstant().toEpochMilli() - sisteKjorte.toInstant().toEpochMilli();
     }
 
     private Integer compareOpensearchVersions() {
