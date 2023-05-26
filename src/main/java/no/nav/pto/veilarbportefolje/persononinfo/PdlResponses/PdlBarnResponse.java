@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Adressebeskyttelse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Bostedsadresse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
 
 import java.util.List;
@@ -21,7 +22,8 @@ public class PdlBarnResponse extends GraphqlResponse<PdlBarnResponse.PdlBarnResp
         public static class HentPersonResponsData {
             private List<Foedsel> foedsel;
             private List<Doedsfall> doedsfall;
-            private List<AdressebeskyttelseDto> adressebeskyttelse;
+            private List<Bostedsadresse> bostedsadresse;
+            private List<Adressebeskyttelse> adressebeskyttelse;
         }
 
         @Data
@@ -38,6 +40,11 @@ public class PdlBarnResponse extends GraphqlResponse<PdlBarnResponse.PdlBarnResp
         }
 
 
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Endringer {
+            private String registrert;
+        }
     }
 
 

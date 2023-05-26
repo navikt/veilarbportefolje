@@ -43,7 +43,7 @@ public class PdlPortefoljeClient {
         GraphqlRequest<PdlIdentVariabel> request = new GraphqlRequest<>(hentPersonBarnQuery, new PdlIdentVariabel(fnr.get(), false));
         PdlBarnResponse respons = pdlClient.request(request, PdlBarnResponse.class);
         if (hasErrors(respons)) {
-            throw new RuntimeException("Kunne ikke hente data om barn fra PDL");
+            throw new RuntimeException("Kunne ikke hente identer fra PDL");
         }
 
         return PDLPersonBarn.genererFraApiRespons(respons.getData().getHentPerson());
