@@ -1,8 +1,5 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
-import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.opensearch.action.bulk.BulkRequest;
 import org.opensearch.action.index.IndexRequest;
 import org.opensearch.client.RequestOptions;
@@ -20,19 +18,17 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.String.format;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OpensearchIndexer implements MeterBinder {
+public class OpensearchIndexer {
     public static final int BATCH_SIZE = 1000;
     public static final int ORACLE_BATCH_SIZE_LIMIT = 1000;
 
@@ -41,8 +37,7 @@ public class OpensearchIndexer implements MeterBinder {
     private final IndexName alias;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final AtomicLong sisteHovedindekseringTimestamp;
-    private final AtomicLong sisteHovedindekseringDuration;
+    private final UnleashService unleashService;
 
     public void indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;
@@ -104,8 +99,6 @@ public class OpensearchIndexer implements MeterBinder {
         batchIndeksering(brukere);
         long tid = System.currentTimeMillis() - tidsStempel0;
         log.info("Hovedindeksering: Ferdig på {} ms, indekserte {} brukere", tid, brukere.size());
-        sisteHovedindekseringTimestamp.set(now().toInstant().toEpochMilli());
-        sisteHovedindekseringDuration.set(tid);
     }
 
     public void batchIndeksering(List<AktorId> alleBrukere) {
@@ -139,27 +132,5 @@ public class OpensearchIndexer implements MeterBinder {
         partition(brukereUnderOppfolging, BATCH_SIZE).forEach(bolk -> {
             List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(bolk, true);
         });
-    }
-
-    @Override
-    public void bindTo(MeterRegistry meterRegistry) {
-        Gauge.builder("veilarbportefolje.hovedindeksering.siste_kjorte", this::sisteHovedindeksering)
-                .register(meterRegistry);
-        Gauge.builder("veilarbportefolje.hovedindeksering.duration", this::getSisteHovedindekseringDuration)
-                .register(meterRegistry);
-    }
-
-    private long sisteHovedindeksering() {
-        if (sisteHovedindekseringTimestamp != null) {
-            return sisteHovedindekseringTimestamp.get();
-        }
-        return 0L;
-    }
-
-    private long getSisteHovedindekseringDuration() {
-        if (sisteHovedindekseringDuration != null) {
-            return sisteHovedindekseringDuration.get();
-        }
-        return 0L;
     }
 }
