@@ -6,7 +6,6 @@ import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.opensearch.client.OpenSearchClient;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
@@ -17,6 +16,9 @@ import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import static no.nav.pto.veilarbportefolje.util.DateUtils.calculateTimeElapsed;
 
 @Component
 @RequiredArgsConstructor
@@ -47,7 +49,7 @@ public class StatsReporter implements MeterBinder {
         Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElse(null);
 
         if (sisteKjorte != null) {
-            return DateUtils.now().toInstant().toEpochMilli() - sisteKjorte.toInstant().toEpochMilli();
+            return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
         }
         return null;
     }
@@ -57,7 +59,7 @@ public class StatsReporter implements MeterBinder {
         Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "deaktiver_utgatte_utdannings_aktivteter"), Timestamp.class)).orElse(null);
 
         if (sisteKjorte != null) {
-            return DateUtils.now().toInstant().toEpochMilli() - sisteKjorte.toInstant().toEpochMilli();
+            return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
         }
         return null;
     }
@@ -67,7 +69,7 @@ public class StatsReporter implements MeterBinder {
         Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElse(null);
 
         if (sisteKjorte != null) {
-            return DateUtils.now().toInstant().toEpochMilli() - sisteKjorte.toInstant().toEpochMilli();
+            return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
         }
         return null;
     }
