@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static no.nav.pto.veilarbportefolje.config.SchedulConfig.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.calculateTimeElapsed;
 
 @Component
@@ -46,7 +47,7 @@ public class StatsReporter implements MeterBinder {
 
     private Long indeksererAktivitetEndringerLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
-        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElse(null);
+        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", indeksererAktivitetEndringer), Timestamp.class)).orElse(null);
 
         if (sisteKjorte != null) {
             return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
@@ -56,7 +57,7 @@ public class StatsReporter implements MeterBinder {
 
     private Long deaktiverUtgatteUtdanningsAktivteterLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
-        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "deaktiver_utgatte_utdannings_aktivteter"), Timestamp.class)).orElse(null);
+        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", deaktiverUtgatteUtdanningsAktivteter), Timestamp.class)).orElse(null);
 
         if (sisteKjorte != null) {
             return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
@@ -66,7 +67,7 @@ public class StatsReporter implements MeterBinder {
 
     private Long indeksererYtelseEndringerLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
-        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", "indekserer_aktivitet_endringer"), Timestamp.class)).orElse(null);
+        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", indeksererYtelseEndringer), Timestamp.class)).orElse(null);
 
         if (sisteKjorte != null) {
             return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
