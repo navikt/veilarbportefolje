@@ -34,10 +34,8 @@ public class YtelsesInnhold implements ArenaInnholdKafka {
     Integer antallUkerIgjenUnderPermittering;
     @JsonAlias("ANTALLDAGERIGJENPERMITTERING")
     Integer antallDagerIgjenUnderPermittering;
-
     @JsonAlias("ANTALLDAGERIGJENUNNTAK")
     Integer antallDagerIgjenUnntak;
-
     @JsonAlias("ENDRET_DATO")
     ArenaDato endretDato;
 }

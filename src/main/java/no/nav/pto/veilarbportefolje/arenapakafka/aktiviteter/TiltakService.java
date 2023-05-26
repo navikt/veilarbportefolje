@@ -15,7 +15,6 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.postgres.utils.TiltakaktivitetEntity;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
@@ -32,12 +31,10 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RequiredArgsConstructor
 public class TiltakService {
     private static final LocalDate LANSERING_AV_OVERSIKTEN = LocalDate.of(2017, 12, 4);
-    private final TiltakRepositoryV2 tiltakRepositoryV2;
     private final TiltakRepositoryV3 tiltakRepositoryV3;
     private final AktorClient aktorClient;
     private final ArenaHendelseRepository arenaHendelseRepository;
     private final OpensearchIndexer opensearchIndexer;
-    private final UnleashService unleashService;
 
     private final Cache<EnhetId, EnhetTiltak> enhetTiltakCachePostgres = Caffeine.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
@@ -68,10 +65,10 @@ public class TiltakService {
 
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
             secureLog.info("Sletter tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
-            tiltakRepositoryV2.delete(innhold.getAktivitetid());
+            tiltakRepositoryV3.deleteTiltaksaktivitetFraArena(innhold.getAktivitetid());
         } else {
             secureLog.info("Lagrer tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
-            tiltakRepositoryV2.upsert(innhold, aktorId);
+            tiltakRepositoryV3.upsert(innhold, aktorId);
         }
 
         arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
@@ -97,7 +94,7 @@ public class TiltakService {
 
         if (kafkaMelding.isHistorisk()) {
             secureLog.info("Sletter tiltaksaktivitet fra ny kilde: {} med tiltakskode {}, pa aktoer: {}", aktivitetId, kafkaMelding.getTiltakskode(), aktorId);
-            tiltakRepositoryV3.delete(aktivitetId);
+            tiltakRepositoryV3.deleteTiltaksaktivitetFraAktivitetsplanen(aktivitetId);
             return true;
         } else if (erNyVersjonAvAktivitet(kafkaMelding)) {
             secureLog.info("Lagrer tiltaksaktivitet fra ny kilde: {} med tiltakskode {}, pa aktoer: {}", aktivitetId, kafkaMelding.getTiltakskode(), aktorId);

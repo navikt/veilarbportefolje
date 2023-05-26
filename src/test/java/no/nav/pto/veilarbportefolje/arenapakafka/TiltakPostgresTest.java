@@ -4,7 +4,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TiltakPostgresTest {
     private final JdbcTemplate jdbcTemplatePostgres;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
-    private final TiltakRepositoryV2 tiltakRepositoryV2;
+    private final TiltakRepositoryV3 tiltakRepositoryV3;
     private final AktivitetOpensearchService aktivitetOpensearchService;
     private final PdlIdentRepository pdlIdentRepository;
 
@@ -49,11 +49,11 @@ public class TiltakPostgresTest {
     private final Fnr fnr = randomFnr();
 
     @Autowired
-    public TiltakPostgresTest( JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV2 tiltakRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, PdlIdentRepository pdlIdentRepository) {
+    public TiltakPostgresTest(JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV3 tiltakRepositoryV3, AktivitetOpensearchService aktivitetOpensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, PdlIdentRepository pdlIdentRepository) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
         this.aktivitetOpensearchService = aktivitetOpensearchService;
-        this.tiltakRepositoryV2 = tiltakRepositoryV2;
+        this.tiltakRepositoryV3  = tiltakRepositoryV3;
         this.pdlIdentRepository = pdlIdentRepository;
     }
 
@@ -83,13 +83,13 @@ public class TiltakPostgresTest {
                 .setAktivitetperiodeFra(new ArenaDato("1989-01-01"))
                 .setAktivitetperiodeTil(new ArenaDato("1990-01-01"))
                 .setAktivitetid("TA-123456789");
-        tiltakRepositoryV2.upsert(innhold, aktorId);
+        tiltakRepositoryV3.upsert(innhold, aktorId);
 
         AvtaltAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
                 .hentAvtaltAktivitetData(List.of(aktorId))
                 .get(aktorId));
 
-        Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
+        Optional<String> kodeVerkNavn = tiltakRepositoryV3.hentTiltaksnavn(tiltaksType);
 
         assertThat(kodeVerkNavn.isPresent()).isTrue();
         assertThat(kodeVerkNavn.get()).isEqualTo(tiltaksNavn);
@@ -126,8 +126,8 @@ public class TiltakPostgresTest {
                 .setAktivitetperiodeTil(new ArenaDato(igarTid.toString().substring(0, 10)))
                 .setAktivitetid("TA-321");
 
-        tiltakRepositoryV2.upsert(idag, aktorId);
-        tiltakRepositoryV2.upsert(igar, aktorId);
+        tiltakRepositoryV3.upsert(idag, aktorId);
+        tiltakRepositoryV3.upsert(igar, aktorId);
 
         AvtaltAktivitetEntity postgresAktivitet = PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon(aktivitetOpensearchService
                 .hentAvtaltAktivitetData(List.of(aktorId))
@@ -153,10 +153,10 @@ public class TiltakPostgresTest {
                 .setTiltakstype(tiltaksType)
                 .setDeltakerStatus("GJENN")
                 .setAktivitetid(id);
-        tiltakRepositoryV2.upsert(innhold, aktorId);
-        tiltakRepositoryV2.delete(id);
+        tiltakRepositoryV3.upsert(innhold, aktorId);
+        tiltakRepositoryV3.deleteTiltaksaktivitetFraArena(id);
 
-        Optional<String> kodeVerkNavn = tiltakRepositoryV2.hentVerdiITiltakskodeVerk(tiltaksType);
+        Optional<String> kodeVerkNavn = tiltakRepositoryV3.hentTiltaksnavn(tiltaksType);
 
         List<AktivitetEntityDto> postgresAktivitet = aktivitetOpensearchService
                 .hentAvtaltAktivitetData(List.of(aktorId))
@@ -171,13 +171,13 @@ public class TiltakPostgresTest {
     public void skal_lagre_tiltak_pa_enhet() {
         String navKontor = "0007";
         pdlIdentRepository.upsertIdenter(List.of(
-                        new PDLIdent(aktorId.get(), false, AKTORID),
-                        new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
-                ));
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
+        ));
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null, "" +
                         "Tester", "Testerson", navKontor, null, null, null, null,
-                        "1234",  true, false, ZonedDateTime.now()));
+                        "1234", true, false, ZonedDateTime.now()));
         String tiltaksType1 = "T123";
         String tiltaksType2 = "T321";
         String tiltaksNavn1 = "test1";
@@ -195,10 +195,10 @@ public class TiltakPostgresTest {
                 .setDeltakerStatus("GJENN")
                 .setAktivitetid("T-321");
 
-        tiltakRepositoryV2.upsert(tiltak1, aktorId);
-        tiltakRepositoryV2.upsert(tiltak2, aktorId);
+        tiltakRepositoryV3.upsert(tiltak1, aktorId);
+        tiltakRepositoryV3.upsert(tiltak2, aktorId);
 
-        EnhetTiltak enhetTiltak = tiltakRepositoryV2.hentTiltakPaEnhet(EnhetId.of(navKontor));
+        EnhetTiltak enhetTiltak = tiltakRepositoryV3.hentTiltakPaEnhet(EnhetId.of(navKontor));
         assertThat(enhetTiltak.getTiltak().size()).isEqualTo(2);
         assertThat(enhetTiltak.getTiltak().get(tiltaksType1)).isEqualTo(tiltaksNavn1);
         assertThat(enhetTiltak.getTiltak().get(tiltaksType2)).isEqualTo(tiltaksNavn2);

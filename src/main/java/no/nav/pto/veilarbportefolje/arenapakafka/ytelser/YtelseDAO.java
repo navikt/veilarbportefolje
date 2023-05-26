@@ -23,8 +23,6 @@ public class YtelseDAO {
     Integer antallUkerIgjen;
     Integer antallUkerIgjenPermittert;
     Integer antallDagerIgjenUnntak;
-
     Integer antallDagerIgjen;
-
     Timestamp endretDato;
 }

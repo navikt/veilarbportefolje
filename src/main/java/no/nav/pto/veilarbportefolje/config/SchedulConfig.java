@@ -33,6 +33,10 @@ public class SchedulConfig {
     private final BarnUnder18AarService barnUnder18AarService;
     private final Scheduler scheduler;
 
+    public static String deaktiverUtgatteUtdanningsAktivteter = "deaktiver_utgatte_utdannings_aktivteter";
+    public static String indeksererYtelseEndringer = "indekserer_ytelse_endringer";
+    public static String indeksererAktivitetEndringer = "indekserer_aktivitet_endringer";
+
     @Autowired
     public SchedulConfig(DataSource dataSource,
                          HovedIndekserer hovedIndekserer,
@@ -55,11 +59,11 @@ public class SchedulConfig {
     // Disse jobben må kjøre etter midnatt
     private List<RecurringTask<?>> nattligeJobber() {
         return List.of(
-                Tasks.recurring("deaktiver_utgatte_utdannings_aktivteter", Schedules.daily(LocalTime.of(2, 1)))
+                Tasks.recurring(deaktiverUtgatteUtdanningsAktivteter, Schedules.daily(LocalTime.of(2, 1)))
                         .execute((instance, ctx) -> aktivitetService.deaktiverUtgatteUtdanningsAktivteter()),
-                Tasks.recurring("indekserer_ytelse_endringer", Schedules.daily(LocalTime.of(2, 1)))
+                Tasks.recurring(indeksererYtelseEndringer, Schedules.daily(LocalTime.of(2, 1)))
                         .execute((instance, ctx) -> ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag()),
-                Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(2, 15)))
+                Tasks.recurring(indeksererAktivitetEndringer, Schedules.daily(LocalTime.of(2, 15)))
                         .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(3, (executionComplete, executionOperations) -> {
                             log.error("Hovedindeksering har feilet {} ganger. Forsøker igjen om 5 min",
                                     executionComplete.getExecution().consecutiveFailures + 1);

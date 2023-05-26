@@ -378,6 +378,8 @@ public class OpensearchQueryBuilder {
             case "fodselsnummer" -> searchSourceBuilder.sort("fnr.raw", order);
             case "utlopteaktiviteter" -> searchSourceBuilder.sort("nyesteutlopteaktivitet", order);
             case "arbeidslistefrist" -> searchSourceBuilder.sort("arbeidsliste_frist", order);
+            case "aap_type" -> searchSourceBuilder.sort("ytelse", order);
+            case "aap_vurderingsfrist" -> sorterAapVurderingsfrist(searchSourceBuilder, order, filtervalg);
             case "aaprettighetsperiode" -> sorterAapRettighetsPeriode(searchSourceBuilder, order);
             case "utkast_14a_status" -> searchSourceBuilder.sort("utkast_14a_status", order);
             case "arbeidslistekategori" -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
@@ -455,6 +457,37 @@ public class OpensearchQueryBuilder {
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
         return builder;
+    }
+
+    static void sorterAapVurderingsfrist(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
+        String expression = "";
+        if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
+            expression = """
+                    if (doc.containsKey('aapmaxtiduke') && !doc['aapmaxtiduke'].empty) {
+                        return doc['aapmaxtiduke'].value;
+                    }
+                    else {
+                        return 0;
+                    }
+                    """;
+        } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_UNNTAK)) {
+            expression = """
+                    if (doc.containsKey('utlopsdato') && !doc['utlopsdato'].empty) {
+                        return doc['utlopsdato'].value.toInstant().toEpochMilli();
+                    }
+                    else {
+                        return 0;
+                    }
+                    """;
+
+        }
+
+        if (!expression.isEmpty()) {
+            Script script = new Script(expression);
+            ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+            scriptBuilder.order(order);
+            builder.sort(scriptBuilder);
+        }
     }
 
     static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder builder, SortOrder order) {

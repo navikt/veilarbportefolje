@@ -16,6 +16,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -2748,6 +2749,111 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 }
         );
 
+    }
+
+    @Test
+    public void test_sortering_AAP() {
+        var bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setYtelse("AAP_UNNTAK")
+                .setUtlopsdato("2023-06-30T21:59:59Z");
+
+        var bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setYtelse("AAP_MAXTID")
+                .setAapmaxtiduke(43)
+                .setAapordinerutlopsdato(DateUtils.toLocalDateOrNull("2023-04-20"));
+
+        var bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setYtelse("AAP_UNNTAK")
+                .setEnhet_id(TEST_ENHET);
+
+        var bruker4 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setYtelse("AAP_MAXTID")
+                .setEnhet_id(TEST_ENHET);
+
+        var bruker5 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setYtelse("AAP_UNNTAK")
+                .setUtlopsdato("2023-08-30T21:59:59Z");
+
+        var bruker6 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setYtelse("AAP_MAXTID")
+                .setAapmaxtiduke(12)
+                .setAapordinerutlopsdato(DateUtils.toLocalDateOrNull("2023-04-12"));
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5, bruker6);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setYtelse(YtelseFilter.AAP_MAXTID);
+
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "aap_vurderingsfrist",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(3);
+        assertThat(response.getBrukere().get(0).getFnr().equals(bruker6.getFnr()));
+        assertThat(response.getBrukere().get(1).getFnr().equals(bruker2.getFnr()));
+        assertThat(response.getBrukere().get(2).getFnr().equals(bruker4.getFnr()));
+
+        filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setYtelse(YtelseFilter.AAP_UNNTAK);
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "aap_vurderingsfrist",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(3);
+        assertThat(response.getBrukere().get(0).getFnr().equals(bruker1.getFnr()));
+        assertThat(response.getBrukere().get(1).getFnr().equals(bruker5.getFnr()));
+        assertThat(response.getBrukere().get(2).getFnr().equals(bruker3.getFnr()));
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {

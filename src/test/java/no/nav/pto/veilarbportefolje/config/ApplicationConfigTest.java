@@ -8,7 +8,6 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
-import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.Decision;
@@ -134,7 +133,6 @@ import static org.mockito.Mockito.when;
         UtdanningsAktivitetService.class,
         ArenaHendelseRepository.class,
         GruppeAktivitetRepositoryV2.class,
-        TiltakRepositoryV2.class,
         TiltakRepositoryV3.class,
         TiltakService.class,
         PostgresOpensearchMapper.class,

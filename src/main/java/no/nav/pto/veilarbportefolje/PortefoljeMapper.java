@@ -4,8 +4,6 @@ import no.nav.pto.veilarbportefolje.domene.ArenaHovedmal;
 import no.nav.pto.veilarbportefolje.domene.ArenaInnsatsgruppe;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
-import no.nav.pto_schema.enums.arena.Hovedmaal;
-import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 
 public class PortefoljeMapper {
     public static ArenaInnsatsgruppe mapTilArenaInnsatsgruppe(Innsatsgruppe innsatsgruppe) {
