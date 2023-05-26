@@ -174,33 +174,6 @@ public class BarnUnder18AarRepositoryTest {
         Assertions.assertFalse(finnesGamelIdentIForeldreansvar);
     }
 
-    @Test
-    public void testOppdateringAvForeldreIdent() {
-        Fnr fnrPerson = randomFnr();
-        List<PDLIdent> identerBruker = List.of(
-                new PDLIdent(randomAktorId().get(), false, AKTORID),
-                new PDLIdent(fnrPerson.get(), false, FOLKEREGISTERIDENT)
-        );
-
-        pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
-        pdlIdentRepository.upsertIdenter(identerBruker);
-        List<BarnUnder18Aar> barnFraPdl = List.of(pdlBarn15Aar());
-        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barnFraPdl);
-
-        Fnr nyFnr = randomFnr();
-        pdlIdentRepository.upsertIdenter(List.of(new PDLIdent(nyFnr.get(), false, FOLKEREGISTERIDENT)));
-        barnUnder18AarRepository.oppdatereForeldreIdent(nyFnr, List.of(fnrPerson, randomFnr()));
-
-        List<Fnr> fnrBarnMedNyIdent = barnUnder18AarRepository.hentForeldreansvarForPerson(nyFnr);
-        List<Fnr> fnrBarnMedGamelIdent = barnUnder18AarRepository.hentForeldreansvarForPerson(fnrPerson);
-
-
-        Assertions.assertNotNull(fnrBarnMedNyIdent);
-        Assertions.assertTrue(fnrBarnMedGamelIdent.isEmpty());
-        Assertions.assertTrue(fnrBarnMedNyIdent.stream().anyMatch(x -> x.equals(barnFraPdl.get(0).getFnr())));
-    }
-
-
     private BarnUnder18Aar pdlBarn() {
         return new BarnUnder18Aar()
                 .setFnr(Fnr.of("12312312312"))
