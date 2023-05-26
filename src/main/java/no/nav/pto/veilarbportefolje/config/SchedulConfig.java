@@ -5,6 +5,7 @@ import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
@@ -12,7 +13,6 @@ import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
-import jakarta.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.time.Duration;
 import java.time.Instant;
@@ -29,6 +29,10 @@ public class SchedulConfig {
     private final AktivitetService aktivitetService;
     private final YtelsesService ytelsesService;
     private final Scheduler scheduler;
+
+    public static String deaktiverUtgatteUtdanningsAktivteter = "deaktiver_utgatte_utdannings_aktivteter";
+    public static String indeksererYtelseEndringer = "indekserer_ytelse_endringer";
+    public static String indeksererAktivitetEndringer = "indekserer_aktivitet_endringer";
 
     @Autowired
     public SchedulConfig(DataSource dataSource,
@@ -51,11 +55,11 @@ public class SchedulConfig {
     // Disse jobben må kjøre etter midnatt
     private List<RecurringTask<?>> nattligeJobber() {
         return List.of(
-                Tasks.recurring("deaktiver_utgatte_utdannings_aktivteter", Schedules.daily(LocalTime.of(2, 1)))
+                Tasks.recurring(deaktiverUtgatteUtdanningsAktivteter, Schedules.daily(LocalTime.of(2, 1)))
                         .execute((instance, ctx) -> aktivitetService.deaktiverUtgatteUtdanningsAktivteter()),
-                Tasks.recurring("indekserer_ytelse_endringer", Schedules.daily(LocalTime.of(2, 1)))
+                Tasks.recurring(indeksererYtelseEndringer, Schedules.daily(LocalTime.of(2, 1)))
                         .execute((instance, ctx) -> ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag()),
-                Tasks.recurring("indekserer_aktivitet_endringer", Schedules.daily(LocalTime.of(2, 15)))
+                Tasks.recurring(indeksererAktivitetEndringer, Schedules.daily(LocalTime.of(2, 15)))
                         .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(3, (executionComplete, executionOperations) -> {
                             log.error("Hovedindeksering har feilet {} ganger. Forsøker igjen om 5 min",
                                     executionComplete.getExecution().consecutiveFailures + 1);
