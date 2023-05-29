@@ -26,23 +26,29 @@ public class BarnUnder18AarRepository {
     private final JdbcTemplate db;
 
     public List<Fnr> hentForeldreansvarForPerson(Fnr fnrForesatt) {
-        List<Fnr> barn = dbReadOnly.queryForList("""
-                            SELECT barn_ident FROM foreldreansvar WHERE FORESATT_IDENT = ?
-                        """, String.class, fnrForesatt.get()).stream()
-                .map(Fnr::of)
-                .toList();
-
-        return barn;
+        try {
+            return dbReadOnly.queryForList("""
+                                SELECT barn_ident FROM foreldreansvar WHERE FORESATT_IDENT = ?
+                            """, String.class, fnrForesatt.get()).stream()
+                    .map(Fnr::of)
+                    .toList();
+        } catch (Exception e) {
+            log.error("Can't fetch foreldre ansvar " + e, e);
+            return List.of();
+        }
     }
 
     public List<Fnr> hentForeldreTilBarn(Fnr fnrBarn) {
-        List<Fnr> foreldre = dbReadOnly.queryForList("""
-                            SELECT FORESATT_IDENT FROM foreldreansvar WHERE BARN_IDENT = ?
-                        """, String.class, fnrBarn.get()).stream()
-                .map(Fnr::of)
-                .toList();
-
-        return foreldre;
+        try {
+            return dbReadOnly.queryForList("""
+                                SELECT FORESATT_IDENT FROM foreldreansvar WHERE BARN_IDENT = ?
+                            """, String.class, fnrBarn.get()).stream()
+                    .map(Fnr::of)
+                    .toList();
+        } catch (Exception e) {
+            log.error("Can't fetch foreldre ansvar " + e, e);
+            return List.of();
+        }
     }
 
     public List<Fnr> hentAlleBarnOver18() {
@@ -74,11 +80,16 @@ public class BarnUnder18AarRepository {
     }
 
     public void lagreBarnData(Fnr barnIdent, LocalDate barnFoedselsdato, String diskresjonskode) {
-        db.update("""
-                        INSERT INTO bruker_data_barn (barn_ident, barn_foedselsdato, barn_diskresjonkode)
-                        VALUES(?,?,?) ON CONFLICT (barn_ident) DO UPDATE SET (barn_foedselsdato, barn_diskresjonkode) = (excluded.barn_foedselsdato, excluded.barn_diskresjonkode)
-                         """,
-                barnIdent.get(), barnFoedselsdato, diskresjonskode);
+        try {
+            db.update("""
+                            INSERT INTO bruker_data_barn (barn_ident, barn_foedselsdato, barn_diskresjonkode)
+                            VALUES(?,?,?) ON CONFLICT (barn_ident) DO UPDATE SET (barn_foedselsdato, barn_diskresjonkode) = (excluded.barn_foedselsdato, excluded.barn_diskresjonkode)
+                             """,
+                    barnIdent.get(), barnFoedselsdato, diskresjonskode);
+        } catch (Exception e) {
+            log.error("Can't update barn data " + e, e);
+        }
+
     }
 
     public void oppdatereBarnIdent(Fnr nyBarnIdent, List<Fnr> gamleBarnIdent) {
@@ -122,12 +133,17 @@ public class BarnUnder18AarRepository {
     }
 
     public BarnUnder18AarData hentInfoOmBarn(Fnr fnrBarn) {
-        return queryForObjectOrNull(
-                () -> dbReadOnly.queryForObject(
-                        "SELECT * FROM bruker_data_barn WHERE barn_ident = ?",
-                        (rs, row) -> new BarnUnder18AarData(
-                                alderFraFodselsdato(toLocalDateOrNull(rs.getDate("BARN_FOEDSELSDATO"))),
-                                rs.getString("BARN_DISKRESJONKODE")), fnrBarn.get()));
+        try {
+            return queryForObjectOrNull(
+                    () -> dbReadOnly.queryForObject(
+                            "SELECT * FROM bruker_data_barn WHERE barn_ident = ?",
+                            (rs, row) -> new BarnUnder18AarData(
+                                    alderFraFodselsdato(toLocalDateOrNull(rs.getDate("BARN_FOEDSELSDATO"))),
+                                    rs.getString("BARN_DISKRESJONKODE")), fnrBarn.get()));
+        } catch (Exception e) {
+            log.error("Can't get info about barn under 18 " + e, e);
+            return null;
+        }
     }
 }
 
