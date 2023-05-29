@@ -157,7 +157,6 @@ public class OpensearchQueryBuilder {
                     harBarnUnder18Aar -> {
                         switch (harBarnUnder18Aar) {
                             case HAR_BARN_UNDER_18_AAR -> {
-                                BoolQueryBuilder harBarnUnder18SubQuery = boolQuery();
                                 queryBuilder.must(existsQuery("barn_under_18_aar"));
                             }
                             default -> throw new IllegalStateException("Ingen barn under 18 aar funnet");
