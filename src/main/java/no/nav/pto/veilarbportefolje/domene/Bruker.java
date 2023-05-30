@@ -191,7 +191,7 @@ public class Bruker {
                 .setHarUkjentBosted(bruker.isHarUkjentBosted())
                 .setBostedSistOppdatert(bruker.getBostedSistOppdatert())
                 .setAvvik14aVedtak(bruker.getAvvik14aVedtak())
-                .setBarnUnder18AarData((List<BarnUnder18AarData>) bruker.getBarn_under_18_aar())
+                .setBarnUnder18AarData(bruker.getBarn_under_18_aar())
                 .setEnsligeForsorgereOvergangsstonad(bruker.getEnslige_forsorgere_overgangsstonad());
     }
 

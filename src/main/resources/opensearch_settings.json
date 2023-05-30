@@ -235,6 +235,16 @@
       },
       "ytelse": {
         "type": "keyword"
+      },
+      "barn_under_18_aar": {
+        "properties": {
+          "alder": {
+            "type": "keyword"
+          },
+          "diskresjonskode": {
+            "type": "keyword"
+          }
+        }
       }
     }
   }
