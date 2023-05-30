@@ -396,11 +396,13 @@ public class OpensearchQueryBuilder {
             case "enslige_forsorgere_aktivitetsplikt" ->
                     sorterEnsligeForsorgereAktivitetsPlikt(searchSourceBuilder, order);
             case "enslige_forsorgere_om_barnet" -> sorterEnsligeForsorgereOmBarnet(searchSourceBuilder, order);
+            case "barn_under_18_aar" -> sorterBarnUnder18(searchSourceBuilder, order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
         return searchSourceBuilder;
     }
+
 
     static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         if (filtervalg.sisteEndringKategori.size() == 0) {
@@ -782,6 +784,21 @@ public class OpensearchQueryBuilder {
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
+    }
+
+    private static void sorterBarnUnder18(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        String expresion = """
+                if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
+                    return doc['barn_under_18_aar.alder'].size();
+                }
+                else {
+                    return 0;
+                }
+                """;
+        Script script = new Script(expresion);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        searchSourceBuilder.sort(scriptBuilder);
     }
 
     private static void sorterEnsligeForsorgereVedtaksPeriode(SearchSourceBuilder builder, SortOrder order) {
