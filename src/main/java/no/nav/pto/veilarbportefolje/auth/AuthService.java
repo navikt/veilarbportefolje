@@ -166,10 +166,10 @@ public class AuthService {
     }
 
     public boolean harVeilederTilgangTilBarn(BarnUnder18AarData barn, String veilederIdent) {
-        if (barn.getDiskresjonskode().equals(Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode)) {
+        if (barn.getDiskresjonskode() != null && barn.getDiskresjonskode().equals(Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode)) {
             return harVeilederTilgangTilKode6(NavIdent.of(veilederIdent));
         }
-        if (barn.getDiskresjonskode().equals(Adressebeskyttelse.FORTROLIG.diskresjonskode)) {
+        if (barn.getDiskresjonskode() != null && barn.getDiskresjonskode().equals(Adressebeskyttelse.FORTROLIG.diskresjonskode)) {
             return harVeilederTilgangTilKode7(NavIdent.of(veilederIdent));
         }
         return true;
