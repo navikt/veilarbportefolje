@@ -157,6 +157,8 @@ public class PostgresOpensearchMapper {
         brukere.forEach(bruker -> {
             Fnr brukerFnr = Fnr.of(bruker.getFnr());
             if (barnUnder18AarMap.containsKey(brukerFnr)) {
+                log.debug("flettInnBarnUnder18Aar");
+                log.debug(barnUnder18AarMap.get(brukerFnr).toString());
                 bruker.setBarn_under_18_aar(barnUnder18AarMap.get(brukerFnr));
             }
         });
