@@ -28,7 +28,6 @@ public class BarnUnder18AarService {
                     List<BarnUnder18AarData> barnListe = new ArrayList<>();
                     barnUnder18AarRepository.hentForeldreansvarForPerson(fnrPerson).forEach(fnrBarn -> {
                                 BarnUnder18AarData barnUnder18AarData = barnUnder18AarRepository.hentInfoOmBarn(fnrBarn);
-                                log.debug("hentBarnUnder18Aar " + ((barnUnder18AarData != null) ? "not null" : "null"));
                                 if (barnUnder18AarData != null) {
                                     barnListe.add(barnUnder18AarData);
                                 }
