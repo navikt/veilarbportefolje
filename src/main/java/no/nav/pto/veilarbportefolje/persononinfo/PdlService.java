@@ -37,8 +37,12 @@ public class PdlService {
     }
 
     public void hentOgLagreBrukerData(Fnr fnrPerson) {
-        PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnrPerson);
-        lagreBrukerData(fnrPerson, personData);
+        try {
+            PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnrPerson);
+            lagreBrukerData(fnrPerson, personData);
+        } catch (Exception e) {
+            secureLog.error("Kan ikke lagre bruker data for person: " + fnrPerson, e);
+        }
     }
 
     public void hentOgLagreBrukerDataPaBarn(Fnr fnrBarn) {
