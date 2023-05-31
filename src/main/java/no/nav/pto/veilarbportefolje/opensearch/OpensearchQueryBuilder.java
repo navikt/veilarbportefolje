@@ -787,8 +787,8 @@ public class OpensearchQueryBuilder {
 
     private static void sorterBarnUnder18(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
         String expresion = """
-                if (doc.containsKey('barn_under_18_aar') && !doc['barn_under_18_aar'].empty) {
-                    return doc['barn_under_18_aar'].values.size();
+                if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
+                    return doc['barn_under_18_aar.alder'].size();
                 }
                 else {
                     return 0;
