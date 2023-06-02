@@ -201,6 +201,17 @@ public class OpensearchQueryBuilder {
                             default -> throw new IllegalStateException("Ingen barn under 18 aar funnet");
                         }
                     });
+            if (filtervalg.barnUnder18AarAlder != null && !filtervalg.barnUnder18AarAlder.isEmpty()) {
+                String[] fraTilAlder = filtervalg.barnUnder18AarAlder.get(0).split("-");
+                int fraAlder = parseInt(fraTilAlder[0]);
+                int tilAlder = parseInt(fraTilAlder[1]);
+                queryBuilder.must(
+                        rangeQuery("barn_under_18_aar.alder")
+                                .gte(fraAlder)
+                                .lte(tilAlder)
+
+                );
+            }
         }
 
         if (filtervalg.harAktivitetFilter()) {
@@ -695,6 +706,7 @@ public class OpensearchQueryBuilder {
                             .lte(format("now-%sy/d", fraAlder))
                             .gt(format("now-%sy-1d", tilAlder + 1))
             );
+
         }
     }
 
