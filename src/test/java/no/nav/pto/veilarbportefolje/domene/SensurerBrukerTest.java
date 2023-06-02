@@ -18,6 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -181,7 +182,8 @@ public class SensurerBrukerTest {
                 .setFnr("11111111111")
                 .setEtternavn("etternanvKode6")
                 .setFornavn("fornavnKode6")
-                .setDiskresjonskode("6");
+                .setDiskresjonskode("6")
+                .setBarnUnder18AarData(emptyList());
     }
 
     private Bruker kode7Bruker() {
@@ -189,7 +191,8 @@ public class SensurerBrukerTest {
                 .setFnr("11111111111")
                 .setEtternavn("etternanvKode7")
                 .setFornavn("fornavnKode7")
-                .setDiskresjonskode("7");
+                .setDiskresjonskode("7")
+                .setBarnUnder18AarData(emptyList());
     }
 
     private Bruker egenAnsatt() {
@@ -230,7 +233,7 @@ public class SensurerBrukerTest {
                 .setBarnUnder18AarData(List.of(
                         new BarnUnder18AarData(11, "6"),
                         new BarnUnder18AarData(15, "7"),
-                        new BarnUnder18AarData(3, "")
+                        new BarnUnder18AarData(3, "-1")
                 ));
     }
 

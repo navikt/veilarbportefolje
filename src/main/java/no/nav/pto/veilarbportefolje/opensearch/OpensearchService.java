@@ -90,6 +90,10 @@ public class OpensearchService {
             leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
+        if (filtervalg.harBarnUnder18AarFilter()) {
+            leggTilBarnFilter(filtervalg, boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7());
+        }
+
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
         OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
