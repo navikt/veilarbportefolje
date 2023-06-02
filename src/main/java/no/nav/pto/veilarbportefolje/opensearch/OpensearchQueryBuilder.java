@@ -339,7 +339,7 @@ public class OpensearchQueryBuilder {
     }
 
     static SearchSourceBuilder sorterQueryParametere(String sortOrder, String sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg) {
-        SortOrder order = ("ascending".equals(sortOrder) || "asc".equals(sortOrder)) ? SortOrder.ASC : SortOrder.DESC;
+        SortOrder order = sortOrder.startsWith("asc") ? SortOrder.ASC : SortOrder.DESC;
 
         if ("ikke_satt".equals(sortField)) {
             searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
