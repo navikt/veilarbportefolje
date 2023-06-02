@@ -2786,7 +2786,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setBarn_under_18_aar(emptyList());
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(16, null), new BarnUnder18AarData(12, null)));
 
         var bruker5 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())

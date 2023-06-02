@@ -168,8 +168,9 @@ public class OpensearchQueryBuilder {
                 int tilAlder = parseInt(fraTilAlder[1]);
                 queryBuilder.must(
                         rangeQuery("barn_under_18_aar.alder")
-                                .lte(tilAlder)
                                 .gte(fraAlder)
+                                .lte(tilAlder)
+
                 );
             }
         }

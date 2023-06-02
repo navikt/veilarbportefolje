@@ -239,7 +239,7 @@
       "barn_under_18_aar": {
         "properties": {
           "alder": {
-            "type": "keyword"
+            "type": "integer"
           },
           "diskresjonskode": {
             "type": "keyword"
