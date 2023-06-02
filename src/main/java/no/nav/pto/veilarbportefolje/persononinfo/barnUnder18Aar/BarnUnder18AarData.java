@@ -9,8 +9,8 @@ public class BarnUnder18AarData {
     Integer alder;
     String diskresjonskode;
 
-    public BarnUnder18AarData(Integer alder, String s) {
+    public BarnUnder18AarData(Integer alder, String diskresjonskode) {
         this.alder = alder;
-        this.diskresjonskode = s;
+        this.diskresjonskode = diskresjonskode;
     }
 }

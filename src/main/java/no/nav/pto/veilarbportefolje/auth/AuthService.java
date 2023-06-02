@@ -130,6 +130,11 @@ public class AuthService {
         return abacResponse;
     }
 
+    public boolean harVeilederTilgangTilKode6() {
+        String veilederIdent = getInnloggetVeilederIdent().toString();
+        return harVeilederTilgangTilKode6(NavIdent.of(veilederIdent));
+    }
+
     public boolean harVeilederTilgangTilKode7(NavIdent veilederIdent) {
         boolean abacResponse = veilarbPep.harVeilederTilgangTilKode7(veilederIdent);
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
@@ -139,6 +144,11 @@ public class AuthService {
             }
         }
         return abacResponse;
+    }
+
+    public boolean harVeilederTilgangTilKode7() {
+        String veilederIdent = getInnloggetVeilederIdent().toString();
+        return harVeilederTilgangTilKode7(NavIdent.of(veilederIdent));
     }
 
     public boolean harVeilederTilgangTilEgenAnsatt(NavIdent veilederIdent) {

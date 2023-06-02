@@ -37,9 +37,9 @@ public class BarnUnder18AarServiceTest {
 
         List<BarnUnder18AarData> barnInfo = List.of(new BarnUnder18AarData(17, null),
                 new BarnUnder18AarData(16, "7"),
-                new BarnUnder18AarData(12, null),
+                new BarnUnder18AarData(12, "-1"),
                 new BarnUnder18AarData(8, "6"),
-                new BarnUnder18AarData(2, null));
+                new BarnUnder18AarData(2, "-1"));
 
         Mockito.when(barnUnder18AarRepository.hentForeldreansvarForPerson(foreldre.get(0)))
                 .thenReturn(barn.subList(0, 3));

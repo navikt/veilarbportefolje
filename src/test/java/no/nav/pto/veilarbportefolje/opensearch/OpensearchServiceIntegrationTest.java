@@ -7,7 +7,9 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -45,8 +47,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -64,19 +65,23 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     private final Pep pep;
     private final AuthContextHolder authContextHolder;
 
+    private PoaoTilgangWrapper poaoTilgangWrapper;
+
     @Autowired
     public OpensearchServiceIntegrationTest(
             OpensearchService opensearchService,
             OpensearchIndexer opensearchIndexer,
             VeilarbVeilederClient veilarbVeilederClientMock,
             AuthContextHolder authContextHolder,
-            Pep pep
+            Pep pep,
+            PoaoTilgangWrapper poaoTilgangWrapper
     ) {
         this.opensearchService = opensearchService;
         this.opensearchIndexer = opensearchIndexer;
         this.veilarbVeilederClientMock = veilarbVeilederClientMock;
         this.authContextHolder = authContextHolder;
         this.pep = pep;
+        this.poaoTilgangWrapper = poaoTilgangWrapper;
     }
 
     @BeforeEach
@@ -2675,7 +2680,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(8, null)));
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(8, "-1")));
 
         var bruker2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2684,7 +2689,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(1, null), new BarnUnder18AarData(12, null)));
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(1, "6"), new BarnUnder18AarData(12, "7")));
 
         var bruker3 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2693,7 +2698,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(5, "7"), new BarnUnder18AarData(11, null)));
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(5, "7"), new BarnUnder18AarData(11, "-1")));
 
 
         var bruker4 = new OppfolgingsBruker()
@@ -2734,6 +2739,96 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
 
+        assertThat(response.getAntall()).isEqualTo(2);
+        assertThat(response.getBrukere().stream().map(Bruker::getFnr).toList().containsAll(List.of(bruker1.getFnr(), bruker2.getFnr(), bruker3.getFnr())));
+
+        response.getBrukere().forEach(bruker -> {
+                    if (bruker.getFnr().equals(bruker1.getFnr())) {
+                        assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(1);
+                    } else if (bruker.getFnr().equals(bruker2.getFnr())) {
+                        assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(2);
+                    } else if (bruker.getFnr().equals(bruker3.getFnr())) {
+                        assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(2);
+                    } else if (bruker.getFnr().equals(bruker4.getFnr())) {
+                        assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(0);
+                    }
+                }
+        );
+
+    }
+
+    @Test
+    public void test_filtrering_barn_under_18_ingen_tilganger() {
+        var bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(8, "-1")));
+
+        var bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(1, "6"), new BarnUnder18AarData(12, "7")));
+
+        var bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(5, "7"), new BarnUnder18AarData(11, "-1")));
+
+
+        var bruker4 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(emptyList());
+
+        var bruker5 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET);
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setBarnUnder18Aar(List.of(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR));
+
+        when(pep.harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_0))).thenReturn(true);
+        when(pep.harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_0))).thenReturn(true);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Decision.Permit.INSTANCE);
+
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+
         assertThat(response.getAntall()).isEqualTo(3);
         assertThat(response.getBrukere().stream().map(Bruker::getFnr).toList().containsAll(List.of(bruker1.getFnr(), bruker2.getFnr(), bruker3.getFnr())));
 
@@ -2744,6 +2839,8 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                         assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(2);
                     } else if (bruker.getFnr().equals(bruker3.getFnr())) {
                         assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(2);
+                    } else if (bruker.getFnr().equals(bruker4.getFnr())) {
+                        assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(0);
                     }
                 }
         );
@@ -2758,7 +2855,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(8, null)));
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(8, "-1")));
 
         var bruker2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2767,7 +2864,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(1, null), new BarnUnder18AarData(12, null), new BarnUnder18AarData(4, null)));
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(1, "-1"), new BarnUnder18AarData(12, "-1"), new BarnUnder18AarData(4, "-1")));
 
         var bruker3 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2776,7 +2873,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(5, "7"), new BarnUnder18AarData(11, null)));
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(5, "7"), new BarnUnder18AarData(11, "-1")));
 
 
         var bruker4 = new OppfolgingsBruker()
