@@ -50,6 +50,7 @@ public class Filtervalg {
     public List<String> tolkBehovSpraak;
     public List<StillingFraNAVFilter> stillingFraNavFilter;
     public List<BarnUnder18Aar> barnUnder18Aar;
+    public List<String> barnUnder18AarAlder;
     public List<String> geografiskBosted;
     public List<Avvik14aVedtak> avvik14aVedtak;
 
@@ -164,8 +165,9 @@ public class Filtervalg {
     }
 
     public boolean harBarnUnder18AarFilter() {
-        return barnUnder18Aar != null && !barnUnder18Aar.isEmpty();
+        return (barnUnder18Aar != null && !barnUnder18Aar.isEmpty()) || (barnUnder18AarAlder != null && !barnUnder18AarAlder.isEmpty());
     }
+
     public boolean harBostedFilter() {
         return geografiskBosted != null && !geografiskBosted.isEmpty();
     }
@@ -218,7 +220,12 @@ public class Filtervalg {
                 .map(SisteEndringsKategori::contains)
                 .reduce(true, and());
 
-        return alderOk && fodselsdatoOk && veiledereOk && utdanningOK && sisteEndringOK;
+        Boolean barnAlderOk = barnUnder18AarAlder
+                .stream()
+                .map(Filtervalg::erGyldigAldersSpenn)
+                .reduce(true, and());
+
+        return alderOk && fodselsdatoOk && veiledereOk && utdanningOK && sisteEndringOK && barnAlderOk;
     }
 
     private BinaryOperator<Boolean> and() {
