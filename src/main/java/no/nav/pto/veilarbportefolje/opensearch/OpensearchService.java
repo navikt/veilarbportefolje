@@ -21,8 +21,11 @@ import org.opensearch.action.search.SearchResponse;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.index.query.BoolQueryBuilder;
+import org.opensearch.script.Script;
 import org.opensearch.search.aggregations.bucket.filter.FiltersAggregator;
 import org.opensearch.search.builder.SearchSourceBuilder;
+import org.opensearch.search.sort.ScriptSortBuilder;
+import org.opensearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -85,12 +88,6 @@ public class OpensearchService {
             leggTilManuelleFilter(boolQuery, filtervalg);
         }
 
-        searchSourceBuilder.query(boolQuery);
-
-        if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
-            leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
-        }
-
         if (filtervalg.harBarnUnder18AarFilter()) {
             leggTilBarnFilter(filtervalg, boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7());
             if (filtervalg.barnUnder18AarAlder != null && !filtervalg.barnUnder18AarAlder.isEmpty()) {
@@ -106,7 +103,13 @@ public class OpensearchService {
             }
         }
 
-        sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
+        searchSourceBuilder.query(boolQuery);
+
+        if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
+            leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        }
+
+        sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg, authService.hentVeilederBrukerInnsynTilganger());
 
         OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();
