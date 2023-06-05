@@ -98,8 +98,6 @@ public class OpensearchQueryBuilder {
 
 
     static BoolQueryBuilder leggTilBarnFilter(Filtervalg filtervalg, BoolQueryBuilder boolQuery, Boolean harTilgangKode6, Boolean harTilgangKode7) {
-        BoolQueryBuilder barnUnder18AarSubQueryExists = boolQuery().must(existsQuery("barn_under_18_aar"));
-
         Boolean tilgangTil6og7 = harTilgangKode6 && harTilgangKode7;
         Boolean tilgangTilKun6 = harTilgangKode6 && !harTilgangKode7;
         Boolean tilgangTil7 = !harTilgangKode6 && harTilgangKode7;
@@ -187,33 +185,6 @@ public class OpensearchQueryBuilder {
                         }
                     });
         }
-
-      /*  if (filtervalg.harBarnUnder18AarFilter()) {
-            filtervalg.barnUnder18Aar.forEach(
-                    harBarnUnder18Aar -> {
-                        switch (harBarnUnder18Aar) {
-                            case HAR_BARN_UNDER_18_AAR -> {
-                                queryBuilder.must(existsQuery("barn_under_18_aar"));
-                            }
-                            default -> throw new IllegalStateException("Ingen barn under 18 aar funnet");
-                        }
-                    });
-
-
-            if (filtervalg.barnUnder18AarAlder != null && !filtervalg.barnUnder18AarAlder.isEmpty()) {
-                String[] fraTilAlder = filtervalg.barnUnder18AarAlder.get(0).split("-");
-                int fraAlder = parseInt(fraTilAlder[0]);
-                int tilAlder = parseInt(fraTilAlder[1]);
-                queryBuilder.must(
-                        rangeQuery("barn_under_18_aar.alder")
-                                .gte(fraAlder)
-                                .lte(tilAlder)
-
-                );
-            }
-        }
-
-       */
 
         if (filtervalg.harAktivitetFilter()) {
             byggAktivitetFilterQuery(filtervalg, queryBuilder);
