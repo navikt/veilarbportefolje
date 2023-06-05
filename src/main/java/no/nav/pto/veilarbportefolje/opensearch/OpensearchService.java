@@ -85,12 +85,6 @@ public class OpensearchService {
             leggTilManuelleFilter(boolQuery, filtervalg);
         }
 
-        searchSourceBuilder.query(boolQuery);
-
-        if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
-            leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
-        }
-
         if (filtervalg.harBarnUnder18AarFilter()) {
             leggTilBarnFilter(filtervalg, boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7());
             if (filtervalg.barnUnder18AarAlder != null && !filtervalg.barnUnder18AarAlder.isEmpty()) {
@@ -104,6 +98,12 @@ public class OpensearchService {
 
                 );
             }
+        }
+
+        searchSourceBuilder.query(boolQuery);
+
+        if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
+            leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
