@@ -242,7 +242,8 @@
             "type": "integer"
           },
           "diskresjonskode": {
-            "type": "keyword"
+            "type": "keyword",
+            "null_value":"-1"
           }
         }
       }

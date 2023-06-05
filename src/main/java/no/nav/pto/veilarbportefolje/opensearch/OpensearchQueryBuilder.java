@@ -98,7 +98,7 @@ public class OpensearchQueryBuilder {
 
 
     static BoolQueryBuilder leggTilBarnFilter(Filtervalg filtervalg, BoolQueryBuilder boolQuery, Boolean harTilgangKode6, Boolean harTilgangKode7) {
-        BoolQueryBuilder barnUnder18AarSubQueryExists = boolQuery().should(existsQuery("barn_under_18_aar"));
+        BoolQueryBuilder barnUnder18AarSubQueryExists = boolQuery().must(existsQuery("barn_under_18_aar"));
 
         Boolean tilgangTil6og7 = harTilgangKode6 && harTilgangKode7;
         Boolean tilgangTilKun6 = harTilgangKode6 && !harTilgangKode7;
@@ -110,28 +110,25 @@ public class OpensearchQueryBuilder {
                     switch (harBarnUnder18Aar) {
                         case HAR_BARN_UNDER_18_AAR -> {
                             if (tilgangTil6og7) {
-                                 boolQuery.must(barnUnder18AarSubQueryExists);
+                                boolQuery.must(boolQuery().should(existsQuery("barn_under_18_aar")));
                             } else if (tilgangTilKun6) {
-                                boolQuery.must(barnUnder18AarSubQueryExists
-                                        .filter(boolQuery().should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                                                .filter(boolQuery().should(matchQuery("barn_under_18_aar.diskresjonskode", "6")))));
+                                boolQuery.must(boolQuery()
+                                        .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
+                                        .should(matchQuery("barn_under_18_aar.diskresjonskode", "6")));
                             } else if (tilgangTil7) {
-                                boolQuery.must(
-                                        barnUnder18AarSubQueryExists
-                                                .filter(boolQuery().should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                                                        .filter(boolQuery().should(matchQuery("barn_under_18_aar.diskresjonskode", "7")))));
+                                boolQuery.must(boolQuery()
+                                        .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
+                                        .should(matchQuery("barn_under_18_aar.diskresjonskode", "7")));
                             } else if (ikkeTilgang6Eller7) {
-                                boolQuery.must(
-                                        barnUnder18AarSubQueryExists
-                                                .filter(boolQuery().should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))));
+                                boolQuery.must(boolQuery()
+                                        .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1")));
                             }
-
                         }
                         default -> throw new IllegalStateException("Ingen barn under 18 aar funnet");
                     }
                 });
 
-        return boolQuery();
+        return boolQuery;
     }
 
 
@@ -191,7 +188,7 @@ public class OpensearchQueryBuilder {
                     });
         }
 
-        if (filtervalg.harBarnUnder18AarFilter()) {
+      /*  if (filtervalg.harBarnUnder18AarFilter()) {
             filtervalg.barnUnder18Aar.forEach(
                     harBarnUnder18Aar -> {
                         switch (harBarnUnder18Aar) {
@@ -201,6 +198,8 @@ public class OpensearchQueryBuilder {
                             default -> throw new IllegalStateException("Ingen barn under 18 aar funnet");
                         }
                     });
+
+
             if (filtervalg.barnUnder18AarAlder != null && !filtervalg.barnUnder18AarAlder.isEmpty()) {
                 String[] fraTilAlder = filtervalg.barnUnder18AarAlder.get(0).split("-");
                 int fraAlder = parseInt(fraTilAlder[0]);
@@ -213,6 +212,8 @@ public class OpensearchQueryBuilder {
                 );
             }
         }
+
+       */
 
         if (filtervalg.harAktivitetFilter()) {
             byggAktivitetFilterQuery(filtervalg, queryBuilder);

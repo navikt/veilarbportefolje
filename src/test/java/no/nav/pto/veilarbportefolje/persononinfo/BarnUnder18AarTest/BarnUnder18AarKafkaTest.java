@@ -145,7 +145,7 @@ public class BarnUnder18AarKafkaTest {
         String diskresjonskode_barn1 = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrForelder)).get(fnrForelder).get(0).getDiskresjonskode();
         pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(pdlDokBarn1MedDiskresjonskode);
         String diskresjonskode_barn1_etter_update = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrForelder)).get(fnrForelder).get(0).getDiskresjonskode();
-        Assertions.assertTrue(diskresjonskode_barn1 == "-1");
+        Assertions.assertTrue(diskresjonskode_barn1 == null);
         Assertions.assertTrue(Objects.equals(diskresjonskode_barn1_etter_update, "7"));
     }
 }
