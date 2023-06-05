@@ -30,7 +30,7 @@ public class BarnUnder18AarService {
                                 BarnUnder18AarData barnUnder18AarData = barnUnder18AarRepository.hentInfoOmBarn(fnrBarn);
                                 if (barnUnder18AarData != null) {
                                     if(barnUnder18AarData.diskresjonskode == null || barnUnder18AarData.diskresjonskode.isEmpty()){
-                                        barnUnder18AarData.setDiskresjonskode("-1");
+                                        barnUnder18AarData.setDiskresjonskode(null);
                                     }
                                     barnListe.add(barnUnder18AarData);
                                 }
