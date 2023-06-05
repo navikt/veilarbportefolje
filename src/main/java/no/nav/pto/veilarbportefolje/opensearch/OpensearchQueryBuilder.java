@@ -97,7 +97,7 @@ public class OpensearchQueryBuilder {
     }
 
 
-    static BoolQueryBuilder leggTilBarnFilter(Filtervalg filtervalg, BoolQueryBuilder boolQuery, Boolean harTilgangKode6, Boolean harTilgangKode7) {
+    static void leggTilBarnFilter(Filtervalg filtervalg, BoolQueryBuilder boolQuery, Boolean harTilgangKode6, Boolean harTilgangKode7) {
         Boolean tilgangTil6og7 = harTilgangKode6 && harTilgangKode7;
         Boolean tilgangTilKun6 = harTilgangKode6 && !harTilgangKode7;
         Boolean tilgangTil7 = !harTilgangKode6 && harTilgangKode7;
@@ -125,8 +125,6 @@ public class OpensearchQueryBuilder {
                         default -> throw new IllegalStateException("Ingen barn under 18 aar funnet");
                     }
                 });
-
-        return boolQuery;
     }
 
 
