@@ -158,9 +158,13 @@ public class SensurerBrukerTest {
     }
 
     private void sjekkAtBarnMedKode7ErFjernet(Bruker bruker) {
-        assertTrue(bruker.getBarnUnder18AarData().stream().noneMatch(
-                barnUnder18AarData ->
-                        barnUnder18AarData.getDiskresjonskode().equals("7")));
+        bruker.getBarnUnder18AarData().forEach(
+                barnUnder18AarData -> {
+                    if (barnUnder18AarData.getDiskresjonskode() != null){
+                        assertTrue(barnUnder18AarData.getDiskresjonskode() != "7");
+                    }
+                }
+        );
     }
 
     private void sjekkAtBarnMedKode6IkkeErFjernet(Bruker bruker) {
@@ -232,7 +236,7 @@ public class SensurerBrukerTest {
                 .setBarnUnder18AarData(List.of(
                         new BarnUnder18AarData(11, "6"),
                         new BarnUnder18AarData(15, "7"),
-                        new BarnUnder18AarData(3, "-1")
+                        new BarnUnder18AarData(3, null)
                 ));
     }
 
