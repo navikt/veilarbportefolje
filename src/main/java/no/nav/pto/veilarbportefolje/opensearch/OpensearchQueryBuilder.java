@@ -450,10 +450,11 @@ public class OpensearchQueryBuilder {
         String expression = "";
         if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP)) {
             expression = """
-                    if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
-                        return doc['aapordinerutlopsdato'].value;
-                    }
-                    else {
+                    if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty) {
+                        return doc['utlopsdato'].value.toInstant().toEpochMilli();
+                    } else if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
+                        return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
+                    } else {
                         return 0;
                     }
                     """;
