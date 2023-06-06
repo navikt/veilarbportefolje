@@ -5,28 +5,6 @@ env:
   IMAGE: ghcr.io/${{ github.repository }}/veilarbportefolje
   PRINT_PAYLOAD: true
 jobs:
-  link-to-trello:
-    runs-on: ubuntu-latest
-    name: Trello update
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Get trello card id
-        id: card
-        uses: navikt/veilarbtrelloactions/get-card@v2.0
-        with:
-          key: ${{ secrets.TRELLO_KEY }}
-          token: ${{ secrets.TRELLO_TOKEN }}
-          board: BcjrjQZk
-      - name: Attach branch to card
-        id: Attach
-        uses: navikt/veilarbtrelloactions/create-attachment@v2.0
-        if: ${{ steps.card.outputs.success }}
-        with:
-          key: ${{ secrets.TRELLO_KEY }}
-          token: ${{ secrets.TRELLO_TOKEN }}
-          card-id: ${{ steps.card.outputs.card-id }}
-          attachment-type: branch
   test:
     name: Run tests
     runs-on: ubuntu-latest
@@ -39,12 +17,7 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin'
-      - name: Set up cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
+          cache: 'maven'
       - name: Run maven tests
         env:
           MAVEN_OPTS: -Xss1024M -Xmx2048M
@@ -62,22 +35,17 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin'
-      - name: Set up cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
+          cache: 'maven'
       - name: Build maven artifacts
         run: mvn -Dgithub.token=${{ secrets.GITHUB_TOKEN }} -B package -D skipTests
       - name: Login to Docker
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push Docker image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: true
