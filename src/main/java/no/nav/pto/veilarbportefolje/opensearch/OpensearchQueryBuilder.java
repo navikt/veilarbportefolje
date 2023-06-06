@@ -830,7 +830,7 @@ public class OpensearchQueryBuilder {
                 if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
                     int count = 0;  
                     for (item in params._source.barn_under_18_aar) { 
-                        if (item.diskresjonskode == null || item.diskresjonskode = '6'){ count = count + 1; }
+                        if ((item.diskresjonskode == null) || (item.diskresjonskode == '6')){ count = count + 1; }
                     } 
                     return count;  
                 }   
@@ -843,7 +843,7 @@ public class OpensearchQueryBuilder {
                 if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
                     int count = 0;  
                     for (item in params._source.barn_under_18_aar) { 
-                        if (item.diskresjonskode == null || item.diskresjonskode = '7'){ count = count + 1; }
+                        if ((item.diskresjonskode == null) || (item.diskresjonskode == '7')){ count = count + 1; }
                     } 
                     return count;  
                 }   
