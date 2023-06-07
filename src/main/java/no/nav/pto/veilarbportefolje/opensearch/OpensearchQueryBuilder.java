@@ -101,14 +101,13 @@ public class OpensearchQueryBuilder {
         Boolean tilgangTil6og7 = harTilgangKode6 && harTilgangKode7;
         Boolean tilgangTilKun6 = harTilgangKode6 && !harTilgangKode7;
         Boolean tilgangTil7 = !harTilgangKode6 && harTilgangKode7;
-        Boolean ikkeTilgang6Eller7 = !harTilgangKode6 && !harTilgangKode7;
 
         filtervalg.barnUnder18Aar.forEach(
                 harBarnUnder18Aar -> {
                     switch (harBarnUnder18Aar) {
                         case HAR_BARN_UNDER_18_AAR -> {
                             if (tilgangTil6og7) {
-                                boolQuery.must(boolQuery().should(existsQuery("barn_under_18_aar")));
+                                boolQuery.must(existsQuery("barn_under_18_aar"));
                             } else if (tilgangTilKun6) {
                                 boolQuery.must(boolQuery()
                                         .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
@@ -117,9 +116,8 @@ public class OpensearchQueryBuilder {
                                 boolQuery.must(boolQuery()
                                         .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
                                         .should(matchQuery("barn_under_18_aar.diskresjonskode", "7")));
-                            } else if (ikkeTilgang6Eller7) {
-                                boolQuery.must(boolQuery()
-                                        .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1")));
+                            } else {
+                                boolQuery.must(matchQuery("barn_under_18_aar.diskresjonskode", "-1"));
                             }
                         }
                         default -> throw new IllegalStateException("Ingen barn under 18 aar funnet");
@@ -131,10 +129,9 @@ public class OpensearchQueryBuilder {
         Boolean tilgangTil6og7 = harTilgangKode6 && harTilgangKode7;
         Boolean tilgangTilKun6 = harTilgangKode6 && !harTilgangKode7;
         Boolean tilgangTil7 = !harTilgangKode6 && harTilgangKode7;
-        Boolean ikkeTilgang6Eller7 = !harTilgangKode6 && !harTilgangKode7;
 
         if (tilgangTil6og7) {
-            boolQuery.must(boolQuery().should(existsQuery("barn_under_18_aar")));
+            boolQuery.must(existsQuery("barn_under_18_aar"));
         } else if (tilgangTilKun6) {
             boolQuery.must(boolQuery()
                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
@@ -143,9 +140,8 @@ public class OpensearchQueryBuilder {
             boolQuery.must(boolQuery()
                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "7")));
-        } else if (ikkeTilgang6Eller7) {
-            boolQuery.must(boolQuery()
-                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1")));
+        } else {
+            boolQuery.must(matchQuery("barn_under_18_aar.diskresjonskode", "-1"));
         }
 
         boolQuery.must(
