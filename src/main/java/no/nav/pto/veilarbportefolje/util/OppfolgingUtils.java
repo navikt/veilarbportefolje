@@ -9,7 +9,7 @@ import java.util.Optional;
 import static java.util.Arrays.asList;
 
 public class OppfolgingUtils {
-    private static List<String> INNSATSGRUPPEKODER =  asList( "IKVAL", "BFORM", "BATT", "VARIG");
+    public static final List<String> INNSATSGRUPPEKODER =  asList( "IKVAL", "BFORM", "BATT", "VARIG");
     private static List<String> OPPFOLGINGKODER = asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG");
 
 
