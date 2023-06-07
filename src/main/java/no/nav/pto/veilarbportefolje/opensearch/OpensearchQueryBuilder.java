@@ -134,17 +134,13 @@ public class OpensearchQueryBuilder {
         } else if (tilgangTilKun6) {
             boolQuery.must(boolQuery()
                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "6"))
-                    .mustNot(matchQuery("barn_under_18_aar.diskresjonskode", "7")));
+                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "6")));
         } else if (tilgangTil7) {
             boolQuery.must(boolQuery()
                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "7"))
-                    .mustNot(matchQuery("barn_under_18_aar.diskresjonskode", "6")));
+                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "7")));
         } else {
-            boolQuery.must(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                    .mustNot(matchQuery("barn_under_18_aar.diskresjonskode", "6"))
-                    .mustNot(matchQuery("barn_under_18_aar.diskresjonskode", "7"));
+            boolQuery.must(matchQuery("barn_under_18_aar.diskresjonskode", "-1"));
         }
     }
 
