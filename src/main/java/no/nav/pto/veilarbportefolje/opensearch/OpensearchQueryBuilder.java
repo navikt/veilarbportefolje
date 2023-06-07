@@ -127,6 +127,35 @@ public class OpensearchQueryBuilder {
                 });
     }
 
+    static void leggTilBarnAlderFilter(BoolQueryBuilder boolQuery, Boolean harTilgangKode6, Boolean harTilgangKode7, int fraAlder, int tilAlder) {
+        Boolean tilgangTil6og7 = harTilgangKode6 && harTilgangKode7;
+        Boolean tilgangTilKun6 = harTilgangKode6 && !harTilgangKode7;
+        Boolean tilgangTil7 = !harTilgangKode6 && harTilgangKode7;
+        Boolean ikkeTilgang6Eller7 = !harTilgangKode6 && !harTilgangKode7;
+
+        if (tilgangTil6og7) {
+            boolQuery.must(boolQuery().should(existsQuery("barn_under_18_aar")));
+        } else if (tilgangTilKun6) {
+            boolQuery.must(boolQuery()
+                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
+                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "6")));
+        } else if (tilgangTil7) {
+            boolQuery.must(boolQuery()
+                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
+                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "7")));
+        } else if (ikkeTilgang6Eller7) {
+            boolQuery.must(boolQuery()
+                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1")));
+        }
+
+        boolQuery.must(
+                rangeQuery("barn_under_18_aar.alder")
+                        .gte(fraAlder)
+                        .lte(tilAlder)
+
+        );
+    }
+
 
     static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg) {
         if (!filtervalg.alder.isEmpty()) {
@@ -866,16 +895,16 @@ public class OpensearchQueryBuilder {
                 """;
 
         String expressionToUse = "";
-        if (harikketilgangKode6og7){
+        if (harikketilgangKode6og7) {
             expressionToUse = expressionIngen;
-        }else if(hartilgangKode6og7){
+        } else if (hartilgangKode6og7) {
             expressionToUse = expression67;
-        }else if (harBaretilgangKode6){
+        } else if (harBaretilgangKode6) {
             expressionToUse = expression6;
-        }else if(harBaretilgangKode7){
+        } else if (harBaretilgangKode7) {
             expressionToUse = expression7;
-        };
-
+        }
+        ;
 
 
         Script script = new Script(expressionToUse);
