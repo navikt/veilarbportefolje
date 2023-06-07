@@ -21,11 +21,8 @@ import org.opensearch.action.search.SearchResponse;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.index.query.BoolQueryBuilder;
-import org.opensearch.script.Script;
 import org.opensearch.search.aggregations.bucket.filter.FiltersAggregator;
 import org.opensearch.search.builder.SearchSourceBuilder;
-import org.opensearch.search.sort.ScriptSortBuilder;
-import org.opensearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -90,16 +87,12 @@ public class OpensearchService {
 
         if (filtervalg.harBarnUnder18AarFilter()) {
             leggTilBarnFilter(filtervalg, boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7());
-            if (filtervalg.barnUnder18AarAlder != null && !filtervalg.barnUnder18AarAlder.isEmpty()) {
+
+            if (filtervalg.barnUnder18AarAlder != null && !filtervalg.barnUnder18AarAlder.isEmpty()){
                 String[] fraTilAlder = filtervalg.barnUnder18AarAlder.get(0).split("-");
                 int fraAlder = parseInt(fraTilAlder[0]);
                 int tilAlder = parseInt(fraTilAlder[1]);
-                boolQuery.must(
-                        rangeQuery("barn_under_18_aar.alder")
-                                .gte(fraAlder)
-                                .lte(tilAlder)
-
-                );
+                leggTilBarnAlderFilter(boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7(), fraAlder, tilAlder);
             }
         }
 
