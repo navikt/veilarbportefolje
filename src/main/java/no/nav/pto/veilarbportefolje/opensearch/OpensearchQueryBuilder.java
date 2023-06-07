@@ -448,7 +448,17 @@ public class OpensearchQueryBuilder {
 
     static void sorterAapVurderingsfrist(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         String expression = "";
-        if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
+        if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP)) {
+            expression = """
+                    if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty) {
+                        return doc['utlopsdato'].value.toInstant().toEpochMilli();
+                    } else if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
+                        return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 0;
+                    }
+                    """;
+        } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
             expression = """
                     if (doc.containsKey('aapmaxtiduke') && !doc['aapmaxtiduke'].empty) {
                         return doc['aapmaxtiduke'].value;
