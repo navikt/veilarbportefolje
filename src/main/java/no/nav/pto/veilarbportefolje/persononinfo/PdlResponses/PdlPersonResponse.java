@@ -96,13 +96,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         }
 
         @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Adressebeskyttelse {
-            private String gradering;
-            private Metadata metadata;
-        }
-
-        @Data
         public static class Sikkerhetstiltak {
             private String tiltakstype;
             private String beskrivelse;
@@ -138,6 +131,7 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
 
 
         @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Foreldreansvar {
             private String ansvarssubjekt;
             private Metadata metadata;
