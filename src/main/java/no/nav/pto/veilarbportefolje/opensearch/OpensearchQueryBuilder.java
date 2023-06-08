@@ -128,7 +128,7 @@ public class OpensearchQueryBuilder {
         );
     }
 
-     static void filterForBarnUnder18(BoolQueryBuilder boolQuery, Boolean tilgangTil6og7, Boolean tilgangTilKun6, Boolean tilgangTil7) {
+     private static void filterForBarnUnder18(BoolQueryBuilder boolQuery, Boolean tilgangTil6og7, Boolean tilgangTilKun6, Boolean tilgangTil7) {
         if (tilgangTil6og7) {
             boolQuery.must(boolQuery().should(existsQuery("barn_under_18_aar")));
         } else if (tilgangTilKun6) {
