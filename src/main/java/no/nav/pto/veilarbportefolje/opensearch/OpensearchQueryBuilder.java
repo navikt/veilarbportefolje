@@ -11,10 +11,8 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
-import org.opensearch.index.query.BoolQueryBuilder;
-import org.opensearch.index.query.QueryBuilder;
-import org.opensearch.index.query.QueryBuilders;
-import org.opensearch.index.query.RangeQueryBuilder;
+import org.apache.lucene.search.join.ScoreMode;
+import org.opensearch.index.query.*;
 import org.opensearch.script.Script;
 import org.opensearch.search.aggregations.AggregationBuilders;
 import org.opensearch.search.aggregations.BucketOrder;
@@ -118,30 +116,49 @@ public class OpensearchQueryBuilder {
         Boolean tilgangTilKun6 = harTilgangKode6 && !harTilgangKode7;
         Boolean tilgangTil7 = !harTilgangKode6 && harTilgangKode7;
 
-        filterForBarnUnder18(boolQuery, tilgangTil6og7, tilgangTilKun6, tilgangTil7);
-
-        boolQuery.must(
-                rangeQuery("barn_under_18_aar.alder")
-                        .gte(fraAlder)
-                        .lte(tilAlder)
-
-        );
+        BoolQueryBuilder barnUnder18aarQueryBuilder = new BoolQueryBuilder();
+        if (tilgangTil6og7) {
+            barnUnder18aarQueryBuilder
+                    .must(existsQuery("barn_under_18_aar"))
+                    .must(rangeQuery("barn_under_18_aar.alder").gte(fraAlder).lte(tilAlder));
+        } else if (tilgangTilKun6) {
+            barnUnder18aarQueryBuilder
+                    .must(boolQuery()
+                            .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
+                            .should(matchQuery("barn_under_18_aar.diskresjonskode", "6")))
+                    .must(rangeQuery("barn_under_18_aar.alder").gte(fraAlder).lte(tilAlder));
+        } else if (tilgangTil7) {
+            barnUnder18aarQueryBuilder
+                    .must(boolQuery()
+                            .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
+                            .should(matchQuery("barn_under_18_aar.diskresjonskode", "7")))
+                    .must(rangeQuery("barn_under_18_aar.alder").gte(fraAlder).lte(tilAlder));
+        } else {
+            barnUnder18aarQueryBuilder
+                    .must(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
+                    .must(rangeQuery("barn_under_18_aar.alder").gte(fraAlder).lte(tilAlder));
+        }
+        NestedQueryBuilder barnUnder18AarNested = nestedQuery("barn_under_18_aar", barnUnder18aarQueryBuilder, ScoreMode.Avg);
+        boolQuery.must(barnUnder18AarNested);
     }
 
      private static void filterForBarnUnder18(BoolQueryBuilder boolQuery, Boolean tilgangTil6og7, Boolean tilgangTilKun6, Boolean tilgangTil7) {
-        if (tilgangTil6og7) {
-            boolQuery.must(boolQuery().should(existsQuery("barn_under_18_aar")));
+         BoolQueryBuilder barnUnder18aarQueryBuilder = new BoolQueryBuilder();
+         if (tilgangTil6og7) {
+             barnUnder18aarQueryBuilder.must(existsQuery("barn_under_18_aar"));
         } else if (tilgangTilKun6) {
-            boolQuery.must(boolQuery()
-                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "6")));
+             barnUnder18aarQueryBuilder.must(boolQuery()
+                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
+                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "6")));
         } else if (tilgangTil7) {
-            boolQuery.must(boolQuery()
-                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                    .should(matchQuery("barn_under_18_aar.diskresjonskode", "7")));
+             barnUnder18aarQueryBuilder.must(boolQuery()
+                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
+                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "7")));
         } else {
-            boolQuery.must(boolQuery().should(matchQuery("barn_under_18_aar.diskresjonskode", "-1")));
+             barnUnder18aarQueryBuilder.must(matchQuery("barn_under_18_aar.diskresjonskode", "-1"));
         }
+         NestedQueryBuilder barnUnder18Aar = nestedQuery("barn_under_18_aar", barnUnder18aarQueryBuilder, ScoreMode.Max);
+         boolQuery.must(barnUnder18Aar);
     }
 
 
@@ -830,70 +847,50 @@ public class OpensearchQueryBuilder {
         Boolean harTilgangKode6 = brukerinnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig();
         Boolean harTilgangKode7 = brukerinnsynTilganger.tilgangTilAdressebeskyttelseFortrolig();
         Boolean hartilgangKode6og7 = harTilgangKode6 && harTilgangKode7;
-        Boolean harikketilgangKode6og7 = !harTilgangKode6 && !harTilgangKode7;
+
         Boolean harBaretilgangKode6 = harTilgangKode6 && !harTilgangKode7;
         Boolean harBaretilgangKode7 = !harTilgangKode6 && harTilgangKode7;
 
 
-        if (filtervalg.barnUnder18Aar != null && !filtervalg.barnUnder18Aar.isEmpty()) {
+        if (filtervalg.harBarnUnder18AarFilter()) {
             String expressionTilgang6og7 = """
-                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
-                        return doc['barn_under_18_aar.alder'].size();
-                    }
-                    else {
-                        return 0;
-                    }
+                    params._source.barn_under_18_aar.size()
                     """;
 
             String expression6 = """
-                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
-                        int count = 0;  
-                        for (item in params._source.barn_under_18_aar) { 
-                            if ((item.diskresjonskode == null) || (item.diskresjonskode == '6')){ count = count + 1; }
-                        } 
-                        return count;  
-                    }   
-                    else {
-                        return 0;
-                    }
+                    int count = 0; 
+                    for (item in params._source.barn_under_18_aar) { 
+                        if ((item.diskresjonskode == null) || (item.diskresjonskode == '6')){ count = count + 1; }
+                    } 
+                    return count;  
                     """;
 
             String expression7 = """
-                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
-                        int count = 0;  
-                        for (item in params._source.barn_under_18_aar) { 
-                            if ((item.diskresjonskode == null) || (item.diskresjonskode == '7')){ count = count + 1; }
-                        } 
-                        return count;  
-                    }   
-                    else {
-                        return 0;
+                    int count = 0;
+                    for (item in params._source.barn_under_18_aar) {
+                        if ((item.diskresjonskode == null) || (item.diskresjonskode == '7')){ count = count + 1; }
                     }
+                    return count;  
                     """;
 
             String expressionIngen = """
-                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
-                        int count = 0;  
-                        for (item in params._source.barn_under_18_aar) { 
-                            if (item.diskresjonskode == null){ count = count + 1; }
-                        } 
-                        return count;  
-                    }   
-                    else {
-                        return 0;
-                    }
+                    int count = 0; 
+                    for (item in params._source.barn_under_18_aar) { 
+                        if (item.diskresjonskode == null){ count = count + 1; }
+                    } 
+                    return count;  
                     """;
 
 
             String expressionToUse = "";
-            if (harikketilgangKode6og7) {
-                expressionToUse = expressionIngen;
-            } else if (hartilgangKode6og7) {
+            if (hartilgangKode6og7) {
                 expressionToUse = expressionTilgang6og7;
             } else if (harBaretilgangKode6) {
                 expressionToUse = expression6;
             } else if (harBaretilgangKode7) {
                 expressionToUse = expression7;
+            }else{
+                expressionToUse = expressionIngen;
             }
 
             Script script = new Script(expressionToUse);
@@ -901,78 +898,6 @@ public class OpensearchQueryBuilder {
             scriptBuilder.order(order);
             searchSourceBuilder.sort(scriptBuilder);
 
-        }
-
-
-        if (filtervalg.barnUnder18AarAlder != null && !filtervalg.barnUnder18AarAlder.isEmpty()) {
-            String[] fraTilAlder = filtervalg.barnUnder18AarAlder.get(0).split("-");
-            int fraAlder = parseInt(fraTilAlder[0]);
-            int tilAlder = parseInt(fraTilAlder[1]);
-
-            String expressionTilgang6og7 = """
-                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
-                        return doc['barn_under_18_aar.alder'].size();
-                    }
-                    else {
-                        return 0;
-                    }
-                    """;
-
-            String expression6 = """
-                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
-                        int count = 0;  
-                        for (item in params._source.barn_under_18_aar) { 
-                            if ((item.diskresjonskode == null) || (item.diskresjonskode == '6')){ count = count + 1; }
-                        } 
-                        return count;  
-                    }   
-                    else {
-                        return 0;
-                    }
-                    """;
-
-            String expression7 = """
-                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
-                        int count = 0;  
-                        for (item in params._source.barn_under_18_aar) { 
-                            if ((item.diskresjonskode == null) || (item.diskresjonskode == '7')){ count = count + 1; }
-                        } 
-                        return count;  
-                    }   
-                    else {
-                        return 0;
-                    }
-                    """;
-
-            String expressionIngen = """
-                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
-                        int count = 0;  
-                        for (item in params._source.barn_under_18_aar) { 
-                            if ((item.diskresjonskode == null) && (item.alder >= 1) && (item.alder <= 5)){ count = count + 1; }
-                        } 
-                        return count;  
-                    }   
-                    else {
-                        return 0;
-                    }
-                    """;
-
-
-            String expressionToUse = "";
-            if (harikketilgangKode6og7) {
-                expressionToUse = expressionIngen;
-            } else if (hartilgangKode6og7) {
-                expressionToUse = expressionTilgang6og7;
-            } else if (harBaretilgangKode6) {
-                expressionToUse = expression6;
-            } else if (harBaretilgangKode7) {
-                expressionToUse = expression7;
-            }
-
-            Script script = new Script(expressionToUse);
-            ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
-            scriptBuilder.order(order);
-            searchSourceBuilder.sort(scriptBuilder);
         }
     }
 
