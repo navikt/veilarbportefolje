@@ -130,7 +130,7 @@ public class OpensearchQueryBuilder {
 
     private static void filterForBarnUnder18(BoolQueryBuilder boolQuery, Boolean tilgangTil6og7, Boolean tilgangTilKun6, Boolean tilgangTil7) {
         if (tilgangTil6og7) {
-            boolQuery.must(existsQuery("barn_under_18_aar"));
+            boolQuery.must(boolQuery().should(existsQuery("barn_under_18_aar")));
         } else if (tilgangTilKun6) {
             boolQuery.must(boolQuery()
                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
@@ -140,7 +140,7 @@ public class OpensearchQueryBuilder {
                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "7")));
         } else {
-            boolQuery.must(matchQuery("barn_under_18_aar.diskresjonskode", "-1"));
+            boolQuery.must(boolQuery().should(matchQuery("barn_under_18_aar.diskresjonskode", "-1")));
         }
     }
 
