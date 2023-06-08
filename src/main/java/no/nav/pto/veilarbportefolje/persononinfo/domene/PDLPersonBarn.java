@@ -5,7 +5,6 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlBarnResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Bostedsadresse;
 
 import java.time.LocalDate;
 import java.util.List;

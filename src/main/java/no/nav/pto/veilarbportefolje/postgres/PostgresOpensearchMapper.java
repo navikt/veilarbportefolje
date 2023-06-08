@@ -12,8 +12,6 @@ import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
@@ -38,8 +36,6 @@ public class PostgresOpensearchMapper {
 
     private final KodeverkService kodeverkService;
     private final Avvik14aVedtakService avvik14aService;
-
-    private final BarnUnder18AarService barnUnder18AarService;
     private final EnsligeForsorgereService ensligeForsorgereService;
 
     public List<OppfolgingsBruker> flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
@@ -149,17 +145,6 @@ public class PostgresOpensearchMapper {
     public void flettInnAvvik14aVedtak(List<OppfolgingsBruker> brukere) {
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik14aVedtakList = avvik14aService.hentAvvik(brukere.stream().map(GjeldendeIdenter::of).collect(Collectors.toSet()));
         brukere.forEach(bruker -> bruker.setAvvik14aVedtak(avvik14aVedtakList.get(GjeldendeIdenter.of(bruker))));
-    }
-
-    public void flettInnBarnUnder18Aar(List<OppfolgingsBruker> brukere) {
-        List<Fnr> brukereFnr = brukere.stream().map(bruker -> Fnr.of(bruker.getFnr())).toList();
-        Map<Fnr, List<BarnUnder18AarData>> barnUnder18AarMap = barnUnder18AarService.hentBarnUnder18Aar(brukereFnr);
-        brukere.forEach(bruker -> {
-            Fnr brukerFnr = Fnr.of(bruker.getFnr());
-            if (barnUnder18AarMap.containsKey(brukerFnr)) {
-                bruker.setBarn_under_18_aar(barnUnder18AarMap.get(brukerFnr));
-            }
-        });
     }
 
     public void flettInnEnsligeForsorgereData(List<OppfolgingsBruker> brukere) {

@@ -9,9 +9,6 @@ import no.nav.pto.veilarbportefolje.domene.Sikkerhetstiltak;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Bostedsadresse;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.UtenlandskAdresse;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Vegadresse;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.time.LocalDate;
@@ -42,8 +39,6 @@ public class PDLPerson {
     private Sikkerhetstiltak sikkerhetstiltak;
     private List<Fnr> foreldreansvar;
 
-    private Bostedsadresse bostedsadresse;
-
 
     public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
         PDLPerson person = new PDLPerson();
@@ -67,8 +62,7 @@ public class PDLPerson {
                 .setTolkBehovSistOppdatert(hentTolkBehovSistOppdatert(response.getTilrettelagtKommunikasjon()))
                 .setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()))
                 .setSikkerhetstiltak(hentSikkerhetstiltak(response.getSikkerhetstiltak()))
-                .setForeldreansvar(hentForeldreansvar(response.getForeldreansvar()))
-                .setBostedsadresse(hentBostedAdresse(response.getBostedsadresse()).orElse(null));
+                .setForeldreansvar(hentForeldreansvar(response.getForeldreansvar()));
 
     }
 
@@ -124,24 +118,24 @@ public class PDLPerson {
                 .orElse("");
     }
 
-    private static String hentBydel(List<Bostedsadresse> response) {
+    private static String hentBydel(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
         return hentBostedAdresse(response)
-                .map(Bostedsadresse::getVegadresse)
-                .map(Vegadresse::getBydelsnummer)
+                .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getVegadresse)
+                .map(PdlPersonResponse.PdlPersonResponseData.Vegadresse::getBydelsnummer)
                 .orElse(null);
     }
 
-    private static String hentUtenlandskAdresse(List<Bostedsadresse> response) {
+    private static String hentUtenlandskAdresse(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
         return hentBostedAdresse(response)
-                .map(Bostedsadresse::getUtenlandskAdresse)
-                .map(UtenlandskAdresse::getLandkode)
+                .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getUtenlandskAdresse)
+                .map(PdlPersonResponse.PdlPersonResponseData.UtenlandskAdresse::getLandkode)
                 .orElse(null);
     }
 
-    private static String hentBostedKommune(List<Bostedsadresse> response) {
+    private static String hentBostedKommune(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
         return hentBostedAdresse(response)
-                .map(Bostedsadresse::getVegadresse)
-                .map(Vegadresse::getKommunenummer)
+                .map(PdlPersonResponse.PdlPersonResponseData.Bostedsadresse::getVegadresse)
+                .map(PdlPersonResponse.PdlPersonResponseData.Vegadresse::getKommunenummer)
                 .orElse(null);
     }
 
@@ -184,7 +178,7 @@ public class PDLPerson {
                 .get();
     }
 
-    private static boolean hentHarUkjentBosted(List<Bostedsadresse> response) {
+    private static boolean hentHarUkjentBosted(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
         if (response == null) {
             return false;
         }
@@ -194,7 +188,7 @@ public class PDLPerson {
                 .orElse(false);
     }
 
-    private static LocalDate hentBostedSisteOppdatert(List<Bostedsadresse> response) {
+    private static LocalDate hentBostedSisteOppdatert(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
         return hentBostedAdresse(response)
                 .map(bostedsadresse -> bostedsadresse.getMetadata().getEndringer())
                 .map(endringers -> endringers.get(0))
@@ -241,7 +235,6 @@ public class PDLPerson {
     }
 
     private static List<Fnr> hentForeldreansvar(List<PdlPersonResponse.PdlPersonResponseData.Foreldreansvar> foreldreansvar) {
-        //TODO handle null/empty
         if (foreldreansvar == null){
             return null;
         }
@@ -258,7 +251,7 @@ public class PDLPerson {
                 .collect(Collectors.toList());
     }
 
-    private static Optional<Bostedsadresse> hentBostedAdresse(List<Bostedsadresse> response) {
+    private static Optional<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> hentBostedAdresse(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
         if (response == null) {
             return Optional.empty();
         }
