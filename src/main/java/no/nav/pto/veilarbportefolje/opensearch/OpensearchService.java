@@ -86,7 +86,9 @@ public class OpensearchService {
         }
 
         if (filtervalg.harBarnUnder18AarFilter()) {
-            leggTilBarnFilter(filtervalg, boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7());
+            if (filtervalg.barnUnder18Aar != null && !filtervalg.barnUnder18Aar.isEmpty()) {
+                leggTilBarnFilter(filtervalg, boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7());
+            }
 
             if (filtervalg.barnUnder18AarAlder != null && !filtervalg.barnUnder18AarAlder.isEmpty()){
                 String[] fraTilAlder = filtervalg.barnUnder18AarAlder.get(0).split("-");

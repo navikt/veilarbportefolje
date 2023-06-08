@@ -3007,7 +3007,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void test_filtrering_barn_under_18_med_alder_filter() {
+    public void test_filtrering_barn_under_18_med_alder_filter_ikke_tilgang_6_eller_7() {
         var bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
@@ -3023,7 +3023,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(1, null), new BarnUnder18AarData(12, null)));
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(2, null), new BarnUnder18AarData(12, null)));
 
         var bruker3 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3054,6 +3054,11 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5);
 
+        when(pep.harVeilederTilgangTilKode6(any())).thenReturn(false);
+        when(pep.harVeilederTilgangTilKode7(any())).thenReturn(false);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("",""));
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("",""));
+
         skrivBrukereTilTestindeks(liste);
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
@@ -3061,7 +3066,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setBarnUnder18Aar(List.of(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+                //.setBarnUnder18Aar(List.of(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
                 .setBarnUnder18AarAlder(List.of("1-5"));
         ;
 
@@ -3069,7 +3074,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                "barn_under_18_aar",
                 filterValg,
                 null,
                 null

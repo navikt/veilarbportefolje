@@ -434,7 +434,7 @@ public class OpensearchQueryBuilder {
             case "enslige_forsorgere_aktivitetsplikt" ->
                     sorterEnsligeForsorgereAktivitetsPlikt(searchSourceBuilder, order);
             case "enslige_forsorgere_om_barnet" -> sorterEnsligeForsorgereOmBarnet(searchSourceBuilder, order);
-            case "barn_under_18_aar" -> sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger);
+            case "barn_under_18_aar" -> sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger, filtervalg);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
@@ -826,7 +826,7 @@ public class OpensearchQueryBuilder {
         builder.sort(scriptBuilder);
     }
 
-    private static void sorterBarnUnder18(SearchSourceBuilder searchSourceBuilder, SortOrder order, BrukerinnsynTilganger brukerinnsynTilganger) {
+    private static void sorterBarnUnder18(SearchSourceBuilder searchSourceBuilder, SortOrder order, BrukerinnsynTilganger brukerinnsynTilganger, Filtervalg filtervalg) {
         Boolean harTilgangKode6 = brukerinnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig();
         Boolean harTilgangKode7 = brukerinnsynTilganger.tilgangTilAdressebeskyttelseFortrolig();
         Boolean hartilgangKode6og7 = harTilgangKode6 && harTilgangKode7;
@@ -834,70 +834,146 @@ public class OpensearchQueryBuilder {
         Boolean harBaretilgangKode6 = harTilgangKode6 && !harTilgangKode7;
         Boolean harBaretilgangKode7 = !harTilgangKode6 && harTilgangKode7;
 
-        String expression67 = """
-                if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
-                    return doc['barn_under_18_aar.alder'].size();
-                }
-                else {
-                    return 0;
-                }
-                """;
 
-        String expression6 = """
-                if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
-                    int count = 0;  
-                    for (item in params._source.barn_under_18_aar) { 
-                        if ((item.diskresjonskode == null) || (item.diskresjonskode == '6')){ count = count + 1; }
-                    } 
-                    return count;  
-                }   
-                else {
-                    return 0;
-                }
-                """;
+        if (filtervalg.barnUnder18Aar != null && !filtervalg.barnUnder18Aar.isEmpty()) {
+            String expressionTilgang6og7 = """
+                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
+                        return doc['barn_under_18_aar.alder'].size();
+                    }
+                    else {
+                        return 0;
+                    }
+                    """;
 
-        String expression7 = """
-                if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
-                    int count = 0;  
-                    for (item in params._source.barn_under_18_aar) { 
-                        if ((item.diskresjonskode == null) || (item.diskresjonskode == '7')){ count = count + 1; }
-                    } 
-                    return count;  
-                }   
-                else {
-                    return 0;
-                }
-                """;
+            String expression6 = """
+                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
+                        int count = 0;  
+                        for (item in params._source.barn_under_18_aar) { 
+                            if ((item.diskresjonskode == null) || (item.diskresjonskode == '6')){ count = count + 1; }
+                        } 
+                        return count;  
+                    }   
+                    else {
+                        return 0;
+                    }
+                    """;
 
-        String expressionIngen = """
-                if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
-                    int count = 0;  
-                    for (item in params._source.barn_under_18_aar) { 
-                        if (item.diskresjonskode == null){ count = count + 1; }
-                    } 
-                    return count;  
-                }   
-                else {
-                    return 0;
-                }
-                """;
+            String expression7 = """
+                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
+                        int count = 0;  
+                        for (item in params._source.barn_under_18_aar) { 
+                            if ((item.diskresjonskode == null) || (item.diskresjonskode == '7')){ count = count + 1; }
+                        } 
+                        return count;  
+                    }   
+                    else {
+                        return 0;
+                    }
+                    """;
 
-        String expressionToUse = "";
-        if (harikketilgangKode6og7) {
-            expressionToUse = expressionIngen;
-        } else if (hartilgangKode6og7) {
-            expressionToUse = expression67;
-        } else if (harBaretilgangKode6) {
-            expressionToUse = expression6;
-        } else if (harBaretilgangKode7) {
-            expressionToUse = expression7;
+            String expressionIngen = """
+                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
+                        int count = 0;  
+                        for (item in params._source.barn_under_18_aar) { 
+                            if (item.diskresjonskode == null){ count = count + 1; }
+                        } 
+                        return count;  
+                    }   
+                    else {
+                        return 0;
+                    }
+                    """;
+
+
+            String expressionToUse = "";
+            if (harikketilgangKode6og7) {
+                expressionToUse = expressionIngen;
+            } else if (hartilgangKode6og7) {
+                expressionToUse = expressionTilgang6og7;
+            } else if (harBaretilgangKode6) {
+                expressionToUse = expression6;
+            } else if (harBaretilgangKode7) {
+                expressionToUse = expression7;
+            }
+
+            Script script = new Script(expressionToUse);
+            ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+            scriptBuilder.order(order);
+            searchSourceBuilder.sort(scriptBuilder);
+
         }
 
 
-        Script script = new Script(expressionToUse);
-        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
-        scriptBuilder.order(order);
-        searchSourceBuilder.sort(scriptBuilder);
+        if (filtervalg.barnUnder18AarAlder != null && !filtervalg.barnUnder18AarAlder.isEmpty()) {
+            String[] fraTilAlder = filtervalg.barnUnder18AarAlder.get(0).split("-");
+            int fraAlder = parseInt(fraTilAlder[0]);
+            int tilAlder = parseInt(fraTilAlder[1]);
+
+            String expressionTilgang6og7 = """
+                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
+                        return doc['barn_under_18_aar.alder'].size();
+                    }
+                    else {
+                        return 0;
+                    }
+                    """;
+
+            String expression6 = """
+                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
+                        int count = 0;  
+                        for (item in params._source.barn_under_18_aar) { 
+                            if ((item.diskresjonskode == null) || (item.diskresjonskode == '6')){ count = count + 1; }
+                        } 
+                        return count;  
+                    }   
+                    else {
+                        return 0;
+                    }
+                    """;
+
+            String expression7 = """
+                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
+                        int count = 0;  
+                        for (item in params._source.barn_under_18_aar) { 
+                            if ((item.diskresjonskode == null) || (item.diskresjonskode == '7')){ count = count + 1; }
+                        } 
+                        return count;  
+                    }   
+                    else {
+                        return 0;
+                    }
+                    """;
+
+            String expressionIngen = """
+                    if (doc.containsKey('barn_under_18_aar.alder') && !doc['barn_under_18_aar.alder'].empty) {
+                        int count = 0;  
+                        for (item in params._source.barn_under_18_aar) { 
+                            if ((item.diskresjonskode == null) && (item.alder >= 1) && (item.alder <= 5)){ count = count + 1; }
+                        } 
+                        return count;  
+                    }   
+                    else {
+                        return 0;
+                    }
+                    """;
+
+
+            String expressionToUse = "";
+            if (harikketilgangKode6og7) {
+                expressionToUse = expressionIngen;
+            } else if (hartilgangKode6og7) {
+                expressionToUse = expressionTilgang6og7;
+            } else if (harBaretilgangKode6) {
+                expressionToUse = expression6;
+            } else if (harBaretilgangKode7) {
+                expressionToUse = expression7;
+            }
+
+            Script script = new Script(expressionToUse);
+            ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+            scriptBuilder.order(order);
+            searchSourceBuilder.sort(scriptBuilder);
+        }
     }
 
     private static void sorterEnsligeForsorgereVedtaksPeriode(SearchSourceBuilder builder, SortOrder
