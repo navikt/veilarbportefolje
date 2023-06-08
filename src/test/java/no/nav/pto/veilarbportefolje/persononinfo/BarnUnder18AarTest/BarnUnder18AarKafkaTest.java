@@ -31,7 +31,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService.hentAktorider;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -115,7 +114,6 @@ public class BarnUnder18AarKafkaTest {
                 this.barnUnder18AarService,
                 new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
         ), this.pdlIdentRepository,
-                this.pdlPersonRepository,
                 new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
                 this.barnUnder18AarService,
                 opensearchIndexer,

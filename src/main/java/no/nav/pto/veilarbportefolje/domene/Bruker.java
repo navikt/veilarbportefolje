@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
@@ -101,7 +100,6 @@ public class Bruker {
     LocalDate nesteSvarfristCvStillingFraNav;
 
     Avvik14aVedtak avvik14aVedtak;
-    List<BarnUnder18AarData> barnUnder18AarData;
 
     EnsligeForsorgereOvergangsstonad ensligeForsorgereOvergangsstonad;
 
@@ -194,7 +192,6 @@ public class Bruker {
                 .setHarUkjentBosted(bruker.isHarUkjentBosted())
                 .setBostedSistOppdatert(bruker.getBostedSistOppdatert())
                 .setAvvik14aVedtak(bruker.getAvvik14aVedtak())
-                .setBarnUnder18AarData(bruker.getBarn_under_18_aar())
                 .setEnsligeForsorgereOvergangsstonad(bruker.getEnslige_forsorgere_overgangsstonad());
     }
 

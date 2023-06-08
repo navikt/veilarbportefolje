@@ -18,7 +18,6 @@ import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,13 +93,6 @@ public class AuthService {
     }
 
     public Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String veilederIdent) {
-
-        if (bruker.getBarnUnder18AarData() != null) {
-            bruker.setBarnUnder18AarData(bruker.getBarnUnder18AarData().stream().filter(barnUnder18AarData ->
-                    harVeilederTilgangTilBarn(barnUnder18AarData, veilederIdent)
-            ).toList());
-        }
-
         if (!bruker.erKonfidensiell()) {
             return bruker;
         }
@@ -130,11 +122,6 @@ public class AuthService {
         return abacResponse;
     }
 
-    public boolean harVeilederTilgangTilKode6() {
-        String veilederIdent = getInnloggetVeilederIdent().toString();
-        return harVeilederTilgangTilKode6(NavIdent.of(veilederIdent));
-    }
-
     public boolean harVeilederTilgangTilKode7(NavIdent veilederIdent) {
         boolean abacResponse = veilarbPep.harVeilederTilgangTilKode7(veilederIdent);
         if (FeatureToggle.brukPoaoTilgang(unleashService)) {
@@ -144,11 +131,6 @@ public class AuthService {
             }
         }
         return abacResponse;
-    }
-
-    public boolean harVeilederTilgangTilKode7() {
-        String veilederIdent = getInnloggetVeilederIdent().toString();
-        return harVeilederTilgangTilKode7(NavIdent.of(veilederIdent));
     }
 
     public boolean harVeilederTilgangTilEgenAnsatt(NavIdent veilederIdent) {
@@ -173,16 +155,6 @@ public class AuthService {
 
     public String getOboToken(String tokenScope) {
         return aadOboTokenClient.exchangeOnBehalfOfToken(tokenScope, getInnloggetBrukerToken());
-    }
-
-    public boolean harVeilederTilgangTilBarn(BarnUnder18AarData barn, String veilederIdent) {
-        if (barn.getDiskresjonskode() != null && barn.getDiskresjonskode().equals(Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode)) {
-            return harVeilederTilgangTilKode6(NavIdent.of(veilederIdent));
-        }
-        if (barn.getDiskresjonskode() != null && barn.getDiskresjonskode().equals(Adressebeskyttelse.FORTROLIG.diskresjonskode)) {
-            return harVeilederTilgangTilKode7(NavIdent.of(veilederIdent));
-        }
-        return true;
     }
 
     @Data

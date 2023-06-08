@@ -33,7 +33,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
     private final PdlService pdlService;
 
     private final PdlIdentRepository pdlIdentRepository;
-    private final PdlPersonRepository pdlPersonRepository;
     private final BrukerServiceV2 brukerService;
     private final BarnUnder18AarService barnUnder18AarService;
     private final OpensearchIndexer opensearchIndexer;
@@ -58,7 +57,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
-
             secureLog.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
 
             handterIdentEndring(pdlIdenter);

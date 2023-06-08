@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Bostedsadresse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
 
 import java.util.List;
@@ -87,6 +86,21 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private Metadata metadata;
         }
 
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Bostedsadresse {
+            private Vegadresse vegadresse;
+            private UtenlandskAdresse utenlandskAdresse;
+            private UkjentBosted ukjentBosted;
+            private Metadata metadata;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Adressebeskyttelse {
+            private String gradering;
+            private Metadata metadata;
+        }
 
         @Data
         public static class Sikkerhetstiltak {
@@ -97,6 +111,24 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private Metadata metadata;
         }
 
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Vegadresse {
+            private final String kommunenummer;
+            private final String bydelsnummer;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class UtenlandskAdresse {
+            private String landkode;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class UkjentBosted {
+            private String bostedskommune;
+        }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)

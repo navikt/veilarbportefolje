@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
-import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import org.junit.BeforeClass;
@@ -34,7 +33,7 @@ public class OpensearchQueryBuilderTest {
 
     @Test
     public void skal_sortere_etternavn_paa_etternavn_feltet() {
-        var searchSourceBuilder = sorterQueryParametere("asc", "etternavn", new SearchSourceBuilder(), new Filtervalg(), new BrukerinnsynTilganger(true,true,true));
+        var searchSourceBuilder = sorterQueryParametere("asc", "etternavn", new SearchSourceBuilder(), new Filtervalg());
         var fieldName = searchSourceBuilder.sorts().get(0).toString();
         assertThat(fieldName).contains("etternavn");
     }
