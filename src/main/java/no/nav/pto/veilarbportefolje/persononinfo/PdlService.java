@@ -50,12 +50,11 @@ public class PdlService {
         barnUnder18AarService.oppdaterEndringPaBarn(fnrBarn, barnData);
     }
 
-    @Transactional
     public void lagreBrukerData(Fnr fnrPerson, PDLPerson personData) {
         pdlPersonRepository.upsertPerson(fnrPerson, personData);
 
+        List<BarnUnder18Aar> barn = new ArrayList<>();
         if (personData.getForeldreansvar() != null && !personData.getForeldreansvar().isEmpty()) {
-            List<BarnUnder18Aar> barn = new ArrayList<>();
             personData.getForeldreansvar().forEach(barnFnr -> {
                 PDLPersonBarn barnPdl = pdlClient.hentBrukerBarnDataFraPdl(barnFnr);
 
@@ -63,8 +62,8 @@ public class PdlService {
                     barn.add(new BarnUnder18Aar(barnFnr, barnPdl.getFodselsdato(), barnPdl.getDiskresjonskode()));
                 }
             });
-            barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barn);
         }
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barn);
     }
 
     public void lagreBrukerDataPaBarn(Fnr fnrBarn, PDLPersonBarn pdlPersonBarn) {

@@ -55,7 +55,7 @@ public class ArbeidslisteRepositoryTestV2 {
         jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
         jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data");
         jdbcTemplate.execute("TRUNCATE TABLE oppfolgingsbruker_arena_v2");
-        jdbcTemplate.execute("TRUNCATE TABLE bruker_identer cascade");
+        jdbcTemplate.execute("TRUNCATE TABLE bruker_identer");
     }
 
     @Test

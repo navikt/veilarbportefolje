@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarDa
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class PDLPersonBarnTest {
     private final ObjectMapper mapper = new ObjectMapper();
-    private final String pdlPersonBarnResponsFraFil = readFileAsJsonString("/person_barn_pdl.json", getClass());
+    private final String pdlPersonBarnResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
 
     private BarnUnder18AarRepository barnUnder18AarRepository;
     private final JdbcTemplate db;
@@ -46,7 +45,7 @@ public class PDLPersonBarnTest {
 
     @BeforeEach
     public void setup() {
-        db.update("truncate bruker_identer cascade ");
+        db.update("truncate bruker_identer");
 
         server.stubFor(
                 post(anyUrl())

@@ -29,9 +29,6 @@ public class BarnUnder18AarService {
                     barnUnder18AarRepository.hentForeldreansvarForPerson(fnrPerson).forEach(fnrBarn -> {
                                 BarnUnder18AarData barnUnder18AarData = barnUnder18AarRepository.hentInfoOmBarn(fnrBarn);
                                 if (barnUnder18AarData != null) {
-                                    if(barnUnder18AarData.diskresjonskode == null || barnUnder18AarData.diskresjonskode.isEmpty()){
-                                        barnUnder18AarData.setDiskresjonskode(null);
-                                    }
                                     barnListe.add(barnUnder18AarData);
                                 }
                             }
@@ -58,13 +55,12 @@ public class BarnUnder18AarService {
         List<Fnr> barnFnrFraPdl = barnFraPdl.stream().map(BarnUnder18Aar::getFnr).toList();
 
         lagredeBarn.forEach(barnFnr -> {
-                    if (!barnFnrFraPdl.contains(barnFnr)) {
-                        barnUnder18AarRepository.slettForeldreansvar(foresattIdent, barnFnr);
-                        slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnr);
-                        secureLog.warn(String.format("Barn fjernet fra PDL for foreldre %s og barn %s", foresattIdent, barnFnr));
-                    }
-                }
-        );
+            if (!barnFnrFraPdl.contains(barnFnr)) {
+                barnUnder18AarRepository.slettForeldreansvar(foresattIdent, barnFnr);
+                slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnr);
+                secureLog.warn(String.format("Barn fjernet fra PDL for foreldre %s og barn %s", foresattIdent, barnFnr));
+            }
+        });
 
         barnFraPdl.forEach(barnUnder18Aar -> {
             if (erUnder18Aar(barnUnder18Aar.getFodselsdato())) {

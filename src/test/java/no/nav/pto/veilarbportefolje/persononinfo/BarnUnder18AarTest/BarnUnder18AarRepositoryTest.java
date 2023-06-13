@@ -60,7 +60,7 @@ public class BarnUnder18AarRepositoryTest {
         this.barnUnder18AarService = new BarnUnder18AarService(new BarnUnder18AarRepository(db, db));
         this.pdlPersonRepository = new PdlPersonRepository(db, null);
 
-        db.update("TRUNCATE bruker_identer CASCADE ");
+        db.update("TRUNCATE bruker_identer");
         db.update("TRUNCATE foreldreansvar CASCADE ");
         db.update("TRUNCATE bruker_data_barn CASCADE");
     }
