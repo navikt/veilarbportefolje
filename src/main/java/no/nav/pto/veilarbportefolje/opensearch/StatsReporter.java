@@ -15,7 +15,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static no.nav.pto.veilarbportefolje.config.SchedulConfig.*;
@@ -47,7 +46,7 @@ public class StatsReporter implements MeterBinder {
 
     private Long indeksererAktivitetEndringerLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
-        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", indeksererAktivitetEndringer), Timestamp.class)).orElse(null);
+        Timestamp sisteKjorte = namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", indeksererAktivitetEndringer), Timestamp.class);
 
         if (sisteKjorte != null) {
             return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
@@ -57,7 +56,7 @@ public class StatsReporter implements MeterBinder {
 
     private Long deaktiverUtgatteUtdanningsAktivteterLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
-        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", deaktiverUtgatteUtdanningsAktivteter), Timestamp.class)).orElse(null);
+        Timestamp sisteKjorte = namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", deaktiverUtgatteUtdanningsAktivteter), Timestamp.class);
 
         if (sisteKjorte != null) {
             return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
@@ -67,7 +66,7 @@ public class StatsReporter implements MeterBinder {
 
     private Long indeksererYtelseEndringerLastRun() {
         String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
-        Timestamp sisteKjorte = Optional.ofNullable(namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", indeksererYtelseEndringer), Timestamp.class)).orElse(null);
+        Timestamp sisteKjorte = namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", indeksererYtelseEndringer), Timestamp.class);
 
         if (sisteKjorte != null) {
             return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
@@ -81,6 +80,9 @@ public class StatsReporter implements MeterBinder {
             String libraryVersion = OpenSearchClient.class.getPackage().getImplementationVersion();
 
             log.info(String.format("Opensearch version: %s, opensearch lib version: %s", serverVersion, libraryVersion));
+            if (serverVersion.charAt(0) != libraryVersion.charAt(0)) {
+                log.error(String.format("Differanse mellom major-versjoner Opensearch og Opensearch klientbibliotek. Opensearch: version: %s, opensearch lib version: %s", serverVersion, libraryVersion));
+            }
 
             if (serverVersion.equals(libraryVersion)) {
                 return 1;
