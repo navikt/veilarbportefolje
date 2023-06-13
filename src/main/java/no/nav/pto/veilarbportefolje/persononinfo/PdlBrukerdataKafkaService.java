@@ -10,12 +10,16 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PdlPersonValideringException;
+import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivAktor;
@@ -27,8 +31,10 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RequiredArgsConstructor
 public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDokument> {
     private final PdlService pdlService;
+
     private final PdlIdentRepository pdlIdentRepository;
-    private final PdlPersonRepository pdlPersonRepository;
+    private final BrukerServiceV2 brukerService;
+    private final BarnUnder18AarService barnUnder18AarService;
     private final OpensearchIndexer opensearchIndexer;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
@@ -45,15 +51,37 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
         List<PDLIdent> pdlIdenter = pdlDokument.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
+        List<Fnr> fnrs = hentFnrs(pdlIdenter);
+        List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);
+        Fnr aktivtFnr = hentAktivFnr(pdlIdenter);
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
             secureLog.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
 
-            handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
             handterIdentEndring(pdlIdenter);
 
+            handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
+
             oppdaterOpensearch(aktivAktorId, pdlIdenter);
+        }
+
+        if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
+            barnUnder18AarService.handterBarnIdentEndring(aktivtFnr, inaktiveFnr);
+
+            handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
+
+            List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnr);
+
+            foreldreTilBarn.forEach(fnrForelder -> {
+                        Optional<AktorId> aktorIdForelder = brukerService.hentAktorId(fnrForelder);
+                        if (aktorIdForelder.isPresent()) {
+                            opensearchIndexer.indekser(aktorIdForelder.get());
+                        } else {
+                            secureLog.warn("Kunne ikke indeksere forelder med fnr {} til barn med fnr {}", fnrForelder, aktivtFnr);
+                        }
+                    }
+            );
         }
     }
 
@@ -63,7 +91,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
         try {
             PDLPerson person = PDLPerson.genererFraApiRespons(personFraKafka);
-            pdlPersonRepository.upsertPerson(aktivFnr, person);
+            pdlService.lagreBrukerData(aktivFnr, person);
         } catch (PdlPersonValideringException e) {
             if (isDevelopment().orElse(false)) {
                 secureLog.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivAktorId), e);
@@ -73,8 +101,28 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             pdlService.hentOgLagreBrukerData(aktivFnr);
         }
         List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);
-        pdlPersonRepository.slettLagretBrukerData(inaktiveFnr);
+        pdlService.slettPDLBrukerData(inaktiveFnr);
     }
+
+    private void handterBarnEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka, List<PDLIdent> pdlIdenter) {
+        Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
+        try {
+            PDLPerson person = PDLPerson.genererFraApiRespons(personFraKafka);
+            PDLPersonBarn barn = new PDLPersonBarn();
+            barn.setErIlive(!person.isErDoed());
+            barn.setFodselsdato(person.getFoedsel());
+            barn.setDiskresjonskode(person.getDiskresjonskode());
+            pdlService.lagreBrukerDataPaBarn(aktivtFnrBarn, barn);
+        } catch (PdlPersonValideringException e) {
+            if (isDevelopment().orElse(false)) {
+                secureLog.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktivtFnrBarn), e);
+                return;
+            }
+            secureLog.warn(String.format("Fikk pdl validerings error på fnr: %s, prøver å laste inn data på REST", aktivtFnrBarn), e);
+            pdlService.hentOgLagreBrukerDataPaBarn(aktivtFnrBarn);
+        }
+    }
+
 
     private void handterIdentEndring(List<PDLIdent> pdlIdenter) {
         pdlIdentRepository.upsertIdenter(pdlIdenter);
@@ -87,11 +135,19 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         opensearchIndexer.indekser(aktivAktorId);
     }
 
-    private static List<AktorId> hentAktorider(List<PDLIdent> identer) {
+    public static List<AktorId> hentAktorider(List<PDLIdent> identer) {
         return identer.stream()
                 .filter(pdlIdent -> PDLIdent.Gruppe.AKTORID.equals(pdlIdent.getGruppe()))
                 .map(PDLIdent::getIdent)
                 .map(AktorId::new)
+                .toList();
+    }
+
+    private static List<Fnr> hentFnrs(List<PDLIdent> identer) {
+        return identer.stream()
+                .filter(pdlIdent -> PDLIdent.Gruppe.FOLKEREGISTERIDENT.equals(pdlIdent.getGruppe()))
+                .map(PDLIdent::getIdent)
+                .map(Fnr::new)
                 .toList();
     }
 

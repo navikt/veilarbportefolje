@@ -124,32 +124,10 @@ CREATE TABLE public.bruker_data (
 --
 
 CREATE TABLE public.bruker_data_barn (
-    id integer NOT NULL,
-    foresatt_ident character varying(30) NOT NULL,
-    bor_med_foresatt boolean,
+    barn_ident character varying(30) NOT NULL,
     barn_foedselsdato date NOT NULL,
     barn_diskresjonkode character varying(3)
 );
-
-
---
--- Name: bruker_data_barn_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.bruker_data_barn_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: bruker_data_barn_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.bruker_data_barn_id_seq OWNED BY public.bruker_data_barn.id;
 
 
 --
@@ -406,6 +384,16 @@ CREATE TABLE public.flyway_schema_history (
 
 
 --
+-- Name: foreldreansvar; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.foreldreansvar (
+    foresatt_ident character varying(30) NOT NULL,
+    barn_ident character varying(30) NOT NULL
+);
+
+
+--
 -- Name: gruppe_aktiviter; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -654,13 +642,6 @@ CREATE TABLE public.ytelsesvedtak (
 
 
 --
--- Name: bruker_data_barn id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.bruker_data_barn ALTER COLUMN id SET DEFAULT nextval('public.bruker_data_barn_id_seq'::regclass);
-
-
---
 -- Name: enslige_forsorgere_aktivitet_type id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -717,7 +698,7 @@ ALTER TABLE ONLY public.bruker_cv
 --
 
 ALTER TABLE ONLY public.bruker_data_barn
-    ADD CONSTRAINT bruker_data_barn_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT bruker_data_barn_pkey PRIMARY KEY (barn_ident);
 
 
 --
@@ -822,6 +803,14 @@ ALTER TABLE ONLY public.enslige_forsorgere_vedtaksresultat_type
 
 ALTER TABLE ONLY public.flyway_schema_history
     ADD CONSTRAINT flyway_schema_history_pk PRIMARY KEY (installed_rank);
+
+
+--
+-- Name: foreldreansvar foreldreansvar_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.foreldreansvar
+    ADD CONSTRAINT foreldreansvar_pkey PRIMARY KEY (foresatt_ident, barn_ident);
 
 
 --
@@ -994,13 +983,6 @@ CREATE INDEX flyway_schema_history_s_idx ON public.flyway_schema_history USING b
 
 
 --
--- Name: idx_bruker_data_barn_foresatt_ident; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_bruker_data_barn_foresatt_ident ON public.bruker_data_barn USING btree (foresatt_ident);
-
-
---
 -- Name: idx_bruker_identer_person; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1119,19 +1101,27 @@ ALTER TABLE ONLY public.enslige_forsorgere
 
 
 --
+-- Name: foreldreansvar fk_barn_ident; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.foreldreansvar
+    ADD CONSTRAINT fk_barn_ident FOREIGN KEY (barn_ident) REFERENCES public.bruker_data_barn(barn_ident) ON UPDATE CASCADE;
+
+
+--
+-- Name: foreldreansvar fk_foresatt_ident; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.foreldreansvar
+    ADD CONSTRAINT fk_foresatt_ident FOREIGN KEY (foresatt_ident) REFERENCES public.bruker_data(freg_ident) ON DELETE CASCADE;
+
+
+--
 -- Name: bruker_statsborgerskap fk_freg_ident; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.bruker_statsborgerskap
     ADD CONSTRAINT fk_freg_ident FOREIGN KEY (freg_ident) REFERENCES public.bruker_data(freg_ident) ON DELETE CASCADE;
-
-
---
--- Name: bruker_data_barn fk_freg_ident; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.bruker_data_barn
-    ADD CONSTRAINT fk_freg_ident FOREIGN KEY (foresatt_ident) REFERENCES public.bruker_data(freg_ident) ON DELETE CASCADE;
 
 
 --

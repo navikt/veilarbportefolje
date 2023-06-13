@@ -75,6 +75,13 @@ query($ident: ID!) {
         ...metadataDetails
       }
     }
+    foreldreansvar {
+      ansvarssubjekt
+
+      metadata {
+        ...metadataDetails
+      }
+    }
   }
 }
 
