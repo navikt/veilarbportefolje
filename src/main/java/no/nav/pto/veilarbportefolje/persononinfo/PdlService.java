@@ -50,7 +50,6 @@ public class PdlService {
         barnUnder18AarService.oppdaterEndringPaBarn(fnrBarn, barnData);
     }
 
-    @Transactional
     public void lagreBrukerData(Fnr fnrPerson, PDLPerson personData) {
         pdlPersonRepository.upsertPerson(fnrPerson, personData);
 

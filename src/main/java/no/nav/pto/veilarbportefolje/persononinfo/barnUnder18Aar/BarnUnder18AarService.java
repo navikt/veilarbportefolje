@@ -55,13 +55,12 @@ public class BarnUnder18AarService {
         List<Fnr> barnFnrFraPdl = barnFraPdl.stream().map(BarnUnder18Aar::getFnr).toList();
 
         lagredeBarn.forEach(barnFnr -> {
-                    if (!barnFnrFraPdl.contains(barnFnr)) {
-                        barnUnder18AarRepository.slettForeldreansvar(foresattIdent, barnFnr);
-                        slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnr);
-                        secureLog.warn(String.format("Barn fjernet fra PDL for foreldre %s og barn %s", foresattIdent, barnFnr));
-                    }
-                }
-        );
+            if (!barnFnrFraPdl.contains(barnFnr)) {
+                barnUnder18AarRepository.slettForeldreansvar(foresattIdent, barnFnr);
+                slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnr);
+                secureLog.warn(String.format("Barn fjernet fra PDL for foreldre %s og barn %s", foresattIdent, barnFnr));
+            }
+        });
 
         barnFraPdl.forEach(barnUnder18Aar -> {
             if (erUnder18Aar(barnUnder18Aar.getFodselsdato())) {
