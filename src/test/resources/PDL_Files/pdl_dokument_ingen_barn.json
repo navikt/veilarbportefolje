@@ -1,0 +1,145 @@
+{
+    "hentPerson": {
+      "navn": [
+        {
+          "fornavn": "Dogmatisk",
+          "mellomnavn": null,
+          "etternavn": "Budeie",
+          "metadata": {
+            "master": "FREG",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:52"
+              }
+            ]
+          }
+        }
+      ],
+      "foedsel": [
+        {
+          "foedselsdato": "1991-12-30",
+          "foedeland": "UKR",
+          "metadata": {
+            "master": "FREG",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:52"
+              }
+            ]
+          }
+        }
+      ],
+      "kjoenn": [
+        {
+          "kjoenn": "KVINNE",
+          "metadata": {
+            "master": "FREG",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:52"
+              }
+            ]
+          }
+        }
+      ],
+      "doedsfall": [],
+      "statsborgerskap": [
+        {
+          "land": "UKR",
+          "gyldigFraOgMed": "1991-12-30",
+          "gyldigTilOgMed": null,
+          "metadata": {
+            "master": "FREG",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:53"
+              }
+            ]
+          }
+        },
+        {
+          "land": "UKR",
+          "gyldigFraOgMed": "1993-09-08",
+          "gyldigTilOgMed": null,
+          "metadata": {
+            "master": "FREG",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:53"
+              }
+            ]
+          }
+        }
+      ],
+      "bostedsadresse": [
+        {
+          "metadata": {
+            "master": "FREG",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:53"
+              }
+            ]
+          }
+        }
+      ],
+      "tilrettelagtKommunikasjon": [
+        {
+          "talespraaktolk": {
+            "spraak": "UK"
+          },
+          "tegnspraaktolk": {
+            "spraak": ""
+          },
+          "metadata": {
+            "master": "PDL",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:53"
+              }
+            ]
+          }
+        }
+      ],
+      "adressebeskyttelse": [
+        {
+          "gradering": "FORTROLIG",
+          "metadata": {
+            "master": "PDL",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:53"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "hentIdenter": {
+      "identer": [
+        {
+          "ident": "12345678901",
+          "historisk": false,
+          "gruppe": "FOLKEREGISTERIDENT"
+        },
+        {
+          "ident": "12345678911",
+          "historisk": false,
+          "gruppe": "NPID"
+        },
+        {
+          "ident": "1234567890123",
+          "historisk": false,
+          "gruppe": "AKTORID"
+        }
+      ]
+    }
+  }

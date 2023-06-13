@@ -35,14 +35,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class BarnUnder18ArPdlServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
-    private final String pdlIdentResponsFraFil = readFileAsJsonString("/identer_pdl.json", getClass());
-    private final String pdlPersonResponsFraFil = readFileAsJsonString("/person_pdl.json", getClass());
+    private final String pdlIdentResponsFraFil = readFileAsJsonString("/PDL_Files/identer_pdl.json", getClass());
+    private final String pdlPersonResponsFraFil = readFileAsJsonString("/PDL_Files/person_pdl.json", getClass());
 
-    private final String pdlPersonMed3BarnResponsFraFil = readFileAsJsonString("/person_pdl_3barn.json", getClass());
-    private final String pdlPersonMed2BarnResponsFraFil = readFileAsJsonString("/person_pdl_2barn.json", getClass());
-    private final String pdlPersonBarn1ResponsFraFil = readFileAsJsonString("/person_barn_pdl.json", getClass());
-    private final String pdlPersonBarn2ResponsFraFil = readFileAsJsonString("/person_barn2_pdl.json", getClass());
-    private final String pdlPersonBarn3ResponsFraFil = readFileAsJsonString("/person_barn3_pdl.json", getClass());
+    private final String pdlPersonMed3BarnResponsFraFil = readFileAsJsonString("/PDL_Files/person_pdl_3barn.json", getClass());
+    private final String pdlPersonMed2BarnResponsFraFil = readFileAsJsonString("/PDL_Files/person_pdl_2barn.json", getClass());
+    private final String pdlPersonBarn1ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
+    private final String pdlPersonBarn2ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn2_pdl.json", getClass());
+    private final String pdlPersonBarn3ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn3_pdl.json", getClass());
     private final JdbcTemplate db;
     private final PdlPersonRepository pdlPersonRepository;
 
@@ -59,7 +59,7 @@ public class BarnUnder18ArPdlServiceTest {
 
     @BeforeEach
     public void setup() {
-        db.update("truncate bruker_identer cascade ");
+        db.update("truncate bruker_identer");
         server.stubFor(
                 post(anyUrl())
                         .inScenario("PDL test")

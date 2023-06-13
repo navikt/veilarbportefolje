@@ -251,7 +251,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     private PDLPerson mockPdlPersonRespons(Fnr fnr) {
 
-        String file = readFileAsJsonString("/person_pdl.json", getClass());
+        String file = readFileAsJsonString("/PDL_Files/person_pdl.json", getClass());
         PDLPerson pdlPerson = PDLPerson.genererFraApiRespons(
                 JsonUtils.fromJson(file, PdlPersonResponse.class).getData().getHentPerson()
         );
@@ -263,7 +263,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     private PDLPersonBarn mockPdlPersonBarnRespons(Fnr fnr) {
 
-        String file = readFileAsJsonString("/person_barn_pdl.json", getClass());
+        String file = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
         PDLPersonBarn pdlPersonBarn = PDLPersonBarn.genererFraApiRespons(
                 JsonUtils.fromJson(file, PdlBarnResponse.class).getData().getHentPerson()
         );

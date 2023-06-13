@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.*;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
@@ -34,7 +35,7 @@ import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class BarnUnder18AarKafkaTest {
+public class BarnUnder18AarMisterForeldreansvar {
 
     private final ObjectMapper mapper = new ObjectMapper();
     private BarnUnder18AarRepository barnUnder18AarRepository;
@@ -56,7 +57,7 @@ public class BarnUnder18AarKafkaTest {
     @MockBean
     private OpensearchIndexerV2 opensearchIndexerV2;
     private final String pdlDokumentAsString = readFileAsJsonString("/PDL_Files/pdl_dokument.json", getClass());
-    private final String pdlDokumentBarn1MedDiskresjonskodeAsString = readFileAsJsonString("/PDL_Files/pdl_dokument_barn1_med_diskresjonskode.json", getClass());
+    private final String pdlDokumentIngenBarn = readFileAsJsonString("/PDL_Files/pdl_dokument_ingen_barn.json", getClass());
     private final String pdlPersonBarn1ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
     private final String pdlPersonBarn2ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn2_pdl.json", getClass());
     private final String pdlPersonBarn3ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn3_pdl.json", getClass());
@@ -65,9 +66,9 @@ public class BarnUnder18AarKafkaTest {
     private WireMockServer server = new WireMockServer();
 
 
-    public BarnUnder18AarKafkaTest() {
+    public BarnUnder18AarMisterForeldreansvar() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
-        barnUnder18AarRepository = new BarnUnder18AarRepository(db,db);
+        barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
         barnUnder18AarService = new BarnUnder18AarService(this.barnUnder18AarRepository);
         pdlIdentRepository = new PdlIdentRepository(db);
         pdlPersonRepository = new PdlPersonRepository(db, db);
@@ -118,19 +119,19 @@ public class BarnUnder18AarKafkaTest {
                 this.barnUnder18AarService,
                 opensearchIndexer,
                 opensearchIndexerV2
-                );
+        );
     }
 
 
     @AfterEach
-    public void stopServer(){
+    public void stopServer() {
         server.stop();
     }
 
     @Test
     public void testHentBarnUnder18Aar() throws JsonProcessingException {
         var pdlDokForelder = mapper.readValue(pdlDokumentAsString, PdlDokument.class);
-        var pdlDokBarn1MedDiskresjonskode = mapper.readValue(pdlDokumentBarn1MedDiskresjonskodeAsString, PdlDokument.class);
+        var pdlDokForelderIngenBarn = mapper.readValue(pdlDokumentIngenBarn, PdlDokument.class);
 
         List<PDLIdent> pdlIdenter = pdlDokForelder.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
@@ -142,10 +143,10 @@ public class BarnUnder18AarKafkaTest {
         pdlIdentRepository.upsertIdenter(pdlDokForelder.getHentIdenter().getIdenter());
 
         pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(pdlDokForelder);
-        String diskresjonskode_barn1 = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrForelder)).get(fnrForelder).get(0).getDiskresjonskode();
-        pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(pdlDokBarn1MedDiskresjonskode);
-        String diskresjonskode_barn1_etter_update = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrForelder)).get(fnrForelder).get(0).getDiskresjonskode();
-        Assertions.assertTrue(diskresjonskode_barn1 == null);
-        Assertions.assertTrue(Objects.equals(diskresjonskode_barn1_etter_update, "7"));
+        List<Fnr> barnFoer  = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnrForelder));
+        pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(pdlDokForelderIngenBarn);
+        List<Fnr> barnEtter = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnrForelder));
+        Assertions.assertTrue(barnFoer.size() == 3);
+        Assertions.assertTrue(barnEtter.isEmpty());
     }
 }

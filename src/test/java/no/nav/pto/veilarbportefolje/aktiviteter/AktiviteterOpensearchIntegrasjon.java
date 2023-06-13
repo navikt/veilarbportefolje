@@ -57,7 +57,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     public void resetDb() {
         jdbcTemplatePostgres.update("TRUNCATE aktiviteter");
         jdbcTemplatePostgres.update("TRUNCATE oppfolgingsbruker_arena_v2");
-        jdbcTemplatePostgres.update("TRUNCATE bruker_identer cascade");
+        jdbcTemplatePostgres.update("TRUNCATE bruker_identer");
         jdbcTemplatePostgres.update("TRUNCATE oppfolging_data");
     }
 
