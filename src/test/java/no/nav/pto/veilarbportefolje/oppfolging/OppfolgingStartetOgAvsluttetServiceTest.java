@@ -8,10 +8,12 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlBarnResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakApiDto;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
@@ -40,6 +42,7 @@ import static no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe.STANDARD_I
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -79,6 +82,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -94,12 +98,21 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         mockPdlIdenterRespons(aktorId, fnr);
         PDLPerson pdlPerson = mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
+
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
         List<String> lagredeIdenter = pdlIdentRepository.hentIdenterForBruker(aktorId.get()).identer();
         assertThat(lagredeIdenter).containsExactlyInAnyOrderElementsOf(List.of(aktorId.get(), fnr.get()));
-        assertThat(pdlPersonRepository.hentPerson(fnr)).isEqualTo(pdlPerson);
+        PDLPerson pdlPersonFraDB = pdlPersonRepository.hentPerson(fnr);
+        assertThat(pdlPersonFraDB.getFoedsel()).isEqualTo(pdlPerson.getFoedsel());
+        assertThat(pdlPersonFraDB.getFornavn()).isEqualTo(pdlPerson.getFornavn());
+        assertThat(pdlPersonFraDB.getEtternavn()).isEqualTo(pdlPerson.getEtternavn());
+        assertThat(pdlPersonFraDB.getBydelsnummer()).isEqualTo(pdlPerson.getBydelsnummer());
+        assertThat(pdlPersonFraDB.getDiskresjonskode()).isEqualTo(pdlPerson.getDiskresjonskode());
+        assertThat(pdlPersonFraDB.getSikkerhetstiltak()).isEqualTo(pdlPerson.getSikkerhetstiltak());
+        assertThat(pdlPersonFraDB.getStatsborgerskap()).isEqualTo(pdlPerson.getStatsborgerskap());
     }
 
     @Test
@@ -109,6 +122,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
 
         Siste14aVedtakApiDto siste14aVedtakApiDto = new Siste14aVedtakApiDto(
                 Innsatsgruppe.SITUASJONSBESTEMT_INNSATS,
@@ -184,6 +198,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
 
         ZonedDateTime sluttDato = tilfeldigDatoTilbakeITid();
 
@@ -207,6 +222,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
 
         SisteOppfolgingsperiodeV1 periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigDatoTilbakeITid());
 
@@ -235,7 +251,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     private PDLPerson mockPdlPersonRespons(Fnr fnr) {
 
-        String file = readFileAsJsonString("/person_pdl.json", getClass());
+        String file = readFileAsJsonString("/PDL_Files/person_pdl.json", getClass());
         PDLPerson pdlPerson = PDLPerson.genererFraApiRespons(
                 JsonUtils.fromJson(file, PdlPersonResponse.class).getData().getHentPerson()
         );
@@ -243,5 +259,17 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         when(pdlPortefoljeClient.hentBrukerDataFraPdl(fnr)).thenReturn(pdlPerson);
 
         return pdlPerson;
+    }
+
+    private PDLPersonBarn mockPdlPersonBarnRespons(Fnr fnr) {
+
+        String file = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
+        PDLPersonBarn pdlPersonBarn = PDLPersonBarn.genererFraApiRespons(
+                JsonUtils.fromJson(file, PdlBarnResponse.class).getData().getHentPerson()
+        );
+
+        when(pdlPortefoljeClient.hentBrukerBarnDataFraPdl(any())).thenReturn(pdlPersonBarn);
+
+        return pdlPersonBarn;
     }
 }

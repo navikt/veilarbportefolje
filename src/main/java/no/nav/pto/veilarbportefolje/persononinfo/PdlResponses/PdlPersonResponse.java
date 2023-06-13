@@ -1,10 +1,11 @@
 package no.nav.pto.veilarbportefolje.persononinfo.PdlResponses;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
 
 import java.util.List;
 
@@ -26,8 +27,9 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private List<Statsborgerskap> statsborgerskap;
             private List<Bostedsadresse> bostedsadresse;
             private List<TilrettelagtKommunikasjon> tilrettelagtKommunikasjon;
-            private List<Adressebeskyttelse> adressebeskyttelse;
+            private List<AdressebeskyttelseDto> adressebeskyttelse;
             private List<Sikkerhetstiltak> sikkerhetstiltak;
+            private List<Foreldreansvar> foreldreansvar;
         }
 
         @Data
@@ -68,7 +70,7 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private String gyldigTilOgMed;
             private Metadata metadata;
         }
-        
+
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class TilrettelagtKommunikasjon {
@@ -90,13 +92,6 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private Vegadresse vegadresse;
             private UtenlandskAdresse utenlandskAdresse;
             private UkjentBosted ukjentBosted;
-            private Metadata metadata;
-        }
-
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Adressebeskyttelse {
-            private String gradering;
             private Metadata metadata;
         }
 
@@ -134,39 +129,12 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
             private String spraak;
         }
 
-        @Data
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Metadata {
-            private boolean historisk;
-            private PdlMaster master;
-            private List<Endringer> endringer;
-        }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Endringer {
-            private String registrert;
-        }
-    }
-
-    public enum PdlMaster {
-        PDL(1),
-        FREG(2),
-        UVIST(3);
-
-        public final int prioritet;
-
-        PdlMaster(int i) {
-            prioritet = i;
-        }
-
-        @JsonCreator
-        public static PdlMaster fromString(String string) {
-            try {
-                return PdlMaster.valueOf(string);
-            } catch (IllegalArgumentException e) {
-                return UVIST;
-            }
+        public static class Foreldreansvar {
+            private String ansvarssubjekt;
+            private Metadata metadata;
         }
     }
 }

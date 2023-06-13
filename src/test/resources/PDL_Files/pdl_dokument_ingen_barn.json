@@ -1,5 +1,4 @@
 {
-  "data": {
     "hentPerson": {
       "navn": [
         {
@@ -122,33 +121,25 @@
             ]
           }
         }
-      ],
-      "sikkerhetstiltak": [
+      ]
+    },
+    "hentIdenter": {
+      "identer": [
         {
-          "tiltakstype": "FYUS",
-          "beskrivelse": "Fysisk utestengelse",
-          "kontaktperson": {
-            "personident": "Z99",
-            "enhet": "0106"
-          },
-          "gyldigFraOgMed": "2022-05-12",
-          "gyldigTilOgMed": "2022-08-05",
-          "metadata": {
-            "endringer": [
-              {
-                "kilde": "Dolly",
-                "registrert": "2022-05-13T11:36:24",
-                "registrertAv": "srvdolly",
-                "systemkilde": "srvdolly",
-                "type": "OPPRETT"
-              }
-            ],
-            "master": "PDL",
-            "opplysningsId": "efc0a89a-0d75-4f38-9bb9-94dac9388618",
-            "historisk": false
-          }
+          "ident": "12345678901",
+          "historisk": false,
+          "gruppe": "FOLKEREGISTERIDENT"
+        },
+        {
+          "ident": "12345678911",
+          "historisk": false,
+          "gruppe": "NPID"
+        },
+        {
+          "ident": "1234567890123",
+          "historisk": false,
+          "gruppe": "AKTORID"
         }
       ]
     }
   }
-}

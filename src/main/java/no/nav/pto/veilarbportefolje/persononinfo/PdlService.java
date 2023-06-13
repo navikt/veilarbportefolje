@@ -5,11 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18Aar;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +25,8 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class PdlService {
     private final PdlIdentRepository pdlIdentRepository;
     private final PdlPersonRepository pdlPersonRepository;
+
+    private final BarnUnder18AarService barnUnder18AarService;
     private final PdlPortefoljeClient pdlClient;
 
     public void hentOgLagrePdlData(AktorId aktorId) {
@@ -30,12 +36,41 @@ public class PdlService {
         hentOgLagreBrukerData(fnr);
     }
 
-    public void hentOgLagreBrukerData(Fnr fnr) {
-        PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnr);
-        pdlPersonRepository.upsertPerson(fnr, personData);
+    public void hentOgLagreBrukerData(Fnr fnrPerson) {
+        try {
+            PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnrPerson);
+            lagreBrukerData(fnrPerson, personData);
+        } catch (Exception e) {
+            secureLog.error("Kan ikke lagre bruker data for person: " + fnrPerson, e);
+        }
     }
 
-    private List<PDLIdent> hentOgLagreIdenter(AktorId aktorId) {
+    public void hentOgLagreBrukerDataPaBarn(Fnr fnrBarn) {
+        PDLPersonBarn barnData = pdlClient.hentBrukerBarnDataFraPdl(fnrBarn);
+        barnUnder18AarService.oppdaterEndringPaBarn(fnrBarn, barnData);
+    }
+
+    public void lagreBrukerData(Fnr fnrPerson, PDLPerson personData) {
+        pdlPersonRepository.upsertPerson(fnrPerson, personData);
+
+        List<BarnUnder18Aar> barn = new ArrayList<>();
+        if (personData.getForeldreansvar() != null && !personData.getForeldreansvar().isEmpty()) {
+            personData.getForeldreansvar().forEach(barnFnr -> {
+                PDLPersonBarn barnPdl = pdlClient.hentBrukerBarnDataFraPdl(barnFnr);
+
+                if (barnPdl.isErIlive()) {
+                    barn.add(new BarnUnder18Aar(barnFnr, barnPdl.getFodselsdato(), barnPdl.getDiskresjonskode()));
+                }
+            });
+        }
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, barn);
+    }
+
+    public void lagreBrukerDataPaBarn(Fnr fnrBarn, PDLPersonBarn pdlPersonBarn) {
+        barnUnder18AarService.oppdaterEndringPaBarn(fnrBarn, pdlPersonBarn);
+    }
+
+    public List<PDLIdent> hentOgLagreIdenter(AktorId aktorId) {
         secureLog.info("Oppdaterer ident mapping for aktor: {}", aktorId);
 
         List<PDLIdent> identer = pdlClient.hentIdenterFraPdl(aktorId);
@@ -65,8 +100,14 @@ public class PdlService {
             return;
         }
         secureLog.info("Sletter identer og brukerdata for aktor: {}", aktorId);
-        pdlPersonRepository.slettLagretBrukerData(fnrs);
+        slettPDLBrukerData(fnrs);
         pdlIdentRepository.slettLagretePerson(lokalIdent);
+    }
+
+    public void slettPDLBrukerData(List<Fnr> fnrs) {
+        List<Fnr> barnFnrsForForeldre = barnUnder18AarService.hentBarnFnrsForForeldre(fnrs);
+        pdlPersonRepository.slettLagretBrukerData(fnrs);
+        barnUnder18AarService.slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnrsForForeldre);
     }
 
     public static AktorId hentAktivAktor(List<PDLIdent> identer) {
