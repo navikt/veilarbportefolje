@@ -114,7 +114,7 @@ public class Bruker {
         String diskresjonskode = bruker.getDiskresjonskode();
         LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(bruker.getOppfolging_startdato());
         boolean trengerVurdering = bruker.isTrenger_vurdering();
-        Boolean harUtelandsAddresse = bruker.getUtenlandskAdresse() != null;
+        boolean harUtelandsAddresse = bruker.getUtenlandskAdresse() != null;
 
         return new Bruker()
                 .setNyForEnhet(ufordelt)
@@ -194,7 +194,7 @@ public class Bruker {
                 .setHarUkjentBosted(bruker.isHarUkjentBosted())
                 .setBostedSistOppdatert(bruker.getBostedSistOppdatert())
                 .setAvvik14aVedtak(bruker.getAvvik14aVedtak())
-                .setBarnUnder18AarData((List<BarnUnder18AarData>) bruker.getBarn_under_18_aar())
+                .setBarnUnder18AarData(bruker.getBarn_under_18_aar())
                 .setEnsligeForsorgereOvergangsstonad(bruker.getEnslige_forsorgere_overgangsstonad());
     }
 

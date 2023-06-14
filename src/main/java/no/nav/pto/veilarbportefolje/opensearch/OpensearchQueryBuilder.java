@@ -125,7 +125,8 @@ public class OpensearchQueryBuilder {
             barnUnder18aarQueryBuilder
                     .must(boolQuery()
                             .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                            .should(matchQuery("barn_under_18_aar.diskresjonskode", "6")))
+                            .should(matchQuery("barn_under_18_aar.diskresjonskode", "6"))
+                            .should(matchQuery("barn_under_18_aar.diskresjonskode", "19")))
                     .must(rangeQuery("barn_under_18_aar.alder").gte(fraAlder).lte(tilAlder));
         } else if (tilgangTil7) {
             barnUnder18aarQueryBuilder
@@ -149,7 +150,8 @@ public class OpensearchQueryBuilder {
         } else if (tilgangTilKun6) {
              barnUnder18aarQueryBuilder.must(boolQuery()
                      .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "6")));
+                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "6"))
+                     .should(matchQuery("barn_under_18_aar.diskresjonskode", "19")));
         } else if (tilgangTil7) {
              barnUnder18aarQueryBuilder.must(boolQuery()
                      .should(matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
@@ -384,8 +386,7 @@ public class OpensearchQueryBuilder {
         }
     }
 
-    static List<BoolQueryBuilder> byggAktivitetFilterQuery(Filtervalg filtervalg, BoolQueryBuilder
-            queryBuilder) {
+    static List<BoolQueryBuilder> byggAktivitetFilterQuery(Filtervalg filtervalg, BoolQueryBuilder queryBuilder) {
         return filtervalg.aktiviteter.entrySet().stream()
                 .map(
                         entry -> {
@@ -458,9 +459,7 @@ public class OpensearchQueryBuilder {
         return searchSourceBuilder;
     }
 
-
-    static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg
-            filtervalg) {
+    static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         if (filtervalg.sisteEndringKategori.size() == 0) {
             return;
         }
@@ -493,8 +492,7 @@ public class OpensearchQueryBuilder {
         searchSourceBuilder.sort("hovedStatsborgerskap.gyldigFra", order);
     }
 
-    static void sorterTolkeSpraak(Filtervalg filtervalg, SearchSourceBuilder
-            searchSourceBuilder, SortOrder order) {
+    static void sorterTolkeSpraak(Filtervalg filtervalg, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
         if (filtervalg.harTalespraaktolkFilter()) {
             searchSourceBuilder.sort("talespraaktolk", order);
         }
@@ -503,8 +501,7 @@ public class OpensearchQueryBuilder {
         }
     }
 
-    static SearchSourceBuilder sorterPaaNyForEnhet(SearchSourceBuilder
-                                                           builder, List<String> veilederePaaEnhet) {
+    static SearchSourceBuilder sorterPaaNyForEnhet(SearchSourceBuilder builder, List<String> veilederePaaEnhet) {
         Script script = new Script(byggVeilederPaaEnhetScript(veilederePaaEnhet));
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, STRING);
         builder.sort(scriptBuilder);
@@ -519,10 +516,19 @@ public class OpensearchQueryBuilder {
         return builder;
     }
 
-    static void sorterAapVurderingsfrist(SearchSourceBuilder builder, SortOrder order, Filtervalg
-            filtervalg) {
+    static void sorterAapVurderingsfrist(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         String expression = "";
-        if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
+        if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP)) {
+            expression = """
+                    if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty) {
+                        return doc['utlopsdato'].value.toInstant().toEpochMilli();
+                    } else if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
+                        return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 0;
+                    }
+                    """;
+        } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
             expression = """
                     if (doc.containsKey('aapmaxtiduke') && !doc['aapmaxtiduke'].empty) {
                         return doc['aapmaxtiduke'].value;
@@ -551,8 +557,7 @@ public class OpensearchQueryBuilder {
         }
     }
 
-    static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder
-            builder, SortOrder order) {
+    static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder builder, SortOrder order) {
         List<String> sorterings_aktiviter;
         if (filtervalg.harAktiviteterForenklet()) {
             sorterings_aktiviter = filtervalg.aktiviteterForenklet;
@@ -575,8 +580,7 @@ public class OpensearchQueryBuilder {
         return builder;
     }
 
-    static QueryBuilder leggTilFerdigFilter(Brukerstatus
-                                                    brukerStatus, List<String> veiledereMedTilgangTilEnhet, boolean erVedtakstottePilotPa) {
+    static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet, boolean erVedtakstottePilotPa) {
         QueryBuilder queryBuilder;
         switch (brukerStatus) {
             case UFORDELTE_BRUKERE:
@@ -662,8 +666,7 @@ public class OpensearchQueryBuilder {
         return boolQuery;
     }
 
-    static <T> BoolQueryBuilder
-    byggManuellFilter(List<T> filtervalgsListe, BoolQueryBuilder queryBuilder, String matchQueryString) {
+    static <T> BoolQueryBuilder byggManuellFilter(List<T> filtervalgsListe, BoolQueryBuilder queryBuilder, String matchQueryString) {
         if (!filtervalgsListe.isEmpty()) {
             BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
             filtervalgsListe.forEach(filtervalg -> boolQueryBuilder.should(matchQuery(matchQueryString, filtervalg)));
@@ -710,7 +713,6 @@ public class OpensearchQueryBuilder {
                             .lte(format("now-%sy/d", fraAlder))
                             .gt(format("now-%sy-1d", tilAlder + 1))
             );
-
         }
     }
 
@@ -743,8 +745,7 @@ public class OpensearchQueryBuilder {
                 );
     }
 
-    static SearchSourceBuilder byggStatustallQuery(BoolQueryBuilder
-                                                           filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+    static SearchSourceBuilder byggStatustallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
         FiltersAggregator.KeyedFilter[] filtre = new FiltersAggregator.KeyedFilter[]{
                 erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
                 mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
@@ -773,8 +774,7 @@ public class OpensearchQueryBuilder {
                 .aggregation(filters("statustall", filtre));
     }
 
-    private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder
-            queryBuilder) {
+    private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
         if (sisteEndringKategori != null && sisteEndringKategori.size() > 1) {
             log.error("Det ble filtrert på flere ulike siste endringer (ulest): {}", sisteEndringKategori.size());
             throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
@@ -791,8 +791,7 @@ public class OpensearchQueryBuilder {
         queryBuilder.must(orQuery);
     }
 
-    private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder
-            queryBuilder) {
+    private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
         if (sisteEndringKategori.size() == 0) {
             return;
         }
@@ -803,8 +802,7 @@ public class OpensearchQueryBuilder {
         queryBuilder.must(existsQuery("siste_endringer." + sisteEndringKategori.get(0)));
     }
 
-    private static void defaultSort(String sortField, SearchSourceBuilder
-            searchSourceBuilder, SortOrder order) {
+    private static void defaultSort(String sortField, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
         if (ValideringsRegler.sortFields.contains(sortField)) {
             searchSourceBuilder.sort(sortField, order);
         } else {
@@ -860,7 +858,7 @@ public class OpensearchQueryBuilder {
             String expression6 = """
                     int count = 0; 
                     for (item in params._source.barn_under_18_aar) { 
-                        if ((item.diskresjonskode == null) || (item.diskresjonskode == '6')){ count = count + 1; }
+                        if ((item.diskresjonskode == null) || (item.diskresjonskode == '6') || (item.diskresjonskode == '19')){ count = count + 1; }
                     } 
                     return count;  
                     """;
@@ -906,8 +904,7 @@ public class OpensearchQueryBuilder {
         builder.sort("enslige_forsorgere_overgangsstonad.vedtaksPeriodetype", order);
     }
 
-    private static void sorterEnsligeForsorgereAktivitetsPlikt(SearchSourceBuilder builder, SortOrder
-            order) {
+    private static void sorterEnsligeForsorgereAktivitetsPlikt(SearchSourceBuilder builder, SortOrder order) {
         builder.sort("enslige_forsorgere_overgangsstonad.harAktivitetsplikt", order);
     }
 
@@ -918,8 +915,7 @@ public class OpensearchQueryBuilder {
                 .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
     }
 
-    private static FiltersAggregator.KeyedFilter trengerVurderingFilter(BoolQueryBuilder
-                                                                                filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
+    private static FiltersAggregator.KeyedFilter trengerVurderingFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
                 .must(filtrereVeilederOgEnhet)
                 .must(termQuery("trenger_vurdering", true));
@@ -931,8 +927,7 @@ public class OpensearchQueryBuilder {
         return new FiltersAggregator.KeyedFilter("trengerVurdering", boolQueryBuilder);
     }
 
-    private static FiltersAggregator.KeyedFilter erSykemeldtMedArbeidsgiverFilter(BoolQueryBuilder
-                                                                                          filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
+    private static FiltersAggregator.KeyedFilter erSykemeldtMedArbeidsgiverFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
                 .must(filtrereVeilederOgEnhet)
                 .must(termQuery("er_sykmeldt_med_arbeidsgiver", true));
@@ -944,8 +939,7 @@ public class OpensearchQueryBuilder {
         return new FiltersAggregator.KeyedFilter("erSykmeldtMedArbeidsgiver", boolQueryBuilder);
     }
 
-    private static FiltersAggregator.KeyedFilter alleMoterMedNavIdag(BoolQueryBuilder
-                                                                             filtrereVeilederOgEnhet) {
+    private static FiltersAggregator.KeyedFilter alleMoterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
         LocalDate localDate = LocalDate.now();
         return new FiltersAggregator.KeyedFilter(
                 "alleMoterMedNAVIdag",
@@ -957,8 +951,7 @@ public class OpensearchQueryBuilder {
         );
     }
 
-    private static FiltersAggregator.KeyedFilter moterMedNavIdag(BoolQueryBuilder
-                                                                         filtrereVeilederOgEnhet) {
+    private static FiltersAggregator.KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
         return new FiltersAggregator.KeyedFilter(
                 "moterMedNAVIdag",
                 boolQuery()
@@ -967,8 +960,7 @@ public class OpensearchQueryBuilder {
         );
     }
 
-    private static FiltersAggregator.KeyedFilter ufordelteBrukere(BoolQueryBuilder
-                                                                          filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
+    private static FiltersAggregator.KeyedFilter ufordelteBrukere(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
         return new FiltersAggregator.KeyedFilter(
                 "ufordelteBrukere",
                 boolQuery()
@@ -985,8 +977,7 @@ public class OpensearchQueryBuilder {
         );
     }
 
-    private static FiltersAggregator.KeyedFilter mustBeTrueFilter(BoolQueryBuilder
-                                                                          filtrereVeilederOgEnhet, String minArbeidsliste, String arbeidsliste_aktiv) {
+    private static FiltersAggregator.KeyedFilter mustBeTrueFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String minArbeidsliste, String arbeidsliste_aktiv) {
         return new FiltersAggregator.KeyedFilter(
                 minArbeidsliste,
                 boolQuery()
@@ -996,8 +987,7 @@ public class OpensearchQueryBuilder {
         );
     }
 
-    private static FiltersAggregator.KeyedFilter inaktiveBrukere(BoolQueryBuilder
-                                                                         filtrereVeilederOgEnhet) {
+    private static FiltersAggregator.KeyedFilter inaktiveBrukere(BoolQueryBuilder filtrereVeilederOgEnhet) {
         return new FiltersAggregator.KeyedFilter(
                 "inaktiveBrukere",
                 boolQuery()
@@ -1007,8 +997,7 @@ public class OpensearchQueryBuilder {
         );
     }
 
-    private static FiltersAggregator.KeyedFilter mustMatchQuery(BoolQueryBuilder
-                                                                        filtrereVeilederOgEnhet, String key, String matchQuery, String value) {
+    private static FiltersAggregator.KeyedFilter mustMatchQuery(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String matchQuery, String value) {
         return new FiltersAggregator.KeyedFilter(
                 key,
                 boolQuery()
@@ -1017,8 +1006,7 @@ public class OpensearchQueryBuilder {
         );
     }
 
-    private static FiltersAggregator.KeyedFilter ikkeIavtaltAktivitet(BoolQueryBuilder
-                                                                              filtrereVeilederOgEnhet) {
+    private static FiltersAggregator.KeyedFilter ikkeIavtaltAktivitet(BoolQueryBuilder filtrereVeilederOgEnhet) {
         return new FiltersAggregator.KeyedFilter(
                 "ikkeIavtaltAktivitet",
                 boolQuery()
@@ -1028,8 +1016,7 @@ public class OpensearchQueryBuilder {
         );
     }
 
-    private static FiltersAggregator.KeyedFilter mustExistFilter(BoolQueryBuilder
-                                                                         filtrereVeilederOgEnhet, String key, String value) {
+    private static FiltersAggregator.KeyedFilter mustExistFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String value) {
         return new FiltersAggregator.KeyedFilter(
                 key,
                 boolQuery()

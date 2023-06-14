@@ -94,6 +94,12 @@ public class AuthService {
     }
 
     public Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String veilederIdent) {
+        if (bruker.getBarnUnder18AarData() != null) {
+            bruker.setBarnUnder18AarData(bruker.getBarnUnder18AarData().stream().filter(barnUnder18AarData ->
+                    harVeilederTilgangTilBarn(barnUnder18AarData, veilederIdent)
+            ).toList());
+        }
+
         if (!bruker.erKonfidensiell()) {
             return bruker;
         }
@@ -169,7 +175,7 @@ public class AuthService {
     }
 
     public boolean harVeilederTilgangTilBarn(BarnUnder18AarData barn, String veilederIdent) {
-        if (barn.getDiskresjonskode() != null && barn.getDiskresjonskode().equals(Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode)) {
+        if (barn.getDiskresjonskode() != null && (barn.getDiskresjonskode().equals(Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode) || barn.getDiskresjonskode().equals(Adressebeskyttelse.STRENGT_FORTROLIG_UTLAND.diskresjonskode) )) {
             return harVeilederTilgangTilKode6(NavIdent.of(veilederIdent));
         }
         if (barn.getDiskresjonskode() != null && barn.getDiskresjonskode().equals(Adressebeskyttelse.FORTROLIG.diskresjonskode)) {

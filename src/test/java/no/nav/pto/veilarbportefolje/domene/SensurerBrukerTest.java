@@ -20,7 +20,6 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -136,6 +135,22 @@ public class SensurerBrukerTest {
         assertTrue(filtrertBruker.barnUnder18AarData.size() == 2);
     }
 
+    @Test
+    public void skalIkkeSeKode19Barn() {
+        when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(false);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn(), "X123456");
+        sjekkAtBarnMedKode19ErFjernet(filtrerteBrukere);
+    }
+
+    @Test
+    public void skalSeKode19Barn() {
+        when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(true);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn(), "X123456");
+        sjekkAtBarnMedKode19ErIkkeFjernet(filtrerteBrukere);
+    }
+
 
     private void sjekkAtKonfidensiellDataErVasket(Bruker bruker) {
         assertThat(bruker.getFnr()).isEqualTo("");
@@ -159,27 +174,28 @@ public class SensurerBrukerTest {
     }
 
     private void sjekkAtBarnMedKode7ErFjernet(Bruker bruker) {
-        bruker.getBarnUnder18AarData().forEach(
-                barnUnder18AarData -> {
-                    if (barnUnder18AarData.getDiskresjonskode() != null){
-                        assertTrue(barnUnder18AarData.getDiskresjonskode() != "7");
-                    }
-                }
-        );
-    }
-
-    private void sjekkAtBarnMedKode6IkkeErFjernet(Bruker bruker) {
-        assertTrue(bruker.getBarnUnder18AarData().stream().anyMatch(
-                barnUnder18AarData ->
-                        barnUnder18AarData.getDiskresjonskode().equals("6")));
-    }
-
-    private void sjekkAtBarnMedKode7IkkeErFjernet(Bruker bruker) {
-        assertTrue(bruker.getBarnUnder18AarData().stream().anyMatch(
+        assertTrue(bruker.getBarnUnder18AarData().stream().filter(x -> x.getDiskresjonskode() != null).noneMatch(
                 barnUnder18AarData ->
                         barnUnder18AarData.getDiskresjonskode().equals("7")));
     }
 
+    private void sjekkAtBarnMedKode6IkkeErFjernet(Bruker bruker) {
+        assertTrue(bruker.getBarnUnder18AarData().stream().filter(x -> x.getDiskresjonskode() != null).anyMatch(
+                barnUnder18AarData ->
+                        barnUnder18AarData.getDiskresjonskode().equals("6")));
+    }
+
+    private void sjekkAtBarnMedKode19ErFjernet(Bruker bruker) {
+        assertTrue(bruker.getBarnUnder18AarData().stream().filter(x -> x.getDiskresjonskode() != null).noneMatch(
+                barnUnder18AarData ->
+                        barnUnder18AarData.getDiskresjonskode().equals("19")));
+    }
+
+    private void sjekkAtBarnMedKode19ErIkkeFjernet(Bruker bruker) {
+        assertTrue(bruker.getBarnUnder18AarData().stream().filter(x -> x.getDiskresjonskode() != null).anyMatch(
+                barnUnder18AarData ->
+                        barnUnder18AarData.getDiskresjonskode().equals("19")));
+    }
 
     private Bruker kode6Bruker() {
         return new Bruker()
@@ -230,6 +246,17 @@ public class SensurerBrukerTest {
                         1, "7"
                 )));
     }
+
+    private Bruker brukerMedKode19Barn() {
+        return new Bruker()
+                .setFnr("11111111111")
+                .setBarnUnder18AarData(List.of(
+                        new BarnUnder18AarData(15, "19"),
+                        new BarnUnder18AarData(12, null),
+                        new BarnUnder18AarData(3, null)
+                ));
+    }
+
 
     private Bruker brukerMedKode6og7Barn() {
         return new Bruker()
