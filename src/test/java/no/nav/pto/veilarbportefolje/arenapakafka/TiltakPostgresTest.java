@@ -67,7 +67,7 @@ public class TiltakPostgresTest {
         jdbcTemplatePostgres.update("TRUNCATE " + PostgresTable.BRUKERTILTAK.TABLE_NAME + " CASCADE");
         jdbcTemplatePostgres.update("TRUNCATE " + PostgresTable.TILTAKKODEVERK.TABLE_NAME + " CASCADE");
         jdbcTemplatePostgres.update("TRUNCATE oppfolgingsbruker_arena_v2 ");
-        jdbcTemplatePostgres.update("TRUNCATE bruker_identer ");
+        jdbcTemplatePostgres.update("TRUNCATE bruker_identer");
     }
 
     @Test

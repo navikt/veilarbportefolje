@@ -74,15 +74,15 @@ public class PdlIdentRepositoryTest {
                 new PDLIdent(ident.get(), false, AKTORID),
                 new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT)
         );
-        var historiskOpfolgingStart = new SisteOppfolgingsperiodeV1(null, historiskIdent.get(), ZonedDateTime.now(), null);
-        var nyOpfolgingStart = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), null);
-        var nyOpfolgingAvslutt = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), ZonedDateTime.now());
+        var historiskOppfolgingStart = new SisteOppfolgingsperiodeV1(null, historiskIdent.get(), ZonedDateTime.now(), null);
+        var nyOppfolgingStart = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), null);
+        var nyOppfolgingAvslutt = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), ZonedDateTime.now());
 
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(historiskOpfolgingStart);
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOpfolgingStart);
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(historiskOppfolgingStart);
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOppfolgingStart);
         // Mock PDL respons
         pdlIdentRepository.upsertIdenter(identer);
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOpfolgingAvslutt);
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOppfolgingAvslutt);
 
         var lokaleIdenter = hentLokaleIdenter(historiskIdent);
         assertThat(identer).containsExactlyInAnyOrderElementsOf(lokaleIdenter);

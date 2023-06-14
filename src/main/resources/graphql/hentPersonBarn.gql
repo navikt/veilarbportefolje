@@ -1,0 +1,28 @@
+query($ident: ID!) {
+  hentPerson(ident: $ident) {
+    foedsel {
+      foedselsdato
+      metadata {
+        ...metadataDetails
+      }
+    }
+    adressebeskyttelse {
+      gradering
+
+      metadata {
+        ...metadataDetails
+      }
+    }
+    doedsfall {
+      doedsdato
+    }
+  }
+}
+
+fragment metadataDetails on Metadata {
+  master
+  historisk
+  endringer {
+    registrert
+  }
+}

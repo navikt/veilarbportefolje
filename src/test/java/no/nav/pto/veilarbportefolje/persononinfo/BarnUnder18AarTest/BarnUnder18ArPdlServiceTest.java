@@ -1,18 +1,22 @@
-package no.nav.pto.veilarbportefolje.persononinfo;
+package no.nav.pto.veilarbportefolje.persononinfo.BarnUnder18AarTest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import lombok.SneakyThrows;
 import no.nav.common.client.pdl.PdlClientImpl;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlBarnResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.AfterEach;
@@ -29,10 +33,13 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PdlServiceTest {
+public class BarnUnder18ArPdlServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final String pdlIdentResponsFraFil = readFileAsJsonString("/PDL_Files/identer_pdl.json", getClass());
     private final String pdlPersonResponsFraFil = readFileAsJsonString("/PDL_Files/person_pdl.json", getClass());
+
+    private final String pdlPersonMed3BarnResponsFraFil = readFileAsJsonString("/PDL_Files/person_pdl_3barn.json", getClass());
+    private final String pdlPersonMed2BarnResponsFraFil = readFileAsJsonString("/PDL_Files/person_pdl_2barn.json", getClass());
     private final String pdlPersonBarn1ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
     private final String pdlPersonBarn2ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn2_pdl.json", getClass());
     private final String pdlPersonBarn3ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn3_pdl.json", getClass());
@@ -43,7 +50,8 @@ public class PdlServiceTest {
     private PdlService pdlService;
 
     private WireMockServer server = new WireMockServer();
-    public PdlServiceTest() {
+
+    public BarnUnder18ArPdlServiceTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
         pdlPersonRepository = new PdlPersonRepository(db, db);
         barnUnder18AarService = new BarnUnder18AarService(new BarnUnder18AarRepository(db, db));
@@ -65,7 +73,7 @@ public class PdlServiceTest {
                 .inScenario("PDL test")
                 .willReturn(aResponse()
                         .withStatus(200)
-                        .withBody(pdlPersonResponsFraFil))
+                        .withBody(pdlPersonMed3BarnResponsFraFil))
                 .whenScenarioStateIs("hent person")
                 .willSetStateTo("hent barn 1")
         );
@@ -94,6 +102,41 @@ public class PdlServiceTest {
                         .withStatus(200)
                         .withBody(pdlPersonBarn3ResponsFraFil))
                 .whenScenarioStateIs("hent barn 3")
+                .willSetStateTo("hent identer")
+        );
+
+        server.stubFor(
+                post(anyUrl())
+                        .inScenario("PDL test")
+                        .willReturn(aResponse()
+                                .withStatus(200)
+                                .withBody(pdlIdentResponsFraFil))
+                        .whenScenarioStateIs("hent identer")
+                        .willSetStateTo("hent person med 2 barn")
+        );
+        server.stubFor(post(anyUrl())
+                .inScenario("PDL test")
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(pdlPersonMed2BarnResponsFraFil))
+                .whenScenarioStateIs("hent person med 2 barn")
+                .willSetStateTo("hent barn 1 igjen")
+        );
+        server.stubFor(post(anyUrl())
+                .inScenario("PDL test")
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(pdlPersonBarn1ResponsFraFil))
+                .whenScenarioStateIs("hent barn 1 igjen")
+                .willSetStateTo("hent barn 3 igjen")
+        );
+
+        server.stubFor(post(anyUrl())
+                .inScenario("PDL test")
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(pdlPersonBarn3ResponsFraFil))
+                .whenScenarioStateIs("hent barn 3 igjen")
         );
 
         server.start();
@@ -110,43 +153,32 @@ public class PdlServiceTest {
     public void stopServer(){
         server.stop();
     }
-
     @Test
     @SneakyThrows
-    public void hentOgLagrePdlData() {
+    public void sjekkAtLagretBarnIkkeFjernes() {
         var identerFraFil = mapper.readValue(pdlIdentResponsFraFil, PdlIdentResponse.class)
                 .getData()
                 .getHentIdenter()
                 .getIdenter();
 
-        pdlService.hentOgLagrePdlData(randomAktorId());
+        AktorId aktorId = randomAktorId();
+        pdlService.hentOgLagrePdlData(aktorId);
         List<PDLIdent> identerFraPostgres = db.queryForList("select * from bruker_identer")
                 .stream()
                 .map(PdlIdentRepository::mapTilident)
                 .toList();
         Fnr fnr = hentAktivFnr(identerFraFil);
-        PDLPerson pdlPerson = pdlPersonRepository.hentPerson(fnr);
-        List<BarnUnder18AarData> barnFraRepository = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnr)).get(fnr);
-        List<Fnr> foreldreansvar = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnr));
+        List<Fnr> foreldreansvar1 = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnr));
+        assertThat(foreldreansvar1.size()).isEqualTo(3);
+        pdlService.hentOgLagrePdlData(aktorId);
+        List<Fnr> foreldreansvar2 = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnr));
+        List<BarnUnder18AarData> barnFraRepository2 = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnr)).get(fnr);
+        assertThat(foreldreansvar2.size()).isEqualTo(2);
 
         assertThat(identerFraPostgres).containsExactlyInAnyOrderElementsOf(identerFraFil);
-        assertThat(pdlPerson.getFornavn()).isEqualTo("Dogmatisk");
-        assertThat(pdlPerson.getEtternavn()).isEqualTo("Budeie");
-        assertThat(pdlPerson.getFoedsel().toString()).isEqualTo("1991-12-30");
-        assertThat(pdlPerson.getFoedeland()).isEqualTo("UKR");
-        assertThat(pdlPerson.getStatsborgerskap().size() == 1);
-        assertThat(pdlPerson.getStatsborgerskap().stream().anyMatch(x -> x.getStatsborgerskap().equals("UKR")));
-        assertThat(pdlPerson.getStatsborgerskap().stream().anyMatch(x -> x.getGyldigFra().toString().equals("1991-12-30")));
-        assertThat(pdlPerson.getTalespraaktolk().equals("UK"));
-        assertThat(pdlPerson.getTolkBehovSistOppdatert().toString().equals("2022-06-02"));
-        assertThat(pdlPerson.getDiskresjonskode().equals("7"));
-        assertThat(pdlPerson.getSikkerhetstiltak().getTiltakstype().equals("FYUS"));
-        assertThat(pdlPerson.getSikkerhetstiltak().getBeskrivelse().equals("Fysisk utestengelse"));
-        assertThat(pdlPerson.getSikkerhetstiltak().getGyldigFra().toString().equals("2022-05-12"));
-        assertThat(pdlPerson.getSikkerhetstiltak().getGyldigTil().toString().equals("2022-08-05"));
-        assertThat(foreldreansvar.size()).isEqualTo(3);
-        assertThat(barnFraRepository.get(0).getAlder()).isEqualTo(DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull(hentFodselsdatoBarn1())));
-        assertThat(barnFraRepository.get(1).getAlder()).isEqualTo(DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull(hentFodselsdatoBarn2())));
+        assertThat(foreldreansvar1.size()).isEqualTo(3);
+        assertThat(barnFraRepository2.get(0).getAlder()).isEqualTo(DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull(hentFodselsdatoBarn1())));
+        assertThat(barnFraRepository2.get(1).getAlder()).isEqualTo(DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull(hentFodselsdatoBarn3())));
     }
 
     public String hentFodselsdatoBarn1() throws JsonProcessingException {
@@ -161,6 +193,16 @@ public class PdlServiceTest {
 
     public String hentFodselsdatoBarn2() throws JsonProcessingException {
         var fdato = mapper.readValue(pdlPersonBarn2ResponsFraFil, PdlBarnResponse.class)
+                .getData()
+                .getHentPerson()
+                .getFoedsel()
+                .get(0)
+                .getFoedselsdato();
+        return fdato;
+    }
+
+    public String hentFodselsdatoBarn3() throws JsonProcessingException {
+        var fdato = mapper.readValue(pdlPersonBarn3ResponsFraFil, PdlBarnResponse.class)
                 .getData()
                 .getHentPerson()
                 .getFoedsel()

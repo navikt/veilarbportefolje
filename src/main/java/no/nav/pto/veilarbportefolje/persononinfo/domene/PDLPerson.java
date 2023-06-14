@@ -3,10 +3,12 @@ package no.nav.pto.veilarbportefolje.persononinfo.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.domene.Sikkerhetstiltak;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.time.LocalDate;
@@ -35,6 +37,7 @@ public class PDLPerson {
     private LocalDate bostedSistOppdatert;
     private String diskresjonskode;
     private Sikkerhetstiltak sikkerhetstiltak;
+    private List<Fnr> foreldreansvar;
 
 
     public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
@@ -58,7 +61,9 @@ public class PDLPerson {
                 .setTegnspraaktolk(hentTegnspraaktolk(response.getTilrettelagtKommunikasjon()))
                 .setTolkBehovSistOppdatert(hentTolkBehovSistOppdatert(response.getTilrettelagtKommunikasjon()))
                 .setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()))
-                .setSikkerhetstiltak(hentSikkerhetstiltak(response.getSikkerhetstiltak()));
+                .setSikkerhetstiltak(hentSikkerhetstiltak(response.getSikkerhetstiltak()))
+                .setForeldreansvar(hentForeldreansvar(response.getForeldreansvar()));
+
     }
 
 
@@ -192,13 +197,13 @@ public class PDLPerson {
     }
 
 
-    private static String hentDiskresjonkode(List<PdlPersonResponse.PdlPersonResponseData.Adressebeskyttelse> adressebeskyttelse) {
-        if (adressebeskyttelse == null) {
+    private static String hentDiskresjonkode(List<AdressebeskyttelseDto> adressebeskyttelseDto) {
+        if (adressebeskyttelseDto == null) {
             return null;
         }
-        var adressebeskyttelseAktiv = adressebeskyttelse.stream().filter(x -> !x.getMetadata().isHistorisk()).toList();
+        var adressebeskyttelseAktiv = adressebeskyttelseDto.stream().filter(x -> !x.getMetadata().isHistorisk()).toList();
         return adressebeskyttelseAktiv.stream().findFirst()
-                .map(PdlPersonResponse.PdlPersonResponseData.Adressebeskyttelse::getGradering)
+                .map(AdressebeskyttelseDto::getGradering)
                 .map(Adressebeskyttelse::mapKodeTilTall)
                 .orElse(null);
     }
@@ -227,6 +232,23 @@ public class PDLPerson {
             LocalDate gyldigTil = (s.getGyldigTilOgMed() != null) ? LocalDate.parse(s.getGyldigTilOgMed()) : null;
             return new PDLStatsborgerskap(s.getLand(), gyldigFra, gyldigTil);
         }).map(PDLStatsborgerskap::toStatsborgerskap).collect(Collectors.toList());
+    }
+
+    private static List<Fnr> hentForeldreansvar(List<PdlPersonResponse.PdlPersonResponseData.Foreldreansvar> foreldreansvar) {
+        if (foreldreansvar == null){
+            return null;
+        }
+        var foreldreansvarAktivt = foreldreansvar.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
+
+        if (foreldreansvarAktivt == null || foreldreansvarAktivt.isEmpty()){
+            return null;
+        }
+
+        return foreldreansvarAktivt.stream()
+                .map(PdlPersonResponse.PdlPersonResponseData.Foreldreansvar::getAnsvarssubjekt)
+                .filter(Objects::nonNull)
+                .map(Fnr::of)
+                .collect(Collectors.toList());
     }
 
     private static Optional<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> hentBostedAdresse(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {

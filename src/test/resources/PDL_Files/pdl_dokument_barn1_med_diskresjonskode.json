@@ -1,0 +1,87 @@
+{
+  "hentPerson": {
+    "navn": [
+      {
+        "fornavn": null,
+        "mellomnavn": null,
+        "etternavn": null,
+        "metadata": {
+          "master": "FREG",
+          "historisk": false,
+          "endringer": [
+            {
+              "registrert": "2022-06-02T15:24:52"
+            }
+          ]
+        }
+      }
+    ],
+    "kjoenn": [
+      {
+        "kjoenn": "KVINNE",
+        "metadata": {
+          "master": "FREG",
+          "historisk": false,
+          "endringer": [
+            {
+              "registrert": "2022-06-02T15:24:52"
+            }
+          ]
+        }
+      }
+    ],
+    "foedsel": [
+      {
+        "foedselsdato": "2014-07-07",
+        "metadata": {
+          "endringer": [
+            {
+              "kilde": "Dolly",
+              "registrert": "2023-04-19T16:52:28",
+              "registrertAv": "Folkeregisteret",
+              "systemkilde": "FREG",
+              "type": "OPPRETT"
+            }
+          ],
+          "master": "FREG",
+          "opplysningsId": "c598a54e-05bd-45c1-9423-b3cb8dc94ddd",
+          "historisk": false
+        }
+      }
+    ],
+    "adressebeskyttelse": [
+      {
+        "gradering": "FORTROLIG",
+        "metadata": {
+          "master": "PDL",
+          "historisk": false,
+          "endringer": [
+            {
+              "registrert": "2022-06-02T15:24:53"
+            }
+          ]
+        }
+      }
+    ],
+    "doedsfall": []
+  },
+  "hentIdenter": {
+    "identer": [
+      {
+        "ident": "123",
+        "historisk": false,
+        "gruppe": "FOLKEREGISTERIDENT"
+      },
+      {
+        "ident": "123",
+        "historisk": false,
+        "gruppe": "NPID"
+      },
+      {
+        "ident": "1232",
+        "historisk": true,
+        "gruppe": "AKTORID"
+      }
+    ]
+  }
+}
