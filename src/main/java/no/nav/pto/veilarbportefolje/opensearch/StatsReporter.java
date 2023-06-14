@@ -79,7 +79,6 @@ public class StatsReporter implements MeterBinder {
             String serverVersion = restHighLevelClient.info(RequestOptions.DEFAULT).getVersion().getNumber();
             String libraryVersion = OpenSearchClient.class.getPackage().getImplementationVersion();
 
-            log.info(String.format("Opensearch version: %s, opensearch lib version: %s", serverVersion, libraryVersion));
             if (serverVersion.charAt(0) != libraryVersion.charAt(0)) {
                 log.error(String.format("Differanse mellom major-versjoner Opensearch og Opensearch klientbibliotek. Opensearch: version: %s, opensearch lib version: %s", serverVersion, libraryVersion));
             }
