@@ -40,7 +40,7 @@ public class OpensearchCountService {
 
     @SneakyThrows
     public long getCount() {
-        String url = createAbsoluteUrl(opensearchClientConfig, indexName) + "_doc/_count";
+        String url = createAbsoluteUrl(opensearchClientConfig, indexName) + "_count";
 
         Request request = new Request.Builder()
                 .url(url)
