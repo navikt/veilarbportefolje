@@ -86,6 +86,9 @@ public class BarnUnder18AarService {
     }
 
     public boolean erFnrBarnAvForelderUnderOppfolging(List<Fnr> fnrBarn) {
+        if (fnrBarn == null || fnrBarn.isEmpty()){
+            return false;
+        }
         return barnUnder18AarRepository.finnesBarnIForeldreansvar(fnrBarn);
     }
 
