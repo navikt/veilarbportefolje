@@ -53,7 +53,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
         List<Fnr> fnrs = hentFnrs(pdlIdenter);
         List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);
-        Fnr aktivtFnr = hentAktivFnr(pdlIdenter);
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
@@ -67,6 +66,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         }
 
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
+            Fnr aktivtFnr = hentAktivFnr(pdlIdenter);
             barnUnder18AarService.handterBarnIdentEndring(aktivtFnr, inaktiveFnr);
 
             handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
