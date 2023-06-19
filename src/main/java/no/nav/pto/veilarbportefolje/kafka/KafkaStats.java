@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -25,6 +26,11 @@ public class KafkaStats implements MeterBinder {
     }
 
     private List<Integer> getRetriesStats() {
-        return this.jdbcTemplate.queryForList("SELECT retries FROM KAFKA_CONSUMER_RECORD WHERE retries > 0", Integer.class);
+        try {
+            return this.jdbcTemplate.query("SELECT retries FROM KAFKA_CONSUMER_RECORD WHERE retries > 0", (rs, rowNum) -> rs.getInt("retries"));
+        }
+        catch (Exception e){
+            return Collections.emptyList();
+        }
     }
 }
