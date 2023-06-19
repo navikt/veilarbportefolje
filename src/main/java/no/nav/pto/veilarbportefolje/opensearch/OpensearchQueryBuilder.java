@@ -460,8 +460,8 @@ public class OpensearchQueryBuilder {
                     """;
         } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
             expression = """
-                    if (doc.containsKey('aapmaxtiduke') && !doc['aapmaxtiduke'].empty) {
-                        return doc['aapmaxtiduke'].value;
+                    if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
+                        return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
                     }
                     else {
                         return 0;
