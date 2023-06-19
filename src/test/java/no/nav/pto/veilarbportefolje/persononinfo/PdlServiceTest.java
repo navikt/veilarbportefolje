@@ -16,6 +16,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,6 +29,8 @@ import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PdlServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
@@ -134,39 +137,39 @@ public class PdlServiceTest {
         assertThat(pdlPerson.getEtternavn()).isEqualTo("Budeie");
         assertThat(pdlPerson.getFoedsel().toString()).isEqualTo("1991-12-30");
         assertThat(pdlPerson.getFoedeland()).isEqualTo("UKR");
-        assertThat(pdlPerson.getStatsborgerskap().size() == 1);
-        assertThat(pdlPerson.getStatsborgerskap().stream().anyMatch(x -> x.getStatsborgerskap().equals("UKR")));
-        assertThat(pdlPerson.getStatsborgerskap().stream().anyMatch(x -> x.getGyldigFra().toString().equals("1991-12-30")));
-        assertThat(pdlPerson.getTalespraaktolk().equals("UK"));
-        assertThat(pdlPerson.getTolkBehovSistOppdatert().toString().equals("2022-06-02"));
-        assertThat(pdlPerson.getDiskresjonskode().equals("7"));
-        assertThat(pdlPerson.getSikkerhetstiltak().getTiltakstype().equals("FYUS"));
-        assertThat(pdlPerson.getSikkerhetstiltak().getBeskrivelse().equals("Fysisk utestengelse"));
-        assertThat(pdlPerson.getSikkerhetstiltak().getGyldigFra().toString().equals("2022-05-12"));
-        assertThat(pdlPerson.getSikkerhetstiltak().getGyldigTil().toString().equals("2022-08-05"));
+        Assertions.assertEquals(2, pdlPerson.getStatsborgerskap().size());
+        assertTrue(pdlPerson.getStatsborgerskap().stream().anyMatch(x -> x.getStatsborgerskap().equals("UKR")));
+        assertTrue(pdlPerson.getStatsborgerskap().stream().anyMatch(x -> x.getGyldigFra().toString().equals("1991-12-30")));
+        assertEquals("UK", pdlPerson.getTalespraaktolk());
+        assertEquals("2022-06-02", pdlPerson.getTolkBehovSistOppdatert().toString());
+        assertEquals("7", pdlPerson.getDiskresjonskode());
+        assertEquals("FYUS", pdlPerson.getSikkerhetstiltak().getTiltakstype());
+        assertEquals("Fysisk utestengelse", pdlPerson.getSikkerhetstiltak().getBeskrivelse());
+        assertEquals("2022-05-12", pdlPerson.getSikkerhetstiltak().getGyldigFra().toString());
+        assertEquals("2022-08-05", pdlPerson.getSikkerhetstiltak().getGyldigTil().toString());
         assertThat(foreldreansvar.size()).isEqualTo(3);
-        assertThat(barnFraRepository.get(0).getAlder()).isEqualTo(DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull(hentFodselsdatoBarn1())));
-        assertThat(barnFraRepository.get(1).getAlder()).isEqualTo(DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull(hentFodselsdatoBarn2())));
+
+        Integer barnAlder1 = DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull(hentFodselsdatoBarn1()));
+        Integer barnAlder2 = DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull(hentFodselsdatoBarn2()));
+        assertTrue(barnFraRepository.stream().map(BarnUnder18AarData::getAlder).toList().containsAll(List.of(barnAlder1, barnAlder2)));
     }
 
     public String hentFodselsdatoBarn1() throws JsonProcessingException {
-        var fdato = mapper.readValue(pdlPersonBarn1ResponsFraFil, PdlBarnResponse.class)
+        return mapper.readValue(pdlPersonBarn1ResponsFraFil, PdlBarnResponse.class)
                 .getData()
                 .getHentPerson()
                 .getFoedsel()
                 .get(0)
                 .getFoedselsdato();
-        return fdato;
     }
 
     public String hentFodselsdatoBarn2() throws JsonProcessingException {
-        var fdato = mapper.readValue(pdlPersonBarn2ResponsFraFil, PdlBarnResponse.class)
+        return mapper.readValue(pdlPersonBarn2ResponsFraFil, PdlBarnResponse.class)
                 .getData()
                 .getHentPerson()
                 .getFoedsel()
                 .get(0)
                 .getFoedselsdato();
-        return fdato;
     }
 }
 
