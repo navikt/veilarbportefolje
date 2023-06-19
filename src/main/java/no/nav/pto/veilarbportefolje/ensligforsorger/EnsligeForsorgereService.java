@@ -88,10 +88,6 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
     private EnsligeForsorgerOvergangsstønadTiltakDto getEnsligeForsorgereDto(EnsligeForsorgerOvergangsstønadTiltak ensligeForsorgerOvergangsstønadTiltak) {
         Optional<LocalDate> yngsteBarn = ensligeForsorgereRepository.hentYngsteBarn(ensligeForsorgerOvergangsstønadTiltak.vedtakid());
 
-        if (yngsteBarn.isEmpty()) {
-            secureLog.warn("Kan ikke finne ef barn for vedtakId: " + ensligeForsorgerOvergangsstønadTiltak.vedtakid());
-        }
-
         Optional<Boolean> harAktivitetsplikt = AktivitetsTypeTilAktivitetsplikt.harAktivitetsplikt(ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype(), ensligeForsorgerOvergangsstønadTiltak.aktivitetsType());
         String vedtakPeriodeBeskrivelse = mapPeriodetypeTilBeskrivelse(ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype());
         return new EnsligeForsorgerOvergangsstønadTiltakDto(
