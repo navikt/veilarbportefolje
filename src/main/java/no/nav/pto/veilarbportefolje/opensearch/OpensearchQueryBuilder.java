@@ -463,6 +463,9 @@ public class OpensearchQueryBuilder {
                     if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
                         return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
                     }
+                    else if (doc.containsKey('aapmaxtiduke') && !doc['aapmaxtiduke'].empty) {
+                        return doc['aapmaxtiduke'].value;
+                    }
                     else {
                         return 0;
                     }
