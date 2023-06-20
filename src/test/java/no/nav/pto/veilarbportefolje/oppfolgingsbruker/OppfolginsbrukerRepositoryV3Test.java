@@ -9,14 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class OppfolginsbrukerRepositoryV3Test {
+public class OppfolginsbrukerRepositoryTestV3 {
     private JdbcTemplate db;
     private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final Fnr fnr = Fnr.of("0");
@@ -35,12 +35,12 @@ public class OppfolginsbrukerRepositoryV3Test {
 
     @Test
     public void skal_ikke_lagre_oppfolgingsbruker_med_eldre_endret_dato() {
-        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", now().minusDays(1),
-                "Tester_new", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
-                "1234", true, true, now());
-        OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", now().minusDays(1),
-                "Tester_old", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
-                "1234", true, false, now().minusDays(5));
+        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1),
+                "1001", "ORG", "OP", "TES",
+                 true,  ZonedDateTime.now());
+        OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1),
+                "1001", "ORG", "OP", "TES",
+                 true,ZonedDateTime.now().minusDays(5));
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
@@ -52,12 +52,11 @@ public class OppfolginsbrukerRepositoryV3Test {
 
     @Test
     public void skal_oppdater_oppfolgingsbruker_fra_nyere_dato() {
-        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", now().minusDays(1), "" +
-                "Tester_old", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
-                "1234", true, false, now().minusDays(5));
-        OppfolgingsbrukerEntity new_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", now().minusDays(1), "" +
-                "Tester_new", "Testerson", "1001", "ORG", "OP", "TES", "IKKE",
-                "1234", true, true, now());
+        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(fnr.get(),"TEST", ZonedDateTime.now().minusDays(1),
+                "1001", "ORG", "OP", "TES",
+                 true, ZonedDateTime.now().minusDays(5));
+        OppfolgingsbrukerEntity new_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1), "1001", "ORG", "OP", "TES",
+                true, ZonedDateTime.now());
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
@@ -89,9 +88,6 @@ public class OppfolginsbrukerRepositoryV3Test {
         String kode7Fnr = randomFnr().get();
         String kontrollFnr = randomFnr().get();
 
-        settDiskresjonskode(kode6Fnr, "6");
-        settDiskresjonskode(kode7Fnr, "7");
-        settDiskresjonskode(kontrollFnr, null);
 
         List<String> medAlleTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
                 new BrukerinnsynTilganger(true, true, false));
@@ -115,17 +111,10 @@ public class OppfolginsbrukerRepositoryV3Test {
 
     private void settSperretAnsatt(String fnr, boolean sperret) {
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(fnr, null, null,
-                        null, null, "0000", null, null,
-                        null, null, null, sperret,
-                        false, now()));
+                new OppfolgingsbrukerEntity(fnr, null, null, "0000", null, null,
+                        null, sperret,
+                         ZonedDateTime.now()));
     }
 
-    private void settDiskresjonskode(String fnr, String kode) {
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(fnr, null, null,
-                        null, null, "0000", null, null,
-                        null, null, kode, false,
-                        false, now()));
-    }
+
 }
