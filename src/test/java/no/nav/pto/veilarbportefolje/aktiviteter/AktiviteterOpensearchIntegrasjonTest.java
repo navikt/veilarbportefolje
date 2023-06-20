@@ -15,7 +15,6 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingRepository;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +35,7 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
+public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     private final AktivitetService aktivitetService;
     private final OpensearchService opensearchService;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
@@ -44,16 +43,14 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
     private final Fnr fodselsnummer = Fnr.ofValidFnr("10108000399"); //TESTFAMILIE
     private final JdbcTemplate jdbcTemplatePostgres;
     private final PdlIdentRepository pdlIdentRepository;
-    private final SkjermingRepository skjermingRepository;
 
     @Autowired
-    public AktiviteterOpensearchIntegrasjonTest(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
+    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository,  JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
         this.aktivitetService = aktivitetService;
         this.opensearchService = opensearchService;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.pdlIdentRepository = pdlIdentRepository;
-        skjermingRepository = new SkjermingRepository(jdbcTemplatePostgres);
     }
 
     @BeforeEach
@@ -62,7 +59,6 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         jdbcTemplatePostgres.update("TRUNCATE oppfolgingsbruker_arena_v2");
         jdbcTemplatePostgres.update("TRUNCATE bruker_identer");
         jdbcTemplatePostgres.update("TRUNCATE oppfolging_data");
-        jdbcTemplatePostgres.update("TRUNCATE nom_skjerming");
     }
 
     @Test
@@ -313,7 +309,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         navKontor.getValue(),  null, null,
-                        null, ZonedDateTime.now()));
-        skjermingRepository.settSkjerming(Fnr.of(fnr.get()), true);
+                        null,   true,
+                         ZonedDateTime.now()));
     }
 }

@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,33 +19,28 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class OppfolginsbrukerRepositoryTestV3 {
     private JdbcTemplate db;
     private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
-
-    private SkjermingRepository skjermingRepository;
-
-
     private final Fnr fnr = Fnr.of("0");
 
     @Autowired
-    public void OppfolginsbrukerRepositoryTestV2(JdbcTemplate db, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository) {
+    public void OppfolginsbrukerRepositoryTestV2( JdbcTemplate db, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository) {
         this.db = db;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
-        skjermingRepository = new SkjermingRepository(db);
     }
 
     @BeforeEach
     public void resetDb() {
         db.execute("truncate oppfolgingsbruker_arena_v2");
         db.update("truncate bruker_identer");
-        db.update("truncate nom_skjerming");
-
     }
 
     @Test
     public void skal_ikke_lagre_oppfolgingsbruker_med_eldre_endret_dato() {
         OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1),
-                "1001", "ORG", "OP", "TES", ZonedDateTime.now());
+                "1001", "ORG", "OP", "TES",
+                 true,  ZonedDateTime.now());
         OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1),
-                "1002", "ORG", "OP", "TES", ZonedDateTime.now().minusDays(5));
+                "1001", "ORG", "OP", "TES",
+                 true,ZonedDateTime.now().minusDays(5));
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
@@ -59,8 +53,10 @@ public class OppfolginsbrukerRepositoryTestV3 {
     @Test
     public void skal_oppdater_oppfolgingsbruker_fra_nyere_dato() {
         OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(fnr.get(),"TEST", ZonedDateTime.now().minusDays(1),
-                "1001", "ORG", "OP", "TES", ZonedDateTime.now().minusDays(5));
-        OppfolgingsbrukerEntity new_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1), "1001", "ORG", "OP", "TES", ZonedDateTime.now());
+                "1001", "ORG", "OP", "TES",
+                 true, ZonedDateTime.now().minusDays(5));
+        OppfolgingsbrukerEntity new_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1), "1001", "ORG", "OP", "TES",
+                true, ZonedDateTime.now());
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
@@ -86,12 +82,38 @@ public class OppfolginsbrukerRepositoryTestV3 {
         assertThat(utenTilgang.stream().anyMatch(x -> x.equals(sperretAnsattFnr))).isTrue();
     }
 
+    @Test
+    public void skjerming_diskresjonskode() {
+        String kode6Fnr = randomFnr().get();
+        String kode7Fnr = randomFnr().get();
+        String kontrollFnr = randomFnr().get();
+
+
+        List<String> medAlleTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
+                new BrukerinnsynTilganger(true, true, false));
+        List<String> medKode6Tilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
+                new BrukerinnsynTilganger(true, false, false));
+        List<String> medKode7Tilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
+                new BrukerinnsynTilganger(false, true, false));
+        List<String> utenTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
+                new BrukerinnsynTilganger(false, false, false));
+
+        assertThat(medAlleTilgang.size()).isEqualTo(0);
+        assertThat(medKode6Tilgang.size()).isEqualTo(1);
+        assertThat(medKode7Tilgang.size()).isEqualTo(1);
+        assertThat(utenTilgang.size()).isEqualTo(2);
+
+        assertThat(medKode6Tilgang.stream().anyMatch(x -> x.equals(kode7Fnr))).isTrue();
+        assertThat(medKode7Tilgang.stream().anyMatch(x -> x.equals(kode6Fnr))).isTrue();
+        assertThat(utenTilgang.stream().anyMatch(x -> x.equals(kode6Fnr))).isTrue();
+        assertThat(utenTilgang.stream().anyMatch(x -> x.equals(kode7Fnr))).isTrue();
+    }
+
     private void settSperretAnsatt(String fnr, boolean sperret) {
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr, null, null, "0000", null, null,
-                        null,
+                        null, sperret,
                          ZonedDateTime.now()));
-        skjermingRepository.settSkjerming(Fnr.of(fnr), sperret);
     }
 
 

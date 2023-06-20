@@ -24,14 +24,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class OppfolgingsbrukerServiceV2Test {
+public class OppfolgingsbrukerServiceTestV2 {
     private final JdbcTemplate db;
     private final OppfolgingsbrukerServiceV2 oppfolginsbrukerService;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
     private final Fnr fnr = randomFnr();
 
     @Autowired
-    public OppfolgingsbrukerServiceV2Test(JdbcTemplate db, OppfolgingsbrukerServiceV2 oppfolginsbrukerService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3) {
+    public OppfolgingsbrukerServiceTestV2( JdbcTemplate db, OppfolgingsbrukerServiceV2 oppfolginsbrukerService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3) {
         this.db = db;
         this.oppfolginsbrukerService = oppfolginsbrukerService;
         this.oppfolgingsbrukerRepositoryV3 = oppfolgingsbrukerRepositoryV3;
@@ -50,7 +50,8 @@ public class OppfolgingsbrukerServiceV2Test {
         ZonedDateTime endret_dato = DateUtils.now();
 
         OppfolgingsbrukerEntity forventetResultat = new OppfolgingsbrukerEntity(fnr.get(), "RARBS", ZonedDateTime.of(iserv_fra_dato.atStartOfDay(), ZoneId.systemDefault()),
-                 "007", "BKART", "AAP", "SKAFFEA", endret_dato);
+                 "007", "BKART", "AAP", "SKAFFEA",
+                 false,  endret_dato);
 
         EndringPaaOppfoelgingsBrukerV2 kafkaMelding = EndringPaaOppfoelgingsBrukerV2.builder().fodselsnummer(fnr.get()).formidlingsgruppe(Formidlingsgruppe.RARBS).iservFraDato(iserv_fra_dato)
                 .oppfolgingsenhet("007").kvalifiseringsgruppe(Kvalifiseringsgruppe.BKART).rettighetsgruppe(Rettighetsgruppe.AAP).hovedmaal(Hovedmaal.SKAFFEA)
