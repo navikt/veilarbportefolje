@@ -272,8 +272,6 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
 
         testDataClient.lagreBrukerUnderOppfolging(aktoerKode6, navKontor, veileder, ZonedDateTime.now());
         testDataClient.lagreBrukerUnderOppfolging(aktoerKode7, navKontor, veileder, ZonedDateTime.now());
-        settDiskresjonskode(aktoerKode6, navKontor, "6");
-        settDiskresjonskode(aktoerKode7, navKontor, "7");
 
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("1")
@@ -310,17 +308,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         Fnr fnr = pdlIdentRepository.hentFnr(aktorId);
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null,
-                        "test", "testson", navKontor.getValue(), null, null,
-                        null, null, null, true,
-                        false, ZonedDateTime.now()));
-    }
-
-    private void settDiskresjonskode(AktorId aktorId, NavKontor navKontor, String kode) {
-        Fnr fnr = pdlIdentRepository.hentFnr(aktorId);
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(fnr.get(), null, null,
-                        "test", "testson", navKontor.getValue(), null, null,
-                        null, null, kode, false, false,
-                        ZonedDateTime.now()));
+                        navKontor.getValue(),  null, null,
+                        null,   true,
+                         ZonedDateTime.now()));
     }
 }
