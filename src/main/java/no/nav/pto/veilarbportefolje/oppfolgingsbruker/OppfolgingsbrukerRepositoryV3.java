@@ -19,19 +19,15 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.DISKRESJONSKODE;
+
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ENDRET_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ER_DOED;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ETTERNAVN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FORNAVN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.SIKKERHETSTILTAK_TYPE_KODE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.SPERRET_ANSATT;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
@@ -130,10 +126,10 @@ public class OppfolgingsbrukerRepositoryV3 {
                         excluded.sperret_ansatt, excluded.er_doed, excluded.endret_dato)
                         """,
                 oppfolgingsbruker.fodselsnr(), oppfolgingsbruker.formidlingsgruppekode(), toTimestamp(oppfolgingsbruker.iserv_fra_dato()),
-                oppfolgingsbruker.etternavn(), oppfolgingsbruker.fornavn(), oppfolgingsbruker.nav_kontor(),
+                 oppfolgingsbruker.nav_kontor(),
                 oppfolgingsbruker.kvalifiseringsgruppekode(), oppfolgingsbruker.rettighetsgruppekode(),
-                oppfolgingsbruker.hovedmaalkode(), oppfolgingsbruker.sikkerhetstiltak_type_kode(), oppfolgingsbruker.fr_kode(),
-                oppfolgingsbruker.sperret_ansatt(), oppfolgingsbruker.er_doed(), toTimestamp(oppfolgingsbruker.endret_dato())
+                oppfolgingsbruker.hovedmaalkode(),
+                oppfolgingsbruker.sperret_ansatt(), toTimestamp(oppfolgingsbruker.endret_dato())
         );
     }
 
@@ -148,10 +144,10 @@ public class OppfolgingsbrukerRepositoryV3 {
             return null;
         }
         return new OppfolgingsbrukerEntity(rs.getString(FODSELSNR), rs.getString(FORMIDLINGSGRUPPEKODE),
-                toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)), rs.getString(ETTERNAVN), rs.getString(FORNAVN),
+                toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)),
                 rs.getString(NAV_KONTOR), rs.getString(KVALIFISERINGSGRUPPEKODE), rs.getString(RETTIGHETSGRUPPEKODE),
-                rs.getString(HOVEDMAALKODE), rs.getString(SIKKERHETSTILTAK_TYPE_KODE), rs.getString(DISKRESJONSKODE),
-                rs.getBoolean(SPERRET_ANSATT), rs.getBoolean(ER_DOED), toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
+                rs.getString(HOVEDMAALKODE),
+                rs.getBoolean(SPERRET_ANSATT), toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
 
     public List<String> finnSkjulteBrukere(List<String> fnrListe, BrukerinnsynTilganger brukerInnsynTilganger) {
