@@ -153,18 +153,12 @@ public class OppfolgingsbrukerRepositoryV3 {
     public List<String> finnSkjulteBrukere(List<String> fnrListe, BrukerinnsynTilganger brukerInnsynTilganger) {
         var params = new MapSqlParameterSource();
         params.addValue("fnrListe", fnrListe.stream().collect(Collectors.joining(",", "{", "}")));
-        params.addValue("tilgangTilKode6", brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig());
-        params.addValue("tilgangTilKode7", brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig());
         params.addValue("tilgangTilEgenAnsatt", brukerInnsynTilganger.tilgangTilSkjerming());
 
         return dbNamed.queryForList("""
                 SELECT fodselsnr from oppfolgingsbruker_arena_v2
                 where fodselsnr = ANY (:fnrListe::varchar[])
-                AND (
-                    (diskresjonskode = '6' AND NOT :tilgangTilKode6::boolean)
-                    OR (diskresjonskode = '7' AND NOT :tilgangTilKode7::boolean)
-                    OR (sperret_ansatt AND NOT :tilgangTilEgenAnsatt::boolean)
-                )""", params, String.class);
+                AND (sperret_ansatt AND NOT :tilgangTilEgenAnsatt::boolean)""", params, String.class);
     }
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {
