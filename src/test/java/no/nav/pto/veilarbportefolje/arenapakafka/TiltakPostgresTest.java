@@ -176,7 +176,7 @@ public class TiltakPostgresTest {
         ));
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null, "1234",
-                        "Tester" + "Testerson", null, null, false, ZonedDateTime.now()));
+                         null, null, null,false, ZonedDateTime.now()));
         String tiltaksType1 = "T123";
         String tiltaksType2 = "T321";
         String tiltaksNavn1 = "test1";
