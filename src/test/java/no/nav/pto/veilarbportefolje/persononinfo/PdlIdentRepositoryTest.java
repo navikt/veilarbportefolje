@@ -192,4 +192,33 @@ public class PdlIdentRepositoryTest {
     private List<PDLIdent> hentLokaleIdenter(AktorId ident) {
         return pdlIdentRepository.hentIdenter(pdlIdentRepository.hentPerson(ident.get()));
     }
+    /*
+    @Test
+    public void skjerming_diskresjonskode() {
+        String kode6Fnr = randomFnr().get();
+        String kode7Fnr = randomFnr().get();
+        String kontrollFnr = randomFnr().get();
+
+
+        List<Map<String, Object>> medAlleTilgang = pdlIdentRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
+                new BrukerinnsynTilganger(true, true, false));
+        List<Map<String, Object>> medKode6Tilgang = pdlIdentRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
+                new BrukerinnsynTilganger(true, false, false));
+        List<Map<String, Object>> medKode7Tilgang = pdlIdentRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
+                new BrukerinnsynTilganger(false, true, false));
+        List<Map<String, Object>> utenTilgang = pdlIdentRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
+                new BrukerinnsynTilganger(false, false, false));
+
+        AssertionsForClassTypes.assertThat(medAlleTilgang.size()).isEqualTo(0);
+        AssertionsForClassTypes.assertThat(medKode6Tilgang.size()).isEqualTo(1);
+        AssertionsForClassTypes.assertThat(medKode7Tilgang.size()).isEqualTo(1);
+        AssertionsForClassTypes.assertThat(utenTilgang.size()).isEqualTo(2);
+
+        AssertionsForClassTypes.assertThat(medKode6Tilgang.stream().anyMatch(x -> x.equals(kode7Fnr))).isTrue();
+        AssertionsForClassTypes.assertThat(medKode7Tilgang.stream().anyMatch(x -> x.equals(kode6Fnr))).isTrue();
+        AssertionsForClassTypes.assertThat(utenTilgang.stream().anyMatch(x -> x.equals(kode6Fnr))).isTrue();
+        AssertionsForClassTypes.assertThat(utenTilgang.stream().anyMatch(x -> x.equals(kode7Fnr))).isTrue();
+    }
+
+*/
 }

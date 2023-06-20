@@ -117,4 +117,16 @@ public class PdlIdentRepository {
         secureLog.info("Sletter lokal ident: {}", person);
         db.update("delete from bruker_identer where person = ?", person);
     }
+/*
+    public List<Map<String, Object>> finnSkjulteBrukere(List<String> fnrListe, BrukerinnsynTilganger brukerInnsynTilganger) {
+        var params = new MapSqlParameterSource();
+        params.addValue("fnrListe", fnrListe.stream().collect(Collectors.joining(",", "{", "}")));
+        params.addValue("tilgangTilEgenAnsatt", brukerInnsynTilganger.tilgangTilSkjerming());
+
+        return db.queryForList("""
+                SELECT fodselsnr from oppfolgingsbruker_arena_v2
+                where fodselsnr = ANY (:fnrListe::varchar[])
+                AND (sperret_ansatt AND NOT :tilgangTilEgenAnsatt::boolean)""", params, String.class);
+    }
+ */
 }
