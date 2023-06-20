@@ -13,6 +13,7 @@ public record OppfolgingsbrukerEntity(
         String kvalifiseringsgruppekode,
         String rettighetsgruppekode,
         String hovedmaalkode,
+        boolean sperret_ansatt,
         ZonedDateTime endret_dato
 ) {
 }

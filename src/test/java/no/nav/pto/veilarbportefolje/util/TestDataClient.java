@@ -113,7 +113,7 @@ public class TestDataClient {
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         navKontor.getValue(), null, null, null,
-                         ZonedDateTime.now()));
+                        false, ZonedDateTime.now()));
         opensearchTestClient.createUserInOpensearch(aktoerId);
     }
 }
