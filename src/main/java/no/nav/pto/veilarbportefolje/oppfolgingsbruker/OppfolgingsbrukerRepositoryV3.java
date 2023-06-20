@@ -120,7 +120,7 @@ public class OppfolgingsbrukerRepositoryV3 {
                         hovedmaalkode,
                         sperret_ansatt, endret_dato)
                         = (excluded.formidlingsgruppekode, excluded.iserv_fra_dato,
-                        excluded.etternavn, excluded.fornavn, excluded.nav_kontor,
+                         excluded.nav_kontor,
                         excluded.kvalifiseringsgruppekode, excluded.rettighetsgruppekode,
                         excluded.hovedmaalkode,
                         excluded.sperret_ansatt, excluded.endret_dato)
