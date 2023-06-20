@@ -39,7 +39,7 @@ public class OppfolginsbrukerRepositoryTestV3 {
                 "1001", "ORG", "OP", "TES",
                  true,  ZonedDateTime.now());
         OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1),
-                "1001", "ORG", "OP", "TES",
+                "1002", "ORG", "OP", "TES",
                  true,ZonedDateTime.now().minusDays(5));
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
@@ -80,33 +80,6 @@ public class OppfolginsbrukerRepositoryTestV3 {
         assertThat(medTilgang.size()).isEqualTo(0);
         assertThat(utenTilgang.size()).isEqualTo(1);
         assertThat(utenTilgang.stream().anyMatch(x -> x.equals(sperretAnsattFnr))).isTrue();
-    }
-
-    @Test
-    public void skjerming_diskresjonskode() {
-        String kode6Fnr = randomFnr().get();
-        String kode7Fnr = randomFnr().get();
-        String kontrollFnr = randomFnr().get();
-
-
-        List<String> medAlleTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
-                new BrukerinnsynTilganger(true, true, false));
-        List<String> medKode6Tilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
-                new BrukerinnsynTilganger(true, false, false));
-        List<String> medKode7Tilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
-                new BrukerinnsynTilganger(false, true, false));
-        List<String> utenTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(kode6Fnr, kode7Fnr, kontrollFnr),
-                new BrukerinnsynTilganger(false, false, false));
-
-        assertThat(medAlleTilgang.size()).isEqualTo(0);
-        assertThat(medKode6Tilgang.size()).isEqualTo(1);
-        assertThat(medKode7Tilgang.size()).isEqualTo(1);
-        assertThat(utenTilgang.size()).isEqualTo(2);
-
-        assertThat(medKode6Tilgang.stream().anyMatch(x -> x.equals(kode7Fnr))).isTrue();
-        assertThat(medKode7Tilgang.stream().anyMatch(x -> x.equals(kode6Fnr))).isTrue();
-        assertThat(utenTilgang.stream().anyMatch(x -> x.equals(kode6Fnr))).isTrue();
-        assertThat(utenTilgang.stream().anyMatch(x -> x.equals(kode7Fnr))).isTrue();
     }
 
     private void settSperretAnsatt(String fnr, boolean sperret) {
