@@ -108,22 +108,22 @@ public class OppfolgingsbrukerRepositoryV3 {
         return db.update("""
                         INSERT INTO oppfolgingsbruker_arena_v2(
                         fodselsnr, formidlingsgruppekode, iserv_fra_dato,
-                        etternavn, fornavn, nav_kontor,
+                        nav_kontor,
                         kvalifiseringsgruppekode, rettighetsgruppekode,
-                        hovedmaalkode, sikkerhetstiltak_type_kode, diskresjonskode,
-                        sperret_ansatt, er_doed, endret_dato)
-                        VALUES(?,?,?, ?,?,?, ?,?, ?,?,?, ?,?,?)
+                        hovedmaalkode,
+                        sperret_ansatt, endret_dato)
+                        VALUES(?,?,?,?,?,?,?,?,?)
                         ON CONFLICT (fodselsnr) DO UPDATE SET(
                         formidlingsgruppekode, iserv_fra_dato,
-                        etternavn, fornavn, nav_kontor,
+                        nav_kontor,
                         kvalifiseringsgruppekode, rettighetsgruppekode,
-                        hovedmaalkode, sikkerhetstiltak_type_kode, diskresjonskode,
-                        sperret_ansatt, er_doed, endret_dato)
+                        hovedmaalkode,
+                        sperret_ansatt, endret_dato)
                         = (excluded.formidlingsgruppekode, excluded.iserv_fra_dato,
                         excluded.etternavn, excluded.fornavn, excluded.nav_kontor,
                         excluded.kvalifiseringsgruppekode, excluded.rettighetsgruppekode,
-                        excluded.hovedmaalkode, excluded.sikkerhetstiltak_type_kode, excluded.diskresjonskode,
-                        excluded.sperret_ansatt, excluded.er_doed, excluded.endret_dato)
+                        excluded.hovedmaalkode,
+                        excluded.sperret_ansatt, excluded.endret_dato)
                         """,
                 oppfolgingsbruker.fodselsnr(), oppfolgingsbruker.formidlingsgruppekode(), toTimestamp(oppfolgingsbruker.iserv_fra_dato()),
                  oppfolgingsbruker.nav_kontor(),
