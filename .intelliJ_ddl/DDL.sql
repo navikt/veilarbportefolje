@@ -497,6 +497,7 @@ CREATE TABLE public.oppfolgingsbruker_arena_v2 (
     kvalifiseringsgruppekode character varying(15),
     rettighetsgruppekode character varying(15),
     hovedmaalkode character varying(30),
+    sperret_ansatt boolean DEFAULT false,
     endret_dato timestamp without time zone
 );
 
