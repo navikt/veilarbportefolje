@@ -16,7 +16,6 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -54,8 +53,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final OpensearchService opensearchService;
     private final SistLestService sistLestService;
 
-    private final UnleashService unleashService;
-
     private final TiltakService tiltakService;
     private final VeilederId veilederId = VeilederId.of("Z123456");
     private final NavKontor testEnhet = NavKontor.of("0000");
@@ -65,13 +62,12 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private Long aktivitetVersion = 1L;
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer, UnleashService unleashService, TiltakService tiltakService) {
+    public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer, TiltakService tiltakService) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
-        this.unleashService = unleashService;
         this.tiltakService = tiltakService;
         BrukerServiceV2 brukerService = mock(BrukerServiceV2.class);
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
-        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer, tiltakService, unleashService);
+        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer, tiltakService);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.opensearchService = opensearchService;
         this.malService = malService;
