@@ -42,7 +42,7 @@ public class PostgresOpensearchMapper {
     private final BarnUnder18AarService barnUnder18AarService;
     private final EnsligeForsorgereService ensligeForsorgereService;
 
-    public List<OppfolgingsBruker> flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
+    public void flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
         Map<AktorId, List<AktivitetEntityDto>> avtalteAktiviterMap = aktivitetOpensearchService.hentAvtaltAktivitetData(aktoerIder);
         Map<AktorId, List<AktivitetEntityDto>> ikkeAvtalteAktiviterMap = aktivitetOpensearchService.hentIkkeAvtaltAktivitetData(aktoerIder);
@@ -61,7 +61,6 @@ public class PostgresOpensearchMapper {
                 }
         );
 
-        return brukere;
     }
 
     public void flettInnSisteEndringerData(List<OppfolgingsBruker> brukere) {

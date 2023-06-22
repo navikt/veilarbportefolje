@@ -344,6 +344,6 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
 
     @SneakyThrows
     private void skrivBrukereTilTestindeks(OppfolgingsBruker... brukere) {
-        opensearchIndexer.skrivTilIndeks(indexName.getValue(), List.of(brukere));
+        opensearchIndexer.skrivBulkTilIndeks(indexName.getValue(), List.of(brukere));
     }
 }

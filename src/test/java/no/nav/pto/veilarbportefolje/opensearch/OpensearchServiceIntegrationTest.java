@@ -3781,7 +3781,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @SneakyThrows
     private void skrivBrukereTilTestindeks(OppfolgingsBruker... brukere) {
-        opensearchIndexer.skrivTilIndeks(indexName.getValue(), List.of(brukere));
+        opensearchIndexer.skrivBulkTilIndeks(indexName.getValue(), List.of(brukere));
     }
 
     private static BrukereMedAntall loggInnVeilederOgHentEnhetPortefolje(OpensearchService opensearchService, String veilederId, AuthContextHolder contextHolder) {
