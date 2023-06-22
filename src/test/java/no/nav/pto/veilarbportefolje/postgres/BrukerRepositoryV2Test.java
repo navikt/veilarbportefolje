@@ -69,20 +69,17 @@ public class BrukerRepositoryV2Test {
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_1.get(), null, null,
                          "0000", null, null,
-                        null, false,
-                        ZonedDateTime.now().minusDays(1)));
+                        null, ZonedDateTime.now().minusDays(1)));
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_2.get(), null, null,
                          "0000", null, null,
-                        null,  false,
-                        ZonedDateTime.now()));
+                        null, ZonedDateTime.now()));
         List<OppfolgingsBruker> oppfolgingsBrukers_pre_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
 
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_ny.get(), null, null,
                         "0001", null, null,
-                        null,  false,
-                        ZonedDateTime.now()));
+                        null, ZonedDateTime.now()));
         List<OppfolgingsBruker> oppfolgingsBrukers_post_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
 
 

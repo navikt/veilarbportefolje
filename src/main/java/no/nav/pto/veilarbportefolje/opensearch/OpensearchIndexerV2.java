@@ -68,7 +68,6 @@ public class OpensearchIndexerV2 {
                 .field("kvalifiseringsgruppekode", oppfolgingsbruker.kvalifiseringsgruppekode())
                 .field("rettighetsgruppekode", oppfolgingsbruker.rettighetsgruppekode())
                 .field("hovedmaalkode", oppfolgingsbruker.hovedmaalkode())
-                .field("egen_ansatt", oppfolgingsbruker.sperret_ansatt())
                 .field("fodselsdato", FodselsnummerUtils.lagFodselsdato(oppfolgingsbruker.fodselsnr()))
                 .field("kjonn", FodselsnummerUtils.lagKjonn(oppfolgingsbruker.fodselsnr()))
                 .field("fodselsdag_i_mnd", Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(oppfolgingsbruker.fodselsnr())))

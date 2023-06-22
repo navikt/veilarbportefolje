@@ -50,8 +50,7 @@ public class OppfolgingsbrukerServiceTestV2 {
         ZonedDateTime endret_dato = DateUtils.now();
 
         OppfolgingsbrukerEntity forventetResultat = new OppfolgingsbrukerEntity(fnr.get(), "RARBS", ZonedDateTime.of(iserv_fra_dato.atStartOfDay(), ZoneId.systemDefault()),
-                 "007", "BKART", "AAP", "SKAFFEA",
-                 false,  endret_dato);
+                 "007", "BKART", "AAP", "SKAFFEA", endret_dato);
 
         EndringPaaOppfoelgingsBrukerV2 kafkaMelding = EndringPaaOppfoelgingsBrukerV2.builder().fodselsnummer(fnr.get()).formidlingsgruppe(Formidlingsgruppe.RARBS).iservFraDato(iserv_fra_dato)
                 .oppfolgingsenhet("007").kvalifiseringsgruppe(Kvalifiseringsgruppe.BKART).rettighetsgruppe(Rettighetsgruppe.AAP).hovedmaal(Hovedmaal.SKAFFEA)

@@ -127,8 +127,9 @@ public class AktiviteterRepositoryV2 {
         params.addValue("veilederIdent", veilederIdent.getValue());
         params.addValue("enhet", enhet.get());
         return namedDb.query("""
-                        SELECT op.fodselsnr, op.fornavn, op.etternavn, a.fradato, a.avtalt
+                        SELECT op.fodselsnr, a.fradato, a.avtalt, bd.fornavn, bd.etternavn
                          from oppfolgingsbruker_arena_v2 op
+                         left join bruker_data bd on bd.freg_ident = op.fodselsnr
                         inner join aktive_identer ai on op.fodselsnr = ai.fnr
                         inner join oppfolging_data od on od.aktoerid = ai.aktorid
                         inner join aktiviteter a on a.aktoerid = ai.aktorid
