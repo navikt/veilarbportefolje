@@ -36,11 +36,9 @@ public class OppfolginsbrukerRepositoryTestV3 {
     @Test
     public void skal_ikke_lagre_oppfolgingsbruker_med_eldre_endret_dato() {
         OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1),
-                "1001", "ORG", "OP", "TES",
-                 true,  ZonedDateTime.now());
+                "1001", "ORG", "OP", "TES", ZonedDateTime.now());
         OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1),
-                "1002", "ORG", "OP", "TES",
-                 true,ZonedDateTime.now().minusDays(5));
+                "1002", "ORG", "OP", "TES", ZonedDateTime.now().minusDays(5));
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
@@ -53,10 +51,8 @@ public class OppfolginsbrukerRepositoryTestV3 {
     @Test
     public void skal_oppdater_oppfolgingsbruker_fra_nyere_dato() {
         OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(fnr.get(),"TEST", ZonedDateTime.now().minusDays(1),
-                "1001", "ORG", "OP", "TES",
-                 true, ZonedDateTime.now().minusDays(5));
-        OppfolgingsbrukerEntity new_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1), "1001", "ORG", "OP", "TES",
-                true, ZonedDateTime.now());
+                "1001", "ORG", "OP", "TES", ZonedDateTime.now().minusDays(5));
+        OppfolgingsbrukerEntity new_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1), "1001", "ORG", "OP", "TES", ZonedDateTime.now());
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
@@ -85,7 +81,7 @@ public class OppfolginsbrukerRepositoryTestV3 {
     private void settSperretAnsatt(String fnr, boolean sperret) {
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr, null, null, "0000", null, null,
-                        null, sperret,
+                        null,
                          ZonedDateTime.now()));
     }
 

@@ -192,4 +192,5 @@ public class PdlIdentRepositoryTest {
     private List<PDLIdent> hentLokaleIdenter(AktorId ident) {
         return pdlIdentRepository.hentIdenter(pdlIdentRepository.hentPerson(ident.get()));
     }
+
 }
