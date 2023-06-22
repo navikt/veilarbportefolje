@@ -309,7 +309,6 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         navKontor.getValue(),  null, null,
-                        null,   true,
-                         ZonedDateTime.now()));
+                        null, ZonedDateTime.now()));
     }
 }

@@ -9,6 +9,8 @@ import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.domene.Sikkerhetstiltak;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
+import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -156,5 +158,23 @@ public class PdlPersonRepository {
                     }
                     return results;
                 });
+    }
+
+    public List<String> finnSkjulteBrukere(List<String> fnrListe, BrukerinnsynTilganger brukerInnsynTilganger) {
+        String fnrsStr = fnrListe.stream().collect(Collectors.joining(",", "{", "}"));
+
+        return dbReadOnly.queryForList(
+                        """
+                        SELECT freg_ident from bruker_data bd, nom_skjerming ns
+                        where ns.fodselsnr = bd.freg_ident AND freg_ident = ANY (?::varchar[])
+                        AND (
+                            (diskresjonkode = '6' AND NOT ?::boolean)
+                            OR (diskresjonkode = '7' AND NOT ?::boolean)
+                            OR (er_skjermet AND NOT ?::boolean)
+                        )
+                        """, fnrsStr, brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig(), brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig(), brukerInnsynTilganger.tilgangTilSkjerming())
+                .stream()
+                .map(rs -> (String) rs.get("freg_ident"))
+                .toList();
     }
 }
