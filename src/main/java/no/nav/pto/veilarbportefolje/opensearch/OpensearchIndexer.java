@@ -50,6 +50,7 @@ public class OpensearchIndexer {
             postgresOpensearchMapper.flettInnStatsborgerskapData(List.of(bruker));
             postgresOpensearchMapper.flettInnAvvik14aVedtak(List.of(bruker));
             postgresOpensearchMapper.flettInnEnsligeForsorgereData(List.of(bruker));
+            postgresOpensearchMapper.flettInnBarnUnder18Aar(List.of(bruker));
 
             syncronIndekseringsRequest(bruker);
         } else {
@@ -118,6 +119,7 @@ public class OpensearchIndexer {
         postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
         postgresOpensearchMapper.flettInnStatsborgerskapData(brukere);
         postgresOpensearchMapper.flettInnEnsligeForsorgereData(brukere);
+        postgresOpensearchMapper.flettInnBarnUnder18Aar(brukere);
 
         if (brukere.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");

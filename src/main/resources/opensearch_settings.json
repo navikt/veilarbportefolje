@@ -235,6 +235,18 @@
       },
       "ytelse": {
         "type": "keyword"
+      },
+      "barn_under_18_aar": {
+        "type" : "nested",
+        "properties": {
+          "alder": {
+            "type": "integer"
+          },
+          "diskresjonskode": {
+            "type": "keyword",
+            "null_value":"-1"
+          }
+        }
       }
     }
   }
