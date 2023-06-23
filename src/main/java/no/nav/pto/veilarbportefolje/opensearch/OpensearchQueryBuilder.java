@@ -159,7 +159,7 @@ public class OpensearchQueryBuilder {
         } else {
              barnUnder18aarQueryBuilder.must(matchQuery("barn_under_18_aar.diskresjonskode", "-1"));
         }
-         NestedQueryBuilder barnUnder18Aar = nestedQuery("barn_under_18_aar", barnUnder18aarQueryBuilder, ScoreMode.Max);
+         NestedQueryBuilder barnUnder18Aar = nestedQuery("barn_under_18_aar", barnUnder18aarQueryBuilder, ScoreMode.Avg);
          boolQuery.must(barnUnder18Aar);
     }
 
@@ -879,7 +879,6 @@ public class OpensearchQueryBuilder {
                     return count;  
                     """;
 
-
             String expressionToUse = "";
             if (hartilgangKode6og7) {
                 expressionToUse = expressionTilgang6og7;
@@ -895,7 +894,6 @@ public class OpensearchQueryBuilder {
             ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
             scriptBuilder.order(order);
             searchSourceBuilder.sort(scriptBuilder);
-
         }
     }
 

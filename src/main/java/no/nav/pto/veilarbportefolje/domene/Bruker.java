@@ -114,7 +114,7 @@ public class Bruker {
         String diskresjonskode = bruker.getDiskresjonskode();
         LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(bruker.getOppfolging_startdato());
         boolean trengerVurdering = bruker.isTrenger_vurdering();
-        boolean harUtelandsAddresse = bruker.getUtenlandskAdresse() != null;
+        boolean harUtenlandskAdresse = bruker.getUtenlandskAdresse() != null;
 
         return new Bruker()
                 .setNyForEnhet(ufordelt)
@@ -190,7 +190,7 @@ public class Bruker {
                 .setLandgruppe(bruker.getLandgruppe())
                 .setBostedBydel(bruker.getBydelsnummer())
                 .setBostedKommune(bruker.getKommunenummer())
-                .setHarUtelandsAddresse(harUtelandsAddresse)
+                .setHarUtelandsAddresse(harUtenlandskAdresse)
                 .setHarUkjentBosted(bruker.isHarUkjentBosted())
                 .setBostedSistOppdatert(bruker.getBostedSistOppdatert())
                 .setAvvik14aVedtak(bruker.getAvvik14aVedtak())
