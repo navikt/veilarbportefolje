@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.oppfolging.SkjermingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,18 +20,25 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class OppfolginsbrukerRepositoryTestV3 {
     private JdbcTemplate db;
     private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
+
+    private SkjermingRepository skjermingRepository;
+
+
     private final Fnr fnr = Fnr.of("0");
 
     @Autowired
-    public void OppfolginsbrukerRepositoryTestV2( JdbcTemplate db, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository) {
+    public void OppfolginsbrukerRepositoryTestV2(JdbcTemplate db, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository) {
         this.db = db;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
+        skjermingRepository = new SkjermingRepository(db);
     }
 
     @BeforeEach
     public void resetDb() {
         db.execute("truncate oppfolgingsbruker_arena_v2");
         db.update("truncate bruker_identer");
+        db.update("truncate nom_skjerming");
+
     }
 
     @Test
@@ -83,6 +91,7 @@ public class OppfolginsbrukerRepositoryTestV3 {
                 new OppfolgingsbrukerEntity(fnr, null, null, "0000", null, null,
                         null,
                          ZonedDateTime.now()));
+        skjermingRepository.settSkjerming(Fnr.of(fnr), sperret);
     }
 
 
