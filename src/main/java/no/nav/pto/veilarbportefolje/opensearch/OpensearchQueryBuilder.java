@@ -520,7 +520,7 @@ public class OpensearchQueryBuilder {
         String expression = "";
         if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP)) {
             expression = """
-                    if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty) {
+                    if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty && doc['aapunntakukerigjen'] != 0) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
                     } else if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
                         return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
@@ -530,7 +530,10 @@ public class OpensearchQueryBuilder {
                     """;
         } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
             expression = """
-                    if (doc.containsKey('aapmaxtiduke') && !doc['aapmaxtiduke'].empty) {
+                    if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
+                        return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
+                    }
+                    else if (doc.containsKey('aapmaxtiduke') && !doc['aapmaxtiduke'].empty) {
                         return doc['aapmaxtiduke'].value;
                     }
                     else {
