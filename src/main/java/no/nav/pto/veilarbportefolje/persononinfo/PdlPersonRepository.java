@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_STATSBORGERSKAP;
 import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.domene.Sikkerhetstiltak;
@@ -157,23 +156,5 @@ public class PdlPersonRepository {
                     }
                     return results;
                 });
-    }
-
-    public List<String> finnSkjulteBrukere(List<String> fnrListe, BrukerinnsynTilganger brukerInnsynTilganger) {
-        String fnrsStr = fnrListe.stream().collect(Collectors.joining(",", "{", "}"));
-
-        return dbReadOnly.queryForList(
-                """
-                SELECT freg_ident from bruker_data bd, nom_skjerming ns
-                where ns.fodselsnr = bd.freg_ident AND freg_ident = ANY (?::varchar[])
-                AND (
-                    (diskresjonkode = '6' AND NOT ?::boolean)
-                    OR (diskresjonkode = '7' AND NOT ?::boolean)
-                    OR (er_skjermet AND NOT ?::boolean)
-                )
-                """, fnrsStr, brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig(), brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig(), brukerInnsynTilganger.tilgangTilSkjerming())
-                .stream()
-                .map(rs -> (String) rs.get("freg_ident"))
-                .toList();
     }
 }
