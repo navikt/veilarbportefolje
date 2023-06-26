@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+import static java.lang.Integer.parseInt;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
@@ -84,13 +85,25 @@ public class OpensearchService {
             leggTilManuelleFilter(boolQuery, filtervalg);
         }
 
+        if (filtervalg.harBarnUnder18AarFilter()) {
+            if (filtervalg.barnUnder18AarAlder != null && !filtervalg.barnUnder18AarAlder.isEmpty()){
+                String[] fraTilAlder = filtervalg.barnUnder18AarAlder.get(0).split("-");
+                int fraAlder = parseInt(fraTilAlder[0]);
+                int tilAlder = parseInt(fraTilAlder[1]);
+                leggTilBarnAlderFilter(boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7(), fraAlder, tilAlder);
+            }
+            else if (filtervalg.barnUnder18Aar != null && !filtervalg.barnUnder18Aar.isEmpty()) {
+                leggTilBarnFilter(filtervalg, boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7());
+            }
+        }
+
         searchSourceBuilder.query(boolQuery);
 
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(unleashService)) {
             leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
-        sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
+        sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg, authService.hentVeilederBrukerInnsynTilganger());
 
         OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();
