@@ -81,7 +81,7 @@ public class OpensearchIndexer {
 
     private void validateBatchSize(List<?> brukere) {
         if (brukere.size() > BATCH_SIZE_LIMIT) {
-            throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", BATCH_SIZE_LIMIT));
+            throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i Postgres db", BATCH_SIZE_LIMIT));
         }
     }
 
