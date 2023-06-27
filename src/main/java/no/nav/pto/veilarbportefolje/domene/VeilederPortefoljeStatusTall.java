@@ -15,7 +15,6 @@ public class VeilederPortefoljeStatusTall {
     public long venterPaSvarFraNAV;
     public long venterPaSvarFraBruker;
     public long iavtaltAktivitet;
-    public long iAktivitet;
     public long ikkeIavtaltAktivitet;
     public long utlopteAktiviteter;
     public long minArbeidsliste;
@@ -36,7 +35,6 @@ public class VeilederPortefoljeStatusTall {
         this.venterPaSvarFraNAV = buckets.getVenterPaSvarFraNAV().getDoc_count();
         this.venterPaSvarFraBruker = buckets.getVenterPaSvarFraBruker().getDoc_count();
         this.iavtaltAktivitet = buckets.getIavtaltAktivitet().getDoc_count();
-        this.iAktivitet = buckets.getIAktivitet().getDoc_count();
         this.ikkeIavtaltAktivitet = buckets.getIkkeIavtaltAktivitet().getDoc_count();
         this.utlopteAktiviteter = buckets.getUtlopteAktiviteter().getDoc_count();
         this.minArbeidsliste = buckets.getMinArbeidsliste().getDoc_count();

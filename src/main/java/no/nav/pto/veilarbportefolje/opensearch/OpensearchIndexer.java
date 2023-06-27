@@ -29,7 +29,7 @@ import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOpp
 @RequiredArgsConstructor
 public class OpensearchIndexer {
     public static final int BATCH_SIZE = 1000;
-    public static final int ORACLE_BATCH_SIZE_LIMIT = 1000;
+    public static final int BATCH_SIZE_LIMIT = 1000;
 
     private final RestHighLevelClient restHighLevelClient;
     private final BrukerRepositoryV2 brukerRepositoryV2;
@@ -45,13 +45,7 @@ public class OpensearchIndexer {
 
     private void indekserBruker(OppfolgingsBruker bruker) {
         if (erUnderOppfolging(bruker)) {
-            postgresOpensearchMapper.flettInnAktivitetsData(List.of(bruker));
-            postgresOpensearchMapper.flettInnSisteEndringerData(List.of(bruker));
-            postgresOpensearchMapper.flettInnStatsborgerskapData(List.of(bruker));
-            postgresOpensearchMapper.flettInnAvvik14aVedtak(List.of(bruker));
-            postgresOpensearchMapper.flettInnEnsligeForsorgereData(List.of(bruker));
-            postgresOpensearchMapper.flettInnBarnUnder18Aar(List.of(bruker));
-
+            flettInnNodvendigData(List.of(bruker));
             syncronIndekseringsRequest(bruker);
         } else {
             opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
@@ -66,7 +60,7 @@ public class OpensearchIndexer {
     }
 
     @SneakyThrows
-    public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
+    public void skrivBulkTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
         BulkRequest bulk = new BulkRequest();
         List<String> aktoerIds = oppfolgingsBrukere.stream().map(OppfolgingsBruker::getAktoer_id).toList();
         oppfolgingsBrukere.stream()
@@ -86,8 +80,8 @@ public class OpensearchIndexer {
     }
 
     private void validateBatchSize(List<?> brukere) {
-        if (brukere.size() > ORACLE_BATCH_SIZE_LIMIT) {
-            throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", ORACLE_BATCH_SIZE_LIMIT));
+        if (brukere.size() > BATCH_SIZE_LIMIT) {
+            throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i Postgres db", BATCH_SIZE_LIMIT));
         }
     }
 
@@ -114,6 +108,13 @@ public class OpensearchIndexer {
 
         List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
 
+        if (brukere != null && !brukere.isEmpty()){
+            flettInnNodvendigData(brukere);
+            this.skrivBulkTilIndeks(alias.getValue(), brukere);
+        }
+    }
+
+    private void flettInnNodvendigData(List<OppfolgingsBruker> brukere){
         postgresOpensearchMapper.flettInnAvvik14aVedtak(brukere);
         postgresOpensearchMapper.flettInnAktivitetsData(brukere);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
@@ -125,7 +126,7 @@ public class OpensearchIndexer {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
             return;
         }
-        this.skrivTilIndeks(alias.getValue(), brukere);
+        this.skrivBulkTilIndeks(alias.getValue(), brukere);
     }
 
     public void dryrunAvPostgresTilOpensearchMapping(List<AktorId> brukereUnderOppfolging) {
