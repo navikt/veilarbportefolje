@@ -27,7 +27,6 @@ public class StatustallResponse {
                 Bucket venterPaSvarFraNAV;
                 Bucket venterPaSvarFraBruker;
                 Bucket iavtaltAktivitet;
-                Bucket iAktivitet;
                 Bucket ikkeIavtaltAktivitet;
                 Bucket utlopteAktiviteter;
                 Bucket minArbeidsliste;

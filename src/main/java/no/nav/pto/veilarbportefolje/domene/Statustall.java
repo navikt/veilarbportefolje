@@ -15,7 +15,6 @@ public class Statustall {
     private long venterPaSvarFraNAV;
     private long venterPaSvarFraBruker;
     private long iavtaltAktivitet;
-    private long iAktivitet;
     private long ikkeIavtaltAktivitet;
     private long utlopteAktiviteter;
     private long minArbeidsliste;
@@ -36,7 +35,6 @@ public class Statustall {
         this.venterPaSvarFraNAV = 0;
         this.venterPaSvarFraBruker = 0;
         this.iavtaltAktivitet = 0;
-        this.iAktivitet = 0;
         this.ikkeIavtaltAktivitet = 0;
         this.utlopteAktiviteter = 0;
         this.minArbeidsliste = 0;
@@ -58,7 +56,6 @@ public class Statustall {
         this.venterPaSvarFraNAV = buckets.getVenterPaSvarFraNAV().getDoc_count();
         this.venterPaSvarFraBruker = buckets.getVenterPaSvarFraBruker().getDoc_count();
         this.iavtaltAktivitet = buckets.getIavtaltAktivitet().getDoc_count();
-        this.iAktivitet = buckets.getIAktivitet().getDoc_count();
         this.ikkeIavtaltAktivitet = buckets.getIkkeIavtaltAktivitet().getDoc_count();
         this.utlopteAktiviteter = buckets.getUtlopteAktiviteter().getDoc_count();
         this.minArbeidsliste = buckets.getMinArbeidsliste().getDoc_count();

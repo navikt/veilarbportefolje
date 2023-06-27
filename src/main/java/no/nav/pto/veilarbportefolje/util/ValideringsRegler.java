@@ -44,7 +44,6 @@ public class ValideringsRegler {
             "aktivitet_start",
             "neste_aktivitet_start",
             "forrige_aktivitet_start",
-            "iaktivitet",
             "iavtaltaktivitet",
             "aaprettighetsperiode",
             "moterMedNAVIdag",

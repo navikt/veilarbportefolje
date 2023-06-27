@@ -92,36 +92,26 @@
         },
         "analyzer": "fnr_sok"
       },
-      "alle_aktiviteter_utlopsdatoer": {
+      "alle_aktiviteter_mote_startdato": {
         "type": "date"
       },
-      "alle_aktiviteter_mote_startdato": {
-        "type": "date",
-        "copy_to": "alle_aktiviteter_utlopsdatoer"
-      },
       "alle_aktiviteter_mote_utlopsdato": {
-        "type": "date",
-        "copy_to": "alle_aktiviteter_utlopsdatoer"
+        "type": "date"
       },
       "alle_aktiviteter_stilling_utlopsdato": {
-        "type": "date",
-        "copy_to": "alle_aktiviteter_utlopsdatoer"
+        "type": "date"
       },
       "alle_aktiviteter_egen_utlopsdato": {
-        "type": "date",
-        "copy_to": "alle_aktiviteter_utlopsdatoer"
+        "type": "date"
       },
       "alle_aktiviteter_behandling_utlopsdato": {
-        "type": "date",
-        "copy_to": "alle_aktiviteter_utlopsdatoer"
+        "type": "date"
       },
       "alle_aktiviteter_ijobb_utlopsdato": {
-        "type": "date",
-        "copy_to": "alle_aktiviteter_utlopsdatoer"
+        "type": "date"
       },
       "alle_aktiviteter_sokeavtale_utlopsdato": {
-        "type": "date",
-        "copy_to": "alle_aktiviteter_utlopsdatoer"
+        "type": "date"
       },
       "aktivitet_utlopsdatoer": {
         "type": "date"
@@ -156,22 +146,19 @@
       "aktivitet_tiltak_utlopsdato": {
         "type": "date",
         "copy_to": [
-          "aktivitet_utlopsdatoer",
-          "alle_aktiviteter_utlopsdatoer"
+          "aktivitet_utlopsdatoer"
         ]
       },
       "aktivitet_utdanningaktivitet_utlopsdato": {
         "type": "date",
         "copy_to": [
-          "aktivitet_utlopsdatoer",
-          "alle_aktiviteter_utlopsdatoer"
+          "aktivitet_utlopsdatoer"
         ]
       },
       "aktivitet_gruppeaktivitet_utlopsdato": {
         "type": "date",
         "copy_to": [
-          "aktivitet_utlopsdatoer",
-          "alle_aktiviteter_utlopsdatoer"
+          "aktivitet_utlopsdatoer"
         ]
       },
       "foedelandFulltNavn": {
