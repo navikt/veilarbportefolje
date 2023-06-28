@@ -37,7 +37,7 @@ class CvServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_hente_fnr_fra_aktoertjenesten_om_fnr_mangler_i_melding() {
+    public void skal_hente_fnr_fra_aktoertjenesten_om_fnr_mangler_i_melding() {
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
@@ -61,7 +61,7 @@ class CvServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_oppdatere_dokumentet_i_db_og_opensearch() {
+    public void skal_oppdatere_dokumentet_i_db_og_opensearch() {
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
@@ -88,7 +88,7 @@ class CvServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_ikke_behandle_meldinger_som_har_meldingstype_arbeidsgiver_generell() {
+    public void skal_ikke_behandle_meldinger_som_har_meldingstype_arbeidsgiver_generell() {
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
@@ -112,7 +112,7 @@ class CvServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_ikke_behandle_meldinger_som_har_meldingstype_cv_generell() {
+    public void skal_ikke_behandle_meldinger_som_har_meldingstype_cv_generell() {
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
@@ -136,7 +136,7 @@ class CvServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_ignorere_tilfeller_hvor_dokumentet_ikke_finnes_i_opensearch() {
+    public void skal_ignorere_tilfeller_hvor_dokumentet_ikke_finnes_i_opensearch() {
         CVMelding cvMelding = new CVMelding();
         cvMelding.setAktoerId(aktoerId);
         cvMelding.setRessurs(Ressurs.CV_HJEMMEL);

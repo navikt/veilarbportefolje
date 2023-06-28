@@ -25,7 +25,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_oppdatere_tilordnet_veileder() {
+    public void skal_oppdatere_tilordnet_veileder() {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
 
@@ -42,7 +42,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_oppdatere_tilordnet_veileder_med_null() {
+    public void skal_oppdatere_tilordnet_veileder_med_null() {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = VeilederId.of(null);
 
@@ -59,7 +59,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_slette_arbeidsliste_om_bruker_har_byttet_nav_kontor() {
+    public void skal_slette_arbeidsliste_om_bruker_har_byttet_nav_kontor() {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
 

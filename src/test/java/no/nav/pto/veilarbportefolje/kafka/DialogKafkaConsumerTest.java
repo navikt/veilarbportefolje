@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 
-class DialogKafkaConsumerTest extends EndToEndTest {
+public class DialogKafkaConsumerTest extends EndToEndTest {
 
     private final DialogService dialogService;
 
@@ -23,7 +23,7 @@ class DialogKafkaConsumerTest extends EndToEndTest {
     }
 
     @Test
-    void skal_oppdatere_dialog_datoer() {
+    public void skal_oppdatere_dialog_datoer() {
         final AktorId aktoerId = randomAktorId();
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
 
