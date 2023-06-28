@@ -514,12 +514,18 @@ public class OpensearchQueryBuilder {
         String expression = "";
         if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP)) {
             expression = """
-                    if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty && doc['aapunntakukerigjen'] != 0) {
+                    if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty && doc['aapunntakukerigjen'].value != 0) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
-                    } else if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
+                    }
+                    else if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
                         return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
-                    } else {
-                        return 0;
+                    }
+                    else if (doc.containsKey('aapmaxtiduke')) {
+                        // Legger til 01.01.2050 i millis for å sortere bak de som har dato
+                        return 2524653462000.0 + doc['aapmaxtiduke'].value;
+                    }
+                    else {
+                       return 0;
                     }
                     """;
         } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
@@ -528,7 +534,8 @@ public class OpensearchQueryBuilder {
                         return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
                     }
                     else if (doc.containsKey('aapmaxtiduke') && !doc['aapmaxtiduke'].empty) {
-                        return doc['aapmaxtiduke'].value;
+                        // Legger til 01.01.2050 i millis for å sortere bak de som har dato
+                        return 2524653462000.0 + doc['aapmaxtiduke'].value;
                     }
                     else {
                         return 0;
