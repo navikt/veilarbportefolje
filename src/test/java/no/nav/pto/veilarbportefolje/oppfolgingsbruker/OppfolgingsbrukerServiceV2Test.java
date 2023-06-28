@@ -25,14 +25,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class OppfolgingsbrukerServiceTestV2 {
+public class OppfolgingsbrukerServiceV2Test {
     private final JdbcTemplate db;
     private final OppfolgingsbrukerServiceV2 oppfolginsbrukerService;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
     private final Fnr fnr = randomFnr();
 
     @Autowired
-    public OppfolgingsbrukerServiceTestV2( JdbcTemplate db, OppfolgingsbrukerServiceV2 oppfolginsbrukerService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3) {
+    public OppfolgingsbrukerServiceV2Test(JdbcTemplate db, OppfolgingsbrukerServiceV2 oppfolginsbrukerService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3) {
         this.db = db;
         this.oppfolginsbrukerService = oppfolginsbrukerService;
         this.oppfolgingsbrukerRepositoryV3 = oppfolgingsbrukerRepositoryV3;

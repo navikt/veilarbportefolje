@@ -14,7 +14,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class OppfolgingRepositoryTestV2 {
+public class OppfolgingRepositoryV2Test {
     private OppfolgingRepositoryV2 oppfolgingRepository;
     private final AktorId aktoerId = TestDataUtils.randomAktorId();
 

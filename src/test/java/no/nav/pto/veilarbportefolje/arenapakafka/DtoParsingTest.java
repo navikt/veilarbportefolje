@@ -10,7 +10,7 @@ import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class DtoParsing {
+public class DtoParsingTest {
     @Test
     public void skal_bygge_korrekt_UtdanningsAktivitetInnhold_json() {
         String goldenGateDtoString = readFileAsJsonString("/goldenGateUtdanningsAktivitet.json", getClass());

@@ -240,7 +240,7 @@ public class PDLPerson {
         }
         var foreldreansvarAktivt = foreldreansvar.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
 
-        if (foreldreansvarAktivt == null || foreldreansvarAktivt.isEmpty()){
+        if (foreldreansvarAktivt.isEmpty()){
             return null;
         }
 

@@ -16,7 +16,7 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class OppfolginsbrukerRepositoryTestV3 {
+public class OppfolginsbrukerRepositoryV3Test {
     private JdbcTemplate db;
     private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final Fnr fnr = Fnr.of("0");

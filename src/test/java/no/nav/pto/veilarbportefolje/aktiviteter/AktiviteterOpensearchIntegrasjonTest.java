@@ -35,7 +35,7 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
+public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
     private final AktivitetService aktivitetService;
     private final OpensearchService opensearchService;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
@@ -45,7 +45,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     private final PdlIdentRepository pdlIdentRepository;
 
     @Autowired
-    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository,  JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
+    public AktiviteterOpensearchIntegrasjonTest(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
         this.aktivitetService = aktivitetService;
         this.opensearchService = opensearchService;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
