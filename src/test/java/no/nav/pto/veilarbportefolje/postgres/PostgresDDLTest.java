@@ -10,8 +10,8 @@ import java.io.PrintWriter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PostgresDDL {
-    private final String DDL_PATH = "./.intelliJ_ddl/DDL.sql";
+
+public class PostgresDDLTest {
 
     @Test
     public void kan_generere_postgres_DDL() throws IOException {
@@ -22,6 +22,7 @@ public class PostgresDDL {
                 .baselineOnMigrate(true)
                 .load()
                 .migrate();
+        String DDL_PATH = "./.intelliJ_ddl/DDL.sql";
         PrintWriter writer = new PrintWriter(DDL_PATH);
         writer.print(postgresContainer.execInContainer("pg_dump", "-O", "-s", "-U", "postgres", "postgres"));
         writer.close();
