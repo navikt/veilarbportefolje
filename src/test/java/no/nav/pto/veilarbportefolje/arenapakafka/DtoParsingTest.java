@@ -2,7 +2,8 @@ package no.nav.pto.veilarbportefolje.arenapakafka;
 
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.*;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import org.junit.Test;
+import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static no.nav.common.json.JsonUtils.fromJson;
@@ -10,7 +11,7 @@ import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class DtoParsing {
+public class DtoParsingTest extends EndToEndTest {
     @Test
     public void skal_bygge_korrekt_UtdanningsAktivitetInnhold_json() {
         String goldenGateDtoString = readFileAsJsonString("/goldenGateUtdanningsAktivitet.json", getClass());

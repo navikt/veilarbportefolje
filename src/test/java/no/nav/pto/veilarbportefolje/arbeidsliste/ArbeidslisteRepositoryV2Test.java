@@ -26,7 +26,7 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class ArbeidslisteRepositoryTestV2 {
+public class ArbeidslisteRepositoryV2Test {
     @Autowired
     private ArbeidslisteRepositoryV2 repo;
     @Autowired
