@@ -12,7 +12,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class NyForVeilederServiceTest extends EndToEndTest {
+public class NyForVeilederServiceTest extends EndToEndTest {
     private final NyForVeilederService nyForVeilederService;
     private final OppfolgingRepositoryV2 oppfolgingRepository;
 
@@ -23,7 +23,7 @@ class NyForVeilederServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_sette_ny_for_veileder_til_false_om_veileder_har_vært_inne_i_aktivitetsplan_til_bruker() {
+    public void skal_sette_ny_for_veileder_til_false_om_veileder_har_vært_inne_i_aktivitetsplan_til_bruker() {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
         ;
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
@@ -43,7 +43,7 @@ class NyForVeilederServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_ignorere_meldinger_hvor_ny_for_veileder_er_satt_til_true_siden_dette_gjøres_ved_tilordning() {
+    public void skal_ignorere_meldinger_hvor_ny_for_veileder_er_satt_til_true_siden_dette_gjøres_ved_tilordning() {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         oppfolgingRepository.settNyForVeileder(aktoerId, false);

@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-class VeilederIdTest {
+public class VeilederIdTest {
     @Test
-    void skal_deserialisere_veileder_id_riktig() {
+    public void skal_deserialisere_veileder_id_riktig() {
         final VeilederId veilederId = VeilederId.of("Z000000");
         final String json = JsonUtils.toJson(veilederId);
         assertThat(json).isEqualTo("{\"veilederId\":\"Z000000\"}");

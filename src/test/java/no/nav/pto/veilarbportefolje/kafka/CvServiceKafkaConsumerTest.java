@@ -20,7 +20,7 @@ import java.time.ZonedDateTime;
 import static java.util.Arrays.stream;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 
-class CvServiceKafkaConsumerTest extends EndToEndTest {
+public class CvServiceKafkaConsumerTest extends EndToEndTest {
 
     @Autowired
     private CVService cvService;
@@ -43,7 +43,7 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
     }
 
     @Test
-    void testCVHjemmel() {
+    public void testCVHjemmel() {
         createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
         assertHarDeltCVAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
 
@@ -53,7 +53,7 @@ class CvServiceKafkaConsumerTest extends EndToEndTest {
     }
 
     @Test
-    void testCVEksistere() {
+    public void testCVEksistere() {
         createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
         assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
 
