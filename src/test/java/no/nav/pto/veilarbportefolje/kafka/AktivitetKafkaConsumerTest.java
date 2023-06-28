@@ -22,7 +22,7 @@ import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensea
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class AktivitetKafkaConsumerTest extends EndToEndTest {
+public class AktivitetKafkaConsumerTest extends EndToEndTest {
     private final AktivitetService aktivitetService;
 
     @Autowired
@@ -31,7 +31,7 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
     }
 
     @Test
-    void skal_oppdatere_aktivitet_i_opensearch() {
+    public void skal_oppdatere_aktivitet_i_opensearch() {
         final AktorId aktoerId = randomAktorId();
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
 

@@ -52,7 +52,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-class OpensearchServiceIntegrationTest extends EndToEndTest {
+public class OpensearchServiceIntegrationTest extends EndToEndTest {
     private static String TEST_ENHET = randomNavKontor().getValue();
     private static final String TEST_VEILEDER_0 = randomVeilederId().getValue();
     private static final String TEST_VEILEDER_1 = randomVeilederId().getValue();
@@ -91,7 +91,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_kun_hente_brukere_som_innlogget_veileder_har_innsynsrett_pa_nar_man_henter_enhetens_portefolje() {
+    public void skal_kun_hente_brukere_som_innlogget_veileder_har_innsynsrett_pa_nar_man_henter_enhetens_portefolje() {
         List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
@@ -202,7 +202,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_kun_hente_brukere_som_innlogget_veileder_har_innsynsrett_pa_nar_man_henter_veileders_portefolje() {
+    public void skal_kun_hente_brukere_som_innlogget_veileder_har_innsynsrett_pa_nar_man_henter_veileders_portefolje() {
         List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
@@ -295,7 +295,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_kun_hente_ut_brukere_under_oppfolging() {
+    public void skal_kun_hente_ut_brukere_under_oppfolging() {
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
                         .setAktoer_id(randomAktorId().toString())
@@ -335,7 +335,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_sette_brukere_med_veileder_fra_annen_enhet_til_ufordelt() {
+    public void skal_sette_brukere_med_veileder_fra_annen_enhet_til_ufordelt() {
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
                         .setFnr(randomFnr().toString())
@@ -380,7 +380,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_hente_ut_brukere_ved_soek_paa_flere_veiledere() {
+    public void skal_hente_ut_brukere_ved_soek_paa_flere_veiledere() {
         String now = Instant.now().toString();
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
@@ -424,7 +424,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_hente_riktig_antall_ufordelte_brukere() {
+    public void skal_hente_riktig_antall_ufordelte_brukere() {
 
         List<OppfolgingsBruker> brukere = List.of(
 
@@ -462,7 +462,7 @@ class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_hente_riktige_antall_brukere_per_veileder() {
+    public void skal_hente_riktige_antall_brukere_per_veileder() {
 
         var veilederId1 = "Z000000";
         var veilederId2 = "Z000001";

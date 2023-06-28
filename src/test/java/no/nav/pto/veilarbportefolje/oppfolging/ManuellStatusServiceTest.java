@@ -38,7 +38,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_oppdatere_oversikten_når_bruker_blir_satt_til_manuell() {
+    public void skal_oppdatere_oversikten_når_bruker_blir_satt_til_manuell() {
         final AktorId aktoerId = randomAktorId();
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
 

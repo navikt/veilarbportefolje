@@ -23,7 +23,7 @@ import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class Avvik14aVedtakServiceTest {
+public class Avvik14aVedtakServiceTest {
 
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = mock(OppfolgingsbrukerRepositoryV3.class);
     private final Siste14aVedtakRepository siste14aVedtakRepository = mock(Siste14aVedtakRepository.class);
