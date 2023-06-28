@@ -153,12 +153,20 @@ public class OppfolgingsbrukerRepositoryV3 {
         var params = new MapSqlParameterSource();
         params.addValue("fnrListe", fnrListe.stream().collect(Collectors.joining(",", "{", "}")));
         params.addValue("tilgangTilEgenAnsatt", brukerInnsynTilganger.tilgangTilSkjerming());
+        params.addValue("tilgangTilAdressebeskyttelseStrengtFortrolig", brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig());
+        params.addValue("tilgangTilAdressebeskyttelseFortrolig", brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig());
 
         return dbNamed.queryForList("""
                 SELECT oa.fodselsnr from oppfolgingsbruker_arena_v2 oa
                 left join nom_skjerming ns on  ns.fodselsnr = oa.fodselsnr
+                left join bruker_data bd on  bd.freg_ident = oa.fodselsnr
                 where oa.fodselsnr = ANY (:fnrListe::varchar[])
-                AND (ns.er_skjermet AND NOT :tilgangTilEgenAnsatt::boolean)""", params, String.class);
+                AND (
+                                    (bd.diskresjonkode = '6' AND NOT :tilgangTilAdressebeskyttelseStrengtFortrolig::boolean)
+                                    OR (bd.diskresjonkode = '7' AND NOT :tilgangTilAdressebeskyttelseFortrolig::boolean)
+                                    OR (ns.er_skjermet AND NOT :tilgangTilEgenAnsatt::boolean)
+                )
+                """, params, String.class);
     }
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {
