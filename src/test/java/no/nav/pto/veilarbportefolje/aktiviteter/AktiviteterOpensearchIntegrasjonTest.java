@@ -36,7 +36,7 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
+public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
     private final AktivitetService aktivitetService;
     private final OpensearchService opensearchService;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
@@ -47,7 +47,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     private final SkjermingRepository skjermingRepository;
 
     @Autowired
-    public AktiviteterOpensearchIntegrasjon(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository,  JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
+    public AktiviteterOpensearchIntegrasjonTest(AktivitetService aktivitetService, OpensearchService opensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, JdbcTemplate jdbcTemplatePostgres, PdlIdentRepository pdlIdentRepository) {
         this.aktivitetService = aktivitetService;
         this.opensearchService = opensearchService;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
@@ -68,7 +68,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     @Test
     public void lasteroppeikkelagreteaktiviteteter() {
         NavKontor navKontor = randomNavKontor();
-        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue(), null);
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
                 .setAktorId(aktoer.get())
@@ -97,7 +97,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
     @Test
     public void lasteroppaktivitetStillingFraNAV() {
         NavKontor navKontor = randomNavKontor();
-        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue(), null);
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
                 .setAktorId(aktoer.get())
@@ -136,8 +136,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         AktorId aktoer1 = randomAktorId();
         AktorId aktoer2 = randomAktorId();
         VeilederId veileder = randomVeilederId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoer1, navKontor, veileder, ZonedDateTime.now());
-        testDataClient.lagreBrukerUnderOppfolging(aktoer2, navKontor, veileder, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoer1, navKontor, veileder, ZonedDateTime.now(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktoer2, navKontor, veileder, ZonedDateTime.now(), null);
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
                 .setAktorId(aktoer1.toString())
@@ -201,7 +201,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         NavKontor navKontor = randomNavKontor();
         VeilederId veileder = randomVeilederId();
         VeilederId annenVeileder = randomVeilederId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoer, navKontor, veileder, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, navKontor, veileder, ZonedDateTime.now(), null);
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("1")
                 .setAktorId(aktoer.get())
@@ -245,7 +245,7 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         NavKontor navKontor = randomNavKontor();
         VeilederId veileder = randomVeilederId();
 
-        testDataClient.lagreBrukerUnderOppfolging(aktoer, navKontor, veileder, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, navKontor, veileder, ZonedDateTime.now(), null);
         settSperretAnsatt(aktoer, navKontor);
 
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
@@ -274,8 +274,8 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
         AktorId aktoerKode6 = randomAktorId();
         AktorId aktoerKode7 = randomAktorId();
 
-        testDataClient.lagreBrukerUnderOppfolging(aktoerKode6, navKontor, veileder, ZonedDateTime.now());
-        testDataClient.lagreBrukerUnderOppfolging(aktoerKode7, navKontor, veileder, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerKode6, navKontor, veileder, ZonedDateTime.now(), "6");
+        testDataClient.lagreBrukerUnderOppfolging(aktoerKode7, navKontor, veileder, ZonedDateTime.now(), "7");
 
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("1")
@@ -316,4 +316,5 @@ public class AktiviteterOpensearchIntegrasjon extends EndToEndTest {
                         null, ZonedDateTime.now()));
         skjermingRepository.settSkjerming(Fnr.of(fnr.get()), true);
     }
+
 }
