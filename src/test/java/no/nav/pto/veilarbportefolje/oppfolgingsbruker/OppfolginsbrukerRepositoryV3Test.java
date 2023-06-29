@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.ZonedDateTime;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
@@ -43,10 +43,10 @@ public class OppfolginsbrukerRepositoryV3Test {
 
     @Test
     public void skal_ikke_lagre_oppfolgingsbruker_med_eldre_endret_dato() {
-        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1),
-                "1001", "ORG", "OP", "TES", ZonedDateTime.now());
-        OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1),
-                "1002", "ORG", "OP", "TES", ZonedDateTime.now().minusDays(5));
+        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", now().minusDays(1),
+                "1001", "ORG", "OP", "TES", now());
+        OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", now().minusDays(1),
+                "1002", "ORG", "OP", "TES", now().minusDays(5));
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
@@ -58,9 +58,9 @@ public class OppfolginsbrukerRepositoryV3Test {
 
     @Test
     public void skal_oppdater_oppfolgingsbruker_fra_nyere_dato() {
-        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(fnr.get(),"TEST", ZonedDateTime.now().minusDays(1),
-                "1001", "ORG", "OP", "TES", ZonedDateTime.now().minusDays(5));
-        OppfolgingsbrukerEntity new_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", ZonedDateTime.now().minusDays(1), "1001", "ORG", "OP", "TES", ZonedDateTime.now());
+        OppfolgingsbrukerEntity msg = new OppfolgingsbrukerEntity(fnr.get(),"TEST", now().minusDays(1),
+                "1001", "ORG", "OP", "TES", now().minusDays(5));
+        OppfolgingsbrukerEntity new_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", now().minusDays(1), "1001", "ORG", "OP", "TES", now());
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
@@ -90,9 +90,7 @@ public class OppfolginsbrukerRepositoryV3Test {
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr, null, null, "0000", null, null,
                         null,
-                         ZonedDateTime.now()));
+                         now()));
         skjermingRepository.settSkjerming(Fnr.of(fnr), sperret);
     }
-
-
 }
