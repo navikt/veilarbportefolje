@@ -24,12 +24,12 @@ import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensea
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class ArbeidslistaSorteringOpensearch extends EndToEndTest {
+public class ArbeidslistaSorteringOpensearchTest extends EndToEndTest {
     private final OpensearchService opensearchService;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
     @Autowired
-    public ArbeidslistaSorteringOpensearch(OpensearchService opensearchService, OpensearchIndexerV2 opensearchIndexerV2) {
+    public ArbeidslistaSorteringOpensearchTest(OpensearchService opensearchService, OpensearchIndexerV2 opensearchIndexerV2) {
         this.opensearchService = opensearchService;
         this.opensearchIndexerV2 = opensearchIndexerV2;
     }

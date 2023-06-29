@@ -10,7 +10,7 @@ import java.io.PrintWriter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PostgresDDL {
+public class PostgresDDLTest {
     private final String DDL_PATH = "./.intelliJ_ddl/DDL.sql";
 
     @Test
