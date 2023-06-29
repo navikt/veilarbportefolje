@@ -36,25 +36,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BarnUnder18ArPdlServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final String pdlIdentResponsFraFil = readFileAsJsonString("/PDL_Files/identer_pdl.json", getClass());
-    private final String pdlPersonResponsFraFil = readFileAsJsonString("/PDL_Files/person_pdl.json", getClass());
-
     private final String pdlPersonMed3BarnResponsFraFil = readFileAsJsonString("/PDL_Files/person_pdl_3barn.json", getClass());
     private final String pdlPersonMed2BarnResponsFraFil = readFileAsJsonString("/PDL_Files/person_pdl_2barn.json", getClass());
     private final String pdlPersonBarn1ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
     private final String pdlPersonBarn2ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn2_pdl.json", getClass());
     private final String pdlPersonBarn3ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn3_pdl.json", getClass());
     private final JdbcTemplate db;
-    private final PdlPersonRepository pdlPersonRepository;
 
-    private final BarnUnder18AarService barnUnder18AarService;
+    private BarnUnder18AarService barnUnder18AarService;
     private PdlService pdlService;
 
     private WireMockServer server = new WireMockServer();
 
     public BarnUnder18ArPdlServiceTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
-        pdlPersonRepository = new PdlPersonRepository(db, db);
-        barnUnder18AarService = new BarnUnder18AarService(new BarnUnder18AarRepository(db, db));
     }
 
     @BeforeEach
@@ -141,12 +136,14 @@ public class BarnUnder18ArPdlServiceTest {
 
         server.start();
 
+        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
+
+        this.barnUnder18AarService = new BarnUnder18AarService(new BarnUnder18AarRepository(db, db), pdlPortefoljeClient);
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
                 new PdlPersonRepository(db, db),
                 this.barnUnder18AarService,
-                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
-        );
+                pdlPortefoljeClient);
     }
 
     @AfterEach
@@ -156,6 +153,8 @@ public class BarnUnder18ArPdlServiceTest {
     @Test
     @SneakyThrows
     public void sjekkAtLagretBarnIkkeFjernes() {
+        //when(pdlClient.hentBrukerBarnDataFraPdl(Mockito.any())).thenReturn(new PDLPersonBarn().setFodselsdato(LocalDate.now().minusMonths(10)).setErIlive(true));
+
         var identerFraFil = mapper.readValue(pdlIdentResponsFraFil, PdlIdentResponse.class)
                 .getData()
                 .getHentIdenter()
@@ -168,9 +167,11 @@ public class BarnUnder18ArPdlServiceTest {
                 .map(PdlIdentRepository::mapTilident)
                 .toList();
         Fnr fnr = hentAktivFnr(identerFraFil);
+
         List<Fnr> foreldreansvar1 = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnr));
         assertThat(foreldreansvar1.size()).isEqualTo(3);
         pdlService.hentOgLagrePdlData(aktorId);
+
         List<Fnr> foreldreansvar2 = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnr));
         List<BarnUnder18AarData> barnFraRepository2 = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnr)).get(fnr);
         assertThat(foreldreansvar2.size()).isEqualTo(2);

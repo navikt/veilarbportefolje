@@ -13,26 +13,28 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.*;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService.hentAktorider;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
+import static org.mockito.Mockito.mock;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class BarnUnder18AarMisterForeldreansvar {
@@ -69,7 +71,7 @@ public class BarnUnder18AarMisterForeldreansvar {
     public BarnUnder18AarMisterForeldreansvar() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
         barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
-        barnUnder18AarService = new BarnUnder18AarService(this.barnUnder18AarRepository);
+        barnUnder18AarService = new BarnUnder18AarService(this.barnUnder18AarRepository, mock(PdlPortefoljeClient.class));
         pdlIdentRepository = new PdlIdentRepository(db);
         pdlPersonRepository = new PdlPersonRepository(db, db);
         oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);

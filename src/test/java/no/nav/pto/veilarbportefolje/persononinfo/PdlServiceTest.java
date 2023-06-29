@@ -42,14 +42,13 @@ public class PdlServiceTest {
     private final JdbcTemplate db;
     private final PdlPersonRepository pdlPersonRepository;
 
-    private final BarnUnder18AarService barnUnder18AarService;
+    private BarnUnder18AarService barnUnder18AarService;
     private PdlService pdlService;
 
     private WireMockServer server = new WireMockServer();
     public PdlServiceTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
         pdlPersonRepository = new PdlPersonRepository(db, db);
-        barnUnder18AarService = new BarnUnder18AarService(new BarnUnder18AarRepository(db, db));
     }
 
     @BeforeEach
@@ -101,11 +100,14 @@ public class PdlServiceTest {
 
         server.start();
 
+        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
+        barnUnder18AarService = new BarnUnder18AarService(new BarnUnder18AarRepository(db, db), pdlPortefoljeClient);
+
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
                 new PdlPersonRepository(db, db),
                 this.barnUnder18AarService,
-                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
+                pdlPortefoljeClient
         );
     }
 

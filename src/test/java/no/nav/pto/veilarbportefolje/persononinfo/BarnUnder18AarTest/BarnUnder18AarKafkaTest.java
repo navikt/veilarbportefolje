@@ -16,22 +16,28 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService.hentAktorider;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class BarnUnder18AarKafkaTest {
@@ -55,6 +61,8 @@ public class BarnUnder18AarKafkaTest {
     private OpensearchIndexer opensearchIndexer;
     @MockBean
     private OpensearchIndexerV2 opensearchIndexerV2;
+
+    private  PdlPortefoljeClient pdlClient;
     private final String pdlDokumentAsString = readFileAsJsonString("/PDL_Files/pdl_dokument.json", getClass());
     private final String pdlDokumentBarn1MedDiskresjonskodeAsString = readFileAsJsonString("/PDL_Files/pdl_dokument_barn1_med_diskresjonskode.json", getClass());
     private final String pdlPersonBarn1ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
@@ -68,7 +76,8 @@ public class BarnUnder18AarKafkaTest {
     public BarnUnder18AarKafkaTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
         barnUnder18AarRepository = new BarnUnder18AarRepository(db,db);
-        barnUnder18AarService = new BarnUnder18AarService(this.barnUnder18AarRepository);
+        pdlClient = Mockito.mock(PdlPortefoljeClient.class);
+        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlClient);
         pdlIdentRepository = new PdlIdentRepository(db);
         pdlPersonRepository = new PdlPersonRepository(db, db);
         oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
@@ -129,6 +138,8 @@ public class BarnUnder18AarKafkaTest {
 
     @Test
     public void testHentBarnUnder18Aar() throws JsonProcessingException {
+        when(pdlClient.hentBrukerBarnDataFraPdl(Mockito.any(Fnr.class))).thenReturn(new PDLPersonBarn().setFodselsdato(LocalDate.now()).setErIlive(true));
+
         var pdlDokForelder = mapper.readValue(pdlDokumentAsString, PdlDokument.class);
         var pdlDokBarn1MedDiskresjonskode = mapper.readValue(pdlDokumentBarn1MedDiskresjonskodeAsString, PdlDokument.class);
 
@@ -145,7 +156,7 @@ public class BarnUnder18AarKafkaTest {
         String diskresjonskode_barn1 = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrForelder)).get(fnrForelder).get(0).getDiskresjonskode();
         pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(pdlDokBarn1MedDiskresjonskode);
         String diskresjonskode_barn1_etter_update = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrForelder)).get(fnrForelder).get(0).getDiskresjonskode();
-        Assertions.assertTrue(diskresjonskode_barn1 == null);
-        Assertions.assertTrue(Objects.equals(diskresjonskode_barn1_etter_update, "7"));
+        Assertions.assertNull(diskresjonskode_barn1);
+        Assertions.assertEquals("7", diskresjonskode_barn1_etter_update);
     }
 }

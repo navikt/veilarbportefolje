@@ -3,8 +3,10 @@ package no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +22,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class BarnUnder18AarService {
 
     private final BarnUnder18AarRepository barnUnder18AarRepository;
+    private final PdlPortefoljeClient pdlClient;
 
     public Map<Fnr, List<BarnUnder18AarData>> hentBarnUnder18Aar(List<Fnr> fnrForeldre) {
         Map<Fnr, List<BarnUnder18AarData>> result = new HashMap<>();
@@ -49,25 +52,32 @@ public class BarnUnder18AarService {
         return result;
     }
 
-    public void lagreBarnOgForeldreansvar(Fnr foresattIdent, List<BarnUnder18Aar> barnFraPdl) {
-        List<Fnr> lagredeBarn = barnUnder18AarRepository.hentForeldreansvarForPerson(foresattIdent);
+    @Transactional
+    public void lagreBarnOgForeldreansvar(Fnr foresattIdent, List<Fnr> foreldreAnsvar) {
+        try {
+            List<Fnr> lagredeBarn = barnUnder18AarRepository.hentForeldreansvarForPerson(foresattIdent);
 
-        List<Fnr> barnFnrFraPdl = barnFraPdl.stream().map(BarnUnder18Aar::getFnr).toList();
+            lagredeBarn.forEach(barnFnr -> {
+                if (!foreldreAnsvar.contains(barnFnr)) {
+                    barnUnder18AarRepository.slettForeldreansvar(foresattIdent, barnFnr);
+                    slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnr);
+                    secureLog.warn(String.format("Barn fjernet fra PDL for foreldre %s og barn %s", foresattIdent, barnFnr));
+                }
+            });
 
-        lagredeBarn.forEach(barnFnr -> {
-            if (!barnFnrFraPdl.contains(barnFnr)) {
-                barnUnder18AarRepository.slettForeldreansvar(foresattIdent, barnFnr);
-                slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnr);
-                secureLog.warn(String.format("Barn fjernet fra PDL for foreldre %s og barn %s", foresattIdent, barnFnr));
-            }
-        });
-
-        barnFraPdl.forEach(barnUnder18Aar -> {
-            if (erUnder18Aar(barnUnder18Aar.getFodselsdato())) {
-                barnUnder18AarRepository.lagreBarnData(barnUnder18Aar.getFnr(), barnUnder18Aar.getFodselsdato(), barnUnder18Aar.getDiskresjonskode());
-                barnUnder18AarRepository.lagreForeldreansvar(foresattIdent, barnUnder18Aar.getFnr());
-            }
-        });
+            foreldreAnsvar.forEach(barnUnder18AarFnr -> {
+                    PDLPersonBarn barnPdl = pdlClient.hentBrukerBarnDataFraPdl(barnUnder18AarFnr);
+                    if (barnPdl.isErIlive() && erUnder18Aar(barnPdl.getFodselsdato())) {
+                        barnUnder18AarRepository.lagreBarnData(barnUnder18AarFnr, barnPdl.getFodselsdato(), barnPdl.getDiskresjonskode());
+                        barnUnder18AarRepository.lagreForeldreansvar(foresattIdent, barnUnder18AarFnr);
+                    }else{
+                        secureLog.debug("Barn will not be saved: " + barnPdl.getFodselsdato() + ", " + barnPdl.isErIlive());
+                    }
+                });
+        }
+        catch (Exception e){
+            throw new RuntimeException("Kan ikke lagre data om barn og foreldreansvar for person: " + foresattIdent + ". Antall av barn: " + foreldreAnsvar.size());
+        }
     }
 
 

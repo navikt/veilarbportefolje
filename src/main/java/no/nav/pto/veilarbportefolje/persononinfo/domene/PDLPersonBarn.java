@@ -28,7 +28,7 @@ public class PDLPersonBarn {
     }
 
     private static boolean hentErILive(List<PdlBarnResponse.PdlBarnResponseData.Doedsfall> doedsfall) {
-        if (doedsfall == null) {
+        if (doedsfall == null || doedsfall.isEmpty()) {
             return true;
         }
         return doedsfall.stream()
