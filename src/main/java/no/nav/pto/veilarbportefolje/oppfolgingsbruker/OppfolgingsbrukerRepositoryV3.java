@@ -19,20 +19,15 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.DISKRESJONSKODE;
+
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ENDRET_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ER_DOED;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ETTERNAVN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FORNAVN;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.SIKKERHETSTILTAK_TYPE_KODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.SPERRET_ANSATT;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -112,28 +107,28 @@ public class OppfolgingsbrukerRepositoryV3 {
         return db.update("""
                         INSERT INTO oppfolgingsbruker_arena_v2(
                         fodselsnr, formidlingsgruppekode, iserv_fra_dato,
-                        etternavn, fornavn, nav_kontor,
+                        nav_kontor,
                         kvalifiseringsgruppekode, rettighetsgruppekode,
-                        hovedmaalkode, sikkerhetstiltak_type_kode, diskresjonskode,
-                        sperret_ansatt, er_doed, endret_dato)
-                        VALUES(?,?,?, ?,?,?, ?,?, ?,?,?, ?,?,?)
+                        hovedmaalkode,
+                        endret_dato)
+                        VALUES(?,?,?,?,?,?,?,?)
                         ON CONFLICT (fodselsnr) DO UPDATE SET(
                         formidlingsgruppekode, iserv_fra_dato,
-                        etternavn, fornavn, nav_kontor,
+                        nav_kontor,
                         kvalifiseringsgruppekode, rettighetsgruppekode,
-                        hovedmaalkode, sikkerhetstiltak_type_kode, diskresjonskode,
-                        sperret_ansatt, er_doed, endret_dato)
+                        hovedmaalkode,
+                        endret_dato)
                         = (excluded.formidlingsgruppekode, excluded.iserv_fra_dato,
-                        excluded.etternavn, excluded.fornavn, excluded.nav_kontor,
+                        excluded.nav_kontor,
                         excluded.kvalifiseringsgruppekode, excluded.rettighetsgruppekode,
-                        excluded.hovedmaalkode, excluded.sikkerhetstiltak_type_kode, excluded.diskresjonskode,
-                        excluded.sperret_ansatt, excluded.er_doed, excluded.endret_dato)
+                        excluded.hovedmaalkode,
+                        excluded.endret_dato)
                         """,
                 oppfolgingsbruker.fodselsnr(), oppfolgingsbruker.formidlingsgruppekode(), toTimestamp(oppfolgingsbruker.iserv_fra_dato()),
-                oppfolgingsbruker.etternavn(), oppfolgingsbruker.fornavn(), oppfolgingsbruker.nav_kontor(),
+                 oppfolgingsbruker.nav_kontor(),
                 oppfolgingsbruker.kvalifiseringsgruppekode(), oppfolgingsbruker.rettighetsgruppekode(),
-                oppfolgingsbruker.hovedmaalkode(), oppfolgingsbruker.sikkerhetstiltak_type_kode(), oppfolgingsbruker.fr_kode(),
-                oppfolgingsbruker.sperret_ansatt(), oppfolgingsbruker.er_doed(), toTimestamp(oppfolgingsbruker.endret_dato())
+                oppfolgingsbruker.hovedmaalkode(),
+                toTimestamp(oppfolgingsbruker.endret_dato())
         );
     }
 
@@ -148,27 +143,30 @@ public class OppfolgingsbrukerRepositoryV3 {
             return null;
         }
         return new OppfolgingsbrukerEntity(rs.getString(FODSELSNR), rs.getString(FORMIDLINGSGRUPPEKODE),
-                toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)), rs.getString(ETTERNAVN), rs.getString(FORNAVN),
+                toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)),
                 rs.getString(NAV_KONTOR), rs.getString(KVALIFISERINGSGRUPPEKODE), rs.getString(RETTIGHETSGRUPPEKODE),
-                rs.getString(HOVEDMAALKODE), rs.getString(SIKKERHETSTILTAK_TYPE_KODE), rs.getString(DISKRESJONSKODE),
-                rs.getBoolean(SPERRET_ANSATT), rs.getBoolean(ER_DOED), toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
+                rs.getString(HOVEDMAALKODE),
+                toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
 
     public List<String> finnSkjulteBrukere(List<String> fnrListe, BrukerinnsynTilganger brukerInnsynTilganger) {
         var params = new MapSqlParameterSource();
         params.addValue("fnrListe", fnrListe.stream().collect(Collectors.joining(",", "{", "}")));
-        params.addValue("tilgangTilKode6", brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig());
-        params.addValue("tilgangTilKode7", brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig());
         params.addValue("tilgangTilEgenAnsatt", brukerInnsynTilganger.tilgangTilSkjerming());
+        params.addValue("tilgangTilAdressebeskyttelseStrengtFortrolig", brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig());
+        params.addValue("tilgangTilAdressebeskyttelseFortrolig", brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig());
 
         return dbNamed.queryForList("""
-                SELECT fodselsnr from oppfolgingsbruker_arena_v2
-                where fodselsnr = ANY (:fnrListe::varchar[])
+                SELECT oa.fodselsnr from oppfolgingsbruker_arena_v2 oa
+                left join nom_skjerming ns on  ns.fodselsnr = oa.fodselsnr
+                left join bruker_data bd on  bd.freg_ident = oa.fodselsnr
+                where oa.fodselsnr = ANY (:fnrListe::varchar[])
                 AND (
-                    (diskresjonskode = '6' AND NOT :tilgangTilKode6::boolean)
-                    OR (diskresjonskode = '7' AND NOT :tilgangTilKode7::boolean)
-                    OR (sperret_ansatt AND NOT :tilgangTilEgenAnsatt::boolean)
-                )""", params, String.class);
+                                    (bd.diskresjonkode = '6' AND NOT :tilgangTilAdressebeskyttelseStrengtFortrolig::boolean)
+                                    OR (bd.diskresjonkode = '7' AND NOT :tilgangTilAdressebeskyttelseFortrolig::boolean)
+                                    OR (ns.er_skjermet AND NOT :tilgangTilEgenAnsatt::boolean)
+                )
+                """, params, String.class);
     }
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {

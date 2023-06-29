@@ -175,9 +175,8 @@ public class TiltakPostgresTest {
                 new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
         ));
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
-                new OppfolgingsbrukerEntity(fnr.get(), null, null, "" +
-                        "Tester", "Testerson", navKontor, null, null, null, null,
-                        "1234", true, false, ZonedDateTime.now()));
+                new OppfolgingsbrukerEntity(fnr.get(), null, null, navKontor,
+                         null, null, null, ZonedDateTime.now()));
         String tiltaksType1 = "T123";
         String tiltaksType2 = "T321";
         String tiltaksNavn1 = "test1";

@@ -493,16 +493,10 @@ CREATE TABLE public.oppfolgingsbruker_arena_v2 (
     fodselsnr character varying(33) NOT NULL,
     formidlingsgruppekode character varying(15),
     iserv_fra_dato timestamp without time zone,
-    etternavn character varying(90),
-    fornavn character varying(90),
     nav_kontor character varying(24),
     kvalifiseringsgruppekode character varying(15),
     rettighetsgruppekode character varying(15),
     hovedmaalkode character varying(30),
-    sikkerhetstiltak_type_kode character varying(12),
-    diskresjonskode character varying(6),
-    sperret_ansatt boolean DEFAULT false,
-    er_doed boolean DEFAULT false,
     endret_dato timestamp without time zone
 );
 

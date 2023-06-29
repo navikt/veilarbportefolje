@@ -41,9 +41,9 @@ public class ArbeidslistaSorteringOpensearchTest extends EndToEndTest {
         final AktorId aktoerId_1 = randomAktorId();
         final AktorId aktoerId_2 = randomAktorId();
         final AktorId aktoerId_3 = randomAktorId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId_1,enhetId, veilederId, ZonedDateTime.now());
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId_2,enhetId, veilederId, ZonedDateTime.now());
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId_3,enhetId, veilederId, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId_1,enhetId, veilederId, ZonedDateTime.now(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId_2,enhetId, veilederId, ZonedDateTime.now(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId_3,enhetId, veilederId, ZonedDateTime.now(), null);
         populateOpensearch(enhetId, veilederId, aktoerId_1.get(), aktoerId_2.get(), aktoerId_3.get());
         Arbeidsliste.Kategori arbeidsliste1_kategori = GRONN;
         Arbeidsliste.Kategori arbeidsliste2_kategori = BLA;
