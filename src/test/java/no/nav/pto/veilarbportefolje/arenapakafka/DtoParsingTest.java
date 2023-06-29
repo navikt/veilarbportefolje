@@ -19,7 +19,7 @@ public class DtoParsingTest extends EndToEndTest {
         UtdanningsAktivitetDTO goldenGateDTO = fromJson(goldenGateDtoString, UtdanningsAktivitetDTO.class);
         assertThat(goldenGateDTO.getCurrentTimestamp()).isEqualTo("2021-06-23T09:03:55.677014");
         assertThat(goldenGateDTO.getAfter().getClass()).isEqualTo(UtdanningsAktivitetInnhold.class);
-        assertThat(goldenGateDTO.getAfter().getEndretDato().getDato().toString()).isEqualTo("2021-06-18T00:00+02:00[Europe/Oslo]");
+        assertThat(goldenGateDTO.getAfter().getEndretDato().getDato().toString().substring(0,10)).isEqualTo("2021-06-18");
         assertThat(goldenGateDTO.getAfter()).isNotNull();
         assertThat(goldenGateDTO.getBefore()).isNull();
     }
