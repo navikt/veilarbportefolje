@@ -153,8 +153,6 @@ public class BarnUnder18ArPdlServiceTest {
     @Test
     @SneakyThrows
     public void sjekkAtLagretBarnIkkeFjernes() {
-        //when(pdlClient.hentBrukerBarnDataFraPdl(Mockito.any())).thenReturn(new PDLPersonBarn().setFodselsdato(LocalDate.now().minusMonths(10)).setErIlive(true));
-
         var identerFraFil = mapper.readValue(pdlIdentResponsFraFil, PdlIdentResponse.class)
                 .getData()
                 .getHentIdenter()

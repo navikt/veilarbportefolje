@@ -100,10 +100,12 @@ public class BarnUnder18AarRepository {
                  """, foresattIdent.get(), barnIdent.get());
     }
 
-    public void slettForeldreansvar(Fnr fnrForesatt, Fnr fnrBarn) {
-        db.update("""
+    public boolean slettForeldreansvar(Fnr fnrForesatt, Fnr fnrBarn) {
+        int affectedRows = db.update("""
                 DELETE FROM foreldreansvar WHERE foresatt_ident = ? AND barn_ident = ?
                  """, fnrForesatt.get(), fnrBarn.get());
+
+        return affectedRows > 0;
     }
 
     public void slettForeldreansvar(Fnr fnrBarn) {

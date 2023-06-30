@@ -19,6 +19,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class BarnUnder18AarService {
 
     private final BarnUnder18AarRepository barnUnder18AarRepository;
@@ -52,20 +53,21 @@ public class BarnUnder18AarService {
         return result;
     }
 
-    @Transactional
-    public void lagreBarnOgForeldreansvar(Fnr foresattIdent, List<Fnr> foreldreAnsvar) {
+    public void lagreBarnOgForeldreansvar(Fnr foresattIdent, List<Fnr> foreldreansvarFraPDL) {
         try {
             List<Fnr> lagredeBarn = barnUnder18AarRepository.hentForeldreansvarForPerson(foresattIdent);
 
             lagredeBarn.forEach(barnFnr -> {
-                if (!foreldreAnsvar.contains(barnFnr)) {
-                    barnUnder18AarRepository.slettForeldreansvar(foresattIdent, barnFnr);
+                if (!foreldreansvarFraPDL.contains(barnFnr)) {
+                    boolean foreldreAnsvarSlettet = barnUnder18AarRepository.slettForeldreansvar(foresattIdent, barnFnr);
                     slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnr);
-                    secureLog.warn(String.format("Barn fjernet fra PDL for foreldre %s og barn %s", foresattIdent, barnFnr));
+                    if (foreldreAnsvarSlettet) {
+                        secureLog.warn(String.format("Barn fjernet fra PDL for foreldre %s og barn %s", foresattIdent, barnFnr));
+                    }
                 }
             });
 
-            foreldreAnsvar.forEach(barnUnder18AarFnr -> {
+            foreldreansvarFraPDL.forEach(barnUnder18AarFnr -> {
                     PDLPersonBarn barnPdl = pdlClient.hentBrukerBarnDataFraPdl(barnUnder18AarFnr);
                     if (barnPdl.isErIlive() && erUnder18Aar(barnPdl.getFodselsdato())) {
                         barnUnder18AarRepository.lagreBarnData(barnUnder18AarFnr, barnPdl.getFodselsdato(), barnPdl.getDiskresjonskode());
@@ -76,7 +78,7 @@ public class BarnUnder18AarService {
                 });
         }
         catch (Exception e){
-            throw new RuntimeException("Kan ikke lagre data om barn og foreldreansvar for person: " + foresattIdent + ". Antall av barn: " + foreldreAnsvar.size());
+            throw new RuntimeException("Kan ikke lagre data om barn og foreldreansvar for person: " + foresattIdent + ". Antall av barn: " + foreldreansvarFraPDL.size());
         }
     }
 
