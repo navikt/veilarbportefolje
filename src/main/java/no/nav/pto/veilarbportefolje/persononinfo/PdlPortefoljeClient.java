@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
+import no.nav.pto.veilarbportefolje.util.SecureLog;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,7 +44,9 @@ public class PdlPortefoljeClient {
         GraphqlRequest<PdlIdentVariabel> request = new GraphqlRequest<>(hentPersonBarnQuery, new PdlIdentVariabel(fnr.get(), false));
         PdlBarnResponse respons = pdlClient.request(request, PdlBarnResponse.class);
         if (hasErrors(respons)) {
-            throw new RuntimeException("Kunne ikke hente data om barn fra PDL");
+            SecureLog.secureLog.info("Error in hentBrukerDataBarnFraPdl, request: {}, response: {}", request, respons.toString());
+            throw new RuntimeException("Kunne ikke hente data om barn fra PDL {}");
+
         }
 
         return PDLPersonBarn.genererFraApiRespons(respons.getData().getHentPerson());

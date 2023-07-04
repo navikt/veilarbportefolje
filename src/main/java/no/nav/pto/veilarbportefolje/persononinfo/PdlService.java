@@ -44,7 +44,11 @@ public class PdlService {
     }
 
     public void hentOgLagreBrukerDataPaBarn(Fnr fnrBarn) {
+        secureLog.info("I hentOgLagreBrukerDataPaBarn");
+        PDLPerson barnData2 = pdlClient.hentBrukerDataFraPdl(fnrBarn);
+        secureLog.info("Kunne hente barnData med vanlig request: {}", barnData2.toString());
         PDLPersonBarn barnData = pdlClient.hentBrukerBarnDataFraPdl(fnrBarn);
+        secureLog.info("Kunne hente barnData med barn request: {}", barnData.toString());
         barnUnder18AarService.oppdaterEndringPaBarn(fnrBarn, barnData);
     }
 
