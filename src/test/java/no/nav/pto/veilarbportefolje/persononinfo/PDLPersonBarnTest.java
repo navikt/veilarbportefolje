@@ -29,13 +29,13 @@ public class PDLPersonBarnTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final String pdlPersonBarnResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
 
-    private BarnUnder18AarRepository barnUnder18AarRepository;
+    private final BarnUnder18AarRepository barnUnder18AarRepository;
     private final JdbcTemplate db;
     private final PdlPersonRepository pdlPersonRepository;
 
     private PdlService pdlService;
 
-    private WireMockServer server = new WireMockServer();
+    private final WireMockServer server = new WireMockServer();
 
     public PDLPersonBarnTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
@@ -55,6 +55,16 @@ public class PDLPersonBarnTest {
                                 .withStatus(200)
                                 .withBody(pdlPersonBarnResponsFraFil))
                         .willSetStateTo("hent barn")
+        );
+
+        server.stubFor(
+                post(anyUrl())
+                        .inScenario("PDL test")
+                        .whenScenarioStateIs(STARTED)
+                        .willReturn(aResponse()
+                                .withStatus(200)
+                                .withBody(pdlPersonBarnResponsFraFil))
+                        .whenScenarioStateIs("hent barn")
         );
 
         server.start();
@@ -86,9 +96,9 @@ public class PDLPersonBarnTest {
                 .getFoedselsdato();
 
         LocalDate fDato = LocalDate.parse(fodselsdato);
-        Integer alder = Period.between(fDato, LocalDate.now()).getYears();
+        int alder = Period.between(fDato, LocalDate.now()).getYears();
 
-        assertThat(barn.getAlder()).isEqualTo(alder.longValue());
+        assertThat(barn.getAlder()).isEqualTo(alder);
         assertThat(barn.getDiskresjonskode()).isEqualTo(null);
     }
 }

@@ -16,19 +16,16 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -37,47 +34,42 @@ import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService.hentAktorider;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class BarnUnder18AarKafkaTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private BarnUnder18AarRepository barnUnder18AarRepository;
 
     private BarnUnder18AarService barnUnder18AarService;
 
     private PdlBrukerdataKafkaService pdlBrukerdataKafkaService;
 
-    private PdlIdentRepository pdlIdentRepository;
+    private final PdlIdentRepository pdlIdentRepository;
 
-    private PdlPersonRepository pdlPersonRepository;
+    private final PdlPersonRepository pdlPersonRepository;
 
-    private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
+    private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
 
-    private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     @MockBean
     private OpensearchIndexer opensearchIndexer;
     @MockBean
     private OpensearchIndexerV2 opensearchIndexerV2;
 
-    private  PdlPortefoljeClient pdlClient;
+    private final BarnUnder18AarRepository barnUnder18AarRepository;
     private final String pdlDokumentAsString = readFileAsJsonString("/PDL_Files/pdl_dokument.json", getClass());
+
+    private final String pdlPersonBarnBolkResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_bolk_1.json", getClass());
     private final String pdlDokumentBarn1MedDiskresjonskodeAsString = readFileAsJsonString("/PDL_Files/pdl_dokument_barn1_med_diskresjonskode.json", getClass());
-    private final String pdlPersonBarn1ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
-    private final String pdlPersonBarn2ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn2_pdl.json", getClass());
-    private final String pdlPersonBarn3ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn3_pdl.json", getClass());
     private final JdbcTemplate db;
 
-    private WireMockServer server = new WireMockServer();
+    private final WireMockServer server = new WireMockServer();
 
 
     public BarnUnder18AarKafkaTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
-        barnUnder18AarRepository = new BarnUnder18AarRepository(db,db);
-        pdlClient = Mockito.mock(PdlPortefoljeClient.class);
-        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlClient);
+        barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
         pdlIdentRepository = new PdlIdentRepository(db);
         pdlPersonRepository = new PdlPersonRepository(db, db);
         oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
@@ -93,36 +85,21 @@ public class BarnUnder18AarKafkaTest {
                         .whenScenarioStateIs(STARTED)
                         .willReturn(aResponse()
                                 .withStatus(200)
-                                .withBody(pdlPersonBarn1ResponsFraFil))
+                                .withBody(pdlPersonBarnBolkResponsFraFil))
                         .willSetStateTo("hent barn 2")
-        );
-
-        server.stubFor(post(anyUrl())
-                .inScenario("PDL test")
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(pdlPersonBarn2ResponsFraFil))
-                .whenScenarioStateIs("hent barn 2")
-                .willSetStateTo("hent barn 3")
-        );
-
-        server.stubFor(post(anyUrl())
-                .inScenario("PDL test")
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(pdlPersonBarn3ResponsFraFil))
-                .whenScenarioStateIs("hent barn 3")
         );
 
         server.start();
 
+        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
+        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
 
         this.pdlBrukerdataKafkaService = new PdlBrukerdataKafkaService(new PdlService(
                 this.pdlIdentRepository,
                 this.pdlPersonRepository,
                 this.barnUnder18AarService,
-                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
-        ), this.pdlIdentRepository,
+                pdlPortefoljeClient)
+        , this.pdlIdentRepository,
                 new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
                 this.barnUnder18AarService,
                 opensearchIndexer,
@@ -138,8 +115,6 @@ public class BarnUnder18AarKafkaTest {
 
     @Test
     public void testHentBarnUnder18Aar() throws JsonProcessingException {
-        when(pdlClient.hentBrukerBarnDataFraPdl(Mockito.any(Fnr.class))).thenReturn(new PDLPersonBarn().setFodselsdato(LocalDate.now()).setErIlive(true));
-
         var pdlDokForelder = mapper.readValue(pdlDokumentAsString, PdlDokument.class);
         var pdlDokBarn1MedDiskresjonskode = mapper.readValue(pdlDokumentBarn1MedDiskresjonskodeAsString, PdlDokument.class);
 

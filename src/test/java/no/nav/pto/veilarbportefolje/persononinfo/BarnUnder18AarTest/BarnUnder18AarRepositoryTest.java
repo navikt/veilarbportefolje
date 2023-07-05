@@ -81,10 +81,9 @@ public class BarnUnder18AarRepositoryTest {
 
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         pdlIdentRepository.upsertIdenter(identerBruker);
-        List<Fnr> foreldreAnsvar = List.of(fnrBarn);
-        Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataFraPdl(fnrBarn)).thenReturn(pdlBarn15Aar());
+        Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataBolkFraPdl(List.of(fnrBarn))).thenReturn(Map.of(fnrBarn, pdlBarn15Aar()));
 
-        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, foreldreAnsvar);
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, List.of(fnrBarn));
         Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrPerson));
         Assertions.assertFalse(forelderBarnMap.isEmpty());
         Assertions.assertEquals(15, (int) forelderBarnMap.get(fnrPerson).get(0).getAlder());
@@ -98,9 +97,9 @@ public class BarnUnder18AarRepositoryTest {
 
         pdlPersonRepository.upsertPerson(foresatt1, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         pdlPersonRepository.upsertPerson(foresatt2, new PDLPerson().setKjonn(M).setFoedsel(LocalDate.now()));
-        List<Fnr> foreldreAnsvar = List.of(fnrBarn);
-        Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataFraPdl(fnrBarn)).thenReturn(pdlBarn());
+        Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataBolkFraPdl(List.of(fnrBarn))).thenReturn(Map.of(fnrBarn, pdlBarn()));
 
+        List<Fnr> foreldreAnsvar = List.of(fnrBarn);
         barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt1, foreldreAnsvar);
         barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt2, foreldreAnsvar);
         Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18Aar(List.of(foresatt1, foresatt2));
@@ -130,12 +129,10 @@ public class BarnUnder18AarRepositoryTest {
         );
 
 
-        List<Fnr> foreldreAnsvar = List.of(fnrBarn);
-        Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataFraPdl(fnrBarn)).thenReturn(pdlBarn15Aar());
-
+        Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataBolkFraPdl(List.of(fnrBarn))).thenReturn(Map.of(fnrBarn, pdlBarn15Aar()));
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         pdlIdentRepository.upsertIdenter(identerBruker);
-        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, foreldreAnsvar);
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, List.of(fnrBarn));
 
         boolean erFnrBarnAvForelderUnderOppfolging = barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(List.of(fnrBarn));
         Assertions.assertTrue(erFnrBarnAvForelderUnderOppfolging);
@@ -177,9 +174,8 @@ public class BarnUnder18AarRepositoryTest {
 
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         pdlIdentRepository.upsertIdenter(identerBruker);
-        List<Fnr> foreldreAnsvar = List.of(fnrBarn);
-        Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataFraPdl(fnrBarn)).thenReturn(pdlBarn15Aar());
-        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, foreldreAnsvar);
+        Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataBolkFraPdl(List.of(fnrBarn))).thenReturn(Map.of(fnrBarn, pdlBarn15Aar()));
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, List.of(fnrBarn));
 
         Fnr nyFnr = randomFnr();
         barnUnder18AarRepository.oppdatereBarnIdent(nyFnr, List.of(fnrBarn, randomFnr()));
@@ -207,11 +203,8 @@ public class BarnUnder18AarRepositoryTest {
 
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         pdlIdentRepository.upsertIdenter(identerBruker);
-        List<Fnr> foreldreAnsvar = List.of(fnrBarn1, fnrBarn2);
-        Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataFraPdl(fnrBarn1)).thenReturn(pdlBarn15Aar());
-        Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataFraPdl(fnrBarn2)).thenReturn(pdlBarn4Aar());
-
-        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, foreldreAnsvar);
+        Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataBolkFraPdl(List.of(fnrBarn1, fnrBarn2))).thenReturn(Map.of(fnrBarn1, pdlBarn15Aar(), fnrBarn2, pdlBarn4Aar()));
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, List.of(fnrBarn1, fnrBarn2));
 
         barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, List.of(fnrBarn2));
         List<Fnr> barnFnrs = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnrPerson));

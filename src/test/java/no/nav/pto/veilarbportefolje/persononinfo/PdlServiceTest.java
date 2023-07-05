@@ -1,12 +1,10 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import lombok.SneakyThrows;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlBarnResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
@@ -36,9 +34,7 @@ public class PdlServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final String pdlIdentResponsFraFil = readFileAsJsonString("/PDL_Files/identer_pdl.json", getClass());
     private final String pdlPersonResponsFraFil = readFileAsJsonString("/PDL_Files/person_pdl.json", getClass());
-    private final String pdlPersonBarn1ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
-    private final String pdlPersonBarn2ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn2_pdl.json", getClass());
-    private final String pdlPersonBarn3ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn3_pdl.json", getClass());
+    private final String pdlPersonBarnBolkResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_bolk_1.json", getClass());
     private final JdbcTemplate db;
     private final PdlPersonRepository pdlPersonRepository;
 
@@ -69,33 +65,15 @@ public class PdlServiceTest {
                         .withStatus(200)
                         .withBody(pdlPersonResponsFraFil))
                 .whenScenarioStateIs("hent person")
-                .willSetStateTo("hent barn 1")
+                .willSetStateTo("hent barn bolk")
         );
 
         server.stubFor(post(anyUrl())
                 .inScenario("PDL test")
                 .willReturn(aResponse()
                         .withStatus(200)
-                        .withBody(pdlPersonBarn1ResponsFraFil))
-                .whenScenarioStateIs("hent barn 1")
-                .willSetStateTo("hent barn 2")
-        );
-
-        server.stubFor(post(anyUrl())
-                .inScenario("PDL test")
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(pdlPersonBarn2ResponsFraFil))
-                .whenScenarioStateIs("hent barn 2")
-                .willSetStateTo("hent barn 3")
-        );
-
-        server.stubFor(post(anyUrl())
-                .inScenario("PDL test")
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(pdlPersonBarn3ResponsFraFil))
-                .whenScenarioStateIs("hent barn 3")
+                        .withBody(pdlPersonBarnBolkResponsFraFil))
+                .whenScenarioStateIs("hent barn bolk")
         );
 
         server.start();
@@ -151,27 +129,10 @@ public class PdlServiceTest {
         assertEquals("2022-08-05", pdlPerson.getSikkerhetstiltak().getGyldigTil().toString());
         assertThat(foreldreansvar.size()).isEqualTo(3);
 
-        Integer barnAlder1 = DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull(hentFodselsdatoBarn1()));
-        Integer barnAlder2 = DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull(hentFodselsdatoBarn2()));
-        assertTrue(barnFraRepository.stream().map(BarnUnder18AarData::getAlder).toList().containsAll(List.of(barnAlder1, barnAlder2)));
-    }
-
-    public String hentFodselsdatoBarn1() throws JsonProcessingException {
-        return mapper.readValue(pdlPersonBarn1ResponsFraFil, PdlBarnResponse.class)
-                .getData()
-                .getHentPerson()
-                .getFoedsel()
-                .get(0)
-                .getFoedselsdato();
-    }
-
-    public String hentFodselsdatoBarn2() throws JsonProcessingException {
-        return mapper.readValue(pdlPersonBarn2ResponsFraFil, PdlBarnResponse.class)
-                .getData()
-                .getHentPerson()
-                .getFoedsel()
-                .get(0)
-                .getFoedselsdato();
+        Integer barnAlder1 = DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull("2014-07-07"));
+        Integer barnAlder2 = DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull("2020-04-01"));
+        Integer barnAlder3 = DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull("2012-03-02"));
+        assertTrue(barnFraRepository.stream().map(BarnUnder18AarData::getAlder).toList().containsAll(List.of(barnAlder1, barnAlder2, barnAlder3)));
     }
 }
 
