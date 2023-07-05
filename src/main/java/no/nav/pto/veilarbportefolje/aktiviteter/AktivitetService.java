@@ -67,7 +67,9 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
                 opensearchIndexer.indekser(aktorId);
             }
         } else {
-            throw new RuntimeException("Mottok aktivitet med aktivitetId: " + aktivitetData.aktivitetId + " med uventet tiltakskode: " + aktivitetData.tiltakskode + " fra ny kilde. Tiltak ble ikke lagret.");
+            // TODO 05.07.23: Finne en bedre måte å håndtere dette på - nå bare ignorerer vi alt som ikke er MIDLONTIL eller VARLONTIL.
+            // Dette er greit per nå da vi uansett får dataen vi trenger fra Arena.
+            secureLog.debug("Mottok aktivitet med aktivitetId: " + aktivitetData.aktivitetId + " med uventet tiltakskode: " + aktivitetData.tiltakskode + " fra ny kilde. Tiltak ble ikke lagret.");
         }
     }
 
