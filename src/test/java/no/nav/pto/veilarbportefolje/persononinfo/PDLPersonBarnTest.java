@@ -23,7 +23,6 @@ import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 public class PDLPersonBarnTest {
     private final ObjectMapper mapper = new ObjectMapper();
@@ -57,22 +56,15 @@ public class PDLPersonBarnTest {
                         .willSetStateTo("hent barn")
         );
 
-        server.stubFor(
-                post(anyUrl())
-                        .inScenario("PDL test")
-                        .whenScenarioStateIs(STARTED)
-                        .willReturn(aResponse()
-                                .withStatus(200)
-                                .withBody(pdlPersonBarnResponsFraFil))
-                        .whenScenarioStateIs("hent barn")
-        );
-
         server.start();
+
+        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
+        BarnUnder18AarService barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
 
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
                 pdlPersonRepository,
-                new BarnUnder18AarService(new BarnUnder18AarRepository(db, db), mock(PdlPortefoljeClient.class)),
+                barnUnder18AarService,
                 new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
         );
     }
