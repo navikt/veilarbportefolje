@@ -38,7 +38,7 @@ public class BrukerMappingAlarm implements MeterBinder {
                 .register(meterRegistry);
     }
 
-    @Scheduled(cron = "* /10 * * * ?")
+    @Scheduled(cron = "* */10 * * * ?")
     public void oppdaterMetrikk() {
         antallBrukereSomIkkeHarIdentIPDL.set(antallBrukereSomIkkeHarIdentIPDL());
         antallAktiveBrukereSomIkkeHarBrukerDataFraPDL.set(antallAktiveBrukereSomIkkeHarBrukerDataFraPDL());

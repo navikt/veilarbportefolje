@@ -31,7 +31,7 @@ public class KafkaStats implements MeterBinder {
         Gauge.builder("veilarbportefolje_kafka_retries_avg", kafkaRetriesAvg, AtomicDouble::get).description("Average number of retries for failed messages").register(meterRegistry);
     }
 
-    @Scheduled(cron = "* /10 * * * ?")
+    @Scheduled(cron = "* */10 * * * ?")
     public void oppdaterMetrikk() {
         try {
             List<Integer> retries = this.jdbcTemplate.query("SELECT retries FROM KAFKA_CONSUMER_RECORD WHERE retries > 0", (rs, rowNum) -> rs.getInt("retries"));
