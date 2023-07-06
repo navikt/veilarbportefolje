@@ -70,7 +70,7 @@ public class OppfolgingsbrukerRepositoryV3 {
                 """;
 
         return db.query(sql,
-                        (rs, row) -> mapTilOppfolgingsbrukerMedOppslagFnr(rs, row, "oppslag_fnr"),
+                        OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbrukerMedOppslagFnr,
                         fnrsCondition,
                         PDLIdent.Gruppe.FOLKEREGISTERIDENT.name())
                 .stream().filter(Objects::nonNull).collect(Collectors.toMap(
@@ -80,11 +80,11 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     @SneakyThrows
-    private static OppfolgingsbrukerEntityMedOppslagFnr mapTilOppfolgingsbrukerMedOppslagFnr(ResultSet rs, int row, String oppslagFnrColumn) {
+    private static OppfolgingsbrukerEntityMedOppslagFnr mapTilOppfolgingsbrukerMedOppslagFnr(ResultSet rs, int row) {
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity = mapTilOppfolgingsbruker(rs, row);
 
         return oppfolgingsbrukerEntity != null
-                ? new OppfolgingsbrukerEntityMedOppslagFnr(Fnr.of(rs.getString(oppslagFnrColumn)), oppfolgingsbrukerEntity)
+                ? new OppfolgingsbrukerEntityMedOppslagFnr(Fnr.of(rs.getString("oppslag_fnr")), oppfolgingsbrukerEntity)
                 : null;
     }
 
