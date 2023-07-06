@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.enums.arena.Rettighetsgruppe;
-import no.nav.pto_schema.enums.arena.SikkerhetstiltakType;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.stereotype.Service;
 
@@ -44,12 +43,10 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
 
         OppfolgingsbrukerEntity oppfolgingsbruker = new OppfolgingsbrukerEntity(
                 kafkaMelding.getFodselsnummer(), kafkaMelding.getFormidlingsgruppe().name(),
-                iservDato, kafkaMelding.getEtternavn(), kafkaMelding.getFornavn(),
+                iservDato,
                 kafkaMelding.getOppfolgingsenhet(), Optional.ofNullable(kafkaMelding.getKvalifiseringsgruppe()).map(Kvalifiseringsgruppe::name).orElse(null),
                 Optional.ofNullable(kafkaMelding.getRettighetsgruppe()).map(Rettighetsgruppe::name).orElse(null),
                 Optional.ofNullable(kafkaMelding.getHovedmaal()).map(Hovedmaal::name).orElse(null),
-                Optional.ofNullable(kafkaMelding.getSikkerhetstiltakType()).map(SikkerhetstiltakType::name).orElse(null), kafkaMelding.getDiskresjonskode(),
-                Optional.ofNullable(kafkaMelding.getSperretAnsatt()).orElse(false), Optional.ofNullable(kafkaMelding.getErDoed()).orElse(false),
                 kafkaMelding.getSistEndretDato());
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
 

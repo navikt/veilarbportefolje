@@ -89,8 +89,8 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         Fnr fnr2 = randomFnr();
         when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
         when(aktorClient.hentAktorId(fnr2)).thenReturn(aktorId2);
-        testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue());
-        testDataClient.lagreBrukerUnderOppfolging(aktorId2, fnr2, navKontor.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktorId2, fnr2, navKontor.getValue(), null);
 
         Map.Entry<String, String> til1 = Map.entry("MIDLONTIL", "Midlertidig lønnstilskudd");
         Map.Entry<String, String> til2 = Map.entry("VARLONTIL", "Varig lønnstilskudd");
@@ -137,8 +137,8 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         Fnr fnr2 = randomFnr();
         when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
         when(aktorClient.hentAktorId(fnr2)).thenReturn(aktorId2);
-        testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue());
-        testDataClient.lagreBrukerUnderOppfolging(aktorId2, fnr2, navKontor.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktorId2, fnr2, navKontor.getValue(), null);
 
         Map.Entry<String, String> til1 = Map.entry("MIDLONTIL", "Midlertidig lønnstilskudd");
         Map.Entry<String, String> til2 = Map.entry("VARLONTIL", "Varig lønnstilskudd");
@@ -224,9 +224,9 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
         when(aktorClient.hentAktorId(fnr2)).thenReturn(aktorId2);
         when(aktorClient.hentAktorId(fnr3)).thenReturn(aktorId3);
-        testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue());
-        testDataClient.lagreBrukerUnderOppfolging(aktorId2, fnr2, navKontor.getValue());
-        testDataClient.lagreBrukerUnderOppfolging(aktorId3, fnr3, navKontor.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktorId2, fnr2, navKontor.getValue(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktorId3, fnr3, navKontor.getValue(), null);
 
         Map.Entry<String, String> til1 = Map.entry("MIDLONTIL", "Midlertidig lønnstilskudd");
         Map.Entry<String, String> til2 = Map.entry("VARLONTIL", "Varig lønnstilskudd");
@@ -325,7 +325,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         AktorId aktorId1 = randomAktorId();
         Fnr fnr1 = randomFnr();
         when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
-        testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue(), null);
 
         Map.Entry<String, String> til1 = Map.entry("MIDLONTIL", "Midlertidig lønnstilskudd");
 
@@ -442,9 +442,9 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
         when(aktorClient.hentAktorId(fnr2)).thenReturn(aktorId2);
         when(aktorClient.hentAktorId(fnr3)).thenReturn(aktorId3);
-        testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue());
-        testDataClient.lagreBrukerUnderOppfolging(aktorId2, fnr2, navKontor.getValue());
-        testDataClient.lagreBrukerUnderOppfolging(aktorId3, fnr3, navKontor.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktorId2, fnr2, navKontor.getValue(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktorId3, fnr3, navKontor.getValue(), null);
 
         Map.Entry<String, String> til1 = Map.entry("VARLONTIL", "Lønnstilskudd");
         Map.Entry<String, String> til2 = Map.entry("MIDLONTIL", "Midlertidig lønnstilskudd");
@@ -620,7 +620,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         Fnr fodselsnummer = randomFnr();
         NavKontor navKontor = randomNavKontor();
 
-        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue(), null);
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
                 .setAktorId(aktoer.get())

@@ -69,26 +69,26 @@ public class TestDataClient {
                 .setKategori(Arbeidsliste.Kategori.GUL)
         );
 
-        lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, startDato);
+        lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, startDato, null);
         opensearchTestClient.oppdaterArbeidsliste(aktoerId, true);
     }
 
     public void lagreBrukerUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
         final Fnr fnr = TestDataUtils.randomFnr();
-        lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), VeilederId.of(null), startDato);
+        lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), VeilederId.of(null), startDato, null);
     }
 
     public void lagreBrukerUnderOppfolging(AktorId aktoerId,
                                            NavKontor navKontor,
                                            VeilederId veilederId,
-                                           ZonedDateTime startDato) {
+                                           ZonedDateTime startDato, String diskresjonKode) {
         final Fnr fnr = TestDataUtils.randomFnr();
-        lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, startDato);
+        lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, startDato, diskresjonKode);
     }
 
-    public void lagreBrukerUnderOppfolging(AktorId aktoerId, Fnr fnr, String navKontor) {
+    public void lagreBrukerUnderOppfolging(AktorId aktoerId, Fnr fnr, String navKontor, String diskresjonKode) {
         final VeilederId veilederId = TestDataUtils.randomVeilederId();
-        lagreBrukerUnderOppfolging(aktoerId, fnr, NavKontor.of(navKontor), veilederId, ZonedDateTime.now());
+        lagreBrukerUnderOppfolging(aktoerId, fnr, NavKontor.of(navKontor), veilederId, ZonedDateTime.now(), diskresjonKode);
     }
 
     public boolean hentUnderOppfolgingOgAktivIdent(AktorId aktoerId) {
@@ -99,12 +99,13 @@ public class TestDataClient {
                                             Fnr fnr,
                                             NavKontor navKontor,
                                             VeilederId veilederId,
-                                            ZonedDateTime startDato) {
+                                            ZonedDateTime startDato,
+                                            String diskresjonKode) {
         pdlIdentRepository.upsertIdenter(List.of(
                 new PDLIdent(aktoerId.get(), false, AKTORID),
                 new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
         ));
-        pdlPersonRepository.upsertPerson(fnr, new PDLPerson().setFoedsel(LocalDate.now()).setKjonn(Kjonn.K));
+        pdlPersonRepository.upsertPerson(fnr, new PDLPerson().setFoedsel(LocalDate.now()).setKjonn(Kjonn.K).setDiskresjonskode(diskresjonKode));
         oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato);
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
         registreringRepositoryV2.upsertBrukerRegistrering(
@@ -112,9 +113,9 @@ public class TestDataClient {
         );
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null,
-                        null, null, navKontor.getValue(), null, null,
-                        null, null, null, false,
-                        false, ZonedDateTime.now()));
+                        navKontor.getValue(), null, null, null,
+                         ZonedDateTime.now()));
         opensearchTestClient.createUserInOpensearch(aktoerId);
+
     }
 }

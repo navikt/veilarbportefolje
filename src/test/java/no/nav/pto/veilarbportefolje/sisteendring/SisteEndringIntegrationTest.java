@@ -16,7 +16,6 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -54,8 +53,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final OpensearchService opensearchService;
     private final SistLestService sistLestService;
 
-    private final UnleashService unleashService;
-
     private final TiltakService tiltakService;
     private final VeilederId veilederId = VeilederId.of("Z123456");
     private final NavKontor testEnhet = NavKontor.of("0000");
@@ -65,13 +62,12 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private Long aktivitetVersion = 1L;
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer, UnleashService unleashService, TiltakService tiltakService) {
+    public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer, TiltakService tiltakService) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
-        this.unleashService = unleashService;
         this.tiltakService = tiltakService;
         BrukerServiceV2 brukerService = mock(BrukerServiceV2.class);
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
-        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer, tiltakService, unleashService);
+        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer, tiltakService);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.opensearchService = opensearchService;
         this.malService = malService;
@@ -87,7 +83,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void sisteendring_populering_mal() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue(), null);
         populateOpensearch(testEnhet, veilederId, aktoerId.get());
         String endretTid = "2020-05-28T07:47:42.480Z";
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse(endretTid);
@@ -106,7 +102,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void sisteendring_populering_aktiviteter() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue(), null);
         populateOpensearch(testEnhet, veilederId, aktoerId.get());
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse("2020-05-28T07:47:42.480Z");
         ZonedDateTime endretTidZonedDateTime_NY_IJOBB = ZonedDateTime.parse("2028-05-28T07:47:42.480Z");
@@ -143,7 +139,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     public void sisteendring_filtrering() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue(), null);
         ZonedDateTime zonedDateTime = ZonedDateTime.parse("2019-05-28T09:47:42.48+02:00");
         ZonedDateTime zonedDateTime_NY_IJOBB = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00");
 
@@ -218,7 +214,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     //@Test
     public void sisteendring_ulestfilter() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue(), null);
         ZonedDateTime endretTid_FULLFORT_IJOBB = ZonedDateTime.parse("2019-05-28T09:47:42.48+02:00");
         ZonedDateTime endretTid_NY_IJOBB = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00");
 
@@ -301,9 +297,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         final AktorId aktoerId_1 = randomAktorId();
         final AktorId aktoerId_2 = randomAktorId();
         final AktorId aktoerId_3 = randomAktorId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId_1, fodselsnummer1, testEnhet.getValue());
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId_2, fodselsnummer2, testEnhet.getValue());
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId_3, fodselsnummer3, testEnhet.getValue());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId_1, fodselsnummer1, testEnhet.getValue(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId_2, fodselsnummer2, testEnhet.getValue(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId_3, fodselsnummer3, testEnhet.getValue(), null);
 
         ZonedDateTime endret_Tid_IJOBB_bruker_1_i_2024 = ZonedDateTime.parse("2024-05-28T09:47:42.480Z");
         ZonedDateTime endret_Tid_IJOBB_bruker_2_i_2025 = ZonedDateTime.parse("2025-05-28T09:47:42.480Z");

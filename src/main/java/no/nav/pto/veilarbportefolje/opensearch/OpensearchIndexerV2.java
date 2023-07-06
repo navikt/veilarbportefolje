@@ -64,24 +64,16 @@ public class OpensearchIndexerV2 {
                 .field("fnr", oppfolgingsbruker.fodselsnr())
                 .field("formidlingsgruppekode", oppfolgingsbruker.formidlingsgruppekode())
                 .field("iserv_fra_dato", toIsoUTC(oppfolgingsbruker.iserv_fra_dato()))
-                .field("etternavn", oppfolgingsbruker.etternavn())
-                .field("fornavn", oppfolgingsbruker.fornavn())
                 .field("enhet_id", oppfolgingsbruker.nav_kontor())
                 .field("kvalifiseringsgruppekode", oppfolgingsbruker.kvalifiseringsgruppekode())
                 .field("rettighetsgruppekode", oppfolgingsbruker.rettighetsgruppekode())
                 .field("hovedmaalkode", oppfolgingsbruker.hovedmaalkode())
-                .field("sikkerhetstiltak", oppfolgingsbruker.sikkerhetstiltak_type_kode())
-                .field("diskresjonskode", oppfolgingsbruker.fr_kode())
-
-                .field("egen_ansatt", oppfolgingsbruker.sperret_ansatt())
-                .field("er_doed", oppfolgingsbruker.er_doed())
                 .field("fodselsdato", FodselsnummerUtils.lagFodselsdato(oppfolgingsbruker.fodselsnr()))
                 .field("kjonn", FodselsnummerUtils.lagKjonn(oppfolgingsbruker.fodselsnr()))
                 .field("fodselsdag_i_mnd", Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(oppfolgingsbruker.fodselsnr())))
 
                 .field("trenger_revurdering", OppfolgingUtils.trengerRevurderingVedtakstotte(oppfolgingsbruker.formidlingsgruppekode(), oppfolgingsbruker.kvalifiseringsgruppekode(), utkast14aStatus))
                 .field("trenger_vurdering", OppfolgingUtils.trengerVurdering(oppfolgingsbruker.rettighetsgruppekode(), oppfolgingsbruker.kvalifiseringsgruppekode()))
-                .field("fullt_navn", String.format("%s, %s", oppfolgingsbruker.etternavn(), oppfolgingsbruker.fornavn()))
                 .endObject();
 
         update(aktoerId, content, "Oppdater oppfolgingsbruker");

@@ -12,7 +12,6 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +31,6 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
     private final SisteEndringService sisteEndringService;
     private final OpensearchIndexer opensearchIndexer;
     private final TiltakService tiltakService;
-    private final UnleashService unleashService;
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());

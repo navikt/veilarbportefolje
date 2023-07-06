@@ -7,7 +7,6 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.enums.arena.Rettighetsgruppe;
-import no.nav.pto_schema.enums.arena.SikkerhetstiltakType;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,12 +50,11 @@ public class OppfolgingsbrukerServiceV2Test {
         ZonedDateTime endret_dato = DateUtils.now();
 
         OppfolgingsbrukerEntity forventetResultat = new OppfolgingsbrukerEntity(fnr.get(), "RARBS", ZonedDateTime.of(iserv_fra_dato.atStartOfDay(), ZoneId.systemDefault()),
-                "Testerson", "Test", "007", "BKART", "AAP", "SKAFFEA", "FYUS",
-                "6", false, true, endret_dato);
+                 "007", "BKART", "AAP", "SKAFFEA", endret_dato);
 
         EndringPaaOppfoelgingsBrukerV2 kafkaMelding = EndringPaaOppfoelgingsBrukerV2.builder().fodselsnummer(fnr.get()).formidlingsgruppe(Formidlingsgruppe.RARBS).iservFraDato(iserv_fra_dato)
-                .etternavn("Testerson").fornavn("Test").oppfolgingsenhet("007").kvalifiseringsgruppe(Kvalifiseringsgruppe.BKART).rettighetsgruppe(Rettighetsgruppe.AAP).hovedmaal(Hovedmaal.SKAFFEA).sikkerhetstiltakType(SikkerhetstiltakType.FYUS)
-                .diskresjonskode("6").sperretAnsatt(false).erDoed(true).sistEndretDato(endret_dato)
+                .oppfolgingsenhet("007").kvalifiseringsgruppe(Kvalifiseringsgruppe.BKART).rettighetsgruppe(Rettighetsgruppe.AAP).hovedmaal(Hovedmaal.SKAFFEA)
+                .sperretAnsatt(false).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
         Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
