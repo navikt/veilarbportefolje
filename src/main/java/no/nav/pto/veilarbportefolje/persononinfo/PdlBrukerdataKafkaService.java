@@ -56,7 +56,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
-            secureLog.info("Det oppsto en PDL endring aktoer: {}, {}", aktivAktorId, pdlDokument);
+            secureLog.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
 
             handterIdentEndring(pdlIdenter);
 
@@ -66,7 +66,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         }
 
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
-            secureLog.info("Fikk kafkamelding om endring på barn fra PDL: {}", pdlDokument);
+            
             Fnr aktivtFnr = hentAktivFnr(pdlIdenter);
             barnUnder18AarService.handterBarnIdentEndring(aktivtFnr, inaktiveFnr);
 
@@ -107,10 +107,8 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
     private void handterBarnEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka, List<PDLIdent> pdlIdenter) {
         Fnr aktivtFnrBarn = hentAktivFnr(pdlIdenter);
-        secureLog.info("Aktivt fnr barn: {}", aktivtFnrBarn);
         try {
             PDLPerson person = PDLPerson.genererFraApiRespons(personFraKafka);
-            secureLog.info("i handterBarnEndring genererteFraApiRespons: {} ", person.toString());
             PDLPersonBarn barn = new PDLPersonBarn();
             barn.setErIlive(!person.isErDoed());
             barn.setFodselsdato(person.getFoedsel());
