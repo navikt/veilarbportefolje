@@ -50,12 +50,7 @@ public class PdlService {
 
     public void lagreBrukerData(Fnr fnrPerson, PDLPerson personData) {
         pdlPersonRepository.upsertPerson(fnrPerson, personData);
-        try {
-            barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, personData.getForeldreansvar());
-        }
-        catch (Exception e){
-            secureLog.warn("Unable to fetch data about one or more barn for person: " + fnrPerson, e);
-        }
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, personData.getForeldreansvar());
     }
 
     public void lagreBrukerDataPaBarn(Fnr fnrBarn, PDLPersonBarn pdlPersonBarn) {

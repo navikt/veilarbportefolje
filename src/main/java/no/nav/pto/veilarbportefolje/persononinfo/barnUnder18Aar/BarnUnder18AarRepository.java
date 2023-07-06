@@ -78,7 +78,7 @@ public class BarnUnder18AarRepository {
                     VALUES(?,?,?) ON CONFLICT (barn_ident) DO UPDATE SET (barn_foedselsdato, barn_diskresjonkode) = (excluded.barn_foedselsdato, excluded.barn_diskresjonkode)
                      """, barnIdent.get(), barnFoedselsdato, diskresjonskode);
         } catch (Exception e) {
-            log.error("Can't update barn data " + e, e);
+            throw new RuntimeException("Can't update barn data " + e, e);
         }
 
     }
