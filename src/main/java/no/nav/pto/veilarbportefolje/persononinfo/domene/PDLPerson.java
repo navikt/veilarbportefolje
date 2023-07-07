@@ -236,12 +236,12 @@ public class PDLPerson {
 
     private static List<Fnr> hentForeldreansvar(List<PdlPersonResponse.PdlPersonResponseData.Foreldreansvar> foreldreansvar) {
         if (foreldreansvar == null){
-            return null;
+            return Collections.emptyList();
         }
         var foreldreansvarAktivt = foreldreansvar.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
 
         if (foreldreansvarAktivt.isEmpty()){
-            return null;
+            return Collections.emptyList();
         }
 
         return foreldreansvarAktivt.stream()

@@ -18,14 +18,16 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarSe
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
@@ -37,38 +39,37 @@ import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 public class BarnUnder18AarKafkaTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private BarnUnder18AarRepository barnUnder18AarRepository;
 
     private BarnUnder18AarService barnUnder18AarService;
 
     private PdlBrukerdataKafkaService pdlBrukerdataKafkaService;
 
-    private PdlIdentRepository pdlIdentRepository;
+    private final PdlIdentRepository pdlIdentRepository;
 
-    private PdlPersonRepository pdlPersonRepository;
+    private final PdlPersonRepository pdlPersonRepository;
 
-    private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
+    private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
 
-    private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     @MockBean
     private OpensearchIndexer opensearchIndexer;
     @MockBean
     private OpensearchIndexerV2 opensearchIndexerV2;
+
+    private final BarnUnder18AarRepository barnUnder18AarRepository;
     private final String pdlDokumentAsString = readFileAsJsonString("/PDL_Files/pdl_dokument.json", getClass());
+
+    private final String pdlPersonBarnBolkResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_bolk_1.json", getClass());
     private final String pdlDokumentBarn1MedDiskresjonskodeAsString = readFileAsJsonString("/PDL_Files/pdl_dokument_barn1_med_diskresjonskode.json", getClass());
-    private final String pdlPersonBarn1ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
-    private final String pdlPersonBarn2ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn2_pdl.json", getClass());
-    private final String pdlPersonBarn3ResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn3_pdl.json", getClass());
     private final JdbcTemplate db;
 
-    private WireMockServer server = new WireMockServer();
+    private final WireMockServer server = new WireMockServer();
 
 
     public BarnUnder18AarKafkaTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
-        barnUnder18AarRepository = new BarnUnder18AarRepository(db,db);
-        barnUnder18AarService = new BarnUnder18AarService(this.barnUnder18AarRepository);
+        barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
         pdlIdentRepository = new PdlIdentRepository(db);
         pdlPersonRepository = new PdlPersonRepository(db, db);
         oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
@@ -84,36 +85,20 @@ public class BarnUnder18AarKafkaTest {
                         .whenScenarioStateIs(STARTED)
                         .willReturn(aResponse()
                                 .withStatus(200)
-                                .withBody(pdlPersonBarn1ResponsFraFil))
+                                .withBody(pdlPersonBarnBolkResponsFraFil))
                         .willSetStateTo("hent barn 2")
-        );
-
-        server.stubFor(post(anyUrl())
-                .inScenario("PDL test")
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(pdlPersonBarn2ResponsFraFil))
-                .whenScenarioStateIs("hent barn 2")
-                .willSetStateTo("hent barn 3")
-        );
-
-        server.stubFor(post(anyUrl())
-                .inScenario("PDL test")
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(pdlPersonBarn3ResponsFraFil))
-                .whenScenarioStateIs("hent barn 3")
         );
 
         server.start();
 
+        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository);
 
         this.pdlBrukerdataKafkaService = new PdlBrukerdataKafkaService(new PdlService(
                 this.pdlIdentRepository,
                 this.pdlPersonRepository,
                 this.barnUnder18AarService,
-                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
-        ), this.pdlIdentRepository,
+                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN")))
+        , this.pdlIdentRepository,
                 new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
                 this.barnUnder18AarService,
                 opensearchIndexer,
@@ -145,7 +130,7 @@ public class BarnUnder18AarKafkaTest {
         String diskresjonskode_barn1 = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrForelder)).get(fnrForelder).get(0).getDiskresjonskode();
         pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(pdlDokBarn1MedDiskresjonskode);
         String diskresjonskode_barn1_etter_update = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrForelder)).get(fnrForelder).get(0).getDiskresjonskode();
-        Assertions.assertTrue(diskresjonskode_barn1 == null);
-        Assertions.assertTrue(Objects.equals(diskresjonskode_barn1_etter_update, "7"));
+        Assertions.assertNull(diskresjonskode_barn1);
+        Assertions.assertEquals("7", diskresjonskode_barn1_etter_update);
     }
 }

@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.alderFraFodselsdato;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -48,11 +49,9 @@ public class BarnUnder18AarRepository {
     }
 
     public List<Fnr> hentAlleBarnOver18() {
-        List<Fnr> barn = dbReadOnly.queryForList("""
+        return dbReadOnly.queryForList("""
                     SELECT barn_ident  FROM bruker_data_barn WHERE BARN_FOEDSELSDATO <= NOW() - INTERVAL '18 YEARS';
                 """, String.class).stream().map(Fnr::of).toList();
-
-        return barn;
     }
 
     public Boolean finnesBarnIForeldreansvar(Fnr fnrBarn) {
@@ -80,7 +79,8 @@ public class BarnUnder18AarRepository {
                     VALUES(?,?,?) ON CONFLICT (barn_ident) DO UPDATE SET (barn_foedselsdato, barn_diskresjonkode) = (excluded.barn_foedselsdato, excluded.barn_diskresjonkode)
                      """, barnIdent.get(), barnFoedselsdato, diskresjonskode);
         } catch (Exception e) {
-            log.error("Can't update barn data " + e, e);
+            secureLog.error("Can't update barn data " + e, e);
+            throw new RuntimeException("Can't update barn data ");
         }
 
     }
@@ -102,10 +102,12 @@ public class BarnUnder18AarRepository {
                  """, foresattIdent.get(), barnIdent.get());
     }
 
-    public void slettForeldreansvar(Fnr fnrForesatt, Fnr fnrBarn) {
-        db.update("""
+    public boolean slettForeldreansvar(Fnr fnrForesatt, Fnr fnrBarn) {
+        int affectedRows = db.update("""
                 DELETE FROM foreldreansvar WHERE foresatt_ident = ? AND barn_ident = ?
                  """, fnrForesatt.get(), fnrBarn.get());
+
+        return affectedRows > 0;
     }
 
     public void slettForeldreansvar(Fnr fnrBarn) {
