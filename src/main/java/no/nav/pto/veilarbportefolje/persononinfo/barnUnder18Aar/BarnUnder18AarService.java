@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class BarnUnder18AarService {
 
     private final BarnUnder18AarRepository barnUnder18AarRepository;
@@ -49,25 +51,34 @@ public class BarnUnder18AarService {
         return result;
     }
 
-    public void lagreBarnOgForeldreansvar(Fnr foresattIdent, List<BarnUnder18Aar> barnFraPdl) {
-        List<Fnr> lagredeBarn = barnUnder18AarRepository.hentForeldreansvarForPerson(foresattIdent);
+    public void lagreBarnOgForeldreansvar(Fnr foresattIdent, Map<Fnr, PDLPersonBarn> pdlPersonBarn) {
+        try {
+            List<Fnr> lagredeBarn = barnUnder18AarRepository.hentForeldreansvarForPerson(foresattIdent);
 
-        List<Fnr> barnFnrFraPdl = barnFraPdl.stream().map(BarnUnder18Aar::getFnr).toList();
+            lagredeBarn.forEach(barnFnr -> {
+                if (pdlPersonBarn == null || !pdlPersonBarn.containsKey(barnFnr)) {
+                    slettForeldreansvar(foresattIdent, barnFnr);
+                    slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnr);
 
-        lagredeBarn.forEach(barnFnr -> {
-            if (!barnFnrFraPdl.contains(barnFnr)) {
-                barnUnder18AarRepository.slettForeldreansvar(foresattIdent, barnFnr);
-                slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnr);
-                secureLog.warn(String.format("Barn fjernet fra PDL for foreldre %s og barn %s", foresattIdent, barnFnr));
+                }
+            });
+
+            if (pdlPersonBarn != null && !pdlPersonBarn.isEmpty()){
+                for (var barnMap : pdlPersonBarn.entrySet()) {
+                    if (barnMap.getValue().isErIlive() && erUnder18Aar(barnMap.getValue().getFodselsdato())) {
+                        barnUnder18AarRepository.lagreBarnData(barnMap.getKey(), barnMap.getValue().getFodselsdato(), barnMap.getValue().getDiskresjonskode());
+                        barnUnder18AarRepository.lagreForeldreansvar(foresattIdent, barnMap.getKey());
+                    }else{
+                        slettForeldreansvar(foresattIdent, barnMap.getKey());
+                        slettBarnDataHvisIngenForeldreErUnderOppfolging(barnMap.getKey());
+                    }
+                }
             }
-        });
-
-        barnFraPdl.forEach(barnUnder18Aar -> {
-            if (erUnder18Aar(barnUnder18Aar.getFodselsdato())) {
-                barnUnder18AarRepository.lagreBarnData(barnUnder18Aar.getFnr(), barnUnder18Aar.getFodselsdato(), barnUnder18Aar.getDiskresjonskode());
-                barnUnder18AarRepository.lagreForeldreansvar(foresattIdent, barnUnder18Aar.getFnr());
-            }
-        });
+        }
+        catch (Exception e){
+            secureLog.error("Kan ikke lagre data om barn og foreldreansvar for person: " + foresattIdent + ". Antall barn: " + pdlPersonBarn.size() + ", error: " + e.getMessage(), e);
+            throw new RuntimeException("Kan ikke lagre data om barn");
+        }
     }
 
 
@@ -79,8 +90,16 @@ public class BarnUnder18AarService {
         barnIdenter.forEach(this::slettBarnDataHvisIngenForeldreErUnderOppfolging);
     }
 
+    private void slettForeldreansvar(Fnr foresattIdent, Fnr barnFnr) {
+        boolean foreldreansvarSlettet = barnUnder18AarRepository.slettForeldreansvar(foresattIdent, barnFnr);
+        if (foreldreansvarSlettet) {
+            secureLog.warn(String.format("Barn fjernet fra PDL for foreldre %s og barn %s", foresattIdent, barnFnr));
+        }
+    }
+
     private void slettBarnDataHvisIngenForeldreErUnderOppfolging(Fnr barnFnr) {
         if (!barnUnder18AarRepository.finnesBarnIForeldreansvar(barnFnr)) {
+            secureLog.info(String.format("Sletter data om barn %s fra bruker_data_barn siden de ikke lenger eksisterer i foreldreansvar", barnFnr));
             barnUnder18AarRepository.slettBarnData(barnFnr);
         }
     }

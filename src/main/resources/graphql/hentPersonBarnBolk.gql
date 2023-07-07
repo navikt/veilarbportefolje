@@ -1,0 +1,32 @@
+query($identer: [ID!]!) {
+    hentPersonBolk(identer: $identer) {
+        ident,
+        person {
+            foedsel {
+                foedselsdato,
+                metadata {
+                    ...metadataDetails
+                }
+            }
+            adressebeskyttelse {
+                gradering,
+
+                metadata {
+                    ...metadataDetails
+                }
+            },
+          	doedsfall {
+          		doedsdato
+        	}
+        },
+        code
+    }
+}
+
+fragment metadataDetails on Metadata {
+  master
+  historisk
+  endringer {
+    registrert
+  }
+}

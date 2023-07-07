@@ -66,6 +66,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         }
 
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
+            
             Fnr aktivtFnr = hentAktivFnr(pdlIdenter);
             barnUnder18AarService.handterBarnIdentEndring(aktivtFnr, inaktiveFnr);
 

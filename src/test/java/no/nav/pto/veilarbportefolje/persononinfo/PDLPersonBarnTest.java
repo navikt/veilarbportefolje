@@ -19,7 +19,6 @@ import java.time.LocalDate;
 import java.time.Period;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
@@ -29,13 +28,13 @@ public class PDLPersonBarnTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final String pdlPersonBarnResponsFraFil = readFileAsJsonString("/PDL_Files/person_barn_pdl.json", getClass());
 
-    private BarnUnder18AarRepository barnUnder18AarRepository;
+    private final BarnUnder18AarRepository barnUnder18AarRepository;
     private final JdbcTemplate db;
     private final PdlPersonRepository pdlPersonRepository;
 
     private PdlService pdlService;
 
-    private WireMockServer server = new WireMockServer();
+    private final WireMockServer server = new WireMockServer();
 
     public PDLPersonBarnTest() {
         this.db = SingletonPostgresContainer.init().createJdbcTemplate();
@@ -59,10 +58,12 @@ public class PDLPersonBarnTest {
 
         server.start();
 
+        BarnUnder18AarService barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository);
+
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
                 pdlPersonRepository,
-                new BarnUnder18AarService(new BarnUnder18AarRepository(db, db)),
+                barnUnder18AarService,
                 new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
         );
     }
@@ -86,9 +87,9 @@ public class PDLPersonBarnTest {
                 .getFoedselsdato();
 
         LocalDate fDato = LocalDate.parse(fodselsdato);
-        Integer alder = Period.between(fDato, LocalDate.now()).getYears();
+        int alder = Period.between(fDato, LocalDate.now()).getYears();
 
-        assertThat(barn.getAlder()).isEqualTo(alder.longValue());
+        assertThat(barn.getAlder()).isEqualTo(alder);
         assertThat(barn.getDiskresjonskode()).isEqualTo(null);
     }
 }
