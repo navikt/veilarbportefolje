@@ -50,7 +50,9 @@ public class PdlService {
 
     public void lagreBrukerData(Fnr fnrPerson, PDLPerson personData) {
         pdlPersonRepository.upsertPerson(fnrPerson, personData);
-        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, personData.getForeldreansvar());
+
+        Map<Fnr, PDLPersonBarn> pdlPersonBarn = pdlClient.hentBrukerBarnDataBolkFraPdl(personData.getForeldreansvar());
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, pdlPersonBarn);
     }
 
     public void lagreBrukerDataPaBarn(Fnr fnrBarn, PDLPersonBarn pdlPersonBarn) {

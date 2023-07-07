@@ -58,8 +58,7 @@ public class PDLPersonBarnTest {
 
         server.start();
 
-        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
-        BarnUnder18AarService barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
+        BarnUnder18AarService barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository);
 
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),

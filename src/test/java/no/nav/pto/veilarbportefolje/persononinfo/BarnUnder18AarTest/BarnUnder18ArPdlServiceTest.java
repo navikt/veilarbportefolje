@@ -113,14 +113,13 @@ public class BarnUnder18ArPdlServiceTest {
 
         server.start();
 
-        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
 
-        this.barnUnder18AarService = new BarnUnder18AarService(new BarnUnder18AarRepository(db, db), pdlPortefoljeClient);
+        this.barnUnder18AarService = new BarnUnder18AarService(new BarnUnder18AarRepository(db, db));
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
                 new PdlPersonRepository(db, db),
                 this.barnUnder18AarService,
-                pdlPortefoljeClient);
+                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN")));
     }
 
     @AfterEach

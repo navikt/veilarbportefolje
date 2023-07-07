@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.persononinfo.BarnUnder18AarTest;
 
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
-import static org.mockito.Mockito.mock;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class BarnUnder18AarServiceTest {
@@ -29,7 +27,7 @@ public class BarnUnder18AarServiceTest {
 
     @BeforeEach
     public void setUp() {
-        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, mock(PdlPortefoljeClient.class));
+        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository);
     }
 
     @Test

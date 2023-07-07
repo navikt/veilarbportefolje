@@ -45,7 +45,7 @@ public class PdlPortefoljeClient {
         PdlBarnResponse respons = pdlClient.request(request, PdlBarnResponse.class);
         if (hasErrors(respons)) {
             SecureLog.secureLog.info("Error in hentBrukerDataBarnFraPdl, request: {}, response: {}", request, respons.toString());
-            throw new RuntimeException("Kunne ikke hente data om barn fra PDL {}");
+            throw new RuntimeException("Kunne ikke hente data om barn fra PDL");
 
         }
 

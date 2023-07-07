@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.alderFraFodselsdato;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -78,7 +79,8 @@ public class BarnUnder18AarRepository {
                     VALUES(?,?,?) ON CONFLICT (barn_ident) DO UPDATE SET (barn_foedselsdato, barn_diskresjonkode) = (excluded.barn_foedselsdato, excluded.barn_diskresjonkode)
                      """, barnIdent.get(), barnFoedselsdato, diskresjonskode);
         } catch (Exception e) {
-            throw new RuntimeException("Can't update barn data " + e, e);
+            secureLog.error("Can't update barn data " + e, e);
+            throw new RuntimeException("Can't update barn data ");
         }
 
     }
