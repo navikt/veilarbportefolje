@@ -22,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -83,7 +84,7 @@ public class BarnUnder18AarRepositoryTest {
         pdlIdentRepository.upsertIdenter(identerBruker);
         Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataBolkFraPdl(List.of(fnrBarn))).thenReturn(Map.of(fnrBarn, pdlBarn15Aar()));
 
-        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, Map.of(fnrBarn, pdlBarn15Aar()));
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, Map.of(fnrBarn, pdlBarn15Aar()), Collections.emptyList());
         Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18Aar(List.of(fnrPerson));
         Assertions.assertFalse(forelderBarnMap.isEmpty());
         Assertions.assertEquals(15, (int) forelderBarnMap.get(fnrPerson).get(0).getAlder());
@@ -99,8 +100,8 @@ public class BarnUnder18AarRepositoryTest {
         pdlPersonRepository.upsertPerson(foresatt2, new PDLPerson().setKjonn(M).setFoedsel(LocalDate.now()));
         Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataBolkFraPdl(List.of(fnrBarn))).thenReturn(Map.of(fnrBarn, pdlBarn()));
 
-        barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt1, Map.of(fnrBarn, pdlBarn()));
-        barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt2, Map.of(fnrBarn, pdlBarn()));
+        barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt1, Map.of(fnrBarn, pdlBarn()), Collections.emptyList());
+        barnUnder18AarService.lagreBarnOgForeldreansvar(foresatt2, Map.of(fnrBarn, pdlBarn()), Collections.emptyList());
         Map<Fnr, List<BarnUnder18AarData>> forelderBarnMap = barnUnder18AarService.hentBarnUnder18Aar(List.of(foresatt1, foresatt2));
         Assertions.assertEquals(2, forelderBarnMap.size());
         Assertions.assertEquals(forelderBarnMap.get(foresatt1), forelderBarnMap.get(foresatt2));
@@ -131,7 +132,7 @@ public class BarnUnder18AarRepositoryTest {
         Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataBolkFraPdl(List.of(fnrBarn))).thenReturn(Map.of(fnrBarn, pdlBarn15Aar()));
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         pdlIdentRepository.upsertIdenter(identerBruker);
-        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, Map.of(fnrBarn, pdlBarn15Aar()));
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, Map.of(fnrBarn, pdlBarn15Aar()), Collections.emptyList());
 
         boolean erFnrBarnAvForelderUnderOppfolging = barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(List.of(fnrBarn));
         Assertions.assertTrue(erFnrBarnAvForelderUnderOppfolging);
@@ -174,7 +175,7 @@ public class BarnUnder18AarRepositoryTest {
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         pdlIdentRepository.upsertIdenter(identerBruker);
         Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataBolkFraPdl(List.of(fnrBarn))).thenReturn(Map.of(fnrBarn, pdlBarn15Aar()));
-        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, Map.of(fnrBarn, pdlBarn15Aar()));
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, Map.of(fnrBarn, pdlBarn15Aar()), Collections.emptyList());
 
         Fnr nyFnr = randomFnr();
         barnUnder18AarRepository.oppdatereBarnIdent(nyFnr, List.of(fnrBarn, randomFnr()));
@@ -203,9 +204,9 @@ public class BarnUnder18AarRepositoryTest {
         pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         pdlIdentRepository.upsertIdenter(identerBruker);
         Mockito.when(mockedPdlPortefoljeClient.hentBrukerBarnDataBolkFraPdl(List.of(fnrBarn1, fnrBarn2))).thenReturn(Map.of(fnrBarn1, pdlBarn15Aar(), fnrBarn2, pdlBarn4Aar()));
-        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, Map.of(fnrBarn1, pdlBarn15Aar(), fnrBarn2, pdlBarn4Aar()));
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, Map.of(fnrBarn1, pdlBarn15Aar(), fnrBarn2, pdlBarn4Aar()), Collections.emptyList());
 
-        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, Map.of(fnrBarn2, pdlBarn4Aar()));
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, Map.of(fnrBarn2, pdlBarn4Aar()), Collections.emptyList());
         List<Fnr> barnFnrs = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnrPerson));
 
         Assertions.assertEquals(1, barnFnrs.size());

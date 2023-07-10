@@ -51,15 +51,15 @@ public class BarnUnder18AarService {
         return result;
     }
 
-    public void lagreBarnOgForeldreansvar(Fnr foresattIdent, Map<Fnr, PDLPersonBarn> pdlPersonBarn) {
+    public void lagreBarnOgForeldreansvar(Fnr foresattIdent, Map<Fnr, PDLPersonBarn> pdlPersonBarn, List<String> foreldreansvarMaster) {
         try {
             List<Fnr> lagredeBarn = barnUnder18AarRepository.hentForeldreansvarForPerson(foresattIdent);
 
             lagredeBarn.forEach(barnFnr -> {
                 if (pdlPersonBarn == null || !pdlPersonBarn.containsKey(barnFnr)) {
+                    secureLog.warn("Slett foreldre ansvar, master: " + String.join(",", foreldreansvarMaster));
                     slettForeldreansvar(foresattIdent, barnFnr);
                     slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnr);
-
                 }
             });
 

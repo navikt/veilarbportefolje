@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.Sikkerhetstiltak;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.time.LocalDate;
@@ -38,6 +39,7 @@ public class PDLPerson {
     private String diskresjonskode;
     private Sikkerhetstiltak sikkerhetstiltak;
     private List<Fnr> foreldreansvar;
+    private List<String> foreldreansvarMaster;
 
 
     public static PDLPerson genererFraApiRespons(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData response) {
@@ -62,7 +64,8 @@ public class PDLPerson {
                 .setTolkBehovSistOppdatert(hentTolkBehovSistOppdatert(response.getTilrettelagtKommunikasjon()))
                 .setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()))
                 .setSikkerhetstiltak(hentSikkerhetstiltak(response.getSikkerhetstiltak()))
-                .setForeldreansvar(hentForeldreansvar(response.getForeldreansvar()));
+                .setForeldreansvar(hentForeldreansvar(response.getForeldreansvar()))
+                .setForeldreansvarMaster(hentForeldreansvarMaster(response.getForeldreansvar()));
 
     }
 
@@ -249,6 +252,23 @@ public class PDLPerson {
                 .filter(Objects::nonNull)
                 .map(Fnr::of)
                 .collect(Collectors.toList());
+    }
+
+    private static List<String> hentForeldreansvarMaster(List<PdlPersonResponse.PdlPersonResponseData.Foreldreansvar> foreldreansvar) {
+        if (foreldreansvar == null){
+            return Collections.emptyList();
+        }
+        var foreldreansvarAktivt = foreldreansvar.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
+
+        if (foreldreansvarAktivt.isEmpty()){
+            return Collections.emptyList();
+        }
+
+        return foreldreansvarAktivt.stream()
+                .map(PdlPersonResponse.PdlPersonResponseData.Foreldreansvar::getMetadata)
+                .map(Metadata::getMaster)
+                .map(Enum::name)
+                .toList();
     }
 
     private static Optional<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> hentBostedAdresse(List<PdlPersonResponse.PdlPersonResponseData.Bostedsadresse> response) {
