@@ -55,15 +55,6 @@ Bruk referansen i response til å følge med i loggene. Dersom jobben feiler, s�
 den gamle brukes videre (read-only modus fjernes). Skulle jobben feile, så bør man kjøre en vanlig hovedindeksering
 igjen (steg 3), siden endringer som kom inn mens jobben kjørte, før den feilet, kun blir skrivet til den nye indeksen.
 
-## Sjekk at databaselink fra arena oppdateres
-
-Les i jobbtabellen til oracle for å undersøke statusen på den automatisk oppdateringen databaselinken til arena
-
-```
-select * from dba_scheduler_jobs;
-```
-
-
 ## PostgreSQL
 
 Innloggingsinformasjon til databasen:
