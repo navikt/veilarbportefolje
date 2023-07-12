@@ -18,7 +18,7 @@ public enum PdlMaster {
     @JsonCreator
     public static PdlMaster fromString(String string) {
         try {
-            return PdlMaster.valueOf(string);
+            return PdlMaster.valueOf(string.toUpperCase());
         } catch (IllegalArgumentException e) {
             secureLog.warn("Pdl kilde: " + string);
             return UVIST;
