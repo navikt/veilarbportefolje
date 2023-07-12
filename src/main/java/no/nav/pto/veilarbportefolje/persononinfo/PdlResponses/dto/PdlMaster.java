@@ -2,6 +2,8 @@ package no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 public enum PdlMaster {
     PDL(1),
     FREG(2),
@@ -18,6 +20,7 @@ public enum PdlMaster {
         try {
             return PdlMaster.valueOf(string);
         } catch (IllegalArgumentException e) {
+            secureLog.warn("Pdl kilde: " + string);
             return UVIST;
         }
     }
