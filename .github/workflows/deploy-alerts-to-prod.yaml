@@ -1,0 +1,25 @@
+name: Deploy alerts for veilarbportefolje to prod-fss
+
+on:
+  push:
+    branches:
+      - 'master'
+    paths:
+      - '.github/workflows/deploy-alerts-to-prod.yaml'
+      - '.nais/alerts/alerts-config-prod.yaml'
+  workflow_dispatch:
+
+jobs:
+  deploy-alerts:
+    name: Deploy alerts to prod-fss
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Deploy to prod-fss
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: prod-fss
+          RESOURCE: .nais/alerts/alerts-config-prod.yaml
