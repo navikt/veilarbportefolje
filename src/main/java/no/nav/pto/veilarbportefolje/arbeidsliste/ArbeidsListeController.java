@@ -127,6 +127,13 @@ public class ArbeidsListeController {
                 .onFailure(e -> secureLog.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
+        if (arbeidslisteService.getArbeidsliste(fnr).get() == null){
+            VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
+            NavKontor enhet = brukerService.hentNavKontor(fnr).orElse(null);
+            secureLog.debug("Arbeidsliste kunne ikke oppdateres, var null, fnr: {}, veileder: {}, på enhet: {}", fnrString, veilederId, enhet);
+            throw new IllegalStateException("Kunne ikke oppdatere. Fant ikke arbeidsliste for bruker");
+        }
+
         return arbeidslisteService.getArbeidsliste(fnr).get()
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(arbeidslisteService.erVeilederForBruker(
@@ -142,6 +149,9 @@ public class ArbeidsListeController {
 
         final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr));
         if (antallRaderSlettet != 1) {
+            VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
+            NavKontor enhet = brukerService.hentNavKontor(Fnr.ofValidFnr(fnr)).orElse(null);
+            secureLog.debug("Kunne ikke slette arbeidsliste for fnr: {}, av veileder: {}, på enhet: {}", fnr, veilederId.toString(), enhet);
             throw new IllegalStateException("Kunne ikke slette. Fant ikke arbeidsliste for bruker");
         }
 
