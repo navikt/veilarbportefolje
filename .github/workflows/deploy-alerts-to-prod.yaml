@@ -20,6 +20,6 @@ jobs:
       - name: Deploy to prod-fss
         uses: nais/deploy/actions/deploy@v1
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_OBO }}
           CLUSTER: prod-fss
           RESOURCE: .nais/alerts/alerts-config-prod.yaml
