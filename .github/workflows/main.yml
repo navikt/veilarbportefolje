@@ -78,7 +78,7 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
-          RESOURCE: nais-prod.yaml
+          RESOURCE: .nais/application/application-config-prod.yaml
           VAR: version=${{ env.IMAGE_TAG }}
   release-prod:
     name: Create prod release
