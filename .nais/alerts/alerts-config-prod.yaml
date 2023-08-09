@@ -4,7 +4,7 @@ metadata:
   name: team-obo-alarmer-veilarbportefolje
   namespace: obo
   labels:
-    team: team-obo
+    team: obo
 spec:
   groups:
     - name: team-obo-alarmer-veilarbportefolje
