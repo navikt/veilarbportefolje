@@ -1,0 +1,45 @@
+apiVersion: "monitoring.coreos.com/v1"
+kind: PrometheusRule
+metadata:
+  name: team-obo-alarmer-veilarbportefolje
+  namespace: obo
+  labels:
+    team: team-obo
+spec:
+  groups:
+    - name: team-obo-alarmer-veilarbportefolje
+      rules:
+        # Kubernetes-spesifikke alerts
+        - alert: Applikasjon er nede
+          expr: kube_deployment_status_replicas_available{deployment=~"veilarbportefolje"} == 0
+          for: 1m
+          annotations:
+            summary: "App {{ $labels.deployment }} er nede i namespace {{ $labels.namespace }}!"
+            consequence: "Appen kan ikke nås av andre applikasjoner, noe som kan potensielt ha stor konsekvens for brukere (nedetid, mm.)."
+            action: "Diagnostiser applikasjonen ved hjelp av relevante kubectl-kommandoer (`kubectl get pod -l app={{ labels.deployment }}`, `kubectl describe pod <pod>`, `kubectl get events --field-selector involvedObject.name=<pod>`)."
+          labels:
+            namespace: obo
+            severity: critical
+
+        # Spring Boot spesifikke alerts
+        - alert: Høy andel serverfeil (HTTP 5XX)
+          expr: (100 * (sum(rate(http_server_requests_seconds_count{app="veilarbportefolje", outcome=~"SERVER_ERROR"}[5m])) / sum(rate(http_server_requests_seconds_count{app="veilarbportefolje"}[5m])))) > 1
+          for: 5m
+          annotations:
+            summary: "Andelen HTTP 5XX feil i veilarbportefolje har oversteget 1% de siste 5 minuttene."
+            consequence: "Potensielle konsekvenser for bruker kan være forhøyet andel opplevd feil, degradert ytelse, mm."
+            action: "Sjekk logger for å se hvilke feil som oppstår og start feilsøking."
+          labels:
+            namespace: obo
+            severity: critical
+
+        - alert: Høy andel klientfeil (HTTP 4XX)
+          expr: (100 * (sum(rate(http_server_requests_seconds_count{app="veilarbportefolje", outcome=~"CLIENT_ERROR"}[5m])) / sum(rate(http_server_requests_seconds_count{app="veilarbportefolje"}[5m])))) > 10
+          for: 5m
+          annotations:
+            summary: "Andelen HTTP 4XX feil i veilarbportefolje har oversteget 10% de siste 5 minuttene."
+            consequence: "Potensielle konsekvenser for bruker kan være forhøyet andel opplevd feil, degradert ytelse, mm."
+            action: "Sjekk logger for å se hvilke feil som oppstår og start feilsøking."
+          labels:
+            namespace: obo
+            severity: warning
