@@ -16,7 +16,7 @@ spec:
           annotations:
             summary: "App {{ $labels.deployment }} er nede i namespace {{ $labels.namespace }}!"
             consequence: "Appen kan ikke nås av andre applikasjoner, noe som kan potensielt ha stor konsekvens for brukere (nedetid, mm.)."
-            action: "Diagnostiser applikasjonen ved hjelp av relevante kubectl-kommandoer (`kubectl get pod -l app={{ labels.deployment }}`, `kubectl describe pod <pod>`, `kubectl get events --field-selector involvedObject.name=<pod>`)."
+            action: "Diagnostiser applikasjonen ved hjelp av relevante kubectl-kommandoer (`kubectl get pod -l app={{ $labels.deployment }}`, `kubectl describe pod <pod>`, `kubectl get events --field-selector involvedObject.name=<pod>`)."
           labels:
             namespace: obo
             severity: critical
