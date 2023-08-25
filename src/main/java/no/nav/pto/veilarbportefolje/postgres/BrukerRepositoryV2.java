@@ -52,13 +52,13 @@ public class BrukerRepositoryV2 {
                         select OD.AKTOERID, OD.OPPFOLGING, ob.*,
                                ns.er_skjermet, ns.skjermet_til, ai.fnr, bd.foedselsdato, bd.fornavn as fornavn_pdl,
                                bd.etternavn as etternavn_pdl, bd.mellomnavn as mellomnavn_pdl, bd.er_doed as er_doed_pdl, bd.kjoenn,
-                               bd.foedeland, 
+                               bd.foedeland,
                                bd.talespraaktolk, bd.tegnspraaktolk, bd.tolkbehovsistoppdatert, bd.diskresjonkode,
-                               bd.sikkerhetstiltak_type, bd.sikkerhetstiltak_gyldigfra, bd.sikkerhetstiltak_gyldigtil, bd.sikkerhetstiltak_beskrivelse, 
+                               bd.sikkerhetstiltak_type, bd.sikkerhetstiltak_gyldigfra, bd.sikkerhetstiltak_gyldigtil, bd.sikkerhetstiltak_beskrivelse,
                                bd.bydelsnummer, bd.kommunenummer, bd.bostedsistoppdatert, bd.utenlandskadresse, bd.harUkjentBosted,
                                OD.STARTDATO, OD.NY_FOR_VEILEDER, OD.VEILEDERID, OD.MANUELL,  DI.VENTER_PA_BRUKER,  DI.VENTER_PA_NAV,
-                               U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON,
-                               BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
+                               U.VEDTAKSTATUS, BP.PROFILERING_RESULTAT, CV.HAR_DELT_CV, CV.CV_EKSISTERER, BR.BRUKERS_SITUASJON, BR.REGISTRERING_OPPRETTET,
+                               BR.UTDANNING, BR.UTDANNING_BESTATT, BR.UTDANNING_GODKJENT, EiR.BRUKERS_SITUASJON as ENDRET_BRUKERS_SITUASJON, EiR.BRUKERS_SITUASJON_SIST_ENDRET, YB.YTELSE, YB.AAPMAXTIDUKE, YB.AAPUNNTAKDAGERIGJEN,
                                YB.DAGPUTLOPUKE, YB.PERMUTLOPUKE, YB.UTLOPSDATO as YTELSE_UTLOPSDATO, YB.ANTALLDAGERIGJEN, YB.ENDRET_DATO as YTELSE_ENDRET_DATO,
                                U.ANSVARLIG_VEILDERNAVN          as VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN,
                                U.ENDRET_TIDSPUNKT               as VEDTAKSTATUS_ENDRET_TIDSPUNKT,
@@ -79,6 +79,7 @@ public class BrukerRepositoryV2 {
                                  LEFT JOIN BRUKER_CV CV on CV.AKTOERID = ai.aktorid
                                  LEFT JOIN BRUKER_REGISTRERING BR on BR.AKTOERID = ai.aktorid
                                  LEFT JOIN YTELSE_STATUS_FOR_BRUKER YB on YB.AKTOERID = ai.aktorid
+                                 LEFT JOIN ENDRING_I_REGISTRERING EiR on EiR.AKTOERID = ai.aktorid
                                  where ai.aktorid = ANY (?::varchar[])
                         """,
                 (ResultSet rs) -> {
@@ -131,10 +132,10 @@ public class BrukerRepositoryV2 {
             aapordinerutlopsdato = DateUtils.addWeeksToTodayAndGetNthDay(rs.getTimestamp("YTELSE_ENDRET_DATO"), rs.getInt(AAPMAXTIDUKE), rs.getInt(ANTALLDAGERIGJEN));
         }
 
+
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setFnr(fnr)
                 .setAktoer_id(rs.getString(AKTOERID))
-                .setBrukers_situasjon(rs.getString(BRUKERS_SITUASJON))
                 .setProfilering_resultat(rs.getString(PROFILERING_RESULTAT))
                 .setUtdanning(rs.getString(UTDANNING))
                 .setUtdanning_bestatt(rs.getString(UTDANNING_BESTATT))
@@ -161,6 +162,8 @@ public class BrukerRepositoryV2 {
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
                 .setAapordinerutlopsdato(aapordinerutlopsdato)
                 .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)));
+
+		setBrukersSituasjon(bruker, rs);
 
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));
         if (arbeidslisteTidspunkt != null) {
@@ -199,6 +202,18 @@ public class BrukerRepositoryV2 {
         return bruker;
     }
 
+	@SneakyThrows
+	private void setBrukersSituasjon(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
+		boolean harOppdatertBrukersSituasjon = rs.getString(ENDRET_BRUKERS_SITUASJON) != null && rs.getTimestamp(BRUKERS_SITUASJON_SIST_ENDRET) != null;
+		LocalDate oppdatertBrukesSituasjonSistEndretDato = toLocalDate(rs.getTimestamp(BRUKERS_SITUASJON_SIST_ENDRET));
+		LocalDate brukesSituasjonOpprettetDato = toLocalDate(rs.getTimestamp(REGISTRERING_OPPRETTET));
+		boolean harEndretSituasjonEttterRegistrering = harOppdatertBrukersSituasjon && isEqualOrAfterWithNullCheck(oppdatertBrukesSituasjonSistEndretDato, brukesSituasjonOpprettetDato);
+		String brukersSisteSituasjon = harEndretSituasjonEttterRegistrering ? rs.getString(ENDRET_BRUKERS_SITUASJON) : rs.getString(BRUKERS_SITUASJON);
+		LocalDate brukersSituasjonSistEndretDato = harEndretSituasjonEttterRegistrering ? oppdatertBrukesSituasjonSistEndretDato : brukesSituasjonOpprettetDato;
+
+		oppfolgingsBruker.setBrukers_situasjon(brukersSisteSituasjon);
+		oppfolgingsBruker.setBrukers_situasjon_sist_endret(brukersSituasjonSistEndretDato);
+	}
     @SneakyThrows
     private OppfolgingsBruker flettInnOppfolgingsbruker(OppfolgingsBruker bruker, String utkast14aStatus, ResultSet rs) {
         String fnr = rs.getString(FODSELSNR_ARENA);

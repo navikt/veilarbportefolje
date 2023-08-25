@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class OppfolgingAvsluttetService {
     private final ArbeidslisteService arbeidslisteService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final RegistreringService registreringService;
+    private final EndringIRegistreringService endringIRegistreringService;
     private final CVRepositoryV2 cvRepositoryV2;
     private final PdlService pdlService;
     private final OpensearchIndexerV2 opensearchIndexerV2;
@@ -36,6 +38,7 @@ public class OppfolgingAvsluttetService {
     public void avsluttOppfolging(AktorId aktoerId) {
         oppfolgingRepositoryV2.slettOppfolgingData(aktoerId);
         registreringService.slettRegistering(aktoerId);
+        endringIRegistreringService.slettEndringIRegistering(aktoerId);
         arbeidslisteService.slettArbeidsliste(aktoerId);
         sisteEndringService.slettSisteEndringer(aktoerId);
         cvRepositoryV2.resetHarDeltCV(aktoerId);
