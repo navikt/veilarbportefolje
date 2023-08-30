@@ -233,6 +233,10 @@ public class BrukerRepositoryV2 {
 
         String landGruppe = Landgruppe.getInstance().getLandgruppeForLandKode(rs.getString("foedeland"));
         String foedelandFulltNavn = kodeverskService.getBeskrivelseForLandkode(rs.getString("foedeland"));
+
+        LocalDate sikkerhetstiltakGyldigtil = toLocalDateOrNull(rs.getString("sikkerhetstiltak_gyldigtil"));
+        boolean showSikkerhetsTiltak = (sikkerhetstiltakGyldigtil == null || sikkerhetstiltakGyldigtil.isAfter(LocalDate.now()));
+
         bruker
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
@@ -252,10 +256,10 @@ public class BrukerRepositoryV2 {
                 .setUtenlandskAdresse(rs.getString("utenlandskAdresse"))
                 .setHarUkjentBosted(rs.getBoolean("harUkjentBosted"))
                 .setBostedSistOppdatert(toLocalDateOrNull(rs.getString("bostedSistOppdatert")))
-                .setSikkerhetstiltak(rs.getString("sikkerhetstiltak_type"))
-                .setSikkerhetstiltak_gyldig_fra(rs.getString("sikkerhetstiltak_gyldigfra"))
-                .setSikkerhetstiltak_gyldig_til(rs.getString("sikkerhetstiltak_gyldigtil"))
-                .setSikkerhetstiltak_beskrivelse(rs.getString("sikkerhetstiltak_beskrivelse"))
+                .setSikkerhetstiltak(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_type") : "")
+                .setSikkerhetstiltak_gyldig_fra(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_gyldigfra"): "")
+                .setSikkerhetstiltak_gyldig_til(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_gyldigtil"): "")
+                .setSikkerhetstiltak_beskrivelse(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_beskrivelse"): "")
                 .setDiskresjonskode(rs.getString("diskresjonkode"));
     }
 
