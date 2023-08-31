@@ -161,6 +161,16 @@ public class DateUtilsTest {
     }
 
     @Test
+    public void testToLocalDateOrNull() {
+        LocalDate localDate = DateUtils.toLocalDateOrNull("2023-08-02");
+        Assertions.assertNotNull(localDate);
+        Assertions.assertEquals(localDate.getYear(), 2023);
+        Assertions.assertEquals(localDate.getMonthValue(), 8);
+        Assertions.assertEquals(localDate.getDayOfMonth(), 2);
+        Assertions.assertFalse(localDate.isAfter(LocalDate.now()));
+    }
+
+    @Test
     public void testErUnder18Aar() {
         LocalDate fodselsdatoFylt18Aar = LocalDate.now().minusYears(18).minusDays(1);
         LocalDate fodselsdatoFylt17Aar = LocalDate.now().minusYears(17)
@@ -172,4 +182,11 @@ public class DateUtilsTest {
 
     }
 
+    @Test
+    public void dateToTimestamp() {
+    }
+
+    @Test
+    public void toLocalDateOrNull() {
+    }
 }

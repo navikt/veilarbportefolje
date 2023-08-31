@@ -234,8 +234,8 @@ public class BrukerRepositoryV2 {
         String landGruppe = Landgruppe.getInstance().getLandgruppeForLandKode(rs.getString("foedeland"));
         String foedelandFulltNavn = kodeverskService.getBeskrivelseForLandkode(rs.getString("foedeland"));
 
-        LocalDate sikkerhetstiltakGyldigtil = toLocalDateOrNull(rs.getString("sikkerhetstiltak_gyldigtil"));
-        boolean showSikkerhetsTiltak = (sikkerhetstiltakGyldigtil == null || sikkerhetstiltakGyldigtil.isAfter(LocalDate.now()));
+        Date sikkerhetstiltakGyldigtil = rs.getDate("sikkerhetstiltak_gyldigtil");
+        boolean showSikkerhetsTiltak = (sikkerhetstiltakGyldigtil == null || sikkerhetstiltakGyldigtil.toLocalDate().isAfter(LocalDate.now()));
 
         bruker
                 .setFornavn(fornavn)
