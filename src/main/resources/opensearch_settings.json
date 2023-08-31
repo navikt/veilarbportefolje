@@ -234,6 +234,12 @@
             "null_value":"-1"
           }
         }
+      },
+      "sikkerhetstiltak_gyldig_fra": {
+        "type": "keyword"
+      },
+      "sikkerhetstiltak_gyldig_til": {
+        "type": "keyword"
       }
     }
   }
