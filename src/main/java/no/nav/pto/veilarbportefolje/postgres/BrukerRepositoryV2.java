@@ -256,10 +256,10 @@ public class BrukerRepositoryV2 {
                 .setUtenlandskAdresse(rs.getString("utenlandskAdresse"))
                 .setHarUkjentBosted(rs.getBoolean("harUkjentBosted"))
                 .setBostedSistOppdatert(toLocalDateOrNull(rs.getString("bostedSistOppdatert")))
-                .setSikkerhetstiltak(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_type") : "")
-                .setSikkerhetstiltak_gyldig_fra(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_gyldigfra"): "")
-                .setSikkerhetstiltak_gyldig_til(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_gyldigtil"): "")
-                .setSikkerhetstiltak_beskrivelse(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_beskrivelse"): "")
+                .setSikkerhetstiltak(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_type") : null)
+                .setSikkerhetstiltak_gyldig_fra(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_gyldigfra"): null)
+                .setSikkerhetstiltak_gyldig_til(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_gyldigtil"): null)
+                .setSikkerhetstiltak_beskrivelse(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_beskrivelse"): null)
                 .setDiskresjonskode(rs.getString("diskresjonkode"));
     }
 
