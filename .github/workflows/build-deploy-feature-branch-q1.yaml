@@ -7,7 +7,6 @@ env:
   PRINT_PAYLOAD: true
 permissions:
   packages: write
-
 jobs:
   build-and-push:
     name: Build and push
