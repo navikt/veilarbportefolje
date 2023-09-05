@@ -12,6 +12,7 @@ public class EnvironmentProperties {
     private String naisAadClientId;
     private String dbUrl;
     private String unleashUrl;
+    private String unleashApiToken;
     private String abacVeilarbUrl;
     private String opensearchUri;
     private String opensearchUsername;

@@ -30,6 +30,7 @@ spec:
         mountPath: /var/run/secrets/nais.io/vault
   envFrom:
     - configmap: pto-config
+    - secret: veilarbportefolje-unleash-api-token
   liveness:
     path: veilarbportefolje/internal/isAlive
     initialDelay: 60
@@ -64,6 +65,9 @@ spec:
         - application: pto-admin
           namespace: pto
           cluster: dev-fss
+    outbound:
+      external:
+        - host: team-obo-unleash-api.nav.cloud.nais.io
   resources:
     limits:
       cpu: "4"

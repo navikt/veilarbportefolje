@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -8,7 +9,6 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
@@ -33,7 +33,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OpensearchIndexer opensearchIndexer;
     private final Utkast14aStatusRepository utkast14aStatusRepository;
-    private final UnleashService unleashService;
+    private final DefaultUnleash defaultUnleash;
 
     @Override
     public void behandleKafkaMeldingLogikk(EndringPaaOppfoelgingsBrukerV2 kafkaMelding) {
@@ -53,7 +53,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
         brukerServiceV2.hentAktorId(Fnr.of(kafkaMelding.getFodselsnummer()))
                 .ifPresent(id -> {
                     secureLog.info("Fikk endring pa oppfolgingsbruker (V2): {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v2", id);
-                    if (brukOppfolgingsbrukerPaPostgres(unleashService)) {
+                    if (brukOppfolgingsbrukerPaPostgres(defaultUnleash)) {
                         opensearchIndexer.indekser(id);
                     } else {
                         oppdaterOpensearch(id, oppfolgingsbruker);

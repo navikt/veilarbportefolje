@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -16,7 +17,6 @@ import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import no.nav.pto.veilarbportefolje.postgres.utils.TiltakaktivitetEntity;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +54,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
             JdbcTemplate jdbcTemplatePostgres,
             TiltakRepositoryV3 tiltakRepositoryV3,
             TiltakService tiltakService,
-            UnleashService unleashService,
+            DefaultUnleash defaultUnleash,
             AktorClient aktorClient,
             AktivitetService aktivitetService,
             OpensearchService opensearchService
@@ -65,7 +65,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         this.aktorClient = aktorClient;
         this.aktivitetService = aktivitetService;
         this.opensearchService = opensearchService;
-        this.unleashService = unleashService;
     }
 
     @BeforeEach

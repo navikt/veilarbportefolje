@@ -14,7 +14,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.service.DefaultUnleash;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ public abstract class EndToEndTest {
     protected IndexName indexName;
 
     @Autowired
-    protected UnleashService unleashService;
+    protected DefaultUnleash unleashService;
 
     @Autowired
     protected OpensearchAdminService opensearchAdminService;

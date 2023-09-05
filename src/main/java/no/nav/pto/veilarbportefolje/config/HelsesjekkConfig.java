@@ -7,7 +7,6 @@ import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchHealthCheck;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,14 +22,12 @@ public class HelsesjekkConfig {
     public SelfTestChecks selfTestChecks(AktorClient aktorClient,
                                          Pep veilarbPep,
                                           JdbcTemplate jdbcTemplate,
-                                         UnleashService unleashService,
                                          OpensearchHealthCheck opensearchHealthCheck) {
         List<SelfTestCheck> asyncSelftester = List.of(
                 new SelfTestCheck(String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, opensearchHealthCheck),
                 new SelfTestCheck("Database for portefolje", true, () -> dbPinger(jdbcTemplate)),
                 new SelfTestCheck("Aktorregister", true, aktorClient),
-                new SelfTestCheck("ABAC", true, veilarbPep.getAbacClient()),
-                new SelfTestCheck("Sjekker at feature-toggles kan hentes fra Unleash", false, unleashService)
+                new SelfTestCheck("ABAC", true, veilarbPep.getAbacClient())
         );
         return new SelfTestChecks(asyncSelftester);
     }
