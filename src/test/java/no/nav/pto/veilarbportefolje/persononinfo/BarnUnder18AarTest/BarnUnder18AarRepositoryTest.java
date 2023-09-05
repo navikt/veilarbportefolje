@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.persononinfo.BarnUnder18AarTest;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
@@ -11,7 +12,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarSe
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
-import no.nav.pto.veilarbportefolje.service.DefaultUnleash;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,8 +59,8 @@ public class BarnUnder18AarRepositoryTest {
     @BeforeEach
     public void setUp() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
-        final DefaultUnleash unleashService = mock(DefaultUnleash.class);
-        when(unleashService.isEnabled(anyString())).thenReturn(true);
+        final DefaultUnleash defaultUnleash = mock(DefaultUnleash.class);
+        when(defaultUnleash.isEnabled(anyString())).thenReturn(true);
         this.barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
         this.barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository);
         this.pdlPersonRepository = new PdlPersonRepository(db, null);
