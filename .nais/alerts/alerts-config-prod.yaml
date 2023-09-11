@@ -43,3 +43,23 @@ spec:
           labels:
             namespace: obo
             severity: warning
+        - alert: Veilarbarena - unable to send kafka message(s)
+          expr: sum by (topic)(delta(kafka_producer_status_total{app="veilarbarena", status != "ok"}[5m])) >= 1
+          for: 5m
+          annotations:
+            summary: "Veilarbarena can't send kafka messages on one or more topics: {{ $labels.topic }}"
+            consequence: "We will miss important changes related to bruker oppfølging"
+            action: "Check logs in veilarbarena!"
+          labels:
+            namespace: obo
+            severity: critical
+        - alert: Veilarboppfolging - unable to send kafka message(s)
+          expr: sum by (topic)(delta(kafka_producer_status_total{app="veilarboppfolging", status != "ok"}[5m])) >= 1
+          for: 5m
+          annotations:
+            summary: "Veilarboppfolging can't send kafka messages on one or more topics: {{ $labels.topic }}."
+            consequence: "We will miss important changes about one or more bruker"
+            action: "Check logs in veilarboppfolging!"
+          labels:
+            namespace: obo
+            severity: critical
