@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
@@ -42,11 +43,12 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         }
     }
 
+    @SneakyThrows
     private void kastErrorHvisBrukerSkalVaereUnderOppfolging(AktorId aktorId, VeilederId veilederId) {
         if (hentVeileder(aktorId).equals(veilederId)) {
             return;
         }
-        boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingService.hentUnderOppfolging(aktorId);
+        boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingService.hentUnderOppfolging2(aktorId);
         if (erUnderOppfolgingIVeilarboppfolging) {
             throw new IllegalStateException("Fikk 'veileder melding' på bruker som enda ikke er under oppfølging i veilarbportefolje");
         }
