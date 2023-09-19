@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
@@ -8,6 +9,8 @@ import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -20,6 +23,7 @@ public class ManuellStatusService extends KafkaCommonConsumerService<ManuellStat
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
+    @SneakyThrows
     public void behandleKafkaMeldingLogikk(ManuellStatusDTO dto) {
         final AktorId aktorId = AktorId.of(dto.getAktorId());
 
@@ -31,11 +35,11 @@ public class ManuellStatusService extends KafkaCommonConsumerService<ManuellStat
         secureLog.info("Oppdatert manuellstatus for bruker {}, ny status: {}", aktorId, manuellStatus);
     }
 
-    private void kastErrorHvisBrukerSkalVaereUnderOppfolging(AktorId aktorId, ManuellStatusDTO dto) {
+    private void kastErrorHvisBrukerSkalVaereUnderOppfolging(AktorId aktorId, ManuellStatusDTO dto) throws IOException {
         if (hentManuellStatus(aktorId) == dto.isErManuell()) {
             return;
         }
-        boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingService.hentUnderOppfolging(aktorId);
+        boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingService.hentUnderOppfolging2(aktorId);
         if (erUnderOppfolgingIVeilarboppfolging) {
             throw new IllegalStateException("Fikk 'manuell status melding' på bruker som enda ikke er under oppfølging i veilarbportefolje");
         }

@@ -15,9 +15,7 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -30,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static io.confluent.kafka.schemaregistry.client.rest.Versions.JSON;
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -178,6 +177,23 @@ public class OppfolgingService {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarboppfolgingUrl, "/api/v2/oppfolging?fnr=" + fnr))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.get())
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            return RestUtils.getBodyStr(response)
+                    .map((bodyStr) -> JsonUtils.fromJson(bodyStr, UnderOppfolgingV2Response.class))
+                    .map(r -> r.erUnderOppfolging)
+                    .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
+        }
+    }
+    public boolean hentUnderOppfolging2(AktorId aktorId) throws IOException {
+        String fnr = aktorClient.hentFnr(aktorId).toString();
+        RequestBody body = RequestBody.create(JSON, MediaType.parse(fnr));
+        Request request = new Request.Builder()
+                .url(joinPaths(veilarboppfolgingUrl, "/api/v2/oppfolging/v3"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.get())
+                .post(body)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

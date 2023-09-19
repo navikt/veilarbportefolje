@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -37,6 +38,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
         postgres.update("truncate TABLE oppfolgingsbruker_arena_v2");
     }
 
+    @SneakyThrows
     @Test
     public void skal_oppdatere_oversikten_når_bruker_blir_satt_til_manuell() {
         final AktorId aktoerId = randomAktorId();
@@ -51,6 +53,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
         pollOpensearchUntil(() -> opensearchTestClient.hentBrukerFraOpensearch(aktoerId).getManuell_bruker().equals(MANUELL.name()));
     }
 
+    @SneakyThrows
     @Test
     void skal_oppdatere_oversikten_når_bruker_blir_satt_til_digital_oppfølging() {
         final AktorId aktoerId = randomAktorId();
