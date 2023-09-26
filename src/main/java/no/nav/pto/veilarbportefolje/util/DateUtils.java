@@ -224,4 +224,11 @@ public class DateUtils {
         LocalDate now = LocalDate.now();
         return Period.between(date, now).getYears();
     }
+
+    public static boolean isEqualOrAfterWithNullCheck(LocalDate date1, LocalDate date2) {
+        if(date1 == null || date2 == null) {
+            return false;
+        }
+        return date1.equals(date2) || date1.isAfter(date2);
+    }
 }

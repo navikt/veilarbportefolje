@@ -30,7 +30,9 @@ public class PostgresTable {
         public static final String UTDANNING = "UTDANNING";
         public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
         public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
-
+        public static final String REGISTRERING_OPPRETTET = "REGISTRERING_OPPRETTET";
+        public static final String ENDRET_BRUKERS_SITUASJON = "ENDRET_BRUKERS_SITUASJON";
+        public static final String BRUKERS_SITUASJON_SIST_ENDRET = "BRUKERS_SITUASJON_SIST_ENDRET";
         public static final String YTELSE = "YTELSE";
         public static final String AAPMAXTIDUKE = "AAPMAXTIDUKE";
 

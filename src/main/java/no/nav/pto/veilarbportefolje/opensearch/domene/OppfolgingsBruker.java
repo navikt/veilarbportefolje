@@ -100,6 +100,7 @@ public class OppfolgingsBruker {
     boolean trenger_revurdering;
     boolean er_sykmeldt_med_arbeidsgiver;
     String brukers_situasjon;
+    LocalDate brukers_situasjon_sist_endret;
     String profilering_resultat;
     String utdanning;
     String utdanning_bestatt;

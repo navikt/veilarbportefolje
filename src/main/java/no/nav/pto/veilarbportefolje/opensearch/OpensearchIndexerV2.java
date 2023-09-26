@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
+import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -32,6 +33,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -45,16 +47,28 @@ public class OpensearchIndexerV2 {
     private final RestHighLevelClient restHighLevelClient;
 
     @SneakyThrows
-    public void updateRegistering(AktorId aktoerId, ArbeidssokerRegistrertEvent utdanningEvent) {
+    public void updateRegistering(AktorId aktoerId, ArbeidssokerRegistrertEvent arbeidssokerRegistrertEvent) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("brukers_situasjon", utdanningEvent.getBrukersSituasjon())
-                .field("utdanning", utdanningEvent.getUtdanning())
-                .field("utdanning_bestatt", utdanningEvent.getUtdanningBestatt())
-                .field("utdanning_godkjent", utdanningEvent.getUtdanningGodkjent())
+                .field("brukers_situasjon", arbeidssokerRegistrertEvent.getBrukersSituasjon())
+                .field("utdanning", arbeidssokerRegistrertEvent.getUtdanning())
+                .field("utdanning_bestatt", arbeidssokerRegistrertEvent.getUtdanningBestatt())
+                .field("utdanning_godkjent", arbeidssokerRegistrertEvent.getUtdanningGodkjent())
+                .field("brukers_situasjon_sist_endret", toLocalDateOrNull(arbeidssokerRegistrertEvent.getRegistreringOpprettet()))
                 .endObject();
 
         update(aktoerId, content, "Oppdater registrering");
+    }
+
+    @SneakyThrows
+    public void updateEndringerIRegistering(AktorId aktoerId, ArbeidssokerBesvarelseEvent endringIRegistreringsdataEvent) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("brukers_situasjon", endringIRegistreringsdataEvent.getBesvarelse().getDinSituasjon().getVerdi())
+                .field("brukers_situasjon_sist_endret", endringIRegistreringsdataEvent.getBesvarelse().getDinSituasjon().getEndretTidspunkt())
+                .endObject();
+
+        update(aktoerId, content, "Oppdater endring i registrering");
     }
 
     @SneakyThrows
