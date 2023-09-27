@@ -54,6 +54,8 @@ import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringRepository;
+import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
@@ -155,7 +157,9 @@ import static org.mockito.Mockito.when;
         EnsligeForsorgereService.class,
         BarnUnder18AarRepository.class,
         BarnUnder18AarService.class,
-        AuthService.class
+        AuthService.class,
+        EndringIRegistreringService.class,
+        EndringIRegistreringRepository.class
 })
 public class ApplicationConfigTest {
 

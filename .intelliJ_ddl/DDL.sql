@@ -209,6 +209,17 @@ CREATE TABLE public.dialog (
 
 
 --
+-- Name: endring_i_registrering; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.endring_i_registrering (
+    aktoerid character varying(20) NOT NULL,
+    brukers_situasjon character varying(40),
+    brukers_situasjon_sist_endret timestamp without time zone
+);
+
+
+--
 -- Name: enslige_forsorgere; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -749,6 +760,14 @@ ALTER TABLE ONLY public.brukertiltak_v2
 
 ALTER TABLE ONLY public.dialog
     ADD CONSTRAINT dialog_pkey PRIMARY KEY (aktoerid);
+
+
+--
+-- Name: endring_i_registrering endring_i_registrering_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.endring_i_registrering
+    ADD CONSTRAINT endring_i_registrering_pkey PRIMARY KEY (aktoerid);
 
 
 --
