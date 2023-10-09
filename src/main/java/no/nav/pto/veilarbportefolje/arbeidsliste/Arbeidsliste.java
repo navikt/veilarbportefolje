@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -25,6 +26,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @RequiredArgsConstructor
 public class Arbeidsliste {
 
+    private static ArbeidslisteService arbeidslisteService;
     public enum Kategori {
         BLA, GRONN, GUL, LILLA
     }
@@ -39,6 +41,7 @@ public class Arbeidsliste {
     Boolean arbeidslisteAktiv;
     Boolean harVeilederTilgang;
     String aktoerid;
+    Boolean harByttetNavKontor;
 
     public static Arbeidsliste of(OppfolgingsBruker bruker) {
         Boolean arbeidslisteAktiv = bruker.isArbeidsliste_aktiv();
@@ -57,8 +60,11 @@ public class Arbeidsliste {
             frist = toZonedDateTime(dateIfNotFarInTheFutureDate(Instant.parse(bruker.getArbeidsliste_frist())));
         }
 
+        Boolean harByttetNavKontor = arbeidslisteService.brukerHarByttetNavKontor(AktorId.of(bruker.getAktoer_id()));
+
         return new Arbeidsliste(sistEndretAv, endringstidspunkt, null, null, frist, arbeidslisteKategori)
-                .setArbeidslisteAktiv(arbeidslisteAktiv);
+                .setArbeidslisteAktiv(arbeidslisteAktiv)
+                .setHarByttetNavKontor(harByttetNavKontor);
     }
 
     private static Date dateIfNotFarInTheFutureDate(Instant instant) {
@@ -74,7 +80,9 @@ public class Arbeidsliste {
                         @JsonProperty("isOppfolgendeVeileder") Boolean isOppfolgendeVeileder,
                         @JsonProperty("arbeidslisteAktiv") Boolean arbeidslisteAktiv,
                         @JsonProperty("kategori") Kategori kategori,
-                        @JsonProperty("harVeilederTilgang") Boolean harVeilederTilgang) {
+                        @JsonProperty("harVeilederTilgang") Boolean harVeilederTilgang,
+                        @JsonProperty("harByttetNavKontor") Boolean harByttetNavKontor
+    ) {
         this.sistEndretAv = sistEndretAv;
         this.endringstidspunkt = endringstidspunkt;
         this.overskrift = overskrift;
@@ -84,5 +92,6 @@ public class Arbeidsliste {
         this.arbeidslisteAktiv = arbeidslisteAktiv;
         this.harVeilederTilgang = harVeilederTilgang;
         this.kategori = kategori;
+        this.harByttetNavKontor = harByttetNavKontor;
     }
 }
