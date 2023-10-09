@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -66,27 +64,6 @@ public class Arbeidsliste {
 
     private static Date dateIfNotFarInTheFutureDate(Instant instant) {
         return DateUtils.isFarInTheFutureDate(instant) ? null : Date.from(instant);
-    }
-
-    @JsonCreator
-    public Arbeidsliste(@JsonProperty("sistEndretAv") VeilederId sistEndretAv,
-                        @JsonProperty("endringstidspunkt") ZonedDateTime endringstidspunkt,
-                        @JsonProperty("overskrift") String overskrift,
-                        @JsonProperty("kommentar") String kommentar,
-                        @JsonProperty("frist") ZonedDateTime frist,
-                        @JsonProperty("isOppfolgendeVeileder") Boolean isOppfolgendeVeileder,
-                        @JsonProperty("arbeidslisteAktiv") Boolean arbeidslisteAktiv,
-                        @JsonProperty("kategori") Kategori kategori,
-                        @JsonProperty("harVeilederTilgang") Boolean harVeilederTilgang) {
-        this.sistEndretAv = sistEndretAv;
-        this.endringstidspunkt = endringstidspunkt;
-        this.overskrift = overskrift;
-        this.kommentar = kommentar;
-        this.frist = frist;
-        this.isOppfolgendeVeileder = isOppfolgendeVeileder;
-        this.arbeidslisteAktiv = arbeidslisteAktiv;
-        this.harVeilederTilgang = harVeilederTilgang;
-        this.kategori = kategori;
     }
 
 }
