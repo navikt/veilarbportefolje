@@ -68,4 +68,25 @@ public class Arbeidsliste {
         return DateUtils.isFarInTheFutureDate(instant) ? null : Date.from(instant);
     }
 
+    @JsonCreator
+    public Arbeidsliste(@JsonProperty("sistEndretAv") VeilederId sistEndretAv,
+                        @JsonProperty("endringstidspunkt") ZonedDateTime endringstidspunkt,
+                        @JsonProperty("overskrift") String overskrift,
+                        @JsonProperty("kommentar") String kommentar,
+                        @JsonProperty("frist") ZonedDateTime frist,
+                        @JsonProperty("isOppfolgendeVeileder") Boolean isOppfolgendeVeileder,
+                        @JsonProperty("arbeidslisteAktiv") Boolean arbeidslisteAktiv,
+                        @JsonProperty("kategori") Kategori kategori,
+                        @JsonProperty("harVeilederTilgang") Boolean harVeilederTilgang) {
+        this.sistEndretAv = sistEndretAv;
+        this.endringstidspunkt = endringstidspunkt;
+        this.overskrift = overskrift;
+        this.kommentar = kommentar;
+        this.frist = frist;
+        this.isOppfolgendeVeileder = isOppfolgendeVeileder;
+        this.arbeidslisteAktiv = arbeidslisteAktiv;
+        this.harVeilederTilgang = harVeilederTilgang;
+        this.kategori = kategori;
+    }
+
 }
