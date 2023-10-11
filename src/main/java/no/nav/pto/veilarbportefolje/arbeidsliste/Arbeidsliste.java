@@ -25,7 +25,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @RequiredArgsConstructor
 public class Arbeidsliste {
 
-    private static ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
     public enum Kategori {
         BLA, GRONN, GUL, LILLA
     }
