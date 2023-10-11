@@ -1,12 +1,10 @@
 package no.nav.pto.veilarbportefolje.registrering.endring
 
-import no.nav.common.types.identer.AktorId
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataUtils
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.LocalDate
 import java.time.ZonedDateTime
 
 
