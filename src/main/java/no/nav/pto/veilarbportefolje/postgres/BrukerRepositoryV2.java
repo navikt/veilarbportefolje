@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
@@ -66,7 +67,8 @@ public class BrukerRepositoryV2 {
                                ARB.ENDRINGSTIDSPUNKT            as ARB_ENDRINGSTIDSPUNKT,
                                ARB.OVERSKRIFT                   as ARB_OVERSKRIFT,
                                ARB.FRIST                        as ARB_FRIST,
-                               ARB.KATEGORI                     as ARB_KATEGORI
+                               ARB.KATEGORI                     as ARB_KATEGORI,
+                               ARB.NAV_KONTOR_FOR_ARBEIDSLISTE as NAV_KONTOR_FOR_ARBEIDSLISTE
                         FROM OPPFOLGING_DATA OD
                                 inner join aktive_identer ai on OD.aktoerid = ai.aktorid
                                  left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
@@ -171,7 +173,8 @@ public class BrukerRepositoryV2 {
                     .setArbeidsliste_endringstidspunkt(arbeidslisteTidspunkt)
                     .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp(ARB_FRIST))).orElse(getFarInTheFutureDate()))
                     .setArbeidsliste_kategori(rs.getString(ARB_KATEGORI))
-                    .setArbeidsliste_sist_endret_av_veilederid(rs.getString(ARB_SIST_ENDRET_AV_VEILEDERIDENT));
+                    .setArbeidsliste_sist_endret_av_veilederid(rs.getString(ARB_SIST_ENDRET_AV_VEILEDERIDENT))
+                    .setNavkontor_for_arbeidsliste(rs.getString(NAV_KONTOR_FOR_ARBEIDSLISTE));
             String overskrift = rs.getString(ARB_OVERSKRIFT);
 
             bruker.setArbeidsliste_tittel_lengde(

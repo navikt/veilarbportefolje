@@ -88,6 +88,7 @@ public class OppfolgingsBruker {
     String arbeidsliste_frist;
     String arbeidsliste_kategori;
     String arbeidsliste_tittel_sortering;
+    String navkontor_for_arbeidsliste;
     int arbeidsliste_tittel_lengde;
     String oppfolging_startdato;
     Set<String> alleAktiviteter = emptySet();

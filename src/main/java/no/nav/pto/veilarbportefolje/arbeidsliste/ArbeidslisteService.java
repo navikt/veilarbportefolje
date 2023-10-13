@@ -153,7 +153,14 @@ public class ArbeidslisteService {
             return false;
         }
 
-        secureLog.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorForBruker.get(), navKontorForArbeidsliste.get());
-        return !navKontorForBruker.orElseThrow().equals(navKontorForArbeidsliste.orElseThrow());
+        boolean navkontorForBrukerUlikNavkontorForArbeidsliste = !navKontorForBruker.orElseThrow().equals(navKontorForArbeidsliste.orElseThrow());
+
+        if (navkontorForBrukerUlikNavkontorForArbeidsliste) {
+            secureLog.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på et annet kontor {}", aktoerId.toString(), navKontorForBruker.get(), navKontorForArbeidsliste.get());
+        } else {
+            secureLog.info("Bruker {} er på kontor {} og arbeidslisten er lagret på samme kontor {}", aktoerId.toString(), navKontorForBruker.get(), navKontorForArbeidsliste.get());
+        }
+
+        return navkontorForBrukerUlikNavkontorForArbeidsliste;
     }
 }
