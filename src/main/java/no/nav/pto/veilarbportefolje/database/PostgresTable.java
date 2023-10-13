@@ -26,6 +26,8 @@ public class PostgresTable {
         public static final String ARB_FRIST = "ARB_FRIST";
         public static final String ARB_KATEGORI = "ARB_KATEGORI";
         public static final String ARB_OVERSKRIFT = "ARB_OVERSKRIFT";
+        public static final String ARB_NAV_KONTOR_FOR_ARBEIDSLISTE = "ARB_NAV_KONTOR_FOR_ARBEIDSLISTE";
+
         public static final String BRUKERS_SITUASJON = "BRUKERS_SITUASJON";
         public static final String UTDANNING = "UTDANNING";
         public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
