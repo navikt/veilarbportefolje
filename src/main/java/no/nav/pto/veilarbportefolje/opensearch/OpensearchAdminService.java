@@ -42,21 +42,19 @@ import static org.opensearch.action.admin.indices.alias.IndicesAliasesRequest.Al
 @Slf4j
 @Service
 public class OpensearchAdminService {
-    private static EnvironmentProperties environmentProperties;
     private final RestHighLevelClient restHighLevelClient;
     private final OpensearchClientConfig openSearchClientConfig;
     private final OkHttpClient httpClient;
 
-
+    private final String opensearchUri;
 
     @Autowired
     public OpensearchAdminService(EnvironmentProperties environmentProperties, RestHighLevelClient restHighLevelClient, OpensearchClientConfig openSearchClientConfig) {
-        OpensearchAdminService.environmentProperties = environmentProperties;
+        this.opensearchUri = environmentProperties.getOpensearchUri();
         this.restHighLevelClient = restHighLevelClient;
         this.openSearchClientConfig = openSearchClientConfig;
         this.httpClient = baseClient();
     }
-    public String VALID_URI = environmentProperties.getOpensearchUri();
     @SneakyThrows
     public String opprettNyIndeks() {
         return opprettNyIndeks(createIndexName());
@@ -243,7 +241,7 @@ public class OpensearchAdminService {
     @SneakyThrows
     private String callAndGetBody(Request request) {
 
-        if  (VALID_URI.equals(request.url().uri().toString())) {
+        if  (Objects.equals(this.opensearchUri, request.url().uri().toString())) {
             try (Response response = httpClient.newCall(request).execute()) {
                 RestUtils.throwIfNotSuccessful(response);
                 try (ResponseBody responseBody = response.body()) {

@@ -15,11 +15,11 @@
 
     <properties>
         <java.version>17</java.version>
-        <common.version>3.2023.10.17_06.55-4e30d96bba05</common.version>
+        <common.version>3.2023.04.11_09.05-411b59915166</common.version>
         <veilarbregistrering.skjema.version>c22beae</veilarbregistrering.skjema.version>
         <jaxb.version>2.3.1</jaxb.version>
-        <snakeyaml.version>2.0</snakeyaml.version>
-        <testcontainers.version>1.17.6</testcontainers.version>
+        <testcontainers.version>1.16.0</testcontainers.version>
+
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
@@ -89,7 +89,7 @@
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
-            <version>1.11.3</version>
+            <version>1.11.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -241,7 +241,7 @@
         <dependency>
             <groupId>com.github.navikt.poao-tilgang</groupId>
             <artifactId>client</artifactId>
-            <version>2023.10.09_13.45-b5ace74e861a</version>
+            <version>2023.03.06_12.28-f645c4624641</version>
         </dependency>
 
         <!--Logging-->
@@ -266,12 +266,12 @@
         <dependency>
             <groupId>org.opensearch</groupId>
             <artifactId>opensearch</artifactId>
-            <version>2.10.0</version>
+            <version>2.7.0</version>
         </dependency>
         <dependency>
             <groupId>org.opensearch.client</groupId>
             <artifactId>opensearch-rest-high-level-client</artifactId>
-            <version>2.11.0</version>
+            <version>2.7.0</version>
         </dependency>
 
         <!--Diverse-->
@@ -288,7 +288,7 @@
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc-template</artifactId>
-            <version>5.2.0</version>
+            <version>4.44.0</version>
         </dependency>
 
         <dependency>
@@ -312,7 +312,7 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.11.2</version>
+            <version>1.11.1</version>
         </dependency>
 
         <!--TEST-->
@@ -342,7 +342,7 @@
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock-jre8-standalone</artifactId>
-            <version>2.35.1</version>
+            <version>2.35.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
