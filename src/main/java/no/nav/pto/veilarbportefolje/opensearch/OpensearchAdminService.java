@@ -242,6 +242,7 @@ public class OpensearchAdminService {
     private String callAndGetBody(Request request) {
 
         if  (Objects.equals(this.opensearchUri, request.url().uri().toString())) {
+            log.info("Logger uri OpensearchAdminService callAndGetBody {}", request.url().uri());
             try (Response response = httpClient.newCall(request).execute()) {
                 RestUtils.throwIfNotSuccessful(response);
                 try (ResponseBody responseBody = response.body()) {
