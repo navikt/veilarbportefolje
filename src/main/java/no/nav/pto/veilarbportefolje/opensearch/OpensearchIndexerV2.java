@@ -21,8 +21,8 @@ import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.core.rest.RestStatus;
 import org.opensearch.core.xcontent.XContentBuilder;
-import org.opensearch.rest.RestStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -31,9 +31,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
