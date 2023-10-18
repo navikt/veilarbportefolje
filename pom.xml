@@ -15,7 +15,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <common.version>3.2023.04.11_09.05-411b59915166</common.version>
+        <common.version>3.2023.10.17_06.55-4e30d96bba05</common.version>
         <veilarbregistrering.skjema.version>c22beae</veilarbregistrering.skjema.version>
         <jaxb.version>2.3.1</jaxb.version>
         <testcontainers.version>1.16.0</testcontainers.version>
