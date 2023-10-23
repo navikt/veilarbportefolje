@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.net.http.HttpClient;
+import java.util.List;
 
 import static no.nav.common.utils.NaisUtils.getCredentials;
 
@@ -29,6 +30,8 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 @Configuration
 public class ClientConfig {
 
+    private final String BEHANDLINGSNUMMER_ARBEIDSRETTET_OPPFOLGING = "B130";
+    private final String BEHANDLINGSNUMMER_OVERSIKTEN = "B555";
 
     @Bean
     public PoaoTilgangWrapper poaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
@@ -87,7 +90,7 @@ public class ClientConfig {
     public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
         return new PdlClientImpl(
                 environmentProperties.getPdlUrl(),
-                () -> tokenClient.createMachineToMachineToken(environmentProperties.getPdlScope())
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getPdlScope()), String.join(",", List.of(BEHANDLINGSNUMMER_ARBEIDSRETTET_OPPFOLGING, BEHANDLINGSNUMMER_OVERSIKTEN))
         );
     }
 
