@@ -105,6 +105,9 @@ public class Bruker {
 
     EnsligeForsorgereOvergangsstonad ensligeForsorgereOvergangsstonad;
 
+    LocalDate brukersSituasjonSistEndret;
+
+
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
@@ -195,7 +198,8 @@ public class Bruker {
                 .setBostedSistOppdatert(bruker.getBostedSistOppdatert())
                 .setAvvik14aVedtak(bruker.getAvvik14aVedtak())
                 .setBarnUnder18AarData(bruker.getBarn_under_18_aar())
-                .setEnsligeForsorgereOvergangsstonad(bruker.getEnslige_forsorgere_overgangsstonad());
+                .setEnsligeForsorgereOvergangsstonad(bruker.getEnslige_forsorgere_overgangsstonad())
+                .setBrukersSituasjonSistEndret(bruker.getBrukers_situasjon_sist_endret());
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {

@@ -69,7 +69,8 @@ public class ValideringsRegler {
             "enslige_forsorgere_vedtaksperiodetype",
             "enslige_forsorgere_aktivitetsplikt",
             "enslige_forsorgere_om_barnet",
-            "barn_under_18_aar"
+            "barn_under_18_aar",
+            "brukersSituasjonSistEndret"
     );
 
     public static void sjekkEnhet(String enhet) {

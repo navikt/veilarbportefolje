@@ -1,11 +1,11 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -39,6 +39,7 @@ public class Arbeidsliste {
     Boolean arbeidslisteAktiv;
     Boolean harVeilederTilgang;
     String aktoerid;
+    String navkontorForArbeidsliste;
 
     public static Arbeidsliste of(OppfolgingsBruker bruker) {
         Boolean arbeidslisteAktiv = bruker.isArbeidsliste_aktiv();
@@ -58,13 +59,13 @@ public class Arbeidsliste {
         }
 
         return new Arbeidsliste(sistEndretAv, endringstidspunkt, null, null, frist, arbeidslisteKategori)
-                .setArbeidslisteAktiv(arbeidslisteAktiv);
+                .setArbeidslisteAktiv(arbeidslisteAktiv)
+                .setNavkontorForArbeidsliste(bruker.getNavkontor_for_arbeidsliste());
     }
 
     private static Date dateIfNotFarInTheFutureDate(Instant instant) {
         return DateUtils.isFarInTheFutureDate(instant) ? null : Date.from(instant);
     }
-
     @JsonCreator
     public Arbeidsliste(@JsonProperty("sistEndretAv") VeilederId sistEndretAv,
                         @JsonProperty("endringstidspunkt") ZonedDateTime endringstidspunkt,
@@ -74,7 +75,9 @@ public class Arbeidsliste {
                         @JsonProperty("isOppfolgendeVeileder") Boolean isOppfolgendeVeileder,
                         @JsonProperty("arbeidslisteAktiv") Boolean arbeidslisteAktiv,
                         @JsonProperty("kategori") Kategori kategori,
-                        @JsonProperty("harVeilederTilgang") Boolean harVeilederTilgang) {
+                        @JsonProperty("harVeilederTilgang") Boolean harVeilederTilgang,
+                        @JsonProperty("navkontorForArbeidsliste") String navkontorForArbeidsliste
+    ) {
         this.sistEndretAv = sistEndretAv;
         this.endringstidspunkt = endringstidspunkt;
         this.overskrift = overskrift;
@@ -84,5 +87,6 @@ public class Arbeidsliste {
         this.arbeidslisteAktiv = arbeidslisteAktiv;
         this.harVeilederTilgang = harVeilederTilgang;
         this.kategori = kategori;
+        this.navkontorForArbeidsliste = navkontorForArbeidsliste;
     }
 }

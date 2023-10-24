@@ -15,6 +15,7 @@ import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProce
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
+import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
@@ -43,6 +44,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDto;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
@@ -99,6 +102,8 @@ public class KafkaConfigCommon {
 
         AIVEN_PROFILERING_TOPIC("paw.arbeidssoker-profilert-v1"),
 
+        ENRING_I_REGISTRERINGSDATA_TOPIC("paw.arbeidssoker-besvarelse-v2"),
+
         AIVEN_AKTIVITER_TOPIC("pto.aktivitet-portefolje-v1"),
 
         TILTAK_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
@@ -119,6 +124,7 @@ public class KafkaConfigCommon {
 
         PDL_BRUKERDATA("pdl.pdl-persondokument-v1");
 
+
         @Getter
         final String topicName;
 
@@ -132,7 +138,7 @@ public class KafkaConfigCommon {
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
-                             SistLestService sistLestService, RegistreringService registreringService,
+                             SistLestService sistLestService, RegistreringService registreringService, EndringIRegistreringService endringIRegistreringService,
                              ProfileringService profileringService, AktivitetService aktivitetService,
                              Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
                              DialogService dialogService, ManuellStatusService manuellStatusService,
@@ -195,6 +201,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         new AivenAvroDeserializer<ArbeidssokerRegistrertEvent>().getDeserializer(),
                                         registreringService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerBesvarelseEvent>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.ENRING_I_REGISTRERINGSDATA_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new AivenAvroDeserializer<ArbeidssokerBesvarelseEvent>().getDeserializer(),
+                                        endringIRegistreringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerProfilertEvent>()
                                 .withLogging()

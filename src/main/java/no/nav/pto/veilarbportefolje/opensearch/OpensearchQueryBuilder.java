@@ -447,6 +447,7 @@ public class OpensearchQueryBuilder {
                     sorterEnsligeForsorgereAktivitetsPlikt(searchSourceBuilder, order);
             case "enslige_forsorgere_om_barnet" -> sorterEnsligeForsorgereOmBarnet(searchSourceBuilder, order);
             case "barn_under_18_aar" -> sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger, filtervalg);
+            case "brukersSituasjonSistEndret" -> searchSourceBuilder.sort("brukers_situasjon_sist_endret", order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
@@ -859,11 +860,11 @@ public class OpensearchQueryBuilder {
                     """;
 
             String expression6 = """
-                    int count = 0; 
-                    for (item in params._source.barn_under_18_aar) { 
+                    int count = 0;
+                    for (item in params._source.barn_under_18_aar) {
                         if ((item.diskresjonskode == null) || (item.diskresjonskode == '6') || (item.diskresjonskode == '19')){ count = count + 1; }
-                    } 
-                    return count;  
+                    }
+                    return count;
                     """;
 
             String expression7 = """
@@ -871,15 +872,15 @@ public class OpensearchQueryBuilder {
                     for (item in params._source.barn_under_18_aar) {
                         if ((item.diskresjonskode == null) || (item.diskresjonskode == '7')){ count = count + 1; }
                     }
-                    return count;  
+                    return count;
                     """;
 
             String expressionIngen = """
-                    int count = 0; 
-                    for (item in params._source.barn_under_18_aar) { 
+                    int count = 0;
+                    for (item in params._source.barn_under_18_aar) {
                         if (item.diskresjonskode == null){ count = count + 1; }
-                    } 
-                    return count;  
+                    }
+                    return count;
                     """;
 
             String expressionToUse = "";
