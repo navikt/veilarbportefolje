@@ -91,13 +91,15 @@ public class BarnUnder18AarKafkaTest {
 
         server.start();
 
-        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository);
+        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
+        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
 
         this.pdlBrukerdataKafkaService = new PdlBrukerdataKafkaService(new PdlService(
                 this.pdlIdentRepository,
                 this.pdlPersonRepository,
                 this.barnUnder18AarService,
-                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN")))
+                pdlPortefoljeClient
+        )
         , this.pdlIdentRepository,
                 new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
                 this.barnUnder18AarService,
