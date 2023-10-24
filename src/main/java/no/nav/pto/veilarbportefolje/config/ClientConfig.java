@@ -30,9 +30,6 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 @Configuration
 public class ClientConfig {
 
-    private final String BEHANDLINGSNUMMER_ARBEIDSRETTET_OPPFOLGING = "B130";
-    private final String BEHANDLINGSNUMMER_OVERSIKTEN = "B555";
-
     @Bean
     public PoaoTilgangWrapper poaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
         return new PoaoTilgangWrapper(authContextHolder, tokenClient, environmentProperties);
@@ -88,9 +85,11 @@ public class ClientConfig {
 
     @Bean
     public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
+        String behandlingsnummer_arbeidsrettet_oppfolging = "B130";
+        String behandlingsnummer_oversikten = "B555";
         return new PdlClientImpl(
                 environmentProperties.getPdlUrl(),
-                () -> tokenClient.createMachineToMachineToken(environmentProperties.getPdlScope()), String.join(",", List.of(BEHANDLINGSNUMMER_ARBEIDSRETTET_OPPFOLGING, BEHANDLINGSNUMMER_OVERSIKTEN))
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getPdlScope()), String.join(",", List.of(behandlingsnummer_arbeidsrettet_oppfolging, behandlingsnummer_oversikten))
         );
     }
 
