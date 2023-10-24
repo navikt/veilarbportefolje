@@ -47,11 +47,10 @@ public class ApplicationConfig {
 
     @Bean
     public DefaultUnleash defaultUnleash(EnvironmentProperties properties) {
-        String appName = "veilarbportefolje";
         String environment = EnvironmentUtils.isProduction().orElse(false) ? "production" : "development";
         UnleashConfig config = UnleashConfig.builder()
-                .appName(appName)
-                .instanceId(appName)
+                .appName(APPLICATION_NAME)
+                .instanceId(APPLICATION_NAME)
                 .unleashAPI(properties.getUnleashUrl())
                 .apiKey(properties.getUnleashApiToken())
                 .environment(environment)

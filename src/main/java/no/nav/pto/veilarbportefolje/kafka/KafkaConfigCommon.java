@@ -45,7 +45,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDto;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
