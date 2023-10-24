@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.persononinfo.BarnUnder18AarTest;
 
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -25,9 +27,12 @@ public class BarnUnder18AarServiceTest {
 
     private BarnUnder18AarService barnUnder18AarService;
 
+    @Autowired
+    private PdlPortefoljeClient mockedPdlPortefoljeClient;
+
     @BeforeEach
     public void setUp() {
-        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository);
+        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, mockedPdlPortefoljeClient);
     }
 
     @Test

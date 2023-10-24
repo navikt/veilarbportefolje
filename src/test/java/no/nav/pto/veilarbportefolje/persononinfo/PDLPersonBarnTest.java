@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
@@ -31,6 +32,9 @@ public class PDLPersonBarnTest {
     private final BarnUnder18AarRepository barnUnder18AarRepository;
     private final JdbcTemplate db;
     private final PdlPersonRepository pdlPersonRepository;
+
+    @Autowired
+    private PdlPortefoljeClient mockedPdlPortefoljeClient;
 
     private PdlService pdlService;
 
@@ -58,7 +62,7 @@ public class PDLPersonBarnTest {
 
         server.start();
 
-        BarnUnder18AarService barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository);
+        BarnUnder18AarService barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, mockedPdlPortefoljeClient);
 
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
