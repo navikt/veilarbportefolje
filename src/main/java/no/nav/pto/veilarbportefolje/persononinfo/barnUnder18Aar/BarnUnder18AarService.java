@@ -66,8 +66,8 @@ public class BarnUnder18AarService {
                 }
             });
 
-            nyeBarn = foreldreansvarPDL.stream().filter(barnFnr -> !lagredeBarn.contains(barnFnr)).toList();
-            if (!nyeBarn.isEmpty()) {
+            if (foreldreansvarPDL != null && !foreldreansvarPDL.isEmpty()) {
+                nyeBarn = foreldreansvarPDL.stream().filter(barnFnr -> !lagredeBarn.contains(barnFnr)).toList();
                 getDataFromPDLAndInsertBarn(foresattIdent, nyeBarn);
             }
         } catch (Exception e) {
@@ -78,6 +78,10 @@ public class BarnUnder18AarService {
 
 
     public void getDataFromPDLAndInsertBarn(Fnr foresattIdent, List<Fnr> nyeBarn) {
+        if (nyeBarn.isEmpty()) {
+            return;
+        }
+
         Map<Fnr, PDLPersonBarn> pdlPersonBarn = pdlClient.hentBrukerBarnDataBolkFraPdl(nyeBarn);
         if (pdlPersonBarn != null && !pdlPersonBarn.isEmpty()) {
             pdlPersonBarn.forEach((fnrBarn, dataBarn) -> {
