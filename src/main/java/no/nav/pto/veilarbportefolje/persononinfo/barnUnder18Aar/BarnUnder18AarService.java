@@ -3,6 +3,8 @@ package no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class BarnUnder18AarService {
 
     private final BarnUnder18AarRepository barnUnder18AarRepository;
+    private final PdlPortefoljeClient pdlClient;
 
     public Map<Fnr, List<BarnUnder18AarData>> hentBarnUnder18Aar(List<Fnr> fnrForeldre) {
         Map<Fnr, List<BarnUnder18AarData>> result = new HashMap<>();
@@ -51,33 +54,43 @@ public class BarnUnder18AarService {
         return result;
     }
 
-    public void lagreBarnOgForeldreansvar(Fnr foresattIdent, Map<Fnr, PDLPersonBarn> pdlPersonBarn, List<String> foreldreansvarMaster) {
+    public void lagreBarnOgForeldreansvar(Fnr foresattIdent, List<Fnr> foreldreansvarPDL) {
+        List<Fnr> nyeBarn = List.of();
         try {
             List<Fnr> lagredeBarn = barnUnder18AarRepository.hentForeldreansvarForPerson(foresattIdent);
 
             lagredeBarn.forEach(barnFnr -> {
-                if (pdlPersonBarn == null || !pdlPersonBarn.containsKey(barnFnr)) {
-                    secureLog.warn("Slett foreldre ansvar, master: " + String.join(",", foreldreansvarMaster));
+                if (foreldreansvarPDL == null || !foreldreansvarPDL.contains(barnFnr)) {
+                    secureLog.warn("Slett foreldreansvar");
                     slettForeldreansvar(foresattIdent, barnFnr);
                     slettBarnDataHvisIngenForeldreErUnderOppfolging(barnFnr);
                 }
             });
 
-            if (pdlPersonBarn != null && !pdlPersonBarn.isEmpty()){
-                for (var barnMap : pdlPersonBarn.entrySet()) {
-                    if (barnMap.getValue().isErIlive() && erUnder18Aar(barnMap.getValue().getFodselsdato())) {
-                        barnUnder18AarRepository.lagreBarnData(barnMap.getKey(), barnMap.getValue().getFodselsdato(), barnMap.getValue().getDiskresjonskode());
-                        barnUnder18AarRepository.lagreForeldreansvar(foresattIdent, barnMap.getKey());
-                    }else{
-                        slettForeldreansvar(foresattIdent, barnMap.getKey());
-                        slettBarnDataHvisIngenForeldreErUnderOppfolging(barnMap.getKey());
-                    }
-                }
+            nyeBarn = foreldreansvarPDL.stream().filter( barnFnr -> !lagredeBarn.contains(barnFnr)).toList();
+            if(!nyeBarn.isEmpty()){
+                getDataFromPDLAndInsertBarn(foresattIdent, nyeBarn);
             }
         }
         catch (Exception e){
-            secureLog.error("Kan ikke lagre data om barn og foreldreansvar for person: " + foresattIdent + ". Antall barn: " + pdlPersonBarn.size() + ", error: " + e.getMessage(), e);
+            secureLog.error("Kan ikke lagre data om barn og foreldreansvar for person: " + foresattIdent + ". Antall barn: " + nyeBarn.size() + ", error: " + e.getMessage(), e);
             throw new RuntimeException("Kan ikke lagre data om barn");
+        }
+    }
+
+
+    public void getDataFromPDLAndInsertBarn(Fnr foresattIdent, List<Fnr> nyeBarn) {
+        Map<Fnr, PDLPersonBarn> pdlPersonBarn = pdlClient.hentBrukerBarnDataBolkFraPdl(nyeBarn);
+        if (pdlPersonBarn != null && !pdlPersonBarn.isEmpty()) {
+            pdlPersonBarn.forEach((fnrBarn, dataBarn) -> {
+                    if (dataBarn.isErIlive() && erUnder18Aar(dataBarn.getFodselsdato())) {
+                    barnUnder18AarRepository.lagreBarnData(fnrBarn, dataBarn.getFodselsdato(), dataBarn.getDiskresjonskode());
+                    barnUnder18AarRepository.lagreForeldreansvar(foresattIdent, fnrBarn);
+                } else {
+                    slettForeldreansvar(foresattIdent, fnrBarn);
+                    slettBarnDataHvisIngenForeldreErUnderOppfolging(fnrBarn);
+                }
+            });
         }
     }
 
