@@ -65,7 +65,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-            if (!FeatureToggle.stoppOpensearchIndekseringEtterPDLEndringene(unleashService)) {
+            if (!FeatureToggle.stoppOpensearchIndeksering(unleashService)) {
                 oppdaterOpensearch(aktivAktorId, pdlIdenter);
             }
         }
@@ -77,7 +77,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
             handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-            if (!FeatureToggle.stoppOpensearchIndekseringEtterPDLEndringene(unleashService)) {
+            if (!FeatureToggle.stoppOpensearchIndeksering(unleashService)) {
                 List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnr);
 
                 foreldreTilBarn.forEach(fnrForelder -> {

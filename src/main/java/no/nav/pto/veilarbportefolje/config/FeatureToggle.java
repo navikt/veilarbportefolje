@@ -17,7 +17,7 @@ public class FeatureToggle {
 
     public static final String BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER = "veilarbportefolje.bruk_filter_for_brukerinnsyn_tilganger";
 
-    public static final String STOPP_INDEKSERING_ETTER_PDL_ENDRING = "veilarbportefolje.stopp_indeksering_etter_pdl_endring";
+    public static final String STOPP_OPENSEARCH_INDEKSERING = "veilarbportefolje.stopp_opensearch_indeksering";
 
     public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
@@ -35,7 +35,7 @@ public class FeatureToggle {
         return unleashService.isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
     }
 
-    public static boolean stoppOpensearchIndekseringEtterPDLEndringene(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.STOPP_INDEKSERING_ETTER_PDL_ENDRING);
+    public static boolean stoppOpensearchIndeksering(UnleashService unleashService) {
+        return unleashService.isEnabled(FeatureToggle.STOPP_OPENSEARCH_INDEKSERING);
     }
 }
