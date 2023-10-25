@@ -71,6 +71,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         }
 
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
+            log.info("Det oppsto en PDL endring for barn");
             Fnr aktivtFnr = hentAktivFnr(pdlIdenter);
             barnUnder18AarService.handterBarnIdentEndring(aktivtFnr, inaktiveFnr);
 
@@ -108,9 +109,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             pdlService.hentOgLagreBrukerData(aktivFnr);
         }
         List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);
-        if (!inaktiveFnr.isEmpty()) {
-            pdlService.slettPDLBrukerData(inaktiveFnr);
-        }
+        pdlService.slettPDLBrukerData(inaktiveFnr);
     }
 
     private void handterBarnEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka, List<PDLIdent> pdlIdenter) {
