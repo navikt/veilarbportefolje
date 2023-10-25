@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -16,6 +17,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PdlPersonValideringException;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,6 +39,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
     private final BarnUnder18AarService barnUnder18AarService;
     private final OpensearchIndexer opensearchIndexer;
     private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final UnleashService unleashService;
 
     @Override
     @SneakyThrows
@@ -62,7 +65,9 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-            oppdaterOpensearch(aktivAktorId, pdlIdenter);
+            if (!FeatureToggle.stoppOpensearchIndekseringEtterPDLEndringene(unleashService)) {
+                oppdaterOpensearch(aktivAktorId, pdlIdenter);
+            }
         }
 
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
@@ -72,17 +77,19 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
             handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-            List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnr);
+            if (!FeatureToggle.stoppOpensearchIndekseringEtterPDLEndringene(unleashService)) {
+                List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnr);
 
-            foreldreTilBarn.forEach(fnrForelder -> {
-                        Optional<AktorId> aktorIdForelder = brukerService.hentAktorId(fnrForelder);
-                        if (aktorIdForelder.isPresent()) {
-                            opensearchIndexer.indekser(aktorIdForelder.get());
-                        } else {
-                            secureLog.warn("Kunne ikke indeksere forelder med fnr {} til barn med fnr {}", fnrForelder, aktivtFnr);
+                foreldreTilBarn.forEach(fnrForelder -> {
+                            Optional<AktorId> aktorIdForelder = brukerService.hentAktorId(fnrForelder);
+                            if (aktorIdForelder.isPresent()) {
+                                opensearchIndexer.indekser(aktorIdForelder.get());
+                            } else {
+                                secureLog.warn("Kunne ikke indeksere forelder med fnr {} til barn med fnr {}", fnrForelder, aktivtFnr);
+                            }
                         }
-                    }
-            );
+                );
+            }
         }
     }
 
