@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class PdlIdentRepository {
     private final JdbcTemplate db;
 
-    @Transactional
     public void upsertIdenter(List<PDLIdent> identer) {
         List<String> personer = hentPersoner(identer);
         personer.forEach(this::slettLagretePerson);
