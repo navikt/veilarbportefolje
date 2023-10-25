@@ -88,6 +88,9 @@ public class BarnUnder18AarService {
                 if (dataBarn.isErIlive() && erUnder18Aar(dataBarn.getFodselsdato())) {
                     barnUnder18AarRepository.lagreBarnData(fnrBarn, dataBarn.getFodselsdato(), dataBarn.getDiskresjonskode());
                     barnUnder18AarRepository.lagreForeldreansvar(foresattIdent, fnrBarn);
+                } else {
+                    slettForeldreansvar(foresattIdent, fnrBarn);
+                    slettBarnDataHvisIngenForeldreErUnderOppfolging(fnrBarn);
                 }
             });
         }
