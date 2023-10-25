@@ -17,6 +17,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRe
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -64,6 +65,8 @@ public class BarnUnder18AarKafkaTest {
     private final String pdlDokumentBarn1MedDiskresjonskodeAsString = readFileAsJsonString("/PDL_Files/pdl_dokument_barn1_med_diskresjonskode.json", getClass());
     private final JdbcTemplate db;
 
+    @MockBean
+    private UnleashService unleashService;
     private final WireMockServer server = new WireMockServer();
 
 
@@ -104,7 +107,8 @@ public class BarnUnder18AarKafkaTest {
                 new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
                 this.barnUnder18AarService,
                 opensearchIndexer,
-                opensearchIndexerV2
+                opensearchIndexerV2,
+                unleashService
                 );
     }
 
