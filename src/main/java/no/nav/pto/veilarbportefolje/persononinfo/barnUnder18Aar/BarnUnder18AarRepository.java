@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -55,21 +56,30 @@ public class BarnUnder18AarRepository {
     }
 
     public Boolean finnesBarnIForeldreansvar(Fnr fnrBarn) {
-        String foresattIdent = dbReadOnly.queryForObject("""
-                    SELECT foresatt_ident FROM foreldreansvar WHERE barn_ident = ? limit 1
+        try {
+            String foresattIdent = dbReadOnly.queryForObject("""
+                        SELECT foresatt_ident FROM foreldreansvar WHERE barn_ident = ? LIMIT 1
                 """, String.class, fnrBarn.get());
 
-        return foresattIdent != null && !foresattIdent.isEmpty();
+            return foresattIdent != null && !foresattIdent.isEmpty();
+        } catch (EmptyResultDataAccessException e) {
+            return false;
+        }
+
     }
 
     public Boolean finnesBarnIForeldreansvar(List<Fnr> fnrBarn) {
-        String fnrsparam = fnrBarn.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
-        String foresattIdent = dbReadOnly.queryForObject("""
+        try {
+            String fnrsparam = fnrBarn.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
+            String foresattIdent = dbReadOnly.queryForObject("""
                     SELECT foresatt_ident FROM foreldreansvar WHERE barn_ident = any (?::varchar[]) LIMIT 1
                 """, String.class, fnrsparam);
 
 
-        return foresattIdent != null && !foresattIdent.isEmpty();
+            return foresattIdent != null && !foresattIdent.isEmpty();
+        } catch (EmptyResultDataAccessException e) {
+            return false;
+        }
     }
 
     public void lagreBarnData(Fnr barnIdent, LocalDate barnFoedselsdato, String diskresjonskode) {
