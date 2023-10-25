@@ -55,21 +55,21 @@ public class BarnUnder18AarRepository {
     }
 
     public Boolean finnesBarnIForeldreansvar(Fnr fnrBarn) {
-        Integer numOfRows = dbReadOnly.queryForObject("""
-                    SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = ?
-                """, Integer.class, fnrBarn.get());
+        String foresattIdent = dbReadOnly.queryForObject("""
+                    SELECT foresatt_ident FROM foreldreansvar WHERE barn_ident = ? limit 1
+                """, String.class, fnrBarn.get());
 
-        return numOfRows > 0;
+        return foresattIdent != null && !foresattIdent.isEmpty();
     }
 
     public Boolean finnesBarnIForeldreansvar(List<Fnr> fnrBarn) {
         String fnrsparam = fnrBarn.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
-        Integer numOfRows = dbReadOnly.queryForObject("""
-                    SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = any (?::varchar[])
-                """, Integer.class, fnrsparam);
+        String foresattIdent = dbReadOnly.queryForObject("""
+                    SELECT foresatt_ident FROM foreldreansvar WHERE barn_ident = any (?::varchar[]) LIMIT 1
+                """, String.class, fnrsparam);
 
 
-        return numOfRows > 0;
+        return foresattIdent != null && !foresattIdent.isEmpty();
     }
 
     public void lagreBarnData(Fnr barnIdent, LocalDate barnFoedselsdato, String diskresjonskode) {
