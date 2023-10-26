@@ -19,10 +19,10 @@ public class DbUtils {
 
     public static DataSource createDataSource(String dbUrl, boolean admin) {
         if (admin) {
-            HikariConfig config = createDataSourceConfig(dbUrl, 2);
+            HikariConfig config = createDataSourceConfig(dbUrl, 10);
             return createVaultRefreshDataSource(config, DbRole.ADMIN);
         }
-        HikariConfig config = createDataSourceConfig(dbUrl, 3);
+        HikariConfig config = createDataSourceConfig(dbUrl, 100);
         config.addDataSourceProperty(SOCKET_TIMEOUT.getName(), "600"); // 10min
         return createVaultRefreshDataSource(config, DbRole.READONLY);
     }
@@ -32,7 +32,7 @@ public class DbUtils {
         config.setJdbcUrl(dbUrl);
         config.setMaximumPoolSize(maximumPoolSize);
         config.setConnectionTimeout(600000); // 10min
-        config.setMinimumIdle(1);
+        config.setMinimumIdle(2);
         return config;
     }
 
