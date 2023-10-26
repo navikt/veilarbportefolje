@@ -23,6 +23,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -30,16 +32,7 @@ public class PdlBrukerdataKafkaServiceTest {
 
     private final PdlDokument randomPdlDokument;
 
-    private static BarnUnder18AarRepository barnUnder18AarRepository;
     private static PdlBrukerdataKafkaService pdlBrukerdataKafkaService;
-
-    private static PdlIdentRepository pdlIdentRepository;
-
-    private static PdlPersonRepository pdlPersonRepository;
-
-    private static OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
-
-    private static OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     @MockBean
     private static OpensearchIndexer opensearchIndexer;
@@ -62,15 +55,26 @@ public class PdlBrukerdataKafkaServiceTest {
     @BeforeAll
     public static void setup() {
         db = SingletonPostgresContainer.init().createJdbcTemplate();
-        barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
-        pdlIdentRepository = new PdlIdentRepository(db);
-        pdlPersonRepository = new PdlPersonRepository(db, db);
-        oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
-        oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
+        BarnUnder18AarRepository barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
+        PdlIdentRepository pdlIdentRepository = new PdlIdentRepository(db);
+        PdlPersonRepository pdlPersonRepository = new PdlPersonRepository(db, db);
+        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
+        OppfolgingRepositoryV2 oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
 
         db.update("truncate bruker_data CASCADE");
         db.update("truncate bruker_data_barn CASCADE");
         db.update("truncate foreldreansvar");
+
+
+        server.stubFor(
+                post(anyUrl())
+                        .inScenario("PDL test")
+                        .whenScenarioStateIs(STARTED)
+                        .willReturn(aResponse()
+                                .withStatus(200))
+                        .willSetStateTo("hent barn")
+        );
+
         server.start();
 
         PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
