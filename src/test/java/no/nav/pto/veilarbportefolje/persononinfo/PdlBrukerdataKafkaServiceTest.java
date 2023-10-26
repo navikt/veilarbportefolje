@@ -2,8 +2,6 @@ package no.nav.pto.veilarbportefolje.persononinfo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.WireMockServer;
-import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -14,18 +12,23 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRe
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
+import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
+import java.util.Map;
+
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
+import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class PdlBrukerdataKafkaServiceTest {
+public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
 
     private final PdlDokument randomPdlDokument;
 
@@ -39,18 +42,13 @@ public class PdlBrukerdataKafkaServiceTest {
     @MockBean
     private static UnleashService unleashService;
 
-    private static final WireMockServer server = new WireMockServer();
-
     private static JdbcTemplate db;
 
     public PdlBrukerdataKafkaServiceTest() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         String pdlDokumentAsString = readFileAsJsonString("/PDL_Files/pdl_dokument.json", getClass());
         randomPdlDokument = mapper.readValue(pdlDokumentAsString, PdlDokument.class);
-    }
 
-    @BeforeAll
-    public static void setup() {
         db = SingletonPostgresContainer.init().createJdbcTemplate();
         BarnUnder18AarRepository barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
         PdlIdentRepository pdlIdentRepository = new PdlIdentRepository(db);
@@ -62,19 +60,9 @@ public class PdlBrukerdataKafkaServiceTest {
         db.update("truncate bruker_data_barn CASCADE");
         db.update("truncate foreldreansvar");
 
+        PdlPortefoljeClient pdlPortefoljeClient = Mockito.mock(PdlPortefoljeClient.class);
+        Mockito.when(pdlPortefoljeClient.hentBrukerBarnDataBolkFraPdl(any())).thenReturn(Map.of());
 
-        server.stubFor(
-                post(anyUrl())
-                        .inScenario("PDL test")
-                        .whenScenarioStateIs(STARTED)
-                        .willReturn(aResponse()
-                                .withStatus(200))
-                        .willSetStateTo("hent barn")
-        );
-
-        server.start();
-
-        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
         BarnUnder18AarService barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
 
         pdlBrukerdataKafkaService = new PdlBrukerdataKafkaService(new PdlService(
@@ -97,11 +85,6 @@ public class PdlBrukerdataKafkaServiceTest {
         db.update("truncate bruker_data CASCADE");
         db.update("truncate bruker_data_barn CASCADE");
         db.update("truncate foreldreansvar");
-    }
-
-    @AfterEach
-    public void stopServer() {
-        server.stop();
     }
 
     @Test
