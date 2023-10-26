@@ -16,16 +16,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.List;
-
-import static no.nav.common.utils.UrlUtils.createServiceUrl;
+import java.util.concurrent.Executor;
 
 @EnableScheduling
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
+@EnableAsync
 public class ApplicationConfig {
 
     public static final String APPLICATION_NAME = "veilarbportefolje";
@@ -69,4 +71,13 @@ public class ApplicationConfig {
         return new KodeverkClientImpl(environmentProperties.getKodeverkUrl());
     }
 
+    @Bean
+    public Executor taskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(100);
+        executor.initialize();
+        return executor;
+    }
 }
