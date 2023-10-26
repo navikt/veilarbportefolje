@@ -15,10 +15,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarSe
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -100,6 +97,11 @@ public class PdlBrukerdataKafkaServiceTest {
         db.update("truncate bruker_data CASCADE");
         db.update("truncate bruker_data_barn CASCADE");
         db.update("truncate foreldreansvar");
+    }
+
+    @AfterEach
+    public void stopServer() {
+        server.stop();
     }
 
     @Test
