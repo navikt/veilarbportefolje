@@ -85,11 +85,10 @@ public class ClientConfig {
 
     @Bean
     public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
-        String behandlingsnummer_arbeidsrettet_oppfolging = "B130";
         String behandlingsnummer_oversikten = "B555";
         return new PdlClientImpl(
                 environmentProperties.getPdlUrl(),
-                () -> tokenClient.createMachineToMachineToken(environmentProperties.getPdlScope()), String.join(",", List.of(behandlingsnummer_arbeidsrettet_oppfolging, behandlingsnummer_oversikten))
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getPdlScope()), behandlingsnummer_oversikten
         );
     }
 
