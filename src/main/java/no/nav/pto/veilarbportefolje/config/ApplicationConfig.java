@@ -33,6 +33,16 @@ public class ApplicationConfig {
     public static final String APPLICATION_NAME = "veilarbportefolje";
 
     @Bean
+    public Executor taskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(10);
+        executor.setMaxPoolSize(50);
+        executor.setQueueCapacity(10);
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean
     public TaskScheduler taskScheduler() {
         ConcurrentTaskScheduler scheduler = new ConcurrentTaskScheduler();
         scheduler.setErrorHandler(new ScheduledErrorHandler());
@@ -69,15 +79,5 @@ public class ApplicationConfig {
     @Bean
     public KodeverkClient kodeverkClient(EnvironmentProperties environmentProperties) {
         return new KodeverkClientImpl(environmentProperties.getKodeverkUrl());
-    }
-
-    @Bean
-    public Executor taskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(50);
-        executor.setQueueCapacity(100);
-        executor.initialize();
-        return executor;
     }
 }
