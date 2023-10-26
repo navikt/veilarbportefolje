@@ -75,8 +75,8 @@ public class ApplicationConfig {
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(20);
-        executor.setQueueCapacity(200);
+        executor.setMaxPoolSize(50);
+        executor.setQueueCapacity(100);
         executor.initialize();
         return executor;
     }
