@@ -19,10 +19,10 @@ public class DbUtils {
 
     public static DataSource createDataSource(String dbUrl, boolean admin) {
         if (admin) {
-            HikariConfig config = createDataSourceConfig(dbUrl, 5);
+            HikariConfig config = createDataSourceConfig(dbUrl, 2);
             return createVaultRefreshDataSource(config, DbRole.ADMIN);
         }
-        HikariConfig config = createDataSourceConfig(dbUrl, 40);
+        HikariConfig config = createDataSourceConfig(dbUrl, 3);
         config.addDataSourceProperty(SOCKET_TIMEOUT.getName(), "600"); // 10min
         return createVaultRefreshDataSource(config, DbRole.READONLY);
     }

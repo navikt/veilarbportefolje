@@ -19,7 +19,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PdlPersonValideringExcep
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,43 +52,25 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             return;
         }
 
-        StopWatch watch1 = new StopWatch();
-        StopWatch watch2 = new StopWatch();
-
-        watch1.start();
-
-
         List<PDLIdent> pdlIdenter = pdlDokument.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
         List<Fnr> fnrs = hentFnrs(pdlIdenter);
         List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);
 
-
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
-            watch2.start();
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
             secureLog.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
 
             handterIdentEndring(pdlIdenter);
 
-            watch2.stop();
-
-            log.info("Elapsed step 1: " + watch2.getLastTaskTimeMillis());
-            watch2.start();
-
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
-
-            watch2.stop();
-            log.info("Elapsed step 2: " + watch2.getLastTaskTimeMillis());
 
             if (!FeatureToggle.stoppOpensearchIndeksering(unleashService)) {
                 oppdaterOpensearch(aktivAktorId, pdlIdenter);
             }
         }
 
-
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
-            watch2.start();
             log.info("Det oppsto en PDL endring for barn");
             Fnr aktivtFnr = hentAktivFnr(pdlIdenter);
             barnUnder18AarService.handterBarnIdentEndring(aktivtFnr, inaktiveFnr);
@@ -109,14 +90,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
                         }
                 );
             }
-
-            watch2.stop();
-            log.info("Elapsed step 3: " + watch2.getLastTaskTimeMillis());
         }
-
-        watch1.stop();
-        log.info("Elapsed total: " + watch1.getLastTaskTimeMillis());
-
     }
 
     private void handterBrukerDataEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka,
