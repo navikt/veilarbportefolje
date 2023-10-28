@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -55,21 +56,21 @@ public class BarnUnder18AarRepository {
     }
 
     public Boolean finnesBarnIForeldreansvar(Fnr fnrBarn) {
-        Integer numOfRows = dbReadOnly.queryForObject("""
-                    SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = ?
-                """, Integer.class, fnrBarn.get());
-
-        return numOfRows > 0;
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject("""
+                        SELECT foresatt_ident FROM foreldreansvar WHERE barn_ident = ? LIMIT 1
+                        """, (rs, row) -> !rs.getString("foresatt_ident").isEmpty(), fnrBarn.get()))
+        ).orElse(false);
     }
 
     public Boolean finnesBarnIForeldreansvar(List<Fnr> fnrBarn) {
         String fnrsparam = fnrBarn.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
-        Integer numOfRows = dbReadOnly.queryForObject("""
-                    SELECT COUNT(*) FROM foreldreansvar WHERE barn_ident = any (?::varchar[])
-                """, Integer.class, fnrsparam);
 
-
-        return numOfRows > 0;
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject("""
+                        SELECT foresatt_ident FROM foreldreansvar WHERE barn_ident = any (?::varchar[]) LIMIT 1
+                        """, (rs, row) -> !rs.getString("foresatt_ident").isEmpty(), fnrsparam))
+        ).orElse(false);
     }
 
     public void lagreBarnData(Fnr barnIdent, LocalDate barnFoedselsdato, String diskresjonskode) {

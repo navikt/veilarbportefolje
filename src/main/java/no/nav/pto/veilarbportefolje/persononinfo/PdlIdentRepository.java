@@ -38,8 +38,8 @@ public class PdlIdentRepository {
         String identerParam = identer.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject("""
-                        select bool_or(oppfolging) as harOppfolging from oppfolging_data
-                        where aktoerid = any (?::varchar[])
+                        select oppfolging as harOppfolging from oppfolging_data
+                        where aktoerid = any (?::varchar[]) AND oppfolging LIMIT 1
                         """, (rs, row) -> rs.getBoolean("harOppfolging"), identerParam))
         ).orElse(false);
     }
