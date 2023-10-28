@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
@@ -55,6 +56,7 @@ public class BarnUnder18AarRepository {
                 """, String.class).stream().map(Fnr::of).toList();
     }
 
+    @Timed("finnesBarnIForeldreansvar")
     public Boolean finnesBarnIForeldreansvar(Fnr fnrBarn) {
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject("""
@@ -63,6 +65,7 @@ public class BarnUnder18AarRepository {
         ).orElse(false);
     }
 
+    @Timed("finnesBarnIForeldreansvar-list")
     public Boolean finnesBarnIForeldreansvar(List<Fnr> fnrBarn) {
         String fnrsparam = fnrBarn.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
 

@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -34,15 +35,18 @@ public class PdlIdentRepository {
         identer.forEach(ident -> insertIdent(nyLokalIdent, ident));
     }
 
+    @Timed("harAktorIdUnderOppfolging")
     public boolean harAktorIdUnderOppfolging(List<AktorId> identer) {
         String identerParam = identer.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject("""
-                        select bool_or(oppfolging) as harOppfolging from oppfolging_data where aktoerid = any (?::varchar[])
+                        select oppfolging as harOppfolging from oppfolging_data
+                        where aktoerid = any (?::varchar[]) AND oppfolging LIMIT 1
                         """, (rs, row) -> rs.getBoolean("harOppfolging"), identerParam))
         ).orElse(false);
     }
 
+    @Timed("erBrukerUnderOppfolging")
     public boolean erBrukerUnderOppfolging(String brukerId) {
         return Optional.ofNullable(queryForObjectOrNull(() -> db.queryForObject("""
                 select bool_or(oppfolging) as harOppfolging from oppfolging_data
