@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
@@ -12,7 +14,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.erUnder18Aar;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -24,6 +28,11 @@ public class BarnUnder18AarService {
 
     private final BarnUnder18AarRepository barnUnder18AarRepository;
     private final PdlPortefoljeClient pdlClient;
+
+    private final Cache<List<Fnr>, Boolean> cacheErFnrBarnAvForelderUnderOppfolging = Caffeine.newBuilder()
+            .expireAfterWrite(2, TimeUnit.HOURS)
+            .maximumSize(50000)
+            .build();
 
     public Map<Fnr, List<BarnUnder18AarData>> hentBarnUnder18Aar(List<Fnr> fnrForeldre) {
         Map<Fnr, List<BarnUnder18AarData>> result = new HashMap<>();
@@ -123,7 +132,8 @@ public class BarnUnder18AarService {
         if (fnrBarn == null || fnrBarn.isEmpty()) {
             return false;
         }
-        return barnUnder18AarRepository.finnesBarnIForeldreansvar(fnrBarn);
+        return tryCacheFirst(cacheErFnrBarnAvForelderUnderOppfolging, fnrBarn,
+                () -> barnUnder18AarRepository.finnesBarnIForeldreansvar(fnrBarn));
     }
 
     public List<Fnr> finnForeldreTilBarn(Fnr fnrBarn) {
