@@ -52,8 +52,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             return;
         }
 
-        long startTime = System.currentTimeMillis();
-
         List<PDLIdent> pdlIdenter = pdlDokument.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
         List<Fnr> fnrs = hentFnrs(pdlIdenter);
@@ -70,7 +68,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             if (!FeatureToggle.stoppOpensearchIndeksering(unleashService)) {
                 oppdaterOpensearch(aktivAktorId, pdlIdenter);
             }
-            log.info("PDL handterBrukerDataEndring execution time: " + (System.currentTimeMillis() - startTime));
         }
 
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
@@ -93,10 +90,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
                         }
                 );
             }
-            log.info("PDL handterBarnEndring execution time: " + (System.currentTimeMillis() - startTime));
         }
-
-        log.info("Pdl behandleKafkaMeldingLogikk execution time: " + (System.currentTimeMillis() - startTime));
     }
 
     private void handterBrukerDataEndring(PdlPersonResponse.PdlPersonResponseData.HentPersonResponsData personFraKafka,
