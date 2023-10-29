@@ -60,6 +60,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
         List<Fnr> inaktiveFnr = hentInaktiveFnr(pdlIdenter);
 
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
+            log.info("PDL harAktorIdUnderOppfolging execution time: " + (System.currentTimeMillis() - startTime));
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
             secureLog.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
 
@@ -73,7 +74,9 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
             log.info("PDL handterBrukerDataEndring execution time: " + (System.currentTimeMillis() - startTime));
         }
 
+        long startTimeBarn = System.currentTimeMillis();
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
+            log.info("PDL erFnrBarnAvForelderUnderOppfolging execution time: " + (System.currentTimeMillis() - startTimeBarn));
             log.info("Det oppsto en PDL endring for barn");
             Fnr aktivtFnr = hentAktivFnr(pdlIdenter);
             barnUnder18AarService.handterBarnIdentEndring(aktivtFnr, inaktiveFnr);
@@ -93,7 +96,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
                         }
                 );
             }
-            log.info("PDL handterBarnEndring execution time: " + (System.currentTimeMillis() - startTime));
+            log.info("PDL handterBarnEndring execution time: " + (System.currentTimeMillis() - startTimeBarn));
         }
 
         log.info("Pdl behandleKafkaMeldingLogikk execution time: " + (System.currentTimeMillis() - startTime));
