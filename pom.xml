@@ -19,7 +19,7 @@
         <common.version>3.2023.10.17_06.55-4e30d96bba05</common.version>
         <veilarbregistrering.skjema.version>c22beae</veilarbregistrering.skjema.version>
         <jaxb.version>2.3.1</jaxb.version>
-        <testcontainers.version>1.16.0</testcontainers.version>
+        <testcontainers.version>1.19.1</testcontainers.version>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
