@@ -35,7 +35,6 @@ public class PdlService {
         hentOgLagreBrukerData(fnr);
     }
 
-    @Async
     public void hentOgLagreBrukerData(Fnr fnrPerson) {
         try {
             PDLPerson personData = pdlClient.hentBrukerDataFraPdl(fnrPerson);
@@ -45,20 +44,17 @@ public class PdlService {
         }
     }
 
-    @Async
     public void hentOgLagreBrukerDataPaBarn(Fnr fnrBarn) {
         PDLPersonBarn barnData = pdlClient.hentBrukerBarnDataFraPdl(fnrBarn);
         barnUnder18AarService.oppdaterEndringPaBarn(fnrBarn, barnData);
     }
 
-    @Async
     public void lagreBrukerData(Fnr fnrPerson, PDLPerson personData) {
         pdlPersonRepository.upsertPerson(fnrPerson, personData);
 
         barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, personData.getForeldreansvar());
     }
 
-    @Async
     public void lagreBrukerDataPaBarn(Fnr fnrBarn, PDLPersonBarn pdlPersonBarn) {
         barnUnder18AarService.oppdaterEndringPaBarn(fnrBarn, pdlPersonBarn);
     }
@@ -97,7 +93,6 @@ public class PdlService {
         pdlIdentRepository.slettLagretePerson(lokalIdent);
     }
 
-    @Async
     public void slettPDLBrukerData(List<Fnr> fnrs) {
         List<Fnr> barnFnrsForForeldre = barnUnder18AarService.hentBarnFnrsForForeldre(fnrs);
         pdlPersonRepository.slettLagretBrukerData(fnrs);
