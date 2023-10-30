@@ -39,9 +39,6 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
     @MockBean
     private static OpensearchIndexerV2 opensearchIndexerV2;
 
-    @MockBean
-    private static UnleashService unleashService;
-
     private static JdbcTemplate db;
 
     public PdlBrukerdataKafkaServiceTest() throws JsonProcessingException {
@@ -65,6 +62,9 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
 
         BarnUnder18AarService barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
 
+        UnleashService mockUnleash = Mockito.mock(UnleashService.class);
+        Mockito.when(mockUnleash.isEnabled(any())).thenReturn(true);
+
         pdlBrukerdataKafkaService = new PdlBrukerdataKafkaService(new PdlService(
                 pdlIdentRepository,
                 pdlPersonRepository,
@@ -76,7 +76,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
                 barnUnder18AarService,
                 opensearchIndexer,
                 opensearchIndexerV2,
-                unleashService
+                mockUnleash
         );
     }
 
@@ -88,7 +88,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
     }
 
     @Test
-    @Timeout(25)
+    @Timeout(20)
     public void testRepublishing() {
         int i = 0;
         while (i < 6000) {
