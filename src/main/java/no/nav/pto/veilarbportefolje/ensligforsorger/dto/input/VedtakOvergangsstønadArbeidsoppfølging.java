@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.ensligforsorger.dto.input;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import java.util.List;
 
 public record VedtakOvergangsstønadArbeidsoppfølging(
@@ -10,6 +12,10 @@ public record VedtakOvergangsstønadArbeidsoppfølging(
         List<Periode> periode,
         Vedtaksresultat vedtaksresultat
 ) {
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public VedtakOvergangsstønadArbeidsoppfølging {
+    }
+
 }
 
 
