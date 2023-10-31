@@ -1003,6 +1003,13 @@ CREATE INDEX idx_bruker_identer_person ON public.bruker_identer USING btree (per
 
 
 --
+-- Name: idx_foreldreansvar_barn_ident; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_foreldreansvar_barn_ident ON public.foreldreansvar USING btree (barn_ident);
+
+
+--
 -- Name: idx_freg_ident; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1014,6 +1021,13 @@ CREATE INDEX idx_freg_ident ON public.bruker_statsborgerskap USING btree (freg_i
 --
 
 CREATE INDEX idx_gyldig_til ON public.bruker_statsborgerskap USING btree (gyldig_til);
+
+
+--
+-- Name: idx_oppfolging_data_oppfolging; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_oppfolging_data_oppfolging ON public.oppfolging_data USING btree (oppfolging);
 
 
 --
