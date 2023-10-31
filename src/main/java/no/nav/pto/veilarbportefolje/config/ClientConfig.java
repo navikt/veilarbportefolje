@@ -29,7 +29,6 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 @Configuration
 public class ClientConfig {
 
-
     @Bean
     public PoaoTilgangWrapper poaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
         return new PoaoTilgangWrapper(authContextHolder, tokenClient, environmentProperties);
@@ -85,9 +84,10 @@ public class ClientConfig {
 
     @Bean
     public PdlClient pdlClient(AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
+        String behandlingsnummer_oversikten = "B555";
         return new PdlClientImpl(
                 environmentProperties.getPdlUrl(),
-                () -> tokenClient.createMachineToMachineToken(environmentProperties.getPdlScope())
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getPdlScope()), behandlingsnummer_oversikten
         );
     }
 

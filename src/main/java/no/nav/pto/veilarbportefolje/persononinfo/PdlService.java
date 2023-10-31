@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarSe
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,7 @@ public class PdlService {
 
     private final BarnUnder18AarService barnUnder18AarService;
     private final PdlPortefoljeClient pdlClient;
-
+    
     public void hentOgLagrePdlData(AktorId aktorId) {
         List<PDLIdent> identer = hentOgLagreIdenter(aktorId);
         Fnr fnr = hentAktivFnr(identer);
@@ -51,8 +52,7 @@ public class PdlService {
     public void lagreBrukerData(Fnr fnrPerson, PDLPerson personData) {
         pdlPersonRepository.upsertPerson(fnrPerson, personData);
 
-        Map<Fnr, PDLPersonBarn> pdlPersonBarn = pdlClient.hentBrukerBarnDataBolkFraPdl(personData.getForeldreansvar());
-        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, pdlPersonBarn, personData.getForeldreansvarMaster());
+        barnUnder18AarService.lagreBarnOgForeldreansvar(fnrPerson, personData.getForeldreansvar());
     }
 
     public void lagreBrukerDataPaBarn(Fnr fnrBarn, PDLPersonBarn pdlPersonBarn) {

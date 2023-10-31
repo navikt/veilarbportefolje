@@ -1,10 +1,12 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -37,6 +39,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
     private final BarnUnder18AarService barnUnder18AarService;
     private final OpensearchIndexer opensearchIndexer;
     private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final DefaultUnleash defaultUnleash;
 
     @Override
     @SneakyThrows
@@ -62,27 +65,31 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-            oppdaterOpensearch(aktivAktorId, pdlIdenter);
+            if (!FeatureToggle.stoppOpensearchIndeksering(defaultUnleash)) {
+                oppdaterOpensearch(aktivAktorId, pdlIdenter);
+            }
         }
 
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
-            
+            log.info("Det oppsto en PDL endring for barn");
             Fnr aktivtFnr = hentAktivFnr(pdlIdenter);
             barnUnder18AarService.handterBarnIdentEndring(aktivtFnr, inaktiveFnr);
 
             handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-            List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnr);
+            if (!FeatureToggle.stoppOpensearchIndeksering(defaultUnleash)) {
+                List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnr);
 
-            foreldreTilBarn.forEach(fnrForelder -> {
-                        Optional<AktorId> aktorIdForelder = brukerService.hentAktorId(fnrForelder);
-                        if (aktorIdForelder.isPresent()) {
-                            opensearchIndexer.indekser(aktorIdForelder.get());
-                        } else {
-                            secureLog.warn("Kunne ikke indeksere forelder med fnr {} til barn med fnr {}", fnrForelder, aktivtFnr);
+                foreldreTilBarn.forEach(fnrForelder -> {
+                            Optional<AktorId> aktorIdForelder = brukerService.hentAktorId(fnrForelder);
+                            if (aktorIdForelder.isPresent()) {
+                                opensearchIndexer.indekser(aktorIdForelder.get());
+                            } else {
+                                secureLog.warn("Kunne ikke indeksere forelder med fnr {} til barn med fnr {}", fnrForelder, aktivtFnr);
+                            }
                         }
-                    }
-            );
+                );
+            }
         }
     }
 

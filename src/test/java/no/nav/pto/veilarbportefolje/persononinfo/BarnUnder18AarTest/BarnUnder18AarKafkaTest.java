@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.persononinfo.BarnUnder18AarTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import io.getunleash.DefaultUnleash;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -64,6 +65,8 @@ public class BarnUnder18AarKafkaTest {
     private final String pdlDokumentBarn1MedDiskresjonskodeAsString = readFileAsJsonString("/PDL_Files/pdl_dokument_barn1_med_diskresjonskode.json", getClass());
     private final JdbcTemplate db;
 
+    @MockBean
+    private DefaultUnleash defaultUnleash;
     private final WireMockServer server = new WireMockServer();
 
 
@@ -91,18 +94,21 @@ public class BarnUnder18AarKafkaTest {
 
         server.start();
 
-        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository);
+        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
+        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
 
         this.pdlBrukerdataKafkaService = new PdlBrukerdataKafkaService(new PdlService(
                 this.pdlIdentRepository,
                 this.pdlPersonRepository,
                 this.barnUnder18AarService,
-                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN")))
+                pdlPortefoljeClient
+        )
         , this.pdlIdentRepository,
                 new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
                 this.barnUnder18AarService,
                 opensearchIndexer,
-                opensearchIndexerV2
+                opensearchIndexerV2,
+                defaultUnleash
                 );
     }
 

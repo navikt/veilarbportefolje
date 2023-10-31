@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.persononinfo.BarnUnder18AarTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import io.getunleash.DefaultUnleash;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -64,6 +65,9 @@ public class BarnUnder18AarMisterForeldreansvarTest {
     private final String pdlDokumentIngenBarn = readFileAsJsonString("/PDL_Files/pdl_dokument_ingen_barn.json", getClass());
     private final JdbcTemplate db;
 
+    @MockBean
+    private DefaultUnleash defaultUnleash;
+
     private final WireMockServer server = new WireMockServer();
 
 
@@ -90,19 +94,23 @@ public class BarnUnder18AarMisterForeldreansvarTest {
 
         server.start();
 
+        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
+        ;
 
-        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository);
+
+        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
 
         this.pdlBrukerdataKafkaService = new PdlBrukerdataKafkaService(new PdlService(
                 this.pdlIdentRepository,
                 this.pdlPersonRepository,
                 this.barnUnder18AarService,
-                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN")))
+                pdlPortefoljeClient)
                 , this.pdlIdentRepository,
                 new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
                 this.barnUnder18AarService,
                 opensearchIndexer,
-                opensearchIndexerV2
+                opensearchIndexerV2,
+                defaultUnleash
         );
     }
 
@@ -127,6 +135,7 @@ public class BarnUnder18AarMisterForeldreansvarTest {
         pdlIdentRepository.upsertIdenter(pdlDokForelder.getHentIdenter().getIdenter());
 
         pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(pdlDokForelder);
+
         List<Fnr> barnFoer  = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnrForelder));
         pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(pdlDokForelderIngenBarn);
         List<Fnr> barnEtter = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnrForelder));
