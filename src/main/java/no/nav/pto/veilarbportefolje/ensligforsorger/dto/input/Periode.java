@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.ensligforsorger.dto.input;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import java.time.LocalDate;
 
 public record Periode(
@@ -8,4 +10,8 @@ public record Periode(
         Periodetype periodetype,
         Aktivitetstype aktivitetstype
 ) {
+
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public Periode {
+    }
 }
