@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PersoninfoController {
 
     @GetMapping("/{fnr}")
+    @Deprecated(forRemoval = true)
     @ResponseStatus(HttpStatus.GONE)
     public void hentPersoninfo(@PathVariable("fnr") String fnr) {
     }

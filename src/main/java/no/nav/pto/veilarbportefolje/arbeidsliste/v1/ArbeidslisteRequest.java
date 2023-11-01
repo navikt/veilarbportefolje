@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arbeidsliste;
+package no.nav.pto.veilarbportefolje.arbeidsliste.v1;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
