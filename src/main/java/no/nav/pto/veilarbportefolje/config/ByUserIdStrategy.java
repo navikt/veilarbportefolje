@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import lombok.RequiredArgsConstructor;
-import no.finn.unleash.strategy.Strategy;
+import io.getunleash.strategy.Strategy;
 import no.nav.common.auth.context.AuthContextHolder;
 
 import java.util.Arrays;

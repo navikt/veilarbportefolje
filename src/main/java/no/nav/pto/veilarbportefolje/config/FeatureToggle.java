@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
 
-import no.nav.pto.veilarbportefolje.service.UnleashService;
+import io.getunleash.DefaultUnleash;
 
 public class FeatureToggle {
 
@@ -19,23 +19,23 @@ public class FeatureToggle {
 
     public static final String STOPP_OPENSEARCH_INDEKSERING = "veilarbportefolje.stopp_opensearch_indeksering";
 
-    public static boolean brukAvAliasIndeksering(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
+    public static boolean brukAvAliasIndeksering(DefaultUnleash defaultUnleash) {
+        return defaultUnleash.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
 
-    public static boolean brukOppfolgingsbrukerPaPostgres(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.OPPFOLGINGS_BRUKER);
+    public static boolean brukOppfolgingsbrukerPaPostgres(DefaultUnleash defaultUnleash) {
+        return defaultUnleash.isEnabled(FeatureToggle.OPPFOLGINGS_BRUKER);
     }
 
-    public static boolean brukPoaoTilgang(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
+    public static boolean brukPoaoTilgang(DefaultUnleash defaultUnleash) {
+        return defaultUnleash.isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
     }
 
-    public static boolean brukFilterForBrukerinnsynTilganger(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
+    public static boolean brukFilterForBrukerinnsynTilganger(DefaultUnleash defaultUnleash) {
+        return defaultUnleash.isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
     }
 
-    public static boolean stoppOpensearchIndeksering(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.STOPP_OPENSEARCH_INDEKSERING);
+    public static boolean stoppOpensearchIndeksering(DefaultUnleash defaultUnleash) {
+        return defaultUnleash.isEnabled(FeatureToggle.STOPP_OPENSEARCH_INDEKSERING);
     }
 }

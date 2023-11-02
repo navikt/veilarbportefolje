@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -57,7 +58,6 @@ import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringRepository;
 import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
@@ -216,8 +216,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public UnleashService unleashService() {
-        final UnleashService mock = mock(UnleashService.class);
+    public DefaultUnleash defaultUnleash() {
+        final DefaultUnleash mock = mock(DefaultUnleash.class);
         when(mock.isEnabled(anyString())).thenReturn(true);
         return mock;
     }

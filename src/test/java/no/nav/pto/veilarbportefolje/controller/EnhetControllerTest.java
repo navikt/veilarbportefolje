@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.controller;
 
+import io.getunleash.DefaultUnleash;
 import lombok.SneakyThrows;
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContext;
@@ -19,7 +20,6 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.persononinfo.bosted.BostedService;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +40,7 @@ public class EnhetControllerTest {
     private PoaoTilgangWrapper poaoTilgangWrapper;
     private AuthContextHolder authContextHolder;
 
-    private UnleashService unleashService;
+    private DefaultUnleash defaultUnleash;
 
     @Before
     public void initController() {
@@ -48,9 +48,9 @@ public class EnhetControllerTest {
         pep = mock(Pep.class);
         poaoTilgangWrapper = mock(PoaoTilgangWrapper.class);
         authContextHolder = AuthContextHolderThreadLocal.instance();
-        unleashService = mock(UnleashService.class);
+        defaultUnleash = mock(DefaultUnleash.class);
 
-        AuthService authService = new AuthService(pep, poaoTilgangWrapper, mock(AzureAdOnBehalfOfTokenClient.class), unleashService, mock(MetricsClient.class));
+        AuthService authService = new AuthService(pep, poaoTilgangWrapper, mock(AzureAdOnBehalfOfTokenClient.class), defaultUnleash, mock(MetricsClient.class));
         enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(PersonOpprinnelseService.class), mock(BostedService.class));
     }
 

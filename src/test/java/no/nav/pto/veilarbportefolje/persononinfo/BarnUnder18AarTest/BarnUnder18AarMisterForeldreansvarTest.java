@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.persononinfo.BarnUnder18AarTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import io.getunleash.DefaultUnleash;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -17,7 +18,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRe
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -66,7 +66,7 @@ public class BarnUnder18AarMisterForeldreansvarTest {
     private final JdbcTemplate db;
 
     @MockBean
-    private UnleashService unleashService;
+    private DefaultUnleash defaultUnleash;
 
     private final WireMockServer server = new WireMockServer();
 
@@ -110,7 +110,7 @@ public class BarnUnder18AarMisterForeldreansvarTest {
                 this.barnUnder18AarService,
                 opensearchIndexer,
                 opensearchIndexerV2,
-                unleashService
+                defaultUnleash
         );
     }
 

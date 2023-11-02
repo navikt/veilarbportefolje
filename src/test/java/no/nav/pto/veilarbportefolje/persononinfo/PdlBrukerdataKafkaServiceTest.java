@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.persononinfo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.getunleash.DefaultUnleash;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -11,7 +12,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.AfterAll;
@@ -62,7 +62,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
 
         BarnUnder18AarService barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
 
-        UnleashService mockUnleash = Mockito.mock(UnleashService.class);
+        DefaultUnleash mockUnleash = Mockito.mock(DefaultUnleash.class);
         Mockito.when(mockUnleash.isEnabled(any())).thenReturn(true);
 
         pdlBrukerdataKafkaService = new PdlBrukerdataKafkaService(new PdlService(

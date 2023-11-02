@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PdlPersonValideringException;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -39,7 +39,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
     private final BarnUnder18AarService barnUnder18AarService;
     private final OpensearchIndexer opensearchIndexer;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final UnleashService unleashService;
+    private final DefaultUnleash defaultUnleash;
 
     @Override
     @SneakyThrows
@@ -65,7 +65,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-            if (!FeatureToggle.stoppOpensearchIndeksering(unleashService)) {
+            if (!FeatureToggle.stoppOpensearchIndeksering(defaultUnleash)) {
                 oppdaterOpensearch(aktivAktorId, pdlIdenter);
             }
         }
@@ -77,7 +77,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDok
 
             handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-            if (!FeatureToggle.stoppOpensearchIndeksering(unleashService)) {
+            if (!FeatureToggle.stoppOpensearchIndeksering(defaultUnleash)) {
                 List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnr);
 
                 foreldreTilBarn.forEach(fnrForelder -> {

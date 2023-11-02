@@ -4,13 +4,13 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.featuretoggle.UnleashClient;
-import no.nav.common.featuretoggle.UnleashClientImpl;
+import io.getunleash.DefaultUnleash;
+import io.getunleash.util.UnleashConfig;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClientImpl;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,13 +62,16 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public UnleashClient unleashClient(EnvironmentProperties properties, AuthContextHolder authContextHolder) {
-        return new UnleashClientImpl(properties.getUnleashUrl(), APPLICATION_NAME, List.of(new ByUserIdStrategy(authContextHolder)));
-    }
-
-    @Bean
-    public UnleashService unleashService(UnleashClient unleashClient) {
-        return new UnleashService(unleashClient);
+    public DefaultUnleash defaultUnleash(EnvironmentProperties properties) {
+        String environment = EnvironmentUtils.isProduction().orElse(false) ? "production" : "development";
+        UnleashConfig config = UnleashConfig.builder()
+                .appName(APPLICATION_NAME)
+                .instanceId(APPLICATION_NAME)
+                .unleashAPI(properties.getUnleashUrl())
+                .apiKey(properties.getUnleashApiToken())
+                .environment(environment)
+                .build();
+        return new DefaultUnleash(config);
     }
 
     @Bean
