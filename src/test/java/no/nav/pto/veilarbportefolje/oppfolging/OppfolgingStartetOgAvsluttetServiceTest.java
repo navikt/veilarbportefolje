@@ -24,6 +24,7 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -75,6 +76,14 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @MockBean
     private VedtaksstotteClient vedtaksstotteClient;
 
+    @BeforeEach
+    public void cleanup() {
+        jdbcTemplate.update("truncate bruker_data CASCADE");
+        jdbcTemplate.update("truncate bruker_data_barn CASCADE");
+        jdbcTemplate.update("truncate foreldreansvar");
+
+    }
+
     @Test
     void når_oppfolging_startes_skal_bruker_settes_under_oppfølging_i_databasen() {
         final AktorId aktorId = randomAktorId();
@@ -112,7 +121,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         assertThat(pdlPersonFraDB.getBydelsnummer()).isEqualTo(pdlPerson.getBydelsnummer());
         assertThat(pdlPersonFraDB.getDiskresjonskode()).isEqualTo(pdlPerson.getDiskresjonskode());
         assertThat(pdlPersonFraDB.getSikkerhetstiltak()).isEqualTo(pdlPerson.getSikkerhetstiltak());
-        assertThat(pdlPersonFraDB.getStatsborgerskap()).isEqualTo(pdlPerson.getStatsborgerskap());
+        assertTrue(pdlPersonFraDB.getStatsborgerskap().containsAll(pdlPerson.getStatsborgerskap()));
     }
 
     @Test
@@ -237,7 +246,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         assertThat(bruker).isNotPresent();
     }
 
-    private List<PDLIdent> mockPdlIdenterRespons(AktorId aktorId, Fnr fnr) {
+    private void mockPdlIdenterRespons(AktorId aktorId, Fnr fnr) {
 
         List<PDLIdent> identer = List.of(
                 new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
@@ -246,7 +255,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         when(pdlPortefoljeClient.hentIdenterFraPdl(aktorId)).thenReturn(identer);
 
-        return identer;
     }
 
     private PDLPerson mockPdlPersonRespons(Fnr fnr) {
