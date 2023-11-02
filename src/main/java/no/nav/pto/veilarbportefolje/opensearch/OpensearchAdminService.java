@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import okhttp3.*;
 import org.apache.commons.io.IOUtils;
@@ -45,14 +46,15 @@ public class OpensearchAdminService {
     private final OpensearchClientConfig openSearchClientConfig;
     private final OkHttpClient httpClient;
 
+    private final String opensearchUri;
+
     @Autowired
-    public OpensearchAdminService(RestHighLevelClient restHighLevelClient, OpensearchClientConfig openSearchClientConfig) {
+    public OpensearchAdminService(EnvironmentProperties environmentProperties, RestHighLevelClient restHighLevelClient, OpensearchClientConfig openSearchClientConfig) {
+        this.opensearchUri = environmentProperties.getOpensearchUri();
         this.restHighLevelClient = restHighLevelClient;
         this.openSearchClientConfig = openSearchClientConfig;
-
         this.httpClient = baseClient();
     }
-
     @SneakyThrows
     public String opprettNyIndeks() {
         return opprettNyIndeks(createIndexName());
@@ -165,7 +167,6 @@ public class OpensearchAdminService {
                 .url(url).get()
                 .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
                 .build();
-
         return callAndGetBody(request);
     }
 
@@ -239,14 +240,24 @@ public class OpensearchAdminService {
 
     @SneakyThrows
     private String callAndGetBody(Request request) {
-        try (Response response = httpClient.newCall(request).execute()) {
-            RestUtils.throwIfNotSuccessful(response);
-            try (ResponseBody responseBody = response.body()) {
-                if (responseBody == null) {
-                    return null;
+
+        if  (Objects.equals(this.opensearchUri, request.url().uri().toString())) {
+            log.info("Logger uri OpensearchAdminService callAndGetBody {}", request.url().uri());
+            try (Response response = httpClient.newCall(request).execute()) {
+                RestUtils.throwIfNotSuccessful(response);
+                try (ResponseBody responseBody = response.body()) {
+                    if (responseBody == null) {
+                        return null;
+                    }
+                    return responseBody.string();
                 }
-                return responseBody.string();
-            }
+            }    
+        } else {
+            log.error("Feil i uri OpensearchAdminService callAndGetBody {}", request.url().uri());
+            Response.Builder builder = new Response.Builder();
+            builder.code(400).message("Illegal URI");
+            Response responseBadUri = builder.build();
+            return responseBadUri.toString();
         }
     }
 }
