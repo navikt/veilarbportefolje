@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.auth;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.getunleash.DefaultUnleash;
 import io.vavr.Tuple;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -20,7 +21,6 @@ import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,15 +40,15 @@ public class AuthService {
     private final PoaoTilgangWrapper poaoTilgangWrapper;
     private final Pep veilarbPep;
     private final Cache<VeilederPaEnhet, Boolean> harVeilederTilgangTilEnhetCache;
-    private final UnleashService unleashService;
+    private final DefaultUnleash defaultUnleash;
     private final MetricsClient metricsClient;
 
     @Autowired
-    public AuthService(Pep veilarbPep, PoaoTilgangWrapper poaoTilgangWrapper, AzureAdOnBehalfOfTokenClient aadOboTokenClient, UnleashService unleashService, MetricsClient metricsClient) {
+    public AuthService(Pep veilarbPep, PoaoTilgangWrapper poaoTilgangWrapper, AzureAdOnBehalfOfTokenClient aadOboTokenClient, DefaultUnleash defaultUnleash, MetricsClient metricsClient) {
         this.aadOboTokenClient = aadOboTokenClient;
         this.poaoTilgangWrapper = poaoTilgangWrapper;
         this.veilarbPep = veilarbPep;
-        this.unleashService = unleashService;
+        this.defaultUnleash = defaultUnleash;
         this.metricsClient = metricsClient;
         this.harVeilederTilgangTilEnhetCache = Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
@@ -72,7 +72,7 @@ public class AuthService {
         Boolean abacResponse = tryCacheFirst(harVeilederTilgangTilEnhetCache, new VeilederPaEnhet(veilederId, enhet),
                 () -> veilarbPep.harVeilederTilgangTilEnhet(NavIdent.of(veilederId), EnhetId.of(enhet)));
 
-        if (FeatureToggle.brukPoaoTilgang(unleashService)) {
+        if (FeatureToggle.brukPoaoTilgang(defaultUnleash)) {
             poaoTilgangWrapper.harVeilederTilgangTilEnhet(EnhetId.of(enhet));
         }
         return abacResponse;
@@ -80,7 +80,7 @@ public class AuthService {
 
     public void tilgangTilBruker(String fnr) {
         boolean abacResponse = veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, Fnr.of(fnr));
-        if (FeatureToggle.brukPoaoTilgang(unleashService)) {
+        if (FeatureToggle.brukPoaoTilgang(defaultUnleash)) {
             poaoTilgangWrapper.harTilgangTilPerson(Fnr.of(fnr));
         }
         AuthUtils.test("tilgangTilBruker", fnr, abacResponse);
@@ -120,7 +120,7 @@ public class AuthService {
 
     public boolean harVeilederTilgangTilKode6(NavIdent veilederIdent) {
         boolean abacResponse = veilarbPep.harVeilederTilgangTilKode6(veilederIdent);
-        if (FeatureToggle.brukPoaoTilgang(unleashService)) {
+        if (FeatureToggle.brukPoaoTilgang(defaultUnleash)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode6();
             if (decision.isPermit() != abacResponse) {
                 metricsClient.report(new Event("poao-tilgang-diff").addTagToReport("method", "harVeilederTilgangTilKode6"));
@@ -136,7 +136,7 @@ public class AuthService {
 
     public boolean harVeilederTilgangTilKode7(NavIdent veilederIdent) {
         boolean abacResponse = veilarbPep.harVeilederTilgangTilKode7(veilederIdent);
-        if (FeatureToggle.brukPoaoTilgang(unleashService)) {
+        if (FeatureToggle.brukPoaoTilgang(defaultUnleash)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode7();
             if (decision.isPermit() != abacResponse) {
                 metricsClient.report(new Event("poao-tilgang-diff").addTagToReport("method", "harVeilederTilgangTilKode7"));
@@ -152,7 +152,7 @@ public class AuthService {
 
     public boolean harVeilederTilgangTilEgenAnsatt(NavIdent veilederIdent) {
         boolean abacResponse = veilarbPep.harVeilederTilgangTilEgenAnsatt(veilederIdent);
-        if (FeatureToggle.brukPoaoTilgang(unleashService)) {
+        if (FeatureToggle.brukPoaoTilgang(defaultUnleash)) {
             Decision decision = poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt();
             if (decision.isPermit() != abacResponse) {
                 secureLog.warn("Diff between abac and poao-tilgang for veileder: " + veilederIdent + ". Poao-tilgang decision is: " + decision.isPermit());

@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.postgres;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
@@ -11,7 +12,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,9 +40,9 @@ public class BrukerRepositoryV2Test {
     @BeforeEach
     public void setUp() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
-        final UnleashService unleashService = mock(UnleashService.class);
+        final DefaultUnleash defaultUnleash = mock(DefaultUnleash.class);
         final KodeverkService kodeverkService = mock(KodeverkService.class);
-        when(unleashService.isEnabled(anyString())).thenReturn(true);
+        when(defaultUnleash.isEnabled(anyString())).thenReturn(true);
         this.brukerRepositoryV2 = new BrukerRepositoryV2(db, kodeverkService);
         this.pdlIdentRepository = new PdlIdentRepository(db);
         this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);

@@ -24,6 +24,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
+        <unleash.version>8.3.0</unleash.version>
     </properties>
 
     <build>
@@ -214,9 +215,9 @@
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
-            <artifactId>feature-toggle</artifactId>
-            <version>${common.version}</version>
+            <groupId>io.getunleash</groupId>
+            <artifactId>unleash-client-java</artifactId>
+            <version>${unleash.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.navikt.common-java-modules</groupId>

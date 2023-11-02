@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.domene;
 
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.abac.Pep;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
@@ -9,7 +10,6 @@ import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,10 +39,10 @@ public class SensurerBrukerTest {
 
     @Before
     public void setUp() {
-        UnleashService unleashService = mock(UnleashService.class);
-        when(unleashService.isEnabled(anyString())).thenReturn(true);
+        DefaultUnleash defaultUnleash = mock(DefaultUnleash.class);
+        when(defaultUnleash.isEnabled(anyString())).thenReturn(true);
         poaoTilgangWrapper = mock(PoaoTilgangWrapper.class);
-        authService = new AuthService(pep, poaoTilgangWrapper, azureAdOnBehalfOfTokenClient, unleashService, mock(MetricsClient.class));
+        authService = new AuthService(pep, poaoTilgangWrapper, azureAdOnBehalfOfTokenClient, defaultUnleash, mock(MetricsClient.class));
     }
 
     @Test

@@ -1,10 +1,10 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,14 +18,14 @@ public class HovedIndekserer {
     private final OpensearchIndexer opensearchIndexer;
     private final OpensearchAdminService opensearchAdminService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-    private final UnleashService unleashService;
+    private final DefaultUnleash defaultUnleash;
 
     public void hovedIndeksering() {
         log.info("Starter jobb: hovedindeksering");
         List<AktorId> brukereSomMaOppdateres;
         brukereSomMaOppdateres = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
 
-        if (brukAvAliasIndeksering(unleashService)) {
+        if (brukAvAliasIndeksering(defaultUnleash)) {
             aliasBasertHovedIndeksering(brukereSomMaOppdateres);
         } else {
             opensearchIndexer.oppdaterAlleBrukereIOpensearch(brukereSomMaOppdateres);
