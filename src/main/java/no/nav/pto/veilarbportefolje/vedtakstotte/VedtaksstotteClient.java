@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import lombok.SneakyThrows;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -11,6 +12,7 @@ import no.nav.pto.veilarbportefolje.kodeverk.CacheConfig;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakApiDto;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.springframework.cache.annotation.Cacheable;
 
@@ -50,9 +52,10 @@ public class VedtaksstotteClient {
     @SneakyThrows
     public Optional<Siste14aVedtakApiDto> hentSiste14aVedtak(Fnr fnr) {
         Request request = new Request.Builder()
-                .url(UrlUtils.joinPaths(baseURL, "/api/siste-14a-vedtak?fnr=" + fnr))
+                .url(UrlUtils.joinPaths(baseURL, "/api/v2/hent-siste-14a-vedtak"))
                 .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())
                 .header("Authorization", "Bearer " + machineToMachineTokenSupplier.get())
+                .post(RequestBody.create(JsonUtils.toJson(new Siste14aVedtakRequest(fnr)), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

@@ -211,11 +211,6 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public AktorClient aktorClientSystem() {
-        return mock(AktorClient.class);
-    }
-
-    @Bean
     public DefaultUnleash defaultUnleash() {
         final DefaultUnleash mock = mock(DefaultUnleash.class);
         when(mock.isEnabled(anyString())).thenReturn(true);
@@ -346,4 +341,6 @@ public class ApplicationConfigTest {
         when(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(new Decision.Deny("", ""));
         return poaoTilgangWrapper;
     }
+
+
 }

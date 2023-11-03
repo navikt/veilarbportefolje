@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.admin;
+package no.nav.pto.veilarbportefolje.admin.v1;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +69,7 @@ public class AdminController {
     }
 
     @PutMapping("/indeks/bruker/fnr")
+    @Deprecated(forRemoval = true)
     public String indeks(@RequestParam String fnr) {
         sjekkTilgangTilAdmin();
         String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
@@ -77,6 +78,7 @@ public class AdminController {
     }
 
     @PutMapping("/indeks/bruker")
+    @Deprecated(forRemoval = true)
     public String indeksAktoerId(@RequestParam String aktorId) {
         sjekkTilgangTilAdmin();
         opensearchIndexer.indekser(AktorId.of(aktorId));
@@ -184,6 +186,7 @@ public class AdminController {
     }
 
     @PutMapping("/pdl/lastInnDataFraPdl")
+    @Deprecated(forRemoval = true)
     public String lastInnPDLBrukerData(@RequestParam String fnr) {
         sjekkTilgangTilAdmin();
         String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
