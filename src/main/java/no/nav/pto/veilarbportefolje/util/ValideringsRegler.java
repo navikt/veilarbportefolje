@@ -5,7 +5,8 @@ import io.vavr.control.Validation;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRequest;
+import no.nav.pto.veilarbportefolje.arbeidsliste.v1.ArbeidslisteRequest;
+import no.nav.pto.veilarbportefolje.arbeidsliste.v2.ArbeidslisteV2Request;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -114,6 +115,19 @@ public class ValideringsRegler {
                                 validateKategori(arbeidsliste.getKategori())
                         )
                         .ap(ArbeidslisteDTO::of);
+    }
+
+    public static Validation<Seq<String>, ArbeidslisteDTO> validerArbeidslisteV2(ArbeidslisteV2Request arbeidsliste, boolean redigering) {
+
+        return Validation
+                    .combine(
+                            validerFnr(arbeidsliste.fnr().get()),
+                            valid(arbeidsliste.overskrift()),
+                            validateKommentar(arbeidsliste.kommentar()),
+                            validateFrist(arbeidsliste.frist(), redigering),
+                            validateKategori(arbeidsliste.kategori())
+                    )
+                    .ap(ArbeidslisteDTO::of);
     }
 
     private static Validation<String, Timestamp> validateFrist(String frist, boolean redigering) {

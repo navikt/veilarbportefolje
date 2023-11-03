@@ -37,7 +37,7 @@ public class VedtaksstotteClientTest {
                     }
                 """;
 
-        givenThat(get(urlEqualTo("/api/siste-14a-vedtak?fnr=" + fnr)).willReturn(aResponse().withStatus(200).withBody(responseBody)));
+        givenThat(post(urlEqualTo("/api/v2/hent-siste-14a-vedtak")).withRequestBody(equalToJson("{\"fnr\":\""+fnr+"\"}")).willReturn(aResponse().withStatus(200).withBody(responseBody)));
 
         Optional<Siste14aVedtakApiDto> response = client.hentSiste14aVedtak(fnr);
 

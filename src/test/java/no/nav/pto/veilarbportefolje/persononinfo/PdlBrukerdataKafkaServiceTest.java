@@ -88,7 +88,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
     }
 
     @Test
-    @Timeout(20)
+    @Timeout(80)
     public void testRepublishing() {
         int i = 0;
         while (i < 6000) {

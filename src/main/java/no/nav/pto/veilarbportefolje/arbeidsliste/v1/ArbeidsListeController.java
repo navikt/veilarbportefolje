@@ -1,10 +1,13 @@
-package no.nav.pto.veilarbportefolje.arbeidsliste;
+package no.nav.pto.veilarbportefolje.arbeidsliste.v1;
 
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
