@@ -55,7 +55,7 @@ public class VedtaksstotteClient {
                 .url(UrlUtils.joinPaths(baseURL, "/api/v2/hent-siste-14a-vedtak"))
                 .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())
                 .header("Authorization", "Bearer " + machineToMachineTokenSupplier.get())
-				.post(RequestBody.create(JsonUtils.toJson(new Siste14aVedtakRequest(fnr)), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(JsonUtils.toJson(new Siste14aVedtakRequest(fnr)), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

@@ -21,34 +21,34 @@ import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraCont
 @RequestMapping("/api/v2/admin")
 @RequiredArgsConstructor
 public class AdminV2Controller {
-	private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
-			"prod-fss" : "dev-fss", "pto", "pto-admin").toString();
-	private final AktorClient aktorClient;
-	private final OpensearchIndexer opensearchIndexer;
-	private final AuthContextHolder authContextHolder;
+    private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
+            "prod-fss" : "dev-fss", "pto", "pto-admin").toString();
+    private final AktorClient aktorClient;
+    private final OpensearchIndexer opensearchIndexer;
+    private final AuthContextHolder authContextHolder;
 
-	@PutMapping("/indeks/bruker/fnr")
-	public String indeks(@RequestBody AdminIndeksBrukerRequest adminIndeksBrukerRequest) {
-		sjekkTilgangTilAdmin();
-		String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(adminIndeksBrukerRequest.fnr().get())).get();
-		opensearchIndexer.indekser(AktorId.of(aktorId));
-		return "Indeksering fullfort";
-	}
+    @PutMapping("/indeks/bruker/fnr")
+    public String indeks(@RequestBody AdminIndeksBrukerRequest adminIndeksBrukerRequest) {
+        sjekkTilgangTilAdmin();
+        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(adminIndeksBrukerRequest.fnr().get())).get();
+        opensearchIndexer.indekser(AktorId.of(aktorId));
+        return "Indeksering fullfort";
+    }
 
-	@PutMapping("/indeks/bruker")
-	public String indeksAktoerId(@RequestBody AdminIndexAktorRequest adminIndexAktorRequest) {
-		sjekkTilgangTilAdmin();
-		opensearchIndexer.indekser(adminIndexAktorRequest.aktorId());
-		return "Indeksering fullfort";
-	}
+    @PutMapping("/indeks/bruker")
+    public String indeksAktoerId(@RequestBody AdminIndexAktorRequest adminIndexAktorRequest) {
+        sjekkTilgangTilAdmin();
+        opensearchIndexer.indekser(adminIndexAktorRequest.aktorId());
+        return "Indeksering fullfort";
+    }
 
-	private void sjekkTilgangTilAdmin() {
-		boolean erSystemBrukerFraAzure = erSystemkallFraAzureAd(authContextHolder);
-		boolean erPtoAdmin = PTO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
+    private void sjekkTilgangTilAdmin() {
+        boolean erSystemBrukerFraAzure = erSystemkallFraAzureAd(authContextHolder);
+        boolean erPtoAdmin = PTO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
 
-		if (erPtoAdmin && erSystemBrukerFraAzure) {
-			return;
-		}
-		throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-	}
+        if (erPtoAdmin && erSystemBrukerFraAzure) {
+            return;
+        }
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
 }
