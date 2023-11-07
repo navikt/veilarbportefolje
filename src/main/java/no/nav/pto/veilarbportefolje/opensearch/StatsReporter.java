@@ -42,6 +42,9 @@ public class StatsReporter implements MeterBinder {
 
         Gauge.builder("veilarbportefolje.opensearch.difference_in_versions", this::compareOpensearchVersions)
                 .register(meterRegistry);
+
+        Gauge.builder("veilarbportefolje.hovedindeksering.slett_data_for_barn_over_18.last_run", this::slettDataForBarnOver18LastRun)
+                .register(meterRegistry);
     }
 
     private Long indeksererAktivitetEndringerLastRun() {
@@ -51,7 +54,7 @@ public class StatsReporter implements MeterBinder {
         if (sisteKjorte != null) {
             return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
         }
-        return null;
+        return -1L;
     }
 
     private Long deaktiverUtgatteUtdanningsAktivteterLastRun() {
@@ -61,7 +64,7 @@ public class StatsReporter implements MeterBinder {
         if (sisteKjorte != null) {
             return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
         }
-        return null;
+        return -1L;
     }
 
     private Long indeksererYtelseEndringerLastRun() {
@@ -71,7 +74,17 @@ public class StatsReporter implements MeterBinder {
         if (sisteKjorte != null) {
             return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
         }
-        return null;
+        return -1L;
+    }
+
+    private Long slettDataForBarnOver18LastRun() {
+        String sql = "SELECT last_success FROM SCHEDULED_TASKS WHERE task_name = :taskName::varchar";
+        Timestamp sisteKjorte = namedDb.queryForObject(sql, new MapSqlParameterSource("taskName", slettDataForBarnSomErOver18), Timestamp.class);
+
+        if (sisteKjorte != null) {
+            return TimeUnit.MILLISECONDS.toHours(calculateTimeElapsed(sisteKjorte.toInstant()).toMillis());
+        }
+        return -1L;
     }
 
     private Integer compareOpensearchVersions() {

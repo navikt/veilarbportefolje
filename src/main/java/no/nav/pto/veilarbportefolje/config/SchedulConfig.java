@@ -37,6 +37,8 @@ public class SchedulConfig {
     public static String indeksererYtelseEndringer = "indekserer_ytelse_endringer";
     public static String indeksererAktivitetEndringer = "indekserer_aktivitet_endringer";
 
+    public static String slettDataForBarnSomErOver18 = "slett_data_for_barn_som_er_over_18";
+
     @Autowired
     public SchedulConfig(DataSource dataSource,
                          HovedIndekserer hovedIndekserer,
@@ -70,7 +72,7 @@ public class SchedulConfig {
                             executionOperations.reschedule(executionComplete, Instant.now().plus(5, MINUTES));
                         }))
                         .execute((instance, ctx) -> hovedIndekserer.hovedIndeksering()),
-                Tasks.recurring("slett_data_for_barn_som_er_over_18", Schedules.daily(LocalTime.of(1, 1)))
+                Tasks.recurring(slettDataForBarnSomErOver18, Schedules.daily(LocalTime.of(1, 1)))
                         .execute((instance, ctx) -> barnUnder18AarService.slettDataForBarnSomErOver18())
         );
     }
