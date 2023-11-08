@@ -63,6 +63,17 @@ public class TiltakService {
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
 
+        // Vi har hatt tilfeller før der vi ikke har mottatt slettemelding for tiltaksaktiviteter av type ENKELAMO med status AKTUELL.
+        // I følge funksjonell beskrivelse fra Arena er det kun tiltak av type AMO med status AKTUELL som skal sendes til oss.
+        // Arena har implementert fiks for dette, men siden dette er vanskelig å verifisere i test forsøker vi å fange opp eventuelle
+        // nye tilfeller ved å logge dette.
+        if ("AKTUELL".equals(innhold.getDeltakerStatus()) && "ENKELAMO".equals(innhold.getTiltakstype())) {
+            log.warn("Mottok aktivitet med tiltakstype ENKELAMO og status AKTUELL. Slike aktiviteter skal ikke lagres/vises i porteføljen, " +
+                    "ref. https://confluence.adeo.no/display/ARENA/Arena+-+Tjeneste+Kafka+-+Aktiviteter#ArenaTjenesteKafkaAktiviteter-Funksjonellbeskrivelse. " +
+                    "Dette skyldes mest trolig en feil i logikken for replikering av data fra Arena. Ta kontakt med Team Arena for å finne ut av hvorfor vi mottar disse."
+            );
+        }
+
         if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
             secureLog.info("Sletter tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
             tiltakRepositoryV3.deleteTiltaksaktivitetFraArena(innhold.getAktivitetid());
