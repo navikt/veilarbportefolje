@@ -50,6 +50,42 @@ public class ArbeidslisteRepositoryV2Test {
             .setKommentar("Arbeidsliste 2 kommentar")
             .setKategori(Arbeidsliste.Kategori.GRONN);
 
+    private final ArbeidslisteDTO data3 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101015"))
+            .setAktorId(AktorId.of("22222224"))
+            .setVeilederId(VeilederId.of("X11112"))
+            .setNavKontorForArbeidsliste("0000")
+            .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+            .setKommentar("Arbeidsliste 3 kommentar")
+            .setOverskrift("Arbeidsliste tittel")
+            .setKategori(Arbeidsliste.Kategori.GRONN);
+
+    private final ArbeidslisteDTO utenKommentarData = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101012"))
+            .setAktorId(AktorId.of("22222225"))
+            .setVeilederId(VeilederId.of("X11112"))
+            .setNavKontorForArbeidsliste("0000")
+            .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+            .setKommentar(null)
+            .setKategori(Arbeidsliste.Kategori.GRONN)
+            .setOverskrift("Dette er en overskrift");
+
+    private final ArbeidslisteDTO utenTittelData = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101013"))
+            .setAktorId(AktorId.of("22222226"))
+            .setVeilederId(VeilederId.of("X11112"))
+            .setNavKontorForArbeidsliste("0000")
+            .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+            .setKommentar("Arbeidsliste 3 kommentar")
+            .setKategori(Arbeidsliste.Kategori.GRONN)
+            .setOverskrift(null);
+
+    private final ArbeidslisteDTO utenTittelellerKommentarData = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101014"))
+            .setAktorId(AktorId.of("22222227"))
+            .setVeilederId(VeilederId.of("X11112"))
+            .setNavKontorForArbeidsliste("0000")
+            .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+            .setKommentar(null)
+            .setKategori(Arbeidsliste.Kategori.GRONN)
+            .setOverskrift(null);
+
     @BeforeEach
     public void setUp() {
         jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
@@ -64,6 +100,91 @@ public class ArbeidslisteRepositoryV2Test {
         Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktorId());
         assertThat(result.isSuccess()).isTrue();
         assertThat(data.getVeilederId()).isEqualTo(result.get().getSistEndretAv());
+    }
+
+    @Test
+    public void skalKunneHenteArbeidslisteUtenTittelEllerKommentar() {
+        insertArbeidslister();
+        Try<Arbeidsliste> resultUtenTittelData = repo.retrieveArbeidsliste(utenTittelData.getAktorId());
+        assertThat(resultUtenTittelData.isSuccess()).isTrue();
+
+        Try<Arbeidsliste> resultUtenKommentarData = repo.retrieveArbeidsliste(utenKommentarData.getAktorId());
+        assertThat(resultUtenKommentarData.isSuccess()).isTrue();
+
+        Try<Arbeidsliste> resultUtenTittelEllerKommentarData = repo.retrieveArbeidsliste(utenTittelellerKommentarData.getAktorId());
+        assertThat(resultUtenTittelEllerKommentarData.isSuccess()).isTrue();
+
+    }
+
+    @Test
+    public void skalKunneOppdatereArbeidslisterUtenKommentar() {
+        insertArbeidslister();
+
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data3.getAktorId());
+        assertThat(data3.kommentar).isEqualTo(result.get().getKommentar());
+
+        Try<Arbeidsliste> updatedArbeidslisteUtenKommentar = result
+                .map(arbeidsliste -> new ArbeidslisteDTO(data3.fnr)
+                        .setAktorId(data3.getAktorId())
+                        .setVeilederId(data3.getVeilederId())
+                        .setEndringstidspunkt(data3.getEndringstidspunkt())
+                        .setFrist(data3.getFrist())
+                        .setKommentar(null)
+                        .setKategori(Arbeidsliste.Kategori.BLA))
+                .flatMap(oppdatertArbeidsliste -> repo.updateArbeidsliste(oppdatertArbeidsliste))
+                .flatMap(arbeidslisteDTO -> repo.retrieveArbeidsliste(arbeidslisteDTO.getAktorId()));
+
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(updatedArbeidslisteUtenKommentar.get().getKommentar()).isEqualTo(null);
+
+    }
+
+    @Test
+    public void skalKunneOppdatereArbeidslisterUtenTittel() {
+        insertArbeidslister();
+
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data3.getAktorId());
+        assertThat(data3.overskrift).isEqualTo(result.get().getOverskrift());
+
+        Try<Arbeidsliste> updatedArbeidslisteUtenTittel = result
+                .map(arbeidsliste -> new ArbeidslisteDTO(data3.fnr)
+                        .setAktorId(data3.getAktorId())
+                        .setVeilederId(data3.getVeilederId())
+                        .setEndringstidspunkt(data3.getEndringstidspunkt())
+                        .setFrist(data3.getFrist())
+                        .setKommentar(data3.getKommentar())
+                        .setOverskrift(null)
+                        .setKategori(Arbeidsliste.Kategori.BLA))
+                .flatMap(oppdatertArbeidsliste -> repo.updateArbeidsliste(oppdatertArbeidsliste))
+                .flatMap(arbeidslisteDTO -> repo.retrieveArbeidsliste(arbeidslisteDTO.getAktorId()));
+
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(updatedArbeidslisteUtenTittel.get().getOverskrift()).isEqualTo(null);
+    }
+
+    @Test
+    public void skalKunneOppdatereArbeidslisterUtenKommentarEllerTittel() {
+        insertArbeidslister();
+
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data3.getAktorId());
+        assertThat(data3.kommentar).isEqualTo(result.get().getKommentar());
+        assertThat(data3.overskrift).isEqualTo(result.get().getOverskrift());
+
+        Try<Arbeidsliste> updatedArbeidslisteUtenKommentarEllerTittel = result
+                .map(arbeidsliste -> new ArbeidslisteDTO(data3.fnr)
+                        .setAktorId(data3.getAktorId())
+                        .setVeilederId(data3.getVeilederId())
+                        .setEndringstidspunkt(data3.getEndringstidspunkt())
+                        .setFrist(data3.getFrist())
+                        .setKommentar(null)
+                        .setOverskrift(null)
+                        .setKategori(Arbeidsliste.Kategori.BLA))
+                .flatMap(oppdatertArbeidsliste -> repo.updateArbeidsliste(oppdatertArbeidsliste))
+                .flatMap(arbeidslisteDTO -> repo.retrieveArbeidsliste(arbeidslisteDTO.getAktorId()));
+
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(updatedArbeidslisteUtenKommentarEllerTittel.get().getKommentar()).isEqualTo(null);
+        assertThat(updatedArbeidslisteUtenKommentarEllerTittel.get().getOverskrift()).isEqualTo(null);
     }
 
     @Test
@@ -199,8 +320,16 @@ public class ArbeidslisteRepositoryV2Test {
     private void insertArbeidslister() {
         Try<ArbeidslisteDTO> result1 = repo.insertArbeidsliste(data);
         Try<ArbeidslisteDTO> result2 = repo.insertArbeidsliste(data2);
+        Try<ArbeidslisteDTO> result3 = repo.insertArbeidsliste(data3);
+        Try<ArbeidslisteDTO> resultUtenTittelData = repo.insertArbeidsliste(utenTittelData);
+        Try<ArbeidslisteDTO> resultUtenKommentarData = repo.insertArbeidsliste(utenKommentarData);
+        Try<ArbeidslisteDTO> resultUtenTittelEllerKommentarData = repo.insertArbeidsliste(utenTittelellerKommentarData);
         assertThat(result1.isSuccess()).isTrue();
         assertThat(result2.isSuccess()).isTrue();
+        assertThat(result3.isSuccess()).isTrue();
+        assertThat(resultUtenTittelData.isSuccess()).isTrue();
+        assertThat(resultUtenKommentarData.isSuccess()).isTrue();
+        assertThat(resultUtenTittelEllerKommentarData.isSuccess()).isTrue();
     }
 
     private void insertOppfolgingsInformasjon() {
