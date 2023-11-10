@@ -15,8 +15,10 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Siste14aVedtakRequest;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -30,6 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -176,8 +179,9 @@ public class OppfolgingService {
     public boolean hentUnderOppfolging(AktorId aktorId) {
         Fnr fnr = aktorClient.hentFnr(aktorId);
         Request request = new Request.Builder()
-                .url(joinPaths(veilarboppfolgingUrl, "/api/v2/oppfolging?fnr=" + fnr))
+                .url(joinPaths(veilarboppfolgingUrl, "/api/v3/hent-oppfolging"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + systemUserTokenProvider.get())
+                .post(RequestBody.create(JsonUtils.toJson(new UnderOppfolgingRequest(fnr)), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
