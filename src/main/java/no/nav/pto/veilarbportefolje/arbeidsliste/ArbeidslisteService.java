@@ -107,7 +107,6 @@ public class ArbeidslisteService {
         });
 
         return validerteFnrs.size() == fnrs.size() ? valid(validerteFnrs) : invalid(format("Veileder har ikke tilgang til alle brukerene i listen: %s", fnrs));
-
     }
 
     public Validation<String, Fnr> erVeilederForBruker(String fnr) {

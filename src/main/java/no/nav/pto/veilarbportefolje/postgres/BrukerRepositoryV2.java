@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
@@ -68,7 +67,8 @@ public class BrukerRepositoryV2 {
                                ARB.OVERSKRIFT                   as ARB_OVERSKRIFT,
                                ARB.FRIST                        as ARB_FRIST,
                                ARB.KATEGORI                     as ARB_KATEGORI,
-                               ARB.NAV_KONTOR_FOR_ARBEIDSLISTE as ARB_NAV_KONTOR_FOR_ARBEIDSLISTE
+                               ARB.NAV_KONTOR_FOR_ARBEIDSLISTE as ARB_NAV_KONTOR_FOR_ARBEIDSLISTE,
+                               HL.ID, HL.frist, HL.kommentar, HL.opprettet_dato
                         FROM OPPFOLGING_DATA OD
                                 inner join aktive_identer ai on OD.aktoerid = ai.aktorid
                                  left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
@@ -82,6 +82,7 @@ public class BrukerRepositoryV2 {
                                  LEFT JOIN BRUKER_REGISTRERING BR on BR.AKTOERID = ai.aktorid
                                  LEFT JOIN YTELSE_STATUS_FOR_BRUKER YB on YB.AKTOERID = ai.aktorid
                                  LEFT JOIN ENDRING_I_REGISTRERING EiR on EiR.AKTOERID = ai.aktorid
+                                 LEFT JOIN HUSKELAPP HL on HL.fnr = ai.fnr
                                  where ai.aktorid = ANY (?::varchar[])
                         """,
                 (ResultSet rs) -> {
@@ -165,7 +166,7 @@ public class BrukerRepositoryV2 {
                 .setAapordinerutlopsdato(aapordinerutlopsdato)
                 .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)));
 
-		setBrukersSituasjon(bruker, rs);
+        setBrukersSituasjon(bruker, rs);
 
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));
         if (arbeidslisteTidspunkt != null) {
@@ -205,18 +206,19 @@ public class BrukerRepositoryV2 {
         return bruker;
     }
 
-	@SneakyThrows
-	private void setBrukersSituasjon(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
-		boolean harOppdatertBrukersSituasjon = rs.getString(ENDRET_BRUKERS_SITUASJON) != null && rs.getTimestamp(BRUKERS_SITUASJON_SIST_ENDRET) != null;
-		LocalDate oppdatertBrukesSituasjonSistEndretDato = toLocalDate(rs.getTimestamp(BRUKERS_SITUASJON_SIST_ENDRET));
-		LocalDate brukesSituasjonOpprettetDato = toLocalDate(rs.getTimestamp(REGISTRERING_OPPRETTET));
-		boolean harEndretSituasjonEttterRegistrering = harOppdatertBrukersSituasjon && isEqualOrAfterWithNullCheck(oppdatertBrukesSituasjonSistEndretDato, brukesSituasjonOpprettetDato);
-		String brukersSisteSituasjon = harEndretSituasjonEttterRegistrering ? rs.getString(ENDRET_BRUKERS_SITUASJON) : rs.getString(BRUKERS_SITUASJON);
-		LocalDate brukersSituasjonSistEndretDato = harEndretSituasjonEttterRegistrering ? oppdatertBrukesSituasjonSistEndretDato : brukesSituasjonOpprettetDato;
+    @SneakyThrows
+    private void setBrukersSituasjon(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
+        boolean harOppdatertBrukersSituasjon = rs.getString(ENDRET_BRUKERS_SITUASJON) != null && rs.getTimestamp(BRUKERS_SITUASJON_SIST_ENDRET) != null;
+        LocalDate oppdatertBrukesSituasjonSistEndretDato = toLocalDate(rs.getTimestamp(BRUKERS_SITUASJON_SIST_ENDRET));
+        LocalDate brukesSituasjonOpprettetDato = toLocalDate(rs.getTimestamp(REGISTRERING_OPPRETTET));
+        boolean harEndretSituasjonEttterRegistrering = harOppdatertBrukersSituasjon && isEqualOrAfterWithNullCheck(oppdatertBrukesSituasjonSistEndretDato, brukesSituasjonOpprettetDato);
+        String brukersSisteSituasjon = harEndretSituasjonEttterRegistrering ? rs.getString(ENDRET_BRUKERS_SITUASJON) : rs.getString(BRUKERS_SITUASJON);
+        LocalDate brukersSituasjonSistEndretDato = harEndretSituasjonEttterRegistrering ? oppdatertBrukesSituasjonSistEndretDato : brukesSituasjonOpprettetDato;
 
-		oppfolgingsBruker.setBrukers_situasjon(brukersSisteSituasjon);
-		oppfolgingsBruker.setBrukers_situasjon_sist_endret(brukersSituasjonSistEndretDato);
-	}
+        oppfolgingsBruker.setBrukers_situasjon(brukersSisteSituasjon);
+        oppfolgingsBruker.setBrukers_situasjon_sist_endret(brukersSituasjonSistEndretDato);
+    }
+
     @SneakyThrows
     private OppfolgingsBruker flettInnOppfolgingsbruker(OppfolgingsBruker bruker, String utkast14aStatus, ResultSet rs) {
         String fnr = rs.getString(FODSELSNR_ARENA);
@@ -275,9 +277,9 @@ public class BrukerRepositoryV2 {
                 .setHarUkjentBosted(rs.getBoolean("harUkjentBosted"))
                 .setBostedSistOppdatert(toLocalDateOrNull(rs.getString("bostedSistOppdatert")))
                 .setSikkerhetstiltak(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_type") : null)
-                .setSikkerhetstiltak_gyldig_fra(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_gyldigfra"): null)
-                .setSikkerhetstiltak_gyldig_til(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_gyldigtil"): null)
-                .setSikkerhetstiltak_beskrivelse(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_beskrivelse"): null)
+                .setSikkerhetstiltak_gyldig_fra(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_gyldigfra") : null)
+                .setSikkerhetstiltak_gyldig_til(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_gyldigtil") : null)
+                .setSikkerhetstiltak_beskrivelse(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_beskrivelse") : null)
                 .setDiskresjonskode(rs.getString("diskresjonkode"));
     }
 

@@ -107,6 +107,8 @@ public class Bruker {
 
     LocalDate brukersSituasjonSistEndret;
 
+    Huskelapp huskelapp;
+
 
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
@@ -199,7 +201,8 @@ public class Bruker {
                 .setAvvik14aVedtak(bruker.getAvvik14aVedtak())
                 .setBarnUnder18AarData(bruker.getBarn_under_18_aar())
                 .setEnsligeForsorgereOvergangsstonad(bruker.getEnslige_forsorgere_overgangsstonad())
-                .setBrukersSituasjonSistEndret(bruker.getBrukers_situasjon_sist_endret());
+                .setBrukersSituasjonSistEndret(bruker.getBrukers_situasjon_sist_endret())
+                .setHuskelapp(bruker.getHuskelapp());
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {
