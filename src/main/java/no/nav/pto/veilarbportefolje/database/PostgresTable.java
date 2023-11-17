@@ -105,6 +105,19 @@ public class PostgresTable {
         public static final String NAV_KONTOR_FOR_ARBEIDSLISTE = "NAV_KONTOR_FOR_ARBEIDSLISTE";
     }
 
+    public static final class HUSKELAPP {
+		public static final String TABLE_NAME = "HUSKELAPP";
+		public static final String ID = "ID";
+		public static final String FNR = "FNR";
+		public static final String ENHET_ID = "ENHET_ID";
+		public static final String OPPRETTET_AV_VEILEDER = "OPPRETTET_AV_VEILEDER";
+		public static final String OPPRETTET_DATO = "OPPRETTET_DATO";
+		public static final String FRIST = "FRIST";
+		public static final String KOMMENTAR = "KOMMENTAR";
+		public static final String STATUS = "STATUS";
+		public static final String ARKIVERT_DATO = "ARKIVERT_DATO";
+	}
+
     public static final class UTKAST_14A_STATUS {
         public static final String TABLE_NAME = "UTKAST_14A_STATUS";
 

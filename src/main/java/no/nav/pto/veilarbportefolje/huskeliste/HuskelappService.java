@@ -30,9 +30,9 @@ public class HuskelappService {
     public HuskelappRepository huskelappRepository;
 
 
-    public UUID opprettHuskelapp(HuskelappInputDto inputDto) {
+    public UUID opprettHuskelapp(HuskelappInputDto inputDto, VeilederId veilederId) {
         try {
-            UUID huskelappId = huskelappRepository.opprettHuskelapp(inputDto);
+            UUID huskelappId = huskelappRepository.opprettHuskelapp(inputDto, veilederId);
 
             arkivereHuskelapp(huskelappId);
 
@@ -65,7 +65,7 @@ public class HuskelappService {
 
     public HuskelappOutputDto hentHuskelapp(Fnr brukerFnr) {
         try {
-            return huskelappRepository.hentHuskelapp(brukerFnr);
+            return huskelappRepository.hentHuskelapp(brukerFnr).orElse(null);
         } catch (Exception e) {
             secureLog.error("Kunne ikke hente huskelapp for bruker: " + brukerFnr);
             throw new RuntimeException("Kunne ikke hente huskelapp", e);

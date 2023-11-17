@@ -44,7 +44,7 @@ public class HuskelappController {
             boolean erVeilederForBruker = validerErVeilederForBruker(inputDto.brukerFnr());
 
             if (erVeilederForBruker && authService.harVeilederTilgangTilEnhet(veilederId.getValue(), inputDto.enhetId().get())) {
-                UUID uuid = huskelappService.opprettHuskelapp(inputDto);
+                UUID uuid = huskelappService.opprettHuskelapp(inputDto, veilederId);
 
                 return ResponseEntity.status(HttpStatus.CREATED).body(uuid);
 

@@ -7,7 +7,7 @@ CREATE TABLE Huskelapp
     opprettet_dato        timestamp            default now(),
     frist                 timestamp,
     kommentar             varchar(200),
-    status                int         not null default 0,
+    status                varchar(10),
     arkivert_dato         timestamp
 );
 
