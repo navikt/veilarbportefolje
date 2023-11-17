@@ -47,6 +47,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -3765,10 +3766,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void test_sortering_huskelapp() {
-        var huskelapp1 = new Huskelapp("Ringe fastlege", LocalDate.now().plusDays(20));
-        var huskelapp2 = new Huskelapp("Ha et møte", LocalDate.now().plusDays(30));
-        var huskelapp3 = new Huskelapp("Snakke om idrett", LocalDate.now().plusMonths(2));
-        var huskelapp4 = new Huskelapp("Huddle med Julie", LocalDate.now().plusDays(3));
+        var huskelapp1 = new Huskelapp("dddd Ringe fastlege", LocalDate.now().plusDays(20));
+        var huskelapp2 = new Huskelapp("bbbb Ha et møte", LocalDate.now().plusDays(30));
+        var huskelapp3 = new Huskelapp("aaaa Snakke om idrett", LocalDate.now().plusMonths(2));
+        var huskelapp4 = new Huskelapp("cccc Huddle med Julie", LocalDate.now().plusDays(3));
 
         var bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3792,6 +3793,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
                 .setHuskelapp(huskelapp3);
 
         var bruker4 = new OppfolgingsBruker()
@@ -3799,6 +3801,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
                 .setHuskelapp(huskelapp4);
 
         var bruker5 = new OppfolgingsBruker()
@@ -3808,7 +3811,14 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
-        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5);
+        var bruker6 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET);
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5, bruker6);
 
         skrivBrukereTilTestindeks(liste);
 
@@ -3829,12 +3839,27 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(6);
-        assertTrue(response.getBrukere().get(0).getFnr().equals(bruker1.getFnr()));
-        assertTrue(response.getBrukere().get(1).getFnr().equals(bruker1.getFnr()));
-        assertTrue(response.getBrukere().get(2).getFnr().equals(bruker1.getFnr()));
-        assertTrue(response.getBrukere().get(3).getFnr().equals(bruker1.getFnr()));
-        assertTrue(response.getBrukere().get(4).getFnr().equals(bruker1.getFnr()));
-        assertTrue(response.getBrukere().get(5).getFnr().equals(bruker1.getFnr()));
+        assertEquals(response.getBrukere().get(0).getFnr(), bruker3.getFnr());
+        assertEquals(response.getBrukere().get(1).getFnr(), bruker2.getFnr());
+        assertEquals(response.getBrukere().get(2).getFnr(), bruker4.getFnr());
+        assertEquals(response.getBrukere().get(3).getFnr(), bruker1.getFnr());
+
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "huskelapp_frist",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(6);
+        assertEquals(response.getBrukere().get(0).getFnr(), bruker4.getFnr());
+        assertEquals(response.getBrukere().get(1).getFnr(), bruker1.getFnr());
+        assertEquals(response.getBrukere().get(2).getFnr(), bruker2.getFnr());
+        assertEquals(response.getBrukere().get(3).getFnr(), bruker3.getFnr());
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {

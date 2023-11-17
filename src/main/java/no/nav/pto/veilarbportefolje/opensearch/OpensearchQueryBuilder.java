@@ -450,8 +450,8 @@ public class OpensearchQueryBuilder {
                     sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger, filtervalg);
             case "brukersSituasjonSistEndret" -> searchSourceBuilder.sort("brukers_situasjon_sist_endret", order);
             case "huskelapp_frist" -> sorterHuskelappFrist(searchSourceBuilder, order);
-            case "huskelapp" -> sorterHuskelappEksistere(searchSourceBuilder, order);
-            case "huskelapp_kommentar" -> sorterHuskelappKommentar(searchSourceBuilder, order);
+            case "huskelapp" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
+            case "huskelapp_kommentar" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
@@ -590,14 +590,15 @@ public class OpensearchQueryBuilder {
     }
 
     private static void sorterHuskelappFrist(SearchSourceBuilder builder, SortOrder order) {
+        String missingValuesReturn = order == SortOrder.ASC ? "2.55230829E14" : "-1";
         String expresion = """
                 if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
                     return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
                 }
                 else {
-                  return 0;
+                  return %s;
                 }
-                """;
+                """.formatted(missingValuesReturn);
         Script script = new Script(expresion);
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
@@ -621,11 +622,10 @@ public class OpensearchQueryBuilder {
 
     private static void sorterHuskelappKommentar(SearchSourceBuilder builder, SortOrder order) {
         String expresion = """
-                if (doc.containsKey('huskelapp') && !doc['huskelapp.kommentar'].empty) {
-                    return doc['huskelapp.kommentar'].substring(0,10);
-                }
-                else {
-                  return 0;
+                if (doc.containsKey('huskelapp.kommentar') && !doc['huskelapp.kommentar'].empty) {
+                    return doc['huskelapp.kommentar'];
+                }else{
+                    return '';
                 }
                 """;
         Script script = new Script(expresion);
