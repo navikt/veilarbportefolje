@@ -37,7 +37,7 @@ public class HuskelappService {
             arkivereHuskelapp(huskelappId);
 
             AktorId aktorId = hentAktorId(inputDto.brukerFnr()).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
-            opensearchIndexerV2.updateHuskelapp(aktorId, new Huskelapp(huskelappId.toString(), inputDto.kommentar(), inputDto.frist()));
+            opensearchIndexerV2.updateHuskelapp(aktorId, new Huskelapp(inputDto.kommentar(), inputDto.frist()));
 
             return huskelappId;
         } catch (Exception e) {

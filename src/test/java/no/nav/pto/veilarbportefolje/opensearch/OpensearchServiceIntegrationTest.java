@@ -3765,10 +3765,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void test_sortering_huskelapp() {
-        var huskelapp1 = new Huskelapp("1-1-1-1", "Ringe fastlege", LocalDate.now().plusDays(20));
-        var huskelapp2 = new Huskelapp("1-1-1-1", "Ha et møte", LocalDate.now().plusDays(30));
-        var huskelapp3 = new Huskelapp("1-1-1-1", "Snakke om idrett", LocalDate.now().plusMonths(2));
-        var huskelapp4 = new Huskelapp("1-1-1-1", "Huddle med Julie", LocalDate.now().plusDays(3));
+        var huskelapp1 = new Huskelapp("Ringe fastlege", LocalDate.now().plusDays(20));
+        var huskelapp2 = new Huskelapp("Ha et møte", LocalDate.now().plusDays(30));
+        var huskelapp3 = new Huskelapp("Snakke om idrett", LocalDate.now().plusMonths(2));
+        var huskelapp4 = new Huskelapp("Huddle med Julie", LocalDate.now().plusDays(3));
 
         var bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
