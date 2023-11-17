@@ -2726,7 +2726,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(5, "19"), new BarnUnder18AarData(11, null)));;
+                .setBarn_under_18_aar(List.of(new BarnUnder18AarData(5, "19"), new BarnUnder18AarData(11, null)));
+        ;
 
         var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5);
 
@@ -2885,7 +2886,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                         assertThat(bruker.getBarnUnder18AarData()).isEqualTo(null);
                     } else if (bruker.getFnr().equals(brukerIngenListe.getFnr())) {
                         assertThat(bruker.getBarnUnder18AarData()).isEqualTo(null);
-                    } else if (bruker.getFnr().equals(brukerMedKode19.getFnr())){
+                    } else if (bruker.getFnr().equals(brukerMedKode19.getFnr())) {
                         assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(2);
                     }
                 }
@@ -3086,8 +3087,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         when(pep.harVeilederTilgangTilKode6(any())).thenReturn(false);
         when(pep.harVeilederTilgangTilKode7(any())).thenReturn(false);
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("",""));
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("",""));
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
 
         skrivBrukereTilTestindeks(liste);
 
@@ -3172,7 +3173,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         when(pep.harVeilederTilgangTilKode6(any())).thenReturn(false);
         when(pep.harVeilederTilgangTilKode7(any())).thenReturn(true);
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("",""));
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Decision.Permit.INSTANCE);
 
         skrivBrukereTilTestindeks(liste);
@@ -3353,106 +3354,106 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     @Test
     public void test_sorting_barn_under_18_veileder_ikke_tilgang_6_7() {
 
-            var bruker1B = new OppfolgingsBruker()
-                    .setFnr(randomFnr().toString())
-                    .setAktoer_id(randomAktorId().toString())
-                    .setOppfolging(true)
-                    .setVeileder_id(TEST_VEILEDER_0)
-                    .setNy_for_veileder(false)
-                    .setEnhet_id(TEST_ENHET)
-                    .setBarn_under_18_aar(List.of(
-                            new BarnUnder18AarData(5, "7")));
+        var bruker1B = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(List.of(
+                        new BarnUnder18AarData(5, "7")));
 
-            var bruker2barnU = new OppfolgingsBruker()
-                    .setFnr(randomFnr().toString())
-                    .setAktoer_id(randomAktorId().toString())
-                    .setOppfolging(true)
-                    .setVeileder_id(TEST_VEILEDER_0)
-                    .setEnhet_id(TEST_ENHET)
-                    .setBarn_under_18_aar(List.of(
-                            new BarnUnder18AarData(8, null),
-                            new BarnUnder18AarData(1, null),
-                            new BarnUnder18AarData(1, "6")));
+        var bruker2barnU = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(List.of(
+                        new BarnUnder18AarData(8, null),
+                        new BarnUnder18AarData(1, null),
+                        new BarnUnder18AarData(1, "6")));
 
-            var bruker3barn1m6_2U = new OppfolgingsBruker()
-                    .setFnr(randomFnr().toString())
-                    .setAktoer_id(randomAktorId().toString())
-                    .setOppfolging(true)
-                    .setVeileder_id(TEST_VEILEDER_0)
-                    .setNy_for_veileder(false)
-                    .setEnhet_id(TEST_ENHET)
-                    .setBarn_under_18_aar(List.of(
-                            new BarnUnder18AarData(1, null),
-                            new BarnUnder18AarData(12, null),
-                            new BarnUnder18AarData(4, null),
-                            new BarnUnder18AarData(4, null),
-                            new BarnUnder18AarData(14, null)));
-
-
-            var bruker4barn = new OppfolgingsBruker()
-                    .setFnr(randomFnr().toString())
-                    .setAktoer_id(randomAktorId().toString())
-                    .setOppfolging(true)
-                    .setVeileder_id(TEST_VEILEDER_0)
-                    .setNy_for_veileder(false)
-                    .setEnhet_id(TEST_ENHET)
-                    .setBarn_under_18_aar(List.of(
-                            new BarnUnder18AarData(5, "7"),
-                            new BarnUnder18AarData(11, null),
-                            new BarnUnder18AarData(4, "6"),
-                            new BarnUnder18AarData(1, "7")));
+        var bruker3barn1m6_2U = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(List.of(
+                        new BarnUnder18AarData(1, null),
+                        new BarnUnder18AarData(12, null),
+                        new BarnUnder18AarData(4, null),
+                        new BarnUnder18AarData(4, null),
+                        new BarnUnder18AarData(14, null)));
 
 
-            var bruker5barn = new OppfolgingsBruker()
-                    .setFnr(randomFnr().toString())
-                    .setAktoer_id(randomAktorId().toString())
-                    .setOppfolging(true)
-                    .setVeileder_id(TEST_VEILEDER_0)
-                    .setNy_for_veileder(false)
-                    .setEnhet_id(TEST_ENHET)
-                    .setBarn_under_18_aar(List.of(
-                            new BarnUnder18AarData(5, "7"),
-                            new BarnUnder18AarData(11, null),
-                            new BarnUnder18AarData(1, null),
-                            new BarnUnder18AarData(4, null),
-                            new BarnUnder18AarData(14, null),
-                            new BarnUnder18AarData(11, "7"),
-                            new BarnUnder18AarData(4, "6")));
-
-            var bruker6b = new OppfolgingsBruker()
-                    .setFnr(randomFnr().toString())
-                    .setAktoer_id(randomAktorId().toString())
-                    .setOppfolging(true)
-                    .setVeileder_id(TEST_VEILEDER_0)
-                    .setNy_for_veileder(false)
-                    .setEnhet_id(TEST_ENHET)
-                    .setBarn_under_18_aar(List.of(
-                            new BarnUnder18AarData(5, "7"),
-                            new BarnUnder18AarData(11, "7"),
-                            new BarnUnder18AarData(1, null),
-                            new BarnUnder18AarData(13, null),
-                            new BarnUnder18AarData(3, null),
-                            new BarnUnder18AarData(11, "7"),
-                            new BarnUnder18AarData(11, "7"),
-                            new BarnUnder18AarData(4, "6")));
+        var bruker4barn = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(List.of(
+                        new BarnUnder18AarData(5, "7"),
+                        new BarnUnder18AarData(11, null),
+                        new BarnUnder18AarData(4, "6"),
+                        new BarnUnder18AarData(1, "7")));
 
 
-            var brukerTomListe = new OppfolgingsBruker()
-                    .setFnr(randomFnr().toString())
-                    .setAktoer_id(randomAktorId().toString())
-                    .setOppfolging(true)
-                    .setVeileder_id(TEST_VEILEDER_0)
-                    .setNy_for_veileder(false)
-                    .setEnhet_id(TEST_ENHET)
-                    .setBarn_under_18_aar(emptyList());
+        var bruker5barn = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(List.of(
+                        new BarnUnder18AarData(5, "7"),
+                        new BarnUnder18AarData(11, null),
+                        new BarnUnder18AarData(1, null),
+                        new BarnUnder18AarData(4, null),
+                        new BarnUnder18AarData(14, null),
+                        new BarnUnder18AarData(11, "7"),
+                        new BarnUnder18AarData(4, "6")));
 
-            var brukerIngenListe = new OppfolgingsBruker()
-                    .setFnr(randomFnr().toString())
-                    .setAktoer_id(randomAktorId().toString())
-                    .setOppfolging(true)
-                    .setVeileder_id(TEST_VEILEDER_0)
-                    .setNy_for_veileder(false)
-                    .setEnhet_id(TEST_ENHET);
+        var bruker6b = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(List.of(
+                        new BarnUnder18AarData(5, "7"),
+                        new BarnUnder18AarData(11, "7"),
+                        new BarnUnder18AarData(1, null),
+                        new BarnUnder18AarData(13, null),
+                        new BarnUnder18AarData(3, null),
+                        new BarnUnder18AarData(11, "7"),
+                        new BarnUnder18AarData(11, "7"),
+                        new BarnUnder18AarData(4, "6")));
+
+
+        var brukerTomListe = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setBarn_under_18_aar(emptyList());
+
+        var brukerIngenListe = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET);
 
         var brukerMedBarnMedKode19 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3469,39 +3470,39 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                         new BarnUnder18AarData(4, "19"),
                         new BarnUnder18AarData(2, "19")));
 
-            var liste = List.of(bruker1B, bruker2barnU, bruker3barn1m6_2U, bruker4barn, bruker5barn, bruker6b, brukerTomListe, brukerIngenListe, brukerMedBarnMedKode19);
+        var liste = List.of(bruker1B, bruker2barnU, bruker3barn1m6_2U, bruker4barn, bruker5barn, bruker6b, brukerTomListe, brukerIngenListe, brukerMedBarnMedKode19);
 
 
-            when(pep.harVeilederTilgangTilKode6(any())).thenReturn(false);
-            when(pep.harVeilederTilgangTilKode7(any())).thenReturn(false);
-            when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("",""));
-            when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("",""));
+        when(pep.harVeilederTilgangTilKode6(any())).thenReturn(false);
+        when(pep.harVeilederTilgangTilKode7(any())).thenReturn(false);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
 
-            skrivBrukereTilTestindeks(liste);
+        skrivBrukereTilTestindeks(liste);
 
-            pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
 
-            Filtervalg filterValg = new Filtervalg()
-                    .setFerdigfilterListe(List.of())
-                    .setBarnUnder18Aar(List.of(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR));
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setBarnUnder18Aar(List.of(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR));
 
-            BrukereMedAntall response = opensearchService.hentBrukere(
-                    TEST_ENHET,
-                    empty(),
-                    "ascending",
-                    "barn_under_18_aar",
-                    filterValg,
-                    null,
-                    null
-            );
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "barn_under_18_aar",
+                filterValg,
+                null,
+                null
+        );
 
-            assertThat(response.getAntall()).isEqualTo(5);
-            assertThat(response.getBrukere().get(0).getFnr()).isEqualTo(bruker4barn.getFnr());
-            assertThat(response.getBrukere().get(1).getFnr()).isEqualTo(bruker2barnU.getFnr());
-            assertThat(response.getBrukere().get(2).getFnr()).isEqualTo(bruker6b.getFnr());
-            assertThat(response.getBrukere().get(3).getFnr()).isEqualTo(bruker5barn.getFnr());
-            assertThat(response.getBrukere().get(4).getFnr()).isEqualTo(bruker3barn1m6_2U.getFnr());
+        assertThat(response.getAntall()).isEqualTo(5);
+        assertThat(response.getBrukere().get(0).getFnr()).isEqualTo(bruker4barn.getFnr());
+        assertThat(response.getBrukere().get(1).getFnr()).isEqualTo(bruker2barnU.getFnr());
+        assertThat(response.getBrukere().get(2).getFnr()).isEqualTo(bruker6b.getFnr());
+        assertThat(response.getBrukere().get(3).getFnr()).isEqualTo(bruker5barn.getFnr());
+        assertThat(response.getBrukere().get(4).getFnr()).isEqualTo(bruker3barn1m6_2U.getFnr());
     }
 
 
@@ -3760,6 +3761,80 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getBrukere().get(0).getFnr().equals(bruker1.getFnr()));
         assertThat(response.getBrukere().get(1).getFnr().equals(bruker5.getFnr()));
         assertThat(response.getBrukere().get(2).getFnr().equals(bruker3.getFnr()));
+    }
+
+    @Test
+    public void test_sortering_huskelapp() {
+        var huskelapp1 = new Huskelapp("1-1-1-1", "Ringe fastlege", LocalDate.now().plusDays(20));
+        var huskelapp2 = new Huskelapp("1-1-1-1", "Ha et møte", LocalDate.now().plusDays(30));
+        var huskelapp3 = new Huskelapp("1-1-1-1", "Snakke om idrett", LocalDate.now().plusMonths(2));
+        var huskelapp4 = new Huskelapp("1-1-1-1", "Huddle med Julie", LocalDate.now().plusDays(3));
+
+        var bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setHuskelapp(huskelapp1);
+
+        var bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setHuskelapp(huskelapp2);
+
+        var bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setHuskelapp(huskelapp3);
+
+        var bruker4 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setHuskelapp(huskelapp4);
+
+        var bruker5 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET);
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of());
+
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "huskelapp_kommentar",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(6);
+        assertTrue(response.getBrukere().get(0).getFnr().equals(bruker1.getFnr()));
+        assertTrue(response.getBrukere().get(1).getFnr().equals(bruker1.getFnr()));
+        assertTrue(response.getBrukere().get(2).getFnr().equals(bruker1.getFnr()));
+        assertTrue(response.getBrukere().get(3).getFnr().equals(bruker1.getFnr()));
+        assertTrue(response.getBrukere().get(4).getFnr().equals(bruker1.getFnr()));
+        assertTrue(response.getBrukere().get(5).getFnr().equals(bruker1.getFnr()));
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
