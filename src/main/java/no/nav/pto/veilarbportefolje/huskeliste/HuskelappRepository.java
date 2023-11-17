@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -27,19 +28,24 @@ public class HuskelappRepository {
         return null;
     }
 
+
     public HuskelappOutputDto hentHuskelapp(Fnr brukerFnr) {
         return null;
     }
 
-    public HuskelappOutputDto slettHuskelapp(String huskelappId) {
+    public Optional<HuskelappOutputDto> hentHuskelapp(UUID huskelappId) {
         return null;
     }
 
-    public HuskelappOutputDto oppdatereStatus(String huskelappId, HuskelappStatus status) {
+    public boolean slettHuskelapp(UUID huskelappId) {
+        return false;
+    }
+
+    public HuskelappOutputDto oppdatereStatus(UUID huskelappId, HuskelappStatus status) {
         return null;
     }
 
-    public HuskelappOutputDto oppdatereArkivertDato(String huskelappId) {
+    public HuskelappOutputDto oppdatereArkivertDato(UUID huskelappId) {
         return null;
     }
 }

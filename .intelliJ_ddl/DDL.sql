@@ -24,11 +24,12 @@ SET default_with_oids = false;
 -- Name: bruker_identer; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.bruker_identer (
-    person character varying(25) NOT NULL,
-    ident character varying(30) NOT NULL,
-    historisk boolean NOT NULL,
-    gruppe character varying(30) NOT NULL
+CREATE TABLE public.bruker_identer
+(
+    person    character varying(25) NOT NULL,
+    ident     character varying(30) NOT NULL,
+    historisk boolean               NOT NULL,
+    gruppe    character varying(30) NOT NULL
 );
 
 
@@ -37,26 +38,28 @@ CREATE TABLE public.bruker_identer (
 --
 
 CREATE VIEW public.aktive_identer AS
- SELECT bi_a.ident AS aktorid,
-    bi_f.ident AS fnr
-   FROM (public.bruker_identer bi_a
-     JOIN public.bruker_identer bi_f ON (((bi_a.person)::text = (bi_f.person)::text)))
-  WHERE (((bi_a.gruppe)::text = 'AKTORID'::text) AND (NOT bi_a.historisk) AND ((bi_f.gruppe)::text = 'FOLKEREGISTERIDENT'::text) AND (NOT bi_f.historisk));
+SELECT bi_a.ident AS aktorid,
+       bi_f.ident AS fnr
+FROM (public.bruker_identer bi_a
+    JOIN public.bruker_identer bi_f ON (((bi_a.person)::text = (bi_f.person)::text)))
+WHERE (((bi_a.gruppe)::text = 'AKTORID'::text) AND (NOT bi_a.historisk) AND
+       ((bi_f.gruppe)::text = 'FOLKEREGISTERIDENT'::text) AND (NOT bi_f.historisk));
 
 
 --
 -- Name: aktiviteter; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.aktiviteter (
-    aktivitetid character varying(20) NOT NULL,
-    aktoerid character varying(20) NOT NULL,
-    aktivitettype character varying(255),
-    avtalt boolean DEFAULT true,
-    fradato timestamp without time zone,
-    tildato timestamp without time zone,
-    status character varying(255),
-    version bigint,
+CREATE TABLE public.aktiviteter
+(
+    aktivitetid         character varying(20) NOT NULL,
+    aktoerid            character varying(20) NOT NULL,
+    aktivitettype       character varying(255),
+    avtalt              boolean DEFAULT true,
+    fradato             timestamp without time zone,
+    tildato             timestamp without time zone,
+    status              character varying(255),
+    version             bigint,
     cv_kan_deles_status character varying(20),
     svarfrist_stilling_fra_nav date
 );
@@ -66,14 +69,15 @@ CREATE TABLE public.aktiviteter (
 -- Name: arbeidsliste; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.arbeidsliste (
-    aktoerid character varying(20) NOT NULL,
+CREATE TABLE public.arbeidsliste
+(
+    aktoerid                    character varying(20) NOT NULL,
     sist_endret_av_veilederident character varying(20),
-    kommentar character varying(1000),
-    frist timestamp without time zone,
-    endringstidspunkt timestamp without time zone,
-    overskrift character varying(500),
-    kategori character varying(10),
+    kommentar                   character varying(1000),
+    frist                       timestamp without time zone,
+    endringstidspunkt           timestamp without time zone,
+    overskrift                  character varying(500),
+    kategori                    character varying(10),
     nav_kontor_for_arbeidsliste character varying(24)
 );
 
@@ -82,9 +86,10 @@ CREATE TABLE public.arbeidsliste (
 -- Name: bruker_cv; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.bruker_cv (
-    aktoerid character varying(20) NOT NULL,
-    har_delt_cv boolean DEFAULT false NOT NULL,
+CREATE TABLE public.bruker_cv
+(
+    aktoerid      character varying(20) NOT NULL,
+    har_delt_cv   boolean DEFAULT false NOT NULL,
     cv_eksisterer boolean DEFAULT false NOT NULL,
     siste_melding_mottatt timestamp without time zone
 );
@@ -94,28 +99,29 @@ CREATE TABLE public.bruker_cv (
 -- Name: bruker_data; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.bruker_data (
-    freg_ident character varying(30) NOT NULL,
-    fornavn character varying(90),
-    mellomnavn character varying(90),
-    etternavn character varying(90),
-    kjoenn character varying(5),
-    er_doed boolean,
-    foedselsdato date,
-    foedeland character varying(10),
-    talespraaktolk character varying(20),
-    tegnspraaktolk character varying(20),
-    tolkbehovsistoppdatert date,
-    bydelsnummer character varying(10),
-    kommunenummer character varying(10),
-    utenlandskadresse character varying(10),
-    bostedsistoppdatert date,
-    diskresjonkode character varying(3),
-    sikkerhetstiltak_type character varying(20),
+CREATE TABLE public.bruker_data
+(
+    freg_ident                 character varying(30) NOT NULL,
+    fornavn                    character varying(90),
+    mellomnavn                 character varying(90),
+    etternavn                  character varying(90),
+    kjoenn                     character varying(5),
+    er_doed                    boolean,
+    foedselsdato               date,
+    foedeland                  character varying(10),
+    talespraaktolk             character varying(20),
+    tegnspraaktolk             character varying(20),
+    tolkbehovsistoppdatert     date,
+    bydelsnummer               character varying(10),
+    kommunenummer              character varying(10),
+    utenlandskadresse          character varying(10),
+    bostedsistoppdatert        date,
+    diskresjonkode             character varying(3),
+    sikkerhetstiltak_type      character varying(20),
     sikkerhetstiltak_beskrivelse character varying(255),
     sikkerhetstiltak_gyldigfra date,
     sikkerhetstiltak_gyldigtil date,
-    harukjentbosted boolean DEFAULT false
+    harukjentbosted            boolean DEFAULT false
 );
 
 
@@ -123,9 +129,10 @@ CREATE TABLE public.bruker_data (
 -- Name: bruker_data_barn; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.bruker_data_barn (
-    barn_ident character varying(30) NOT NULL,
-    barn_foedselsdato date NOT NULL,
+CREATE TABLE public.bruker_data_barn
+(
+    barn_ident        character varying(30) NOT NULL,
+    barn_foedselsdato date                  NOT NULL,
     barn_diskresjonkode character varying(3)
 );
 
@@ -134,8 +141,9 @@ CREATE TABLE public.bruker_data_barn (
 -- Name: bruker_profilering; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.bruker_profilering (
-    aktoerid character varying(20) NOT NULL,
+CREATE TABLE public.bruker_profilering
+(
+    aktoerid             character varying(20) NOT NULL,
     profilering_resultat character varying(40),
     profilering_tidspunkt timestamp without time zone
 );
@@ -145,12 +153,13 @@ CREATE TABLE public.bruker_profilering (
 -- Name: bruker_registrering; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.bruker_registrering (
-    aktoerid character varying(20) NOT NULL,
-    brukers_situasjon character varying(40),
+CREATE TABLE public.bruker_registrering
+(
+    aktoerid           character varying(20) NOT NULL,
+    brukers_situasjon  character varying(40),
     registrering_opprettet timestamp without time zone,
-    utdanning character varying(35),
-    utdanning_bestatt character varying(15),
+    utdanning          character varying(35),
+    utdanning_bestatt  character varying(15),
     utdanning_godkjent character varying(15)
 );
 
@@ -159,7 +168,8 @@ CREATE TABLE public.bruker_registrering (
 -- Name: bruker_statsborgerskap; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.bruker_statsborgerskap (
+CREATE TABLE public.bruker_statsborgerskap
+(
     freg_ident character varying(30) NOT NULL,
     statsborgerskap character varying(20),
     gyldig_fra date,
@@ -171,14 +181,15 @@ CREATE TABLE public.bruker_statsborgerskap (
 -- Name: brukertiltak; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.brukertiltak (
+CREATE TABLE public.brukertiltak
+(
     aktivitetid character varying(25) NOT NULL,
     aktoerid character varying(20),
     personid character varying(20),
     tiltakskode character varying(10),
-    tildato timestamp without time zone,
-    fradato timestamp without time zone,
-    version bigint
+    tildato  timestamp without time zone,
+    fradato  timestamp without time zone,
+    version  bigint
 );
 
 
@@ -186,14 +197,15 @@ CREATE TABLE public.brukertiltak (
 -- Name: brukertiltak_v2; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.brukertiltak_v2 (
+CREATE TABLE public.brukertiltak_v2
+(
     aktivitetid character varying(25) NOT NULL,
     aktoerid character varying(20),
     tiltakskode character varying(10),
-    tildato timestamp without time zone,
-    fradato timestamp without time zone,
-    version bigint,
-    status character varying(255)
+    tildato  timestamp without time zone,
+    fradato  timestamp without time zone,
+    version  bigint,
+    status   character varying(255)
 );
 
 
@@ -201,8 +213,9 @@ CREATE TABLE public.brukertiltak_v2 (
 -- Name: dialog; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.dialog (
-    aktoerid character varying(20) NOT NULL,
+CREATE TABLE public.dialog
+(
+    aktoerid      character varying(20) NOT NULL,
     venter_pa_bruker timestamp without time zone,
     venter_pa_nav timestamp without time zone
 );
@@ -212,8 +225,9 @@ CREATE TABLE public.dialog (
 -- Name: endring_i_registrering; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.endring_i_registrering (
-    aktoerid character varying(20) NOT NULL,
+CREATE TABLE public.endring_i_registrering
+(
+    aktoerid          character varying(20) NOT NULL,
     brukers_situasjon character varying(40),
     brukers_situasjon_sist_endret timestamp without time zone
 );
@@ -223,12 +237,13 @@ CREATE TABLE public.endring_i_registrering (
 -- Name: enslige_forsorgere; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.enslige_forsorgere (
-    vedtakid bigint NOT NULL,
+CREATE TABLE public.enslige_forsorgere
+(
+    vedtakid    bigint                NOT NULL,
     personident character varying(30) NOT NULL,
     stonadstype integer,
     vedtaksresultat integer,
-    oppdatert timestamp without time zone DEFAULT now()
+    oppdatert   timestamp without time zone DEFAULT now()
 );
 
 
@@ -236,7 +251,8 @@ CREATE TABLE public.enslige_forsorgere (
 -- Name: enslige_forsorgere_aktivitet_type; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.enslige_forsorgere_aktivitet_type (
+CREATE TABLE public.enslige_forsorgere_aktivitet_type
+(
     id integer NOT NULL,
     aktivitet_type character varying(100) NOT NULL
 );
@@ -266,9 +282,10 @@ ALTER SEQUENCE public.enslige_forsorgere_aktivitet_type_id_seq OWNED BY public.e
 -- Name: enslige_forsorgere_barn; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.enslige_forsorgere_barn (
+CREATE TABLE public.enslige_forsorgere_barn
+(
     vedtakid bigint,
-    fnr character varying(11),
+    fnr      character varying(11),
     termindato date
 );
 
@@ -277,10 +294,11 @@ CREATE TABLE public.enslige_forsorgere_barn (
 -- Name: enslige_forsorgere_periode; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.enslige_forsorgere_periode (
-    vedtakid bigint,
-    fra_dato timestamp without time zone,
-    til_dato timestamp without time zone,
+CREATE TABLE public.enslige_forsorgere_periode
+(
+    vedtakid    bigint,
+    fra_dato    timestamp without time zone,
+    til_dato    timestamp without time zone,
     periodetype integer,
     aktivitetstype integer
 );
@@ -290,7 +308,8 @@ CREATE TABLE public.enslige_forsorgere_periode (
 -- Name: enslige_forsorgere_stonad_type; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.enslige_forsorgere_stonad_type (
+CREATE TABLE public.enslige_forsorgere_stonad_type
+(
     id integer NOT NULL,
     stonad_type character varying(100) NOT NULL
 );
@@ -320,7 +339,8 @@ ALTER SEQUENCE public.enslige_forsorgere_stonad_type_id_seq OWNED BY public.ensl
 -- Name: enslige_forsorgere_vedtaksperiode_type; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.enslige_forsorgere_vedtaksperiode_type (
+CREATE TABLE public.enslige_forsorgere_vedtaksperiode_type
+(
     id integer NOT NULL,
     periode_type character varying(100) NOT NULL
 );
@@ -350,7 +370,8 @@ ALTER SEQUENCE public.enslige_forsorgere_vedtaksperiode_type_id_seq OWNED BY pub
 -- Name: enslige_forsorgere_vedtaksresultat_type; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.enslige_forsorgere_vedtaksresultat_type (
+CREATE TABLE public.enslige_forsorgere_vedtaksresultat_type
+(
     id integer NOT NULL,
     vedtaksresultat_type character varying(100) NOT NULL
 );
@@ -380,17 +401,18 @@ ALTER SEQUENCE public.enslige_forsorgere_vedtaksresultat_type_id_seq OWNED BY pu
 -- Name: flyway_schema_history; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.flyway_schema_history (
-    installed_rank integer NOT NULL,
-    version character varying(50),
-    description character varying(200) NOT NULL,
-    type character varying(20) NOT NULL,
-    script character varying(1000) NOT NULL,
-    checksum integer,
-    installed_by character varying(100) NOT NULL,
-    installed_on timestamp without time zone DEFAULT now() NOT NULL,
-    execution_time integer NOT NULL,
-    success boolean NOT NULL
+CREATE TABLE public.flyway_schema_history
+(
+    installed_rank integer                                   NOT NULL,
+    version        character varying(50),
+    description    character varying(200)                    NOT NULL,
+    type           character varying(20)                     NOT NULL,
+    script         character varying(1000)                   NOT NULL,
+    checksum       integer,
+    installed_by   character varying(100)                    NOT NULL,
+    installed_on   timestamp without time zone DEFAULT now() NOT NULL,
+    execution_time integer                                   NOT NULL,
+    success        boolean                                   NOT NULL
 );
 
 
@@ -398,7 +420,8 @@ CREATE TABLE public.flyway_schema_history (
 -- Name: foreldreansvar; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.foreldreansvar (
+CREATE TABLE public.foreldreansvar
+(
     foresatt_ident character varying(30) NOT NULL,
     barn_ident character varying(30) NOT NULL
 );
@@ -408,14 +431,15 @@ CREATE TABLE public.foreldreansvar (
 -- Name: gruppe_aktiviter; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.gruppe_aktiviter (
-    moteplan_id character varying(25) NOT NULL,
+CREATE TABLE public.gruppe_aktiviter
+(
+    moteplan_id        character varying(25) NOT NULL,
     veiledningdeltaker_id character varying(25) NOT NULL,
-    aktoerid character varying(20),
+    aktoerid           character varying(20),
     moteplan_startdato timestamp without time zone,
     moteplan_sluttdato timestamp without time zone,
-    hendelse_id bigint,
-    aktiv boolean DEFAULT false
+    hendelse_id        bigint,
+    aktiv              boolean DEFAULT false
 );
 
 
@@ -441,18 +465,19 @@ CREATE TABLE public.huskelapp
 -- Name: kafka_consumer_record; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.kafka_consumer_record (
-    id bigint NOT NULL,
-    topic character varying(100) NOT NULL,
-    partition integer NOT NULL,
-    record_offset bigint NOT NULL,
-    retries integer DEFAULT 0 NOT NULL,
-    last_retry timestamp(6) without time zone,
-    key bytea,
-    value bytea,
-    headers_json text,
+CREATE TABLE public.kafka_consumer_record
+(
+    id            bigint                                                NOT NULL,
+    topic         character varying(100)                                NOT NULL,
+    partition     integer                                               NOT NULL,
+    record_offset bigint                                                NOT NULL,
+    retries       integer                     DEFAULT 0                 NOT NULL,
+    last_retry    timestamp(6) without time zone,
+    key           bytea,
+    value         bytea,
+    headers_json  text,
     record_timestamp bigint,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at    timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -472,7 +497,8 @@ CREATE SEQUENCE public.kafka_consumer_record_id_seq
 -- Name: lest_arena_hendelse_aktivitet; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.lest_arena_hendelse_aktivitet (
+CREATE TABLE public.lest_arena_hendelse_aktivitet
+(
     aktivitetid character varying(25) NOT NULL,
     hendelse_id bigint
 );
@@ -482,7 +508,8 @@ CREATE TABLE public.lest_arena_hendelse_aktivitet (
 -- Name: lest_arena_hendelse_ytelse; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.lest_arena_hendelse_ytelse (
+CREATE TABLE public.lest_arena_hendelse_ytelse
+(
     vedtakid character varying(25) NOT NULL,
     hendelse_id bigint
 );
@@ -492,8 +519,9 @@ CREATE TABLE public.lest_arena_hendelse_ytelse (
 -- Name: nom_skjerming; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.nom_skjerming (
-    fodselsnr character varying(33) NOT NULL,
+CREATE TABLE public.nom_skjerming
+(
+    fodselsnr   character varying(33) NOT NULL,
     er_skjermet boolean DEFAULT false,
     skjermet_fra timestamp without time zone,
     skjermet_til timestamp without time zone
@@ -504,13 +532,14 @@ CREATE TABLE public.nom_skjerming (
 -- Name: oppfolging_data; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.oppfolging_data (
-    aktoerid character varying(20) NOT NULL,
+CREATE TABLE public.oppfolging_data
+(
+    aktoerid   character varying(20) NOT NULL,
     veilederid character varying(20),
     oppfolging boolean DEFAULT false NOT NULL,
     ny_for_veileder boolean DEFAULT false NOT NULL,
-    manuell boolean DEFAULT false NOT NULL,
-    startdato timestamp without time zone
+    manuell    boolean DEFAULT false NOT NULL,
+    startdato  timestamp without time zone
 );
 
 
@@ -518,15 +547,16 @@ CREATE TABLE public.oppfolging_data (
 -- Name: oppfolgingsbruker_arena_v2; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.oppfolgingsbruker_arena_v2 (
-    fodselsnr character varying(33) NOT NULL,
+CREATE TABLE public.oppfolgingsbruker_arena_v2
+(
+    fodselsnr             character varying(33) NOT NULL,
     formidlingsgruppekode character varying(15),
-    iserv_fra_dato timestamp without time zone,
-    nav_kontor character varying(24),
+    iserv_fra_dato        timestamp without time zone,
+    nav_kontor            character varying(24),
     kvalifiseringsgruppekode character varying(15),
-    rettighetsgruppekode character varying(15),
-    hovedmaalkode character varying(30),
-    endret_dato timestamp without time zone
+    rettighetsgruppekode  character varying(15),
+    hovedmaalkode         character varying(30),
+    endret_dato           timestamp without time zone
 );
 
 
@@ -546,18 +576,19 @@ CREATE SEQUENCE public.pdl_person_seq
 -- Name: scheduled_tasks; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.scheduled_tasks (
-    task_name text NOT NULL,
-    task_instance text NOT NULL,
-    task_data bytea,
+CREATE TABLE public.scheduled_tasks
+(
+    task_name      text                     NOT NULL,
+    task_instance  text                     NOT NULL,
+    task_data      bytea,
     execution_time timestamp with time zone NOT NULL,
-    picked boolean NOT NULL,
-    picked_by text,
-    last_success timestamp with time zone,
-    last_failure timestamp with time zone,
+    picked         boolean                  NOT NULL,
+    picked_by      text,
+    last_success   timestamp with time zone,
+    last_failure   timestamp with time zone,
     consecutive_failures integer,
     last_heartbeat timestamp with time zone,
-    version bigint NOT NULL
+    version        bigint                   NOT NULL
 );
 
 
@@ -565,8 +596,9 @@ CREATE TABLE public.scheduled_tasks (
 -- Name: shedlock; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.shedlock (
-    name character varying(256) NOT NULL,
+CREATE TABLE public.shedlock
+(
+    name      character varying(256) NOT NULL,
     lock_until timestamp(3) without time zone,
     locked_at timestamp(3) without time zone,
     locked_by character varying(255)
@@ -577,12 +609,13 @@ CREATE TABLE public.shedlock (
 -- Name: siste_14a_vedtak; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.siste_14a_vedtak (
-    bruker_id character varying(20) NOT NULL,
-    hovedmal character varying(30),
-    innsatsgruppe character varying(40) NOT NULL,
-    fattet_dato timestamp with time zone NOT NULL,
-    fra_arena boolean NOT NULL
+CREATE TABLE public.siste_14a_vedtak
+(
+    bruker_id     character varying(20)    NOT NULL,
+    hovedmal      character varying(30),
+    innsatsgruppe character varying(40)    NOT NULL,
+    fattet_dato   timestamp with time zone NOT NULL,
+    fra_arena     boolean                  NOT NULL
 );
 
 
@@ -590,12 +623,13 @@ CREATE TABLE public.siste_14a_vedtak (
 -- Name: siste_endring; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.siste_endring (
-    aktoerid character varying(20) NOT NULL,
-    aktivitetid character varying(20),
+CREATE TABLE public.siste_endring
+(
+    aktoerid               character varying(20) NOT NULL,
+    aktivitetid            character varying(20),
     siste_endring_kategori character varying(45) NOT NULL,
     siste_endring_tidspunkt timestamp without time zone,
-    er_sett boolean DEFAULT false
+    er_sett                boolean DEFAULT false
 );
 
 
@@ -603,7 +637,8 @@ CREATE TABLE public.siste_endring (
 -- Name: tiltakkodeverket; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.tiltakkodeverket (
+CREATE TABLE public.tiltakkodeverket
+(
     kode character varying(10) NOT NULL,
     verdi character varying(80)
 );
@@ -613,15 +648,16 @@ CREATE TABLE public.tiltakkodeverket (
 -- Name: utkast_14a_status; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.utkast_14a_status (
-    aktoerid character varying(20) NOT NULL,
-    vedtakid character varying(20) NOT NULL,
-    vedtakstatus character varying(40),
-    innsatsgruppe character varying(40),
-    hovedmal character varying(30),
+CREATE TABLE public.utkast_14a_status
+(
+    aktoerid              character varying(20) NOT NULL,
+    vedtakid              character varying(20) NOT NULL,
+    vedtakstatus          character varying(40),
+    innsatsgruppe         character varying(40),
+    hovedmal              character varying(30),
     ansvarlig_veilderident character varying(20),
     ansvarlig_veildernavn character varying(60),
-    endret_tidspunkt timestamp without time zone
+    endret_tidspunkt      timestamp without time zone
 );
 
 
@@ -629,16 +665,17 @@ CREATE TABLE public.utkast_14a_status (
 -- Name: ytelse_status_for_bruker; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.ytelse_status_for_bruker (
-    aktoerid character varying(20) NOT NULL,
-    utlopsdato timestamp without time zone,
-    dagputlopuke integer,
-    permutlopuke integer,
-    aapmaxtiduke integer,
+CREATE TABLE public.ytelse_status_for_bruker
+(
+    aktoerid         character varying(20) NOT NULL,
+    utlopsdato       timestamp without time zone,
+    dagputlopuke     integer,
+    permutlopuke     integer,
+    aapmaxtiduke     integer,
     aapunntakdagerigjen integer,
-    ytelse character varying(40),
+    ytelse           character varying(40),
     antalldagerigjen integer,
-    endret_dato timestamp without time zone
+    endret_dato      timestamp without time zone
 );
 
 
@@ -646,21 +683,22 @@ CREATE TABLE public.ytelse_status_for_bruker (
 -- Name: ytelsesvedtak; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.ytelsesvedtak (
-    vedtaksid character varying(20) NOT NULL,
-    aktorid character varying(20) NOT NULL,
-    personid character varying(20),
-    ytelsestype character varying(15),
-    saksid character varying(30),
-    sakstypekode character varying(10),
-    rettighetstypekode character varying(10),
-    startdato timestamp without time zone,
-    utlopsdato timestamp without time zone,
-    antallukerigjen integer,
+CREATE TABLE public.ytelsesvedtak
+(
+    vedtaksid              character varying(20) NOT NULL,
+    aktorid                character varying(20) NOT NULL,
+    personid               character varying(20),
+    ytelsestype            character varying(15),
+    saksid                 character varying(30),
+    sakstypekode           character varying(10),
+    rettighetstypekode     character varying(10),
+    startdato              timestamp without time zone,
+    utlopsdato             timestamp without time zone,
+    antallukerigjen        integer,
     antallpermitteringsuker integer,
     antalldagerigjenunntak integer,
-    antalldagerigjen integer,
-    endret_dato timestamp without time zone
+    antalldagerigjen       integer,
+    endret_dato            timestamp without time zone
 );
 
 
@@ -668,28 +706,32 @@ CREATE TABLE public.ytelsesvedtak (
 -- Name: enslige_forsorgere_aktivitet_type id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.enslige_forsorgere_aktivitet_type ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_aktivitet_type_id_seq'::regclass);
+ALTER TABLE ONLY public.enslige_forsorgere_aktivitet_type
+    ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_aktivitet_type_id_seq'::regclass);
 
 
 --
 -- Name: enslige_forsorgere_stonad_type id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.enslige_forsorgere_stonad_type ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_stonad_type_id_seq'::regclass);
+ALTER TABLE ONLY public.enslige_forsorgere_stonad_type
+    ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_stonad_type_id_seq'::regclass);
 
 
 --
 -- Name: enslige_forsorgere_vedtaksperiode_type id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.enslige_forsorgere_vedtaksperiode_type ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_vedtaksperiode_type_id_seq'::regclass);
+ALTER TABLE ONLY public.enslige_forsorgere_vedtaksperiode_type
+    ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_vedtaksperiode_type_id_seq'::regclass);
 
 
 --
 -- Name: enslige_forsorgere_vedtaksresultat_type id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.enslige_forsorgere_vedtaksresultat_type ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_vedtaksresultat_type_id_seq'::regclass);
+ALTER TABLE ONLY public.enslige_forsorgere_vedtaksresultat_type
+    ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_vedtaksresultat_type_id_seq'::regclass);
 
 
 --
@@ -1124,7 +1166,7 @@ CREATE INDEX vedtaksresultat_enslige_forsorgere_vedtaksresultat_type_indx ON pub
 --
 
 ALTER TABLE ONLY public.enslige_forsorgere_barn
-    ADD CONSTRAINT enslige_forsorgere_barn_vedtakid_fkey FOREIGN KEY (vedtakid) REFERENCES public.enslige_forsorgere(vedtakid);
+    ADD CONSTRAINT enslige_forsorgere_barn_vedtakid_fkey FOREIGN KEY (vedtakid) REFERENCES public.enslige_forsorgere (vedtakid);
 
 
 --
@@ -1132,7 +1174,7 @@ ALTER TABLE ONLY public.enslige_forsorgere_barn
 --
 
 ALTER TABLE ONLY public.enslige_forsorgere_periode
-    ADD CONSTRAINT enslige_forsorgere_periode_aktivitetstype_fkey FOREIGN KEY (aktivitetstype) REFERENCES public.enslige_forsorgere_aktivitet_type(id);
+    ADD CONSTRAINT enslige_forsorgere_periode_aktivitetstype_fkey FOREIGN KEY (aktivitetstype) REFERENCES public.enslige_forsorgere_aktivitet_type (id);
 
 
 --
@@ -1140,7 +1182,7 @@ ALTER TABLE ONLY public.enslige_forsorgere_periode
 --
 
 ALTER TABLE ONLY public.enslige_forsorgere_periode
-    ADD CONSTRAINT enslige_forsorgere_periode_periodetype_fkey FOREIGN KEY (periodetype) REFERENCES public.enslige_forsorgere_vedtaksperiode_type(id);
+    ADD CONSTRAINT enslige_forsorgere_periode_periodetype_fkey FOREIGN KEY (periodetype) REFERENCES public.enslige_forsorgere_vedtaksperiode_type (id);
 
 
 --
@@ -1148,7 +1190,7 @@ ALTER TABLE ONLY public.enslige_forsorgere_periode
 --
 
 ALTER TABLE ONLY public.enslige_forsorgere_periode
-    ADD CONSTRAINT enslige_forsorgere_periode_vedtakid_fkey FOREIGN KEY (vedtakid) REFERENCES public.enslige_forsorgere(vedtakid);
+    ADD CONSTRAINT enslige_forsorgere_periode_vedtakid_fkey FOREIGN KEY (vedtakid) REFERENCES public.enslige_forsorgere (vedtakid);
 
 
 --
@@ -1156,7 +1198,7 @@ ALTER TABLE ONLY public.enslige_forsorgere_periode
 --
 
 ALTER TABLE ONLY public.enslige_forsorgere
-    ADD CONSTRAINT enslige_forsorgere_stonadstype_fkey FOREIGN KEY (stonadstype) REFERENCES public.enslige_forsorgere_stonad_type(id);
+    ADD CONSTRAINT enslige_forsorgere_stonadstype_fkey FOREIGN KEY (stonadstype) REFERENCES public.enslige_forsorgere_stonad_type (id);
 
 
 --
@@ -1164,7 +1206,7 @@ ALTER TABLE ONLY public.enslige_forsorgere
 --
 
 ALTER TABLE ONLY public.enslige_forsorgere
-    ADD CONSTRAINT enslige_forsorgere_vedtaksresultat_fkey FOREIGN KEY (vedtaksresultat) REFERENCES public.enslige_forsorgere_vedtaksresultat_type(id);
+    ADD CONSTRAINT enslige_forsorgere_vedtaksresultat_fkey FOREIGN KEY (vedtaksresultat) REFERENCES public.enslige_forsorgere_vedtaksresultat_type (id);
 
 
 --
@@ -1172,7 +1214,7 @@ ALTER TABLE ONLY public.enslige_forsorgere
 --
 
 ALTER TABLE ONLY public.foreldreansvar
-    ADD CONSTRAINT fk_barn_ident FOREIGN KEY (barn_ident) REFERENCES public.bruker_data_barn(barn_ident) ON UPDATE CASCADE;
+    ADD CONSTRAINT fk_barn_ident FOREIGN KEY (barn_ident) REFERENCES public.bruker_data_barn (barn_ident) ON UPDATE CASCADE;
 
 
 --
@@ -1180,7 +1222,7 @@ ALTER TABLE ONLY public.foreldreansvar
 --
 
 ALTER TABLE ONLY public.foreldreansvar
-    ADD CONSTRAINT fk_foresatt_ident FOREIGN KEY (foresatt_ident) REFERENCES public.bruker_data(freg_ident) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_foresatt_ident FOREIGN KEY (foresatt_ident) REFERENCES public.bruker_data (freg_ident) ON DELETE CASCADE;
 
 
 --
@@ -1188,7 +1230,7 @@ ALTER TABLE ONLY public.foreldreansvar
 --
 
 ALTER TABLE ONLY public.bruker_statsborgerskap
-    ADD CONSTRAINT fk_freg_ident FOREIGN KEY (freg_ident) REFERENCES public.bruker_data(freg_ident) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_freg_ident FOREIGN KEY (freg_ident) REFERENCES public.bruker_data (freg_ident) ON DELETE CASCADE;
 
 
 --

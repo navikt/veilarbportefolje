@@ -2,9 +2,9 @@ package no.nav.pto.veilarbportefolje.domene;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-import java.util.Date;
+import java.time.LocalDate;
 
-public record Huskelapp(String id, String kommentar, Date frist, Date opprettet_dato) {
+public record Huskelapp(String id, String kommentar, LocalDate frist) {
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public Huskelapp {
     }

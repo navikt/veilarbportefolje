@@ -1,9 +1,12 @@
 package no.nav.pto.veilarbportefolje.huskeliste;
 
+import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
-import no.nav.common.metrics.MetricsClient;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.Huskelapp;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskeliste.controller.dto.HuskelappInputDto;
 import no.nav.pto.veilarbportefolje.huskeliste.controller.dto.HuskelappOutputDto;
@@ -11,49 +14,101 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @RequiredArgsConstructor
 @Service
 public class HuskelappService {
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final MetricsClient metricsClient;
+    private final AktorClient aktorClient;
 
 
     public HuskelappRepository huskelappRepository;
 
 
     public UUID opprettHuskelapp(HuskelappInputDto inputDto) {
-        //db
-        //opensearch
-        return null;
+        try {
+            UUID huskelappId = huskelappRepository.opprettHuskelapp(inputDto);
+
+            arkivereHuskelapp(huskelappId);
+
+            AktorId aktorId = hentAktorId(inputDto.brukerFnr()).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+            opensearchIndexerV2.updateHuskelapp(aktorId, new Huskelapp(huskelappId.toString(), inputDto.kommentar(), inputDto.frist()));
+
+            return huskelappId;
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke opprette huskelapp for fnr: " + inputDto.brukerFnr());
+            throw new RuntimeException("Kunne ikke opprette huskelapp", e);
+        }
     }
 
     public List<HuskelappOutputDto> hentHuskelapp(VeilederId veilederId, EnhetId enhetId) {
-        return huskelappRepository.hentHuskelapp(enhetId, veilederId);
-    }
-
-    public HuskelappOutputDto hentHuskelapp(Fnr brukerFnr, VeilederId) {
-        boolean erVeilederForBruker = validerErVeilederForBruker(brukerFnr);
-
-        if (erVeilederForBruker) {
-            return huskelappRepository.hentHuskelapp(brukerFnr);
+        try {
+            return huskelappRepository.hentHuskelapp(enhetId, veilederId);
+        } catch (Exception e) {
+            throw new RuntimeException("Kunne ikke hente huskelapper", e);
         }
-
-        throw new RuntimeException("Veileder har ikke tilgang til å se huskelappen til bruker.");
     }
 
-    public HuskelappOutputDto slettHuskelapp(String huskelappId) {
-        return null;
+    public Optional<HuskelappOutputDto> hentHuskelapp(UUID huskelappId) {
+        try {
+            return huskelappRepository.hentHuskelapp(huskelappId);
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke hente huskelapp for id: " + huskelappId);
+            throw new RuntimeException("Kunne ikke hente huskelapp", e);
+        }
     }
 
-    public HuskelappOutputDto oppdatereStatus(String huskelappId, HuskelappStatus status) {
-        return null;
+    public HuskelappOutputDto hentHuskelapp(Fnr brukerFnr) {
+        try {
+            return huskelappRepository.hentHuskelapp(brukerFnr);
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke hente huskelapp for bruker: " + brukerFnr);
+            throw new RuntimeException("Kunne ikke hente huskelapp", e);
+        }
     }
 
-    public HuskelappOutputDto oppdatereArkivertDato(String huskelappId) {
-        return null;
+    public void slettHuskelapp(UUID huskelappId) {
+        try {
+            huskelappRepository.slettHuskelapp(huskelappId);
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke slette huskelapp med id: " + huskelappId);
+            throw new RuntimeException("Kunne ikke slette huskelapp", e);
+        }
     }
 
+    public void oppdatereStatus(UUID huskelappId, Fnr brukerFnr, HuskelappStatus status) {
+        try {
+            huskelappRepository.oppdatereStatus(huskelappId, status);
 
+            AktorId aktorId = hentAktorId(brukerFnr).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+            opensearchIndexerV2.sletteHuskeliste(aktorId);
+        } catch (Exception e) {
+            throw new RuntimeException("Kunne ikke oppdatere huskelapp", e);
+        }
+    }
+
+    private void arkivereHuskelapp(UUID huskelappId) {
+        try {
+            oppdatereArkivertDato(huskelappId);
+        } catch (Exception e) {
+            throw new RuntimeException("Kunne ikke arkivere huskelapp", e);
+        }
+    }
+
+    private void oppdatereArkivertDato(UUID huskelappId) {
+        try {
+            huskelappRepository.oppdatereArkivertDato(huskelappId);
+        } catch (Exception e) {
+            throw new RuntimeException("", e);
+        }
+    }
+
+    private Try<AktorId> hentAktorId(Fnr fnr) {
+        return Try.of(() -> aktorClient.hentAktorId(fnr));
+    }
 }
