@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.huskeliste;
+package no.nav.pto.veilarbportefolje.huskelapp;
 
 public enum HuskelappStatus {
     AKTIV,

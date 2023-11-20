@@ -103,7 +103,7 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void sletteHuskeliste(AktorId aktoerId) {
+    public void sletteHuskelapp(AktorId aktoerId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .nullField("huskelapp")

@@ -1,19 +1,16 @@
-package no.nav.pto.veilarbportefolje.huskeliste.controller;
+package no.nav.pto.veilarbportefolje.huskelapp.controller;
 
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.huskeliste.HuskelappService;
-import no.nav.pto.veilarbportefolje.huskeliste.controller.dto.HuskelappInputDto;
-import no.nav.pto.veilarbportefolje.huskeliste.controller.dto.HuskelappOutputDto;
-import no.nav.pto.veilarbportefolje.huskeliste.controller.dto.HuskelappUpdateStatusDto;
+import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.*;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.http.HttpStatus;
@@ -55,13 +52,13 @@ public class HuskelappController {
         }
     }
 
-    @PostMapping("/hent-huskelapp-paa-enhet")
-    public ResponseEntity<List<HuskelappOutputDto>> hentHuskelapp(EnhetId enhetId) {
+    @PostMapping("/hent-huskelapp-for-veileder")
+    public ResponseEntity<List<HuskelappOutputDto>> hentHuskelapp(@RequestBody HuskelappForVeilederRequest huskelappForVeilederRequest) {
         try {
-            VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
+            VeilederId veilederId = huskelappForVeilederRequest.veilederId();
 
-            if (authService.harVeilederTilgangTilEnhet(veilederId.getValue(), enhetId.get())) {
-                List<HuskelappOutputDto> huskelappOutputDtoList = huskelappService.hentHuskelapp(veilederId, enhetId);
+            if (authService.harVeilederTilgangTilEnhet(veilederId.getValue(), huskelappForVeilederRequest.enhetId().get())) {
+                List<HuskelappOutputDto> huskelappOutputDtoList = huskelappService.hentHuskelapp(veilederId, huskelappForVeilederRequest.enhetId());
                 return ResponseEntity.ok(huskelappOutputDtoList);
             }
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Veileder har ikke tilgang til å se huskelappen til bruker.");
@@ -71,10 +68,11 @@ public class HuskelappController {
 
     }
 
-    @PostMapping("/hent-huskelapp-paa-bruker")
-    public ResponseEntity<HuskelappOutputDto> hentHuskelapp(Fnr brukerFnr) {
+    @PostMapping("/hent-huskelapp-for-bruker")
+    public ResponseEntity<HuskelappOutputDto> hentHuskelapp(@RequestBody HuskelappForBrukerRequest huskelappForBrukerRequest) {
         try {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
+            Fnr brukerFnr = huskelappForBrukerRequest.fnr();
 
             boolean harVeilederTilgang = brukerServiceV2.hentNavKontor(brukerFnr)
                     .map(enhet -> authService.harVeilederTilgangTilEnhet(veilederId.getValue(), enhet.getValue()))

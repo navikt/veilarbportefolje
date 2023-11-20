@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.huskeliste;
+package no.nav.pto.veilarbportefolje.huskelapp;
 
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
@@ -8,8 +8,8 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.Huskelapp;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.huskeliste.controller.dto.HuskelappInputDto;
-import no.nav.pto.veilarbportefolje.huskeliste.controller.dto.HuskelappOutputDto;
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappInputDto;
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOutputDto;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
@@ -86,7 +86,7 @@ public class HuskelappService {
             huskelappRepository.oppdatereStatus(huskelappId, status);
 
             AktorId aktorId = hentAktorId(brukerFnr).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
-            opensearchIndexerV2.sletteHuskeliste(aktorId);
+            opensearchIndexerV2.sletteHuskelapp(aktorId);
         } catch (Exception e) {
             throw new RuntimeException("Kunne ikke oppdatere huskelapp", e);
         }

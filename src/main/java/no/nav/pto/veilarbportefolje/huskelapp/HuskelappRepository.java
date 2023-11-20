@@ -1,12 +1,12 @@
-package no.nav.pto.veilarbportefolje.huskeliste;
+package no.nav.pto.veilarbportefolje.huskelapp;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.huskeliste.controller.dto.HuskelappInputDto;
-import no.nav.pto.veilarbportefolje.huskeliste.controller.dto.HuskelappOutputDto;
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappInputDto;
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOutputDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 

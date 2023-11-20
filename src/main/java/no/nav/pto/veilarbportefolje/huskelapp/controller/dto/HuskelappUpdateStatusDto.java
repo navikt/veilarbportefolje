@@ -1,7 +1,7 @@
-package no.nav.pto.veilarbportefolje.huskeliste.controller.dto;
+package no.nav.pto.veilarbportefolje.huskelapp.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import no.nav.pto.veilarbportefolje.huskeliste.HuskelappStatus;
+import no.nav.pto.veilarbportefolje.huskelapp.HuskelappStatus;
 
 public record HuskelappUpdateStatusDto(String huskelappId, HuskelappStatus status) {
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
