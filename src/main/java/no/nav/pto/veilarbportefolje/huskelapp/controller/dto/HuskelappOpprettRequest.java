@@ -6,8 +6,8 @@ import no.nav.common.types.identer.Fnr;
 
 import java.time.LocalDate;
 
-public record HuskelappInputDto(Fnr brukerFnr, LocalDate frist, String kommentar, EnhetId enhetId) {
+public record HuskelappOpprettRequest(Fnr brukerFnr, LocalDate frist, String kommentar, EnhetId enhetId) {
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-    public HuskelappInputDto {
+    public HuskelappOpprettRequest {
     }
 }
