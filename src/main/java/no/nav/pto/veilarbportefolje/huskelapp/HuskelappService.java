@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.domene.Huskelapp;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappInputDto;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOutputDto;
+import no.nav.pto.veilarbportefolje.huskelapp.domain.HuskelappStatus;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
