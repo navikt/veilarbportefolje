@@ -16,13 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.ARKIVERT_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.FNR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.ID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.KOMMENTAR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.OPPRETTET_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.STATUS;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.TABLE_NAME;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
 
 @RequiredArgsConstructor
@@ -34,20 +28,23 @@ public class HuskelappRepository {
 
     public UUID opprettHuskelapp(HuskelappInputDto inputDto, VeilederId veilederId) {
         UUID huskelappId = UUID.randomUUID();
+        UUID endringsId = UUID.randomUUID();
         String sql = """
                 INSERT INTO HUSKELAPP (
-                    ID, FNR, ENHET_ID, OPPRETTET_AV_VEILEDER, OPPRETTET_DATO, FRIST, KOMMENTAR, STATUS
+                    endrings_id, huskelapp_id, FNR, ENHET_ID, endret_av_veileder, endret_dato, FRIST, KOMMENTAR, STATUS
                 )
                 VALUES (
                     ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?
                 )
                 """;
-        int rowsUpdated = db.update(sql, huskelappId, inputDto.brukerFnr(), inputDto.enhetId(), veilederId, inputDto.frist(), inputDto.kommentar(), HuskelappStatus.AKTIV);
+        int rowsUpdated = db.update(sql, endringsId, huskelappId, inputDto.brukerFnr(), inputDto.enhetId(), veilederId, inputDto.frist(), inputDto.kommentar(), HuskelappStatus.AKTIV);
         if(rowsUpdated > 0) {
             return huskelappId;
         } else {
             throw new RuntimeException("Kunne ikke opprette huskelapp");
         }
+
+
     }
 
     public List<HuskelappOutputDto> hentHuskelapp(EnhetId enhetId, VeilederId veilederId) {
@@ -73,12 +70,12 @@ public class HuskelappRepository {
     }
 
     public Optional<HuskelappOutputDto> hentHuskelapp(UUID huskelappId) {
-        String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, ID);
+        String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, HUSKELAPP_ID);
         return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappOutputListMapper).findFirst();
     }
 
     public boolean slettHuskelapp(UUID huskelappId) {
-        String sql = String.format("DELETE FROM %s WHERE %s=? ", TABLE_NAME, ID);
+        String sql = String.format("DELETE FROM %s WHERE %s=? ", TABLE_NAME, HUSKELAPP_ID);
         int rowsUpdated = db.update(sql, huskelappId);
         return rowsUpdated > 0;
     }
@@ -86,25 +83,25 @@ public class HuskelappRepository {
     public void oppdatereStatus(UUID huskelappId, HuskelappStatus status) {
         String sql = String.format(
                 "UPDATE %s SET %s = ? WHERE %s = ?",
-                TABLE_NAME, STATUS, ID
+                TABLE_NAME, STATUS, HUSKELAPP_ID
         );
         db.update(sql, status, huskelappId);
     }
 
     public void oppdatereArkivertDato(UUID huskelappId) {
-        String sql = String.format(
-                "UPDATE %s SET %s = CURRENT_TIMESTAMP WHERE %s = ?",
-                TABLE_NAME, ARKIVERT_DATO, ID
-        );
-        db.update(sql, huskelappId);
+       // String sql = String.format(
+       //         "UPDATE %s SET %s = CURRENT_TIMESTAMP WHERE %s = ?",
+       //         TABLE_NAME, ARKIVERT_DATO, ID
+       // );
+       // db.update(sql, huskelappId);
     }
 
     @SneakyThrows
     private static HuskelappOutputDto huskelappOutputListMapper(Map<String, Object> rs) {
         return new HuskelappOutputDto(
-                (String)rs.get(ID),
+                (String)rs.get(HUSKELAPP_ID),
                 Fnr.of((String)rs.get(FNR)),
-                toLocalDate((Timestamp)rs.get(OPPRETTET_DATO)),
+                toLocalDate((Timestamp)rs.get(ENDRET_DATO)),
                 (String)rs.get(KOMMENTAR));
     }
 }
