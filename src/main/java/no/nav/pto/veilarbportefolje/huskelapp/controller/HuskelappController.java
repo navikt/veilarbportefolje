@@ -119,7 +119,7 @@ public class HuskelappController {
                 boolean erVeilederForBruker = validerErVeilederForBruker(huskelappOptional.get().brukerFnr());
 
                 if (erVeilederForBruker) {
-                    huskelappService.slettHuskelapp(UUID.fromString(huskelappSlettRequest.huskelappId()), huskelappOptional.get().brukerFnr());
+                    huskelappService.settHuskelappIkkeAktiv(UUID.fromString(huskelappSlettRequest.huskelappId()), huskelappOptional.get().brukerFnr());
                     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
                 }
             }

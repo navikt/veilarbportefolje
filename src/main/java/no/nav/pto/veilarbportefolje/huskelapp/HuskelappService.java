@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOutputDto;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
-import no.nav.pto.veilarbportefolje.huskelapp.domain.HuskelappStatus;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
@@ -86,23 +85,23 @@ public class HuskelappService {
         }
     }
 
-	public void slettHuskelapp(UUID huskelappId, Fnr brukerFnr) {
+	public void settHuskelappIkkeAktiv(UUID huskelappId, Fnr brukerFnr) {
 		try {
-			huskelappRepository.settHuskelappIkkeAktiv(huskelappId);
+			huskelappRepository.settSisteHuskelappRadIkkeAktiv(huskelappId);
 
 			AktorId aktorId = hentAktorId(brukerFnr).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
-			opensearchIndexerV2.sletteHuskelapp(aktorId);
+			opensearchIndexerV2.slettHuskelapp(aktorId);
 		} catch (Exception e) {
 			throw new RuntimeException("Kunne ikke oppdatere huskelapp", e);
 		}
 	}
 
-    public void slettHuskelapperPaaBruker(Fnr fnr) {
+    public void slettAlleHuskelapperPaaBruker(Fnr fnr) {
         try {
-            huskelappRepository.slettHuskelapperPaaBruker(fnr);
+            huskelappRepository.slettAlleHuskelappRaderPaaBruker(fnr);
 
 			AktorId aktorId = hentAktorId(fnr).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
-			opensearchIndexerV2.sletteHuskelapp(aktorId);
+			opensearchIndexerV2.slettHuskelapp(aktorId);
         } catch (Exception e) {
             secureLog.error("Kunne ikke slette huskelapper for fnr: " + fnr.toString());
             throw new RuntimeException("Kunne ikke slette huskelapp", e);

@@ -94,20 +94,23 @@ public class OpensearchIndexerV2 {
 
     @SneakyThrows
     public void updateHuskelapp(AktorId aktoerId, Huskelapp huskelapp) {
-        //TODO: Må man ikke legge til hvert enkelt felt for huskelapp, ikke bare hele huskelapp-objektet?
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("huskelapp", huskelapp)
+                .startObject("huskelapp")
+                .field("kommentar", huskelapp.kommentar())
+                .field("frist", huskelapp.frist())
                 .endObject();
 
-        update(aktoerId, content, "Oppdater huskelapp");
+        update(aktoerId, content, "Oppretter/redigerer huskelapp");
     }
 
+
     @SneakyThrows
-    public void sletteHuskelapp(AktorId aktoerId) {
+    public void slettHuskelapp(AktorId aktoerId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .nullField("huskelapp")
+                .field("kommentar", (String) null)
+                .field("frist", (String) null)
                 .endObject();
 
         update(aktoerId, content, "Sletter huskelapp");

@@ -107,12 +107,13 @@ public class HuskelappRepository {
         return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappOutputListMapper).findFirst();
     }
 
-    public void slettHuskelapperPaaBruker(Fnr fnr) {
+    public void slettAlleHuskelappRaderPaaBruker(Fnr fnr) {
         String sql = String.format("DELETE FROM %s WHERE %s=? ", TABLE_NAME, FNR);
         db.update(sql, fnr);
     }
 
-    public void settHuskelappIkkeAktiv(UUID huskelappId) {
+    public void settSisteHuskelappRadIkkeAktiv(UUID huskelappId) {
+        //TODO: Må vi også si WHERE STATUS = AKTIV
         String sql = String.format(
                 "UPDATE %s SET %s = ? WHERE %s = ?",
                 TABLE_NAME, STATUS, HUSKELAPP_ID
