@@ -39,6 +39,7 @@ public class HuskelappController {
     public ResponseEntity<UUID> opprettHuskelapp(@RequestBody HuskelappOpprettRequest huskelappOpprettRequest) {
         try {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
+			validerOppfolgingOgBruker(huskelappOpprettRequest.brukerFnr().get());
             boolean erVeilederForBruker = validerErVeilederForBruker(huskelappOpprettRequest.brukerFnr());
 
             if (erVeilederForBruker && authService.harVeilederTilgangTilEnhet(veilederId.getValue(), huskelappOpprettRequest.enhetId().get())) {
@@ -109,15 +110,16 @@ public class HuskelappController {
     }
 
     @DeleteMapping("/huskelapp")
-    public ResponseEntity<String> slettHuskelapp(String huskelappId) {
+    public ResponseEntity<String> slettHuskelapp(HuskelappSlettRequest huskelappSlettRequest) {
         try {
-            Optional<HuskelappOutputDto> huskelappOptional = huskelappService.hentHuskelapp(UUID.fromString(huskelappId));
+            Optional<HuskelappOutputDto> huskelappOptional = huskelappService.hentHuskelapp(UUID.fromString(huskelappSlettRequest.huskelappId()));
 
             if (huskelappOptional.isPresent()) {
+				validerOppfolgingOgBruker(huskelappOptional.get().brukerFnr().get());
                 boolean erVeilederForBruker = validerErVeilederForBruker(huskelappOptional.get().brukerFnr());
 
                 if (erVeilederForBruker) {
-                    //huskelappService.slettHuskelapp(UUID.fromString(huskelappId));
+                    huskelappService.slettHuskelapp(UUID.fromString(huskelappSlettRequest.huskelappId()), huskelappOptional.get().brukerFnr());
                     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
                 }
             }
@@ -127,28 +129,6 @@ public class HuskelappController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    @PutMapping("/huskelapp")
-    public ResponseEntity<String> oppdatereStatus(@RequestBody HuskelappUpdateStatusDto huskelappUpdateStatusDto) {
-
-        try {
-            Optional<HuskelappOutputDto> huskelappOptional = huskelappService.hentHuskelapp(UUID.fromString(huskelappUpdateStatusDto.huskelappId()));
-
-            if (huskelappOptional.isPresent()) {
-                boolean erVeilederForBruker = validerErVeilederForBruker(huskelappOptional.get().brukerFnr());
-
-                if (erVeilederForBruker) {
-                    huskelappService.oppdatereStatus(UUID.fromString(huskelappUpdateStatusDto.huskelappId()), huskelappOptional.get().brukerFnr(), huskelappUpdateStatusDto.status());
-                    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-                }
-            }
-
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Veileder har ikke tilgang til å oppdatere huskelappen til bruker.");
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
 
     private boolean validerErVeilederForBruker(Fnr fnr) {
         VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();

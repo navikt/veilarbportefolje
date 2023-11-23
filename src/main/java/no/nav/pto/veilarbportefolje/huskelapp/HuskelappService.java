@@ -86,39 +86,26 @@ public class HuskelappService {
         }
     }
 
+	public void slettHuskelapp(UUID huskelappId, Fnr brukerFnr) {
+		try {
+			huskelappRepository.settHuskelappIkkeAktiv(huskelappId);
+
+			AktorId aktorId = hentAktorId(brukerFnr).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+			opensearchIndexerV2.sletteHuskelapp(aktorId);
+		} catch (Exception e) {
+			throw new RuntimeException("Kunne ikke oppdatere huskelapp", e);
+		}
+	}
+
     public void slettHuskelapperPaaBruker(Fnr fnr) {
         try {
             huskelappRepository.slettHuskelapperPaaBruker(fnr);
+
+			AktorId aktorId = hentAktorId(fnr).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+			opensearchIndexerV2.sletteHuskelapp(aktorId);
         } catch (Exception e) {
             secureLog.error("Kunne ikke slette huskelapper for fnr: " + fnr.toString());
             throw new RuntimeException("Kunne ikke slette huskelapp", e);
-        }
-    }
-
-    public void oppdatereStatus(UUID huskelappId, Fnr brukerFnr, HuskelappStatus status) {
-        try {
-            huskelappRepository.oppdatereStatus(huskelappId, status);
-
-            AktorId aktorId = hentAktorId(brukerFnr).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
-            opensearchIndexerV2.sletteHuskelapp(aktorId);
-        } catch (Exception e) {
-            throw new RuntimeException("Kunne ikke oppdatere huskelapp", e);
-        }
-    }
-
-    private void arkivereHuskelapp(UUID huskelappId) {
-        try {
-            oppdatereArkivertDato(huskelappId);
-        } catch (Exception e) {
-            throw new RuntimeException("Kunne ikke arkivere huskelapp", e);
-        }
-    }
-
-    private void oppdatereArkivertDato(UUID huskelappId) {
-        try {
-            huskelappRepository.oppdatereArkivertDato(huskelappId);
-        } catch (Exception e) {
-            throw new RuntimeException("", e);
         }
     }
 

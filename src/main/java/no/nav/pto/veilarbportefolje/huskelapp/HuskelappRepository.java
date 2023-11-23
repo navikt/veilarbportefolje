@@ -109,23 +109,15 @@ public class HuskelappRepository {
 
     public void slettHuskelapperPaaBruker(Fnr fnr) {
         String sql = String.format("DELETE FROM %s WHERE %s=? ", TABLE_NAME, FNR);
-        int rowsUpdated = db.update(sql, fnr);
+        db.update(sql, fnr);
     }
 
-    public void oppdatereStatus(UUID huskelappId, HuskelappStatus status) {
+    public void settHuskelappIkkeAktiv(UUID huskelappId) {
         String sql = String.format(
                 "UPDATE %s SET %s = ? WHERE %s = ?",
                 TABLE_NAME, STATUS, HUSKELAPP_ID
         );
-        db.update(sql, status, huskelappId);
-    }
-
-    public void oppdatereArkivertDato(UUID huskelappId) {
-        // String sql = String.format(
-        //         "UPDATE %s SET %s = CURRENT_TIMESTAMP WHERE %s = ?",
-        //         TABLE_NAME, ARKIVERT_DATO, ID
-        // );
-        // db.update(sql, huskelappId);
+        db.update(sql, HuskelappStatus.IKKE_AKTIV, huskelappId);
     }
 
     @SneakyThrows
