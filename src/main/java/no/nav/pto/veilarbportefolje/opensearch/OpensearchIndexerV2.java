@@ -96,9 +96,7 @@ public class OpensearchIndexerV2 {
     public void updateHuskelapp(AktorId aktoerId, Huskelapp huskelapp) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .startObject("huskelapp")
-                .field("kommentar", huskelapp.kommentar())
-                .field("frist", huskelapp.frist())
+                .field("huskelapp", huskelapp)
                 .endObject();
 
         update(aktoerId, content, "Oppretter/redigerer huskelapp");
@@ -109,8 +107,7 @@ public class OpensearchIndexerV2 {
     public void slettHuskelapp(AktorId aktoerId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("kommentar", (String) null)
-                .field("frist", (String) null)
+                .nullField("huskelapp")
                 .endObject();
 
         update(aktoerId, content, "Sletter huskelapp");

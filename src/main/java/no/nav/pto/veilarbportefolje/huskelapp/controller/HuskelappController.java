@@ -92,6 +92,7 @@ public class HuskelappController {
     @PostMapping("/hent-huskelapp-for-bruker")
     public ResponseEntity<HuskelappOutputDto> hentHuskelapp(@RequestBody HuskelappForBrukerRequest huskelappForBrukerRequest) {
         try {
+            validerOppfolgingOgBruker(huskelappForBrukerRequest.fnr().get());
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             Fnr brukerFnr = huskelappForBrukerRequest.fnr();
 
@@ -115,10 +116,12 @@ public class HuskelappController {
             Optional<HuskelappOutputDto> huskelappOptional = huskelappService.hentHuskelapp(UUID.fromString(huskelappSlettRequest.huskelappId()));
 
             if (huskelappOptional.isPresent()) {
+                VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
 				validerOppfolgingOgBruker(huskelappOptional.get().brukerFnr().get());
                 boolean erVeilederForBruker = validerErVeilederForBruker(huskelappOptional.get().brukerFnr());
+                boolean harTilgangTilEnhet = authService.harVeilederTilgangTilEnhet(veilederId.getValue(), huskelappOptional.get().enhetID().get());
 
-                if (erVeilederForBruker) {
+                if (erVeilederForBruker && harTilgangTilEnhet) {
                     huskelappService.settHuskelappIkkeAktiv(UUID.fromString(huskelappSlettRequest.huskelappId()), huskelappOptional.get().brukerFnr());
                     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
                 }

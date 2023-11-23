@@ -126,6 +126,7 @@ public class HuskelappRepository {
         return new HuskelappOutputDto(
                 (String) rs.get(HUSKELAPP_ID),
                 Fnr.of((String) rs.get(FNR)),
+                EnhetId.of((String) rs.get(ENHET_ID)),
                 toLocalDate((Timestamp) rs.get(ENDRET_DATO)),
                 (String) rs.get(KOMMENTAR));
     }
