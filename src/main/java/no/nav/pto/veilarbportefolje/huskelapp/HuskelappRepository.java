@@ -32,7 +32,6 @@ public class HuskelappRepository {
     public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId) {
         UUID huskelappId = UUID.randomUUID();
         UUID endringsId = UUID.randomUUID();
-        //TODO:: Dersom vi flytter postgres-databasene onprem, kan CURRENT_TIMESTAMP i sql-setninga gi problem hvis vi har database i en annen tidssone enn vår?
         String sql = """
                 INSERT INTO HUSKELAPP (
                     ENDRINGS_ID,
@@ -62,7 +61,6 @@ public class HuskelappRepository {
                 """;
         db.update(sqlSettForrigeRadInaktiv, HuskelappStatus.IKKE_AKTIV.name(), huskelappRedigerRequest.huskelappId(), HuskelappStatus.AKTIV.name());
 
-        //TODO:: Bør vi egentlig ha mulighet for å endre enhetId her? EnhetId skal vel kun endres dersom bruker bytter navkontor... Og hvorfor har vi mulighet for å endre fnr?
         String sqlRedigerHuskelapp = """
                 INSERT INTO HUSKELAPP (
                     ENDRINGS_ID,
@@ -137,7 +135,7 @@ public class HuskelappRepository {
                 (UUID) rs.get(HUSKELAPP_ID),
                 Fnr.of((String) rs.get(FNR)),
                 EnhetId.of((String) rs.get(ENHET_ID)),
-                (Timestamp) rs.get(ENDRET_DATO),
+                (Timestamp) rs.get(FRIST),
                 (String) rs.get(KOMMENTAR));
     }
 }
