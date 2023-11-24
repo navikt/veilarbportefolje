@@ -99,8 +99,8 @@ public class HuskelappRepository {
     }
 
     public Optional<HuskelappOutputDto> hentHuskelapp(Fnr brukerFnr) {
-        String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, FNR);
-        return dbReadOnly.queryForList(sql, brukerFnr.get()).stream().map(HuskelappRepository::huskelappOutputListMapper).findFirst();
+        String sql = String.format("SELECT * FROM %s WHERE %s=? AND STATUS = ?", TABLE_NAME, FNR);
+        return dbReadOnly.queryForList(sql, brukerFnr.get(), HuskelappStatus.AKTIV.name()).stream().map(HuskelappRepository::huskelappOutputListMapper).findFirst();
     }
 
     public Optional<HuskelappOutputDto> hentHuskelapp(UUID huskelappId) {
