@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 
-import java.time.LocalDate;
+import java.sql.Timestamp;
 
-public record HuskelappOpprettRequest(Fnr brukerFnr, LocalDate frist, String kommentar, EnhetId enhetId) {
+public record HuskelappOpprettRequest(Fnr brukerFnr, Timestamp frist, String kommentar, EnhetId enhetId) {
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public HuskelappOpprettRequest {
     }

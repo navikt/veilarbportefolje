@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.huskelapp;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -15,15 +14,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
 
 @RequiredArgsConstructor
 public class HuskelappRepository {
@@ -34,6 +32,7 @@ public class HuskelappRepository {
     public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId) {
         UUID huskelappId = UUID.randomUUID();
         UUID endringsId = UUID.randomUUID();
+        //TODO:: Dersom vi flytter postgres-databasene onprem, kan CURRENT_TIMESTAMP i sql-setninga gi problem hvis vi har database i en annen tidssone enn vår?
         String sql = """
                 INSERT INTO HUSKELAPP (
                     ENDRINGS_ID,
@@ -47,10 +46,10 @@ public class HuskelappRepository {
                     STATUS
                 )
                 VALUES (
-                    ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        db.update(sql, endringsId, huskelappId, huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId(), veilederId.getValue(), huskelappOpprettRequest.frist(), huskelappOpprettRequest.kommentar(), HuskelappStatus.AKTIV);
+        db.update(sql, endringsId, huskelappId, huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), huskelappOpprettRequest.frist(), huskelappOpprettRequest.kommentar(), HuskelappStatus.AKTIV.name());
         return huskelappId;
     }
 
@@ -61,8 +60,9 @@ public class HuskelappRepository {
         String sqlSettForrigeRadInaktiv = """
                 UPDATE HUSKELAPP SET STATUS = ? WHERE HUSKELAPP_ID = ? AND STATUS = ?
                 """;
-        db.update(sqlSettForrigeRadInaktiv, HuskelappStatus.IKKE_AKTIV, huskelappRedigerRequest.huskelappId(), HuskelappStatus.AKTIV);
+        db.update(sqlSettForrigeRadInaktiv, HuskelappStatus.IKKE_AKTIV.name(), huskelappRedigerRequest.huskelappId(), HuskelappStatus.AKTIV.name());
 
+        //TODO:: Bør vi egentlig ha mulighet for å endre enhetId her? EnhetId skal vel kun endres dersom bruker bytter navkontor... Og hvorfor har vi mulighet for å endre fnr?
         String sqlRedigerHuskelapp = """
                 INSERT INTO HUSKELAPP (
                     ENDRINGS_ID,
@@ -76,10 +76,11 @@ public class HuskelappRepository {
                     STATUS
                 )
                 VALUES (
-                    ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        db.update(sqlRedigerHuskelapp, endringsId, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId(), veilederId.getValue(), huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV);
+        //TODO:: Hva skal vi putte inn som variabel nr 6 når den blir satt i sql-en? Man kan ikke ignorere den
+        db.update(sqlRedigerHuskelapp, endringsId, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
         return endringsId;
     }
 
@@ -134,10 +135,10 @@ public class HuskelappRepository {
     @SneakyThrows
     private static HuskelappOutputDto huskelappOutputListMapper(Map<String, Object> rs) {
         return new HuskelappOutputDto(
-                (String) rs.get(HUSKELAPP_ID),
+                (UUID) rs.get(HUSKELAPP_ID),
                 Fnr.of((String) rs.get(FNR)),
                 EnhetId.of((String) rs.get(ENHET_ID)),
-                toLocalDate((Timestamp) rs.get(ENDRET_DATO)),
+                (Timestamp) rs.get(ENDRET_DATO),
                 (String) rs.get(KOMMENTAR));
     }
 }

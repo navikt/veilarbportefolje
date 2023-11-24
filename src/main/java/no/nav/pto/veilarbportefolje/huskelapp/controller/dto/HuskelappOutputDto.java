@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 
-import java.time.LocalDate;
+import java.sql.Timestamp;
+import java.util.UUID;
 
-public record HuskelappOutputDto(String huskelappId, Fnr brukerFnr, EnhetId enhetID, LocalDate frist, String kommentar) {
+public record HuskelappOutputDto(UUID huskelappId, Fnr brukerFnr, EnhetId enhetID, Timestamp frist, String kommentar) {
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public HuskelappOutputDto {
     }
