@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.huskelapp;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -19,7 +20,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.*;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
 
 @RequiredArgsConstructor
@@ -119,6 +122,13 @@ public class HuskelappRepository {
                 TABLE_NAME, STATUS, HUSKELAPP_ID
         );
         db.update(sql, HuskelappStatus.IKKE_AKTIV, huskelappId);
+    }
+
+    public Optional<String> hentNavkontorPaHuskelapp(Fnr brukerFnr){
+        //Hvordan gjør vi dette ved støtte for flere huskelapper...
+        String sql = String.format("SELECT ENHET_ID FROM %s WHERE %s=? AND STATUS = AKTIV", TABLE_NAME, FNR);
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getString(ENHET_ID), brukerFnr.get())));
     }
 
     @SneakyThrows
