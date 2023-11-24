@@ -81,7 +81,7 @@ public class HuskelappRepository {
         return endringsId;
     }
 
-    public List<HuskelappOutputDto> hentHuskelapp(EnhetId enhetId, VeilederId veilederId) {
+    public List<HuskelappOutputDto> hentAktivHuskelapp(EnhetId enhetId, VeilederId veilederId) {
         return dbReadOnly.queryForList("""
                                 SELECT hl.* FROM HUSKELAPP hl
                                 INNER JOIN aktive_identer ai on ai.fnr = hl.fnr
@@ -98,15 +98,21 @@ public class HuskelappRepository {
 
     }
 
-    public Optional<HuskelappOutputDto> hentHuskelapp(Fnr brukerFnr) {
+    public Optional<HuskelappOutputDto> hentAktivHuskelapp(Fnr brukerFnr) {
         String sql = String.format("SELECT * FROM %s WHERE %s=? AND STATUS = ?", TABLE_NAME, FNR);
         return dbReadOnly.queryForList(sql, brukerFnr.get(), HuskelappStatus.AKTIV.name()).stream().map(HuskelappRepository::huskelappOutputListMapper).findFirst();
     }
 
-    public Optional<HuskelappOutputDto> hentHuskelapp(UUID huskelappId) {
+    public Optional<HuskelappOutputDto> hentAktivHuskelapp(UUID huskelappId) {
         String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, HUSKELAPP_ID);
         return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappOutputListMapper).findFirst();
     }
+
+    public List<HuskelappOutputDto> hentAlleRaderPaHuskelapp(UUID huskelappId) {
+        String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, HUSKELAPP_ID);
+        return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappOutputListMapper).toList();
+    }
+
 
     public void slettAlleHuskelappRaderPaaBruker(Fnr fnr) {
         String sql = String.format("DELETE FROM %s WHERE %s=? ", TABLE_NAME, FNR);
@@ -116,13 +122,22 @@ public class HuskelappRepository {
     public void settSisteHuskelappRadIkkeAktiv(UUID huskelappId) {
         //TODO: Må vi også si WHERE STATUS = AKTIV
         String sql = String.format(
+                "UPDATE %s SET %s = ? WHERE %s = ? AND STATUS = ?",
+                TABLE_NAME, STATUS, HUSKELAPP_ID
+        );
+        db.update(sql, HuskelappStatus.IKKE_AKTIV.name(), huskelappId, HuskelappStatus.AKTIV.name());
+    }
+
+    public void settSisteHuskelappRadIkkeAktivOld(UUID huskelappId) {
+        //TODO: Må vi også si WHERE STATUS = AKTIV
+        String sql = String.format(
                 "UPDATE %s SET %s = ? WHERE %s = ?",
                 TABLE_NAME, STATUS, HUSKELAPP_ID
         );
-        db.update(sql, HuskelappStatus.IKKE_AKTIV, huskelappId);
+        db.update(sql, HuskelappStatus.IKKE_AKTIV.name(), huskelappId);
     }
 
-    public Optional<String> hentNavkontorPaHuskelapp(Fnr brukerFnr){
+    public Optional<String> hentNavkontorPaHuskelapp(Fnr brukerFnr) {
         //Hvordan gjør vi dette ved støtte for flere huskelapper...
         String sql = String.format("SELECT ENHET_ID FROM %s WHERE %s=? AND STATUS = AKTIV", TABLE_NAME, FNR);
         return Optional.ofNullable(
@@ -136,6 +151,7 @@ public class HuskelappRepository {
                 Fnr.of((String) rs.get(FNR)),
                 EnhetId.of((String) rs.get(ENHET_ID)),
                 (Timestamp) rs.get(FRIST),
-                (String) rs.get(KOMMENTAR));
+                (String) rs.get(KOMMENTAR),
+                HuskelappStatus.valueOf((String) rs.get(STATUS)));
     }
 }

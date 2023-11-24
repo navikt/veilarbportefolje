@@ -64,7 +64,7 @@ public class HuskelappService {
 
     public List<HuskelappOutputDto> hentHuskelapp(VeilederId veilederId, EnhetId enhetId) {
         try {
-            return huskelappRepository.hentHuskelapp(enhetId, veilederId);
+            return huskelappRepository.hentAktivHuskelapp(enhetId, veilederId);
         } catch (Exception e) {
             throw new RuntimeException("Kunne ikke hente huskelapper", e);
         }
@@ -72,7 +72,7 @@ public class HuskelappService {
 
     public Optional<HuskelappOutputDto> hentHuskelapp(UUID huskelappId) {
         try {
-            return huskelappRepository.hentHuskelapp(huskelappId);
+            return huskelappRepository.hentAktivHuskelapp(huskelappId);
         } catch (Exception e) {
             secureLog.error("Kunne ikke hente huskelapp for id: " + huskelappId);
             throw new RuntimeException("Kunne ikke hente huskelapp", e);
@@ -81,7 +81,7 @@ public class HuskelappService {
 
     public HuskelappOutputDto hentHuskelapp(Fnr brukerFnr) {
         try {
-            return huskelappRepository.hentHuskelapp(brukerFnr).orElse(null);
+            return huskelappRepository.hentAktivHuskelapp(brukerFnr).orElse(null);
         } catch (Exception e) {
             secureLog.error("Kunne ikke hente huskelapp for bruker: " + brukerFnr);
             throw new RuntimeException("Kunne ikke hente huskelapp", e);

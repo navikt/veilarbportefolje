@@ -14,9 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,7 +65,7 @@ public class HuskelappRepositoryTest {
     @Test
     public void skalKunneOppretteOgHenteHuskelapp() {
         repo.opprettHuskelapp(huskelapp1, VeilederId.of("Z123456"));
-        Optional<HuskelappOutputDto> result = repo.hentHuskelapp(fnr1);
+        Optional<HuskelappOutputDto> result = repo.hentAktivHuskelapp(fnr1);
         assertThat(result.isPresent()).isTrue();
         assertThat(result.get().enhetID().toString()).isEqualTo("0010");
         assertThat(result.get().frist()).isEqualTo(frist1);
@@ -75,7 +75,7 @@ public class HuskelappRepositoryTest {
     @Test
     public void skalKunneHenteHuskelappUtenKommentar() {
         repo.opprettHuskelapp(huskelappUtenKommentar, VeilederId.of("Z123456"));
-        Optional<HuskelappOutputDto> result = repo.hentHuskelapp(Fnr.ofValidFnr("01010101013"));
+        Optional<HuskelappOutputDto> result = repo.hentAktivHuskelapp(Fnr.ofValidFnr("01010101013"));
         assertThat(result.isPresent()).isTrue();
         assertThat(result.get().kommentar()).isEqualTo(null);
     }
@@ -86,16 +86,42 @@ public class HuskelappRepositoryTest {
         Fnr fnrBruker = Fnr.ofValidFnr("01010101011");
         Timestamp nyFrist = Timestamp.from(Instant.parse("2025-10-11T00:00:00Z"));
         repo.opprettHuskelapp(huskelapp2, VeilederId.of("Z123456"));
-        Optional<HuskelappOutputDto> huskelappFør = repo.hentHuskelapp(fnrBruker);
+        Optional<HuskelappOutputDto> huskelappFør = repo.hentAktivHuskelapp(fnrBruker);
         assertThat(huskelappFør.isPresent()).isTrue();
         assertThat(huskelappFør.get().kommentar()).isEqualTo("Huskelapp nr.2 sin kommentar");
         HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappFør.get().huskelappId(), fnrBruker, nyFrist, "ny kommentar på huskelapp nr.2", EnhetId.of("0010"));
         repo.redigerHuskelapp(huskelappRedigerRequest, VeilederId.of("Z234567"));
-        Optional<HuskelappOutputDto> huskelappEtter = repo.hentHuskelapp(fnrBruker);
+        Optional<HuskelappOutputDto> huskelappEtter = repo.hentAktivHuskelapp(fnrBruker);
         assertThat(huskelappEtter.isPresent()).isTrue();
         assertThat(huskelappEtter.get().kommentar()).isEqualTo("ny kommentar på huskelapp nr.2");
         assertThat(huskelappEtter.get().frist()).isEqualTo(nyFrist);
+    }
 
+    @Test
+    public void skalKunneSletteHuskelapp() {
+        Fnr fnrBruker = Fnr.ofValidFnr("01010101011");
+        repo.opprettHuskelapp(huskelapp2, VeilederId.of("Z123456"));
+        Optional<HuskelappOutputDto> huskelapp = repo.hentAktivHuskelapp(fnrBruker);
+        assertThat(huskelapp.isPresent()).isTrue();
+        assertThat(huskelapp.get().kommentar()).isEqualTo("Huskelapp nr.2 sin kommentar");
+        repo.settSisteHuskelappRadIkkeAktiv(huskelapp.get().huskelappId());
+        Optional<HuskelappOutputDto> huskelappEtter = repo.hentAktivHuskelapp(fnrBruker);
+        assertThat(huskelappEtter.isPresent()).isFalse();
+    }
+
+    @Test
+    public void skalKunneSletteHuskelappMedFlereRader() {
+        Fnr fnrBruker = Fnr.ofValidFnr("01010101011");
+        repo.opprettHuskelapp(huskelapp2, VeilederId.of("Z123456"));
+        Optional<HuskelappOutputDto> huskelappFoer = repo.hentAktivHuskelapp(fnrBruker);
+        assertThat(huskelappFoer.isPresent()).isTrue();
+        assertThat(huskelappFoer.get().kommentar()).isEqualTo("Huskelapp nr.2 sin kommentar");
+        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappFoer.get().huskelappId(), fnrBruker, huskelappFoer.get().frist(), "ny kommentar på huskelapp nr.2", EnhetId.of("0010"));
+        repo.redigerHuskelapp(huskelappRedigerRequest, VeilederId.of("Z123456"));
+        List<HuskelappOutputDto> alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId());
+        repo.settSisteHuskelappRadIkkeAktivOld(huskelappFoer.get().huskelappId());
+        Optional<HuskelappOutputDto> huskelappEtter = repo.hentAktivHuskelapp(fnrBruker);
+        assertThat(huskelappEtter.isPresent()).isFalse();
     }
 
 
