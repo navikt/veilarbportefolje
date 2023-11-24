@@ -79,7 +79,6 @@ public class HuskelappRepository {
                     ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        //TODO:: Hva skal vi putte inn som variabel nr 6 når den blir satt i sql-en? Man kan ikke ignorere den
         db.update(sqlRedigerHuskelapp, endringsId, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
         return endringsId;
     }
