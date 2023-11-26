@@ -6,11 +6,13 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,9 +27,8 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class HuskelappService {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final AktorClient aktorClient;
-
-
-    public HuskelappRepository huskelappRepository;
+    private final BrukerServiceV2 brukerServiceV2;
+    public final HuskelappRepository huskelappRepository;
 
 
     public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId) {
@@ -60,7 +61,7 @@ public class HuskelappService {
 
     public List<Huskelapp> hentHuskelapp(VeilederId veilederId, EnhetId enhetId) {
         try {
-            return huskelappRepository.hentHuskelapp(enhetId, veilederId);
+            return huskelappRepository.hentAktivHuskelapp(enhetId, veilederId);
         } catch (Exception e) {
             throw new RuntimeException("Kunne ikke hente huskelapper", e);
         }
@@ -68,7 +69,7 @@ public class HuskelappService {
 
     public Optional<Huskelapp> hentHuskelapp(UUID huskelappId) {
         try {
-            return huskelappRepository.hentHuskelapp(huskelappId);
+            return huskelappRepository.hentAktivHuskelapp(huskelappId);
         } catch (Exception e) {
             secureLog.error("Kunne ikke hente huskelapp for id: " + huskelappId);
             throw new RuntimeException("Kunne ikke hente huskelapp", e);
@@ -77,7 +78,7 @@ public class HuskelappService {
 
     public Huskelapp hentHuskelapp(Fnr brukerFnr) {
         try {
-            return huskelappRepository.hentHuskelapp(brukerFnr).orElse(null);
+            return huskelappRepository.hentAktivHuskelapp(brukerFnr).orElse(null);
         } catch (Exception e) {
             secureLog.error("Kunne ikke hente huskelapp for bruker: " + brukerFnr);
             throw new RuntimeException("Kunne ikke hente huskelapp", e);
@@ -105,6 +106,33 @@ public class HuskelappService {
             secureLog.error("Kunne ikke slette huskelapper for fnr: " + fnr.toString());
             throw new RuntimeException("Kunne ikke slette huskelapp", e);
         }
+    }
+
+    public boolean brukerHarHuskelappPaForrigeNavkontor(AktorId aktoerId) {
+
+        Fnr fnrBruker = aktorClient.hentFnr(aktoerId);
+        Optional<String> navKontorPaHuskelapp = huskelappRepository.hentNavkontorPaHuskelapp(fnrBruker);
+
+        if (navKontorPaHuskelapp.isEmpty()) {
+            secureLog.info("Bruker {} har ikke NAV-kontor på huskelapp", aktoerId.toString());
+            return false;
+        }
+
+        final Optional<String> navKontorForBruker = brukerServiceV2.hentNavKontor(aktoerId).map(NavKontor::getValue);
+        if (navKontorForBruker.isEmpty()) {
+            secureLog.error("Kunne ikke hente NAV-kontor for bruker {}", aktoerId.toString());
+            return false;
+        }
+
+        boolean navkontorForBrukerUlikNavkontorPaHuskelapp = !navKontorForBruker.orElseThrow().equals(navKontorPaHuskelapp.orElseThrow());
+
+        if (navkontorForBrukerUlikNavkontorPaHuskelapp) {
+            secureLog.info("Bruker {} er på kontor {} mens huskelappen er lagret på et annet kontor {}", aktoerId.toString(), navKontorForBruker.get(), navKontorPaHuskelapp.get());
+        } else {
+            secureLog.info("Bruker {} er på kontor {} og huskelappen er lagret på samme kontor {}", aktoerId.toString(), navKontorForBruker.get(), navKontorPaHuskelapp.get());
+        }
+
+        return navkontorForBrukerUlikNavkontorPaHuskelapp;
     }
 
     private Try<AktorId> hentAktorId(Fnr fnr) {

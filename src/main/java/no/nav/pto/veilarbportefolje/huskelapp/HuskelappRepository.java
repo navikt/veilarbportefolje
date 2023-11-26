@@ -14,12 +14,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.*;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
 
 @RequiredArgsConstructor
@@ -44,10 +46,10 @@ public class HuskelappRepository {
                     STATUS
                 )
                 VALUES (
-                    ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        db.update(sql, endringsId, huskelappId, huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId(), veilederId.getValue(), huskelappOpprettRequest.frist(), huskelappOpprettRequest.kommentar(), HuskelappStatus.AKTIV);
+        db.update(sql, endringsId, huskelappId, huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), huskelappOpprettRequest.frist(), huskelappOpprettRequest.kommentar(), HuskelappStatus.AKTIV.name());
         return huskelappId;
     }
 
@@ -58,7 +60,7 @@ public class HuskelappRepository {
         String sqlSettForrigeRadInaktiv = """
                 UPDATE HUSKELAPP SET STATUS = ? WHERE HUSKELAPP_ID = ? AND STATUS = ?
                 """;
-        db.update(sqlSettForrigeRadInaktiv, HuskelappStatus.IKKE_AKTIV, huskelappRedigerRequest.huskelappId(), HuskelappStatus.AKTIV);
+        db.update(sqlSettForrigeRadInaktiv, HuskelappStatus.IKKE_AKTIV.name(), huskelappRedigerRequest.huskelappId(), HuskelappStatus.AKTIV.name());
 
         String sqlRedigerHuskelapp = """
                 INSERT INTO HUSKELAPP (
@@ -73,14 +75,14 @@ public class HuskelappRepository {
                     STATUS
                 )
                 VALUES (
-                    ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        db.update(sqlRedigerHuskelapp, endringsId, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId(), veilederId.getValue(), huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV);
+        db.update(sqlRedigerHuskelapp, endringsId, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
         return endringsId;
     }
 
-    public List<Huskelapp> hentHuskelapp(EnhetId enhetId, VeilederId veilederId) {
+    public List<Huskelapp> hentAktivHuskelapp(EnhetId enhetId, VeilederId veilederId) {
         return dbReadOnly.queryForList("""
                                 SELECT hl.* FROM HUSKELAPP hl
                                 INNER JOIN aktive_identer ai on ai.fnr = hl.fnr
@@ -97,15 +99,21 @@ public class HuskelappRepository {
 
     }
 
-    public Optional<Huskelapp> hentHuskelapp(Fnr brukerFnr) {
-        String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, FNR);
-        return dbReadOnly.queryForList(sql, brukerFnr.get()).stream().map(HuskelappRepository::huskelappMapper).findFirst();
+    public Optional<Huskelapp> hentAktivHuskelapp(Fnr brukerFnr) {
+        String sql = String.format("SELECT * FROM %s WHERE %s=? AND STATUS = ?", TABLE_NAME, FNR);
+        return dbReadOnly.queryForList(sql, brukerFnr.get(), HuskelappStatus.AKTIV.name()).stream().map(HuskelappRepository::huskelappMapper).findFirst();
     }
 
-    public Optional<Huskelapp> hentHuskelapp(UUID huskelappId) {
+    public Optional<Huskelapp> hentAktivHuskelapp(UUID huskelappId) {
         String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, HUSKELAPP_ID);
         return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappMapper).findFirst();
     }
+
+    public List<Huskelapp> hentAlleRaderPaHuskelapp(UUID huskelappId) {
+        String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, HUSKELAPP_ID);
+        return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappMapper).toList();
+    }
+
 
     public void slettAlleHuskelappRaderPaaBruker(Fnr fnr) {
         String sql = String.format("DELETE FROM %s WHERE %s=? ", TABLE_NAME, FNR);
@@ -113,17 +121,25 @@ public class HuskelappRepository {
     }
 
     public void settSisteHuskelappRadIkkeAktiv(UUID huskelappId) {
+        //TODO: Må vi også si WHERE STATUS = AKTIV
         String sql = String.format(
                 "UPDATE %s SET %s = ? WHERE %s = ? AND STATUS = ?",
                 TABLE_NAME, STATUS, HUSKELAPP_ID
         );
-        db.update(sql, HuskelappStatus.IKKE_AKTIV, huskelappId, HuskelappStatus.AKTIV);
+        db.update(sql, HuskelappStatus.IKKE_AKTIV.name(), huskelappId, HuskelappStatus.AKTIV.name());
+    }
+
+    public Optional<String> hentNavkontorPaHuskelapp(Fnr brukerFnr) {
+        //Hvordan gjør vi dette ved støtte for flere huskelapper...
+        String sql = String.format("SELECT ENHET_ID FROM %s WHERE %s=? AND STATUS = AKTIV", TABLE_NAME, FNR);
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getString(ENHET_ID), brukerFnr.get())));
     }
 
     @SneakyThrows
     private static Huskelapp huskelappMapper(Map<String, Object> rs) {
         return new Huskelapp(
-                UUID.fromString((String) rs.get(HUSKELAPP_ID)),
+				(UUID) rs.get(HUSKELAPP_ID),
                 Fnr.of((String) rs.get(FNR)),
                 EnhetId.of((String) rs.get(ENHET_ID)),
                 VeilederId.of((String) rs.get(ENDRET_AV_VEILEDER)),

@@ -64,6 +64,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
         final VeilederId nyVeileder = randomVeilederId();
 
         testDataClient.setupBrukerMedArbeidsliste(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
+        testDataClient.setupBrukerMedHuskelapp(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
         testDataClient.endreNavKontorForBruker(aktoerId, randomNavKontor());
         final boolean arbeidslisteAktiv = arbeidslisteAktiv(aktoerId);
         assertThat(arbeidslisteAktiv).isTrue();
