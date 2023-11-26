@@ -9,17 +9,22 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public record Huskelapp(
-	UUID huskelappId,
-	Fnr brukerFnr,
-	EnhetId enhetId,
-	VeilederId endretAv,
-	LocalDate endretDato,
-	LocalDate frist,
-	String kommentar,
-	HuskelappStatus status
+    UUID huskelappId,
+    Fnr brukerFnr,
+    EnhetId enhetId,
+    VeilederId endretAv,
+    LocalDate endretDato,
+    LocalDate frist,
+    String kommentar,
+    HuskelappStatus status
 
 ) {
-	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public Huskelapp {
-	}
+
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public Huskelapp {
+    }
+
+    public Huskelapp(String kommentar, LocalDate frist) {
+        this(null, null, null, null, null, frist, kommentar, null);
+    }
 }

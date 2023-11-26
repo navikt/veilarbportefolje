@@ -6,11 +6,10 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.domene.Huskelapp;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
-import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOutputDto;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
+import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +58,7 @@ public class HuskelappService {
         }
     }
 
-    public List<HuskelappOutputDto> hentHuskelapp(VeilederId veilederId, EnhetId enhetId) {
+    public List<Huskelapp> hentHuskelapp(VeilederId veilederId, EnhetId enhetId) {
         try {
             return huskelappRepository.hentHuskelapp(enhetId, veilederId);
         } catch (Exception e) {
@@ -67,7 +66,7 @@ public class HuskelappService {
         }
     }
 
-    public Optional<HuskelappOutputDto> hentHuskelapp(UUID huskelappId) {
+    public Optional<Huskelapp> hentHuskelapp(UUID huskelappId) {
         try {
             return huskelappRepository.hentHuskelapp(huskelappId);
         } catch (Exception e) {
@@ -76,7 +75,7 @@ public class HuskelappService {
         }
     }
 
-    public HuskelappOutputDto hentHuskelapp(Fnr brukerFnr) {
+    public Huskelapp hentHuskelapp(Fnr brukerFnr) {
         try {
             return huskelappRepository.hentHuskelapp(brukerFnr).orElse(null);
         } catch (Exception e) {
@@ -85,23 +84,23 @@ public class HuskelappService {
         }
     }
 
-	public void settHuskelappIkkeAktiv(UUID huskelappId, Fnr brukerFnr) {
-		try {
-			huskelappRepository.settSisteHuskelappRadIkkeAktiv(huskelappId);
+    public void settHuskelappIkkeAktiv(UUID huskelappId, Fnr brukerFnr) {
+        try {
+            huskelappRepository.settSisteHuskelappRadIkkeAktiv(huskelappId);
 
-			AktorId aktorId = hentAktorId(brukerFnr).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
-			opensearchIndexerV2.slettHuskelapp(aktorId);
-		} catch (Exception e) {
-			throw new RuntimeException("Kunne ikke oppdatere huskelapp", e);
-		}
-	}
+            AktorId aktorId = hentAktorId(brukerFnr).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+            opensearchIndexerV2.slettHuskelapp(aktorId);
+        } catch (Exception e) {
+            throw new RuntimeException("Kunne ikke oppdatere huskelapp", e);
+        }
+    }
 
     public void slettAlleHuskelapperPaaBruker(Fnr fnr) {
         try {
             huskelappRepository.slettAlleHuskelappRaderPaaBruker(fnr);
 
-			AktorId aktorId = hentAktorId(fnr).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
-			opensearchIndexerV2.slettHuskelapp(aktorId);
+            AktorId aktorId = hentAktorId(fnr).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+            opensearchIndexerV2.slettHuskelapp(aktorId);
         } catch (Exception e) {
             secureLog.error("Kunne ikke slette huskelapper for fnr: " + fnr.toString());
             throw new RuntimeException("Kunne ikke slette huskelapp", e);

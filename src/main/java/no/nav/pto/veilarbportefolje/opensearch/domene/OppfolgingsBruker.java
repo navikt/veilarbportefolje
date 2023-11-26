@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad;
-import no.nav.pto.veilarbportefolje.domene.Huskelapp;
+import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;

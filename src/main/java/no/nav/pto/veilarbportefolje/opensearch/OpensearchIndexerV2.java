@@ -8,7 +8,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
-import no.nav.pto.veilarbportefolje.domene.Huskelapp;
+import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;

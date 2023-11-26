@@ -6,8 +6,8 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
-import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOutputDto;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
+import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.HuskelappStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -80,7 +80,7 @@ public class HuskelappRepository {
         return endringsId;
     }
 
-    public List<HuskelappOutputDto> hentHuskelapp(EnhetId enhetId, VeilederId veilederId) {
+    public List<Huskelapp> hentHuskelapp(EnhetId enhetId, VeilederId veilederId) {
         return dbReadOnly.queryForList("""
                                 SELECT hl.* FROM HUSKELAPP hl
                                 INNER JOIN aktive_identer ai on ai.fnr = hl.fnr
@@ -92,19 +92,19 @@ public class HuskelappRepository {
                         veilederId.getValue()
                 )
                 .stream()
-                .map(HuskelappRepository::huskelappOutputListMapper)
+                .map(HuskelappRepository::huskelappMapper)
                 .toList();
 
     }
 
-    public Optional<HuskelappOutputDto> hentHuskelapp(Fnr brukerFnr) {
+    public Optional<Huskelapp> hentHuskelapp(Fnr brukerFnr) {
         String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, FNR);
-        return dbReadOnly.queryForList(sql, brukerFnr.get()).stream().map(HuskelappRepository::huskelappOutputListMapper).findFirst();
+        return dbReadOnly.queryForList(sql, brukerFnr.get()).stream().map(HuskelappRepository::huskelappMapper).findFirst();
     }
 
-    public Optional<HuskelappOutputDto> hentHuskelapp(UUID huskelappId) {
+    public Optional<Huskelapp> hentHuskelapp(UUID huskelappId) {
         String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, HUSKELAPP_ID);
-        return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappOutputListMapper).findFirst();
+        return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappMapper).findFirst();
     }
 
     public void slettAlleHuskelappRaderPaaBruker(Fnr fnr) {
@@ -113,21 +113,33 @@ public class HuskelappRepository {
     }
 
     public void settSisteHuskelappRadIkkeAktiv(UUID huskelappId) {
-        //TODO: Må vi også si WHERE STATUS = AKTIV
         String sql = String.format(
-                "UPDATE %s SET %s = ? WHERE %s = ?",
+                "UPDATE %s SET %s = ? WHERE %s = ? AND STATUS = ?",
                 TABLE_NAME, STATUS, HUSKELAPP_ID
         );
-        db.update(sql, HuskelappStatus.IKKE_AKTIV, huskelappId);
+        db.update(sql, HuskelappStatus.IKKE_AKTIV, huskelappId, HuskelappStatus.AKTIV);
     }
 
     @SneakyThrows
-    private static HuskelappOutputDto huskelappOutputListMapper(Map<String, Object> rs) {
-        return new HuskelappOutputDto(
-                (String) rs.get(HUSKELAPP_ID),
+    private static Huskelapp huskelappMapper(Map<String, Object> rs) {
+        return new Huskelapp(
+                UUID.fromString((String) rs.get(HUSKELAPP_ID)),
                 Fnr.of((String) rs.get(FNR)),
                 EnhetId.of((String) rs.get(ENHET_ID)),
+                VeilederId.of((String) rs.get(ENDRET_AV_VEILEDER)),
                 toLocalDate((Timestamp) rs.get(ENDRET_DATO)),
-                (String) rs.get(KOMMENTAR));
+                toLocalDate((Timestamp) rs.get(FRIST)),
+                (String) rs.get(KOMMENTAR),
+                huskelappStatusMapper((String) rs.get(STATUS))
+               );
+    }
+
+    @SneakyThrows
+    private static HuskelappStatus huskelappStatusMapper(String status) {
+        return switch (status) {
+            case "AKTIV" -> HuskelappStatus.AKTIV;
+            case "IKKE_AKTIV" -> HuskelappStatus.IKKE_AKTIV;
+            default -> null;
+        };
     }
 }

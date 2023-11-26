@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
@@ -68,7 +69,8 @@ public class BrukerRepositoryV2 {
                                ARB.FRIST                        as ARB_FRIST,
                                ARB.KATEGORI                     as ARB_KATEGORI,
                                ARB.NAV_KONTOR_FOR_ARBEIDSLISTE as ARB_NAV_KONTOR_FOR_ARBEIDSLISTE,
-                               HL.ID, HL.frist, HL.kommentar, HL.opprettet_dato
+                               HL.frist							as HL_FRIST,
+                               HL.kommentar						as HL_KOMMENTAR
                         FROM OPPFOLGING_DATA OD
                                 inner join aktive_identer ai on OD.aktoerid = ai.aktorid
                                  left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
@@ -164,7 +166,9 @@ public class BrukerRepositoryV2 {
                 .setPermutlopuke(rs.getObject(PERMUTLOPUKE, Integer.class))
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
                 .setAapordinerutlopsdato(aapordinerutlopsdato)
-                .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)));
+                .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)))
+                .setHuskelapp(new Huskelapp(rs.getString(HL_KOMMENTAR), toLocalDate(rs.getTimestamp(HL_FRIST))));
+
 
         setBrukersSituasjon(bruker, rs);
 
