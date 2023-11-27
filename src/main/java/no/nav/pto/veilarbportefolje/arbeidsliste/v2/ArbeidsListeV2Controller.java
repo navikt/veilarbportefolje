@@ -47,17 +47,21 @@ public class ArbeidsListeV2Controller {
     @PostMapping("/hent-arbeidsliste")
     public Arbeidsliste getArbeidsListe(@RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest) {
         validerOppfolgingOgBruker(arbeidslisteForBrukerRequest.fnr().get());
-        Fnr fnr = Fnr.ofValidFnr(arbeidslisteForBrukerRequest.fnr().get());
 
+        Fnr validertFnr = Fnr.ofValidFnr(arbeidslisteForBrukerRequest.fnr().get());
         String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().toString();
-        Boolean isOppfolgendeVeileder = arbeidslisteService.erVeilederForBruker(fnr, VeilederId.of(innloggetVeileder));
 
-        boolean harVeilederTilgang = brukerService.hentNavKontor(fnr)
+
+        boolean harVeilederTilgang = brukerService.hentNavKontor(validertFnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet.getValue()))
                 .orElse(false);
 
-        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(fnr).orElse(emptyArbeidsliste())
-                .setIsOppfolgendeVeileder(isOppfolgendeVeileder)
+        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(validertFnr)
+                .toJavaOptional()
+                .orElse(emptyArbeidsliste())
+                .setIsOppfolgendeVeileder(
+                        arbeidslisteService.erVeilederForBruker(validertFnr, VeilederId.of(innloggetVeileder))
+                )
                 .setHarVeilederTilgang(harVeilederTilgang);
 
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);

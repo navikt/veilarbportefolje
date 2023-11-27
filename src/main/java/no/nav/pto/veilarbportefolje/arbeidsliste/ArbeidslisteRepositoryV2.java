@@ -50,15 +50,15 @@ public class ArbeidslisteRepositoryV2 {
     }
 
     // Ny metode
-    public Optional<Arbeidsliste> retrieveArbeidsliste(Fnr bruker) {
+    public Try<Arbeidsliste> retrieveArbeidsliste(Fnr bruker) {
         String sql = """
                     SELECT a.*, f.verdi FROM arbeidsliste a
                     INNER JOIN aktive_identer ai on ai.aktorid = a.aktoerid
                     LEFT JOIN fargekategori f on f.fnr = ai.fnr
                     WHERE ai.fnr = ?
                 """;
-        return Optional.ofNullable(
-                queryForObjectOrNull(
+        return Try.of(
+                () -> queryForObjectOrNull(
                         () -> db.queryForObject(sql, this::arbeidslisteMapper, bruker.get())
                 )
         );

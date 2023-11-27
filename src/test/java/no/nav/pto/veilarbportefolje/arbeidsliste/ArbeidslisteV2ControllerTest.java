@@ -82,7 +82,7 @@ public class ArbeidslisteV2ControllerTest {
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of("1234")));
         when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
-        when(arbeidslisteService.getArbeidsliste(fnr)).thenReturn(Optional.of(arbeidsliste));
+        when(arbeidslisteService.getArbeidsliste(fnr)).thenReturn(Try.of(() -> arbeidsliste));
 
 
         mockMvc
@@ -123,7 +123,7 @@ public class ArbeidslisteV2ControllerTest {
         when(arbeidslisteService.createArbeidsliste(any())).thenReturn(Try.of(() -> arbeidslisteDTO));
         when(arbeidslisteService.erVeilederForBruker(fnr.get())).thenReturn(valid(Fnr.ofValidFnr(fnr.get())));
         when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of("1234")));
-        when(arbeidslisteService.getArbeidsliste(fnr)).thenReturn(Optional.of(arbeidsliste));
+        when(arbeidslisteService.getArbeidsliste(fnr)).thenReturn(Try.of(() -> arbeidsliste));
 
         mockMvc
                 .perform(

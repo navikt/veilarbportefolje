@@ -39,7 +39,7 @@ public class ArbeidslisteService {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final MetricsClient metricsClient;
 
-    public Optional<Arbeidsliste> getArbeidsliste(Fnr fnr) {
+    public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
         return arbeidslisteRepositoryV2.retrieveArbeidsliste(fnr);
     }
 

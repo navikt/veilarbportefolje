@@ -78,18 +78,21 @@ public class ArbeidsListeController {
     @GetMapping("{fnr}")
     public Arbeidsliste getArbeidsListe(@PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
-        Fnr fnr = Fnr.ofValidFnr(fnrString);
 
+        Fnr validertFnr = Fnr.ofValidFnr(fnrString);
         String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().toString();
-        Boolean isOppfolgendeVeileder = arbeidslisteService.erVeilederForBruker(fnr, VeilederId.of(innloggetVeileder));
 
-        boolean harVeilederTilgang = brukerService.hentNavKontor(fnr)
+        boolean harVeilederTilgang = brukerService.hentNavKontor(validertFnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet.getValue()))
                 .orElse(false);
 
-        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(fnr).orElse(emptyArbeidsliste())
-                .setIsOppfolgendeVeileder(isOppfolgendeVeileder)
-                .setHarVeilederTilgang(harVeilederTilgang);
+        Arbeidsliste arbeidsliste =
+                arbeidslisteService.getArbeidsliste(validertFnr)
+                        .toJavaOptional()
+                        .orElse(emptyArbeidsliste())
+                        .setIsOppfolgendeVeileder(
+                                arbeidslisteService.erVeilederForBruker(validertFnr, VeilederId.of(innloggetVeileder)))
+                        .setHarVeilederTilgang(harVeilederTilgang);
 
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
     }
