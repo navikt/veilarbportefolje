@@ -23,6 +23,7 @@ import java.util.UUID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @RequiredArgsConstructor
 public class HuskelappRepository {
@@ -49,7 +50,7 @@ public class HuskelappRepository {
                     ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        db.update(sql, endringsId, huskelappId, huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), huskelappOpprettRequest.frist(), huskelappOpprettRequest.kommentar(), HuskelappStatus.AKTIV.name());
+        db.update(sql, endringsId, huskelappId, huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappOpprettRequest.frist()), huskelappOpprettRequest.kommentar(), HuskelappStatus.AKTIV.name());
         return huskelappId;
     }
 
@@ -78,7 +79,7 @@ public class HuskelappRepository {
                     ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        db.update(sqlRedigerHuskelapp, endringsId, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
+        db.update(sqlRedigerHuskelapp, endringsId, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappRedigerRequest.frist()), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
         return endringsId;
     }
 

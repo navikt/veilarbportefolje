@@ -83,6 +83,13 @@ public class DateUtils {
         return Timestamp.from(zonedDateTime.toInstant());
     }
 
+	public static Timestamp toTimestamp(LocalDate localDate) {
+		if (localDate == null) {
+			return null;
+		}
+		return Timestamp.valueOf(localDate.atStartOfDay());
+	}
+
     public static Timestamp toTimestamp(LocalDateTime localDateTime) {
         if (localDateTime == null) {
             return null;
