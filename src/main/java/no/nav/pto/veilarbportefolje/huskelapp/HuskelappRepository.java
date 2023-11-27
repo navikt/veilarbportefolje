@@ -89,9 +89,11 @@ public class HuskelappRepository {
                                 INNER JOIN oppfolging_data o ON ai.aktorid = o.aktoerid
                                 INNER JOIN oppfolgingsbruker_arena_v2 ob on ai.fnr = ob.fodselsnr
                                 WHERE ob.nav_kontor = ?
-                                AND o.veilederid = ?""",
+                                AND o.veilederid = ?
+                                AND hl.status = ?""",
                         enhetId.get(),
-                        veilederId.getValue()
+                        veilederId.getValue(),
+                        HuskelappStatus.AKTIV.name()
                 )
                 .stream()
                 .map(HuskelappRepository::huskelappMapper)
@@ -139,7 +141,7 @@ public class HuskelappRepository {
     @SneakyThrows
     private static Huskelapp huskelappMapper(Map<String, Object> rs) {
         return new Huskelapp(
-				(UUID) rs.get(HUSKELAPP_ID),
+                (UUID) rs.get(HUSKELAPP_ID),
                 Fnr.of((String) rs.get(FNR)),
                 EnhetId.of((String) rs.get(ENHET_ID)),
                 VeilederId.of((String) rs.get(ENDRET_AV_VEILEDER)),
@@ -147,7 +149,7 @@ public class HuskelappRepository {
                 toLocalDate((Timestamp) rs.get(FRIST)),
                 (String) rs.get(KOMMENTAR),
                 huskelappStatusMapper((String) rs.get(STATUS))
-               );
+        );
     }
 
     @SneakyThrows
