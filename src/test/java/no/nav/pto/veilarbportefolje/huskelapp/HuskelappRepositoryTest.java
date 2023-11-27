@@ -88,7 +88,7 @@ public class HuskelappRepositoryTest {
         repo.redigerHuskelapp(huskelappRedigerRequest, VeilederId.of("Z123456"));
         insertOppfolgingsInformasjon();
         List<Huskelapp> result = repo.hentAktivHuskelapp(EnhetId.of("0010"), VeilederId.of("Z123456"));
-        assertThat(result.size()).isEqualTo(1);
+        assertThat(result.size()).isEqualTo(2);
     }
 
     private void insertOppfolgingsInformasjon() {

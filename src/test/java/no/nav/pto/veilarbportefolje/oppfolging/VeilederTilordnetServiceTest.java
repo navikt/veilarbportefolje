@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -10,17 +11,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.ZonedDateTime;
 
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.when;
 
 class VeilederTilordnetServiceTest extends EndToEndTest {
 
+    @Autowired
+    private final AktorClient aktorClient;
     private final VeilederTilordnetService veilederTilordnetService;
 
     @Autowired
-    public VeilederTilordnetServiceTest(VeilederTilordnetService veilederTilordnetService) {
+    public VeilederTilordnetServiceTest(AktorClient aktorClient, VeilederTilordnetService veilederTilordnetService) {
+        this.aktorClient = aktorClient;
         this.veilederTilordnetService = veilederTilordnetService;
     }
 
@@ -28,6 +31,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
     public void skal_oppdatere_tilordnet_veileder() {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
+        when(aktorClient.hentFnr(aktoerId)).thenReturn(randomFnr());
 
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now(), null);
 
@@ -45,6 +49,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
     public void skal_oppdatere_tilordnet_veileder_med_null() {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = VeilederId.of(null);
+        when(aktorClient.hentFnr(aktoerId)).thenReturn(randomFnr());
 
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now(), null);
 
@@ -62,6 +67,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
     public void skal_slette_arbeidsliste_om_bruker_har_byttet_nav_kontor() {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
+        when(aktorClient.hentFnr(aktoerId)).thenReturn(randomFnr());
 
         testDataClient.setupBrukerMedArbeidsliste(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
         testDataClient.setupBrukerMedHuskelapp(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());

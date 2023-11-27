@@ -4,6 +4,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
@@ -69,6 +70,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Autowired
     private PdlPersonRepository pdlPersonRepository;
+
+    @Autowired
+    private AktorClient aktorClient;
 
     @MockBean
     private PdlPortefoljeClient pdlPortefoljeClient;
@@ -152,6 +156,8 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @Test
     void når_oppfølging_avsluttes_skal_arbeidsliste_registrering_og_oppfølgingsdata_slettes() {
         final AktorId aktoerId = randomAktorId();
+        when(aktorClient.hentFnr(aktoerId)).thenReturn(randomFnr());
+        when(aktorClient.hentAktorId(any())).thenReturn(aktoerId);
 
         testDataClient.setupBrukerMedArbeidsliste(
                 aktoerId,
@@ -186,6 +192,8 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @Test
     void når_oppfølging_avsluttes_skal_siste_14a_vedtak_slettes() {
         final AktorId aktorId = randomAktorId();
+        when(aktorClient.hentFnr(aktorId)).thenReturn(randomFnr());
+        when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
 
         testDataClient.lagreBrukerUnderOppfolging(aktorId, tilfeldigDatoTilbakeITid());
 
@@ -228,6 +236,8 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     void skal_avslutte_bruker_som_har_en_tidligere_startdato_enn_sluttdato() {
         final AktorId aktorId = randomAktorId();
         final Fnr fnr = TestDataUtils.randomFnr();
+        when(aktorClient.hentFnr(aktorId)).thenReturn(randomFnr());
+        when(aktorClient.hentAktorId(randomFnr())).thenReturn(aktorId);
 
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
