@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.huskelapp;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
@@ -7,6 +8,8 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +17,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.concurrent.ThreadLocalRandom.current;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -24,30 +30,32 @@ public class HuskelappRepositoryTest {
     @Autowired
     private HuskelappRepository repo;
     @Autowired
+    private OppfolgingRepositoryV2 oppfolgingRepository;
+    @Autowired
     private JdbcTemplate jdbcTemplate;
 
 
     Fnr fnr1 = Fnr.ofValidFnr("01010101010");
-    LocalDate frist1 = LocalDate.of(2026,1,1);
+    LocalDate frist1 = LocalDate.of(2026, 1, 1);
 
 
     private final HuskelappOpprettRequest huskelapp1 = new HuskelappOpprettRequest(fnr1,
             frist1, ("Huskelapp nr.1 sin kommentar"), EnhetId.of("0010"));
 
     private final HuskelappOpprettRequest huskelapp2 = new HuskelappOpprettRequest(Fnr.ofValidFnr("01010101011"),
-            LocalDate.of(2017,10,11), ("Huskelapp nr.2 sin kommentar"), EnhetId.of("0010"));
+            LocalDate.of(2017, 10, 11), ("Huskelapp nr.2 sin kommentar"), EnhetId.of("0010"));
 
     private final HuskelappOpprettRequest huskelapp3 = new HuskelappOpprettRequest(Fnr.ofValidFnr("01010101015"),
-            LocalDate.of(2017,10,11), ("Huskelapp nr.3 sin kommentar"), EnhetId.of("0010"));
+            LocalDate.of(2017, 10, 11), ("Huskelapp nr.3 sin kommentar"), EnhetId.of("0010"));
 
     private final HuskelappOpprettRequest huskelapp4 = new HuskelappOpprettRequest(Fnr.ofValidFnr("01010101012"),
-            LocalDate.of(2017,10,11), ("Huskelapp nr.4 sin kommentar"), EnhetId.of("0010"));
+            LocalDate.of(2017, 10, 11), ("Huskelapp nr.4 sin kommentar"), EnhetId.of("0010"));
 
     private final HuskelappOpprettRequest huskelappUtenKommentar = new HuskelappOpprettRequest(Fnr.ofValidFnr("01010101013"),
-            LocalDate.of(2017,10,11), (null), EnhetId.of("0010"));
+            LocalDate.of(2017, 10, 11), (null), EnhetId.of("0010"));
 
     private final HuskelappOpprettRequest huskelapp6 = new HuskelappOpprettRequest(Fnr.ofValidFnr("01010101014"),
-            LocalDate.of(2017,10,11), (null), EnhetId.of("0010"));
+            LocalDate.of(2017, 10, 11), (null), EnhetId.of("0010"));
 
     @BeforeEach
     public void setUp() {
@@ -63,8 +71,40 @@ public class HuskelappRepositoryTest {
         repo.opprettHuskelapp(huskelapp1, VeilederId.of("Z123456"));
         Optional<Huskelapp> result = repo.hentAktivHuskelapp(fnr1);
         assertThat(result.isPresent()).isTrue();
-        assertThat(result.get().enhetId().toString()).isEqualTo("0010");
-        assertThat(result.get().frist()).isEqualTo(frist1);
+        Optional<Huskelapp> result2 = repo.hentAktivHuskelapp(result.get().huskelappId());
+        assertThat(result2.isPresent()).isTrue();
+
+        assertThat(result.get().enhetId().toString()).isEqualTo("0010").isEqualTo(result2.get().enhetId().toString());
+        assertThat(result.get().frist()).isEqualTo(frist1).isEqualTo(result2.get().frist());
+    }
+
+    @Test
+    public void skalKunneOppretteOgHenteHuskelapp2() {
+        repo.opprettHuskelapp(huskelapp1, VeilederId.of("Z123456"));
+        repo.opprettHuskelapp(huskelapp2, VeilederId.of("Z123456"));
+        LocalDate nyFrist = LocalDate.of(2025, 10, 11);
+        Optional<Huskelapp> huskelapp1result = repo.hentAktivHuskelapp(huskelapp1.brukerFnr());
+        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelapp1result.get().huskelappId(), huskelapp1.brukerFnr(), nyFrist, "ny kommentar på huskelapp nr.2", EnhetId.of("0010"));
+        repo.redigerHuskelapp(huskelappRedigerRequest, VeilederId.of("Z123456"));
+        insertOppfolgingsInformasjon();
+        List<Huskelapp> result = repo.hentAktivHuskelapp(EnhetId.of("0010"), VeilederId.of("Z123456"));
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private void insertOppfolgingsInformasjon() {
+        insertOppfolgingsInformasjon(huskelapp1.brukerFnr(), AktorId.of("456123"), VeilederId.of("Z123456"), huskelapp1.enhetId());
+        insertOppfolgingsInformasjon(huskelapp2.brukerFnr(), AktorId.of("123456"), VeilederId.of("Z123456"), huskelapp2.enhetId());
+    }
+
+    private void insertOppfolgingsInformasjon(Fnr fnr, AktorId aktorId, VeilederId veilederId, EnhetId navKontor) {
+        int person = current().nextInt();
+        jdbcTemplate.update("INSERT INTO bruker_identer (person, ident, gruppe, historisk) values (?,?,?, false)",
+                person, aktorId.get(), PDLIdent.Gruppe.AKTORID.name());
+        jdbcTemplate.update("INSERT INTO bruker_identer (person, ident, gruppe, historisk) values (?,?,?, false)",
+                person, fnr.get(), PDLIdent.Gruppe.FOLKEREGISTERIDENT.name());
+        jdbcTemplate.update("INSERT INTO oppfolgingsbruker_arena_v2 (fodselsnr, nav_kontor) values (?,?)", fnr.get(), navKontor.get());
+        oppfolgingRepository.settUnderOppfolging(aktorId, ZonedDateTime.now());
+        oppfolgingRepository.settVeileder(aktorId, veilederId);
     }
 
 
@@ -80,7 +120,7 @@ public class HuskelappRepositoryTest {
     @Test
     public void skalKunneRedigereHuskelapp() {
         Fnr fnrBruker = Fnr.ofValidFnr("01010101011");
-        LocalDate nyFrist = LocalDate.of(2025,10,11);
+        LocalDate nyFrist = LocalDate.of(2025, 10, 11);
         repo.opprettHuskelapp(huskelapp2, VeilederId.of("Z123456"));
         Optional<Huskelapp> huskelappFør = repo.hentAktivHuskelapp(fnrBruker);
         assertThat(huskelappFør.isPresent()).isTrue();
@@ -106,7 +146,7 @@ public class HuskelappRepositoryTest {
     }
 
     @Test
-    public void skalKunneSletteHuskelappMedFlereRader() {
+    public void skalKunneInaktivereNyesteHuskelappRadNaarFlereRader() {
         Fnr fnrBruker = Fnr.ofValidFnr("01010101011");
         repo.opprettHuskelapp(huskelapp2, VeilederId.of("Z123456"));
         Optional<Huskelapp> huskelappFoer = repo.hentAktivHuskelapp(fnrBruker);
@@ -118,6 +158,36 @@ public class HuskelappRepositoryTest {
         repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId());
         Optional<Huskelapp> huskelappEtter = repo.hentAktivHuskelapp(fnrBruker);
         assertThat(huskelappEtter.isPresent()).isFalse();
+    }
+
+
+    @Test
+    public void sletterAlleHuskelappRader() {
+        Fnr fnrBruker = Fnr.ofValidFnr("01010101011");
+        repo.opprettHuskelapp(huskelapp2, VeilederId.of("Z123456"));
+        Optional<Huskelapp> huskelappFoer = repo.hentAktivHuskelapp(fnrBruker);
+        assertThat(huskelappFoer.isPresent()).isTrue();
+        assertThat(huskelappFoer.get().kommentar()).isEqualTo("Huskelapp nr.2 sin kommentar");
+        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappFoer.get().huskelappId(), fnrBruker, huskelappFoer.get().frist(), "ny kommentar på huskelapp nr.2", EnhetId.of("0010"));
+        repo.redigerHuskelapp(huskelappRedigerRequest, VeilederId.of("Z123456"));
+        repo.redigerHuskelapp(huskelappRedigerRequest, VeilederId.of("Z123456"));
+        repo.redigerHuskelapp(huskelappRedigerRequest, VeilederId.of("Z123456"));
+        List<Huskelapp> alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId());
+        assertThat(alleHuskelappRader.size()).isEqualTo(4);
+        repo.slettAlleHuskelappRaderPaaBruker(fnrBruker);
+        Optional<Huskelapp> huskelappEtter = repo.hentAktivHuskelapp(fnrBruker);
+        List<Huskelapp> alleHuskelappRader2 = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId());
+        assertThat(alleHuskelappRader2.size()).isEqualTo(0);
+    }
+
+
+    @Test
+    public void faarHentetNavkontorPaHuskelapp() {
+        Fnr fnrBruker = Fnr.ofValidFnr("01010101011");
+        repo.opprettHuskelapp(huskelapp2, VeilederId.of("Z123456"));
+        Optional<String> enhetId = repo.hentNavkontorPaHuskelapp(fnrBruker);
+        assertThat(enhetId.isPresent()).isTrue();
+        assertThat(enhetId.get()).isEqualTo("0010");
     }
 
 

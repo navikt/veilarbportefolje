@@ -117,11 +117,11 @@ public class HuskelappRepository {
 
     public void slettAlleHuskelappRaderPaaBruker(Fnr fnr) {
         String sql = String.format("DELETE FROM %s WHERE %s=? ", TABLE_NAME, FNR);
-        db.update(sql, fnr);
+        db.update(sql, fnr.get());
     }
 
     public void settSisteHuskelappRadIkkeAktiv(UUID huskelappId) {
-        //TODO: Må vi også si WHERE STATUS = AKTIV
+        //TODO: Satte også WHERE STATUS = AKTIV, selv om jeg tror rekkefølgen gjør at den alltid sletter den nyeste
         String sql = String.format(
                 "UPDATE %s SET %s = ? WHERE %s = ? AND STATUS = ?",
                 TABLE_NAME, STATUS, HUSKELAPP_ID
@@ -131,9 +131,9 @@ public class HuskelappRepository {
 
     public Optional<String> hentNavkontorPaHuskelapp(Fnr brukerFnr) {
         //Hvordan gjør vi dette ved støtte for flere huskelapper...
-        String sql = String.format("SELECT ENHET_ID FROM %s WHERE %s=? AND STATUS = AKTIV", TABLE_NAME, FNR);
+        String sql = String.format("SELECT ENHET_ID FROM %s WHERE %s=? AND STATUS = ?", TABLE_NAME, FNR);
         return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getString(ENHET_ID), brukerFnr.get())));
+                queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getString(ENHET_ID), brukerFnr.get(), HuskelappStatus.AKTIV.name())));
     }
 
     @SneakyThrows
