@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste.v1;
 
-import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -10,7 +9,6 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -40,18 +38,16 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerServiceV2 brukerService;
-    private final AktorClient aktorClient;
     private final AuthService authService;
 
     @Autowired
     public ArbeidsListeController(
             ArbeidslisteService arbeidslisteService,
             BrukerServiceV2 brukerService,
-            AktorClient aktorClient, AuthService authService
+            AuthService authService
     ) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerService = brukerService;
-        this.aktorClient = aktorClient;
         this.authService = authService;
 
     }
@@ -82,22 +78,17 @@ public class ArbeidsListeController {
     @GetMapping("{fnr}")
     public Arbeidsliste getArbeidsListe(@PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
+        Fnr fnr = Fnr.ofValidFnr(fnrString);
 
         String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().toString();
-
-        Fnr fnr = Fnr.ofValidFnr(fnrString);
-        Try<AktorId> aktoerId = Try.of(() -> aktorClient.hentAktorId(fnr));
+        Boolean isOppfolgendeVeileder = arbeidslisteService.erVeilederForBruker(fnr, VeilederId.of(innloggetVeileder));
 
         boolean harVeilederTilgang = brukerService.hentNavKontor(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet.getValue()))
                 .orElse(false);
 
-        Arbeidsliste arbeidsliste = aktoerId
-                .flatMap(arbeidslisteService::getArbeidsliste)
-                .toJavaOptional()
-                .orElse(emptyArbeidsliste())
-                .setIsOppfolgendeVeileder(aktoerId.map(id ->
-                        arbeidslisteService.erVeilederForBruker(fnr, VeilederId.of(innloggetVeileder))).get())
+        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(fnr).orElse(emptyArbeidsliste())
+                .setIsOppfolgendeVeileder(isOppfolgendeVeileder)
                 .setHarVeilederTilgang(harVeilederTilgang);
 
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
@@ -130,7 +121,7 @@ public class ArbeidsListeController {
                 .onFailure(e -> secureLog.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        if (arbeidslisteService.getArbeidsliste(fnr).get() == null){
+        if (arbeidslisteService.getArbeidsliste(fnr).get() == null) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(fnr).orElse(null);
             secureLog.warn("Arbeidsliste kunne ikke oppdateres, var null, fnr: {}, veileder: {}, på enhet: {}", fnrString, veilederId, enhet);

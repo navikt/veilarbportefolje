@@ -17,6 +17,8 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.List;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.generateJWT;
@@ -46,6 +49,8 @@ public class ArbeidslisteV2ControllerIntegrationTest {
     private static final String TEST_AKTORID = "123456789";
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private PdlIdentRepository pdlIdentRepository;
     @Autowired
     private AuthContextHolder authContextHolder;
     @MockBean
@@ -156,5 +161,9 @@ public class ArbeidslisteV2ControllerIntegrationTest {
         when(brukerService.hentNavKontor(Fnr.of(TEST_FNR))).thenReturn(Optional.of(NavKontor.of(TEST_ENHETSID)));
         when(aktorClient.hentAktorId(Fnr.of(TEST_FNR))).thenReturn(AktorId.of(TEST_AKTORID));
         when(brukerService.hentAktorId(Fnr.of(TEST_FNR))).thenReturn(Optional.of(AktorId.of(TEST_AKTORID)));
+
+        PDLIdent pdlIdentFnr = PDLIdent.builder().ident(TEST_FNR).gruppe(PDLIdent.Gruppe.FOLKEREGISTERIDENT).historisk(false).build();
+        PDLIdent pdlIdentAktorId = PDLIdent.builder().ident(TEST_AKTORID).gruppe(PDLIdent.Gruppe.AKTORID).historisk(false).build();
+        pdlIdentRepository.upsertIdenter(List.of(pdlIdentFnr, pdlIdentAktorId));
     }
 }

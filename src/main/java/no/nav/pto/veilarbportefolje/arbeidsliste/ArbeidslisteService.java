@@ -39,12 +39,8 @@ public class ArbeidslisteService {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final MetricsClient metricsClient;
 
-    public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
-        return hentAktorId(fnr).map(this::getArbeidsliste).get();
-    }
-
-    public Try<Arbeidsliste> getArbeidsliste(AktorId aktoerId) {
-        return arbeidslisteRepositoryV2.retrieveArbeidsliste(aktoerId);
+    public Optional<Arbeidsliste> getArbeidsliste(Fnr fnr) {
+        return arbeidslisteRepositoryV2.retrieveArbeidsliste(fnr);
     }
 
     public List<Arbeidsliste> getArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {

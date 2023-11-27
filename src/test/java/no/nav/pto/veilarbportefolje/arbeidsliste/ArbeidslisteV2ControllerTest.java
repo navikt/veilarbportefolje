@@ -62,18 +62,17 @@ public class ArbeidslisteV2ControllerTest {
         Fnr fnr = Fnr.of("12345678910");
         AktorId aktorId = AktorId.of("1223234234234");
         Arbeidsliste arbeidsliste = new Arbeidsliste(
-            VeilederId.of("Z12345"),
-            ZonedDateTime.now(),
-            "Tittel",
-            "kommentar",
-            ZonedDateTime.now(),
-            true,
-            true,
-            Arbeidsliste.Kategori.LILLA,
-            true,
-            "1234"
-            );
-
+                VeilederId.of("Z12345"),
+                ZonedDateTime.now(),
+                "Tittel",
+                "kommentar",
+                ZonedDateTime.now(),
+                true,
+                true,
+                Arbeidsliste.Kategori.LILLA,
+                true,
+                "1234"
+        );
 
 
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
@@ -83,20 +82,20 @@ public class ArbeidslisteV2ControllerTest {
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of("1234")));
         when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
-        when(arbeidslisteService.getArbeidsliste(aktorId)).thenReturn(Try.of(() -> arbeidsliste));
+        when(arbeidslisteService.getArbeidsliste(fnr)).thenReturn(Optional.of(arbeidsliste));
 
 
         mockMvc
                 .perform(
                         post("/api/v2/hent-arbeidsliste")
                                 .contentType(APPLICATION_JSON)
-                                .content("{\"fnr\":\""+ fnr +"\"}")
+                                .content("{\"fnr\":\"" + fnr + "\"}")
                                 .header("test_ident", "Z12345")
                                 .header("test_ident_type", "INTERN")
                 )
                 .andExpect(status().is(200))
                 .andExpect(content()
-                .string(toJson(arbeidsliste)));
+                        .string(toJson(arbeidsliste)));
     }
 
     @Test
@@ -124,7 +123,7 @@ public class ArbeidslisteV2ControllerTest {
         when(arbeidslisteService.createArbeidsliste(any())).thenReturn(Try.of(() -> arbeidslisteDTO));
         when(arbeidslisteService.erVeilederForBruker(fnr.get())).thenReturn(valid(Fnr.ofValidFnr(fnr.get())));
         when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of("1234")));
-        when(arbeidslisteService.getArbeidsliste(fnr)).thenReturn(Try.of(() -> arbeidsliste));
+        when(arbeidslisteService.getArbeidsliste(fnr)).thenReturn(Optional.of(arbeidsliste));
 
         mockMvc
                 .perform(

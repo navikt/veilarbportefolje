@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,6 +49,21 @@ public class ArbeidslisteRepositoryV2 {
         );
     }
 
+    // Ny metode
+    public Optional<Arbeidsliste> retrieveArbeidsliste(Fnr bruker) {
+        String sql = """
+                    SELECT a.*, f.verdi FROM arbeidsliste a
+                    INNER JOIN aktive_identer ai on ai.aktorid = a.aktoerid
+                    LEFT JOIN fargekategori f on f.fnr = ai.fnr
+                    WHERE ai.fnr = ?
+                """;
+        return Optional.ofNullable(
+                queryForObjectOrNull(
+                        () -> db.queryForObject(sql, this::arbeidslisteMapper, bruker.get())
+                )
+        );
+    }
+
     public List<Arbeidsliste> hentArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
         return dbReadOnly.queryForList("""
                                 SELECT a.* FROM arbeidsliste a
@@ -63,6 +79,7 @@ public class ArbeidslisteRepositoryV2 {
                 .map(ArbeidslisteRepositoryV2::arbeidslisteMapper)
                 .toList();
     }
+
 
     public Try<ArbeidslisteDTO> insertArbeidsliste(ArbeidslisteDTO dto) {
         return Try.of(
