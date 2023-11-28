@@ -38,7 +38,7 @@ public class HuskelappController {
     private final BrukerServiceV2 brukerServiceV2;
 
     @PostMapping("/huskelapp")
-    public ResponseEntity<UUID> opprettHuskelapp(@RequestBody HuskelappOpprettRequest huskelappOpprettRequest) {
+    public ResponseEntity<String> opprettHuskelapp(@RequestBody HuskelappOpprettRequest huskelappOpprettRequest) {
         try {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             validerOppfolgingOgBrukerOgEnhet(huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get());
@@ -49,7 +49,7 @@ public class HuskelappController {
             }
 
             UUID uuid = huskelappService.opprettHuskelapp(huskelappOpprettRequest, veilederId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(uuid);
+            return ResponseEntity.status(HttpStatus.CREATED).body(uuid.toString());
 
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);

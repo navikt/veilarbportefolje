@@ -46,7 +46,7 @@ public class HuskelappService {
     }
 
     public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
-        UUID endringsId = UUID.fromString("");
+        UUID endringsId = null;
         try {
             endringsId = huskelappRepository.redigerHuskelapp(huskelappRedigerRequest, veilederId);
 
