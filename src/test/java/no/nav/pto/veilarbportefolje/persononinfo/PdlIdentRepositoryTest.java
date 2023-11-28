@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.persononinfo;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
@@ -22,6 +23,8 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class PdlIdentRepositoryTest {
@@ -34,6 +37,9 @@ public class PdlIdentRepositoryTest {
 
     @Autowired
     private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+
+    @Autowired
+    private AktorClient aktorClient;
 
     @Test
     public void identSplitt_allePersonerMedTidligereIdenterSkalSlettes() {
@@ -69,6 +75,8 @@ public class PdlIdentRepositoryTest {
     public void oppfolgingAvsluttet_flereIdenterUnderOppfolging_lokalIdentLagringSkalIkkeSlettes() {
         AktorId historiskIdent = randomAktorId();
         AktorId ident = randomAktorId();
+        when(aktorClient.hentFnr(any())).thenReturn(randomFnr());
+        when(aktorClient.hentAktorId(any())).thenReturn(ident);
         List<PDLIdent> identer = List.of(
                 new PDLIdent(historiskIdent.get(), true, AKTORID),
                 new PDLIdent(ident.get(), false, AKTORID),
