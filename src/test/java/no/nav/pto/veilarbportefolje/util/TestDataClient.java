@@ -109,6 +109,10 @@ public class TestDataClient {
         lagreBrukerUnderOppfolging(aktoerId, fnr, NavKontor.of(navKontor), veilederId, ZonedDateTime.now(), diskresjonKode);
     }
 
+	public void lagreBrukerUnderOppfolging(AktorId aktoerId, Fnr fnr, NavKontor navKontor, VeilederId veilederId) {
+		lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, ZonedDateTime.now(), null);
+	}
+
     public boolean hentUnderOppfolgingOgAktivIdent(AktorId aktoerId) {
         return oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId);
     }

@@ -124,7 +124,6 @@ public class HuskelappRepository {
     }
 
     public void settSisteHuskelappRadIkkeAktiv(UUID huskelappId) {
-        //TODO: Satte også WHERE STATUS = AKTIV, selv om jeg tror rekkefølgen gjør at den alltid sletter den nyeste
         String sql = String.format(
                 "UPDATE %s SET %s = ? WHERE %s = ? AND STATUS = ?",
                 TABLE_NAME, STATUS, HUSKELAPP_ID

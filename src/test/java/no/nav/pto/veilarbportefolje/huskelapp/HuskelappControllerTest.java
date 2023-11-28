@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.huskelapp;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import no.nav.common.abac.VeilarbPep;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
@@ -10,31 +11,38 @@ import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.HuskelappController;
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappForBrukerRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappForVeilederRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappResponse;
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappSlettRequest;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
+import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDate;
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.common.json.JsonUtils.toJson;
+import static no.nav.common.json.JsonUtils.fromJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,6 +51,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class HuskelappControllerTest {
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    protected TestDataClient testDataClient;
 
     @MockBean
     private AuthService authService;
@@ -60,103 +71,248 @@ public class HuskelappControllerTest {
     private AktorClient aktorClient;
 
     @Test
-    void test_at_vi_opprettet_huskelapp() throws Exception {
-        Fnr fnr = Fnr.of("12345678910");
-		EnhetId enhetId = EnhetId.of("1234");
-        AktorId aktorId = AktorId.of("1223234234234");
-		HuskelappOpprettRequest request = new HuskelappOpprettRequest(fnr, LocalDate.now(), "Test", enhetId);
+    void test_opprett_og_hent_huskelapp_for_bruker() throws Exception {
+        Fnr fnr = Fnr.of("10987654321");
+        EnhetId enhetId = EnhetId.of("1234");
+        AktorId aktorId = AktorId.of("99988877766655");
+        VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
+        LocalDate huskelappfrist = LocalDate.now();
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, NavKontor.of(enhetId.get()), veilederId);
 
-		when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
-		when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(Decision.Permit.INSTANCE);
-		when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-		when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
-		when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
+        when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
+        when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
-		when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(AuthUtils.getInnloggetVeilederIdent()));
+        when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
 
-        mockMvc
+        HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, huskelappfrist, "Test", enhetId);
+        String opprettetHuskelappId = mockMvc
                 .perform(
                         post("/api/v1/huskelapp")
                                 .contentType(APPLICATION_JSON)
-                                .content(toJson(request))
+                                .content(toJson(opprettRequest))
                                 .header("test_ident", "Z12345")
                                 .header("test_ident_type", "INTERN")
                 )
-                .andExpect(status().is(201));
+                .andExpect(status().is(201))
+                .andReturn().getResponse().getContentAsString();
+
+        HuskelappForBrukerRequest hentForBrukerRequest = new HuskelappForBrukerRequest(fnr, enhetId);
+        HuskelappResponse expected = new HuskelappResponse(opprettetHuskelappId, fnr, enhetId, huskelappfrist, "Test", LocalDate.now(), veilederId.getValue());
+
+        String hentHuskelappResult = mockMvc
+                .perform(
+                        post("/api/v1/hent-huskelapp-for-bruker")
+                                .contentType(APPLICATION_JSON)
+                                .content(toJson(hentForBrukerRequest))
+                                .header("test_ident", "Z12345")
+                                .header("test_ident_type", "INTERN")
+                )
+                .andExpect(status().is(200))
+                .andReturn().getResponse().getContentAsString();
+
+        HuskelappResponse hentetHuskelappBody = fromJson(hentHuskelappResult, HuskelappResponse.class);
+        assertThat(hentetHuskelappBody.huskelappId()).isEqualTo(expected.huskelappId());
+        assertThat(hentetHuskelappBody.brukerFnr()).isEqualTo(expected.brukerFnr());
+        assertThat(hentetHuskelappBody.enhetId()).isEqualTo(expected.enhetId());
+        assertThat(hentetHuskelappBody.frist()).isEqualTo(expected.frist());
+        assertThat(hentetHuskelappBody.kommentar()).isEqualTo(expected.kommentar());
+        assertThat(hentetHuskelappBody.endretDato()).isEqualTo(expected.endretDato());
+        assertThat(hentetHuskelappBody.endretAv()).isEqualTo(expected.endretAv());
+
     }
 
-	@Test
-	void test_at_vi_redigere_huskelapp() throws Exception {
-		Fnr fnr = Fnr.of("12345678910");
-		EnhetId enhetId = EnhetId.of("1234");
-		AktorId aktorId = AktorId.of("1223234234234");
-		HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, LocalDate.now(), "Test", enhetId);
+    @Test
+    void test_at_vi_redigere_huskelapp() throws Exception {
+        Fnr fnr = Fnr.of("12345678910");
+        EnhetId enhetId = EnhetId.of("1234");
+        AktorId aktorId = AktorId.of("1223234234234");
+        VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
+        HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, LocalDate.now(), "Test", enhetId);
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, NavKontor.of(enhetId.get()), veilederId);
 
-		when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
-		when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(Decision.Permit.INSTANCE);
-		when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-		when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
-		when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-		when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
-		when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(AuthUtils.getInnloggetVeilederIdent()));
+        when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
+        when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(Decision.Permit.INSTANCE);
+        when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
+        when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
+        when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
+        when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
+        when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
 
-		ResultActions opprettetResult = mockMvc
-				.perform(
-						post("/api/v1/huskelapp")
-								.contentType(APPLICATION_JSON)
-								.content(toJson(opprettRequest))
-								.header("test_ident", "Z12345")
-								.header("test_ident_type", "INTERN")
-				);
+        String opprettetHuskelappId = mockMvc
+                .perform(
+                        post("/api/v1/huskelapp")
+                                .contentType(APPLICATION_JSON)
+                                .content(toJson(opprettRequest))
+                                .header("test_ident", "Z12345")
+                                .header("test_ident_type", "INTERN")
+                ).andReturn().getResponse().getContentAsString();
 
-		String body = opprettetResult.andReturn().getResponse().getContentAsString();
-		HuskelappRedigerRequest redigereRequest = new HuskelappRedigerRequest(UUID.fromString(body), fnr, LocalDate.now(), "Test", enhetId);
-		mockMvc
-				.perform(
-						put("/api/v1/huskelapp")
-								.contentType(APPLICATION_JSON)
-								.content(toJson(redigereRequest))
-								.header("test_ident", "Z12345")
-								.header("test_ident_type", "INTERN")
-				).andExpect(status().is(204));
-	}
+        HuskelappForBrukerRequest hentForBrukerForRedigeringRequest = new HuskelappForBrukerRequest(fnr, enhetId);
+        String hentHuskelappForRedigeringResult = mockMvc
+                .perform(
+                        post("/api/v1/hent-huskelapp-for-bruker")
+                                .contentType(APPLICATION_JSON)
+                                .content(toJson(hentForBrukerForRedigeringRequest))
+                                .header("test_ident", "Z12345")
+                                .header("test_ident_type", "INTERN")
+                )
+                .andExpect(status().is(200))
+                .andReturn().getResponse().getContentAsString();
 
-	@Test
-	void test_hent_huskelapp_for_Veileder() throws Exception {
-		Fnr fnr = Fnr.of("12345678910");
-		EnhetId enhetId = EnhetId.of("1234");
-		AktorId aktorId = AktorId.of("1223234234234");
-		VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
-		HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, LocalDate.now(), "Test", enhetId);
+        HuskelappResponse hentetHuskelappBody = fromJson(hentHuskelappForRedigeringResult, HuskelappResponse.class);
+        assertThat(hentetHuskelappBody.huskelappId()).isEqualTo(opprettetHuskelappId);
+        assertThat(hentetHuskelappBody.frist()).isEqualTo(opprettRequest.frist());
+        assertThat(hentetHuskelappBody.kommentar()).isEqualTo(opprettRequest.kommentar());
+        assertThat(hentetHuskelappBody.endretAv()).isEqualTo(veilederId.getValue());
 
-		when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-		when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
-		when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-		when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
-		when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
+        HuskelappRedigerRequest redigereRequest = new HuskelappRedigerRequest(UUID.fromString(opprettetHuskelappId), fnr, null, "Test at det blir en ny kommentar", enhetId);
+        mockMvc
+                .perform(
+                        put("/api/v1/huskelapp")
+                                .contentType(APPLICATION_JSON)
+                                .content(toJson(redigereRequest))
+                                .header("test_ident", "Z12345")
+                                .header("test_ident_type", "INTERN")
+                ).andExpect(status().is(204));
 
-		mockMvc
-				.perform(
-						post("/api/v1/huskelapp")
-								.contentType(APPLICATION_JSON)
-								.content(toJson(opprettRequest))
-								.header("test_ident", "Z12345")
-								.header("test_ident_type", "INTERN")
-				)
-				.andExpect(status().is(201));
+        HuskelappForBrukerRequest hentForBrukerEtterRedigeringRequest = new HuskelappForBrukerRequest(fnr, enhetId);
+        String hentHuskelappEtterRedigeringResult = mockMvc
+                .perform(
+                        post("/api/v1/hent-huskelapp-for-bruker")
+                                .contentType(APPLICATION_JSON)
+                                .content(toJson(hentForBrukerEtterRedigeringRequest))
+                                .header("test_ident", "Z12345")
+                                .header("test_ident_type", "INTERN")
+                )
+                .andExpect(status().is(200))
+                .andReturn().getResponse().getContentAsString();
 
-		HuskelappForVeilederRequest hentForVeilederRequest = new HuskelappForVeilederRequest(enhetId, veilederId);
+        HuskelappResponse hentetHuskelappEtterRedigeringBody = fromJson(hentHuskelappEtterRedigeringResult, HuskelappResponse.class);
+        assertThat(hentetHuskelappEtterRedigeringBody.huskelappId()).isEqualTo(opprettetHuskelappId);
+        assertThat(hentetHuskelappEtterRedigeringBody.frist()).isEqualTo(redigereRequest.frist());
+        assertThat(hentetHuskelappEtterRedigeringBody.kommentar()).isEqualTo(redigereRequest.kommentar());
+        assertThat(hentetHuskelappEtterRedigeringBody.endretAv()).isEqualTo(veilederId.getValue());
+    }
 
-		mockMvc
-				.perform(
-						post("/api/v1/hent-huskelapp-for-veileder")
-								.contentType(APPLICATION_JSON)
-								.content(toJson(hentForVeilederRequest))
-								.header("test_ident", "Z12345")
-								.header("test_ident_type", "INTERN")
-				)
-				.andExpect(status().is(200))
-				.andExpect(content()
-						.string(toJson(Collections.emptyList())));;
-	}
+    @Test
+    void test_hent_huskelapp_for_veileder() throws Exception {
+        Fnr fnr = Fnr.of("76543218457");
+        EnhetId enhetId = EnhetId.of("1234");
+        AktorId aktorId = AktorId.of("1223234234234");
+        VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
+        HuskelappOpprettRequest opprettRequest1 = new HuskelappOpprettRequest(fnr, LocalDate.now(), "Test", enhetId);
+        HuskelappOpprettRequest opprettRequest2 = new HuskelappOpprettRequest(fnr, null, null, enhetId);
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, NavKontor.of(enhetId.get()), veilederId);
+
+        when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
+        when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
+        when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
+        when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
+
+        String opprettetHuskelappId1 = mockMvc
+                .perform(
+                        post("/api/v1/huskelapp")
+                                .contentType(APPLICATION_JSON)
+                                .content(toJson(opprettRequest1))
+                                .header("test_ident", "Z12345")
+                                .header("test_ident_type", "INTERN")
+                )
+                .andExpect(status().is(201))
+                .andReturn().getResponse().getContentAsString();
+
+        String opprettetHuskelappId2 = mockMvc
+                .perform(
+                        post("/api/v1/huskelapp")
+                                .contentType(APPLICATION_JSON)
+                                .content(toJson(opprettRequest2))
+                                .header("test_ident", "Z12345")
+                                .header("test_ident_type", "INTERN")
+                )
+                .andExpect(status().is(201))
+                .andReturn().getResponse().getContentAsString();
+
+        HuskelappForVeilederRequest hentForVeilederRequest = new HuskelappForVeilederRequest(enhetId, veilederId);
+
+        String result = mockMvc
+                .perform(
+                        post("/api/v1/hent-huskelapp-for-veileder")
+                                .contentType(APPLICATION_JSON)
+                                .content(toJson(hentForVeilederRequest))
+                                .header("test_ident", "Z12345")
+                                .header("test_ident_type", "INTERN")
+                )
+                .andExpect(status().is(200))
+                .andReturn().getResponse().getContentAsString();
+
+        List<HuskelappResponse> hentetHuskelappEtterRedigeringBody = fromJson(result, new TypeReference<>() {});
+        assertThat(hentetHuskelappEtterRedigeringBody.size()).isEqualTo(2);
+        assertThat(hentetHuskelappEtterRedigeringBody.stream().anyMatch( var -> var.equals(new HuskelappResponse(
+                        opprettetHuskelappId1,
+                        opprettRequest1.brukerFnr(),
+                        opprettRequest1.enhetId(),
+                        opprettRequest1.frist(),
+                        opprettRequest1.kommentar(),
+                        LocalDate.now(),
+                        veilederId.getValue()
+                )))).isTrue();
+        assertThat(hentetHuskelappEtterRedigeringBody.stream().anyMatch( var -> var.equals(new HuskelappResponse(
+                opprettetHuskelappId2,
+                opprettRequest2.brukerFnr(),
+                opprettRequest2.enhetId(),
+                opprettRequest2.frist(),
+                opprettRequest2.kommentar(),
+                LocalDate.now(),
+                veilederId.getValue()
+        )))).isTrue();
+    }
+
+    @Test
+    void test_slett_huskelapp() throws Exception {
+        Fnr fnr = Fnr.of("34567823456");
+        EnhetId enhetId = EnhetId.of("1234");
+        AktorId aktorId = AktorId.of("1223234234234");
+        HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, LocalDate.now(), "Test", enhetId);
+
+        when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
+        when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(Decision.Permit.INSTANCE);
+        when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
+        when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
+        when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
+        when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
+        when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(AuthUtils.getInnloggetVeilederIdent()));
+
+        String opprettetBody = mockMvc
+                .perform(
+                        post("/api/v1/huskelapp")
+                                .contentType(APPLICATION_JSON)
+                                .content(toJson(opprettRequest))
+                                .header("test_ident", "Z12345")
+                                .header("test_ident_type", "INTERN")
+                )
+                .andExpect(status().is(201))
+                .andReturn().getResponse().getContentAsString();
+
+        HuskelappSlettRequest slettRequest = new HuskelappSlettRequest(opprettetBody);
+        mockMvc
+                .perform(
+                        delete("/api/v1/huskelapp")
+                                .contentType(APPLICATION_JSON)
+                                .content(toJson(slettRequest))
+                                .header("test_ident", "Z12345")
+                                .header("test_ident_type", "INTERN")
+                )
+                .andExpect(status().is(204));
+
+        HuskelappForBrukerRequest hentForBrukerRequest = new HuskelappForBrukerRequest(fnr, enhetId);
+        mockMvc
+                .perform(
+                        post("/api/v1/hent-huskelapp-for-bruker")
+                                .contentType(APPLICATION_JSON)
+                                .content(toJson(hentForBrukerRequest))
+                                .header("test_ident", "Z12345")
+                                .header("test_ident_type", "INTERN")
+                )
+                .andExpect(status().is(200))
+                .andExpect(content().string(""));
+    }
 }
