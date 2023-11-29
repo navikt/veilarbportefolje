@@ -28,6 +28,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.generateJWT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -47,12 +49,18 @@ public class ArbeidslisteV2ControllerIntegrationTest {
     private static final String TEST_ENHETSID = "1234";
     private static final String TEST_VEILEDERIDENT = "Z123456";
     private static final String TEST_AKTORID = "123456789";
+
     @Autowired
     private MockMvc mockMvc;
     @Autowired
     private PdlIdentRepository pdlIdentRepository;
     @Autowired
     private AuthContextHolder authContextHolder;
+    @Autowired
+    private ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
+    @Autowired
+    private JdbcTemplate db;
+
     @MockBean
     private AuthService authService;
     @MockBean
@@ -88,17 +96,16 @@ public class ArbeidslisteV2ControllerIntegrationTest {
 
     @Test
     public void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet() throws Exception {
-        authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
-            mockMvc.perform(MockMvcRequestBuilders.post("/api/v2/arbeidsliste")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(JsonUtils.toJson(new ArbeidslisteV2Request(Fnr.of(TEST_FNR),
-                                    null,
-                                    null,
-                                    null,
-                                    Arbeidsliste.Kategori.LILLA.name()))))
-                    .andExpect(
-                            MockMvcResultMatchers.status().isOk());
+        arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
+                Fnr.of(TEST_FNR),
+                null,
+                null,
+                null,
+                Arbeidsliste.Kategori.LILLA
+        ).setAktorId(AktorId.of(TEST_AKTORID)));
+        assertThat(arbeidslisteRepositoryV2.retrieveArbeidsliste(Fnr.of(TEST_FNR)).isSuccess()).isTrue();
 
+        authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.delete("/api/v2/arbeidsliste")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JsonUtils.toJson(new ArbeidslisteForBrukerRequest(Fnr.of(TEST_FNR))))
@@ -117,17 +124,16 @@ public class ArbeidslisteV2ControllerIntegrationTest {
 
     @Test
     public void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet() throws Exception {
-        authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
-            mockMvc.perform(MockMvcRequestBuilders.post("/api/v2/arbeidsliste")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(JsonUtils.toJson(new ArbeidslisteV2Request(Fnr.of(TEST_FNR),
-                                    null,
-                                    null,
-                                    null,
-                                    Arbeidsliste.Kategori.LILLA.name()))))
-                    .andExpect(
-                            MockMvcResultMatchers.status().isOk());
+        arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
+                Fnr.of(TEST_FNR),
+                null,
+                null,
+                null,
+                Arbeidsliste.Kategori.LILLA
+        ).setAktorId(AktorId.of(TEST_AKTORID)));
+        assertThat(arbeidslisteRepositoryV2.retrieveArbeidsliste(Fnr.of(TEST_FNR)).isSuccess()).isTrue();
 
+        authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.put("/api/v2/arbeidsliste")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JsonUtils.toJson(new ArbeidslisteV2Request(Fnr.of(TEST_FNR),
@@ -150,6 +156,10 @@ public class ArbeidslisteV2ControllerIntegrationTest {
 
     @BeforeEach
     public void setupMocks() {
+        db.update("TRUNCATE arbeidsliste");
+        db.update("TRUNCATE fargekategori");
+        db.update("TRUNCATE bruker_identer");
+
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(Decision.Permit.INSTANCE);
         when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
