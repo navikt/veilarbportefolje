@@ -44,7 +44,7 @@ public class HuskelappController {
             validerOppfolgingOgBrukerOgEnhet(huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get());
             boolean erVeilederForBruker = validerErVeilederForBruker(huskelappOpprettRequest.brukerFnr());
 
-            if(!erVeilederForBruker) {
+            if (!erVeilederForBruker) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
 
@@ -148,13 +148,13 @@ public class HuskelappController {
 
     private HuskelappResponse mapToHuskelappResponse(Huskelapp huskelapp) {
         return new HuskelappResponse(
-            huskelapp.huskelappId().toString(),
-            huskelapp.brukerFnr(),
-            huskelapp.enhetId(),
-            huskelapp.frist(),
-            huskelapp.kommentar(),
-            huskelapp.endretDato(),
-            huskelapp.endretAv()
+                huskelapp.huskelappId().toString(),
+                huskelapp.brukerFnr(),
+                huskelapp.enhetId(),
+                huskelapp.frist(),
+                huskelapp.kommentar(),
+                huskelapp.endretDato(),
+                huskelapp.endretAv()
         );
     }
 }

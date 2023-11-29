@@ -95,12 +95,12 @@ public class OpensearchIndexerV2 {
     @SneakyThrows
     public void updateHuskelapp(AktorId aktoerId, Huskelapp huskelapp) {
         final XContentBuilder content = jsonBuilder()
-				.startObject()
+                .startObject()
                 .startObject("huskelapp")
                 .field("frist", huskelapp.frist())
-				.field("kommentar", huskelapp.kommentar())
+                .field("kommentar", huskelapp.kommentar())
                 .endObject()
-				.endObject();
+                .endObject();
 
         update(aktoerId, content, "Oppretter/redigerer huskelapp");
     }

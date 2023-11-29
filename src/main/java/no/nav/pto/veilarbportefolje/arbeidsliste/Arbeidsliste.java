@@ -66,6 +66,7 @@ public class Arbeidsliste {
     private static Date dateIfNotFarInTheFutureDate(Instant instant) {
         return DateUtils.isFarInTheFutureDate(instant) ? null : Date.from(instant);
     }
+
     @JsonCreator
     public Arbeidsliste(@JsonProperty("sistEndretAv") VeilederId sistEndretAv,
                         @JsonProperty("endringstidspunkt") ZonedDateTime endringstidspunkt,

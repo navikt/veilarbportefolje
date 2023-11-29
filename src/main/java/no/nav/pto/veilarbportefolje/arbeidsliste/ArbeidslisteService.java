@@ -51,7 +51,7 @@ public class ArbeidslisteService {
         return arbeidslisteRepositoryPostgres.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);
     }
 
-     public Try<ArbeidslisteDTO>  createArbeidsliste(ArbeidslisteDTO dto) {
+    public Try<ArbeidslisteDTO> createArbeidsliste(ArbeidslisteDTO dto) {
 
         metricsClient.report((new Event("arbeidsliste.opprettet")));
 

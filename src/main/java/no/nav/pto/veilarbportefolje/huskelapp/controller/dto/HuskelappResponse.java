@@ -6,5 +6,6 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 
 import java.time.LocalDate;
 
-public record HuskelappResponse(String huskelappId, Fnr brukerFnr, EnhetId enhetID, LocalDate frist, String kommentar, LocalDate endretDato, VeilederId endretAv) {
+public record HuskelappResponse(String huskelappId, Fnr brukerFnr, EnhetId enhetID, LocalDate frist, String kommentar,
+                                LocalDate endretDato, VeilederId endretAv) {
 }

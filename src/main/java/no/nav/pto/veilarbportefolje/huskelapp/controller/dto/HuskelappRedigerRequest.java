@@ -6,5 +6,6 @@ import no.nav.common.types.identer.Fnr;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public record HuskelappRedigerRequest(UUID huskelappId, Fnr brukerFnr, LocalDate frist, String kommentar, EnhetId enhetId) {
+public record HuskelappRedigerRequest(UUID huskelappId, Fnr brukerFnr, LocalDate frist, String kommentar,
+                                      EnhetId enhetId) {
 }

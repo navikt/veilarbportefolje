@@ -9,14 +9,14 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public record Huskelapp(
-    UUID huskelappId,
-    Fnr brukerFnr,
-    EnhetId enhetId,
-    VeilederId endretAv,
-    LocalDate endretDato,
-    LocalDate frist,
-    String kommentar,
-    HuskelappStatus status
+        UUID huskelappId,
+        Fnr brukerFnr,
+        EnhetId enhetId,
+        VeilederId endretAv,
+        LocalDate endretDato,
+        LocalDate frist,
+        String kommentar,
+        HuskelappStatus status
 
 ) {
 
