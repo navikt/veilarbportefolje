@@ -46,7 +46,7 @@ public class HuskelappService {
     }
 
     public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
-        UUID endringsId = UUID.fromString("");
+        UUID endringsId = null;
         try {
             endringsId = huskelappRepository.redigerHuskelapp(huskelappRedigerRequest, veilederId);
 
@@ -76,9 +76,9 @@ public class HuskelappService {
         }
     }
 
-    public Huskelapp hentHuskelapp(Fnr brukerFnr) {
+    public Optional<Huskelapp> hentHuskelapp(Fnr brukerFnr) {
         try {
-            return huskelappRepository.hentAktivHuskelapp(brukerFnr).orElse(null);
+            return huskelappRepository.hentAktivHuskelapp(brukerFnr);
         } catch (Exception e) {
             secureLog.error("Kunne ikke hente huskelapp for bruker: " + brukerFnr);
             throw new RuntimeException("Kunne ikke hente huskelapp", e);
