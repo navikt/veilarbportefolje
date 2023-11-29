@@ -100,14 +100,14 @@ public class HuskelappController {
             Optional<Huskelapp> huskelappOptional = huskelappService.hentHuskelapp(UUID.fromString(huskelappSlettRequest.huskelappId()));
 
             if (huskelappOptional.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.GONE, "Ingen huskelapp å slette med denne IDen");
+                return ResponseEntity.status(HttpStatus.GONE).build();
             }
 
             validerOppfolgingOgBrukerOgEnhet(huskelappOptional.get().brukerFnr().get(), huskelappOptional.get().enhetId().get());
             boolean erVeilederForBruker = validerErVeilederForBruker(huskelappOptional.get().brukerFnr());
 
             if (!erVeilederForBruker) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Veileder har ikke tilgang til kan ikke slette huskelapp");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
             huskelappService.settHuskelappIkkeAktiv(UUID.fromString(huskelappSlettRequest.huskelappId()), huskelappOptional.get().brukerFnr());
