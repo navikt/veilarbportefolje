@@ -243,16 +243,18 @@ public class ArbeidslisteRepositoryV2Test {
     @Test
     public void skalSletteArbeidslisteForAktoerids() {
         insertArbeidslister();
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1);
 
-        AktorId aktoerId1 = AktorId.of("22222222");
-        Try<Arbeidsliste> arbeidsliste = repo.retrieveArbeidsliste(aktoerId1);
+        AktorId aktoerId1 = TEST_ARBEIDSLISTE_1.getAktorId();
+        Fnr fnr1 = TEST_ARBEIDSLISTE_1.getFnr();
+        Try<Arbeidsliste> arbeidsliste = repo.retrieveArbeidsliste(fnr1);
         assertThat(arbeidsliste.isSuccess()).isTrue();
         assertThat(arbeidsliste.get()).isNotNull();
 
         final Integer rowsUpdated = repo.slettArbeidsliste(aktoerId1);
         assertThat(rowsUpdated).isEqualTo(1);
 
-        arbeidsliste = repo.retrieveArbeidsliste(aktoerId1);
+        arbeidsliste = repo.retrieveArbeidsliste(fnr1);
         assertThat(arbeidsliste.isSuccess()).isTrue();
         assertThat(arbeidsliste.get()).isNull();
     }

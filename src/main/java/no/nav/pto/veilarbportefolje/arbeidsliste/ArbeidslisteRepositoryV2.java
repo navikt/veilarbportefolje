@@ -40,16 +40,6 @@ public class ArbeidslisteRepositoryV2 {
         );
     }
 
-    public Try<Arbeidsliste> retrieveArbeidsliste(AktorId aktorId) {
-        String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, AKTOERID);
-        return Try.of(
-                () -> queryForObjectOrNull(
-                        () -> db.queryForObject(sql, (rs, row) -> arbeidslisteMapper(rs, row, false), aktorId.get())
-                )
-        );
-    }
-
-    // Ny metode
     public Try<Arbeidsliste> retrieveArbeidsliste(Fnr bruker) {
         String sql = """
                     SELECT a.*, f.verdi FROM arbeidsliste a
@@ -59,7 +49,7 @@ public class ArbeidslisteRepositoryV2 {
                 """;
         return Try.of(
                 () -> queryForObjectOrNull(
-                        () -> db.queryForObject(sql, (rs, row) -> arbeidslisteMapper(rs, row, true), bruker.get())
+                        () -> db.queryForObject(sql, (rs, row) -> arbeidslisteMapper(rs, row), bruker.get())
                 )
         );
     }
@@ -138,8 +128,8 @@ public class ArbeidslisteRepositoryV2 {
     }
 
     @SneakyThrows
-    private Arbeidsliste arbeidslisteMapper(ResultSet rs, int row, boolean harDataFraFargekategoriTabell) {
-        String kategoriFraFargekategoriTabell = harDataFraFargekategoriTabell ? rs.getString("VERDI") : null;
+    private Arbeidsliste arbeidslisteMapper(ResultSet rs, int row) {
+        String kategoriFraFargekategoriTabell = rs.getString("VERDI");
         String kategoriFraArbeidslisteTabell = rs.getString("KATEGORI");
 
         return new Arbeidsliste(
