@@ -20,6 +20,7 @@ import no.nav.pto.veilarbportefolje.controller.VeilederController;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
@@ -39,9 +40,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.generateJWT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,6 +88,38 @@ public class ArbeidslisteIntegrationTest {
     private BrukerServiceV2 brukerService;
     @MockBean
     private AktorClient aktorClient;
+
+    @Test
+    public void hent_arbeidsliste_skal_hente_arbeidsliste_som_forventet_naar_fargekategori_tabell_er_populert_v2() {
+        OppfolgingsbrukerEntity oppfolgingsbrukerEntity1 = OppfolgingsbrukerEntity.builder()
+                .fodselsnr(TEST_FNR)
+                .nav_kontor(TEST_ENHETSID)
+                .endret_dato(ZonedDateTime.now().minusDays(10))
+                .build();
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
+        oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
+        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
+        arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
+                Fnr.of(TEST_FNR),
+                "Overskriften",
+                "Kommentaren",
+                null,
+                null
+        ).setAktorId(AktorId.of(TEST_AKTORID)).setVeilederId(VeilederId.of(TEST_VEILEDERIDENT)));
+        db.update("""
+                    INSERT INTO fargekategori VALUES (?, ?, ?, ?, ?)
+                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.GUL.name(), Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
+
+        authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
+            mockMvc.perform(MockMvcRequestBuilders.post("/api/v2/hent-arbeidsliste")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(JsonUtils.toJson(new ArbeidslisteForBrukerRequest(Fnr.of(TEST_FNR)))))
+                    .andExpect(MockMvcResultMatchers.status().isOk())
+                    .andExpect(
+                            MockMvcResultMatchers.content().json(
+                                    "{\"sistEndretAv\":{\"veilederId\":\"Z123456\"},\"overskrift\":\"Overskriften\",\"kommentar\":\"Kommentaren\",\"frist\":null,\"kategori\":\"GUL\",\"isOppfolgendeVeileder\":true,\"arbeidslisteAktiv\":null,\"harVeilederTilgang\":true,\"navkontorForArbeidsliste\":null,\"aktoerid\":\"111111111\"}"));
+        });
+    }
 
     @Test
     public void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_v1() throws Exception {

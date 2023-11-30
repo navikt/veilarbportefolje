@@ -126,6 +126,7 @@ public class ArbeidslisteRepositoryV2 {
 
     public int upsert(String aktoerId, ArbeidslisteDTO dto) {
         secureLog.info("Upsert arbeidsliste pa bruker: {}", aktoerId);
+        Optional<Arbeidsliste.Kategori> maybeKategori = Optional.ofNullable(dto.getKategori());
         return db.update("""
                         INSERT INTO ARBEIDSLISTE (AKTOERID, SIST_ENDRET_AV_VEILEDERIDENT , ENDRINGSTIDSPUNKT,
                         OVERSKRIFT, KOMMENTAR, FRIST , KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE)
@@ -133,7 +134,7 @@ public class ArbeidslisteRepositoryV2 {
                         (SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT, OVERSKRIFT, KOMMENTAR , FRIST , KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE) =
                         (excluded.SIST_ENDRET_AV_VEILEDERIDENT, excluded.ENDRINGSTIDSPUNKT, excluded.OVERSKRIFT, excluded.KOMMENTAR , excluded.FRIST , excluded.KATEGORI, excluded.NAV_KONTOR_FOR_ARBEIDSLISTE)
                         """,
-                aktoerId, dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), dto.getKategori().toString(), dto.getNavKontorForArbeidsliste());
+                aktoerId, dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), maybeKategori.map((Enum::toString)).orElse(null), dto.getNavKontorForArbeidsliste());
     }
 
     @SneakyThrows
@@ -164,5 +165,4 @@ public class ArbeidslisteRepositoryV2 {
                 Arbeidsliste.Kategori.valueOf((String) rs.get(KATEGORI))
         ).setAktoerid((String) rs.get(AKTOERID));
     }
-
 }
