@@ -49,17 +49,18 @@ public class ArbeidslisteRepositoryV2 {
                 """;
         return Try.of(
                 () -> queryForObjectOrNull(
-                        () -> db.queryForObject(sql, (rs, row) -> arbeidslisteMapper(rs, row), bruker.get())
+                        () -> db.queryForObject(sql, this::arbeidslisteMapper, bruker.get())
                 )
         );
     }
 
     public List<Arbeidsliste> hentArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
         return dbReadOnly.queryForList("""
-                                SELECT a.* FROM arbeidsliste a
+                                SELECT a.*, f.verdi FROM arbeidsliste a
                                 INNER JOIN oppfolging_data o ON a.aktoerid = o.aktoerid
                                 INNER JOIN aktive_identer ai on ai.aktorid = a.aktoerid
                                 INNER JOIN oppfolgingsbruker_arena_v2 ob on ai.fnr = ob.fodselsnr
+                                LEFT JOIN fargekategori f on f.fnr = ai.fnr
                                 WHERE ob.nav_kontor = ?
                                 AND o.veilederid = ?""",
                         enhet.get(),
@@ -69,7 +70,6 @@ public class ArbeidslisteRepositoryV2 {
                 .map(ArbeidslisteRepositoryV2::arbeidslisteMapper)
                 .toList();
     }
-
 
     public Try<ArbeidslisteDTO> insertArbeidsliste(ArbeidslisteDTO dto) {
         return Try.of(
@@ -138,21 +138,26 @@ public class ArbeidslisteRepositoryV2 {
                 rs.getString(OVERSKRIFT),
                 rs.getString(KOMMENTAR),
                 toZonedDateTime(rs.getTimestamp(FRIST)),
-                kategoriFraFargekategoriTabell != null ?
-                        Arbeidsliste.Kategori.valueOf(kategoriFraFargekategoriTabell)
+                kategoriFraFargekategoriTabell != null
+                        ? Arbeidsliste.Kategori.valueOf(kategoriFraFargekategoriTabell)
                         : Arbeidsliste.Kategori.valueOf(kategoriFraArbeidslisteTabell)
         ).setAktoerid(rs.getString(AKTOERID));
     }
 
     @SneakyThrows
     private static Arbeidsliste arbeidslisteMapper(Map<String, Object> rs) {
+        String kategoriFraFargekategoriTabell = (String) rs.get("VERDI");
+        String kategoriFraArbeidslisteTabell = (String) rs.get("KATEGORI");
+
         return new Arbeidsliste(
                 VeilederId.of((String) rs.get(SIST_ENDRET_AV_VEILEDERIDENT)),
                 toZonedDateTime((Timestamp) rs.get(ENDRINGSTIDSPUNKT)),
                 (String) rs.get(OVERSKRIFT),
                 (String) rs.get(KOMMENTAR),
                 toZonedDateTime((Timestamp) rs.get(FRIST)),
-                Arbeidsliste.Kategori.valueOf((String) rs.get(KATEGORI))
+                kategoriFraFargekategoriTabell != null
+                        ? Arbeidsliste.Kategori.valueOf(kategoriFraFargekategoriTabell)
+                        : Arbeidsliste.Kategori.valueOf(kategoriFraArbeidslisteTabell)
         ).setAktoerid((String) rs.get(AKTOERID));
     }
 }
