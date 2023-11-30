@@ -138,13 +138,18 @@ public class ArbeidslisteRepositoryV2 {
 
     @SneakyThrows
     private Arbeidsliste arbeidslisteMapper(ResultSet rs, int row) {
+        String kategoriFraFargekategoriTabell = rs.getString("VERDI");
+        String kategoriFraArbeidslisteTabell = rs.getString("KATEGORI");
+
         return new Arbeidsliste(
                 VeilederId.of(rs.getString(SIST_ENDRET_AV_VEILEDERIDENT)),
                 toZonedDateTime(rs.getTimestamp(ENDRINGSTIDSPUNKT)),
                 rs.getString(OVERSKRIFT),
                 rs.getString(KOMMENTAR),
                 toZonedDateTime(rs.getTimestamp(FRIST)),
-                Arbeidsliste.Kategori.valueOf(rs.getString(KATEGORI))
+                kategoriFraFargekategoriTabell != null ?
+                        Arbeidsliste.Kategori.valueOf(kategoriFraFargekategoriTabell)
+                        : Arbeidsliste.Kategori.valueOf(kategoriFraArbeidslisteTabell)
         ).setAktoerid(rs.getString(AKTOERID));
     }
 
