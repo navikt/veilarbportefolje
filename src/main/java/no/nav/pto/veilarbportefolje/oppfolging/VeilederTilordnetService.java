@@ -47,7 +47,6 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
             arbeidslisteService.slettArbeidsliste(aktoerId);
         }
 
-        //TODO: Featuretoggle her? Trenger ikke pga returnerer false (SKRIV TEST!)
         final boolean brukerHarByttetNavkontorHuskelapp = huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktoerId);
         if (brukerHarByttetNavkontorHuskelapp) {
             Fnr fnr = aktorClient.hentFnr(aktoerId);

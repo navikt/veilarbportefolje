@@ -28,7 +28,7 @@ public class HuskelappService {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final AktorClient aktorClient;
     private final BrukerServiceV2 brukerServiceV2;
-    public final HuskelappRepository huskelappRepository;
+    private final HuskelappRepository huskelappRepository;
 
 
     public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId) {
@@ -63,6 +63,7 @@ public class HuskelappService {
         try {
             return huskelappRepository.hentAktivHuskelapp(enhetId, veilederId);
         } catch (Exception e) {
+            secureLog.error("Kunne ikke hente huskelapper for enhet: " + enhetId + ", og veileder: " + veilederId);
             throw new RuntimeException("Kunne ikke hente huskelapper", e);
         }
     }
@@ -92,7 +93,8 @@ public class HuskelappService {
             AktorId aktorId = hentAktorId(brukerFnr).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
             opensearchIndexerV2.slettHuskelapp(aktorId);
         } catch (Exception e) {
-            throw new RuntimeException("Kunne ikke oppdatere huskelapp", e);
+            secureLog.error("Kunne ikke sette huskelapp til inaktiv for bruker: " + brukerFnr);
+            throw new RuntimeException("Kunne ikke inaktivere huskelapp", e);
         }
     }
 
@@ -104,7 +106,7 @@ public class HuskelappService {
             opensearchIndexerV2.slettHuskelapp(aktorId);
         } catch (Exception e) {
             secureLog.error("Kunne ikke slette huskelapper for fnr: " + fnr.toString());
-            throw new RuntimeException("Kunne ikke slette huskelapp", e);
+            throw new RuntimeException("Kunne ikke slette huskelapper", e);
         }
     }
 

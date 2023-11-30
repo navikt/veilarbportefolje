@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.HuskelappStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
@@ -26,6 +27,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @RequiredArgsConstructor
+@Repository
 public class HuskelappRepository {
     private final JdbcTemplate db;
     @Qualifier("PostgresJdbcReadOnly")
@@ -58,10 +60,7 @@ public class HuskelappRepository {
     public UUID redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
         UUID endringsId = UUID.randomUUID();
 
-        String sqlSettForrigeRadInaktiv = """
-                UPDATE HUSKELAPP SET STATUS = ? WHERE HUSKELAPP_ID = ? AND STATUS = ?
-                """;
-        db.update(sqlSettForrigeRadInaktiv, HuskelappStatus.IKKE_AKTIV.name(), huskelappRedigerRequest.huskelappId(), HuskelappStatus.AKTIV.name());
+        settSisteHuskelappRadIkkeAktiv(huskelappRedigerRequest.huskelappId());
 
         String sqlRedigerHuskelapp = """
                 INSERT INTO HUSKELAPP (
