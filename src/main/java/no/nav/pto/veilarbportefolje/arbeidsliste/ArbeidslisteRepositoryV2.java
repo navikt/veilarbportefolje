@@ -44,7 +44,7 @@ public class ArbeidslisteRepositoryV2 {
         String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, AKTOERID);
         return Try.of(
                 () -> queryForObjectOrNull(
-                        () -> db.queryForObject(sql, this::arbeidslisteMapper, aktorId.get())
+                        () -> db.queryForObject(sql, (rs, row) -> arbeidslisteMapper(rs, row, false), aktorId.get())
                 )
         );
     }
@@ -59,7 +59,7 @@ public class ArbeidslisteRepositoryV2 {
                 """;
         return Try.of(
                 () -> queryForObjectOrNull(
-                        () -> db.queryForObject(sql, this::arbeidslisteMapper, bruker.get())
+                        () -> db.queryForObject(sql, (rs, row) -> arbeidslisteMapper(rs, row, true), bruker.get())
                 )
         );
     }
@@ -138,8 +138,8 @@ public class ArbeidslisteRepositoryV2 {
     }
 
     @SneakyThrows
-    private Arbeidsliste arbeidslisteMapper(ResultSet rs, int row) {
-        String kategoriFraFargekategoriTabell = rs.getString("VERDI");
+    private Arbeidsliste arbeidslisteMapper(ResultSet rs, int row, boolean harDataFraFargekategoriTabell) {
+        String kategoriFraFargekategoriTabell = harDataFraFargekategoriTabell ? rs.getString("VERDI") : null;
         String kategoriFraArbeidslisteTabell = rs.getString("KATEGORI");
 
         return new Arbeidsliste(
