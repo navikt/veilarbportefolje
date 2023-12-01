@@ -24,7 +24,4 @@ public record Huskelapp(
     public Huskelapp {
     }
 
-    public Huskelapp(String kommentar, LocalDate frist) {
-        this(null, null, null, null, null, frist, kommentar, null);
-    }
 }

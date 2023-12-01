@@ -3769,10 +3769,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void test_sortering_huskelapp() {
-        var huskelapp1 = new Huskelapp("dddd Ringe fastlege", LocalDate.now().plusDays(20));
-        var huskelapp2 = new Huskelapp("bbbb Ha et møte", LocalDate.now().plusDays(30));
-        var huskelapp3 = new Huskelapp("aaaa Snakke om idrett", LocalDate.now().plusMonths(2));
-        var huskelapp4 = new Huskelapp("cccc Huddle med Julie", LocalDate.now().plusDays(3));
+        var huskelapp1 = new HuskelappForBruker(LocalDate.now().plusDays(20), "dddd Ringe fastlege");
+        var huskelapp2 = new HuskelappForBruker(LocalDate.now().plusDays(30), "bbbb Ha et møte");
+        var huskelapp3 = new HuskelappForBruker(LocalDate.now().plusMonths(2), "aaaa Snakke om idrett");
+        var huskelapp4 = new HuskelappForBruker(LocalDate.now().plusDays(3), "cccc Huddle med Julie");
 
         var bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())

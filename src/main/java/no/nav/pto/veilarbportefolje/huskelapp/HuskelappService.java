@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
@@ -36,7 +37,7 @@ public class HuskelappService {
             UUID huskelappId = huskelappRepository.opprettHuskelapp(huskelappOpprettRequest, veilederId);
 
             AktorId aktorId = hentAktorId(huskelappOpprettRequest.brukerFnr()).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
-            opensearchIndexerV2.updateHuskelapp(aktorId, new Huskelapp(huskelappOpprettRequest.kommentar(), huskelappOpprettRequest.frist()));
+            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappOpprettRequest.frist(), huskelappOpprettRequest.kommentar()));
 
             return huskelappId;
         } catch (Exception e) {
@@ -51,7 +52,7 @@ public class HuskelappService {
             endringsId = huskelappRepository.redigerHuskelapp(huskelappRedigerRequest, veilederId);
 
             AktorId aktorId = hentAktorId(huskelappRedigerRequest.brukerFnr()).getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
-            opensearchIndexerV2.updateHuskelapp(aktorId, new Huskelapp(huskelappRedigerRequest.kommentar(), huskelappRedigerRequest.frist()));
+            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar()));
 
         } catch (Exception e) {
             secureLog.error("Kunne ikke redigere huskelapp for fnr: " + huskelappRedigerRequest.brukerFnr() + " HuskelappId: " + huskelappRedigerRequest.huskelappId().toString() + " med endringsId: " + endringsId.toString());

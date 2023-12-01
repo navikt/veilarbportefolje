@@ -108,7 +108,7 @@ public class Bruker {
 
     LocalDate brukersSituasjonSistEndret;
 
-    Huskelapp huskelapp;
+    HuskelappForBruker huskelapp;
 
 
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {

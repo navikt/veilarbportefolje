@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
@@ -167,7 +168,7 @@ public class BrukerRepositoryV2 {
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
                 .setAapordinerutlopsdato(aapordinerutlopsdato)
                 .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)))
-                .setHuskelapp(new Huskelapp(rs.getString(HL_KOMMENTAR), toLocalDate(rs.getTimestamp(HL_FRIST))));
+                .setHuskelapp(new HuskelappForBruker(toLocalDate(rs.getTimestamp(HL_FRIST)), rs.getString(HL_KOMMENTAR)));
 
 
         setBrukersSituasjon(bruker, rs);

@@ -8,6 +8,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
+import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
@@ -93,7 +94,7 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void updateHuskelapp(AktorId aktoerId, Huskelapp huskelapp) {
+    public void updateHuskelapp(AktorId aktoerId, HuskelappForBruker huskelapp) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .startObject("huskelapp")
