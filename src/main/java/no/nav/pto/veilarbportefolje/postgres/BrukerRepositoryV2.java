@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
-import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
@@ -69,7 +68,8 @@ public class BrukerRepositoryV2 {
                                ARB.OVERSKRIFT                   as ARB_OVERSKRIFT,
                                ARB.FRIST                        as ARB_FRIST,
                                ARB.KATEGORI                     as ARB_KATEGORI,
-                               ARB.NAV_KONTOR_FOR_ARBEIDSLISTE as ARB_NAV_KONTOR_FOR_ARBEIDSLISTE,
+                               ARB.NAV_KONTOR_FOR_ARBEIDSLISTE  as ARB_NAV_KONTOR_FOR_ARBEIDSLISTE,
+                               FAR.verdi                        as FAR_VERDI,
                                HL.frist							as HL_FRIST,
                                HL.kommentar						as HL_KOMMENTAR
                         FROM OPPFOLGING_DATA OD
@@ -85,6 +85,7 @@ public class BrukerRepositoryV2 {
                                  LEFT JOIN BRUKER_REGISTRERING BR on BR.AKTOERID = ai.aktorid
                                  LEFT JOIN YTELSE_STATUS_FOR_BRUKER YB on YB.AKTOERID = ai.aktorid
                                  LEFT JOIN ENDRING_I_REGISTRERING EiR on EiR.AKTOERID = ai.aktorid
+                                 LEFT JOIN fargekategori far on far.fnr = ai.fnr
                                  LEFT JOIN HUSKELAPP HL on HL.fnr = ai.fnr
                                  where ai.aktorid = ANY (?::varchar[])
                         """,
@@ -175,10 +176,14 @@ public class BrukerRepositoryV2 {
 
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));
         if (arbeidslisteTidspunkt != null) {
+            String fargekategoriFraFargekategoriTabell = rs.getString(FAR_VERDI);
+            String fargekategoriFraArbeidslisteTabell = rs.getString(ARB_KATEGORI);
+            String resolvedFargekategori = fargekategoriFraFargekategoriTabell != null ? fargekategoriFraFargekategoriTabell : fargekategoriFraArbeidslisteTabell;
+
             bruker.setArbeidsliste_aktiv(true)
                     .setArbeidsliste_endringstidspunkt(arbeidslisteTidspunkt)
                     .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp(ARB_FRIST))).orElse(getFarInTheFutureDate()))
-                    .setArbeidsliste_kategori(rs.getString(ARB_KATEGORI))
+                    .setArbeidsliste_kategori(resolvedFargekategori)
                     .setArbeidsliste_sist_endret_av_veilederid(rs.getString(ARB_SIST_ENDRET_AV_VEILEDERIDENT))
                     .setNavkontor_for_arbeidsliste(rs.getString(ARB_NAV_KONTOR_FOR_ARBEIDSLISTE));
             String overskrift = rs.getString(ARB_OVERSKRIFT);

@@ -377,6 +377,19 @@ ALTER SEQUENCE public.enslige_forsorgere_vedtaksresultat_type_id_seq OWNED BY pu
 
 
 --
+-- Name: fargekategori; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.fargekategori (
+    id uuid NOT NULL,
+    fnr character varying(11) NOT NULL,
+    verdi character varying(25),
+    sist_endret timestamp without time zone NOT NULL,
+    sist_endret_av_veilederident character varying(7)
+);
+
+
+--
 -- Name: flyway_schema_history; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -828,6 +841,14 @@ ALTER TABLE ONLY public.enslige_forsorgere_vedtaksresultat_type
 
 
 --
+-- Name: fargekategori fargekategori_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.fargekategori
+    ADD CONSTRAINT fargekategori_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: flyway_schema_history flyway_schema_history_pk; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1011,6 +1032,13 @@ CREATE INDEX brukertiltak_v2_aktoerid_index ON public.brukertiltak_v2 USING btre
 --
 
 CREATE INDEX enslige_forsorgere_aktivitet_type_indx ON public.enslige_forsorgere_aktivitet_type USING btree (aktivitet_type);
+
+
+--
+-- Name: fargekategori_fnr_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fargekategori_fnr_index ON public.fargekategori USING btree (fnr);
 
 
 --

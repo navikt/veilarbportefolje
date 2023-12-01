@@ -34,21 +34,17 @@ public class ArbeidslisteService {
     private static final Logger log = LoggerFactory.getLogger(ArbeidslisteService.class);
 
     private final AktorClient aktorClient;
-    private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryPostgres;
+    private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
     private final BrukerServiceV2 brukerServiceV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final MetricsClient metricsClient;
 
     public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
-        return hentAktorId(fnr).map(this::getArbeidsliste).get();
-    }
-
-    public Try<Arbeidsliste> getArbeidsliste(AktorId aktoerId) {
-        return arbeidslisteRepositoryPostgres.retrieveArbeidsliste(aktoerId);
+        return arbeidslisteRepositoryV2.retrieveArbeidsliste(fnr);
     }
 
     public List<Arbeidsliste> getArbeidslisteForVeilederPaEnhet(EnhetId enhet, VeilederId veilederident) {
-        return arbeidslisteRepositoryPostgres.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);
+        return arbeidslisteRepositoryV2.hentArbeidslisteForVeilederPaEnhet(enhet, veilederident);
     }
 
     public Try<ArbeidslisteDTO> createArbeidsliste(ArbeidslisteDTO dto) {
@@ -63,7 +59,7 @@ public class ArbeidslisteService {
 
         NavKontor navKontorForBruker = brukerServiceV2.hentNavKontor(dto.getFnr()).orElseThrow();
         dto.setNavKontorForArbeidsliste(navKontorForBruker.getValue());
-        return arbeidslisteRepositoryPostgres.insertArbeidsliste(dto)
+        return arbeidslisteRepositoryV2.insertArbeidsliste(dto)
                 .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
 
@@ -73,12 +69,12 @@ public class ArbeidslisteService {
             return Try.failure(aktoerId.getCause());
         }
         data.setAktorId(aktoerId.get());
-        return arbeidslisteRepositoryPostgres.updateArbeidsliste(data)
+        return arbeidslisteRepositoryV2.updateArbeidsliste(data)
                 .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
 
     public int slettArbeidsliste(AktorId aktoerId) {
-        final int rowsUpdated = arbeidslisteRepositoryPostgres.slettArbeidsliste(aktoerId);
+        final int rowsUpdated = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);
         if (rowsUpdated == 1) {
             opensearchIndexerV2.slettArbeidsliste(aktoerId);
         }
@@ -139,7 +135,7 @@ public class ArbeidslisteService {
     }
 
     public boolean brukerHarByttetNavKontor(AktorId aktoerId) {
-        Optional<String> navKontorForArbeidsliste = arbeidslisteRepositoryPostgres.hentNavKontorForArbeidsliste(aktoerId);
+        Optional<String> navKontorForArbeidsliste = arbeidslisteRepositoryV2.hentNavKontorForArbeidsliste(aktoerId);
 
         if (navKontorForArbeidsliste.isEmpty()) {
             secureLog.info("Bruker {} har ikke NAV-kontor på arbeidsliste", aktoerId.toString());
