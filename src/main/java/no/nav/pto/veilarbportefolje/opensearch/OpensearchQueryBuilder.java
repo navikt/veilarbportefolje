@@ -330,6 +330,10 @@ public class OpensearchQueryBuilder {
             queryBuilder.must(existsQuery("enslige_forsorgere_overgangsstonad"));
         }
 
+        if (filtervalg.harHuskelapp != null && filtervalg.harHuskelapp) {
+            queryBuilder.must(existsQuery("huskelapp"));
+        }
+
         if (filtervalg.harDinSituasjonSvar()) {
             BoolQueryBuilder brukerensSituasjonSubQuery = boolQuery();
             filtervalg.registreringstype.forEach(dinSituasjonSvar -> {
