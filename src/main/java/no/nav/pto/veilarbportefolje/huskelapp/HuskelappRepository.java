@@ -35,10 +35,8 @@ public class HuskelappRepository {
 
     public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId) {
         UUID huskelappId = UUID.randomUUID();
-        UUID endringsId = UUID.randomUUID();
         String sql = """
                 INSERT INTO HUSKELAPP (
-                    ENDRINGS_ID,
                     HUSKELAPP_ID,
                     FNR,
                     ENHET_ID,
@@ -49,22 +47,19 @@ public class HuskelappRepository {
                     STATUS
                 )
                 VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        db.update(sql, endringsId, huskelappId, huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappOpprettRequest.frist()), huskelappOpprettRequest.kommentar(), HuskelappStatus.AKTIV.name());
+        db.update(sql, huskelappId, huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappOpprettRequest.frist()), huskelappOpprettRequest.kommentar(), HuskelappStatus.AKTIV.name());
         return huskelappId;
     }
 
     @Transactional
-    public UUID redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
-        UUID endringsId = UUID.randomUUID();
-
+    public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
         settSisteHuskelappRadIkkeAktiv(huskelappRedigerRequest.huskelappId());
 
         String sqlRedigerHuskelapp = """
                 INSERT INTO HUSKELAPP (
-                    ENDRINGS_ID,
                     HUSKELAPP_ID,
                     FNR,
                     ENHET_ID,
@@ -75,11 +70,10 @@ public class HuskelappRepository {
                     STATUS
                 )
                 VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        db.update(sqlRedigerHuskelapp, endringsId, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappRedigerRequest.frist()), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
-        return endringsId;
+        db.update(sqlRedigerHuskelapp, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappRedigerRequest.frist()), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
     }
 
     public List<Huskelapp> hentAktivHuskelapp(EnhetId enhetId, VeilederId veilederId) {
