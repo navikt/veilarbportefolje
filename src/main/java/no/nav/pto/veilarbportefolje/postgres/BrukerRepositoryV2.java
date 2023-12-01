@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.postgres;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.asm.Advice;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
@@ -168,10 +169,9 @@ public class BrukerRepositoryV2 {
                 .setPermutlopuke(rs.getObject(PERMUTLOPUKE, Integer.class))
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
                 .setAapordinerutlopsdato(aapordinerutlopsdato)
-                .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)))
-                .setHuskelapp(new HuskelappForBruker(toLocalDate(rs.getTimestamp(HL_FRIST)), rs.getString(HL_KOMMENTAR)));
+                .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)));
 
-
+        setHuskelapp(bruker, rs);
         setBrukersSituasjon(bruker, rs);
 
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));
@@ -214,6 +214,15 @@ public class BrukerRepositoryV2 {
         bruker.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(SKJERMET_TIL)));
 
         return bruker;
+    }
+
+    @SneakyThrows
+    private void setHuskelapp(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
+        LocalDate frist = toLocalDate(rs.getTimestamp(HL_FRIST));
+        String kommentar = rs.getString(HL_KOMMENTAR);
+        if(frist != null || kommentar != null) {
+            oppfolgingsBruker.setHuskelapp(new HuskelappForBruker(frist, kommentar));
+        }
     }
 
     @SneakyThrows
