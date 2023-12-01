@@ -1,17 +1,13 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste.v2;
 
-import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
-import no.nav.pto.veilarbportefolje.arbeidsliste.v1.ArbeidslisteRequest;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
@@ -27,7 +23,6 @@ import java.util.function.Function;
 
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
-import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidsliste;
 import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidslisteV2;
 
 @Slf4j
@@ -36,18 +31,16 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 public class ArbeidsListeV2Controller {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerServiceV2 brukerService;
-    private final AktorClient aktorClient;
     private final AuthService authService;
 
     @Autowired
     public ArbeidsListeV2Controller(
             ArbeidslisteService arbeidslisteService,
             BrukerServiceV2 brukerService,
-            AktorClient aktorClient, AuthService authService
+            AuthService authService
     ) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerService = brukerService;
-        this.aktorClient = aktorClient;
         this.authService = authService;
     }
 
@@ -55,21 +48,20 @@ public class ArbeidsListeV2Controller {
     public Arbeidsliste getArbeidsListe(@RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest) {
         validerOppfolgingOgBruker(arbeidslisteForBrukerRequest.fnr().get());
 
+        Fnr validertFnr = Fnr.ofValidFnr(arbeidslisteForBrukerRequest.fnr().get());
         String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().toString();
 
-        Fnr fnr = Fnr.ofValidFnr(arbeidslisteForBrukerRequest.fnr().get());
-        Try<AktorId> aktoerId = Try.of(() -> aktorClient.hentAktorId(fnr));
 
-        boolean harVeilederTilgang = brukerService.hentNavKontor(fnr)
+        boolean harVeilederTilgang = brukerService.hentNavKontor(validertFnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet.getValue()))
                 .orElse(false);
 
-        Arbeidsliste arbeidsliste = aktoerId
-                .flatMap(arbeidslisteService::getArbeidsliste)
+        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(validertFnr)
                 .toJavaOptional()
                 .orElse(emptyArbeidsliste())
-                .setIsOppfolgendeVeileder(aktoerId.map(id ->
-                        arbeidslisteService.erVeilederForBruker(fnr, VeilederId.of(innloggetVeileder))).get())
+                .setIsOppfolgendeVeileder(
+                        arbeidslisteService.erVeilederForBruker(validertFnr, VeilederId.of(innloggetVeileder))
+                )
                 .setHarVeilederTilgang(harVeilederTilgang);
 
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
@@ -103,7 +95,7 @@ public class ArbeidsListeV2Controller {
                 .onFailure(e -> secureLog.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        if (arbeidslisteService.getArbeidsliste(fnr).get() == null){
+        if (arbeidslisteService.getArbeidsliste(fnr).get() == null) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(fnr).orElse(null);
             secureLog.warn("Arbeidsliste kunne ikke oppdateres, var null, fnr: {}, veileder: {}, på enhet: {}", body.fnr().get(), veilederId, enhet);
