@@ -53,8 +53,8 @@ public class Filtervalg {
     public List<String> barnUnder18AarAlder = new ArrayList<>();
     public List<String> geografiskBosted;
     public List<Avvik14aVedtak> avvik14aVedtak;
-
     public List<EnsligeForsorgere> ensligeForsorgere;
+    public Boolean harHuskelapp;
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
@@ -89,7 +89,8 @@ public class Filtervalg {
                 harLandgruppeFilter() ||
                 harBostedFilter() ||
                 harAvvik14aVedtakFilter() ||
-                harEnsligeForsorgereFilter();
+                harEnsligeForsorgereFilter() ||
+                harHuskelapp != null;
     }
 
     public boolean harEnsligeForsorgereFilter() {

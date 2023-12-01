@@ -224,14 +224,14 @@
         "type": "keyword"
       },
       "barn_under_18_aar": {
-        "type" : "nested",
+        "type": "nested",
         "properties": {
           "alder": {
             "type": "integer"
           },
           "diskresjonskode": {
             "type": "keyword",
-            "null_value":"-1"
+            "null_value": "-1"
           }
         }
       },
@@ -240,6 +240,16 @@
       },
       "sikkerhetstiltak_gyldig_til": {
         "type": "keyword"
+      },
+      "huskelapp": {
+        "properties": {
+          "kommentar": {
+            "type": "keyword"
+          },
+          "frist": {
+            "type": "date"
+          }
+        }
       }
     }
   }
