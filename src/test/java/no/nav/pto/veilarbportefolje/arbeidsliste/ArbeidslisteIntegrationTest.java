@@ -54,7 +54,7 @@ import static org.mockito.Mockito.when;
 
 @WebMvcTest(controllers = {ArbeidsListeController.class, ArbeidsListeV2Controller.class, VeilederController.class})
 @Import(ApplicationConfigTest.class)
-public class ArbeidslisteIntegrationTest {
+class ArbeidslisteIntegrationTest {
 
     private static final String TEST_FNR = "11111111111";
     private static final String TEST_FNR_2 = "22222222222";
@@ -90,7 +90,7 @@ public class ArbeidslisteIntegrationTest {
     private AktorClient aktorClient;
 
     @Test
-    public void hent_arbeidsliste_skal_hente_arbeidsliste_som_forventet_naar_fargekategori_tabell_er_populert_v2() {
+    void hent_arbeidsliste_skal_hente_arbeidsliste_som_forventet_naar_fargekategori_tabell_er_populert_v2() {
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity1 = OppfolgingsbrukerEntity.builder()
                 .fodselsnr(TEST_FNR)
                 .nav_kontor(TEST_ENHETSID)
@@ -122,7 +122,7 @@ public class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    public void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_v1() throws Exception {
+    void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_v1() throws Exception {
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.post(String.format("/api/arbeidsliste/%s", TEST_FNR))
                             .contentType(MediaType.APPLICATION_JSON)
@@ -145,7 +145,7 @@ public class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    public void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_v2() throws Exception {
+    void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_v2() throws Exception {
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.post("/api/v2/arbeidsliste")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -167,7 +167,7 @@ public class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    public void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_v1() throws Exception {
+    void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_v1() throws Exception {
         arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 null,
@@ -190,7 +190,7 @@ public class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    public void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_v2() throws Exception {
+    void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_v2() throws Exception {
         arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 null,
@@ -218,7 +218,7 @@ public class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    public void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_v1() throws Exception {
+    void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_v1() throws Exception {
         arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 null,
@@ -247,7 +247,7 @@ public class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    public void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_v2() throws Exception {
+    void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_v2() throws Exception {
         arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 null,
@@ -279,7 +279,7 @@ public class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    public void hent_arbeidsliste_for_veileder_skal_returnere_arbeidslister_som_forventet_v1() throws Exception {
+    void hent_arbeidsliste_for_veileder_skal_returnere_arbeidslister_som_forventet_v1() throws Exception {
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity1 = OppfolgingsbrukerEntity.builder()
                 .fodselsnr(TEST_FNR)
                 .nav_kontor(TEST_ENHETSID)
@@ -323,7 +323,7 @@ public class ArbeidslisteIntegrationTest {
     }
 
     @BeforeEach
-    public void setupMocks() {
+    void setupMocks() {
         db.update("TRUNCATE arbeidsliste");
         db.update("TRUNCATE fargekategori");
         db.update("TRUNCATE bruker_identer");
