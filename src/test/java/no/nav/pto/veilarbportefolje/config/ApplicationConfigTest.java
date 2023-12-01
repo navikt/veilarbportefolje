@@ -30,6 +30,8 @@ import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereRepository;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
+import no.nav.pto.veilarbportefolje.huskelapp.HuskelappRepository;
+import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
@@ -159,7 +161,9 @@ import static org.mockito.Mockito.when;
         BarnUnder18AarService.class,
         AuthService.class,
         EndringIRegistreringService.class,
-        EndringIRegistreringRepository.class
+        EndringIRegistreringRepository.class,
+        HuskelappService.class,
+        HuskelappRepository.class
 })
 public class ApplicationConfigTest {
 
@@ -178,8 +182,8 @@ public class ApplicationConfigTest {
     public TestDataClient dbTestClient(JdbcTemplate jdbcTemplatePostgres,
                                        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2,
                                        RegistreringRepositoryV2 registreringRepositoryV2, OpensearchTestClient opensearchTestClient,
-                                       OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository) {
-        return new TestDataClient(jdbcTemplatePostgres, registreringRepositoryV2, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlIdentRepository, pdlPersonRepository);
+                                       OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository) {
+        return new TestDataClient(jdbcTemplatePostgres, registreringRepositoryV2, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlIdentRepository, pdlPersonRepository, huskelappRepository);
     }
 
     @Bean

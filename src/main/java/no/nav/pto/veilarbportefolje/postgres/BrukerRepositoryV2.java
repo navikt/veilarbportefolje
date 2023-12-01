@@ -3,7 +3,9 @@ package no.nav.pto.veilarbportefolje.postgres;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.asm.Advice;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
@@ -68,7 +70,9 @@ public class BrukerRepositoryV2 {
                                ARB.FRIST                        as ARB_FRIST,
                                ARB.KATEGORI                     as ARB_KATEGORI,
                                ARB.NAV_KONTOR_FOR_ARBEIDSLISTE  as ARB_NAV_KONTOR_FOR_ARBEIDSLISTE,
-                               FAR.verdi                        as FAR_VERDI
+                               FAR.verdi                        as FAR_VERDI,
+                               HL.frist							as HL_FRIST,
+                               HL.kommentar						as HL_KOMMENTAR
                         FROM OPPFOLGING_DATA OD
                                 inner join aktive_identer ai on OD.aktoerid = ai.aktorid
                                  left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
@@ -83,6 +87,7 @@ public class BrukerRepositoryV2 {
                                  LEFT JOIN YTELSE_STATUS_FOR_BRUKER YB on YB.AKTOERID = ai.aktorid
                                  LEFT JOIN ENDRING_I_REGISTRERING EiR on EiR.AKTOERID = ai.aktorid
                                  LEFT JOIN fargekategori far on far.fnr = ai.fnr
+                                 LEFT JOIN HUSKELAPP HL on HL.fnr = ai.fnr
                                  where ai.aktorid = ANY (?::varchar[])
                         """,
                 (ResultSet rs) -> {
@@ -166,6 +171,7 @@ public class BrukerRepositoryV2 {
                 .setAapordinerutlopsdato(aapordinerutlopsdato)
                 .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)));
 
+        setHuskelapp(bruker, rs);
         setBrukersSituasjon(bruker, rs);
 
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARB_ENDRINGSTIDSPUNKT));
@@ -208,6 +214,15 @@ public class BrukerRepositoryV2 {
         bruker.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(SKJERMET_TIL)));
 
         return bruker;
+    }
+
+    @SneakyThrows
+    private void setHuskelapp(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
+        LocalDate frist = toLocalDate(rs.getTimestamp(HL_FRIST));
+        String kommentar = rs.getString(HL_KOMMENTAR);
+        if(frist != null || kommentar != null) {
+            oppfolgingsBruker.setHuskelapp(new HuskelappForBruker(frist, kommentar));
+        }
     }
 
     @SneakyThrows
