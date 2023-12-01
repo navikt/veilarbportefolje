@@ -73,8 +73,8 @@ public class HuskelappService {
         try {
             return huskelappRepository.hentAktivHuskelapp(huskelappId);
         } catch (Exception e) {
-            secureLog.error("Kunne ikke hente huskelapp for id: " + huskelappId);
-            throw new RuntimeException("Kunne ikke hente huskelapp", e);
+            secureLog.error("Kunne ikke hente huskelapp for id: " + huskelappId + "Stacktrace: " + e.getCause());
+            throw new RuntimeException("Kunne ikke hente huskelapp");
         }
     }
 
