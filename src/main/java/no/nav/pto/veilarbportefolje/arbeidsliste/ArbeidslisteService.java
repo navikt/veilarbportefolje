@@ -59,6 +59,7 @@ public class ArbeidslisteService {
 
         NavKontor navKontorForBruker = brukerServiceV2.hentNavKontor(dto.getFnr()).orElseThrow();
         dto.setNavKontorForArbeidsliste(navKontorForBruker.getValue());
+
         return arbeidslisteRepositoryV2.insertArbeidsliste(dto)
                 .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
@@ -69,6 +70,7 @@ public class ArbeidslisteService {
             return Try.failure(aktoerId.getCause());
         }
         data.setAktorId(aktoerId.get());
+
         return arbeidslisteRepositoryV2.updateArbeidsliste(data)
                 .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }

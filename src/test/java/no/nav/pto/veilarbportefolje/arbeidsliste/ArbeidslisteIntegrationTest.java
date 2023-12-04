@@ -27,6 +27,8 @@ import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositor
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -107,8 +109,9 @@ class ArbeidslisteIntegrationTest {
                 null
         ).setAktorId(AktorId.of(TEST_AKTORID)).setVeilederId(VeilederId.of(TEST_VEILEDERIDENT)), db);
         db.update("""
-                    INSERT INTO fargekategori VALUES (?, ?, ?, ?, ?)
-                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.GUL.name(), Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
+                    INSERT INTO fargekategori (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
+                    VALUES(?,?,?,?,?)
+                    """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.GUL.verdi, Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.post("/api/v2/hent-arbeidsliste")
@@ -320,6 +323,16 @@ class ArbeidslisteIntegrationTest {
                             MockMvcResultMatchers.content().json(
                                     "[{\"sistEndretAv\":{\"veilederId\":\"Z123456\"},\"overskrift\":\"Overskriften\",\"kommentar\":\"Kommentaren\",\"frist\":null,\"kategori\":\"LILLA\",\"isOppfolgendeVeileder\":null,\"arbeidslisteAktiv\":null,\"harVeilederTilgang\":null,\"navkontorForArbeidsliste\":null,\"aktoerid\":\"111111111\"},{\"sistEndretAv\":{\"veilederId\":\"Z123456\"},\"overskrift\":\"Overskriften\",\"kommentar\":\"Kommentaren\",\"frist\":null,\"kategori\":\"LILLA\",\"isOppfolgendeVeileder\":null,\"arbeidslisteAktiv\":null,\"harVeilederTilgang\":null,\"navkontorForArbeidsliste\":null,\"aktoerid\":\"222222222\"}]"));
         });
+    }
+
+    @AfterAll
+    static void clear(
+            @Autowired JdbcTemplate db
+    ) {
+        db.update("TRUNCATE arbeidsliste");
+        db.update("TRUNCATE fargekategori");
+        db.update("TRUNCATE bruker_identer");
+        db.update("TRUNCATE oppfolgingsbruker_arena_v2");
     }
 
     @BeforeEach
