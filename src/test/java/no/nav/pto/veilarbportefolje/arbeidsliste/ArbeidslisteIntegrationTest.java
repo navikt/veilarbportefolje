@@ -99,13 +99,13 @@ class ArbeidslisteIntegrationTest {
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
-        arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
+        ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "Overskriften",
                 "Kommentaren",
                 null,
                 null
-        ).setAktorId(AktorId.of(TEST_AKTORID)).setVeilederId(VeilederId.of(TEST_VEILEDERIDENT)));
+        ).setAktorId(AktorId.of(TEST_AKTORID)).setVeilederId(VeilederId.of(TEST_VEILEDERIDENT)), db);
         db.update("""
                     INSERT INTO fargekategori VALUES (?, ?, ?, ?, ?)
                 """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.GUL.name(), Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
@@ -168,13 +168,13 @@ class ArbeidslisteIntegrationTest {
 
     @Test
     void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_v1() throws Exception {
-        arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
+        ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 null,
                 null,
                 null,
                 Arbeidsliste.Kategori.LILLA
-        ).setAktorId(AktorId.of(TEST_AKTORID)));
+        ).setAktorId(AktorId.of(TEST_AKTORID)), db);
         assertThat(arbeidslisteRepositoryV2.retrieveArbeidsliste(Fnr.of(TEST_FNR)).isSuccess()).isTrue();
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
@@ -191,13 +191,13 @@ class ArbeidslisteIntegrationTest {
 
     @Test
     void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_v2() throws Exception {
-        arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
+        ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 null,
                 null,
                 null,
                 Arbeidsliste.Kategori.LILLA
-        ).setAktorId(AktorId.of(TEST_AKTORID)));
+        ).setAktorId(AktorId.of(TEST_AKTORID)), db);
         assertThat(arbeidslisteRepositoryV2.retrieveArbeidsliste(Fnr.of(TEST_FNR)).isSuccess()).isTrue();
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
@@ -219,13 +219,13 @@ class ArbeidslisteIntegrationTest {
 
     @Test
     void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_v1() throws Exception {
-        arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
+        ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 null,
                 null,
                 null,
                 Arbeidsliste.Kategori.LILLA
-        ).setAktorId(AktorId.of(TEST_AKTORID)));
+        ).setAktorId(AktorId.of(TEST_AKTORID)), db);
         assertThat(arbeidslisteRepositoryV2.retrieveArbeidsliste(Fnr.of(TEST_FNR)).isSuccess()).isTrue();
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
@@ -248,13 +248,13 @@ class ArbeidslisteIntegrationTest {
 
     @Test
     void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_v2() throws Exception {
-        arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
+        ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 null,
                 null,
                 null,
                 Arbeidsliste.Kategori.LILLA
-        ).setAktorId(AktorId.of(TEST_AKTORID)));
+        ).setAktorId(AktorId.of(TEST_AKTORID)), db);
         assertThat(arbeidslisteRepositoryV2.retrieveArbeidsliste(Fnr.of(TEST_FNR)).isSuccess()).isTrue();
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
@@ -296,21 +296,21 @@ class ArbeidslisteIntegrationTest {
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity2);
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID_2), ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID_2), VeilederId.of(TEST_VEILEDERIDENT));
-
-        arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
+        ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "Overskriften",
                 "Kommentaren",
                 null,
                 Arbeidsliste.Kategori.LILLA
-        ).setAktorId(AktorId.of(TEST_AKTORID)).setVeilederId(VeilederId.of(TEST_VEILEDERIDENT)));
-        arbeidslisteRepositoryV2.insertArbeidsliste(ArbeidslisteDTO.of(
+        ).setAktorId(AktorId.of(TEST_AKTORID)).setVeilederId(VeilederId.of(TEST_VEILEDERIDENT)), db);
+        ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR_2),
                 "Overskriften",
                 "Kommentaren",
                 null,
                 Arbeidsliste.Kategori.LILLA
-        ).setAktorId(AktorId.of(TEST_AKTORID_2)).setVeilederId(VeilederId.of(TEST_VEILEDERIDENT)));
+        ).setAktorId(AktorId.of(TEST_AKTORID_2)).setVeilederId(VeilederId.of(TEST_VEILEDERIDENT)), db);
+
         assertThat(arbeidslisteRepositoryV2.retrieveArbeidsliste(Fnr.of(TEST_FNR)).isSuccess()).isTrue();
         assertThat(arbeidslisteRepositoryV2.retrieveArbeidsliste(Fnr.of(TEST_FNR_2)).isSuccess()).isTrue();
 
