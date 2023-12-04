@@ -76,8 +76,10 @@ public class ArbeidslisteService {
     }
 
     public int slettArbeidsliste(AktorId aktoerId) {
-        final int rowsUpdated = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);
-        if (rowsUpdated == 1) {
+        Optional<Fnr> fnr = brukerServiceV2.hentFnr(aktoerId);
+        final int rowsUpdated = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId, fnr);
+
+        if (rowsUpdated == 1 || rowsUpdated == 2) {
             opensearchIndexerV2.slettArbeidsliste(aktoerId);
         }
         return rowsUpdated;
