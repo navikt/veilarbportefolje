@@ -16,9 +16,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static java.util.concurrent.ThreadLocalRandom.current;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
@@ -232,9 +234,19 @@ public class ArbeidslisteRepositoryV2Test {
     public void skalSletteEksisterendeArbeidsliste() {
         insertArbeidslister();
 
-        final Integer rowsUpdated = repo.slettArbeidsliste(TEST_ARBEIDSLISTE_1.getAktorId());
+        final Integer rowsUpdated = repo.slettArbeidsliste(TEST_ARBEIDSLISTE_1.getAktorId(), Optional.of(TEST_ARBEIDSLISTE_1.getFnr()));
 
         assertThat(rowsUpdated).isEqualTo(1);
+    }
+
+    @Test
+    public void skalSletteEksisterendeArbeidslisteOgFargekategori() {
+        insertArbeidslister();
+        insertFargekategori(TEST_ARBEIDSLISTE_1, jdbcTemplate);
+
+        final Integer rowsUpdated = repo.slettArbeidsliste(TEST_ARBEIDSLISTE_1.getAktorId(), Optional.of(TEST_ARBEIDSLISTE_1.getFnr()));
+
+        assertThat(rowsUpdated).isEqualTo(2);
     }
 
     @Test
@@ -255,7 +267,7 @@ public class ArbeidslisteRepositoryV2Test {
         assertThat(arbeidsliste.isSuccess()).isTrue();
         assertThat(arbeidsliste.get()).isNotNull();
 
-        final Integer rowsUpdated = repo.slettArbeidsliste(aktoerId1);
+        final Integer rowsUpdated = repo.slettArbeidsliste(aktoerId1, Optional.empty());
         assertThat(rowsUpdated).isEqualTo(1);
 
         arbeidsliste = repo.retrieveArbeidsliste(fnr1);
@@ -353,6 +365,20 @@ public class ArbeidslisteRepositoryV2Test {
                 arbeidslisteDTO.getFrist(),
                 Optional.ofNullable(arbeidslisteDTO.getKategori()).map((Enum::toString)).orElse(null),
                 arbeidslisteDTO.getNavKontorForArbeidsliste()
+        );
+    }
+
+    private static void insertFargekategori(ArbeidslisteDTO arbeidslisteDTO, JdbcTemplate jdbcTemplate) {
+        String insertFargekategoriQuery = """
+                INSERT INTO fargekategori (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
+                                VALUES (?,?,?,?,?)
+                """;
+        jdbcTemplate.update(insertFargekategoriQuery,
+                UUID.randomUUID(),
+                arbeidslisteDTO.getFnr().get(),
+                ArbeidslisteMapper.mapTilFargekategoriVerdi(arbeidslisteDTO.getKategori()),
+                Timestamp.valueOf(LocalDateTime.now()),
+                arbeidslisteDTO.getVeilederId().toString()
         );
     }
 
