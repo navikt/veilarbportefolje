@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.concurrent.ThreadLocalRandom.current;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
@@ -96,7 +97,9 @@ public class ArbeidslisteRepositoryV2Test {
     public void skalKunneHenteArbeidsliste() {
         insertArbeidslister();
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1);
+
         Try<Arbeidsliste> result = repo.retrieveArbeidsliste(TEST_ARBEIDSLISTE_1.getFnr());
+
         assertThat(result.isSuccess()).isTrue();
         assertThat(TEST_ARBEIDSLISTE_1.getVeilederId()).isEqualTo(result.get().getSistEndretAv());
     }
@@ -104,15 +107,14 @@ public class ArbeidslisteRepositoryV2Test {
     @Test
     public void skalKunneHenteArbeidslisteUtenTittelEllerKommentar() {
         insertArbeidslister();
+
         Try<Arbeidsliste> resultUtenTittelData = repo.retrieveArbeidsliste(TEST_ARBEIDSLISTE_UTEN_TITTEL.getFnr());
-        assertThat(resultUtenTittelData.isSuccess()).isTrue();
-
         Try<Arbeidsliste> resultUtenKommentarData = repo.retrieveArbeidsliste(TEST_ARBEIDSLISTE_UTEN_KOMMENTAR.getFnr());
-        assertThat(resultUtenKommentarData.isSuccess()).isTrue();
-
         Try<Arbeidsliste> resultUtenTittelEllerKommentarData = repo.retrieveArbeidsliste(TEST_ARBEIDSLISTE_UTEN_KOMMENTAR_OG_TITTEL.getFnr());
-        assertThat(resultUtenTittelEllerKommentarData.isSuccess()).isTrue();
 
+        assertThat(resultUtenKommentarData.isSuccess()).isTrue();
+        assertThat(resultUtenTittelData.isSuccess()).isTrue();
+        assertThat(resultUtenTittelEllerKommentarData.isSuccess()).isTrue();
     }
 
     @Test
@@ -220,7 +222,6 @@ public class ArbeidslisteRepositoryV2Test {
 
         VeilederId expected = VeilederId.of("TEST_ID");
         repo.updateArbeidsliste(TEST_ARBEIDSLISTE_1.setVeilederId(expected));
-
         Try<Arbeidsliste> result = repo.retrieveArbeidsliste(TEST_ARBEIDSLISTE_1.getFnr());
 
         assertThat(result.isSuccess()).isTrue();
@@ -230,13 +231,16 @@ public class ArbeidslisteRepositoryV2Test {
     @Test
     public void skalSletteEksisterendeArbeidsliste() {
         insertArbeidslister();
+
         final Integer rowsUpdated = repo.slettArbeidsliste(TEST_ARBEIDSLISTE_1.getAktorId());
+
         assertThat(rowsUpdated).isEqualTo(1);
     }
 
     @Test
     public void skalReturnereFailureVedFeil() {
         Try<ArbeidslisteDTO> result = repo.insertArbeidsliste(TEST_ARBEIDSLISTE_1.setAktorId(null));
+
         assertThat(result.isFailure()).isTrue();
     }
 
@@ -270,18 +274,16 @@ public class ArbeidslisteRepositoryV2Test {
                 .setKategori(TEST_ARBEIDSLISTE_1.getKategori())
                 .setNavKontorForArbeidsliste(annetNavKontor.get())
                 .setKommentar("Arbeidsliste 1 kopi kommentar");
-
         insertArbeidslister();
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr());
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_2.getAktorId(), TEST_ARBEIDSLISTE_2.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr());
         insertOppfolgingsInformasjon(arbeidslistePaNyEnhet.getAktorId(), arbeidslistePaNyEnhet.getVeilederId(), annetNavKontor, randomFnr());
-        repo.insertArbeidsliste(arbeidslistePaNyEnhet);
+        insertArbeidsliste(arbeidslistePaNyEnhet, jdbcTemplate);
 
         List<Arbeidsliste> arbeidslistes1 = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), TEST_ARBEIDSLISTE_1.getVeilederId());
         List<Arbeidsliste> arbeidslistesAnnenEnhet = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(arbeidslistePaNyEnhet.getNavKontorForArbeidsliste()), arbeidslistePaNyEnhet.getVeilederId());
 
         assertThat(arbeidslistePaNyEnhet.getVeilederId()).isEqualTo(TEST_ARBEIDSLISTE_1.getVeilederId());
-
         assertThat(arbeidslistes1.size()).isEqualTo(1);
         assertThat(arbeidslistesAnnenEnhet.size()).isEqualTo(1);
         assertThat(arbeidslistes1.get(0).getKommentar()).isEqualTo(TEST_ARBEIDSLISTE_1.getKommentar());
@@ -293,6 +295,7 @@ public class ArbeidslisteRepositoryV2Test {
         insertArbeidslister();
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr());
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_2.getAktorId(), TEST_ARBEIDSLISTE_2.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr());
+
         List<Arbeidsliste> arbeidslistes1 = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), TEST_ARBEIDSLISTE_1.getVeilederId());
         List<Arbeidsliste> arbeidslistes2 = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(TEST_ARBEIDSLISTE_2.getNavKontorForArbeidsliste()), TEST_ARBEIDSLISTE_2.getVeilederId());
 
@@ -316,7 +319,7 @@ public class ArbeidslisteRepositoryV2Test {
         insertArbeidslister();
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr());
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_2.getAktorId(), TEST_ARBEIDSLISTE_2.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr());
-        repo.insertArbeidsliste(arbeidslisteLagetAvAnnenVeileder);
+        insertArbeidsliste(arbeidslisteLagetAvAnnenVeileder, jdbcTemplate);
         insertOppfolgingsInformasjon(arbeidslisteLagetAvAnnenVeileder.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), navKontor, randomFnr());
 
         List<Arbeidsliste> arbeidslister = repo.hentArbeidslisteForVeilederPaEnhet(navKontor, TEST_ARBEIDSLISTE_1.getVeilederId());
@@ -327,18 +330,30 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     private void insertArbeidslister() {
-        Try<ArbeidslisteDTO> result1 = repo.insertArbeidsliste(TEST_ARBEIDSLISTE_1);
-        Try<ArbeidslisteDTO> result2 = repo.insertArbeidsliste(TEST_ARBEIDSLISTE_2);
-        Try<ArbeidslisteDTO> result3 = repo.insertArbeidsliste(TEST_ARBEIDSLISTE_3);
-        Try<ArbeidslisteDTO> resultUtenTittelData = repo.insertArbeidsliste(TEST_ARBEIDSLISTE_UTEN_TITTEL);
-        Try<ArbeidslisteDTO> resultUtenKommentarData = repo.insertArbeidsliste(TEST_ARBEIDSLISTE_UTEN_KOMMENTAR);
-        Try<ArbeidslisteDTO> resultUtenTittelEllerKommentarData = repo.insertArbeidsliste(TEST_ARBEIDSLISTE_UTEN_KOMMENTAR_OG_TITTEL);
-        assertThat(result1.isSuccess()).isTrue();
-        assertThat(result2.isSuccess()).isTrue();
-        assertThat(result3.isSuccess()).isTrue();
-        assertThat(resultUtenTittelData.isSuccess()).isTrue();
-        assertThat(resultUtenKommentarData.isSuccess()).isTrue();
-        assertThat(resultUtenTittelEllerKommentarData.isSuccess()).isTrue();
+        insertArbeidsliste(TEST_ARBEIDSLISTE_1, jdbcTemplate);
+        insertArbeidsliste(TEST_ARBEIDSLISTE_2, jdbcTemplate);
+        insertArbeidsliste(TEST_ARBEIDSLISTE_3, jdbcTemplate);
+        insertArbeidsliste(TEST_ARBEIDSLISTE_UTEN_TITTEL, jdbcTemplate);
+        insertArbeidsliste(TEST_ARBEIDSLISTE_UTEN_KOMMENTAR, jdbcTemplate);
+        insertArbeidsliste(TEST_ARBEIDSLISTE_UTEN_KOMMENTAR_OG_TITTEL, jdbcTemplate);
+    }
+
+    public static void insertArbeidsliste(ArbeidslisteDTO arbeidslisteDTO, JdbcTemplate jdbcTemplate) {
+        String insertArbeidslisteQuery = """
+                    INSERT INTO arbeidsliste (AKTOERID, SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT,
+                                OVERSKRIFT, KOMMENTAR, FRIST, KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE)
+                                VALUES (?,?,?,?,?,?,?,?)
+                """;
+        jdbcTemplate.update(insertArbeidslisteQuery,
+                arbeidslisteDTO.getAktorId().get(),
+                arbeidslisteDTO.getVeilederId().getValue(),
+                arbeidslisteDTO.getEndringstidspunkt(),
+                arbeidslisteDTO.getOverskrift(),
+                arbeidslisteDTO.getKommentar(),
+                arbeidslisteDTO.getFrist(),
+                Optional.ofNullable(arbeidslisteDTO.getKategori()).map((Enum::toString)).orElse(null),
+                arbeidslisteDTO.getNavKontorForArbeidsliste()
+        );
     }
 
     private void insertOppfolgingsInformasjon(ArbeidslisteDTO arbeidslisteDTO) {
