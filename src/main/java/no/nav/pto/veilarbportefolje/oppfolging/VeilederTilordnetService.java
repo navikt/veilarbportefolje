@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -49,8 +48,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
 
         final boolean brukerHarByttetNavkontorHuskelapp = huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktoerId);
         if (brukerHarByttetNavkontorHuskelapp) {
-            Fnr fnr = aktorClient.hentFnr(aktoerId);
-            huskelappService.slettAlleHuskelapperPaaBruker(fnr);
+            huskelappService.slettAlleHuskelapperPaaBruker(aktoerId);
         }
     }
 
