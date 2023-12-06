@@ -100,6 +100,7 @@ public class HuskelappService {
 
     public void slettAlleHuskelapperPaaBruker(AktorId aktorId) {
         try {
+            secureLog.info("Sletter alle huskelapper paa bruker med aktoerid: " + aktorId);
             Fnr fnr = hentFnr(aktorId).orElseThrow(RuntimeException::new);
             huskelappRepository.slettAlleHuskelappRaderPaaBruker(fnr);
             opensearchIndexerV2.slettHuskelapp(aktorId);
