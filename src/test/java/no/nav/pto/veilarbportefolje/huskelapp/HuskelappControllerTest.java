@@ -10,16 +10,12 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.HuskelappController;
-import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappForBrukerRequest;
-import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappForVeilederRequest;
-import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
-import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
-import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappResponse;
-import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappSlettRequest;
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.*;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import org.junit.jupiter.api.Test;
@@ -34,15 +30,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.json.JsonUtils.fromJson;
+import static no.nav.common.json.JsonUtils.toJson;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -67,8 +63,8 @@ public class HuskelappControllerTest {
     @MockBean
     private BrukerServiceV2 brukerService;
 
-    @MockBean
-    private AktorClient aktorClient;
+    @Autowired
+    private PdlIdentRepository pdlIdentRepository;
 
     @Test
     void test_opprett_og_hent_huskelapp_for_bruker() throws Exception {
@@ -81,7 +77,6 @@ public class HuskelappControllerTest {
 
         when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-        when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
 
         HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, huskelappfrist, "Test", enhetId);
@@ -90,8 +85,6 @@ public class HuskelappControllerTest {
                         post("/api/v1/huskelapp")
                                 .contentType(APPLICATION_JSON)
                                 .content(toJson(opprettRequest))
-                                .header("test_ident", "Z12345")
-                                .header("test_ident_type", "INTERN")
                 )
                 .andExpect(status().is(201))
                 .andReturn().getResponse().getContentAsString();
@@ -135,16 +128,19 @@ public class HuskelappControllerTest {
         when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-        when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
+
+        List<PDLIdent> identer = List.of(
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
+        );
+        pdlIdentRepository.upsertIdenter(identer);
 
         String opprettetHuskelappId = mockMvc
                 .perform(
                         post("/api/v1/huskelapp")
                                 .contentType(APPLICATION_JSON)
                                 .content(toJson(opprettRequest))
-                                .header("test_ident", "Z12345")
-                                .header("test_ident_type", "INTERN")
                 ).andReturn().getResponse().getContentAsString();
 
         HuskelappForBrukerRequest hentForBrukerForRedigeringRequest = new HuskelappForBrukerRequest(fnr, enhetId);
@@ -206,8 +202,13 @@ public class HuskelappControllerTest {
 
         when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-        when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
+
+        List<PDLIdent> identer = List.of(
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
+        );
+        pdlIdentRepository.upsertIdenter(identer);
 
         String opprettetHuskelappId1 = mockMvc
                 .perform(
@@ -244,18 +245,19 @@ public class HuskelappControllerTest {
                 .andExpect(status().is(200))
                 .andReturn().getResponse().getContentAsString();
 
-        List<HuskelappResponse> hentetHuskelappEtterRedigeringBody = fromJson(result, new TypeReference<>() {});
+        List<HuskelappResponse> hentetHuskelappEtterRedigeringBody = fromJson(result, new TypeReference<>() {
+        });
         assertThat(hentetHuskelappEtterRedigeringBody.size()).isEqualTo(2);
-        assertThat(hentetHuskelappEtterRedigeringBody.stream().anyMatch( var -> var.equals(new HuskelappResponse(
-                        opprettetHuskelappId1,
-                        opprettRequest1.brukerFnr(),
-                        opprettRequest1.enhetId(),
-                        opprettRequest1.frist(),
-                        opprettRequest1.kommentar(),
-                        LocalDate.now(),
-                        veilederId.getValue()
-                )))).isTrue();
-        assertThat(hentetHuskelappEtterRedigeringBody.stream().anyMatch( var -> var.equals(new HuskelappResponse(
+        assertThat(hentetHuskelappEtterRedigeringBody.stream().anyMatch(var -> var.equals(new HuskelappResponse(
+                opprettetHuskelappId1,
+                opprettRequest1.brukerFnr(),
+                opprettRequest1.enhetId(),
+                opprettRequest1.frist(),
+                opprettRequest1.kommentar(),
+                LocalDate.now(),
+                veilederId.getValue()
+        )))).isTrue();
+        assertThat(hentetHuskelappEtterRedigeringBody.stream().anyMatch(var -> var.equals(new HuskelappResponse(
                 opprettetHuskelappId2,
                 opprettRequest2.brukerFnr(),
                 opprettRequest2.enhetId(),
@@ -278,8 +280,13 @@ public class HuskelappControllerTest {
         when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-        when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(AuthUtils.getInnloggetVeilederIdent()));
+
+        List<PDLIdent> identer = List.of(
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
+        );
+        pdlIdentRepository.upsertIdenter(identer);
 
         String opprettetBody = mockMvc
                 .perform(
