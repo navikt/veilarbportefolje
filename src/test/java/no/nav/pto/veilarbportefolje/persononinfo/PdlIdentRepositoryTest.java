@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.persononinfo;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
@@ -23,8 +22,6 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class PdlIdentRepositoryTest {
@@ -37,9 +34,6 @@ public class PdlIdentRepositoryTest {
 
     @Autowired
     private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-
-    @Autowired
-    private AktorClient aktorClient;
 
     @Test
     public void identSplitt_allePersonerMedTidligereIdenterSkalSlettes() {
@@ -75,21 +69,19 @@ public class PdlIdentRepositoryTest {
     public void oppfolgingAvsluttet_flereIdenterUnderOppfolging_lokalIdentLagringSkalIkkeSlettes() {
         AktorId historiskIdent = randomAktorId();
         AktorId ident = randomAktorId();
-        when(aktorClient.hentFnr(any())).thenReturn(randomFnr());
-        when(aktorClient.hentAktorId(any())).thenReturn(ident);
         List<PDLIdent> identer = List.of(
                 new PDLIdent(historiskIdent.get(), true, AKTORID),
                 new PDLIdent(ident.get(), false, AKTORID),
                 new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT)
         );
+        pdlIdentRepository.upsertIdenter(identer);
+
         var historiskOppfolgingStart = new SisteOppfolgingsperiodeV1(null, historiskIdent.get(), ZonedDateTime.now(), null);
         var nyOppfolgingStart = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), null);
         var nyOppfolgingAvslutt = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), ZonedDateTime.now());
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(historiskOppfolgingStart);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOppfolgingStart);
-        // Mock PDL respons
-        pdlIdentRepository.upsertIdenter(identer);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOppfolgingAvslutt);
 
         var lokaleIdenter = hentLokaleIdenter(historiskIdent);
@@ -100,14 +92,14 @@ public class PdlIdentRepositoryTest {
     public void oppfolgingAvsluttet_ingenAndreIdenterUnderOppfolging_identLagringSkalSlettes() {
         AktorId ident = randomAktorId();
         List<PDLIdent> identer = List.of(
-                new PDLIdent(ident.get(), false, AKTORID)
+                new PDLIdent(ident.get(), false, AKTORID),
+                new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT)
         );
+        pdlIdentRepository.upsertIdenter(identer);
         var opfolgingStart = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), null);
         var opfolgingAvslutt = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), ZonedDateTime.now());
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingStart);
-        // Mock PDL respons
-        pdlIdentRepository.upsertIdenter(identer);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingAvslutt);
         var lokaleIdenter = hentLokaleIdenter(ident);
         assertThat(lokaleIdenter).hasSize(0);
