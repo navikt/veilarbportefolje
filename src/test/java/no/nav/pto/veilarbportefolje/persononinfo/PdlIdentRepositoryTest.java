@@ -74,14 +74,14 @@ public class PdlIdentRepositoryTest {
                 new PDLIdent(ident.get(), false, AKTORID),
                 new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT)
         );
+        pdlIdentRepository.upsertIdenter(identer);
+
         var historiskOppfolgingStart = new SisteOppfolgingsperiodeV1(null, historiskIdent.get(), ZonedDateTime.now(), null);
         var nyOppfolgingStart = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), null);
         var nyOppfolgingAvslutt = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), ZonedDateTime.now());
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(historiskOppfolgingStart);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOppfolgingStart);
-        // Mock PDL respons
-        pdlIdentRepository.upsertIdenter(identer);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOppfolgingAvslutt);
 
         var lokaleIdenter = hentLokaleIdenter(historiskIdent);
@@ -92,14 +92,14 @@ public class PdlIdentRepositoryTest {
     public void oppfolgingAvsluttet_ingenAndreIdenterUnderOppfolging_identLagringSkalSlettes() {
         AktorId ident = randomAktorId();
         List<PDLIdent> identer = List.of(
-                new PDLIdent(ident.get(), false, AKTORID)
+                new PDLIdent(ident.get(), false, AKTORID),
+                new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT)
         );
+        pdlIdentRepository.upsertIdenter(identer);
         var opfolgingStart = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), null);
         var opfolgingAvslutt = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), ZonedDateTime.now());
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingStart);
-        // Mock PDL respons
-        pdlIdentRepository.upsertIdenter(identer);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingAvslutt);
         var lokaleIdenter = hentLokaleIdenter(ident);
         assertThat(lokaleIdenter).hasSize(0);

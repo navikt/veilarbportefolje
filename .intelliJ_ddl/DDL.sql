@@ -377,6 +377,19 @@ ALTER SEQUENCE public.enslige_forsorgere_vedtaksresultat_type_id_seq OWNED BY pu
 
 
 --
+-- Name: fargekategori; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.fargekategori (
+    id uuid NOT NULL,
+    fnr character varying(11) NOT NULL,
+    verdi character varying(25),
+    sist_endret timestamp without time zone NOT NULL,
+    sist_endret_av_veilederident character varying(7)
+);
+
+
+--
 -- Name: flyway_schema_history; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -416,6 +429,23 @@ CREATE TABLE public.gruppe_aktiviter (
     moteplan_sluttdato timestamp without time zone,
     hendelse_id bigint,
     aktiv boolean DEFAULT false
+);
+
+
+--
+-- Name: huskelapp; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.huskelapp (
+    endrings_id uuid NOT NULL,
+    huskelapp_id uuid,
+    fnr character varying(11) NOT NULL,
+    enhet_id character varying(4) NOT NULL,
+    endret_av_veileder character varying(10) NOT NULL,
+    endret_dato timestamp without time zone DEFAULT now(),
+    frist timestamp without time zone,
+    kommentar character varying(200),
+    status character varying(10)
 );
 
 
@@ -811,6 +841,14 @@ ALTER TABLE ONLY public.enslige_forsorgere_vedtaksresultat_type
 
 
 --
+-- Name: fargekategori fargekategori_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.fargekategori
+    ADD CONSTRAINT fargekategori_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: flyway_schema_history flyway_schema_history_pk; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -832,6 +870,14 @@ ALTER TABLE ONLY public.foreldreansvar
 
 ALTER TABLE ONLY public.gruppe_aktiviter
     ADD CONSTRAINT gruppe_aktiviter_pkey PRIMARY KEY (moteplan_id, veiledningdeltaker_id);
+
+
+--
+-- Name: huskelapp huskelapp_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.huskelapp
+    ADD CONSTRAINT huskelapp_pkey PRIMARY KEY (endrings_id);
 
 
 --
@@ -989,10 +1035,38 @@ CREATE INDEX enslige_forsorgere_aktivitet_type_indx ON public.enslige_forsorgere
 
 
 --
+-- Name: fargekategori_fnr_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fargekategori_fnr_index ON public.fargekategori USING btree (fnr);
+
+
+--
 -- Name: flyway_schema_history_s_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX flyway_schema_history_s_idx ON public.flyway_schema_history USING btree (success);
+
+
+--
+-- Name: huskelappenhetid; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX huskelappenhetid ON public.huskelapp USING btree (enhet_id);
+
+
+--
+-- Name: huskelappfnr; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX huskelappfnr ON public.huskelapp USING btree (fnr);
+
+
+--
+-- Name: huskelappid; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX huskelappid ON public.huskelapp USING btree (huskelapp_id);
 
 
 --
