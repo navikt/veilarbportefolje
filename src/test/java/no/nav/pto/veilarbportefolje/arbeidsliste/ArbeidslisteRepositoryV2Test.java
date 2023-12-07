@@ -6,7 +6,6 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.concurrent.ThreadLocalRandom.current;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,8 +32,6 @@ public class ArbeidslisteRepositoryV2Test {
     private ArbeidslisteRepositoryV2 repo;
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private OppfolgingRepositoryV2 oppfolgingRepository;
 
     private final ArbeidslisteDTO TEST_ARBEIDSLISTE_1 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
             .setAktorId(AktorId.of("22222222"))
@@ -89,7 +87,8 @@ public class ArbeidslisteRepositoryV2Test {
 
     @BeforeEach
     public void setUp() {
-        jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
+        jdbcTemplate.execute("TRUNCATE TABLE arbeidsliste");
+        jdbcTemplate.execute("TRUNCATE TABLE fargekategori");
         jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data");
         jdbcTemplate.execute("TRUNCATE TABLE oppfolgingsbruker_arena_v2");
         jdbcTemplate.execute("TRUNCATE TABLE bruker_identer");
@@ -98,7 +97,7 @@ public class ArbeidslisteRepositoryV2Test {
     @Test
     public void skalKunneHenteArbeidsliste() {
         insertArbeidslister();
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1);
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
 
         Try<Arbeidsliste> result = repo.retrieveArbeidsliste(TEST_ARBEIDSLISTE_1.getFnr());
 
@@ -122,7 +121,7 @@ public class ArbeidslisteRepositoryV2Test {
     @Test
     public void skalKunneOppdatereArbeidslisterUtenKommentar() {
         insertArbeidslister();
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_3);
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_3, jdbcTemplate);
 
         Try<Arbeidsliste> result = repo.retrieveArbeidsliste(TEST_ARBEIDSLISTE_3.getFnr());
         assertThat(TEST_ARBEIDSLISTE_3.kommentar).isEqualTo(result.get().getKommentar());
@@ -146,7 +145,7 @@ public class ArbeidslisteRepositoryV2Test {
     @Test
     public void skalKunneOppdatereArbeidslisterUtenTittel() {
         insertArbeidslister();
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_3);
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_3, jdbcTemplate);
 
         Try<Arbeidsliste> result = repo.retrieveArbeidsliste(TEST_ARBEIDSLISTE_3.getFnr());
         assertThat(TEST_ARBEIDSLISTE_3.overskrift).isEqualTo(result.get().getOverskrift());
@@ -170,7 +169,7 @@ public class ArbeidslisteRepositoryV2Test {
     @Test
     public void skalKunneOppdatereArbeidslisterUtenKommentarEllerTittel() {
         insertArbeidslister();
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_3);
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_3, jdbcTemplate);
 
         Try<Arbeidsliste> result = repo.retrieveArbeidsliste(TEST_ARBEIDSLISTE_3.getFnr());
         assertThat(TEST_ARBEIDSLISTE_3.kommentar).isEqualTo(result.get().getKommentar());
@@ -196,7 +195,7 @@ public class ArbeidslisteRepositoryV2Test {
     @Test
     public void skalKunneOppdatereKategori() {
         insertArbeidslister();
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1);
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
 
         Try<Arbeidsliste> result = repo.retrieveArbeidsliste(TEST_ARBEIDSLISTE_1.getFnr());
         assertThat(Arbeidsliste.Kategori.BLA).isEqualTo(result.get().getKategori());
@@ -220,7 +219,7 @@ public class ArbeidslisteRepositoryV2Test {
     @Test
     public void skalOppdatereEksisterendeArbeidsliste() {
         insertArbeidslister();
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1);
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
 
         VeilederId expected = VeilederId.of("TEST_ID");
         repo.updateArbeidsliste(TEST_ARBEIDSLISTE_1.setVeilederId(expected));
@@ -259,7 +258,7 @@ public class ArbeidslisteRepositoryV2Test {
     @Test
     public void skalSletteArbeidslisteForAktoerids() {
         insertArbeidslister();
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1);
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
 
         AktorId aktoerId1 = TEST_ARBEIDSLISTE_1.getAktorId();
         Fnr fnr1 = TEST_ARBEIDSLISTE_1.getFnr();
@@ -287,9 +286,9 @@ public class ArbeidslisteRepositoryV2Test {
                 .setNavKontorForArbeidsliste(annetNavKontor.get())
                 .setKommentar("Arbeidsliste 1 kopi kommentar");
         insertArbeidslister();
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr());
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_2.getAktorId(), TEST_ARBEIDSLISTE_2.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr());
-        insertOppfolgingsInformasjon(arbeidslistePaNyEnhet.getAktorId(), arbeidslistePaNyEnhet.getVeilederId(), annetNavKontor, randomFnr());
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr(), jdbcTemplate);
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_2.getAktorId(), TEST_ARBEIDSLISTE_2.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr(), jdbcTemplate);
+        insertOppfolgingsInformasjon(arbeidslistePaNyEnhet.getAktorId(), arbeidslistePaNyEnhet.getVeilederId(), annetNavKontor, randomFnr(), jdbcTemplate);
         insertArbeidsliste(arbeidslistePaNyEnhet, jdbcTemplate);
 
         List<Arbeidsliste> arbeidslistes1 = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), TEST_ARBEIDSLISTE_1.getVeilederId());
@@ -305,8 +304,8 @@ public class ArbeidslisteRepositoryV2Test {
     @Test
     public void hentArbeidslisteForVeilederPaEnhet_filtrerPaVeileder() {
         insertArbeidslister();
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr());
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_2.getAktorId(), TEST_ARBEIDSLISTE_2.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr());
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr(), jdbcTemplate);
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_2.getAktorId(), TEST_ARBEIDSLISTE_2.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr(), jdbcTemplate);
 
         List<Arbeidsliste> arbeidslistes1 = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), TEST_ARBEIDSLISTE_1.getVeilederId());
         List<Arbeidsliste> arbeidslistes2 = repo.hentArbeidslisteForVeilederPaEnhet(EnhetId.of(TEST_ARBEIDSLISTE_2.getNavKontorForArbeidsliste()), TEST_ARBEIDSLISTE_2.getVeilederId());
@@ -329,10 +328,10 @@ public class ArbeidslisteRepositoryV2Test {
                 .setNavKontorForArbeidsliste(navKontor.get())
                 .setKommentar("Arbeidsliste 1 kopi kommentar");
         insertArbeidslister();
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr());
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_2.getAktorId(), TEST_ARBEIDSLISTE_2.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr());
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr(), jdbcTemplate);
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_2.getAktorId(), TEST_ARBEIDSLISTE_2.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr(), jdbcTemplate);
         insertArbeidsliste(arbeidslisteLagetAvAnnenVeileder, jdbcTemplate);
-        insertOppfolgingsInformasjon(arbeidslisteLagetAvAnnenVeileder.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), navKontor, randomFnr());
+        insertOppfolgingsInformasjon(arbeidslisteLagetAvAnnenVeileder.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), navKontor, randomFnr(), jdbcTemplate);
 
         List<Arbeidsliste> arbeidslister = repo.hentArbeidslisteForVeilederPaEnhet(navKontor, TEST_ARBEIDSLISTE_1.getVeilederId());
 
@@ -382,25 +381,31 @@ public class ArbeidslisteRepositoryV2Test {
         );
     }
 
-    private void insertOppfolgingsInformasjon(ArbeidslisteDTO arbeidslisteDTO) {
+    public static void insertOppfolgingsInformasjon(ArbeidslisteDTO arbeidslisteDTO, JdbcTemplate jdbcTemplate) {
         int person = current().nextInt();
         jdbcTemplate.update("INSERT INTO bruker_identer (person, ident, gruppe, historisk) values (?,?,?, false)",
                 person, arbeidslisteDTO.getAktorId().get(), PDLIdent.Gruppe.AKTORID.name());
         jdbcTemplate.update("INSERT INTO bruker_identer (person, ident, gruppe, historisk) values (?,?,?, false)",
                 person, arbeidslisteDTO.getFnr().get(), PDLIdent.Gruppe.FOLKEREGISTERIDENT.name());
         jdbcTemplate.update("INSERT INTO oppfolgingsbruker_arena_v2 (fodselsnr, nav_kontor) values (?,?)", arbeidslisteDTO.getFnr().get(), arbeidslisteDTO.getNavKontorForArbeidsliste());
-        oppfolgingRepository.settUnderOppfolging(arbeidslisteDTO.getAktorId(), ZonedDateTime.now());
-        oppfolgingRepository.settVeileder(arbeidslisteDTO.getAktorId(), arbeidslisteDTO.getVeilederId());
+        jdbcTemplate.update("""
+                INSERT INTO oppfolging_data (AKTOERID, OPPFOLGING, STARTDATO) VALUES (?,?,?)
+                ON CONFLICT (AKTOERID) DO UPDATE SET OPPFOLGING = EXCLUDED.OPPFOLGING, STARTDATO = EXCLUDED.STARTDATO
+                """, arbeidslisteDTO.getAktorId().get(), true, toTimestamp(ZonedDateTime.now()));
+        jdbcTemplate.update("UPDATE oppfolging_data SET veilederid = ? WHERE aktoerid = ?", arbeidslisteDTO.getVeilederId().getValue(), arbeidslisteDTO.getAktorId().get());
     }
 
-    private void insertOppfolgingsInformasjon(AktorId aktorId, VeilederId veilederId, EnhetId navKontor, Fnr fnr) {
+    private static void insertOppfolgingsInformasjon(AktorId aktorId, VeilederId veilederId, EnhetId navKontor, Fnr fnr, JdbcTemplate jdbcTemplate) {
         int person = current().nextInt();
         jdbcTemplate.update("INSERT INTO bruker_identer (person, ident, gruppe, historisk) values (?,?,?, false)",
                 person, aktorId.get(), PDLIdent.Gruppe.AKTORID.name());
         jdbcTemplate.update("INSERT INTO bruker_identer (person, ident, gruppe, historisk) values (?,?,?, false)",
                 person, fnr.get(), PDLIdent.Gruppe.FOLKEREGISTERIDENT.name());
         jdbcTemplate.update("INSERT INTO oppfolgingsbruker_arena_v2 (fodselsnr, nav_kontor) values (?,?)", fnr.get(), navKontor.get());
-        oppfolgingRepository.settUnderOppfolging(aktorId, ZonedDateTime.now());
-        oppfolgingRepository.settVeileder(aktorId, veilederId);
+        jdbcTemplate.update("""
+                INSERT INTO oppfolging_data (AKTOERID, OPPFOLGING, STARTDATO) VALUES (?,?,?)
+                ON CONFLICT (AKTOERID) DO UPDATE SET OPPFOLGING = EXCLUDED.OPPFOLGING, STARTDATO = EXCLUDED.STARTDATO
+                """, aktorId.get(), true, toTimestamp(ZonedDateTime.now()));
+        jdbcTemplate.update("UPDATE oppfolging_data SET veilederid = ? WHERE aktoerid = ?", veilederId.getValue(), aktorId.get());
     }
 }
