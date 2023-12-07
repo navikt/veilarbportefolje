@@ -28,6 +28,7 @@ public class PostgresTable {
         public static final String ARB_OVERSKRIFT = "ARB_OVERSKRIFT";
         public static final String ARB_NAV_KONTOR_FOR_ARBEIDSLISTE = "ARB_NAV_KONTOR_FOR_ARBEIDSLISTE";
         public static final String FAR_VERDI = "FAR_VERDI";
+        public static final String FAR_SIST_ENDRET = "FAR_SIST_ENDRET";
 
         public static final String HL_FRIST = "HL_FRIST";
         public static final String HL_KOMMENTAR = "HL_KOMMENTAR";
