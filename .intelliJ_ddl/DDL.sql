@@ -433,6 +433,23 @@ CREATE TABLE public.gruppe_aktiviter (
 
 
 --
+-- Name: huskelapp; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.huskelapp (
+    endrings_id uuid NOT NULL,
+    huskelapp_id uuid,
+    fnr character varying(11) NOT NULL,
+    enhet_id character varying(4) NOT NULL,
+    endret_av_veileder character varying(10) NOT NULL,
+    endret_dato timestamp without time zone DEFAULT now(),
+    frist timestamp without time zone,
+    kommentar character varying(200),
+    status character varying(10)
+);
+
+
+--
 -- Name: kafka_consumer_record; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -856,6 +873,14 @@ ALTER TABLE ONLY public.gruppe_aktiviter
 
 
 --
+-- Name: huskelapp huskelapp_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.huskelapp
+    ADD CONSTRAINT huskelapp_pkey PRIMARY KEY (endrings_id);
+
+
+--
 -- Name: kafka_consumer_record kafka_consumer_record_topic_partition_record_offset_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1021,6 +1046,27 @@ CREATE INDEX fargekategori_fnr_index ON public.fargekategori USING btree (fnr);
 --
 
 CREATE INDEX flyway_schema_history_s_idx ON public.flyway_schema_history USING btree (success);
+
+
+--
+-- Name: huskelappenhetid; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX huskelappenhetid ON public.huskelapp USING btree (enhet_id);
+
+
+--
+-- Name: huskelappfnr; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX huskelappfnr ON public.huskelapp USING btree (fnr);
+
+
+--
+-- Name: huskelappid; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX huskelappid ON public.huskelapp USING btree (huskelapp_id);
 
 
 --

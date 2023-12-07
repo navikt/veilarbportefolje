@@ -83,6 +83,13 @@ public class DateUtils {
         return Timestamp.from(zonedDateTime.toInstant());
     }
 
+    public static Timestamp toTimestamp(LocalDate localDate) {
+        if (localDate == null) {
+            return null;
+        }
+        return Timestamp.valueOf(localDate.atStartOfDay());
+    }
+
     public static Timestamp toTimestamp(LocalDateTime localDateTime) {
         if (localDateTime == null) {
             return null;
@@ -226,7 +233,7 @@ public class DateUtils {
     }
 
     public static boolean isEqualOrAfterWithNullCheck(LocalDate date1, LocalDate date2) {
-        if(date1 == null || date2 == null) {
+        if (date1 == null || date2 == null) {
             return false;
         }
         return date1.equals(date2) || date1.isAfter(date2);

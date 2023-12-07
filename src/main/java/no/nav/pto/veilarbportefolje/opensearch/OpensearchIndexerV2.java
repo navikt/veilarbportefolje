@@ -8,6 +8,8 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
+import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
+import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
@@ -31,9 +33,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -91,6 +91,30 @@ public class OpensearchIndexerV2 {
                 .endObject();
 
         update(aktoerId, content, "Oppdater oppfolgingsbruker");
+    }
+
+    @SneakyThrows
+    public void updateHuskelapp(AktorId aktoerId, HuskelappForBruker huskelapp) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .startObject("huskelapp")
+                .field("frist", huskelapp.frist())
+                .field("kommentar", huskelapp.kommentar())
+                .endObject()
+                .endObject();
+
+        update(aktoerId, content, "Oppretter/redigerer huskelapp");
+    }
+
+
+    @SneakyThrows
+    public void slettHuskelapp(AktorId aktoerId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .nullField("huskelapp")
+                .endObject();
+
+        update(aktoerId, content, "Sletter huskelapp");
     }
 
     @SneakyThrows
