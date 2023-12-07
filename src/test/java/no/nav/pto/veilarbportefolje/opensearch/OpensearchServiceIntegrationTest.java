@@ -5,7 +5,9 @@ import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
@@ -15,6 +17,7 @@ import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
@@ -28,6 +31,7 @@ import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -48,6 +52,7 @@ import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterT
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggArbeidslisteQuery;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -3870,19 +3875,50 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_indeksere_arbeidsliste_data_riktig() {
-        ArbeidslisteDTO arb1 = TEST_ARBEIDSLISTE_1.setNavKontorForArbeidsliste(TEST_ENHET);
-        ArbeidslisteDTO arb2 = TEST_ARBEIDSLISTE_2.setNavKontorForArbeidsliste(TEST_ENHET);
-        ArbeidslisteDTO arb3 = TEST_ARBEIDSLISTE_3.setNavKontorForArbeidsliste(TEST_ENHET);
+        ArbeidslisteDTO arb1 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
+                .setAktorId(AktorId.of("22222222"))
+                .setVeilederId(VeilederId.of("X11111"))
+                .setNavKontorForArbeidsliste(TEST_ENHET)
+                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+                .setKommentar("Arbeidsliste 1 kommentar")
+                .setOverskrift("Dette er en overskrift")
+                .setKategori(Arbeidsliste.Kategori.BLA)
+                .setEndringstidspunkt(toTimestamp(ZonedDateTime.now()));
+        ArbeidslisteDTO arb2 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101011"))
+                .setAktorId(AktorId.of("22222223"))
+                .setVeilederId(VeilederId.of("X11112"))
+                .setNavKontorForArbeidsliste(TEST_ENHET)
+                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+                .setKommentar("Arbeidsliste 2 kommentar")
+                .setKategori(Arbeidsliste.Kategori.GRONN)
+                .setEndringstidspunkt(toTimestamp(ZonedDateTime.now()));
+        ArbeidslisteDTO arb2MedTomKategori = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101011"))
+                .setAktorId(AktorId.of("22222223"))
+                .setVeilederId(VeilederId.of("X11112"))
+                .setNavKontorForArbeidsliste(TEST_ENHET)
+                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+                .setKommentar("Arbeidsliste 2 kommentar")
+                .setKategori(null)
+                .setEndringstidspunkt(toTimestamp(ZonedDateTime.now()));
+        ArbeidslisteDTO arb3 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101015"))
+                .setAktorId(AktorId.of("22222224"))
+                .setVeilederId(VeilederId.of("X11112"))
+                .setNavKontorForArbeidsliste(TEST_ENHET)
+                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+                .setKommentar("Arbeidsliste 3 kommentar")
+                .setOverskrift("Arbeidsliste tittel")
+                .setKategori(Arbeidsliste.Kategori.GRONN)
+                .setEndringstidspunkt(toTimestamp(ZonedDateTime.now()));
         // Bruker som har arbeidsliste liggende kun i ARBEIDSLISTE-tabell
-        insertArbeidsliste(TEST_ARBEIDSLISTE_1, db);
+        insertArbeidsliste(arb1, db);
         // Bruker som har arbeidsliste i ARBEIDSLISTE-tabell og kategori i FARGEKATEGORI-tabell
-        insertArbeidsliste(TEST_ARBEIDSLISTE_2.setKategori(null), db);
-        insertFargekategori(TEST_ARBEIDSLISTE_2, db);
+        insertArbeidsliste(arb2MedTomKategori, db);
+        insertFargekategori(arb2, db);
         // Bruker som bare har kategori i FARGEKATEGORI-tabell
-        insertFargekategori(TEST_ARBEIDSLISTE_3, db);
-        ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, db);
-        ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_2, db);
-        ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_3, db);
+        insertFargekategori(arb3, db);
+        ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(arb1, db);
+        ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(arb2, db);
+        ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(arb3, db);
         opensearchIndexer.indekser(arb1.getAktorId());
         opensearchIndexer.indekser(arb2.getAktorId());
         opensearchIndexer.indekser(arb3.getAktorId());
