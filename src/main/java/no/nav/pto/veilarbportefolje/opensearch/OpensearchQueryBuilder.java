@@ -669,6 +669,9 @@ public class OpensearchQueryBuilder {
             case MIN_ARBEIDSLISTE:
                 queryBuilder = matchQuery("arbeidsliste_aktiv", true);
                 break;
+            case MINE_HUSKELAPPER:
+                queryBuilder = existsQuery("huskelapp");
+                break;
             case NYE_BRUKERE_FOR_VEILEDER:
                 queryBuilder = matchQuery("ny_for_veileder", true);
                 break;
@@ -684,9 +687,6 @@ public class OpensearchQueryBuilder {
                 } else {
                     throw new IllegalStateException();
                 }
-                break;
-            case MINE_HUSKELAPPER:
-                queryBuilder = existsQuery("huskelapp");
                 break;
             default:
                 throw new IllegalStateException();
@@ -830,7 +830,8 @@ public class OpensearchQueryBuilder {
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriC", "arbeidsliste_kategori", FargekategoriVerdi.GUL.verdi),
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriD", "arbeidsliste_kategori", FargekategoriVerdi.LILLA.verdi),
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriE", "arbeidsliste_kategori", FargekategoriVerdi.LIMEGRONN.verdi),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriF", "arbeidsliste_kategori", FargekategoriVerdi.ORANSJE.verdi)
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriF", "arbeidsliste_kategori", FargekategoriVerdi.ORANSJE.verdi),
+                mustExistFilter(filtrereVeilederOgEnhet, "mineHuskelapper", "huskelapp")
         };
 
         return new SearchSourceBuilder()

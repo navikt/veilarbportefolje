@@ -25,6 +25,7 @@ public class VeilederPortefoljeStatusTall {
     public long minArbeidslisteLilla;
     public long minArbeidslisteGronn;
     public long minArbeidslisteGul;
+    public long mineHuskelapper;
 
     public VeilederPortefoljeStatusTall(StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
         this.totalt = buckets.getTotalt().getDoc_count();
@@ -45,5 +46,6 @@ public class VeilederPortefoljeStatusTall {
         this.minArbeidslisteGronn = buckets.getMinArbeidslisteGronn().getDoc_count();
         this.minArbeidslisteGul = buckets.getMinArbeidslisteGul().getDoc_count();
         this.underVurdering = vedtakstottePilotErPa ? buckets.getUnderVurdering().getDoc_count() : 0;
+        this.mineHuskelapper = buckets.getMineHuskelapper().getDoc_count();
     }
 }

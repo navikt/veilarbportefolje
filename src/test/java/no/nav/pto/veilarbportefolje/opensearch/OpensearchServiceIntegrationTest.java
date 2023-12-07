@@ -557,7 +557,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER_0);
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setHuskelapp(new HuskelappForBruker(LocalDate.now(), "test huskelapp"));
 
         var testBruker2 = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().toString())
@@ -572,7 +573,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setNy_for_veileder(true)
                 .setTrenger_vurdering(true)
                 .setVenterpasvarfranav("2018-05-09T22:00:00Z")
-                .setNyesteutlopteaktivitet("2018-05-09T22:00:00Z");
+                .setNyesteutlopteaktivitet("2018-05-09T22:00:00Z")
+                .setHuskelapp(null);
 
         var inaktivBruker = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().toString())
@@ -601,6 +603,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(statustall.getTrengerVurdering()).isEqualTo(1);
         assertThat(statustall.getVenterPaSvarFraNAV()).isEqualTo(1);
         assertThat(statustall.getUtlopteAktiviteter()).isEqualTo(1);
+        assertThat(statustall.getMineHuskelapper()).isEqualTo(1);
     }
 
     @Test
