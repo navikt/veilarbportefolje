@@ -71,7 +71,10 @@ public class ValideringsRegler {
             "enslige_forsorgere_aktivitetsplikt",
             "enslige_forsorgere_om_barnet",
             "barn_under_18_aar",
-            "brukersSituasjonSistEndret"
+            "brukersSituasjonSistEndret",
+            "huskelapp",
+            "huskelapp_frist",
+            "huskelapp_kommentar"
     );
 
     public static void sjekkEnhet(String enhet) {
@@ -120,14 +123,14 @@ public class ValideringsRegler {
     public static Validation<Seq<String>, ArbeidslisteDTO> validerArbeidslisteV2(ArbeidslisteV2Request arbeidsliste, boolean redigering) {
 
         return Validation
-                    .combine(
-                            validerFnr(arbeidsliste.fnr().get()),
-                            valid(arbeidsliste.overskrift()),
-                            validateKommentar(arbeidsliste.kommentar()),
-                            validateFrist(arbeidsliste.frist(), redigering),
-                            validateKategori(arbeidsliste.kategori())
-                    )
-                    .ap(ArbeidslisteDTO::of);
+                .combine(
+                        validerFnr(arbeidsliste.fnr().get()),
+                        valid(arbeidsliste.overskrift()),
+                        validateKommentar(arbeidsliste.kommentar()),
+                        validateFrist(arbeidsliste.frist(), redigering),
+                        validateKategori(arbeidsliste.kategori())
+                )
+                .ap(ArbeidslisteDTO::of);
     }
 
     private static Validation<String, Timestamp> validateFrist(String frist, boolean redigering) {
