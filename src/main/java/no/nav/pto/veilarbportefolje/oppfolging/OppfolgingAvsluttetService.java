@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -41,12 +40,11 @@ public class OppfolgingAvsluttetService {
     private final EnsligeForsorgereService ensligeForsorgereService;
 
     public void avsluttOppfolging(AktorId aktoerId) {
-        Fnr fnrBruker = aktorClient.hentFnr(aktoerId);
         oppfolgingRepositoryV2.slettOppfolgingData(aktoerId);
         registreringService.slettRegistering(aktoerId);
         endringIRegistreringService.slettEndringIRegistering(aktoerId);
         arbeidslisteService.slettArbeidsliste(aktoerId);
-        huskelappService.slettAlleHuskelapperPaaBruker(fnrBruker);
+        huskelappService.slettAlleHuskelapperPaaBruker(aktoerId);
         sisteEndringService.slettSisteEndringer(aktoerId);
         cvRepositoryV2.resetHarDeltCV(aktoerId);
         siste14aVedtakService.slettSiste14aVedtak(aktoerId.get());

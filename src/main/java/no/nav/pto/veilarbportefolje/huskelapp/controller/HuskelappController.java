@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.huskelapp.controller;
 
-import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,11 +7,11 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.*;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.http.HttpStatus;
@@ -34,8 +33,8 @@ public class HuskelappController {
 
     private final HuskelappService huskelappService;
     private final AuthService authService;
-    private final AktorClient aktorClient;
     private final BrukerServiceV2 brukerServiceV2;
+    private final PdlIdentRepository pdlIdentRepository;
 
     @PostMapping("/huskelapp")
     public ResponseEntity<String> opprettHuskelapp(@RequestBody HuskelappOpprettRequest huskelappOpprettRequest) {
@@ -119,14 +118,13 @@ public class HuskelappController {
                 .map(this::hentAktorId)
                 .get()
                 .map(brukerServiceV2::hentVeilederForBruker)
-                .get()
-                .map(currentVeileder -> currentVeileder.equals(veilederId))
+                .flatMap(id -> id.map(currentVeileder -> currentVeileder.equals(veilederId)))
                 .orElse(false);
 
     }
 
-    private Try<AktorId> hentAktorId(Fnr fnr) {
-        return Try.of(() -> aktorClient.hentAktorId(fnr));
+    private Optional<AktorId> hentAktorId(Fnr fnr) {
+        return Optional.ofNullable(pdlIdentRepository.hentAktorId(fnr));
     }
 
     private void validerOppfolgingOgBrukerOgEnhet(String fnr, String enhetId) {
