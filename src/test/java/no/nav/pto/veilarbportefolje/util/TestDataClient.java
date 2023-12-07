@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.util;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
@@ -9,6 +10,8 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.huskelapp.HuskelappRepository;
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
@@ -37,7 +40,9 @@ public class TestDataClient {
     private final PdlIdentRepository pdlIdentRepository;
     private final PdlPersonRepository pdlPersonRepository;
 
-    public TestDataClient(JdbcTemplate jdbcTemplatePostgres, RegistreringRepositoryV2 registreringRepositoryV2, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository) {
+    private final HuskelappRepository huskelappRepository;
+
+    public TestDataClient(JdbcTemplate jdbcTemplatePostgres, RegistreringRepositoryV2 registreringRepositoryV2, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.registreringRepositoryV2 = registreringRepositoryV2;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
@@ -46,6 +51,7 @@ public class TestDataClient {
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.pdlIdentRepository = pdlIdentRepository;
         this.pdlPersonRepository = pdlPersonRepository;
+        this.huskelappRepository = huskelappRepository;
     }
 
     public void endreNavKontorForBruker(AktorId aktoerId, NavKontor navKontor) {
@@ -73,6 +79,18 @@ public class TestDataClient {
         opensearchTestClient.oppdaterArbeidsliste(aktoerId, true);
     }
 
+    public void setupBrukerMedHuskelapp(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
+        final Fnr fnr = TestDataUtils.randomFnr();
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(aktoerId.get(), false, AKTORID),
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
+        ));
+        huskelappRepository.opprettHuskelapp(new HuskelappOpprettRequest(fnr, LocalDate.now(), "test", EnhetId.of(navKontor.getValue())), veilederId);
+
+        lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, startDato, null);
+        opensearchTestClient.oppdaterArbeidsliste(aktoerId, true);
+    }
+
     public void lagreBrukerUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
         final Fnr fnr = TestDataUtils.randomFnr();
         lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), VeilederId.of(null), startDato, null);
@@ -89,6 +107,10 @@ public class TestDataClient {
     public void lagreBrukerUnderOppfolging(AktorId aktoerId, Fnr fnr, String navKontor, String diskresjonKode) {
         final VeilederId veilederId = TestDataUtils.randomVeilederId();
         lagreBrukerUnderOppfolging(aktoerId, fnr, NavKontor.of(navKontor), veilederId, ZonedDateTime.now(), diskresjonKode);
+    }
+
+    public void lagreBrukerUnderOppfolging(AktorId aktoerId, Fnr fnr, NavKontor navKontor, VeilederId veilederId) {
+        lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, ZonedDateTime.now(), null);
     }
 
     public boolean hentUnderOppfolgingOgAktivIdent(AktorId aktoerId) {
@@ -114,7 +136,7 @@ public class TestDataClient {
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         navKontor.getValue(), null, null, null,
-                         ZonedDateTime.now()));
+                        ZonedDateTime.now()));
         opensearchTestClient.createUserInOpensearch(aktoerId);
 
     }

@@ -108,13 +108,13 @@ public class OpensearchIndexer {
 
         List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
 
-        if (brukere != null && !brukere.isEmpty()){
+        if (brukere != null && !brukere.isEmpty()) {
             flettInnNodvendigData(brukere);
             this.skrivBulkTilIndeks(alias.getValue(), brukere);
         }
     }
 
-    private void flettInnNodvendigData(List<OppfolgingsBruker> brukere){
+    private void flettInnNodvendigData(List<OppfolgingsBruker> brukere) {
         postgresOpensearchMapper.flettInnAvvik14aVedtak(brukere);
         postgresOpensearchMapper.flettInnAktivitetsData(brukere);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukere);

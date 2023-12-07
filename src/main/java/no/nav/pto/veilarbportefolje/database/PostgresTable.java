@@ -27,6 +27,10 @@ public class PostgresTable {
         public static final String ARB_KATEGORI = "ARB_KATEGORI";
         public static final String ARB_OVERSKRIFT = "ARB_OVERSKRIFT";
         public static final String ARB_NAV_KONTOR_FOR_ARBEIDSLISTE = "ARB_NAV_KONTOR_FOR_ARBEIDSLISTE";
+        public static final String FAR_VERDI = "FAR_VERDI";
+
+        public static final String HL_FRIST = "HL_FRIST";
+        public static final String HL_KOMMENTAR = "HL_KOMMENTAR";
 
         public static final String BRUKERS_SITUASJON = "BRUKERS_SITUASJON";
         public static final String UTDANNING = "UTDANNING";
@@ -103,6 +107,19 @@ public class PostgresTable {
         public static final String FRIST = "FRIST";
         public static final String KATEGORI = "KATEGORI";
         public static final String NAV_KONTOR_FOR_ARBEIDSLISTE = "NAV_KONTOR_FOR_ARBEIDSLISTE";
+    }
+
+    public static final class HUSKELAPP {
+        public static final String TABLE_NAME = "HUSKELAPP";
+        public static final String ENDRINGS_ID = "ENDRINGS_ID";
+        public static final String HUSKELAPP_ID = "HUSKELAPP_ID";
+        public static final String FNR = "FNR";
+        public static final String ENHET_ID = "ENHET_ID";
+        public static final String ENDRET_AV_VEILEDER = "ENDRET_AV_VEILEDER";
+        public static final String ENDRET_DATO = "ENDRET_DATO";
+        public static final String FRIST = "FRIST";
+        public static final String KOMMENTAR = "KOMMENTAR";
+        public static final String STATUS = "STATUS";
     }
 
     public static final class UTKAST_14A_STATUS {

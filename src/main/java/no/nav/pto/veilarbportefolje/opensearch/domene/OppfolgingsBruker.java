@@ -3,6 +3,8 @@ package no.nav.pto.veilarbportefolje.opensearch.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad;
+import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
+import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
@@ -124,4 +126,6 @@ public class OppfolgingsBruker {
     List<BarnUnder18AarData> barn_under_18_aar = emptyList();
 
     EnsligeForsorgereOvergangsstonad enslige_forsorgere_overgangsstonad;
+    HuskelappForBruker huskelapp;
+
 }
