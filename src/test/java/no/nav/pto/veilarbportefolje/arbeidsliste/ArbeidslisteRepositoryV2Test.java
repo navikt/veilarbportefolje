@@ -33,7 +33,7 @@ public class ArbeidslisteRepositoryV2Test {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final ArbeidslisteDTO TEST_ARBEIDSLISTE_1 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
+    public final static ArbeidslisteDTO TEST_ARBEIDSLISTE_1 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
             .setAktorId(AktorId.of("22222222"))
             .setVeilederId(VeilederId.of("X11111"))
             .setNavKontorForArbeidsliste("0000")
@@ -41,7 +41,7 @@ public class ArbeidslisteRepositoryV2Test {
             .setKommentar("Arbeidsliste 1 kommentar")
             .setOverskrift("Dette er en overskrift")
             .setKategori(Arbeidsliste.Kategori.BLA);
-    private final ArbeidslisteDTO TEST_ARBEIDSLISTE_2 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101011"))
+    public final static ArbeidslisteDTO TEST_ARBEIDSLISTE_2 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101011"))
             .setAktorId(AktorId.of("22222223"))
             .setVeilederId(VeilederId.of("X11112"))
             .setNavKontorForArbeidsliste("0000")
@@ -49,7 +49,7 @@ public class ArbeidslisteRepositoryV2Test {
             .setKommentar("Arbeidsliste 2 kommentar")
             .setKategori(Arbeidsliste.Kategori.GRONN);
 
-    private final ArbeidslisteDTO TEST_ARBEIDSLISTE_3 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101015"))
+    public final static ArbeidslisteDTO TEST_ARBEIDSLISTE_3 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101015"))
             .setAktorId(AktorId.of("22222224"))
             .setVeilederId(VeilederId.of("X11112"))
             .setNavKontorForArbeidsliste("0000")
@@ -367,7 +367,7 @@ public class ArbeidslisteRepositoryV2Test {
         );
     }
 
-    private static void insertFargekategori(ArbeidslisteDTO arbeidslisteDTO, JdbcTemplate jdbcTemplate) {
+    public static void insertFargekategori(ArbeidslisteDTO arbeidslisteDTO, JdbcTemplate jdbcTemplate) {
         String insertFargekategoriQuery = """
                 INSERT INTO fargekategori (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
                                 VALUES (?,?,?,?,?)
