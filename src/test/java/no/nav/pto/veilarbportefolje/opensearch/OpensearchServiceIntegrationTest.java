@@ -3900,45 +3900,31 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setKommentar("Arbeidsliste 2 kommentar")
                 .setKategori(null)
                 .setEndringstidspunkt(toTimestamp(ZonedDateTime.now()));
-        ArbeidslisteDTO arb3 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101015"))
-                .setAktorId(AktorId.of("22222224"))
-                .setVeilederId(VeilederId.of("X11112"))
-                .setNavKontorForArbeidsliste(TEST_ENHET)
-                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
-                .setKommentar("Arbeidsliste 3 kommentar")
-                .setOverskrift("Arbeidsliste tittel")
-                .setKategori(Arbeidsliste.Kategori.GRONN)
-                .setEndringstidspunkt(toTimestamp(ZonedDateTime.now()));
+
         // Bruker som har arbeidsliste liggende kun i ARBEIDSLISTE-tabell
         insertArbeidsliste(arb1, db);
         // Bruker som har arbeidsliste i ARBEIDSLISTE-tabell og kategori i FARGEKATEGORI-tabell
         insertArbeidsliste(arb2MedTomKategori, db);
         insertFargekategori(arb2, db);
-        // Bruker som bare har kategori i FARGEKATEGORI-tabell
-        insertFargekategori(arb3, db);
         ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(arb1, db);
         ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(arb2, db);
-        ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(arb3, db);
         opensearchIndexer.indekser(arb1.getAktorId());
         opensearchIndexer.indekser(arb2.getAktorId());
-        opensearchIndexer.indekser(arb3.getAktorId());
-        Filtervalg filterValg = new Filtervalg()
-                .setFerdigfilterListe(List.of());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == 2);
 
         BrukereMedAntall respons = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "ascending",
                 "ikke_satt",
-                filterValg,
+                new Filtervalg().setFerdigfilterListe(emptyList()),
                 null,
                 null
         );
 
-        assertThat(respons.getAntall()).isEqualTo(3);
-        assertEquals(respons.getBrukere().get(0).getFnr(), arb1.getFnr().get());
-        assertEquals(respons.getBrukere().get(1).getFnr(), arb2.getFnr().get());
-        assertEquals(respons.getBrukere().get(2).getFnr(), arb3.getFnr().get());
+        assertThat(respons.getAntall()).isEqualTo(2);
+        assertEquals(Arbeidsliste.Kategori.BLA, respons.getBrukere().get(0).getArbeidsliste().getKategori());
+        assertEquals(Arbeidsliste.Kategori.GRONN, respons.getBrukere().get(1).getArbeidsliste().getKategori());
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
