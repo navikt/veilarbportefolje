@@ -1062,10 +1062,10 @@ CREATE INDEX enslige_forsorgere_aktivitet_type_indx ON public.enslige_forsorgere
 
 
 --
--- Name: fargekategori_unique_fnr_index; Type: INDEX; Schema: public; Owner: -
+-- Name: fargekategori_fnr_unique_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX fargekategori_unique_fnr_index ON public.fargekategori USING btree (fnr);
+CREATE UNIQUE INDEX fargekategori_fnr_unique_index ON public.fargekategori USING btree (fnr);
 
 
 --

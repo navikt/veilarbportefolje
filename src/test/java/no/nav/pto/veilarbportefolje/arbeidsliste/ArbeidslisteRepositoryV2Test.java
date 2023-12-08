@@ -5,7 +5,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +56,7 @@ public class ArbeidslisteRepositoryV2Test {
             .setKommentar("Arbeidsliste 1 oppdatert kommentar")
             .setOverskrift("Dette er en oppdatert overskrift")
             .setKategori(Arbeidsliste.Kategori.GRONN);
+
     public final static ArbeidslisteDTO TEST_ARBEIDSLISTE_2 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101011"))
             .setAktorId(AktorId.of("22222223"))
             .setVeilederId(VeilederId.of("X11112"))
@@ -234,15 +234,22 @@ public class ArbeidslisteRepositoryV2Test {
 
     @Test
     public void skalOppdatereEksisterendeArbeidsliste() {
-        insertArbeidslister();
-        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
+        ArbeidslisteDTO arbeidsliste = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
+                .setAktorId(AktorId.of("22222222"))
+                .setVeilederId(VeilederId.of("TEST_ID"))
+                .setNavKontorForArbeidsliste("0000")
+                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+                .setKommentar("Arbeidsliste 1 kommentar")
+                .setOverskrift("Dette er en overskrift")
+                .setKategori(Arbeidsliste.Kategori.BLA);
+        insertArbeidsliste(arbeidsliste, jdbcTemplate);
+        insertOppfolgingsInformasjon(arbeidsliste, jdbcTemplate);
 
-        VeilederId expected = VeilederId.of("TEST_ID");
-        repo.updateArbeidsliste(TEST_ARBEIDSLISTE_1.setVeilederId(expected));
-        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(TEST_ARBEIDSLISTE_1.getFnr());
+        repo.updateArbeidsliste(arbeidsliste);
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(arbeidsliste.getFnr());
 
         assertThat(result.isSuccess()).isTrue();
-        assertThat(expected).isEqualTo(result.get().getSistEndretAv());
+        assertThat(VeilederId.of("TEST_ID")).isEqualTo(result.get().getSistEndretAv());
     }
 
     @Test
@@ -266,7 +273,16 @@ public class ArbeidslisteRepositoryV2Test {
 
     @Test
     public void skalReturnereFailureVedFeil() {
-        Try<ArbeidslisteDTO> result = repo.insertArbeidsliste(TEST_ARBEIDSLISTE_1.setAktorId(null));
+        ArbeidslisteDTO arbeidsliste = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
+                .setAktorId(null)
+                .setVeilederId(VeilederId.of("X11111"))
+                .setNavKontorForArbeidsliste("0000")
+                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+                .setKommentar("Arbeidsliste 1 kommentar")
+                .setOverskrift("Dette er en overskrift")
+                .setKategori(Arbeidsliste.Kategori.BLA);
+
+        Try<ArbeidslisteDTO> result = repo.insertArbeidsliste(arbeidsliste);
 
         assertThat(result.isFailure()).isTrue();
     }
