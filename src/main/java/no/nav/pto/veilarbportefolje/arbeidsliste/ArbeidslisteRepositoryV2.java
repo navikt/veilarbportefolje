@@ -2,22 +2,18 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -52,7 +48,7 @@ public class ArbeidslisteRepositoryV2 {
                 """;
         return Try.of(
                 () -> queryForObjectOrNull(
-                        () -> db.queryForObject(sql, this::arbeidslisteMapper, bruker.get())
+                        () -> db.queryForObject(sql, ArbeidslisteMapper::arbeidslisteMapper, bruker.get())
                 )
         );
     }
@@ -70,7 +66,7 @@ public class ArbeidslisteRepositoryV2 {
                         veilederident.getValue()
                 )
                 .stream()
-                .map(ArbeidslisteRepositoryV2::arbeidslisteMapper)
+                .map(ArbeidslisteMapper::arbeidslisteMapper)
                 .toList();
     }
 
@@ -158,62 +154,5 @@ public class ArbeidslisteRepositoryV2 {
         if (oppdaterteRaderIArbeidsliste != oppdaterteRaderIFargekategori) {
             // TODO trenger vi gjøre noe her? Disse tallene burde vel være like, eller?
         }
-    }
-
-    @SneakyThrows
-    private Arbeidsliste arbeidslisteMapper(ResultSet rs, int row) {
-        return new Arbeidsliste(
-                VeilederId.of(rs.getString(SIST_ENDRET_AV_VEILEDERIDENT)),
-                toZonedDateTime(rs.getTimestamp(ENDRINGSTIDSPUNKT)),
-                rs.getString(OVERSKRIFT),
-                rs.getString(KOMMENTAR),
-                toZonedDateTime(rs.getTimestamp(FRIST)),
-                getResolvedKategori(rs)
-        ).setAktoerid(rs.getString(AKTOERID));
-    }
-
-    @SneakyThrows
-    private static Arbeidsliste arbeidslisteMapper(Map<String, Object> rs) {
-        return new Arbeidsliste(
-                VeilederId.of((String) rs.get(SIST_ENDRET_AV_VEILEDERIDENT)),
-                toZonedDateTime((Timestamp) rs.get(ENDRINGSTIDSPUNKT)),
-                (String) rs.get(OVERSKRIFT),
-                (String) rs.get(KOMMENTAR),
-                toZonedDateTime((Timestamp) rs.get(FRIST)),
-                getResolvedKategori(rs)
-        ).setAktoerid((String) rs.get(AKTOERID));
-    }
-
-    @Nullable
-    private static Arbeidsliste.Kategori getResolvedKategori(Map<String, Object> rs) {
-        String kategoriFraFargekategoriTabell = (String) rs.get("VERDI");
-        String kategoriFraArbeidslisteTabell = (String) rs.get("KATEGORI");
-
-        if (kategoriFraFargekategoriTabell != null) {
-            return ArbeidslisteMapper.mapFraFargekategoriTilKategori(kategoriFraFargekategoriTabell);
-        }
-
-        if (kategoriFraArbeidslisteTabell != null) {
-            return ArbeidslisteMapper.mapFraKategoriTilKategori(kategoriFraArbeidslisteTabell);
-        }
-
-        return null;
-    }
-
-    @Nullable
-    @SneakyThrows
-    private static Arbeidsliste.Kategori getResolvedKategori(ResultSet rs) {
-        String kategoriFraFargekategoriTabell = rs.getString("VERDI");
-        String kategoriFraArbeidslisteTabell = rs.getString("KATEGORI");
-
-        if (kategoriFraFargekategoriTabell != null) {
-            return ArbeidslisteMapper.mapFraFargekategoriTilKategori(kategoriFraFargekategoriTabell);
-        }
-
-        if (kategoriFraArbeidslisteTabell != null) {
-            return ArbeidslisteMapper.mapFraKategoriTilKategori(kategoriFraArbeidslisteTabell);
-        }
-
-        return null;
     }
 }
