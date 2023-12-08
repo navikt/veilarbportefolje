@@ -5,26 +5,33 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.concurrent.ThreadLocalRandom.current;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.FARGEKATEGORI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class ArbeidslisteRepositoryV2Test {
@@ -41,6 +48,15 @@ public class ArbeidslisteRepositoryV2Test {
             .setKommentar("Arbeidsliste 1 kommentar")
             .setOverskrift("Dette er en overskrift")
             .setKategori(Arbeidsliste.Kategori.BLA);
+
+    public final static ArbeidslisteDTO TEST_ARBEIDSLISTE_1_OPPDATERT = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
+            .setAktorId(AktorId.of("22222222"))
+            .setVeilederId(VeilederId.of("X11111"))
+            .setNavKontorForArbeidsliste("0000")
+            .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+            .setKommentar("Arbeidsliste 1 oppdatert kommentar")
+            .setOverskrift("Dette er en oppdatert overskrift")
+            .setKategori(Arbeidsliste.Kategori.GRONN);
     public final static ArbeidslisteDTO TEST_ARBEIDSLISTE_2 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101011"))
             .setAktorId(AktorId.of("22222223"))
             .setVeilederId(VeilederId.of("X11112"))
@@ -338,6 +354,124 @@ public class ArbeidslisteRepositoryV2Test {
         assertThat(arbeidslister.size()).isEqualTo(2);
         assertThat(arbeidslister.stream().anyMatch(x -> x.getKommentar().equals(TEST_ARBEIDSLISTE_1.getKommentar()))).isTrue();
         assertThat(arbeidslister.stream().anyMatch(x -> x.getKommentar().equals(arbeidslisteLagetAvAnnenVeileder.getKommentar()))).isTrue();
+    }
+
+    @Test
+    public void oppretting_av_arbeidsliste_skal_populere_tabeller_riktig_nar_bruker_ikke_har_arbeidsliste_fra_for() throws SQLException {
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
+
+
+        repo.insertArbeidsliste(TEST_ARBEIDSLISTE_1);
+
+        Map<String, Object> arbeidslisteResultSet = jdbcTemplate.queryForMap("""
+                SELECT * FROM arbeidsliste WHERE aktoerid = ?
+                """, TEST_ARBEIDSLISTE_1.getAktorId().get());
+        Map<String, Object> fargekategoriResultSet = jdbcTemplate.queryForMap("""
+                SELECT * FROM fargekategori WHERE fnr = ?
+                """, TEST_ARBEIDSLISTE_1.getFnr().get());
+
+        // Sjekker bare på tilstedeværelse av verdier her da denne testen
+        // er skrevet ifm. separering av FARGEKATEGORI ut fra ARBEIDSLISTE.
+        // Det vi er interessert i her er med andre ord repositoryet
+        // putter arbeidslisteinnhold og kategori i sine respektive tabeller.
+        //
+        // Testen kan tilpasses til å sjekke selve verdiene for de resterende kolonnene
+        // om man ønsker det.
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.AKTOERID)).isNotNull();
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.SIST_ENDRET_AV_VEILEDERIDENT)).isNotNull();
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.KOMMENTAR)).isNotNull();
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.FRIST)).isNotNull();
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.ENDRINGSTIDSPUNKT)).isNotNull();
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.OVERSKRIFT)).isNotNull();
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE)).isNotNull();
+        assertThat(fargekategoriResultSet.get(FARGEKATEGORI.ID)).isNotNull();
+        assertThat(fargekategoriResultSet.get(FARGEKATEGORI.FNR)).isNotNull();
+        assertThat(fargekategoriResultSet.get(FARGEKATEGORI.SIST_ENDRET)).isNotNull();
+        assertThat(fargekategoriResultSet.get(FARGEKATEGORI.SIST_ENDRET_AV_VEILEDERIDENT)).isNotNull();
+
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.KATEGORI)).isNull();
+        assertThat(fargekategoriResultSet.get(FARGEKATEGORI.VERDI)).isEqualTo("FARGEKATEGORI_A");
+    }
+
+    @Test
+    public void oppdatering_av_arbeidsliste_skal_populere_tabeller_riktig_nar_bruker_ikke_har_arbeidsliste_fra_for() throws SQLException {
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
+        String insertArbeidslisteQuery = """
+                    INSERT INTO arbeidsliste (AKTOERID, SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT,
+                                OVERSKRIFT, KOMMENTAR, FRIST, KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE)
+                                VALUES (?,?,?,?,?,?,?,?)
+                """;
+        jdbcTemplate.update(insertArbeidslisteQuery,
+                TEST_ARBEIDSLISTE_1.getAktorId().get(),
+                TEST_ARBEIDSLISTE_1.getVeilederId().getValue(),
+                TEST_ARBEIDSLISTE_1.getEndringstidspunkt(),
+                TEST_ARBEIDSLISTE_1.getOverskrift(),
+                TEST_ARBEIDSLISTE_1.getKommentar(),
+                TEST_ARBEIDSLISTE_1.getFrist(),
+                null,
+                TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()
+        );
+
+        repo.updateArbeidsliste(TEST_ARBEIDSLISTE_1_OPPDATERT);
+
+        Map<String, Object> arbeidslisteResultSet = jdbcTemplate.queryForMap("""
+                SELECT * FROM arbeidsliste WHERE aktoerid = ?
+                """, TEST_ARBEIDSLISTE_1.getAktorId().get());
+        Map<String, Object> fargekategoriResultSet = jdbcTemplate.queryForMap("""
+                SELECT * FROM fargekategori WHERE fnr = ?
+                """, TEST_ARBEIDSLISTE_1.getFnr().get());
+
+        // Sjekker bare på tilstedeværelse av verdier her da denne testen
+        // er skrevet ifm. separering av FARGEKATEGORI ut fra ARBEIDSLISTE.
+        // Det vi er interessert i her er med andre ord repositoryet
+        // oppdaterer arbeidslisteinnhold og kategori i sine respektive tabeller.
+        //
+        // Testen kan tilpasses til å sjekke selve verdiene for de resterende kolonnene
+        // om man ønsker det.
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.AKTOERID)).isNotNull();
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.SIST_ENDRET_AV_VEILEDERIDENT)).isNotNull();
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.KOMMENTAR)).isNotNull();
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.FRIST)).isNotNull();
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.ENDRINGSTIDSPUNKT)).isNotNull();
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.OVERSKRIFT)).isNotNull();
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE)).isNotNull();
+        assertThat(fargekategoriResultSet.get(FARGEKATEGORI.ID)).isNotNull();
+        assertThat(fargekategoriResultSet.get(FARGEKATEGORI.FNR)).isNotNull();
+        assertThat(fargekategoriResultSet.get(FARGEKATEGORI.SIST_ENDRET)).isNotNull();
+        assertThat(fargekategoriResultSet.get(FARGEKATEGORI.SIST_ENDRET_AV_VEILEDERIDENT)).isNotNull();
+
+        assertThat(arbeidslisteResultSet.get(ARBEIDSLISTE.KATEGORI)).isNull();
+        assertThat(fargekategoriResultSet.get(FARGEKATEGORI.VERDI)).isEqualTo("FARGEKATEGORI_B");
+    }
+
+    @Test
+    public void sletting_av_arbeidsliste_skal_populere_tabeller_riktig_nar_bruker_ikke_har_arbeidsliste_fra_for() throws SQLException {
+        insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
+        String insertArbeidslisteQuery = """
+                    INSERT INTO arbeidsliste (AKTOERID, SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT,
+                                OVERSKRIFT, KOMMENTAR, FRIST, KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE)
+                                VALUES (?,?,?,?,?,?,?,?)
+                """;
+        jdbcTemplate.update(insertArbeidslisteQuery,
+                TEST_ARBEIDSLISTE_1.getAktorId().get(),
+                TEST_ARBEIDSLISTE_1.getVeilederId().getValue(),
+                TEST_ARBEIDSLISTE_1.getEndringstidspunkt(),
+                TEST_ARBEIDSLISTE_1.getOverskrift(),
+                TEST_ARBEIDSLISTE_1.getKommentar(),
+                TEST_ARBEIDSLISTE_1.getFrist(),
+                null,
+                TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()
+        );
+
+        repo.slettArbeidsliste(TEST_ARBEIDSLISTE_1.getAktorId(), Optional.of(TEST_ARBEIDSLISTE_1.getFnr()));
+
+        assertThrows(DataAccessException.class, () -> jdbcTemplate.queryForMap("""
+                SELECT * FROM arbeidsliste WHERE aktoerid = ?
+                """, TEST_ARBEIDSLISTE_1.getAktorId().get()));
+        assertThrows(DataAccessException.class, () -> jdbcTemplate.queryForMap("""
+                SELECT * FROM fargekategori WHERE fnr = ?
+                """, TEST_ARBEIDSLISTE_1.getFnr().get())
+        );
     }
 
     private void insertArbeidslister() {

@@ -110,6 +110,14 @@ public class PostgresTable {
         public static final String NAV_KONTOR_FOR_ARBEIDSLISTE = "NAV_KONTOR_FOR_ARBEIDSLISTE";
     }
 
+    public static final class FARGEKATEGORI {
+        public static final String ID = "ID";
+        public static final String FNR = "FNR";
+        public static final String VERDI = "VERDI";
+        public static final String SIST_ENDRET = "SIST_ENDRET";
+        public static final String SIST_ENDRET_AV_VEILEDERIDENT = "SIST_ENDRET_AV_VEILEDERIDENT";
+    }
+
     public static final class HUSKELAPP {
         public static final String TABLE_NAME = "HUSKELAPP";
         public static final String ENDRINGS_ID = "ENDRINGS_ID";
