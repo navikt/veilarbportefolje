@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +104,17 @@ public class ArbeidslisteRepositoryV2Test {
 
     @BeforeEach
     public void setUp() {
+        jdbcTemplate.execute("TRUNCATE TABLE arbeidsliste");
+        jdbcTemplate.execute("TRUNCATE TABLE fargekategori");
+        jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data");
+        jdbcTemplate.execute("TRUNCATE TABLE oppfolgingsbruker_arena_v2");
+        jdbcTemplate.execute("TRUNCATE TABLE bruker_identer");
+    }
+
+    @AfterAll
+    public static void cleanUp(
+            @Autowired JdbcTemplate jdbcTemplate
+    ) {
         jdbcTemplate.execute("TRUNCATE TABLE arbeidsliste");
         jdbcTemplate.execute("TRUNCATE TABLE fargekategori");
         jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data");
