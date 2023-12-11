@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.arbeidsliste.SlettArbeidslisteException;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
@@ -27,7 +28,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidsliste;
@@ -144,8 +144,10 @@ public class ArbeidsListeController {
         validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
-        final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr));
-        if (antallRaderSlettet != 1) {
+
+        try {
+            arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr));
+        } catch (SlettArbeidslisteException e) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(Fnr.ofValidFnr(fnr)).orElse(null);
             secureLog.warn("Kunne ikke slette arbeidsliste for fnr: {}, av veileder: {}, på enhet: {}", fnr, veilederId.toString(), enhet);
@@ -175,23 +177,24 @@ public class ArbeidsListeController {
         }
 
         validerFnrs.get().forEach(fnr -> {
-            final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(fnr);
-
             final AktorId aktoerId = brukerService.hentAktorId(fnr)
                     .orElse(new AktorId("uten aktør-ID"));
 
-            if (antallRaderSlettet != 1) {
-                feiledeFnrs.add(fnr.get());
-                secureLog.warn("Kunne ikke slette arbeidsliste for bruker {} ", aktoerId.get());
-            } else {
+            try {
+                arbeidslisteService.slettArbeidsliste(fnr);
+
                 okFnrs.add(fnr.get());
                 secureLog.info("Arbeidsliste for aktoerid {} slettet", aktoerId.get());
+            } catch (SlettArbeidslisteException e) {
+                feiledeFnrs.add(fnr.get());
+                secureLog.warn("Kunne ikke slette arbeidsliste for bruker {} ", aktoerId.get());
             }
         });
 
         if (feiledeFnrs.size() == fnrs.size()) {
             return ResponseEntity.internalServerError().build();
         }
+
         return ResponseEntity.ok(RestResponse.of(okFnrs, feiledeFnrs));
     }
 
