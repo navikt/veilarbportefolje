@@ -129,6 +129,17 @@ public class ArbeidslisteRepositoryV2 {
             secureLog.warn("Kunne ikke slette fargekategori for bruker med AktørID {}. Årsak fødselsnummer-parameter var tom.", aktoerId.get());
         }
 
+        if (oppdaterteRaderArbeidsliste > 1 || oppdaterteRaderFargekategori > 1) {
+            secureLog.error(String.format(
+                    "Fant flere rader i ARBEIDSLISTE/FARGEKATEGORI-tabell. Fnr: %s - antall rader i FARGEKATEGORI: %s. AktørID: %s - antall rader i ARBEIDSLISTE: %s.",
+                    maybeFnr.orElse(Fnr.of("")),
+                    oppdaterteRaderFargekategori,
+                    aktoerId.get(),
+                    oppdaterteRaderArbeidsliste
+            ));
+            throw new IllegalStateException("Fant flere rader i ARBEIDSLISTE/FARGEKATEGORI-tabell for bruker.");
+        }
+
         return (oppdaterteRaderArbeidsliste + oppdaterteRaderFargekategori);
     }
 
