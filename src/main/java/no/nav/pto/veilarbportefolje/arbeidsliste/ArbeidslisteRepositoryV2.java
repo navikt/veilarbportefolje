@@ -70,7 +70,7 @@ public class ArbeidslisteRepositoryV2 {
                 .toList();
     }
 
-    @Transactional // TODO: Sjekke opp potensielle fallgruver med transaksjoner
+    @Transactional
     public Try<ArbeidslisteDTO> insertArbeidsliste(ArbeidslisteDTO dto) {
         return Try.of(
                 () -> {
@@ -86,7 +86,7 @@ public class ArbeidslisteRepositoryV2 {
         ).onFailure(e -> secureLog.warn("Kunne ikke inserte arbeidsliste til db", e));
     }
 
-    @Transactional // TODO: Sjekke opp potensielle fallgruver med transaksjoner
+    @Transactional
     public Try<ArbeidslisteDTO> updateArbeidsliste(ArbeidslisteDTO data) {
         final String updateSql = String.format(
                 "UPDATE %s SET %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ? WHERE %s = ?",
@@ -164,7 +164,10 @@ public class ArbeidslisteRepositoryV2 {
                 UUID.randomUUID(), dto.getFnr().get(), ArbeidslisteMapper.mapTilFargekategoriVerdi(dto.getKategori()), dto.getEndringstidspunkt(), dto.getVeilederId().getValue());
 
         if (oppdaterteRaderIArbeidsliste != oppdaterteRaderIFargekategori) {
-            // TODO trenger vi gjøre noe her? Disse tallene burde vel være like, eller?
+            log.warn("Oppdaterte ulikt antall rader i henholdsvis ARBEIDSLISTE og FARGEKATEGORI. " +
+                    "I utgangspunktet forventet vi at likt antall ble oppdatert. Sjekk opp i hva som har skjedd og tilpass " +
+                    "loggmelding dersom det eventuelt viser seg at dette er forventet."
+            );
         }
     }
 }
