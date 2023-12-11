@@ -493,12 +493,14 @@ public class ArbeidslisteRepositoryV2Test {
 
         repo.slettArbeidsliste(TEST_ARBEIDSLISTE_1.getAktorId(), Optional.of(TEST_ARBEIDSLISTE_1.getFnr()));
 
+        String aktorId = TEST_ARBEIDSLISTE_1.getAktorId().get();
+        String fnr = TEST_ARBEIDSLISTE_1.getFnr().get();
         assertThrows(DataAccessException.class, () -> jdbcTemplate.queryForMap("""
                 SELECT * FROM arbeidsliste WHERE aktoerid = ?
-                """, TEST_ARBEIDSLISTE_1.getAktorId().get()));
+                """, aktorId));
         assertThrows(DataAccessException.class, () -> jdbcTemplate.queryForMap("""
                 SELECT * FROM fargekategori WHERE fnr = ?
-                """, TEST_ARBEIDSLISTE_1.getFnr().get())
+                """, fnr)
         );
     }
 
