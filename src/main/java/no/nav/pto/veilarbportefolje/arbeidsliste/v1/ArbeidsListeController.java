@@ -139,7 +139,7 @@ public class ArbeidsListeController {
     }
 
     @DeleteMapping("{fnr}")
-    public Arbeidsliste deleteArbeidsliste(@PathVariable("fnr") String fnr) {
+    public ResponseEntity<Arbeidsliste> deleteArbeidsliste(@PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
@@ -149,14 +149,15 @@ public class ArbeidsListeController {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(Fnr.ofValidFnr(fnr)).orElse(null);
             secureLog.warn("Kunne ikke slette arbeidsliste for fnr: {}, av veileder: {}, på enhet: {}", fnr, veilederId.toString(), enhet);
-            throw new IllegalStateException("Kunne ikke slette. Fant ikke arbeidsliste for bruker");
+
+            return ResponseEntity.internalServerError().build();
         }
 
-        return emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true);
+        return ResponseEntity.ok(emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true));
     }
 
     @PostMapping("/delete")
-    public RestResponse<String> deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
+    public ResponseEntity<RestResponse<String>> deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
         authService.tilgangTilOppfolging();
 
         java.util.List<String> feiledeFnrs = new ArrayList<>();
@@ -170,7 +171,7 @@ public class ArbeidsListeController {
         Validation<List<Fnr>, List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
         Validation<String, List<Fnr>> veilederForBrukere = arbeidslisteService.erVeilederForBrukere(fnrs);
         if (validerFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
-            throw new IllegalStateException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
+            return ResponseEntity.internalServerError().build();
         }
 
         validerFnrs.get().forEach(fnr -> {
@@ -189,9 +190,9 @@ public class ArbeidsListeController {
         });
 
         if (feiledeFnrs.size() == fnrs.size()) {
-            throw new IllegalStateException();
+            return ResponseEntity.internalServerError().build();
         }
-        return RestResponse.of(okFnrs, feiledeFnrs);
+        return ResponseEntity.ok(RestResponse.of(okFnrs, feiledeFnrs));
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {

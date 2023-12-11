@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -110,7 +111,7 @@ public class ArbeidsListeV2Controller {
     }
 
     @DeleteMapping("/arbeidsliste")
-    public Arbeidsliste deleteArbeidsliste(@RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest) {
+    public ResponseEntity<Arbeidsliste> deleteArbeidsliste(@RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest) {
         validerOppfolgingOgBruker(arbeidslisteForBrukerRequest.fnr().get());
         validerErVeilederForBruker(arbeidslisteForBrukerRequest.fnr().get());
         Fnr gyldigFnr = Fnr.ofValidFnr(arbeidslisteForBrukerRequest.fnr().get());
@@ -121,10 +122,11 @@ public class ArbeidsListeV2Controller {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(gyldigFnr).orElse(null);
             secureLog.warn("Kunne ikke slette arbeidsliste for fnr: {}, av veileder: {}, på enhet: {}", gyldigFnr.get(), veilederId.toString(), enhet);
-            throw new IllegalStateException("Kunne ikke slette. Fant ikke arbeidsliste for bruker");
+
+            return ResponseEntity.internalServerError().build();
         }
 
-        return emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true);
+        return ResponseEntity.ok(emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true));
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
