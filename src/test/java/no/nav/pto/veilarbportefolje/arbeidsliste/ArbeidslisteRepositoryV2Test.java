@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.SQLException;
@@ -495,10 +496,10 @@ public class ArbeidslisteRepositoryV2Test {
 
         String aktorId = TEST_ARBEIDSLISTE_1.getAktorId().get();
         String fnr = TEST_ARBEIDSLISTE_1.getFnr().get();
-        assertThrows(DataAccessException.class, () -> jdbcTemplate.queryForMap("""
+        assertThrows(EmptyResultDataAccessException.class, () -> jdbcTemplate.queryForMap("""
                 SELECT * FROM arbeidsliste WHERE aktoerid = ?
                 """, aktorId));
-        assertThrows(DataAccessException.class, () -> jdbcTemplate.queryForMap("""
+        assertThrows(EmptyResultDataAccessException.class, () -> jdbcTemplate.queryForMap("""
                 SELECT * FROM fargekategori WHERE fnr = ?
                 """, fnr)
         );
