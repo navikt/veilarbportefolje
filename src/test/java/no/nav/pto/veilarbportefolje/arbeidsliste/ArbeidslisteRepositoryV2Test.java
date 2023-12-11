@@ -123,7 +123,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void skalKunneHenteArbeidsliste() {
+    void skalKunneHenteArbeidsliste() {
         insertArbeidslister();
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
 
@@ -134,7 +134,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void skalKunneHenteArbeidslisteUtenTittelEllerKommentar() {
+    void skalKunneHenteArbeidslisteUtenTittelEllerKommentar() {
         insertArbeidslister();
 
         Try<Arbeidsliste> resultUtenTittelData = repo.retrieveArbeidsliste(TEST_ARBEIDSLISTE_UTEN_TITTEL.getFnr());
@@ -147,7 +147,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void skalKunneOppdatereArbeidslisterUtenKommentar() {
+    void skalKunneOppdatereArbeidslisterUtenKommentar() {
         insertArbeidslister();
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_3, jdbcTemplate);
 
@@ -171,7 +171,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void skalKunneOppdatereArbeidslisterUtenTittel() {
+    void skalKunneOppdatereArbeidslisterUtenTittel() {
         insertArbeidslister();
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_3, jdbcTemplate);
 
@@ -195,7 +195,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void skalKunneOppdatereArbeidslisterUtenKommentarEllerTittel() {
+    void skalKunneOppdatereArbeidslisterUtenKommentarEllerTittel() {
         insertArbeidslister();
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_3, jdbcTemplate);
 
@@ -221,7 +221,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void skalKunneOppdatereKategori() {
+    void skalKunneOppdatereKategori() {
         insertArbeidslister();
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
 
@@ -245,7 +245,7 @@ public class ArbeidslisteRepositoryV2Test {
 
 
     @Test
-    public void skalOppdatereEksisterendeArbeidsliste() {
+    void skalOppdatereEksisterendeArbeidsliste() {
         ArbeidslisteDTO arbeidsliste = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
                 .setAktorId(AktorId.of("22222222"))
                 .setVeilederId(VeilederId.of("TEST_ID"))
@@ -265,7 +265,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void skalSletteEksisterendeArbeidsliste() {
+    void skalSletteEksisterendeArbeidsliste() {
         insertArbeidslister();
 
         final Integer rowsUpdated = repo.slettArbeidsliste(TEST_ARBEIDSLISTE_1.getAktorId(), Optional.of(TEST_ARBEIDSLISTE_1.getFnr()));
@@ -274,7 +274,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void skalSletteEksisterendeArbeidslisteOgFargekategori() {
+    void skalSletteEksisterendeArbeidslisteOgFargekategori() {
         insertArbeidslister();
         insertFargekategori(TEST_ARBEIDSLISTE_1, jdbcTemplate);
 
@@ -284,7 +284,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void skalReturnereFailureVedFeil() {
+    void skalReturnereFailureVedFeil() {
         ArbeidslisteDTO arbeidsliste = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
                 .setAktorId(null)
                 .setVeilederId(VeilederId.of("X11111"))
@@ -300,7 +300,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void skalSletteArbeidslisteForAktoerids() {
+    void skalSletteArbeidslisteForAktoerids() {
         insertArbeidslister();
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
 
@@ -319,7 +319,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void hentArbeidslisteForVeilederPaEnhet_filtrerPaEnhet() {
+    void hentArbeidslisteForVeilederPaEnhet_filtrerPaEnhet() {
         EnhetId annetNavKontor = EnhetId.of("1111");
         ArbeidslisteDTO arbeidslistePaNyEnhet = new ArbeidslisteDTO(randomFnr())
                 .setAktorId(randomAktorId())
@@ -346,7 +346,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void hentArbeidslisteForVeilederPaEnhet_filtrerPaVeileder() {
+    void hentArbeidslisteForVeilederPaEnhet_filtrerPaVeileder() {
         insertArbeidslister();
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1.getAktorId(), TEST_ARBEIDSLISTE_1.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr(), jdbcTemplate);
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_2.getAktorId(), TEST_ARBEIDSLISTE_2.getVeilederId(), EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()), randomFnr(), jdbcTemplate);
@@ -361,7 +361,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void hentArbeidslisteForVeilederPaEnhet_arbeidslisteKanLagesAvAnnenVeileder() {
+    void hentArbeidslisteForVeilederPaEnhet_arbeidslisteKanLagesAvAnnenVeileder() {
         EnhetId navKontor = EnhetId.of(TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste());
         ArbeidslisteDTO arbeidslisteLagetAvAnnenVeileder = new ArbeidslisteDTO(randomFnr())
                 .setAktorId(randomAktorId())
@@ -385,7 +385,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void oppretting_av_arbeidsliste_skal_populere_tabeller_riktig_nar_bruker_ikke_har_arbeidsliste_fra_for() throws SQLException {
+    void oppretting_av_arbeidsliste_skal_populere_tabeller_riktig_nar_bruker_ikke_har_arbeidsliste_fra_for() throws SQLException {
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
 
 
@@ -422,7 +422,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void oppdatering_av_arbeidsliste_skal_populere_tabeller_riktig_nar_bruker_ikke_har_arbeidsliste_fra_for() throws SQLException {
+    void oppdatering_av_arbeidsliste_skal_populere_tabeller_riktig_nar_bruker_ikke_har_arbeidsliste_fra_for() throws SQLException {
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
         String insertArbeidslisteQuery = """
                     INSERT INTO arbeidsliste (AKTOERID, SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT,
@@ -473,7 +473,7 @@ public class ArbeidslisteRepositoryV2Test {
     }
 
     @Test
-    public void sletting_av_arbeidsliste_skal_populere_tabeller_riktig_nar_bruker_ikke_har_arbeidsliste_fra_for() throws SQLException {
+    void sletting_av_arbeidsliste_skal_populere_tabeller_riktig_nar_bruker_ikke_har_arbeidsliste_fra_for() throws SQLException {
         insertOppfolgingsInformasjon(TEST_ARBEIDSLISTE_1, jdbcTemplate);
         String insertArbeidslisteQuery = """
                     INSERT INTO arbeidsliste (AKTOERID, SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT,
