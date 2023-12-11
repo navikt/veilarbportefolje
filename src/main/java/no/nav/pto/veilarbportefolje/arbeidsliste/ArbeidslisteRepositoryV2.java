@@ -137,7 +137,8 @@ public class ArbeidslisteRepositoryV2 {
                     aktoerId.get(),
                     oppdaterteRaderArbeidsliste
             ));
-            throw new IllegalStateException("Fant flere rader i ARBEIDSLISTE/FARGEKATEGORI-tabell for bruker.");
+
+            throw new SlettArbeidslisteException("Fant flere rader i ARBEIDSLISTE/FARGEKATEGORI-tabell for bruker.");
         }
 
         return (oppdaterteRaderArbeidsliste + oppdaterteRaderFargekategori);
