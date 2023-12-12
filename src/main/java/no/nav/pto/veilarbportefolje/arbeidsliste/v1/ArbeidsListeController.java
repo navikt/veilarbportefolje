@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.arbeidsliste.SlettArbeidslisteException;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
@@ -24,7 +25,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -144,11 +144,13 @@ public class ArbeidsListeController {
         validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
-        final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr));
-        if (antallRaderSlettet != 1) {
+        try {
+            arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr));
+        } catch (SlettArbeidslisteException e) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(Fnr.ofValidFnr(fnr)).orElse(null);
-            secureLog.warn("Kunne ikke slette arbeidsliste for fnr: {}, av veileder: {}, på enhet: {}", fnr, veilederId.toString(), enhet);
+            secureLog.warn(String.format("Kunne ikke slette arbeidsliste for fnr:%s, av veileder: %s, på enhet: %s", fnr, veilederId.toString(), enhet), e);
+
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke slette. Fant ikke arbeidsliste for bruker");
         }
 
@@ -167,24 +169,23 @@ public class ArbeidsListeController {
                 .map(data -> Fnr.ofValidFnr(data.getFnr()))
                 .collect(Collectors.toList());
 
-        Validation<List<Fnr>, List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
+        Validation<List<Fnr>, List<Fnr>> validerteFnrs = ValideringsRegler.validerFnrs(fnrs);
         Validation<String, List<Fnr>> veilederForBrukere = arbeidslisteService.erVeilederForBrukere(fnrs);
-        if (validerFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
+        if (validerteFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, format("%s inneholder ett eller flere ugyldige fødselsnummer", validerteFnrs.getError()));
         }
 
-        validerFnrs.get().forEach(fnr -> {
-            final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(fnr);
-
+        validerteFnrs.get().forEach(fnr -> {
             final AktorId aktoerId = brukerService.hentAktorId(fnr)
                     .orElse(new AktorId("uten aktør-ID"));
 
-            if (antallRaderSlettet != 1) {
-                feiledeFnrs.add(fnr.get());
-                secureLog.warn("Kunne ikke slette arbeidsliste for bruker {} ", aktoerId.get());
-            } else {
+            try {
+                arbeidslisteService.slettArbeidsliste(fnr);
                 okFnrs.add(fnr.get());
                 secureLog.info("Arbeidsliste for aktoerid {} slettet", aktoerId.get());
+            } catch (SlettArbeidslisteException e) {
+                feiledeFnrs.add(fnr.get());
+                secureLog.warn("Kunne ikke slette arbeidsliste for bruker {} ", aktoerId.get());
             }
         });
 

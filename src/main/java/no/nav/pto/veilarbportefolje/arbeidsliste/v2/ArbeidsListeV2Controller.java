@@ -6,6 +6,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.arbeidsliste.SlettArbeidslisteException;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
@@ -19,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.function.Function;
 
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -116,11 +116,13 @@ public class ArbeidsListeV2Controller {
         Fnr gyldigFnr = Fnr.ofValidFnr(arbeidslisteForBrukerRequest.fnr().get());
         sjekkTilgangTilEnhet(gyldigFnr);
 
-        final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(gyldigFnr);
-        if (antallRaderSlettet != 1) {
+        try {
+            arbeidslisteService.slettArbeidsliste(gyldigFnr);
+        } catch (SlettArbeidslisteException e) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(gyldigFnr).orElse(null);
             secureLog.warn("Kunne ikke slette arbeidsliste for fnr: {}, av veileder: {}, på enhet: {}", gyldigFnr.get(), veilederId.toString(), enhet);
+
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke slette. Fant ikke arbeidsliste for bruker");
         }
 

@@ -81,15 +81,19 @@ public class ArbeidslisteService {
         return rowsUpdated;
     }
 
-    public int slettArbeidsliste(Fnr fnr) {
+    public void slettArbeidsliste(Fnr fnr) {
         Optional<AktorId> aktoerId = brukerServiceV2.hentAktorId(fnr);
 
         if (aktoerId.isEmpty()) {
-            secureLog.error("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: {}", fnr.get());
-            return -1;
+            throw new SlettArbeidslisteException(String.format("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: %s", fnr.get()));
         }
 
-        return slettArbeidsliste(aktoerId.get());
+        int antallArbeidslisterSlettet = slettArbeidsliste(aktoerId.get());
+
+        if (antallArbeidslisterSlettet != 1) {
+            throw new SlettArbeidslisteException("Kunne ikke slette arbeidsliste. Årsak: antall arbeidslister for bruker er ulik 1.");
+        }
+
     }
 
     private Try<AktorId> hentAktorId(Fnr fnr) {
