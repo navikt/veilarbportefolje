@@ -75,8 +75,8 @@ public class ArbeidsListeV2Controller {
         sjekkTilgangTilEnhet(gyldigFnr);
 
         arbeidslisteService.createArbeidsliste(data(body, gyldigFnr))
-                .onFailure(e -> secureLog.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
-                .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+                .onFailure(e -> secureLog.warn("Kunne ikke opprette arberidsliste: {}", e.getMessage()))
+                .getOrElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
         return arbeidslisteService.getArbeidsliste(gyldigFnr).get()
                 .setHarVeilederTilgang(true)
@@ -93,13 +93,13 @@ public class ArbeidsListeV2Controller {
         arbeidslisteService
                 .updateArbeidsliste(data(body, fnr))
                 .onFailure(e -> secureLog.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
-                .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+                .getOrElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
         if (arbeidslisteService.getArbeidsliste(fnr).get() == null) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(fnr).orElse(null);
             secureLog.warn("Arbeidsliste kunne ikke oppdateres, var null, fnr: {}, veileder: {}, på enhet: {}", body.fnr().get(), veilederId, enhet);
-            throw new IllegalStateException("Kunne ikke oppdatere. Fant ikke arbeidsliste for bruker");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke oppdatere. Fant ikke arbeidsliste for bruker");
         }
 
         return arbeidslisteService.getArbeidsliste(fnr).get()
@@ -121,14 +121,14 @@ public class ArbeidsListeV2Controller {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(gyldigFnr).orElse(null);
             secureLog.warn("Kunne ikke slette arbeidsliste for fnr: {}, av veileder: {}, på enhet: {}", gyldigFnr.get(), veilederId.toString(), enhet);
-            throw new IllegalStateException("Kunne ikke slette. Fant ikke arbeidsliste for bruker");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke slette. Fant ikke arbeidsliste for bruker");
         }
 
         return emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true);
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
-        NavKontor enhet = brukerService.hentNavKontor(fnr).orElseThrow(() -> new IllegalArgumentException("Kunne ikke hente enhet for denne brukeren"));
+        NavKontor enhet = brukerService.hentNavKontor(fnr).orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke hente enhet for denne brukeren"));
         authService.tilgangTilEnhet(enhet.getValue());
     }
 
