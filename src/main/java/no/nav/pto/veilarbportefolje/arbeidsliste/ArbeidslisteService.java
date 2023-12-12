@@ -83,11 +83,13 @@ public class ArbeidslisteService {
 
     public int slettArbeidsliste(Fnr fnr) {
         Optional<AktorId> aktoerId = brukerServiceV2.hentAktorId(fnr);
-        if (aktoerId.isPresent()) {
-            return slettArbeidsliste(aktoerId.get());
+
+        if (aktoerId.isEmpty()) {
+            secureLog.error("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: {}", fnr.get());
+            return -1;
         }
-        log.error("fant ikke aktørId på fnr");
-        return -1;
+
+        return slettArbeidsliste(aktoerId.get());
     }
 
     private Try<AktorId> hentAktorId(Fnr fnr) {
