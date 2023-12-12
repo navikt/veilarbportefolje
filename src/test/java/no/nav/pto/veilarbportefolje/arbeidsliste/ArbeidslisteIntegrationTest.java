@@ -335,11 +335,10 @@ class ArbeidslisteIntegrationTest {
     @Test
     void slett_arbeidsliste_skal_returnere_exception_nar_bruker_ikke_har_arbeidsliste_v1()  {
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
-            ServletException exception = assertThrows(ServletException.class,
-                    () -> mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/api/arbeidsliste/%s", TEST_FNR)))
-            );
 
-            assertThat(exception).hasCauseInstanceOf(IllegalStateException.class);
+            mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/api/arbeidsliste/%s", TEST_FNR))).andExpect(
+                    MockMvcResultMatchers.status().isInternalServerError()
+            );
 
             mockMvc.perform(MockMvcRequestBuilders.get(String.format("/api/arbeidsliste/%s", TEST_FNR)))
                     .andExpect(MockMvcResultMatchers.status().isOk()).andExpect(
@@ -351,13 +350,13 @@ class ArbeidslisteIntegrationTest {
     @Test
     void slett_arbeidsliste_skal_returnere_exception_nar_bruker_ikke_har_arbeidsliste_v2()  {
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
-            ServletException exception = assertThrows(ServletException.class,
-                    () -> mockMvc.perform(MockMvcRequestBuilders.delete("/api/v2/arbeidsliste")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(JsonUtils.toJson(new ArbeidslisteForBrukerRequest(Fnr.of(TEST_FNR)))))
-            );
 
-            assertThat(exception).hasCauseInstanceOf(IllegalStateException.class);
+            mockMvc.perform(MockMvcRequestBuilders.delete("/api/v2/arbeidsliste")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(JsonUtils.toJson(new ArbeidslisteForBrukerRequest(Fnr.of(TEST_FNR))))
+            ).andExpect(
+                    MockMvcResultMatchers.status().isInternalServerError()
+            );
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/v2/hent-arbeidsliste")
                             .contentType(MediaType.APPLICATION_JSON)
