@@ -73,14 +73,6 @@ public class ArbeidslisteService {
                 .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
 
-    public int slettArbeidsliste(AktorId aktoerId) {
-        final int rowsUpdated = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);
-        if (rowsUpdated == 1) {
-            opensearchIndexerV2.slettArbeidsliste(aktoerId);
-        }
-        return rowsUpdated;
-    }
-
     public void slettArbeidsliste(Fnr fnr) {
         Optional<AktorId> aktoerId = brukerServiceV2.hentAktorId(fnr);
 
@@ -88,12 +80,19 @@ public class ArbeidslisteService {
             throw new SlettArbeidslisteException(String.format("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: %s", fnr.get()));
         }
 
-        int antallArbeidslisterSlettet = slettArbeidsliste(aktoerId.get());
+        slettArbeidsliste(aktoerId.get());
+    }
 
-        if (antallArbeidslisterSlettet != 1) {
-            throw new SlettArbeidslisteException("Kunne ikke slette arbeidsliste. Årsak: antall arbeidslister for bruker er ulik 1.");
+    public void slettArbeidsliste(AktorId aktoerId) {
+        final int antallSlettedeArbeidslister = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);
+
+        if (antallSlettedeArbeidslister > 1) {
+            secureLog.warn("Uventet tilstand: fant flere arbeidslister ved sletting for aktørId {}. Forventet å finne kun en arbeidsliste. Antall arbeidslister/rader slettet {}.", aktoerId.get(), antallSlettedeArbeidslister);
         }
 
+        if (antallSlettedeArbeidslister == 1) {
+            opensearchIndexerV2.slettArbeidsliste(aktoerId);
+        }
     }
 
     private Try<AktorId> hentAktorId(Fnr fnr) {
