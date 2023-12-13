@@ -86,13 +86,15 @@ public class ArbeidslisteService {
     public void slettArbeidsliste(AktorId aktoerId) {
         final int antallSlettedeArbeidslister = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);
 
+        if (antallSlettedeArbeidslister <= 0) {
+            return;
+        }
+
         if (antallSlettedeArbeidslister > 1) {
             secureLog.warn("Uventet tilstand: fant flere arbeidslister ved sletting for aktørId {}. Forventet å finne kun en arbeidsliste. Antall arbeidslister/rader slettet {}.", aktoerId.get(), antallSlettedeArbeidslister);
         }
 
-        if (antallSlettedeArbeidslister == 1) {
-            opensearchIndexerV2.slettArbeidsliste(aktoerId);
-        }
+        opensearchIndexerV2.slettArbeidsliste(aktoerId);
     }
 
     private Try<AktorId> hentAktorId(Fnr fnr) {
