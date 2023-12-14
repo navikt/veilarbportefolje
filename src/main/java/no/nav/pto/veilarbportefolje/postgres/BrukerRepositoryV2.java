@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.asm.Advice;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteMapper;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
@@ -178,7 +179,9 @@ public class BrukerRepositoryV2 {
         if (arbeidslisteTidspunkt != null) {
             String fargekategoriFraFargekategoriTabell = rs.getString(FAR_VERDI);
             String fargekategoriFraArbeidslisteTabell = rs.getString(ARB_KATEGORI);
-            String resolvedFargekategori = fargekategoriFraFargekategoriTabell != null ? fargekategoriFraFargekategoriTabell : fargekategoriFraArbeidslisteTabell;
+            String resolvedFargekategori = fargekategoriFraFargekategoriTabell != null
+                    ? ArbeidslisteMapper.mapFraFargekategoriTilKategori(fargekategoriFraFargekategoriTabell).name()
+                    : fargekategoriFraArbeidslisteTabell;
 
             bruker.setArbeidsliste_aktiv(true)
                     .setArbeidsliste_endringstidspunkt(arbeidslisteTidspunkt)
