@@ -82,11 +82,11 @@ public class ArbeidslisteService {
             throw new SlettArbeidslisteException(String.format("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: %s", fnr.get()));
         }
 
-        slettArbeidsliste(aktoerId.get());
+        slettArbeidsliste(aktoerId.get(), Optional.of(fnr));
     }
 
-    public void slettArbeidsliste(AktorId aktoerId) {
-        final int antallSlettedeArbeidslister = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);
+    public void slettArbeidsliste(AktorId aktoerId, Optional<Fnr> fnr) {
+        final int antallSlettedeArbeidslister = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId, fnr);
 
         if (antallSlettedeArbeidslister <= 0) {
             return;

@@ -3,13 +3,17 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -24,6 +28,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
     private final HuskelappService huskelappService;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final AktorClient aktorClient;
+    private final PdlIdentRepository pdlIdentRepository;
 
 
     @Override
@@ -43,7 +48,8 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
 
         final boolean harByttetNavKontor = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
         if (harByttetNavKontor) {
-            arbeidslisteService.slettArbeidsliste(aktoerId);
+            Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnr(aktoerId));
+            arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr);
         }
 
         final boolean brukerHarByttetNavkontorHuskelapp = huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktoerId);
