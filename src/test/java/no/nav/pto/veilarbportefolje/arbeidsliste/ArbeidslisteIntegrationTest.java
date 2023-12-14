@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
-import jakarta.servlet.ServletException;
 import no.nav.common.abac.VeilarbPep;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -333,11 +332,11 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void slett_arbeidsliste_skal_returnere_exception_nar_bruker_ikke_har_arbeidsliste_v1()  {
+    void slett_arbeidsliste_skal_returnere_ok_nar_bruker_ikke_har_arbeidsliste_v1()  {
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
 
             mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/api/arbeidsliste/%s", TEST_FNR))).andExpect(
-                    MockMvcResultMatchers.status().isInternalServerError()
+                    MockMvcResultMatchers.status().isOk()
             );
 
             mockMvc.perform(MockMvcRequestBuilders.get(String.format("/api/arbeidsliste/%s", TEST_FNR)))
@@ -348,14 +347,14 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void slett_arbeidsliste_skal_returnere_exception_nar_bruker_ikke_har_arbeidsliste_v2()  {
+    void slett_arbeidsliste_skal_returnere_ok_nar_bruker_ikke_har_arbeidsliste_v2()  {
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
 
             mockMvc.perform(MockMvcRequestBuilders.delete("/api/v2/arbeidsliste")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JsonUtils.toJson(new ArbeidslisteForBrukerRequest(Fnr.of(TEST_FNR))))
             ).andExpect(
-                    MockMvcResultMatchers.status().isInternalServerError()
+                    MockMvcResultMatchers.status().isOk()
             );
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/v2/hent-arbeidsliste")
