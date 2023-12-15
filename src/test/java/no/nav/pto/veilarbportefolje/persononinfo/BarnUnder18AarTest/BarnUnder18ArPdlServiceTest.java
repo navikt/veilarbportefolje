@@ -60,6 +60,7 @@ public class BarnUnder18ArPdlServiceTest {
     @BeforeEach
     public void setup() {
         db.update("truncate bruker_identer");
+        db.update("truncate foreldreansvar");
         server.stubFor(
                 post(anyUrl())
                         .inScenario("PDL test")
