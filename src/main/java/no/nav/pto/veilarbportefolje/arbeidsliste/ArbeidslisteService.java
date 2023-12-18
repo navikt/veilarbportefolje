@@ -59,6 +59,7 @@ public class ArbeidslisteService {
 
         NavKontor navKontorForBruker = brukerServiceV2.hentNavKontor(dto.getFnr()).orElseThrow();
         dto.setNavKontorForArbeidsliste(navKontorForBruker.getValue());
+
         return arbeidslisteRepositoryV2.insertArbeidsliste(dto)
                 .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
@@ -69,6 +70,7 @@ public class ArbeidslisteService {
             return Try.failure(aktoerId.getCause());
         }
         data.setAktorId(aktoerId.get());
+
         return arbeidslisteRepositoryV2.updateArbeidsliste(data)
                 .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
@@ -80,11 +82,11 @@ public class ArbeidslisteService {
             throw new SlettArbeidslisteException(String.format("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: %s", fnr.get()));
         }
 
-        slettArbeidsliste(aktoerId.get());
+        slettArbeidsliste(aktoerId.get(), Optional.of(fnr));
     }
 
-    public void slettArbeidsliste(AktorId aktoerId) {
-        final int antallSlettedeArbeidslister = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);
+    public void slettArbeidsliste(AktorId aktoerId, Optional<Fnr> fnr) {
+        final int antallSlettedeArbeidslister = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId, fnr);
 
         if (antallSlettedeArbeidslister <= 0) {
             return;

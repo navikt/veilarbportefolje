@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.postgres;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.asm.Advice;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteMapper;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
@@ -223,7 +222,7 @@ public class BrukerRepositoryV2 {
     private void setHuskelapp(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
         LocalDate frist = toLocalDate(rs.getTimestamp(HL_FRIST));
         String kommentar = rs.getString(HL_KOMMENTAR);
-        if(frist != null || kommentar != null) {
+        if (frist != null || kommentar != null) {
             oppfolgingsBruker.setHuskelapp(new HuskelappForBruker(frist, kommentar));
         }
     }

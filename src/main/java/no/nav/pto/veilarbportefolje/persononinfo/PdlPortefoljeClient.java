@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.utils.graphql.GraphqlRequest;
 import no.nav.common.client.utils.graphql.GraphqlResponse;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.FileUtils;
@@ -58,6 +59,10 @@ public class PdlPortefoljeClient {
         if (hasErrors(respons)) {
             throw new RuntimeException("Kunne ikke hente identer fra PDL");
         }
+
+        System.out.println("SE HER:");
+        System.out.println("AktørId:" + aktorId.get());
+        System.out.println("Respons:" + JsonUtils.toJson(respons));
 
         return respons.getData()
                 .getHentIdenter()

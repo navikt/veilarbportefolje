@@ -3,6 +3,9 @@ package no.nav.pto.veilarbportefolje.database;
 public class PostgresTable {
     public static final class OpensearchData {
 
+        private OpensearchData() { /* no-op */ }
+
+
         public static final String FODSELSNR = "FNR";
         public static final String FODSELSNR_ARENA = "fodselsnr";
 
@@ -28,6 +31,7 @@ public class PostgresTable {
         public static final String ARB_OVERSKRIFT = "ARB_OVERSKRIFT";
         public static final String ARB_NAV_KONTOR_FOR_ARBEIDSLISTE = "ARB_NAV_KONTOR_FOR_ARBEIDSLISTE";
         public static final String FAR_VERDI = "FAR_VERDI";
+        public static final String FAR_SIST_ENDRET = "FAR_SIST_ENDRET";
 
         public static final String HL_FRIST = "HL_FRIST";
         public static final String HL_KOMMENTAR = "HL_KOMMENTAR";
@@ -67,6 +71,9 @@ public class PostgresTable {
     }
 
     public static final class OPPFOLGING_DATA {
+
+        private OPPFOLGING_DATA() { /* no-op */ }
+
         public static final String TABLE_NAME = "OPPFOLGING_DATA";
 
         public static final String AKTOERID = "AKTOERID";
@@ -78,6 +85,9 @@ public class PostgresTable {
     }
 
     public static final class OPPFOLGINGSBRUKER_ARENA_V2 {
+
+        private OPPFOLGINGSBRUKER_ARENA_V2() { /* no-op */ }
+
         public static final String TABLE_NAME = "OPPFOLGINGSBRUKER_ARENA";
         public static final String FODSELSNR = "FODSELSNR";
         public static final String FORMIDLINGSGRUPPEKODE = "FORMIDLINGSGRUPPEKODE";
@@ -90,6 +100,9 @@ public class PostgresTable {
     }
 
     public static final class DIALOG {
+
+        private DIALOG() { /* no-op */ }
+
         public static final String TABLE_NAME = "DIALOG";
 
         public static final String AKTOERID = "AKTOERID";
@@ -98,6 +111,9 @@ public class PostgresTable {
     }
 
     public static final class ARBEIDSLISTE {
+
+        private ARBEIDSLISTE() { /* no-op */ }
+
         public static final String TABLE_NAME = "ARBEIDSLISTE";
         public static final String AKTOERID = "AKTOERID";
         public static final String SIST_ENDRET_AV_VEILEDERIDENT = "SIST_ENDRET_AV_VEILEDERIDENT";
@@ -109,7 +125,21 @@ public class PostgresTable {
         public static final String NAV_KONTOR_FOR_ARBEIDSLISTE = "NAV_KONTOR_FOR_ARBEIDSLISTE";
     }
 
+    public static final class FARGEKATEGORI {
+
+        private FARGEKATEGORI() { /* no-op */ }
+
+        public static final String ID = "ID";
+        public static final String FNR = "FNR";
+        public static final String VERDI = "VERDI";
+        public static final String SIST_ENDRET = "SIST_ENDRET";
+        public static final String SIST_ENDRET_AV_VEILEDERIDENT = "SIST_ENDRET_AV_VEILEDERIDENT";
+    }
+
     public static final class HUSKELAPP {
+
+        private HUSKELAPP() { /* no-op */ }
+
         public static final String TABLE_NAME = "HUSKELAPP";
         public static final String ENDRINGS_ID = "ENDRINGS_ID";
         public static final String HUSKELAPP_ID = "HUSKELAPP_ID";
@@ -123,6 +153,9 @@ public class PostgresTable {
     }
 
     public static final class UTKAST_14A_STATUS {
+
+        private UTKAST_14A_STATUS() { /* no-op */ }
+
         public static final String TABLE_NAME = "UTKAST_14A_STATUS";
 
         public static final String AKTOERID = "AKTOERID";
@@ -136,12 +169,18 @@ public class PostgresTable {
     }
 
     public static final class LEST_ARENA_HENDELSE_AKTIVITETER {
+
+        private LEST_ARENA_HENDELSE_AKTIVITETER() { /* no-op */ }
+
         public static final String TABLE_NAME = "LEST_ARENA_HENDELSE_AKTIVITET";
         public static final String AKTIVITETID = "AKTIVITETID";
         public static final String HENDELSE_ID = "HENDELSE_ID";
     }
 
     public static final class YTELSESVEDTAK {
+
+        private YTELSESVEDTAK() { /* no-op */ }
+
         public static final String TABLE_NAME = "YTELSESVEDTAK";
 
         public static final String VEDTAKSID = "VEDTAKSID";
@@ -161,12 +200,18 @@ public class PostgresTable {
     }
 
     public static final class LEST_ARENA_HENDELSE_YTELSER {
+
+        private LEST_ARENA_HENDELSE_YTELSER() { /* no-op */ }
+
         public static final String TABLE_NAME = "LEST_ARENA_HENDELSE_YTELSE";
         public static final String VEDTAKID = "VEDTAKID";
         public static final String HENDELSE_ID = "HENDELSE_ID";
     }
 
     public static final class BRUKER_PROFILERING {
+
+        private BRUKER_PROFILERING() { /* no-op */ }
+
         public static final String TABLE_NAME = "BRUKER_PROFILERING";
 
         public static final String AKTOERID = "AKTOERID";
@@ -175,6 +220,9 @@ public class PostgresTable {
     }
 
     public static final class BRUKER_REGISTRERING {
+
+        private BRUKER_REGISTRERING() { /* no-op */ }
+
         public static final String TABLE_NAME = "BRUKER_REGISTRERING";
 
         public static final String AKTOERID = "AKTOERID";
@@ -186,6 +234,9 @@ public class PostgresTable {
     }
 
     public static final class BRUKER_CV {
+
+        private BRUKER_CV() { /* no-op */ }
+
         public static final String TABLE_NAME = "BRUKER_CV";
 
         public static final String AKTOERID = "AKTOERID";
@@ -195,6 +246,9 @@ public class PostgresTable {
     }
 
     public static final class GRUPPE_AKTIVITER {
+
+        private GRUPPE_AKTIVITER() { /* no-op */ }
+
         public static final String TABLE_NAME = "GRUPPE_AKTIVITER";
         public static final String MOTEPLAN_ID = "MOTEPLAN_ID";
         public static final String VEILEDNINGDELTAKER_ID = "VEILEDNINGDELTAKER_ID";
@@ -207,6 +261,9 @@ public class PostgresTable {
     }
 
     public static final class AKTIVITETER {
+
+        private AKTIVITETER() { /* no-op */ }
+
         public static final String TABLE_NAME = "AKTIVITETER";
         public static final String AKTIVITETID = "AKTIVITETID";
         public static final String AKTOERID = "AKTOERID";
@@ -219,6 +276,9 @@ public class PostgresTable {
     }
 
     public static final class BRUKERTILTAK {
+
+        private BRUKERTILTAK() { /* no-op */ }
+
         public static final String TABLE_NAME = "BRUKERTILTAK";
         public static final String AKTIVITETID = "AKTIVITETID";
         public static final String AKTOERID = "AKTOERID";
@@ -229,6 +289,9 @@ public class PostgresTable {
     }
 
     public static final class BRUKERTILTAK_V2 {
+
+        private BRUKERTILTAK_V2() { /* no-op */ }
+
         public static final String TABLE_NAME = "BRUKERTILTAK_V2";
         public static final String AKTIVITETID = "AKTIVITETID";
         public static final String AKTOERID = "AKTOERID";
@@ -239,12 +302,18 @@ public class PostgresTable {
     }
 
     public static final class TILTAKKODEVERK {
+
+        private TILTAKKODEVERK() { /* no-op */ }
+
         public static final String TABLE_NAME = "TILTAKKODEVERKET";
         public static final String KODE = "KODE";
         public static final String VERDI = "VERDI";
     }
 
     public static final class NOM_SKJERMING {
+
+        private NOM_SKJERMING() { /* no-op */ }
+
         public static final String TABLE_NAME = "NOM_SKJERMING";
         public static final String FNR = "FODSELSNR";
         public static final String ER_SKJERMET = "ER_SKJERMET";
@@ -253,6 +322,9 @@ public class PostgresTable {
     }
 
     public static final class SISTE_ENDRING {
+
+        private SISTE_ENDRING() { /* no-op */ }
+
         public static final String TABLE_NAME = "SISTE_ENDRING";
         public static final String AKTOERID = "AKTOERID";
         public static final String AKTIVITETID = "AKTIVITETID";
@@ -263,6 +335,9 @@ public class PostgresTable {
     }
 
     public static final class BRUKER_STATSBORGERSKAP {
+
+        private BRUKER_STATSBORGERSKAP() { /* no-op */ }
+
         public static final String TABLE_NAME = "BRUKER_STATSBORGERSKAP";
         public static final String FNR = "FREG_IDENT";
         public static final String STATSBORGERSKAP = "STATSBORGERSKAP";
