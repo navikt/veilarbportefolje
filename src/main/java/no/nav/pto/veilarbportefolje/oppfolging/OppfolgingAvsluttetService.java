@@ -6,13 +6,11 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
@@ -39,7 +37,6 @@ public class OppfolgingAvsluttetService {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final SisteEndringService sisteEndringService;
     private final Siste14aVedtakService siste14aVedtakService;
-    private final AktorClient aktorClient;
     private final EnsligeForsorgereService ensligeForsorgereService;
     private final PdlIdentRepository pdlIdentRepository;
 
@@ -50,7 +47,7 @@ public class OppfolgingAvsluttetService {
         registreringService.slettRegistering(aktoerId);
         endringIRegistreringService.slettEndringIRegistering(aktoerId);
         arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr);
-        huskelappService.slettAlleHuskelapperPaaBruker(aktoerId);
+        huskelappService.slettAlleHuskelapperPaaBruker(aktoerId, maybeFnr);
         sisteEndringService.slettSisteEndringer(aktoerId);
         cvRepositoryV2.resetHarDeltCV(aktoerId);
         siste14aVedtakService.slettSiste14aVedtak(aktoerId.get());
