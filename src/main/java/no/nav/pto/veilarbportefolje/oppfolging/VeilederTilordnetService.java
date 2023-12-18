@@ -47,14 +47,14 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         secureLog.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
         final boolean harByttetNavKontor = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
+        Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnr(aktoerId));
         if (harByttetNavKontor) {
-            Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnr(aktoerId));
             arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr);
         }
 
         final boolean brukerHarByttetNavkontorHuskelapp = huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktoerId);
         if (brukerHarByttetNavkontorHuskelapp) {
-            huskelappService.slettAlleHuskelapperPaaBruker(aktoerId);
+            huskelappService.slettAlleHuskelapperPaaBruker(aktoerId, maybeFnr);
         }
     }
 
