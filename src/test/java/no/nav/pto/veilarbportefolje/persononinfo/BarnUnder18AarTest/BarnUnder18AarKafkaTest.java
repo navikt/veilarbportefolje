@@ -94,7 +94,7 @@ public class BarnUnder18AarKafkaTest {
 
         server.start();
 
-        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
+        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN", "B999"));
         barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
 
         this.pdlBrukerdataKafkaService = new PdlBrukerdataKafkaService(new PdlService(
@@ -103,18 +103,18 @@ public class BarnUnder18AarKafkaTest {
                 this.barnUnder18AarService,
                 pdlPortefoljeClient
         )
-        , this.pdlIdentRepository,
+                , this.pdlIdentRepository,
                 new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
                 this.barnUnder18AarService,
                 opensearchIndexer,
                 opensearchIndexerV2,
                 defaultUnleash
-                );
+        );
     }
 
 
     @AfterEach
-    public void stopServer(){
+    public void stopServer() {
         server.stop();
     }
 

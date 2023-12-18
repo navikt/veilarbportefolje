@@ -60,6 +60,7 @@ public class BarnUnder18ArPdlServiceTest {
     @BeforeEach
     public void setup() {
         db.update("truncate bruker_identer");
+        db.update("truncate foreldreansvar");
         server.stubFor(
                 post(anyUrl())
                         .inScenario("PDL test")
@@ -84,7 +85,7 @@ public class BarnUnder18ArPdlServiceTest {
                         .withStatus(200)
                         .withBody(pdlBolkMed3BarnFraFil))
                 .whenScenarioStateIs("hent barn bolk")
-                .willSetStateTo("hent identer")
+                .willSetStateTo("hent identer igjen")
         );
 
         server.stubFor(
@@ -93,7 +94,7 @@ public class BarnUnder18ArPdlServiceTest {
                         .willReturn(aResponse()
                                 .withStatus(200)
                                 .withBody(pdlIdentResponsFraFil))
-                        .whenScenarioStateIs("hent identer")
+                        .whenScenarioStateIs("hent identer igjen")
                         .willSetStateTo("hent person med 2 barn")
         );
         server.stubFor(post(anyUrl())
@@ -116,7 +117,7 @@ public class BarnUnder18ArPdlServiceTest {
 
         server.start();
 
-        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
+        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN", "B999"));
         this.barnUnder18AarService = new BarnUnder18AarService(new BarnUnder18AarRepository(db, db), pdlPortefoljeClient);
         this.pdlService = new PdlService(
                 new PdlIdentRepository(db),
@@ -126,9 +127,11 @@ public class BarnUnder18ArPdlServiceTest {
     }
 
     @AfterEach
-    public void stopServer(){
+    public void stopServer() {
         server.stop();
+
     }
+
     @Test
     @SneakyThrows
     public void sjekkAtLagretBarnIkkeFjernes() {
@@ -147,7 +150,6 @@ public class BarnUnder18ArPdlServiceTest {
 
         List<Fnr> foreldreansvar1 = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnr));
         assertThat(foreldreansvar1.size()).isEqualTo(3);
-
 
         pdlService.hentOgLagrePdlData(aktorId);
         List<Fnr> foreldreansvar2 = barnUnder18AarService.hentBarnFnrsForForeldre(List.of(fnr));
