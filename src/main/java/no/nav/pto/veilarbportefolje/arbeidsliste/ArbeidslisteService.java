@@ -92,10 +92,6 @@ public class ArbeidslisteService {
             return;
         }
 
-        if (antallSlettedeArbeidslister > 1) {
-            secureLog.warn("Uventet tilstand: fant flere arbeidslister ved sletting for aktørId {}. Forventet å finne kun en arbeidsliste. Antall arbeidslister/rader slettet {}.", aktoerId.get(), antallSlettedeArbeidslister);
-        }
-
         opensearchIndexerV2.slettArbeidsliste(aktoerId);
     }
 
