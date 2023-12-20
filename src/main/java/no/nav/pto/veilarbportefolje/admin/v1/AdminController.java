@@ -51,7 +51,7 @@ public class AdminController {
     public String slettOppfolgingsbruker(@RequestBody String aktoerId) {
         sjekkTilgangTilAdmin();
         oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(aktoerId));
-        return "Slettet oppfølgingsbruker " + aktoerId;
+        return "Oppfølgingsbruker ble slettet";
     }
 
     @PostMapping("/lastInnOppfolging")
@@ -221,7 +221,7 @@ public class AdminController {
     }
 
     private void validerIndexName(String indexName) {
-        if(!BRUKERINDEKS_ALIAS.equals(indexName)) {
+        if (!BRUKERINDEKS_ALIAS.equals(indexName)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
