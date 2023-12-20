@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.erSystemkallFraAzureAd;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
@@ -151,6 +152,7 @@ public class AdminController {
     @PostMapping("/opensearch/getSettings")
     public String getSettings(@RequestParam String indexName) {
         sjekkTilgangTilAdmin();
+        validerIndexName(indexName);
         return opensearchAdminService.getSettingsOnIndex(indexName);
     }
 
@@ -216,5 +218,11 @@ public class AdminController {
             return;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
+
+    private void validerIndexName(String indexName) {
+        if(!BRUKERINDEKS_ALIAS.equals(indexName)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
     }
 }
