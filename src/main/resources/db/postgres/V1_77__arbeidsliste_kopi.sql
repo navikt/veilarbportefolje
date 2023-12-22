@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS arbeidsliste_kopi_2023_12_19 AS TABLE arbeidsliste;
