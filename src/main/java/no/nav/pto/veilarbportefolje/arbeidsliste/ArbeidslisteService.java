@@ -59,6 +59,7 @@ public class ArbeidslisteService {
 
         NavKontor navKontorForBruker = brukerServiceV2.hentNavKontor(dto.getFnr()).orElseThrow();
         dto.setNavKontorForArbeidsliste(navKontorForBruker.getValue());
+
         return arbeidslisteRepositoryV2.insertArbeidsliste(dto)
                 .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
@@ -69,25 +70,29 @@ public class ArbeidslisteService {
             return Try.failure(aktoerId.getCause());
         }
         data.setAktorId(aktoerId.get());
+
         return arbeidslisteRepositoryV2.updateArbeidsliste(data)
                 .onSuccess(opensearchIndexerV2::updateArbeidsliste);
     }
 
-    public int slettArbeidsliste(AktorId aktoerId) {
-        final int rowsUpdated = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);
-        if (rowsUpdated == 1) {
-            opensearchIndexerV2.slettArbeidsliste(aktoerId);
+    public void slettArbeidsliste(Fnr fnr) {
+        Optional<AktorId> aktoerId = brukerServiceV2.hentAktorId(fnr);
+
+        if (aktoerId.isEmpty()) {
+            throw new SlettArbeidslisteException(String.format("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: %s", fnr.get()));
         }
-        return rowsUpdated;
+
+        slettArbeidsliste(aktoerId.get(), Optional.of(fnr));
     }
 
-    public int slettArbeidsliste(Fnr fnr) {
-        Optional<AktorId> aktoerId = brukerServiceV2.hentAktorId(fnr);
-        if (aktoerId.isPresent()) {
-            return slettArbeidsliste(aktoerId.get());
+    public void slettArbeidsliste(AktorId aktoerId, Optional<Fnr> fnr) {
+        final int antallSlettedeArbeidslister = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId, fnr);
+
+        if (antallSlettedeArbeidslister <= 0) {
+            return;
         }
-        log.error("fant ikke aktørId på fnr");
-        return -1;
+
+        opensearchIndexerV2.slettArbeidsliste(aktoerId);
     }
 
     private Try<AktorId> hentAktorId(Fnr fnr) {

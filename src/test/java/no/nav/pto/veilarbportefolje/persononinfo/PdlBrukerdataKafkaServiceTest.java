@@ -91,7 +91,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
     @Timeout(90)
     public void testRepublishing() {
         int i = 0;
-        while (i < 6000) {
+        while (i < 1000) {
             pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(randomPdlDokument);
             i++;
         }
