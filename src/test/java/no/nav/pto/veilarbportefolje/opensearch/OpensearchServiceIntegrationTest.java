@@ -5,26 +5,31 @@ import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
-import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -40,13 +45,14 @@ import java.util.stream.Stream;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
+import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test.*;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggArbeidslisteQuery;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,8 +75,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     private final VeilarbVeilederClient veilarbVeilederClientMock;
     private final Pep pep;
     private final AuthContextHolder authContextHolder;
-
     private final PoaoTilgangWrapper poaoTilgangWrapper;
+    private final JdbcTemplate db;
 
     @Autowired
     public OpensearchServiceIntegrationTest(
@@ -79,7 +85,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
             VeilarbVeilederClient veilarbVeilederClientMock,
             AuthContextHolder authContextHolder,
             Pep pep,
-            PoaoTilgangWrapper poaoTilgangWrapper
+            PoaoTilgangWrapper poaoTilgangWrapper,
+            JdbcTemplate db
     ) {
         this.opensearchService = opensearchService;
         this.opensearchIndexer = opensearchIndexer;
@@ -87,6 +94,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         this.authContextHolder = authContextHolder;
         this.pep = pep;
         this.poaoTilgangWrapper = mock(PoaoTilgangWrapper.class);
+        this.db = db;
     }
 
     @BeforeEach
@@ -3863,6 +3871,60 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertEquals(response.getBrukere().get(1).getFnr(), bruker1.getFnr());
         assertEquals(response.getBrukere().get(2).getFnr(), bruker2.getFnr());
         assertEquals(response.getBrukere().get(3).getFnr(), bruker3.getFnr());
+    }
+
+    @Test
+    void skal_indeksere_arbeidsliste_data_riktig() {
+        ArbeidslisteDTO arb1 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
+                .setAktorId(AktorId.of("22222222"))
+                .setVeilederId(VeilederId.of("X11111"))
+                .setNavKontorForArbeidsliste(TEST_ENHET)
+                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+                .setKommentar("Arbeidsliste 1 kommentar")
+                .setOverskrift("Dette er en overskrift")
+                .setKategori(Arbeidsliste.Kategori.BLA)
+                .setEndringstidspunkt(toTimestamp(ZonedDateTime.now()));
+        ArbeidslisteDTO arb2 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101011"))
+                .setAktorId(AktorId.of("22222223"))
+                .setVeilederId(VeilederId.of("X11112"))
+                .setNavKontorForArbeidsliste(TEST_ENHET)
+                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+                .setKommentar("Arbeidsliste 2 kommentar")
+                .setKategori(Arbeidsliste.Kategori.GRONN)
+                .setEndringstidspunkt(toTimestamp(ZonedDateTime.now()));
+        ArbeidslisteDTO arb2MedTomKategori = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101011"))
+                .setAktorId(AktorId.of("22222223"))
+                .setVeilederId(VeilederId.of("X11112"))
+                .setNavKontorForArbeidsliste(TEST_ENHET)
+                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+                .setKommentar("Arbeidsliste 2 kommentar")
+                .setKategori(null)
+                .setEndringstidspunkt(toTimestamp(ZonedDateTime.now()));
+
+        // Bruker som har arbeidsliste liggende kun i ARBEIDSLISTE-tabell
+        insertArbeidsliste(arb1, db);
+        // Bruker som har arbeidsliste i ARBEIDSLISTE-tabell og kategori i FARGEKATEGORI-tabell
+        insertArbeidsliste(arb2MedTomKategori, db);
+        insertFargekategori(arb2, db);
+        ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(arb1, db);
+        ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(arb2, db);
+        opensearchIndexer.indekser(arb1.getAktorId());
+        opensearchIndexer.indekser(arb2.getAktorId());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == 2);
+
+        BrukereMedAntall respons = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                new Filtervalg().setFerdigfilterListe(emptyList()),
+                null,
+                null
+        );
+
+        assertThat(respons.getAntall()).isEqualTo(2);
+        assertEquals(Arbeidsliste.Kategori.BLA, respons.getBrukere().get(0).getArbeidsliste().getKategori());
+        assertEquals(Arbeidsliste.Kategori.GRONN, respons.getBrukere().get(1).getArbeidsliste().getKategori());
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {

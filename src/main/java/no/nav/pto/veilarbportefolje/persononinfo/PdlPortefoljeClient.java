@@ -65,7 +65,7 @@ public class PdlPortefoljeClient {
     }
 
     public Map<Fnr, PDLPersonBarn> hentBrukerBarnDataBolkFraPdl(List<Fnr> barnIdenter) {
-        if (barnIdenter == null || barnIdenter.isEmpty()){
+        if (barnIdenter == null || barnIdenter.isEmpty()) {
             return Collections.emptyMap();
         }
 

@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.arbeidsliste.SlettArbeidslisteException;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
@@ -24,7 +25,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -105,7 +105,7 @@ public class ArbeidsListeController {
 
         arbeidslisteService.createArbeidsliste(data(body, Fnr.ofValidFnr(fnr)))
                 .onFailure(e -> secureLog.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
-                .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+                .getOrElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
         return arbeidslisteService.getArbeidsliste(Fnr.ofValidFnr(fnr)).get()
                 .setHarVeilederTilgang(true)
@@ -122,13 +122,13 @@ public class ArbeidsListeController {
         arbeidslisteService
                 .updateArbeidsliste(data(body, fnr))
                 .onFailure(e -> secureLog.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
-                .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+                .getOrElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
         if (arbeidslisteService.getArbeidsliste(fnr).get() == null) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(fnr).orElse(null);
             secureLog.warn("Arbeidsliste kunne ikke oppdateres, var null, fnr: {}, veileder: {}, på enhet: {}", fnrString, veilederId, enhet);
-            throw new IllegalStateException("Kunne ikke oppdatere. Fant ikke arbeidsliste for bruker");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke oppdatere. Fant ikke arbeidsliste for bruker");
         }
 
         return arbeidslisteService.getArbeidsliste(fnr).get()
@@ -144,12 +144,14 @@ public class ArbeidsListeController {
         validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
-        final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr));
-        if (antallRaderSlettet != 1) {
+        try {
+            arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr));
+        } catch (SlettArbeidslisteException e) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(Fnr.ofValidFnr(fnr)).orElse(null);
-            secureLog.warn("Kunne ikke slette arbeidsliste for fnr: {}, av veileder: {}, på enhet: {}", fnr, veilederId.toString(), enhet);
-            throw new IllegalStateException("Kunne ikke slette. Fant ikke arbeidsliste for bruker");
+            secureLog.warn(String.format("Kunne ikke slette arbeidsliste for fnr:%s, av veileder: %s, på enhet: %s", fnr, veilederId.toString(), enhet), e);
+
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke slette. Fant ikke arbeidsliste for bruker");
         }
 
         return emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true);
@@ -167,35 +169,34 @@ public class ArbeidsListeController {
                 .map(data -> Fnr.ofValidFnr(data.getFnr()))
                 .collect(Collectors.toList());
 
-        Validation<List<Fnr>, List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
+        Validation<List<Fnr>, List<Fnr>> validerteFnrs = ValideringsRegler.validerFnrs(fnrs);
         Validation<String, List<Fnr>> veilederForBrukere = arbeidslisteService.erVeilederForBrukere(fnrs);
-        if (validerFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
-            throw new IllegalStateException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
+        if (validerteFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, format("%s inneholder ett eller flere ugyldige fødselsnummer", validerteFnrs.getError()));
         }
 
-        validerFnrs.get().forEach(fnr -> {
-            final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(fnr);
-
+        validerteFnrs.get().forEach(fnr -> {
             final AktorId aktoerId = brukerService.hentAktorId(fnr)
                     .orElse(new AktorId("uten aktør-ID"));
 
-            if (antallRaderSlettet != 1) {
-                feiledeFnrs.add(fnr.get());
-                secureLog.warn("Kunne ikke slette arbeidsliste for bruker {} ", aktoerId.get());
-            } else {
+            try {
+                arbeidslisteService.slettArbeidsliste(fnr);
                 okFnrs.add(fnr.get());
                 secureLog.info("Arbeidsliste for aktoerid {} slettet", aktoerId.get());
+            } catch (SlettArbeidslisteException e) {
+                feiledeFnrs.add(fnr.get());
+                secureLog.warn("Kunne ikke slette arbeidsliste for bruker {} ", aktoerId.get());
             }
         });
 
         if (feiledeFnrs.size() == fnrs.size()) {
-            throw new IllegalStateException();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return RestResponse.of(okFnrs, feiledeFnrs);
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
-        NavKontor enhet = brukerService.hentNavKontor(fnr).orElseThrow(() -> new IllegalArgumentException("Kunne ikke hente enhet for denne brukeren"));
+        NavKontor enhet = brukerService.hentNavKontor(fnr).orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke hente enhet for denne brukeren"));
         authService.tilgangTilEnhet(enhet.getValue());
     }
 
