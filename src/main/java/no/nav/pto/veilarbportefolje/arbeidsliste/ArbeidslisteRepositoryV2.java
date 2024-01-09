@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
@@ -11,12 +10,12 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.*;
@@ -49,7 +48,7 @@ public class ArbeidslisteRepositoryV2 {
                 """;
         return Try.of(
                 () -> queryForObjectOrNull(
-                        () -> db.queryForObject(sql, this::arbeidslisteMapper, bruker.get())
+                        () -> db.queryForObject(sql, ArbeidslisteMapper::arbeidslisteMapper, bruker.get())
                 )
         );
     }
@@ -67,10 +66,11 @@ public class ArbeidslisteRepositoryV2 {
                         veilederident.getValue()
                 )
                 .stream()
-                .map(ArbeidslisteRepositoryV2::arbeidslisteMapper)
+                .map(ArbeidslisteMapper::arbeidslisteMapper)
                 .toList();
     }
 
+    @Transactional
     public Try<ArbeidslisteDTO> insertArbeidsliste(ArbeidslisteDTO dto) {
         return Try.of(
                 () -> {
@@ -86,7 +86,7 @@ public class ArbeidslisteRepositoryV2 {
         ).onFailure(e -> secureLog.warn("Kunne ikke inserte arbeidsliste til db", e));
     }
 
-
+    @Transactional
     public Try<ArbeidslisteDTO> updateArbeidsliste(ArbeidslisteDTO data) {
         final String updateSql = String.format(
                 "UPDATE %s SET %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ? WHERE %s = ?",
@@ -97,67 +97,77 @@ public class ArbeidslisteRepositoryV2 {
         Timestamp endringsTidspunkt = Timestamp.from(now());
         return Try.of(
                 () -> {
-                    int rows = db.update(updateSql, data.getVeilederId().getValue(), endringsTidspunkt, data.getOverskrift(),
-                            data.getKommentar(), data.getFrist(), data.getKategori().name(), data.getAktorId().get());
+                    int arbeidslisteRows = db.update(updateSql, data.getVeilederId().getValue(), endringsTidspunkt, data.getOverskrift(),
+                            data.getKommentar(), data.getFrist(), null, data.getAktorId().get());
 
-                    secureLog.info("Oppdaterte arbeidsliste pa bruker {}, rader: {}", data.getAktorId().get(), rows);
+                    int fargekategoriRows = db.update("""
+                                    INSERT INTO FARGEKATEGORI (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
+                                    VALUES(?,?,?,?,?) ON CONFLICT (FNR) DO UPDATE SET
+                                    (VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT) = (excluded.VERDI, excluded.SIST_ENDRET, excluded.SIST_ENDRET_AV_VEILEDERIDENT)
+                                    """,
+                            UUID.randomUUID(), data.getFnr().get(), ArbeidslisteMapper.mapTilFargekategoriVerdi(data.getKategori()), endringsTidspunkt, data.getVeilederId().getValue());
+
+                    secureLog.info("Oppdaterte arbeidsliste pa bruker {}, rader: {}", data.getAktorId().get(), arbeidslisteRows + fargekategoriRows);
                     return data.setEndringstidspunkt(endringsTidspunkt);
                 }
         ).onFailure(e -> secureLog.warn("Kunne ikke oppdatere arbeidsliste i db", e));
     }
 
-    public int slettArbeidsliste(AktorId aktoerId) {
+    @Transactional
+    public int slettArbeidsliste(AktorId aktoerId, Optional<Fnr> maybeFnr) {
         if (aktoerId == null) {
             return 0;
         }
         secureLog.info("Sletter arbeidsliste pa bruker: {}", aktoerId);
-        return db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
+
+        int oppdaterteRaderArbeidsliste = db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
+
+        int oppdaterteRaderFargekategori = 0;
+        if (maybeFnr.isPresent()) {
+            oppdaterteRaderFargekategori = db.update("DELETE FROM FARGEKATEGORI WHERE FNR = ?", maybeFnr.get().get());
+        } else {
+            secureLog.warn("Kunne ikke slette fargekategori for bruker med AktørID {}. Årsak fødselsnummer-parameter var tom.", aktoerId.get());
+        }
+
+        if (oppdaterteRaderArbeidsliste > 1 || oppdaterteRaderFargekategori > 1) {
+            secureLog.error(String.format(
+                    "Fant flere rader i ARBEIDSLISTE/FARGEKATEGORI-tabell. Fnr: %s - antall rader i FARGEKATEGORI: %s. AktørID: %s - antall rader i ARBEIDSLISTE: %s.",
+                    maybeFnr.orElse(Fnr.of("")),
+                    oppdaterteRaderFargekategori,
+                    aktoerId.get(),
+                    oppdaterteRaderArbeidsliste
+            ));
+
+            throw new SlettArbeidslisteException("Fant flere rader i ARBEIDSLISTE/FARGEKATEGORI-tabell for bruker.");
+        }
+
+        return (oppdaterteRaderArbeidsliste + oppdaterteRaderFargekategori);
     }
 
-    public int upsert(String aktoerId, ArbeidslisteDTO dto) {
+    private void upsert(String aktoerId, ArbeidslisteDTO dto) {
         secureLog.info("Upsert arbeidsliste pa bruker: {}", aktoerId);
-        Optional<Arbeidsliste.Kategori> maybeKategori = Optional.ofNullable(dto.getKategori());
-        return db.update("""
+
+        int oppdaterteRaderIArbeidsliste = db.update("""
                         INSERT INTO ARBEIDSLISTE (AKTOERID, SIST_ENDRET_AV_VEILEDERIDENT , ENDRINGSTIDSPUNKT,
                         OVERSKRIFT, KOMMENTAR, FRIST , KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE)
                         VALUES(?,?,?,?,?,?,?,?) ON CONFLICT (AKTOERID) DO UPDATE SET
                         (SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT, OVERSKRIFT, KOMMENTAR , FRIST , KATEGORI, NAV_KONTOR_FOR_ARBEIDSLISTE) =
                         (excluded.SIST_ENDRET_AV_VEILEDERIDENT, excluded.ENDRINGSTIDSPUNKT, excluded.OVERSKRIFT, excluded.KOMMENTAR , excluded.FRIST , excluded.KATEGORI, excluded.NAV_KONTOR_FOR_ARBEIDSLISTE)
                         """,
-                aktoerId, dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), maybeKategori.map((Enum::toString)).orElse(null), dto.getNavKontorForArbeidsliste());
-    }
+                aktoerId, dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), null, dto.getNavKontorForArbeidsliste());
 
-    @SneakyThrows
-    private Arbeidsliste arbeidslisteMapper(ResultSet rs, int row) {
-        String kategoriFraFargekategoriTabell = rs.getString("VERDI");
-        String kategoriFraArbeidslisteTabell = rs.getString("KATEGORI");
+        int oppdaterteRaderIFargekategori = db.update("""
+                        INSERT INTO FARGEKATEGORI (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
+                        VALUES(?,?,?,?,?) ON CONFLICT (FNR) DO UPDATE SET
+                        (VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT) = (excluded.VERDI, excluded.SIST_ENDRET, excluded.SIST_ENDRET_AV_VEILEDERIDENT)
+                        """,
+                UUID.randomUUID(), dto.getFnr().get(), ArbeidslisteMapper.mapTilFargekategoriVerdi(dto.getKategori()), dto.getEndringstidspunkt(), dto.getVeilederId().getValue());
 
-        return new Arbeidsliste(
-                VeilederId.of(rs.getString(SIST_ENDRET_AV_VEILEDERIDENT)),
-                toZonedDateTime(rs.getTimestamp(ENDRINGSTIDSPUNKT)),
-                rs.getString(OVERSKRIFT),
-                rs.getString(KOMMENTAR),
-                toZonedDateTime(rs.getTimestamp(FRIST)),
-                kategoriFraFargekategoriTabell != null
-                        ? Arbeidsliste.Kategori.valueOf(kategoriFraFargekategoriTabell)
-                        : Arbeidsliste.Kategori.valueOf(kategoriFraArbeidslisteTabell)
-        ).setAktoerid(rs.getString(AKTOERID));
-    }
-
-    @SneakyThrows
-    private static Arbeidsliste arbeidslisteMapper(Map<String, Object> rs) {
-        String kategoriFraFargekategoriTabell = (String) rs.get("VERDI");
-        String kategoriFraArbeidslisteTabell = (String) rs.get("KATEGORI");
-
-        return new Arbeidsliste(
-                VeilederId.of((String) rs.get(SIST_ENDRET_AV_VEILEDERIDENT)),
-                toZonedDateTime((Timestamp) rs.get(ENDRINGSTIDSPUNKT)),
-                (String) rs.get(OVERSKRIFT),
-                (String) rs.get(KOMMENTAR),
-                toZonedDateTime((Timestamp) rs.get(FRIST)),
-                kategoriFraFargekategoriTabell != null
-                        ? Arbeidsliste.Kategori.valueOf(kategoriFraFargekategoriTabell)
-                        : Arbeidsliste.Kategori.valueOf(kategoriFraArbeidslisteTabell)
-        ).setAktoerid((String) rs.get(AKTOERID));
+        if (oppdaterteRaderIArbeidsliste != oppdaterteRaderIFargekategori) {
+            log.warn("Oppdaterte ulikt antall rader i henholdsvis ARBEIDSLISTE og FARGEKATEGORI. " +
+                    "I utgangspunktet forventet vi at likt antall ble oppdatert. Sjekk opp i hva som har skjedd og tilpass " +
+                    "loggmelding dersom det eventuelt viser seg at dette er forventet."
+            );
+        }
     }
 }
