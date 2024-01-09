@@ -124,9 +124,7 @@ public class OpensearchIndexer {
 
         if (brukere.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
-            return;
         }
-        this.skrivBulkTilIndeks(alias.getValue(), brukere);
     }
 
     public void dryrunAvPostgresTilOpensearchMapping(List<AktorId> brukereUnderOppfolging) {

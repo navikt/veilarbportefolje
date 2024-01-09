@@ -437,7 +437,6 @@ CREATE TABLE public.gruppe_aktiviter (
 --
 
 CREATE TABLE public.huskelapp (
-    endrings_id uuid NOT NULL,
     huskelapp_id uuid,
     fnr character varying(11) NOT NULL,
     enhet_id character varying(4) NOT NULL,
@@ -445,8 +444,29 @@ CREATE TABLE public.huskelapp (
     endret_dato timestamp without time zone DEFAULT now(),
     frist timestamp without time zone,
     kommentar character varying(200),
-    status character varying(10)
+    status character varying(10),
+    endrings_id integer NOT NULL
 );
+
+
+--
+-- Name: huskelapp_endrings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.huskelapp_endrings_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: huskelapp_endrings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.huskelapp_endrings_id_seq OWNED BY public.huskelapp.endrings_id;
 
 
 --
@@ -702,6 +722,13 @@ ALTER TABLE ONLY public.enslige_forsorgere_vedtaksperiode_type ALTER COLUMN id S
 --
 
 ALTER TABLE ONLY public.enslige_forsorgere_vedtaksresultat_type ALTER COLUMN id SET DEFAULT nextval('public.enslige_forsorgere_vedtaksresultat_type_id_seq'::regclass);
+
+
+--
+-- Name: huskelapp endrings_id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.huskelapp ALTER COLUMN endrings_id SET DEFAULT nextval('public.huskelapp_endrings_id_seq'::regclass);
 
 
 --
@@ -1035,10 +1062,10 @@ CREATE INDEX enslige_forsorgere_aktivitet_type_indx ON public.enslige_forsorgere
 
 
 --
--- Name: fargekategori_fnr_index; Type: INDEX; Schema: public; Owner: -
+-- Name: fargekategori_fnr_unique_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX fargekategori_fnr_index ON public.fargekategori USING btree (fnr);
+CREATE UNIQUE INDEX fargekategori_fnr_unique_index ON public.fargekategori USING btree (fnr);
 
 
 --
