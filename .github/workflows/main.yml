@@ -2,7 +2,6 @@ name: Build, push and deploy
 on: push
 env:
   IMAGE_TAG: ${{ github.sha }}
-  IMAGE: ghcr.io/${{ github.repository }}/veilarbportefolje
   PRINT_PAYLOAD: true
 permissions:
   packages: write
@@ -26,10 +25,15 @@ jobs:
           MAVEN_OPTS: -Xss1024M -Xmx2048M
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn -B verify
+
   build-and-push:
     name: Build and push
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master'
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,20 +43,17 @@ jobs:
           java-version: 17
           distribution: 'temurin'
           cache: 'maven'
-      - name: Build maven artifacts
+      - name: Build maven artifacts and output SBOM
         run: mvn -Dgithub.token=${{ secrets.GITHUB_TOKEN }} -B package -D skipTests
-      - name: Login to Docker
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
         with:
-          context: .
-          push: true
-          tags: ${{ env.IMAGE }}:${{ env.IMAGE_TAG }}
+          team: pto
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+          byosbom: target/bom.json
+
   deploy-dev:
     name: Deploy application to dev
     if: github.ref == 'refs/heads/dev'
@@ -62,12 +63,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Deploy application
-        uses: nais/deploy/actions/deploy@v1
+        uses: nais/deploy/actions/deploy@v2
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
           RESOURCE: .nais/application/application-config-dev.yaml
-          VAR: version=${{ env.IMAGE_TAG }},namespace=pto
+          VAR: image=${{ needs.build-and-push.outputs.image }}
+
   deploy-prod:
     name: Deploy application to prod
     if: github.ref == 'refs/heads/master'
@@ -77,12 +79,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Deploy application
-        uses: nais/deploy/actions/deploy@v1
+        uses: nais/deploy/actions/deploy@v2
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
           RESOURCE: .nais/application/application-config-prod.yaml
-          VAR: version=${{ env.IMAGE_TAG }}
+          VAR: image=${{ needs.build-and-push.outputs.image }}
+
   release-prod:
     name: Create prod release
     needs: deploy-prod

@@ -19,7 +19,7 @@
         <common.version>3.2023.10.23_12.41-bafec3836d28</common.version>
         <veilarbregistrering.skjema.version>c22beae</veilarbregistrering.skjema.version>
         <jaxb.version>2.3.1</jaxb.version>
-        <testcontainers.version>1.19.1</testcontainers.version>
+        <testcontainers.version>1.19.3</testcontainers.version>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -77,6 +77,19 @@
                         <version>${kotlin.version}</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>2.7.9</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>makeAggregateBom</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <finalName>veilarbportefolje</finalName>
@@ -290,7 +303,7 @@
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc-template</artifactId>
-            <version>5.9.1</version>
+            <version>5.10.2</version>
         </dependency>
 
         <dependency>
