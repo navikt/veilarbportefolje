@@ -23,8 +23,8 @@ import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.core.rest.RestStatus;
 import org.opensearch.core.xcontent.XContentBuilder;
-import org.opensearch.rest.RestStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
