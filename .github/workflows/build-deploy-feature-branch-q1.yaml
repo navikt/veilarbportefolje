@@ -12,6 +12,10 @@ jobs:
   build-and-push:
     name: Build and push
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,11 +34,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
         with:
-          context: .
-          push: true
-          tags: ${{ env.IMAGE }}:${{ env.IMAGE_TAG }}
+          team: pto
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
   deploy-dev:
     name: Deploy application to dev
     needs: build-and-push
@@ -48,4 +53,4 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
           RESOURCE: .nais/application/application-config-dev.yaml
-          VAR: version=${{ env.IMAGE_TAG }},namespace=pto
+          VAR: image=${{ needs.build-and-push.outputs.image }}
