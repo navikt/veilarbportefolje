@@ -79,6 +79,22 @@ CREATE TABLE public.arbeidsliste (
 
 
 --
+-- Name: arbeidsliste_kopi_2023_12_19; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.arbeidsliste_kopi_2023_12_19 (
+    aktoerid character varying(20),
+    sist_endret_av_veilederident character varying(20),
+    kommentar character varying(1000),
+    frist timestamp without time zone,
+    endringstidspunkt timestamp without time zone,
+    overskrift character varying(500),
+    kategori character varying(10),
+    nav_kontor_for_arbeidsliste character varying(24)
+);
+
+
+--
 -- Name: bruker_cv; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1094,6 +1110,20 @@ CREATE INDEX huskelappfnr ON public.huskelapp USING btree (fnr);
 --
 
 CREATE INDEX huskelappid ON public.huskelapp USING btree (huskelapp_id);
+
+
+--
+-- Name: idx_bruker_identer_gruppe; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_bruker_identer_gruppe ON public.bruker_identer USING btree (gruppe);
+
+
+--
+-- Name: idx_bruker_identer_historisk; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_bruker_identer_historisk ON public.bruker_identer USING btree (historisk);
 
 
 --
