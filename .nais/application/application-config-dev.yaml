@@ -99,4 +99,6 @@ spec:
     - name: POAO_TILGANG_TOKEN_SCOPE
       value: "api://dev-fss.poao.poao-tilgang/.default"
     - name: KODEVERK_URL
-      value: "http://kodeverk.default.svc.nais.local"
+      value: "http://kodeverk.team-rocket.svc.nais.local"
+    - name: KODEVERK_SCOPE
+      value: "api://dev-fss.team-rocket.kodeverk/.default"
