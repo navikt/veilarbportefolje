@@ -19,3 +19,5 @@ INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederid
      WHERE arb.aktoerid = ai.aktorid
        AND arb.kategori IS NOT NULL)
 ON CONFLICT (fnr) DO NOTHING;
+
+UPDATE arbeidsliste SET kategori = null WHERE kategori IS NOT NULL;
