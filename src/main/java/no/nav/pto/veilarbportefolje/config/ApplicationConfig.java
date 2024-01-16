@@ -80,7 +80,8 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public KodeverkClient kodeverkClient(EnvironmentProperties environmentProperties) {
-        return new KodeverkClientImpl(environmentProperties.getKodeverkUrl());
+    public KodeverkClient kodeverkClient(EnvironmentProperties environmentProperties, AzureAdMachineToMachineTokenClient tokenClient) {
+        return new KodeverkClientImpl(environmentProperties.getKodeverkUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getKodeverkScope()));
     }
 }

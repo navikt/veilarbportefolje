@@ -18,6 +18,7 @@ public class EnvironmentProperties {
     private String opensearchUsername;
     private String opensearchPassword;
     private String kodeverkUrl;
+    private String kodeverkScope;
     private String veilarboppfolgingUrl;
     private String veilarboppfolgingScope;
     private String veilarbvedtaksstotteUrl;
