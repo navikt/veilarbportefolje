@@ -117,6 +117,27 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
+    public void updateFargekategori(AktorId aktoerId, String fargekategori) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("fargekategori", fargekategori)
+                .endObject();
+
+        update(aktoerId, content, "Oppretter/redigerer fargekategori");
+    }
+
+
+    @SneakyThrows
+    public void slettFargekategori(AktorId aktoerId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .nullField("fargekategori")
+                .endObject();
+
+        update(aktoerId, content, "Sletter fargekategori");
+    }
+
+    @SneakyThrows
     public void updateSisteEndring(SisteEndringDTO dto) {
         String kategori = dto.getKategori().name();
         final String tidspunkt = toIsoUTC(dto.getTidspunkt());

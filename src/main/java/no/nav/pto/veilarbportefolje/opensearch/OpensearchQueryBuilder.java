@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
+import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
@@ -263,6 +264,21 @@ public class OpensearchQueryBuilder {
             );
             queryBuilder.must(subQuery);
         }
+        if (filtervalg.harFargeKategoriFilter()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            BoolQueryBuilder subQueryUnkjent = boolQuery();
+            filtervalg.getFargeKategori().forEach(
+                    fargeKategori -> {
+                        if (fargeKategori.equalsIgnoreCase("INGEN")) {
+                            subQueryUnkjent.mustNot(existsQuery("fargekategori"));
+                            subQuery.should(subQueryUnkjent);
+                        } else {
+                            subQuery.should(matchQuery("fargekategori", fargeKategori));
+                        }
+                    }
+            );
+            queryBuilder.must(subQuery);
+        }
         if (filtervalg.harTalespraaktolkFilter() || filtervalg.harTegnspraakFilter()) {
             BoolQueryBuilder tolkBehovSubquery = boolQuery();
             BoolQueryBuilder tolkBehovTale = boolQuery();
@@ -456,6 +472,7 @@ public class OpensearchQueryBuilder {
             case "huskelapp_frist" -> sorterHuskelappFrist(searchSourceBuilder, order);
             case "huskelapp" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
             case "huskelapp_kommentar" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
+            case "fargekategori" -> searchSourceBuilder.sort("fargekategori", order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
@@ -824,7 +841,13 @@ public class OpensearchQueryBuilder {
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteBla", "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name())
+                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriA", "arbeidsliste_kategori", FargekategoriVerdi.BLA.verdi),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriB", "arbeidsliste_kategori", FargekategoriVerdi.GRONN.verdi),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriC", "arbeidsliste_kategori", FargekategoriVerdi.GUL.verdi),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriD", "arbeidsliste_kategori", FargekategoriVerdi.LILLA.verdi),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriE", "arbeidsliste_kategori", FargekategoriVerdi.LIMEGRONN.verdi),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriF", "arbeidsliste_kategori", FargekategoriVerdi.ORANSJE.verdi)
         };
 
         return new SearchSourceBuilder()

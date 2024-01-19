@@ -36,6 +36,7 @@ public class PostgresTable {
         public static final String HL_FRIST = "HL_FRIST";
         public static final String HL_KOMMENTAR = "HL_KOMMENTAR";
 
+
         public static final String BRUKERS_SITUASJON = "BRUKERS_SITUASJON";
         public static final String UTDANNING = "UTDANNING";
         public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
