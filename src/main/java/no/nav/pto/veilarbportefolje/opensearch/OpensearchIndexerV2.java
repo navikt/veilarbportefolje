@@ -9,7 +9,6 @@ import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
-import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
@@ -23,8 +22,8 @@ import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.core.rest.RestStatus;
 import org.opensearch.core.xcontent.XContentBuilder;
-import org.opensearch.rest.RestStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -115,6 +114,27 @@ public class OpensearchIndexerV2 {
                 .endObject();
 
         update(aktoerId, content, "Sletter huskelapp");
+    }
+
+    @SneakyThrows
+    public void updateFargekategori(AktorId aktoerId, String fargekategori) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("fargekategori", fargekategori)
+                .endObject();
+
+        update(aktoerId, content, "Oppretter/redigerer fargekategori");
+    }
+
+
+    @SneakyThrows
+    public void slettFargekategori(AktorId aktoerId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .nullField("fargekategori")
+                .endObject();
+
+        update(aktoerId, content, "Sletter fargekategori");
     }
 
     @SneakyThrows

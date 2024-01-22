@@ -19,7 +19,7 @@ public class KodeverkClientImplTest {
     public void testFindingMostRecentValue() {
         String kodeverkJson = readTestResourceFile("kodeverk-spraak.json");
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        KodeverkClientImpl kodeverkClient = new KodeverkClientImpl(apiUrl);
+        KodeverkClientImpl kodeverkClient = new KodeverkClientImpl(apiUrl, () -> "TOKEN");
 
         givenThat(get(anyUrl())
                 .willReturn(aResponse()

@@ -169,7 +169,8 @@ public class BrukerRepositoryV2 {
                 .setPermutlopuke(rs.getObject(PERMUTLOPUKE, Integer.class))
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
                 .setAapordinerutlopsdato(aapordinerutlopsdato)
-                .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)));
+                .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)))
+                .setFargekategori(rs.getString(FAR_VERDI));
 
         setHuskelapp(bruker, rs);
         setBrukersSituasjon(bruker, rs);

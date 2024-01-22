@@ -55,6 +55,7 @@ public class Filtervalg {
     public List<Avvik14aVedtak> avvik14aVedtak;
     public List<EnsligeForsorgere> ensligeForsorgere;
     public Boolean harHuskelapp;
+    public List<String> fargeKategori = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
@@ -90,7 +91,8 @@ public class Filtervalg {
                 harBostedFilter() ||
                 harAvvik14aVedtakFilter() ||
                 harEnsligeForsorgereFilter() ||
-                harHuskelapp != null;
+                harHuskelapp != null
+                || harFargeKategoriFilter();
     }
 
     public boolean harEnsligeForsorgereFilter() {
@@ -159,6 +161,10 @@ public class Filtervalg {
 
     public boolean harLandgruppeFilter() {
         return landgruppe != null && !landgruppe.isEmpty();
+    }
+
+    public boolean harFargeKategoriFilter() {
+        return fargeKategori != null && !fargeKategori.isEmpty();
     }
 
     public boolean harStillingFraNavFilter() {
