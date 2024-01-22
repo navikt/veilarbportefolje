@@ -55,7 +55,7 @@ public class Filtervalg {
     public List<Avvik14aVedtak> avvik14aVedtak;
     public List<EnsligeForsorgere> ensligeForsorgere;
     public Boolean harHuskelapp;
-    public List<String> fargeKategori;
+    public List<String> fargeKategori = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
