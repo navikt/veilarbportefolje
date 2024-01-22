@@ -74,7 +74,8 @@ public class ValideringsRegler {
             "brukersSituasjonSistEndret",
             "huskelapp",
             "huskelapp_frist",
-            "huskelapp_kommentar"
+            "huskelapp_kommentar",
+            "fargekategori"
     );
 
     public static void sjekkEnhet(String enhet) {
