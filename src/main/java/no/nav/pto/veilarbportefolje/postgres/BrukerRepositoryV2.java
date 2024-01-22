@@ -87,7 +87,7 @@ public class BrukerRepositoryV2 {
                                  LEFT JOIN YTELSE_STATUS_FOR_BRUKER YB on YB.AKTOERID = ai.aktorid
                                  LEFT JOIN ENDRING_I_REGISTRERING EiR on EiR.AKTOERID = ai.aktorid
                                  LEFT JOIN fargekategori far on far.fnr = ai.fnr
-                                 LEFT JOIN HUSKELAPP HL on HL.fnr = ai.fnr
+                                 LEFT JOIN HUSKELAPP HL on HL.fnr = ai.fnr and HL.status = 'AKTIV'
                                  where ai.aktorid = ANY (?::varchar[])
                         """,
                 (ResultSet rs) -> {
