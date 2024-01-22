@@ -18,6 +18,7 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
@@ -45,7 +46,8 @@ import java.util.stream.Stream;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test.*;
+import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test.insertArbeidsliste;
+import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test.insertFargekategori;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
@@ -3871,6 +3873,119 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertEquals(response.getBrukere().get(1).getFnr(), bruker1.getFnr());
         assertEquals(response.getBrukere().get(2).getFnr(), bruker2.getFnr());
         assertEquals(response.getBrukere().get(3).getFnr(), bruker3.getFnr());
+    }
+
+    @Test
+    public void test_filtering_og_sortering_fargekategori() {
+
+        var bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setFargekategori(FargekategoriVerdi.LILLA.verdi);
+
+        var bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setFargekategori(FargekategoriVerdi.BLA.verdi);
+
+        var bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setFargekategori(FargekategoriVerdi.BLA.verdi);
+
+        var bruker4 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setFargekategori(FargekategoriVerdi.GRONN.verdi);
+
+        var bruker5 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET);
+
+        var bruker6 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET);
+
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5, bruker6);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setFargeKategori(List.of(FargekategoriVerdi.GRONN.verdi, FargekategoriVerdi.BLA.verdi));
+
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(3);
+        assertTrue(response.getBrukere().stream().map(Bruker::getFnr).toList().containsAll(List.of(bruker2.getFnr(), bruker3.getFnr(), bruker4.getFnr())));
+
+        filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of())
+                .setFargeKategori(List.of("INGEN"));
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(2);
+        assertTrue(response.getBrukere().stream().map(Bruker::getFnr).toList().containsAll(List.of(bruker5.getFnr(), bruker6.getFnr())));
+
+
+        filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of());
+
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "fargekategori",
+                filterValg,
+                null,
+                null
+        );
+
+        List<String> equealSortOrder = List.of(bruker2.getFnr(), bruker3.getFnr());
+
+        assertThat(response.getAntall()).isEqualTo(6);
+        assertTrue(equealSortOrder.contains(response.getBrukere().get(0).getFnr()));
+        assertTrue(equealSortOrder.contains(response.getBrukere().get(1).getFnr()));
+        assertEquals(response.getBrukere().get(2).getFnr(), bruker4.getFnr());
+        assertEquals(response.getBrukere().get(3).getFnr(), bruker1.getFnr());
     }
 
     @Test
