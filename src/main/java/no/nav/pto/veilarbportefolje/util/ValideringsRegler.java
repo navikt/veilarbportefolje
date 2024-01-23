@@ -74,6 +74,7 @@ public class ValideringsRegler {
             "brukersSituasjonSistEndret",
             "huskelapp_frist",
             "huskelapp_kommentar",
+            "huskelapp",
             "fargekategori"
     );
 
