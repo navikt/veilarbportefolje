@@ -685,7 +685,7 @@ public class OpensearchQueryBuilder {
                     throw new IllegalStateException();
                 }
                 break;
-            case HUSKELAPP:
+            case MINE_HUSKELAPPER:
                 queryBuilder = existsQuery("huskelapp");
                 break;
             default:
