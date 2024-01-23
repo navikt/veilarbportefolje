@@ -6,11 +6,13 @@ import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -24,8 +26,7 @@ public class FargekategoriController {
     @PutMapping("/fargekategori")
     public ResponseEntity<FargekategoriResponse> oppdaterFargekategoriForBruker(@RequestBody OppdaterFargekategoriRequest request) {
         VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
-        // TODO: Validering
-        // Sjekk at request.fnr er gyldig fnr
+        validerRequest(request);
 
         // TODO: Autorisering
         // Sjekk at veileder har tilgang til oppfølging
@@ -34,6 +35,12 @@ public class FargekategoriController {
         // Sjekk at veileder er tilordnet brukeren
 
         return ResponseEntity.ok(new FargekategoriResponse(fargekategoriService.oppdaterFargekategoriForBruker(request, innloggetVeileder)));
+    }
+
+    private static void validerRequest(OppdaterFargekategoriRequest request) {
+        if(!Fnr.isValid(request.fnr().get())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ugyldig fnr");
+        };
     }
 
     public record FargekategoriResponse(UUID id) {
