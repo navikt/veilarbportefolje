@@ -623,7 +623,7 @@ public class OpensearchQueryBuilder {
 
     private static void sorterHuskelappEksistere(SearchSourceBuilder builder, SortOrder order) {
         String expresion = """
-                if (doc.containsKey('huskelapp.kommentar')) {
+                if (!doc['huskelapp.kommentar'].empty || !doc['huskelapp.frist'].empty) {
                     return 1;
                 }
                 else {
