@@ -41,10 +41,10 @@ public class ArbeidslisteMapper {
             return null;
         }
         return switch (kategori) {
-            case BLA -> FargekategoriVerdi.BLA.verdi;
-            case GRONN -> FargekategoriVerdi.GRONN.verdi;
-            case GUL -> FargekategoriVerdi.GUL.verdi;
-            case LILLA -> FargekategoriVerdi.LILLA.verdi;
+            case BLA -> FargekategoriVerdi.FARGEKATEGORI_A.name();
+            case GRONN -> FargekategoriVerdi.FARGEKATEGORI_B.name();
+            case GUL -> FargekategoriVerdi.FARGEKATEGORI_C.name();
+            case LILLA -> FargekategoriVerdi.FARGEKATEGORI_D.name();
         };
     }
 

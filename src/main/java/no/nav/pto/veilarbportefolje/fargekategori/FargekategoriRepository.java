@@ -31,7 +31,7 @@ public class FargekategoriRepository {
                     SET verdi=?, sist_endret=?, sist_endret_av_veilederident=?
                 """;
 
-        jdbcTemplate.update(sql, UUID.randomUUID(), request.fnr().get(), request.fargekategoriVerdi().verdi, sistEndret, sistEndretAv.getValue(), request.fargekategoriVerdi().verdi, sistEndret, sistEndretAv.getValue());
+        jdbcTemplate.update(sql, UUID.randomUUID(), request.fnr().get(), request.fargekategoriVerdi().name(), sistEndret, sistEndretAv.getValue(), request.fargekategoriVerdi().name(), sistEndret, sistEndretAv.getValue());
 
         return jdbcTemplate.queryForObject(
                 "SELECT id FROM fargekategori WHERE fnr=?",

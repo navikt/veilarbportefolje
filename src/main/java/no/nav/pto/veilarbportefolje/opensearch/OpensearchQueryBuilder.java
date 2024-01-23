@@ -842,12 +842,12 @@ public class OpensearchQueryBuilder {
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriA", "arbeidsliste_kategori", FargekategoriVerdi.BLA.verdi),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriB", "arbeidsliste_kategori", FargekategoriVerdi.GRONN.verdi),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriC", "arbeidsliste_kategori", FargekategoriVerdi.GUL.verdi),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriD", "arbeidsliste_kategori", FargekategoriVerdi.LILLA.verdi),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriE", "arbeidsliste_kategori", FargekategoriVerdi.LIMEGRONN.verdi),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriF", "arbeidsliste_kategori", FargekategoriVerdi.ORANSJE.verdi)
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriA", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_A.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriB", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_B.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriC", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_C.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriD", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_D.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriE", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_E.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriF", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_F.name())
         };
 
         return new SearchSourceBuilder()
