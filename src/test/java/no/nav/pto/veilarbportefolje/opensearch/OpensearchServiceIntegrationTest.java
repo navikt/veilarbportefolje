@@ -3933,7 +3933,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setFargeKategori(List.of(FargekategoriVerdi.GRONN.verdi, FargekategoriVerdi.BLA.verdi));
+                .setFargekategori(List.of(FargekategoriVerdi.GRONN.verdi, FargekategoriVerdi.BLA.verdi));
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -3950,7 +3950,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setFargeKategori(List.of("INGEN"));
+                .setFargekategori(List.of("INGEN"));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
