@@ -15,6 +15,5 @@ public enum Brukerstatus {
     ER_SYKMELDT_MED_ARBEIDSGIVER,
     MOTER_IDAG,
     UNDER_VURDERING,
-
-    HUSKELAPP
+    MINE_HUSKELAPPER
 }
