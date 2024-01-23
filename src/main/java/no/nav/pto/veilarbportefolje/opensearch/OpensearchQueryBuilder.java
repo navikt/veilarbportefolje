@@ -466,7 +466,7 @@ public class OpensearchQueryBuilder {
                     sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger, filtervalg);
             case "brukersSituasjonSistEndret" -> searchSourceBuilder.sort("brukers_situasjon_sist_endret", order);
             case "huskelapp_frist" -> sorterHuskelappFrist(searchSourceBuilder, order);
-            case "huskelapp" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
+            case "huskelapp" -> sorterHuskelappEksistere(searchSourceBuilder, order);
             case "huskelapp_kommentar" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
             case "fargekategori" -> searchSourceBuilder.sort("fargekategori", order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
@@ -611,6 +611,9 @@ public class OpensearchQueryBuilder {
                 if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
                     return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
                 }
+                else {
+                    return -1;
+                }
                 """;
         Script script = new Script(expresion);
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
@@ -632,21 +635,6 @@ public class OpensearchQueryBuilder {
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
     }
-
-    private static void sorterHuskelappKommentar(SearchSourceBuilder builder, SortOrder order) {
-        String expresion = """
-                if (doc.containsKey('huskelapp.kommentar') && !doc['huskelapp.kommentar'].empty) {
-                    return doc['huskelapp.kommentar'];
-                }else{
-                    return '';
-                }
-                """;
-        Script script = new Script(expresion);
-        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, STRING);
-        scriptBuilder.order(order);
-        builder.sort(scriptBuilder);
-    }
-
 
     static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet, boolean erVedtakstottePilotPa) {
         QueryBuilder queryBuilder;
