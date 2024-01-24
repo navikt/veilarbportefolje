@@ -21,7 +21,6 @@ public class FargekategoriRepository {
 
     @Transactional
     public UUID upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {
-        // TODO: Exception handling
         Timestamp sistEndret = toTimestamp(ZonedDateTime.now());
 
         String upsertSql = """
