@@ -3,8 +3,10 @@ package no.nav.pto.veilarbportefolje.fargekategori;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -26,10 +28,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class FargekategoriControllerTest {
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @Autowired
-    JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
+
+    private static final Fnr TESTBRUKER_FNR = Fnr.of("11111111111");
+    private static final NavKontor TESTENHET = NavKontor.of("1234");
+    private static final NavIdent TESTVEILEDER = NavIdent.of("Z999999");
 
     @Test
     void opprettelse_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
@@ -75,17 +81,17 @@ public class FargekategoriControllerTest {
             return jdbcTemplate.queryForObject(
                     "SELECT * FROM fargekategori WHERE fnr=?",
                     mapTilFargekategoriEntity(),
-                    "11111111111");
+                    TESTBRUKER_FNR.get());
         });
 
         assertThat(fargekategoriEntity).isNotNull();
         // id genereres så vi sjekker bare på tilstedeværelse
         assertThat(fargekategoriEntity.id()).isNotNull();
-        assertThat(fargekategoriEntity.fnr()).isEqualTo(Fnr.of("11111111111"));
+        assertThat(fargekategoriEntity.fnr()).isEqualTo(TESTBRUKER_FNR);
         assertThat(fargekategoriEntity.verdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_A);
         // sistEndret genereres så vi sjekker bare på tilstedeværelse
         assertThat(fargekategoriEntity.sistEndret()).isNotNull();
-        assertThat(fargekategoriEntity.sistEndretAvVeilederIdent()).isEqualTo(NavIdent.of("Z999999"));
+        assertThat(fargekategoriEntity.sistEndretAvVeilederIdent()).isEqualTo(TESTVEILEDER);
     }
 
     @NotNull
