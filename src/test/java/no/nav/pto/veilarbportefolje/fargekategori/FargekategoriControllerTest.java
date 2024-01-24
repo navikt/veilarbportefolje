@@ -1,15 +1,20 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
+import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,6 +25,8 @@ import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,14 +40,19 @@ public class FargekategoriControllerTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private TestDataClient testDataClient;
+
+    @MockBean
+    private AuthService authService;
+
     private static final Fnr TESTBRUKER_FNR = Fnr.of("11111111111");
+    private static final AktorId TESTBRUKER_AKTOR_ID = AktorId.of("99988877766655");
     private static final NavKontor TESTENHET = NavKontor.of("1234");
     private static final NavIdent TESTVEILEDER = NavIdent.of("Z999999");
 
     @Test
     void opprettelse_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
-        // TODO: Sett opp database med oppfølgingsbruker, mm.
-
         String request = """
                 {
                   "fnr":"11111111111",
@@ -61,8 +73,6 @@ public class FargekategoriControllerTest {
 
     @Test
     void opprettelse_av_fargekategori_skal_gi_riktig_tilstand_i_db() throws Exception {
-        // TODO: Sett opp database med oppfølgingsbruker, mm.
-
         String request = """
                 {
                   "fnr":"11111111111",
@@ -112,13 +122,10 @@ public class FargekategoriControllerTest {
         jdbcTemplate.update("TRUNCATE fargekategori");
         jdbcTemplate.update("TRUNCATE oppfolgingsbruker_arena_v2");
 
-        // TODO: Riktig veileder må være "logget inn"
+        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER_AKTOR_ID, TESTBRUKER_FNR, TESTENHET, VeilederId.of(TESTVEILEDER.get()));
 
-        // TODO: Brukeren må være under oppfølging på en enhet
-
-        // TODO: Brukeren må ha en tilordnet veileder
-
-        // TODO: Veileder må ha riktige tilganger
-
+        doNothing().when(authService).tilgangTilOppfolging();
+        doNothing().when(authService).tilgangTilBruker(TESTBRUKER_FNR.get());
+        doNothing().when(authService).tilgangTilEnhet(TESTENHET.getValue());
     }
 }
