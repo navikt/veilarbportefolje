@@ -104,4 +104,21 @@ public class FargekategoriControllerTest {
                 NavIdent.of(resultSet.getString("sist_endret_av_veilederident"))
         );
     }
+
+
+    @BeforeEach
+    void setup() {
+        // Reset all data
+        jdbcTemplate.update("TRUNCATE fargekategori");
+        jdbcTemplate.update("TRUNCATE oppfolgingsbruker_arena_v2");
+
+        // TODO: Riktig veileder må være "logget inn"
+
+        // TODO: Brukeren må være under oppfølging på en enhet
+
+        // TODO: Brukeren må ha en tilordnet veileder
+
+        // TODO: Veileder må ha riktige tilganger
+
+    }
 }
