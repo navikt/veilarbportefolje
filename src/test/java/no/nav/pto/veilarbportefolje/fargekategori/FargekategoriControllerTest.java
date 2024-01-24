@@ -1,12 +1,10 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
 import no.nav.common.auth.context.AuthContextHolder;
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
@@ -33,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = FargekategoriController.class)
-@Import(ApplicationConfigTest.class)
+@Import({ApplicationConfigTest.class, FargekategoriControllerTestConfig.class})
 public class FargekategoriControllerTest {
 
     @Autowired
@@ -48,10 +46,8 @@ public class FargekategoriControllerTest {
     @MockBean
     private AuthService authService;
 
-    private static final Fnr TESTBRUKER_FNR = Fnr.of("11111111111");
-    private static final AktorId TESTBRUKER_AKTOR_ID = AktorId.of("99988877766655");
-    private static final NavKontor TESTENHET = NavKontor.of("1234");
-    private static final NavIdent TESTVEILEDER = NavIdent.of("Z999999");
+    @Qualifier("fargekategoriControllerTestAuthService")
+    private AuthContextHolder authContextHolder;
 
     @Test
     void opprettelse_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
@@ -93,17 +89,17 @@ public class FargekategoriControllerTest {
             return jdbcTemplate.queryForObject(
                     "SELECT * FROM fargekategori WHERE fnr=?",
                     mapTilFargekategoriEntity(),
-                    TESTBRUKER_FNR.get());
+                    FargekategoriControllerTestConfig.TESTBRUKER_FNR.get());
         });
 
         assertThat(opprettetFargekategoriEntity).isNotNull();
         // id genereres så vi sjekker bare på tilstedeværelse
         assertThat(opprettetFargekategoriEntity.id()).isNotNull();
-        assertThat(opprettetFargekategoriEntity.fnr()).isEqualTo(TESTBRUKER_FNR);
+        assertThat(opprettetFargekategoriEntity.fnr()).isEqualTo(FargekategoriControllerTestConfig.TESTBRUKER_FNR);
         assertThat(opprettetFargekategoriEntity.verdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_A);
         // sistEndret genereres så vi sjekker bare på tilstedeværelse
         assertThat(opprettetFargekategoriEntity.sistEndret()).isNotNull();
-        assertThat(opprettetFargekategoriEntity.sistEndretAvVeilederIdent()).isEqualTo(TESTVEILEDER);
+        assertThat(opprettetFargekategoriEntity.sistEndretAvVeilederIdent()).isEqualTo(FargekategoriControllerTestConfig.TESTVEILEDER);
     }
 
     @Test
@@ -164,7 +160,7 @@ public class FargekategoriControllerTest {
             return jdbcTemplate.queryForObject(
                     "SELECT * FROM fargekategori WHERE fnr=?",
                     mapTilFargekategoriEntity(),
-                    TESTBRUKER_FNR.get());
+                    FargekategoriControllerTestConfig.TESTBRUKER_FNR.get());
         });
 
         mockMvc.perform(
@@ -178,7 +174,7 @@ public class FargekategoriControllerTest {
             return jdbcTemplate.queryForObject(
                     "SELECT * FROM fargekategori WHERE fnr=?",
                     mapTilFargekategoriEntity(),
-                    TESTBRUKER_FNR.get());
+                    FargekategoriControllerTestConfig.TESTBRUKER_FNR.get());
         });
 
         assertThat(oppdatertFargekategoriEntity).isNotNull();
@@ -208,10 +204,10 @@ public class FargekategoriControllerTest {
         jdbcTemplate.update("TRUNCATE fargekategori");
         jdbcTemplate.update("TRUNCATE oppfolgingsbruker_arena_v2");
 
-        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER_AKTOR_ID, TESTBRUKER_FNR, TESTENHET, VeilederId.of(TESTVEILEDER.get()));
+        testDataClient.lagreBrukerUnderOppfolging(FargekategoriControllerTestConfig.TESTBRUKER_AKTOR_ID, FargekategoriControllerTestConfig.TESTBRUKER_FNR, FargekategoriControllerTestConfig.TESTENHET, VeilederId.of(FargekategoriControllerTestConfig.TESTVEILEDER.get()));
 
         doNothing().when(authService).tilgangTilOppfolging();
-        doNothing().when(authService).tilgangTilBruker(TESTBRUKER_FNR.get());
-        doNothing().when(authService).tilgangTilEnhet(TESTENHET.getValue());
+        doNothing().when(authService).tilgangTilBruker(FargekategoriControllerTestConfig.TESTBRUKER_FNR.get());
+        doNothing().when(authService).tilgangTilEnhet(FargekategoriControllerTestConfig.TESTENHET.getValue());
     }
 }
