@@ -47,6 +47,10 @@ public class HuskelappController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
+            if ((huskelappOpprettRequest.kommentar() == null || huskelappOpprettRequest.kommentar().isEmpty()) && huskelappOpprettRequest.frist() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Huskelapp mangler frist og kommentar");
+            }
+
             UUID uuid = huskelappService.opprettHuskelapp(huskelappOpprettRequest, veilederId);
             return ResponseEntity.status(HttpStatus.CREATED).body(uuid.toString());
 
@@ -60,6 +64,11 @@ public class HuskelappController {
         validerOppfolgingOgBrukerOgEnhet(huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get());
         try {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
+
+            if ((huskelappRedigerRequest.kommentar() == null || huskelappRedigerRequest.kommentar().isEmpty()) && huskelappRedigerRequest.frist() == null){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Huskelapp mangler frist og kommentar");
+            }
+
             huskelappService.redigerHuskelapp(huskelappRedigerRequest, veilederId);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (Exception e) {
