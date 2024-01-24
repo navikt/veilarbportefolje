@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
@@ -20,6 +21,7 @@ public class FargekategoriRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
+    @Transactional
     public UUID oppdaterFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {
         // TODO: Exception handling
         Timestamp sistEndret = toTimestamp(ZonedDateTime.now());
