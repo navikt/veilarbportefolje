@@ -24,14 +24,14 @@ public class FargekategoriRepository {
         // TODO: Exception handling
         Timestamp sistEndret = toTimestamp(ZonedDateTime.now());
 
-        String sql = """
+        String upsertSql = """
                     INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
                     VALUES (?, ?, ?, ?, ?)
                     ON CONFLICT (fnr) DO UPDATE
                     SET verdi=?, sist_endret=?, sist_endret_av_veilederident=?
                 """;
 
-        jdbcTemplate.update(sql, UUID.randomUUID(), request.fnr().get(), request.fargekategoriVerdi().name(), sistEndret, sistEndretAv.getValue(), request.fargekategoriVerdi().name(), sistEndret, sistEndretAv.getValue());
+        jdbcTemplate.update(upsertSql, UUID.randomUUID(), request.fnr().get(), request.fargekategoriVerdi().name(), sistEndret, sistEndretAv.getValue(), request.fargekategoriVerdi().name(), sistEndret, sistEndretAv.getValue());
 
         return jdbcTemplate.queryForObject(
                 "SELECT id FROM fargekategori WHERE fnr=?",
