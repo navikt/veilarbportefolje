@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
@@ -26,8 +28,8 @@ import java.util.UUID;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = FargekategoriController.class)
@@ -87,21 +89,105 @@ public class FargekategoriControllerTest {
                 )
                 .andExpect(status().is(200));
 
-        FargekategoriEntity fargekategoriEntity = queryForObjectOrNull(() -> {
+        FargekategoriEntity opprettetFargekategoriEntity = queryForObjectOrNull(() -> {
             return jdbcTemplate.queryForObject(
                     "SELECT * FROM fargekategori WHERE fnr=?",
                     mapTilFargekategoriEntity(),
                     TESTBRUKER_FNR.get());
         });
 
-        assertThat(fargekategoriEntity).isNotNull();
+        assertThat(opprettetFargekategoriEntity).isNotNull();
         // id genereres så vi sjekker bare på tilstedeværelse
-        assertThat(fargekategoriEntity.id()).isNotNull();
-        assertThat(fargekategoriEntity.fnr()).isEqualTo(TESTBRUKER_FNR);
-        assertThat(fargekategoriEntity.verdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_A);
+        assertThat(opprettetFargekategoriEntity.id()).isNotNull();
+        assertThat(opprettetFargekategoriEntity.fnr()).isEqualTo(TESTBRUKER_FNR);
+        assertThat(opprettetFargekategoriEntity.verdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_A);
         // sistEndret genereres så vi sjekker bare på tilstedeværelse
-        assertThat(fargekategoriEntity.sistEndret()).isNotNull();
-        assertThat(fargekategoriEntity.sistEndretAvVeilederIdent()).isEqualTo(TESTVEILEDER);
+        assertThat(opprettetFargekategoriEntity.sistEndret()).isNotNull();
+        assertThat(opprettetFargekategoriEntity.sistEndretAvVeilederIdent()).isEqualTo(TESTVEILEDER);
+    }
+
+    @Test
+    void oppdatering_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
+        String opprettRequest = """
+                {
+                  "fnr":"11111111111",
+                  "fargekategoriVerdi":"FARGEKATEGORI_A"
+                }
+                """;
+        String oppdaterRequest = """
+                {
+                  "fnr":"11111111111",
+                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                }
+                """;
+
+        String opprettJson = mockMvc.perform(
+                        put("/api/v1/fargekategori")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(opprettRequest)
+                )
+                .andExpect(status().is(200))
+                .andReturn().getResponse().getContentAsString();
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategori")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(oppdaterRequest)
+                )
+                .andExpect(status().is(200))
+                .andExpect(content().json(opprettJson));
+    }
+
+    @Test
+    void oppdatering_av_fargekategori_skal_gi_riktig_tilstand_i_db() throws Exception {
+        String opprettRequest = """
+                {
+                  "fnr":"11111111111",
+                  "fargekategoriVerdi":"FARGEKATEGORI_A"
+                }
+                """;
+        String oppdaterRequest = """
+                {
+                  "fnr":"11111111111",
+                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                }
+                """;
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategori")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(opprettRequest)
+                )
+                .andExpect(status().is(200));
+
+        FargekategoriEntity opprettetFargekategoriEntity = queryForObjectOrNull(() -> {
+            return jdbcTemplate.queryForObject(
+                    "SELECT * FROM fargekategori WHERE fnr=?",
+                    mapTilFargekategoriEntity(),
+                    TESTBRUKER_FNR.get());
+        });
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategori")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(oppdaterRequest)
+                )
+                .andExpect(status().is(200));
+
+        FargekategoriEntity oppdatertFargekategoriEntity = queryForObjectOrNull(() -> {
+            return jdbcTemplate.queryForObject(
+                    "SELECT * FROM fargekategori WHERE fnr=?",
+                    mapTilFargekategoriEntity(),
+                    TESTBRUKER_FNR.get());
+        });
+
+        assertThat(oppdatertFargekategoriEntity).isNotNull();
+        assertThat(opprettetFargekategoriEntity).isNotNull();
+        assertThat(oppdatertFargekategoriEntity.id()).isEqualTo(opprettetFargekategoriEntity.id());
+        assertThat(oppdatertFargekategoriEntity.fnr()).isEqualTo(opprettetFargekategoriEntity.fnr());
+        assertThat(oppdatertFargekategoriEntity.sistEndretAvVeilederIdent()).isEqualTo(opprettetFargekategoriEntity.sistEndretAvVeilederIdent());
+        assertThat(oppdatertFargekategoriEntity.sistEndret()).isNotEqualTo(opprettetFargekategoriEntity.sistEndret());
+        assertThat(oppdatertFargekategoriEntity.verdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_B);
     }
 
     @NotNull
