@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
-import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
@@ -20,7 +19,6 @@ import java.util.UUID;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = FargekategoriController.class)
@@ -34,7 +32,7 @@ public class FargekategoriControllerTest {
     JdbcTemplate jdbcTemplate;
 
     @Test
-    void test_opprettelse_av_fargekategori() throws Exception {
+    void opprettelse_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
         // TODO: Sett opp database med oppfølgingsbruker, mm.
 
         String request = """
@@ -53,18 +51,39 @@ public class FargekategoriControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         assertThat(responseJson.contains("\"id\":")).isTrue();
+    }
 
-        // TODO: Sjekke at resultatet i DB er som forventet
+    @Test
+    void opprettelse_av_fargekategori_skal_gi_riktig_tilstand_i_db() throws Exception {
+        // TODO: Sett opp database med oppfølgingsbruker, mm.
+
+        String request = """
+                {
+                  "fnr":"11111111111",
+                  "fargekategoriVerdi":"FARGEKATEGORI_A"
+                }
+                """;
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategori")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(request)
+                )
+                .andExpect(status().is(200));
+
         FargekategoriEntity fargekategoriEntity = queryForObjectOrNull(() -> {
             return jdbcTemplate.queryForObject(
                     "SELECT * FROM fargekategori WHERE fnr=?",
                     mapTilFargekategoriEntity(),
                     "11111111111");
         });
+
         assertThat(fargekategoriEntity).isNotNull();
+        // id genereres så vi sjekker bare på tilstedeværelse
         assertThat(fargekategoriEntity.id()).isNotNull();
         assertThat(fargekategoriEntity.fnr()).isEqualTo(Fnr.of("11111111111"));
         assertThat(fargekategoriEntity.verdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_A);
+        // sistEndret genereres så vi sjekker bare på tilstedeværelse
         assertThat(fargekategoriEntity.sistEndret()).isNotNull();
         assertThat(fargekategoriEntity.sistEndretAvVeilederIdent()).isEqualTo(NavIdent.of("Z999999"));
     }
