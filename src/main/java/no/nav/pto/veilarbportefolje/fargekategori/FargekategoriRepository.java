@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController.OppdaterFargekategoriRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -38,4 +39,11 @@ public class FargekategoriRepository {
                 request.fnr().get()
         );
     }
+
+    public void deleteFargekategori(Fnr fnr) {
+        String deleteSql = "DELETE FROM fargekategori WHERE fnr=?";
+        jdbcTemplate.update(deleteSql, fnr.get());
+    }
+
+
 }

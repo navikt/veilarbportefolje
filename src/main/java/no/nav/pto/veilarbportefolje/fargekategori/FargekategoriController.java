@@ -45,9 +45,11 @@ public class FargekategoriController {
         authService.tilgangTilEnhet(brukerEnhet.get().toString());
 
         try {
-            return ResponseEntity.ok(
-                    new FargekategoriResponse(fargekategoriService.oppdaterFargekategoriForBruker(request, innloggetVeileder))
-            );
+            Optional<UUID> fargekategoriId = fargekategoriService.oppdaterFargekategoriForBruker(request, innloggetVeileder);
+
+            return fargekategoriId
+                    .map(uuid -> ResponseEntity.ok(new FargekategoriResponse(uuid)))
+                    .orElseGet(() -> ResponseEntity.status(204).build());
         } catch (Exception e) {
             String melding = String.format("Klarte ikke å opprette/oppdatere fargekategori med verdi %s for fnr %s", request.fargekategoriVerdi.name(), request.fnr.get());
             secureLog.error(melding, e);
