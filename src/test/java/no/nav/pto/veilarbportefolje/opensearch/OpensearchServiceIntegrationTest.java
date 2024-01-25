@@ -3861,7 +3861,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "ascending",
+                "descending",
                 "huskelapp_frist",
                 filterValg,
                 null,
@@ -3869,10 +3869,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(6);
-        assertEquals(response.getBrukere().get(0).getFnr(), bruker4.getFnr());
-        assertEquals(response.getBrukere().get(1).getFnr(), bruker1.getFnr());
-        assertEquals(response.getBrukere().get(2).getFnr(), bruker2.getFnr());
-        assertEquals(response.getBrukere().get(3).getFnr(), bruker3.getFnr());
+        assertEquals(response.getBrukere().get(0).getFnr(), bruker3.getFnr());
+        assertEquals(response.getBrukere().get(1).getFnr(), bruker2.getFnr());
+        assertEquals(response.getBrukere().get(2).getFnr(), bruker1.getFnr());
+        assertEquals(response.getBrukere().get(3).getFnr(), bruker4.getFnr());
+
     }
 
     @Test
@@ -3933,7 +3934,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setFargeKategori(List.of(FargekategoriVerdi.FARGEKATEGORI_B.name(), FargekategoriVerdi.FARGEKATEGORI_A.name()));
+                .setFargekategori(List.of(FargekategoriVerdi.FARGEKATEGORI_B.name(), FargekategoriVerdi.FARGEKATEGORI_A.name()));
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -3950,7 +3951,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setFargeKategori(List.of("INGEN"));
+                .setFargekategori(List.of("INGEN"));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,

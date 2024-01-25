@@ -267,7 +267,7 @@ public class OpensearchQueryBuilder {
         if (filtervalg.harFargeKategoriFilter()) {
             BoolQueryBuilder subQuery = boolQuery();
             BoolQueryBuilder subQueryUnkjent = boolQuery();
-            filtervalg.getFargeKategori().forEach(
+            filtervalg.getFargekategori().forEach(
                     fargeKategori -> {
                         if (fargeKategori.equalsIgnoreCase("INGEN")) {
                             subQueryUnkjent.mustNot(existsQuery("fargekategori"));
@@ -344,10 +344,6 @@ public class OpensearchQueryBuilder {
 
         if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.getEnsligeForsorgere().contains(EnsligeForsorgere.OVERGANGSSTØNAD)) {
             queryBuilder.must(existsQuery("enslige_forsorgere_overgangsstonad"));
-        }
-
-        if (filtervalg.harHuskelapp != null && filtervalg.harHuskelapp) {
-            queryBuilder.must(existsQuery("huskelapp"));
         }
 
         if (filtervalg.harDinSituasjonSvar()) {
@@ -470,7 +466,7 @@ public class OpensearchQueryBuilder {
                     sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger, filtervalg);
             case "brukersSituasjonSistEndret" -> searchSourceBuilder.sort("brukers_situasjon_sist_endret", order);
             case "huskelapp_frist" -> sorterHuskelappFrist(searchSourceBuilder, order);
-            case "huskelapp" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
+            case "huskelapp" -> sorterHuskelappEksistere(searchSourceBuilder, order);
             case "huskelapp_kommentar" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
             case "fargekategori" -> searchSourceBuilder.sort("fargekategori", order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
@@ -611,15 +607,14 @@ public class OpensearchQueryBuilder {
     }
 
     private static void sorterHuskelappFrist(SearchSourceBuilder builder, SortOrder order) {
-        String missingValuesReturn = order == SortOrder.ASC ? "2.55230829E14" : "-1";
         String expresion = """
                 if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
                     return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
                 }
                 else {
-                  return %s;
+                    return -1;
                 }
-                """.formatted(missingValuesReturn);
+                """;
         Script script = new Script(expresion);
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
@@ -628,7 +623,7 @@ public class OpensearchQueryBuilder {
 
     private static void sorterHuskelappEksistere(SearchSourceBuilder builder, SortOrder order) {
         String expresion = """
-                if (doc.containsKey('huskelapp') && !doc['huskelapp'].empty) {
+                if (doc.containsKey('huskelapp.kommentar')) {
                     return 1;
                 }
                 else {
@@ -640,21 +635,6 @@ public class OpensearchQueryBuilder {
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
     }
-
-    private static void sorterHuskelappKommentar(SearchSourceBuilder builder, SortOrder order) {
-        String expresion = """
-                if (doc.containsKey('huskelapp.kommentar') && !doc['huskelapp.kommentar'].empty) {
-                    return doc['huskelapp.kommentar'];
-                }else{
-                    return '';
-                }
-                """;
-        Script script = new Script(expresion);
-        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, STRING);
-        scriptBuilder.order(order);
-        builder.sort(scriptBuilder);
-    }
-
 
     static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet, boolean erVedtakstottePilotPa) {
         QueryBuilder queryBuilder;
@@ -704,6 +684,9 @@ public class OpensearchQueryBuilder {
                 } else {
                     throw new IllegalStateException();
                 }
+                break;
+            case MINE_HUSKELAPPER:
+                queryBuilder = existsQuery("huskelapp");
                 break;
             default:
                 throw new IllegalStateException();
