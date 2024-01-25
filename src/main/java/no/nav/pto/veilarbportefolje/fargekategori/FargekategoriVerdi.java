@@ -6,5 +6,6 @@ public enum FargekategoriVerdi {
     FARGEKATEGORI_C,
     FARGEKATEGORI_D,
     FARGEKATEGORI_E,
-    FARGEKATEGORI_F;
+    FARGEKATEGORI_F,
+    INGEN_KATEGORI
 }
