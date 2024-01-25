@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
@@ -67,6 +68,9 @@ public class FargekategoriController {
     public record FargekategoriResponse(UUID id) {
     }
 
-    public record OppdaterFargekategoriRequest(Fnr fnr, FargekategoriVerdi fargekategoriVerdi) {
+    public record OppdaterFargekategoriRequest(
+            @JsonProperty(required = true) Fnr fnr,
+            @JsonProperty(required = true) FargekategoriVerdi fargekategoriVerdi
+    ) {
     }
 }
