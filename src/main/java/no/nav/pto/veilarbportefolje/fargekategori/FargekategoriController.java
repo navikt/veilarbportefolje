@@ -48,7 +48,7 @@ public class FargekategoriController {
             return ResponseEntity.ok(
                     new FargekategoriResponse(fargekategoriService.oppdaterFargekategoriForBruker(request, innloggetVeileder))
             );
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             String melding = String.format("Klarte ikke å opprette/oppdatere fargekategori med verdi %s for fnr %s", request.fargekategoriVerdi.name(), request.fnr.get());
             secureLog.error(melding, e);
 
