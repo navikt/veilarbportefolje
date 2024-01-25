@@ -186,6 +186,75 @@ public class FargekategoriControllerTest {
         assertThat(oppdatertFargekategoriEntity.verdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_B);
     }
 
+    @Test
+    void sletting_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
+        String opprettRequest = """
+                {
+                  "fnr":"11111111111",
+                  "fargekategoriVerdi":"FARGEKATEGORI_A"
+                }
+                """;
+        String slettRequest = """
+                {
+                  "fnr":"11111111111",
+                  "fargekategoriVerdi":"INGEN_KATEGORI"
+                }
+                """;
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategori")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(opprettRequest)
+                )
+                .andExpect(status().is(200));
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategori")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(slettRequest)
+                )
+                .andExpect(status().is(204));
+    }
+
+    @Test
+    void sletting_av_fargekategori_skal_gi_riktig_tilstand_i_db() throws Exception {
+        String opprettRequest = """
+                {
+                  "fnr":"11111111111",
+                  "fargekategoriVerdi":"FARGEKATEGORI_A"
+                }
+                """;
+        String slettRequest = """
+                {
+                  "fnr":"11111111111",
+                  "fargekategoriVerdi":"INGEN_KATEGORI"
+                }
+                """;
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategori")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(opprettRequest)
+                )
+                .andExpect(status().is(200));
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategori")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(slettRequest)
+                )
+                .andExpect(status().is(204));
+
+        FargekategoriEntity oppdatertFargekategoriEntity = queryForObjectOrNull(() -> {
+            return jdbcTemplate.queryForObject(
+                    "SELECT * FROM fargekategori WHERE fnr=?",
+                    mapTilFargekategoriEntity(),
+                    FargekategoriControllerTestConfig.TESTBRUKER_FNR.get());
+        });
+
+        assertThat(oppdatertFargekategoriEntity).isNull();
+    }
+
     @NotNull
     private static RowMapper<FargekategoriEntity> mapTilFargekategoriEntity() {
         return (resultSet, rowNum) -> new FargekategoriEntity(
