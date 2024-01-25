@@ -4,6 +4,7 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -21,11 +22,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -48,6 +53,55 @@ public class FargekategoriControllerTest {
 
     @Qualifier("fargekategoriControllerTestAuthService")
     private AuthContextHolder authContextHolder;
+
+    @Test
+    void henting_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
+        String request = """
+                {
+                  "fnr":"11111111111",
+                }
+                """;
+
+        UUID uuid = UUID.randomUUID();
+        Fnr fnr = Fnr.of("11223312345");
+        FargekategoriVerdi fargekategoriVerdi = FargekategoriVerdi.FARGEKATEGORI_D;
+        Timestamp sistEndret = toTimestamp(ZonedDateTime.now());
+        VeilederId sistEndretAv = AuthUtils.getInnloggetVeilederIdent();
+
+        String fargekategoriSql = """
+                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
+                    VALUES (?, ?, ?, ?, ?)
+                """;
+
+        jdbcTemplate.update(fargekategoriSql,
+                            uuid,
+                            fnr.get(),
+                            fargekategoriVerdi.name(),
+                            sistEndret,
+                            sistEndretAv.getValue());
+
+        String expected = """
+                {
+                    "uuid": "$uuid",
+                    "fnr": "$fnr",
+                    "fargekategoriVerdi": "$fargekategoriVerdi",
+                    "sistEndret": "$sistEndret",
+                    "sistEndretAvVeilederIdent": "$veilederIdent"
+                }
+                """.replace("$uuid", uuid.toString())
+                .replace("$fnr", fnr.get())
+                .replace("$fargekategoriVerdi", fargekategoriVerdi.name())
+                .replace("$sistEndret", sistEndret.toString())
+                .replace("$sistEndretAv", sistEndretAv.getValue());
+
+        mockMvc.perform(
+                        post("/api/v1/hent-fargekategori")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(request)
+                )
+                .andExpect(status().is(200))
+                .andExpect(content().json(expected));
+    }
 
     @Test
     void opprettelse_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
