@@ -34,6 +34,7 @@ public class HuskelappService {
 
     public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId) {
         try {
+
             UUID huskelappId = huskelappRepository.opprettHuskelapp(huskelappOpprettRequest, veilederId);
 
             AktorId aktorId = hentAktorId(huskelappOpprettRequest.brukerFnr()).orElseThrow(RuntimeException::new);
