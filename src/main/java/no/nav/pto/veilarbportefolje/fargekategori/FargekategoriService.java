@@ -19,10 +19,10 @@ public class FargekategoriService {
     private final PdlIdentRepository pdlIdentRepository;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
-    public Optional<FargekategoriEntity> hentFargekategoriForBruker(FargekategoriController.HentFargekategoriRequest request, VeilederId innloggetVeileder) {
-        // TODO: iplementer denne
+    public Optional<FargekategoriEntity> hentFargekategoriForBruker(FargekategoriController.HentFargekategoriRequest request) {
+        // TODO skal vi returnere FARGEKATEGORIVERDI.INGEN_KATEGORI om vi ikkje finn kategori i databasen?
 
-        return Optional.empty();
+        return fargekategoriRepository.hentFargekategoriForBruker(request.fnr());
     }
 
     public Optional<UUID> oppdaterFargekategoriForBruker(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {

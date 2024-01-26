@@ -36,7 +36,7 @@ public class FargekategoriController {
         // TODO autentisering
 
         try {
-            Optional<FargekategoriEntity> kanskjeFargekategori = fargekategoriService.hentFargekategoriForBruker(request, innloggetVeileder);
+            Optional<FargekategoriEntity> kanskjeFargekategori = fargekategoriService.hentFargekategoriForBruker(request);
 
             return kanskjeFargekategori.map(ResponseEntity::ok).orElseThrow();
         } catch (Exception e) {
