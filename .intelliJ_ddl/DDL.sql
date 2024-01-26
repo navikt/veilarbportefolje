@@ -95,6 +95,22 @@ CREATE TABLE public.arbeidsliste_kopi_2023_12_19 (
 
 
 --
+-- Name: arbeidsliste_kopi_2024_01_16; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.arbeidsliste_kopi_2024_01_16 (
+    aktoerid character varying(20),
+    sist_endret_av_veilederident character varying(20),
+    kommentar character varying(1000),
+    frist timestamp without time zone,
+    endringstidspunkt timestamp without time zone,
+    overskrift character varying(500),
+    kategori character varying(10),
+    nav_kontor_for_arbeidsliste character varying(24)
+);
+
+
+--
 -- Name: bruker_cv; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -401,6 +417,19 @@ CREATE TABLE public.fargekategori (
     fnr character varying(11) NOT NULL,
     verdi character varying(25),
     sist_endret timestamp without time zone NOT NULL,
+    sist_endret_av_veilederident character varying(7)
+);
+
+
+--
+-- Name: fargekategori_kopi_2024_01_16; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.fargekategori_kopi_2024_01_16 (
+    id uuid,
+    fnr character varying(11),
+    verdi character varying(25),
+    sist_endret timestamp without time zone,
     sist_endret_av_veilederident character varying(7)
 );
 

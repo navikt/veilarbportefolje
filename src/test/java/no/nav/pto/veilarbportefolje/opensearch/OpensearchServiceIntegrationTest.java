@@ -3885,7 +3885,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setFargekategori(FargekategoriVerdi.LILLA.verdi);
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_D.name());
 
         var bruker2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3894,7 +3894,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setFargekategori(FargekategoriVerdi.BLA.verdi);
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
 
         var bruker3 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3902,7 +3902,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setFargekategori(FargekategoriVerdi.BLA.verdi);
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
 
         var bruker4 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3910,7 +3910,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setFargekategori(FargekategoriVerdi.GRONN.verdi);
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name());
 
         var bruker5 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3934,7 +3934,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setFargekategori(List.of(FargekategoriVerdi.GRONN.verdi, FargekategoriVerdi.BLA.verdi));
+                .setFargekategori(List.of(FargekategoriVerdi.FARGEKATEGORI_B.name(), FargekategoriVerdi.FARGEKATEGORI_A.name()));
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 TEST_ENHET,
