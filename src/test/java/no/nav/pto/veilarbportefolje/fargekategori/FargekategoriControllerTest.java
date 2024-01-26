@@ -26,6 +26,7 @@ import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.FARGEKATEGORI.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -317,11 +318,11 @@ public class FargekategoriControllerTest {
     @NotNull
     private static RowMapper<FargekategoriEntity> mapTilFargekategoriEntity() {
         return (resultSet, rowNum) -> new FargekategoriEntity(
-                UUID.fromString(resultSet.getString("id")),
-                Fnr.of(resultSet.getString("fnr")),
-                FargekategoriVerdi.valueOf(resultSet.getString("verdi")),
-                DateUtils.toZonedDateTime(resultSet.getTimestamp("sist_endret")),
-                NavIdent.of(resultSet.getString("sist_endret_av_veilederident"))
+                UUID.fromString(resultSet.getString(ID)),
+                Fnr.of(resultSet.getString(FNR)),
+                FargekategoriVerdi.valueOf(resultSet.getString(VERDI)),
+                DateUtils.toZonedDateTime(resultSet.getTimestamp(SIST_ENDRET)),
+                NavIdent.of(resultSet.getString(SIST_ENDRET_AV_VEILEDERIDENT))
         );
     }
 
