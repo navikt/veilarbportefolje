@@ -19,6 +19,12 @@ public class FargekategoriService {
     private final PdlIdentRepository pdlIdentRepository;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
+    public Optional<FargekategoriEntity> hentFargekategoriForBruker(FargekategoriController.HentFargekategoriRequest request, VeilederId innloggetVeileder) {
+        // TODO: iplementer denne
+
+        return Optional.empty();
+    }
+
     public Optional<UUID> oppdaterFargekategoriForBruker(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {
         if (request.fargekategoriVerdi() == FargekategoriVerdi.INGEN_KATEGORI) {
             fargekategoriRepository.deleteFargekategori(request.fnr());
@@ -36,4 +42,5 @@ public class FargekategoriService {
             return Optional.of(oppdatertKategori);
         }
     }
+
 }
