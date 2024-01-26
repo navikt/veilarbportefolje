@@ -197,7 +197,7 @@ public class HuskelappControllerTest {
         AktorId aktorId = AktorId.of("1223234234234");
         VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
         HuskelappOpprettRequest opprettRequest1 = new HuskelappOpprettRequest(fnr, LocalDate.now(), "Test", enhetId);
-        HuskelappOpprettRequest opprettRequest2 = new HuskelappOpprettRequest(fnr, null, null, enhetId);
+        HuskelappOpprettRequest opprettRequest2 = new HuskelappOpprettRequest(fnr, null, "Huskelapps", enhetId);
         testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, NavKontor.of(enhetId.get()), veilederId);
 
         when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
@@ -266,6 +266,38 @@ public class HuskelappControllerTest {
                 LocalDate.now(),
                 veilederId.getValue()
         )))).isTrue();
+    }
+
+    @Test
+    void test_opprett_huskelapp_uten_kommentar_og_frist() throws Exception {
+        Fnr fnr = Fnr.of("76543218457");
+        EnhetId enhetId = EnhetId.of("1234");
+        AktorId aktorId = AktorId.of("1223234234234");
+        VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
+        HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, null, null, enhetId);
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, NavKontor.of(enhetId.get()), veilederId);
+
+        when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
+        when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
+        when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
+
+        List<PDLIdent> identer = List.of(
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
+        );
+        pdlIdentRepository.upsertIdenter(identer);
+
+       mockMvc
+                .perform(
+                        post("/api/v1/huskelapp")
+                                .contentType(APPLICATION_JSON)
+                                .content(toJson(opprettRequest))
+                                .header("test_ident", "Z12345")
+                                .header("test_ident_type", "INTERN")
+                )
+                .andExpect(status().is(400))
+                .andReturn().getResponse().getContentAsString();
+
     }
 
     @Test
