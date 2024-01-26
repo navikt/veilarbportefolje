@@ -30,6 +30,8 @@ import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereRepository;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
+import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriRepository;
+import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappRepository;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
@@ -163,7 +165,9 @@ import static org.mockito.Mockito.when;
         EndringIRegistreringService.class,
         EndringIRegistreringRepository.class,
         HuskelappService.class,
-        HuskelappRepository.class
+        HuskelappRepository.class,
+        FargekategoriService.class,
+        FargekategoriRepository.class
 })
 public class ApplicationConfigTest {
 
