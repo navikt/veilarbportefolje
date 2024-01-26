@@ -28,7 +28,6 @@ import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.FARGEKATEGORI.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -85,7 +84,7 @@ public class FargekategoriControllerTest {
                 {
                     "id": "$uuid",
                     "fnr": "$fnr",
-                    "verdi": "$fargekategoriVerdi",
+                    "fargekategoriVerdi": "$fargekategoriVerdi",
                     "sistEndret": "$sistEndret",
                     "sistEndretAvVeilederIdent": "$endretAvVeileder"
                 }
@@ -156,7 +155,7 @@ public class FargekategoriControllerTest {
         // id genereres så vi sjekker bare på tilstedeværelse
         assertThat(opprettetFargekategoriEntity.id()).isNotNull();
         assertThat(opprettetFargekategoriEntity.fnr()).isEqualTo(FargekategoriControllerTestConfig.TESTBRUKER_FNR);
-        assertThat(opprettetFargekategoriEntity.verdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_A);
+        assertThat(opprettetFargekategoriEntity.fargekategoriVerdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_A);
         // sistEndret genereres så vi sjekker bare på tilstedeværelse
         assertThat(opprettetFargekategoriEntity.sistEndret()).isNotNull();
         assertThat(opprettetFargekategoriEntity.sistEndretAvVeilederIdent()).isEqualTo(FargekategoriControllerTestConfig.TESTVEILEDER);
@@ -243,7 +242,7 @@ public class FargekategoriControllerTest {
         assertThat(oppdatertFargekategoriEntity.fnr()).isEqualTo(opprettetFargekategoriEntity.fnr());
         assertThat(oppdatertFargekategoriEntity.sistEndretAvVeilederIdent()).isEqualTo(opprettetFargekategoriEntity.sistEndretAvVeilederIdent());
         assertThat(oppdatertFargekategoriEntity.sistEndret()).isNotEqualTo(opprettetFargekategoriEntity.sistEndret());
-        assertThat(oppdatertFargekategoriEntity.verdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_B);
+        assertThat(oppdatertFargekategoriEntity.fargekategoriVerdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_B);
     }
 
     @Test

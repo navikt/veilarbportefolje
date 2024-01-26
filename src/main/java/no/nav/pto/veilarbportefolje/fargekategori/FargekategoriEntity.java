@@ -9,7 +9,7 @@ import java.util.UUID;
 public record FargekategoriEntity(
         UUID id,
         Fnr fnr,
-        FargekategoriVerdi verdi,
+        FargekategoriVerdi fargekategoriVerdi,
         ZonedDateTime sistEndret,
         NavIdent sistEndretAvVeilederIdent
 ) {}
