@@ -56,17 +56,17 @@ public class FargekategoriControllerTest {
 
     @Test
     void henting_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
-        String request = """
-                {
-                  "fnr":"11111111111",
-                }
-                """;
-
         UUID uuid = UUID.randomUUID();
         Fnr fnr = Fnr.of("11223312345");
         FargekategoriVerdi fargekategoriVerdi = FargekategoriVerdi.FARGEKATEGORI_D;
-        Timestamp sistEndret = toTimestamp(ZonedDateTime.now());
+        ZonedDateTime sistEndret = ZonedDateTime.now();
         VeilederId sistEndretAv = AuthUtils.getInnloggetVeilederIdent();
+
+        String request = """
+                {
+                  "fnr": "$fnr"
+                }
+                """.replace("$fnr", fnr.get());
 
         String fargekategoriSql = """
                     INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
@@ -77,22 +77,22 @@ public class FargekategoriControllerTest {
                             uuid,
                             fnr.get(),
                             fargekategoriVerdi.name(),
-                            sistEndret,
+                            Timestamp.from(sistEndret.toInstant()),
                             sistEndretAv.getValue());
 
         String expected = """
                 {
-                    "uuid": "$uuid",
+                    "id": "$uuid",
                     "fnr": "$fnr",
-                    "fargekategoriVerdi": "$fargekategoriVerdi",
+                    "verdi": "$fargekategoriVerdi",
                     "sistEndret": "$sistEndret",
-                    "sistEndretAvVeilederIdent": "$veilederIdent"
+                    "sistEndretAvVeilederIdent": "$endretAvVeileder"
                 }
                 """.replace("$uuid", uuid.toString())
                 .replace("$fnr", fnr.get())
                 .replace("$fargekategoriVerdi", fargekategoriVerdi.name())
-                .replace("$sistEndret", sistEndret.toString())
-                .replace("$sistEndretAv", sistEndretAv.getValue());
+                .replace("$sistEndret", sistEndret.toString().substring(0, 32)) // substring gjer at vi unngår å få med [Paris/Oslo] i strengen
+                .replace("$endretAvVeileder", sistEndretAv.getValue());
 
         mockMvc.perform(
                         post("/api/v1/hent-fargekategori")
