@@ -86,7 +86,7 @@ public class FargekategoriControllerTest {
                     "fnr": "$fnr",
                     "fargekategoriVerdi": "$fargekategoriVerdi",
                     "sistEndret": "$sistEndret",
-                    "sistEndretAvVeilederIdent": "$endretAvVeileder"
+                    "endretAv": "$endretAvVeileder"
                 }
                 """.replace("$uuid", uuid.toString())
                 .replace("$fnr", fnr.get())
@@ -158,7 +158,7 @@ public class FargekategoriControllerTest {
         assertThat(opprettetFargekategoriEntity.fargekategoriVerdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_A);
         // sistEndret genereres så vi sjekker bare på tilstedeværelse
         assertThat(opprettetFargekategoriEntity.sistEndret()).isNotNull();
-        assertThat(opprettetFargekategoriEntity.sistEndretAvVeilederIdent()).isEqualTo(FargekategoriControllerTestConfig.TESTVEILEDER);
+        assertThat(opprettetFargekategoriEntity.endretAv()).isEqualTo(FargekategoriControllerTestConfig.TESTVEILEDER);
     }
 
     @Test
@@ -240,7 +240,7 @@ public class FargekategoriControllerTest {
         assertThat(opprettetFargekategoriEntity).isNotNull();
         assertThat(oppdatertFargekategoriEntity.id()).isEqualTo(opprettetFargekategoriEntity.id());
         assertThat(oppdatertFargekategoriEntity.fnr()).isEqualTo(opprettetFargekategoriEntity.fnr());
-        assertThat(oppdatertFargekategoriEntity.sistEndretAvVeilederIdent()).isEqualTo(opprettetFargekategoriEntity.sistEndretAvVeilederIdent());
+        assertThat(oppdatertFargekategoriEntity.endretAv()).isEqualTo(opprettetFargekategoriEntity.endretAv());
         assertThat(oppdatertFargekategoriEntity.sistEndret()).isNotEqualTo(opprettetFargekategoriEntity.sistEndret());
         assertThat(oppdatertFargekategoriEntity.fargekategoriVerdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_B);
     }

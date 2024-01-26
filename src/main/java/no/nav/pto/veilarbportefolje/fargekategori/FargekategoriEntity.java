@@ -11,5 +11,5 @@ public record FargekategoriEntity(
         Fnr fnr,
         FargekategoriVerdi fargekategoriVerdi,
         ZonedDateTime sistEndret,
-        NavIdent sistEndretAvVeilederIdent
+        NavIdent endretAv
 ) {}
