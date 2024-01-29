@@ -27,6 +27,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.FARGEKATEGORI.*;
+import static no.nav.pto.veilarbportefolje.fargekategori.FargekategoriControllerTestConfig.TESTBRUKER_FNR;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
@@ -57,7 +58,7 @@ public class FargekategoriControllerTest {
     @Test
     void henting_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
         UUID uuid = UUID.randomUUID();
-        Fnr fnr = Fnr.of("11223312345");
+        Fnr fnr = TESTBRUKER_FNR;
         FargekategoriVerdi fargekategoriVerdi = FargekategoriVerdi.FARGEKATEGORI_D;
         ZonedDateTime sistEndret = ZonedDateTime.now();
         VeilederId sistEndretAv = AuthUtils.getInnloggetVeilederIdent();
@@ -91,6 +92,7 @@ public class FargekategoriControllerTest {
                 """.replace("$uuid", uuid.toString())
                 .replace("$fnr", fnr.get())
                 .replace("$fargekategoriVerdi", fargekategoriVerdi.name())
+                // TODO Finn ein måte å unngå å sjekke dette feltet på
                 .replace("$sistEndret", sistEndret.toString().substring(0, 32)) // substring gjer at vi unngår å få med [Paris/Oslo] i strengen
                 .replace("$endretAvVeileder", sistEndretAv.getValue());
 
@@ -143,13 +145,13 @@ public class FargekategoriControllerTest {
             return jdbcTemplate.queryForObject(
                     "SELECT * FROM fargekategori WHERE fnr=?",
                     mapTilFargekategoriEntity(),
-                    FargekategoriControllerTestConfig.TESTBRUKER_FNR.get());
+                    TESTBRUKER_FNR.get());
         });
 
         assertThat(opprettetFargekategoriEntity).isNotNull();
         // id genereres så vi sjekker bare på tilstedeværelse
         assertThat(opprettetFargekategoriEntity.id()).isNotNull();
-        assertThat(opprettetFargekategoriEntity.fnr()).isEqualTo(FargekategoriControllerTestConfig.TESTBRUKER_FNR);
+        assertThat(opprettetFargekategoriEntity.fnr()).isEqualTo(TESTBRUKER_FNR);
         assertThat(opprettetFargekategoriEntity.fargekategoriVerdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_A);
         // sistEndret genereres så vi sjekker bare på tilstedeværelse
         assertThat(opprettetFargekategoriEntity.sistEndret()).isNotNull();
@@ -214,7 +216,7 @@ public class FargekategoriControllerTest {
             return jdbcTemplate.queryForObject(
                     "SELECT * FROM fargekategori WHERE fnr=?",
                     mapTilFargekategoriEntity(),
-                    FargekategoriControllerTestConfig.TESTBRUKER_FNR.get());
+                    TESTBRUKER_FNR.get());
         });
 
         mockMvc.perform(
@@ -228,7 +230,7 @@ public class FargekategoriControllerTest {
             return jdbcTemplate.queryForObject(
                     "SELECT * FROM fargekategori WHERE fnr=?",
                     mapTilFargekategoriEntity(),
-                    FargekategoriControllerTestConfig.TESTBRUKER_FNR.get());
+                    TESTBRUKER_FNR.get());
         });
 
         assertThat(oppdatertFargekategoriEntity).isNotNull();
@@ -303,7 +305,7 @@ public class FargekategoriControllerTest {
             return jdbcTemplate.queryForObject(
                     "SELECT * FROM fargekategori WHERE fnr=?",
                     mapTilFargekategoriEntity(),
-                    FargekategoriControllerTestConfig.TESTBRUKER_FNR.get());
+                    TESTBRUKER_FNR.get());
         });
 
         assertThat(oppdatertFargekategoriEntity).isNull();
@@ -327,10 +329,10 @@ public class FargekategoriControllerTest {
         jdbcTemplate.update("TRUNCATE fargekategori");
         jdbcTemplate.update("TRUNCATE oppfolgingsbruker_arena_v2");
 
-        testDataClient.lagreBrukerUnderOppfolging(FargekategoriControllerTestConfig.TESTBRUKER_AKTOR_ID, FargekategoriControllerTestConfig.TESTBRUKER_FNR, FargekategoriControllerTestConfig.TESTENHET, VeilederId.of(FargekategoriControllerTestConfig.TESTVEILEDER.get()));
+        testDataClient.lagreBrukerUnderOppfolging(FargekategoriControllerTestConfig.TESTBRUKER_AKTOR_ID, TESTBRUKER_FNR, FargekategoriControllerTestConfig.TESTENHET, VeilederId.of(FargekategoriControllerTestConfig.TESTVEILEDER.get()));
 
         doNothing().when(authService).tilgangTilOppfolging();
-        doNothing().when(authService).tilgangTilBruker(FargekategoriControllerTestConfig.TESTBRUKER_FNR.get());
+        doNothing().when(authService).tilgangTilBruker(TESTBRUKER_FNR.get());
         doNothing().when(authService).tilgangTilEnhet(FargekategoriControllerTestConfig.TESTENHET.getValue());
     }
 }
