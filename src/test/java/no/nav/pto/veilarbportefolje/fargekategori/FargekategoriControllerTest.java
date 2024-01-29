@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.FARGEKATEGORI.*;
+import static no.nav.pto.veilarbportefolje.fargekategori.FargekategoriControllerTestConfig.TESTBRUKER_AKTOR_ID;
 import static no.nav.pto.veilarbportefolje.fargekategori.FargekategoriControllerTestConfig.TESTBRUKER_FNR;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
@@ -80,11 +81,11 @@ public class FargekategoriControllerTest {
                 """;
 
         jdbcTemplate.update(fargekategoriSql,
-                            uuid,
-                            fnr.get(),
-                            fargekategoriVerdi.name(),
-                            toTimestamp(sistEndret),
-                            sistEndretAv.getValue());
+                uuid,
+                fnr.get(),
+                fargekategoriVerdi.name(),
+                toTimestamp(sistEndret),
+                sistEndretAv.getValue());
 
         String expected = """
                 {
@@ -196,25 +197,31 @@ public class FargekategoriControllerTest {
 
     @Test
     void oppdatering_av_fargekategori_skal_gi_riktig_tilstand_i_db() throws Exception {
-        String opprettRequest = """
-                {
-                  "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_A"
-                }
-                """;
-        String oppdaterRequest = """
-                {
-                  "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
-                }
+        UUID uuid = UUID.randomUUID();
+        Fnr fnr = TESTBRUKER_FNR;
+        FargekategoriVerdi fargekategoriVerdi = FargekategoriVerdi.FARGEKATEGORI_D;
+        LocalDate sistEndret = LocalDate.now().minusDays(1);
+        VeilederId sistEndretAv = AuthUtils.getInnloggetVeilederIdent();
+
+        String fargekategoriSql = """
+                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
+                    VALUES (?, ?, ?, ?, ?)
                 """;
 
-        mockMvc.perform(
-                        put("/api/v1/fargekategori")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(opprettRequest)
-                )
-                .andExpect(status().is(200));
+        jdbcTemplate.update(fargekategoriSql,
+                uuid,
+                fnr.get(),
+                fargekategoriVerdi.name(),
+                toTimestamp(sistEndret),
+                sistEndretAv.getValue());
+
+        String oppdaterRequest = """
+                {
+                  "fnr":"$fnr",
+                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                }
+                """
+                .replace("$fnr", fnr.get());
 
         FargekategoriEntity opprettetFargekategoriEntity = queryForObjectOrNull(() -> {
             return jdbcTemplate.queryForObject(
