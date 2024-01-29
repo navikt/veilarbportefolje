@@ -32,6 +32,7 @@ public class FargekategoriController {
         VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
 
         // TODO validering
+        validerRequest(request.fnr);
 
         // TODO autentisering
 
@@ -51,7 +52,7 @@ public class FargekategoriController {
     @PutMapping("/fargekategori")
     public ResponseEntity<FargekategoriResponse> oppdaterFargekategoriForBruker(@RequestBody OppdaterFargekategoriRequest request) {
         VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
-        validerRequest(request);
+        validerRequest(request.fnr);
 
         Optional<NavKontor> brukerEnhet = brukerServiceV2.hentNavKontor(request.fnr);
 
@@ -77,8 +78,8 @@ public class FargekategoriController {
         }
     }
 
-    private static void validerRequest(OppdaterFargekategoriRequest request) {
-        if (!Fnr.isValid(request.fnr().get())) {
+    private static void validerRequest(Fnr fnr) {
+        if (!Fnr.isValid(fnr.get())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ugyldig fnr");
         }
     }
