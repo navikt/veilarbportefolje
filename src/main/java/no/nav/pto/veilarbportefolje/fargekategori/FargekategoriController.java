@@ -29,12 +29,17 @@ public class FargekategoriController {
 
     @PostMapping("/hent-fargekategori")
     public ResponseEntity<FargekategoriEntity> hentFargekategoriForBruker(@RequestBody HentFargekategoriRequest request) {
-        VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
-
-        // TODO validering
         validerRequest(request.fnr);
 
-        // TODO autentisering
+        Optional<NavKontor> brukerEnhet = brukerServiceV2.hentNavKontor(request.fnr);
+        if (brukerEnhet.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker med oppgitt fnr er ikke under oppfølging");
+        }
+
+        authService.tilgangTilOppfolging();
+        authService.tilgangTilBruker(request.fnr.get());
+        authService.tilgangTilEnhet(brukerEnhet.get().toString());
+
 
         try {
             Optional<FargekategoriEntity> kanskjeFargekategori = fargekategoriService.hentFargekategoriForBruker(request);
@@ -46,7 +51,6 @@ public class FargekategoriController {
 
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
     }
 
     @PutMapping("/fargekategori")
@@ -63,6 +67,7 @@ public class FargekategoriController {
         authService.tilgangTilOppfolging();
         authService.tilgangTilBruker(request.fnr.get());
         authService.tilgangTilEnhet(brukerEnhet.get().toString());
+        // TODO berre "tildelt veileder" skal kunne redigere
 
         try {
             Optional<UUID> fargekategoriId = fargekategoriService.oppdaterFargekategoriForBruker(request, innloggetVeileder);
@@ -84,7 +89,9 @@ public class FargekategoriController {
         }
     }
 
-    public record HentFargekategoriRequest(Fnr fnr) {
+    public record HentFargekategoriRequest(
+            @JsonProperty(required = true) Fnr fnr
+    ) {
     }
 
     public record FargekategoriResponse(UUID id) {
