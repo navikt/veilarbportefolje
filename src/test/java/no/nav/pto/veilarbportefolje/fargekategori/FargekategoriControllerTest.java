@@ -104,11 +104,6 @@ public class FargekategoriControllerTest {
     }
 
     @Test
-    void skal_ikke_kunne_hente_fargekategori_uten_riktig_autentisering() throws Exception {
-        // TODO skriv testar
-    }
-
-    @Test
     void opprettelse_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
         String request = """
                 {
