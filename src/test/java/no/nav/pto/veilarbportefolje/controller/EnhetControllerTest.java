@@ -50,7 +50,7 @@ public class EnhetControllerTest {
         authContextHolder = AuthContextHolderThreadLocal.instance();
         defaultUnleash = mock(DefaultUnleash.class);
 
-        AuthService authService = new AuthService(pep, poaoTilgangWrapper, mock(AzureAdOnBehalfOfTokenClient.class), defaultUnleash, mock(MetricsClient.class));
+        AuthService authService = new AuthService(pep, poaoTilgangWrapper, mock(AzureAdOnBehalfOfTokenClient.class), mock(MetricsClient.class));
         enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(PersonOpprinnelseService.class), mock(BostedService.class));
     }
 
