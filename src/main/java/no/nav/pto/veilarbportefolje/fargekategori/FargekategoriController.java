@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
@@ -40,7 +41,6 @@ public class FargekategoriController {
         authService.tilgangTilBruker(request.fnr.get());
         authService.tilgangTilEnhet(brukerEnhet.get().toString());
 
-
         try {
             Optional<FargekategoriEntity> kanskjeFargekategori = fargekategoriService.hentFargekategoriForBruker(request);
 
@@ -67,7 +67,11 @@ public class FargekategoriController {
         authService.tilgangTilOppfolging();
         authService.tilgangTilBruker(request.fnr.get());
         authService.tilgangTilEnhet(brukerEnhet.get().toString());
-        // TODO berre "tildelt veileder" skal kunne redigere
+        Validation<String, Fnr> erVeilederForBrukerValidation = fargekategoriService.erVeilederForBruker(request.fnr.get());
+
+        if (erVeilederForBrukerValidation.isInvalid()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke tilordnet veileder");
+        }
 
         try {
             Optional<UUID> fargekategoriId = fargekategoriService.oppdaterFargekategoriForBruker(request, innloggetVeileder);
