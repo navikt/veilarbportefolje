@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.FARGEKATEGORI.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 public class FargekategoriMapper {
@@ -19,7 +20,7 @@ public class FargekategoriMapper {
                 UUID.fromString(rs.getString(ID)),
                 Fnr.of(rs.getString(FNR)),
                 FargekategoriVerdi.valueOf(rs.getString(VERDI)),
-                toZonedDateTime(rs.getTimestamp(SIST_ENDRET)),
+                toLocalDate(rs.getTimestamp(SIST_ENDRET)),
                 NavIdent.of(rs.getString(SIST_ENDRET_AV_VEILEDERIDENT))
         );
     }

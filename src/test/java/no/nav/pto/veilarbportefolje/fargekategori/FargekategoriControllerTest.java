@@ -23,12 +23,15 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.FARGEKATEGORI.*;
 import static no.nav.pto.veilarbportefolje.fargekategori.FargekategoriControllerTestConfig.TESTBRUKER_FNR;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -60,7 +63,7 @@ public class FargekategoriControllerTest {
         UUID uuid = UUID.randomUUID();
         Fnr fnr = TESTBRUKER_FNR;
         FargekategoriVerdi fargekategoriVerdi = FargekategoriVerdi.FARGEKATEGORI_D;
-        ZonedDateTime sistEndret = ZonedDateTime.now();
+        LocalDate sistEndret = LocalDate.now();
         VeilederId sistEndretAv = AuthUtils.getInnloggetVeilederIdent();
 
         String request = """
@@ -78,7 +81,7 @@ public class FargekategoriControllerTest {
                             uuid,
                             fnr.get(),
                             fargekategoriVerdi.name(),
-                            Timestamp.from(sistEndret.toInstant()),
+                            toTimestamp(sistEndret),
                             sistEndretAv.getValue());
 
         String expected = """
@@ -92,8 +95,7 @@ public class FargekategoriControllerTest {
                 """.replace("$uuid", uuid.toString())
                 .replace("$fnr", fnr.get())
                 .replace("$fargekategoriVerdi", fargekategoriVerdi.name())
-                // TODO Finn ein måte å unngå å sjekke dette feltet på
-                .replace("$sistEndret", sistEndret.toString().substring(0, 32)) // substring gjer at vi unngår å få med [Paris/Oslo] i strengen
+                .replace("$sistEndret", sistEndret.toString())
                 .replace("$endretAvVeileder", sistEndretAv.getValue());
 
         mockMvc.perform(
@@ -317,7 +319,7 @@ public class FargekategoriControllerTest {
                 UUID.fromString(resultSet.getString(ID)),
                 Fnr.of(resultSet.getString(FNR)),
                 FargekategoriVerdi.valueOf(resultSet.getString(VERDI)),
-                DateUtils.toZonedDateTime(resultSet.getTimestamp(SIST_ENDRET)),
+                toLocalDate(resultSet.getTimestamp(SIST_ENDRET)),
                 NavIdent.of(resultSet.getString(SIST_ENDRET_AV_VEILEDERIDENT))
         );
     }
