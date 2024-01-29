@@ -10,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @Repository
@@ -19,6 +21,17 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 public class FargekategoriRepository {
 
     private final JdbcTemplate jdbcTemplate;
+
+    public Optional<FargekategoriEntity> hentFargekategoriForBruker(Fnr fnr) {
+        String hentSql = "SELECT * FROM fargekategori WHERE fnr=?";
+
+        return Optional.ofNullable(queryForObjectOrNull(() ->
+                jdbcTemplate.queryForObject(
+                        hentSql,
+                        (resultSet, rowNumber) -> FargekategoriMapper.fargekategoriMapper(resultSet),
+                        fnr.get())
+        ));
+    }
 
     @Transactional
     public UUID upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {
@@ -31,7 +44,15 @@ public class FargekategoriRepository {
                     SET verdi=?, sist_endret=?, sist_endret_av_veilederident=?
                 """;
 
-        jdbcTemplate.update(upsertSql, UUID.randomUUID(), request.fnr().get(), request.fargekategoriVerdi().name(), sistEndret, sistEndretAv.getValue(), request.fargekategoriVerdi().name(), sistEndret, sistEndretAv.getValue());
+        jdbcTemplate.update(upsertSql,
+                UUID.randomUUID(),
+                request.fnr().get(),
+                request.fargekategoriVerdi().name(),
+                sistEndret,
+                sistEndretAv.getValue(),
+                request.fargekategoriVerdi().name(),
+                sistEndret,
+                sistEndretAv.getValue());
 
         return jdbcTemplate.queryForObject(
                 "SELECT id FROM fargekategori WHERE fnr=?",
