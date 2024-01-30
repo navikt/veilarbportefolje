@@ -20,8 +20,8 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -40,9 +40,9 @@ public class SensurerBrukerTest {
     @Before
     public void setUp() {
         DefaultUnleash defaultUnleash = mock(DefaultUnleash.class);
-        when(defaultUnleash.isEnabled(anyString())).thenReturn(true);
+
         poaoTilgangWrapper = mock(PoaoTilgangWrapper.class);
-        authService = new AuthService(pep, poaoTilgangWrapper, azureAdOnBehalfOfTokenClient, defaultUnleash, mock(MetricsClient.class));
+        authService = new AuthService(pep, poaoTilgangWrapper, azureAdOnBehalfOfTokenClient, mock(MetricsClient.class));
     }
 
     @Test
@@ -132,7 +132,7 @@ public class SensurerBrukerTest {
         Bruker filtrertBruker = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6og7Barn(), "X123456");
         sjekkAtBarnMedKode7ErFjernet(filtrertBruker);
         sjekkAtBarnMedKode6IkkeErFjernet(filtrertBruker);
-        assertTrue(filtrertBruker.barnUnder18AarData.size() == 2);
+        assertEquals(2, filtrertBruker.barnUnder18AarData.size());
     }
 
     @Test
