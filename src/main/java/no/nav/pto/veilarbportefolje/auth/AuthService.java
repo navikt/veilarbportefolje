@@ -114,6 +114,7 @@ public class AuthService {
         Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode6();
         if (decision.isPermit() != abacResponse) {
             metricsClient.report(new Event("poao-tilgang-diff").addTagToReport("method", "harVeilederTilgangTilKode6"));
+            secureLog.warn("Fortrolig diff between abac and poao-tilgang for veileder. Poao-tilgang decision is: " + decision.isPermit());
         }
         return abacResponse;
     }
@@ -128,6 +129,7 @@ public class AuthService {
         Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode7();
         if (decision.isPermit() != abacResponse) {
             metricsClient.report(new Event("poao-tilgang-diff").addTagToReport("method", "harVeilederTilgangTilKode7"));
+            secureLog.warn("Streng diff between abac and poao-tilgang for veileder. Poao-tilgang decision is: " + decision.isPermit());
         }
         return abacResponse;
     }
