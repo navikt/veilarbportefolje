@@ -109,7 +109,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
-        doReturn(false).when(defaultUnleash).isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
         doReturn(true).when(defaultUnleash).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
 
         doReturn(true).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_0));
@@ -220,7 +219,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
-        doReturn(false).when(defaultUnleash).isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
         doReturn(true).when(defaultUnleash).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
 
         doReturn(true).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_0));
@@ -611,7 +609,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
-        doReturn(false).when(defaultUnleash).isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
         doReturn(true).when(defaultUnleash).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
         doReturn(false).when(pep).harVeilederTilgangTilKode6(any());
         doReturn(false).when(pep).harVeilederTilgangTilKode7(any());
@@ -671,7 +668,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
-        doReturn(false).when(defaultUnleash).isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
         doReturn(false).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_0));
         doReturn(true).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_0));
         doReturn(false).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_0));
@@ -729,7 +725,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
-        doReturn(false).when(defaultUnleash).isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
         doReturn(true).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_0));
         doReturn(true).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_0));
         doReturn(true).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_0));
@@ -798,7 +793,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
-        doReturn(false).when(defaultUnleash).isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
         doReturn(false).when(defaultUnleash).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
 
         OppfolgingsBruker kode_6_bruker = genererRandomBruker(true, TEST_ENHET, null, "6", false);
@@ -857,7 +851,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
-        doReturn(false).when(defaultUnleash).isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
         doReturn(false).when(defaultUnleash).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
 
         OppfolgingsBruker kode_6_bruker = genererRandomBruker(true, TEST_ENHET, null, "6", false);
@@ -3888,7 +3881,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setFargekategori(FargekategoriVerdi.LILLA.verdi);
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_D.name());
 
         var bruker2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3897,7 +3890,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setFargekategori(FargekategoriVerdi.BLA.verdi);
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
 
         var bruker3 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3905,7 +3898,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setFargekategori(FargekategoriVerdi.BLA.verdi);
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
 
         var bruker4 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3913,7 +3906,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setFargekategori(FargekategoriVerdi.GRONN.verdi);
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name());
 
         var bruker5 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3937,7 +3930,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setFargekategori(List.of(FargekategoriVerdi.GRONN.verdi, FargekategoriVerdi.BLA.verdi));
+                .setFargekategori(List.of(FargekategoriVerdi.FARGEKATEGORI_B.name(), FargekategoriVerdi.FARGEKATEGORI_A.name()));
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 TEST_ENHET,
