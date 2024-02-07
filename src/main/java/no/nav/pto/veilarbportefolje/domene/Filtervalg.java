@@ -54,7 +54,6 @@ public class Filtervalg {
     public List<String> geografiskBosted;
     public List<Avvik14aVedtak> avvik14aVedtak;
     public List<EnsligeForsorgere> ensligeForsorgere;
-    public Boolean harHuskelapp;
     public List<String> fargekategori = new ArrayList<>();
 
     public boolean harAktiveFilter() {
@@ -91,7 +90,6 @@ public class Filtervalg {
                 harBostedFilter() ||
                 harAvvik14aVedtakFilter() ||
                 harEnsligeForsorgereFilter() ||
-                harHuskelapp != null ||
                 harFargeKategoriFilter();
     }
 
