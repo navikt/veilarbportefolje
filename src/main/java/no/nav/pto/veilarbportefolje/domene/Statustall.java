@@ -25,6 +25,7 @@ public class Statustall {
     private long minArbeidslisteLilla;
     private long minArbeidslisteGronn;
     private long minArbeidslisteGul;
+    private long mineHuskelapper;
 
     public Statustall() {
         this.totalt = 0;
@@ -45,6 +46,7 @@ public class Statustall {
         this.minArbeidslisteGronn = 0;
         this.minArbeidslisteGul = 0;
         this.underVurdering = 0;
+        this.mineHuskelapper = 0;
     }
 
     public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
@@ -66,5 +68,6 @@ public class Statustall {
         this.minArbeidslisteGronn = buckets.getMinArbeidslisteGronn().getDoc_count();
         this.minArbeidslisteGul = buckets.getMinArbeidslisteGul().getDoc_count();
         this.underVurdering = vedtakstottePilotErPa ? buckets.getUnderVurdering().getDoc_count() : 0;
+        this.mineHuskelapper = buckets.getMineHuskelapper().getDoc_count();
     }
 }

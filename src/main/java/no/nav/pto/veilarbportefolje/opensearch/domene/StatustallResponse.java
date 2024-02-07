@@ -40,6 +40,7 @@ public class StatustallResponse {
                 Bucket adressebeskyttelseEllerSkjermingTotalt;
                 Bucket adressebeskyttelseEllerSkjermingUfordelte;
                 Bucket adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV;
+                Bucket mineHuskelapper;
             }
         }
     }
