@@ -16,7 +16,8 @@ public record HuskelappResponse(
         LocalDate frist,
         String kommentar,
         @JsonDeserialize(using = LocalDateDeserializer.class)
-        LocalDate endretDato, String endretAv) {
+        LocalDate endretDato,
+        String endretAv) {
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public HuskelappResponse {
     }

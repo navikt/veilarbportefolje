@@ -623,7 +623,7 @@ public class OpensearchQueryBuilder {
 
     private static void sorterHuskelappEksistere(SearchSourceBuilder builder, SortOrder order) {
         String expresion = """
-                if (doc.containsKey('huskelapp.kommentar')) {
+                if (!doc['huskelapp.kommentar'].empty || !doc['huskelapp.frist'].empty) {
                     return 1;
                 }
                 else {
@@ -669,6 +669,9 @@ public class OpensearchQueryBuilder {
             case MIN_ARBEIDSLISTE:
                 queryBuilder = matchQuery("arbeidsliste_aktiv", true);
                 break;
+            case MINE_HUSKELAPPER:
+                queryBuilder = existsQuery("huskelapp");
+                break;
             case NYE_BRUKERE_FOR_VEILEDER:
                 queryBuilder = matchQuery("ny_for_veileder", true);
                 break;
@@ -684,9 +687,6 @@ public class OpensearchQueryBuilder {
                 } else {
                     throw new IllegalStateException();
                 }
-                break;
-            case MINE_HUSKELAPPER:
-                queryBuilder = existsQuery("huskelapp");
                 break;
             default:
                 throw new IllegalStateException();
@@ -830,7 +830,8 @@ public class OpensearchQueryBuilder {
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriC", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_C.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriD", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_D.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriE", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_E.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriF", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_F.name())
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriF", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_F.name()),
+                mustExistFilter(filtrereVeilederOgEnhet, "mineHuskelapper", "huskelapp")
         };
 
         return new SearchSourceBuilder()
