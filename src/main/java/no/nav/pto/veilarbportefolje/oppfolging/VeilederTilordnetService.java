@@ -49,7 +49,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         final boolean harByttetNavKontor = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnr(aktoerId));
         if (harByttetNavKontor) {
-            arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr);
+            arbeidslisteService.slettArbeidslisteOgFargekategori(aktoerId, maybeFnr);
         }
 
         final boolean brukerHarByttetNavkontorHuskelapp = huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktoerId);

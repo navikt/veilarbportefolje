@@ -114,7 +114,7 @@ public class ArbeidslisteRepositoryV2 {
     }
 
     @Transactional
-    public int slettArbeidsliste(AktorId aktoerId, Optional<Fnr> maybeFnr) {
+    public int slettArbeidslisteOgFargekategori(AktorId aktoerId, Optional<Fnr> maybeFnr) {
         if (aktoerId == null) {
             return 0;
         }
@@ -139,6 +139,29 @@ public class ArbeidslisteRepositoryV2 {
             ));
 
             throw new SlettArbeidslisteException("Fant flere rader i ARBEIDSLISTE/FARGEKATEGORI-tabell for bruker.");
+        }
+
+        return (oppdaterteRaderArbeidsliste + oppdaterteRaderFargekategori);
+    }
+
+    public int slettArbeidsliste(AktorId aktoerId) {
+        if (aktoerId == null) {
+            return 0;
+        }
+        secureLog.info("Sletter arbeidsliste pa bruker: {}", aktoerId);
+
+        int oppdaterteRaderArbeidsliste = db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
+
+        int oppdaterteRaderFargekategori = 0;
+
+        if (oppdaterteRaderArbeidsliste > 1) {
+            secureLog.error(String.format(
+                    "Fant flere rader i ARBEIDSLISTE-tabell. AktørID: %s - antall rader i ARBEIDSLISTE: %s.",
+                    aktoerId.get(),
+                    oppdaterteRaderArbeidsliste
+            ));
+
+            throw new SlettArbeidslisteException("Fant flere rader i ARBEIDSLISTE-tabell for bruker.");
         }
 
         return (oppdaterteRaderArbeidsliste + oppdaterteRaderFargekategori);

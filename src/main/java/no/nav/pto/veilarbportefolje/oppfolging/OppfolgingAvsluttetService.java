@@ -21,7 +21,6 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -61,26 +60,30 @@ public class OppfolgingAvsluttetService {
                 .map(Fnr::new)
                 .toList();
 
-        for (AktorId aktorId : alleAktoerIdForBruker) {
-            Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnr(aktoerId));
-
+        alleAktoerIdForBruker.forEach((aktorId) -> {
             oppfolgingRepositoryV2.slettOppfolgingData(aktorId);
             registreringService.slettRegistering(aktorId);
             endringIRegistreringService.slettEndringIRegistering(aktorId);
-            arbeidslisteService.slettArbeidsliste(aktorId, maybeFnr);
-            maybeFnr.ifPresent(huskelappService::slettAlleHuskelapperPaaBruker);
-            maybeFnr.ifPresent(fargekategoriService::fjernFargekategoriForBruker);
+            arbeidslisteService.slettArbeidsliste(aktorId);
             sisteEndringService.slettSisteEndringer(aktorId);
             cvRepositoryV2.resetHarDeltCV(aktorId);
             siste14aVedtakService.slettSiste14aVedtak(aktorId.get());
             pdlService.slettPdlData(aktorId);
             ensligeForsorgereService.slettEnsligeForsorgereData(aktorId);
             profileringService.slettProfileringData(aktorId);
+            // TODO: Delete from rest of the tables which are missing
+        });
 
+        alleFolkeregisterIdenterForBruker.forEach(folkeregisterIdent -> {
+            huskelappService.slettAlleHuskelapperPaaBruker(folkeregisterIdent);
+            fargekategoriService.fjernFargekategoriForBruker(folkeregisterIdent);
+        });
 
-            opensearchIndexerV2.slettDokumenter(List.of(aktorId));
-            secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktorId);
-        }
-
+        opensearchIndexerV2.slettDokumenter(alleAktoerIdForBruker);
+        secureLog.info(
+                "Bruker: {} har avsluttet oppfølging og er slettet. Slettet også data for historiske identer {} for samme bruker.",
+                aktoerId,
+                String.join(", ", alleAktoerIdForBruker.stream().map(AktorId::get).toList())
+        );
     }
 }
