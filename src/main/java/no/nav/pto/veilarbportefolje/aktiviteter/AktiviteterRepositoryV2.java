@@ -148,6 +148,10 @@ public class AktiviteterRepositoryV2 {
                 });
     }
 
+    public void slettOppfolgingData(AktorId aktorId) {
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktorId.get());
+    }
+
     @SneakyThrows
     private Moteplan mapTilMoteplan(ResultSet rs) {
         return new Moteplan(
@@ -190,4 +194,6 @@ public class AktiviteterRepositoryV2 {
         }
         return aktiviteter;
     }
+
+
 }

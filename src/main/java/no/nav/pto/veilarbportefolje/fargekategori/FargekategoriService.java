@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController.OppdaterFargekategoriRequest;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
@@ -24,7 +25,7 @@ import static java.lang.String.format;
 
 @Service
 @RequiredArgsConstructor
-public class FargekategoriService {
+public class FargekategoriService implements HandtereOppfolgingData<Fnr> {
 
     private final FargekategoriRepository fargekategoriRepository;
     private final PdlIdentRepository pdlIdentRepository;
@@ -85,7 +86,7 @@ public class FargekategoriService {
                 .orElse(false);
     }
 
-    public void fjernFargekategoriForBruker(Fnr fnr) {
+    public void slettOppfolgingData(Fnr fnr) {
         fargekategoriRepository.deleteFargekategori(fnr);
     }
 

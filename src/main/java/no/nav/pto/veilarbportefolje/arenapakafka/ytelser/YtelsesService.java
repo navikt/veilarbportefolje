@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class YtelsesService {
+public class YtelsesService implements HandtereOppfolgingData<AktorId> {
     private final AktorClient aktorClient;
     private final YtelsesRepositoryV2 ytelsesRepositoryV2;
     private final ArenaHendelseRepository arenaHendelseRepository;
@@ -217,5 +218,10 @@ public class YtelsesService {
         }
 
         ytelsesStatusRepositoryV2.upsertYtelseStatus(ytelsesTilstand);
+    }
+
+    public void slettOppfolgingData(AktorId aktorId) {
+        ytelsesStatusRepositoryV2.slettYtelseStatus(aktorId);
+        ytelsesRepositoryV2.slettOppfolgingData(aktorId);
     }
 }

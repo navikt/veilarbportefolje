@@ -5,11 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,13 +21,13 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PdlService {
+public class PdlService implements HandtereOppfolgingData<AktorId> {
     private final PdlIdentRepository pdlIdentRepository;
     private final PdlPersonRepository pdlPersonRepository;
 
     private final BarnUnder18AarService barnUnder18AarService;
     private final PdlPortefoljeClient pdlClient;
-    
+
     public void hentOgLagrePdlData(AktorId aktorId) {
         List<PDLIdent> identer = hentOgLagreIdenter(aktorId);
         Fnr fnr = hentAktivFnr(identer);
@@ -68,7 +68,7 @@ public class PdlService {
     }
 
     @Transactional
-    public void slettPdlData(AktorId aktorId) {
+    public void slettOppfolgingData(AktorId aktorId) {
         String lokalIdent = pdlIdentRepository.hentPerson(aktorId.get());
         List<PDLIdent> identer = pdlIdentRepository.hentIdenter(lokalIdent);
         List<AktorId> aktorIds = identer.stream()
@@ -118,6 +118,25 @@ public class PdlService {
                 .findAny()
                 .orElseThrow(() -> new IllegalStateException("Ingen aktiv fnr på bruker"));
     }
+
+    public List<AktorId> hentAlleAktoerForBruker(AktorId aktoerId) {
+        List<PDLIdent> alleIdenterForBruker = pdlIdentRepository.hentAlleIdenterForAktorId(aktoerId);
+        return alleIdenterForBruker
+                .stream()
+                .filter(x -> x.getGruppe() == PDLIdent.Gruppe.AKTORID)
+                .map(PDLIdent::getIdent).map(AktorId::of)
+                .toList();
+    }
+
+    public List<Fnr> hentAlleFolkeregistreIdenterForBruker(AktorId aktoerId) {
+        List<PDLIdent> alleIdenterForBruker = pdlIdentRepository.hentAlleIdenterForAktorId(aktoerId);
+        return alleIdenterForBruker
+                .stream()
+                .filter(x -> x.getGruppe() == PDLIdent.Gruppe.FOLKEREGISTERIDENT)
+                .map(PDLIdent::getIdent).map(Fnr::new)
+                .toList();
+    }
+
 
     public Map<Fnr, List<Statsborgerskap>> hentStatsborgerskap(List<Fnr> fnrs) {
         return pdlPersonRepository.hentGyldigeStatsborgerskapData(fnrs);

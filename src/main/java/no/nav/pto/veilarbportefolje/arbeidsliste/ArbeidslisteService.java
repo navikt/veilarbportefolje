@@ -12,11 +12,10 @@ import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,8 +29,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
 @RequiredArgsConstructor
-public class ArbeidslisteService {
-    private static final Logger log = LoggerFactory.getLogger(ArbeidslisteService.class);
+public class ArbeidslisteService implements HandtereOppfolgingData<AktorId> {
 
     private final AktorClient aktorClient;
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
@@ -85,7 +83,8 @@ public class ArbeidslisteService {
         slettArbeidslisteOgFargekategori(aktoerId.get(), Optional.of(fnr));
     }
 
-    public void slettArbeidsliste(AktorId aktoerId) {
+    @Override
+    public void slettOppfolgingData(AktorId aktoerId) {
         arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);
     }
 
@@ -167,4 +166,5 @@ public class ArbeidslisteService {
 
         return navkontorForBrukerUlikNavkontorForArbeidsliste;
     }
+
 }

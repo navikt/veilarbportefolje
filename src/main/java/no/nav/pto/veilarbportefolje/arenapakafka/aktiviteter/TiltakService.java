@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.postgres.utils.TiltakaktivitetEntity;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -29,7 +30,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TiltakService {
+public class TiltakService implements HandtereOppfolgingData<AktorId> {
     private static final LocalDate LANSERING_AV_OVERSIKTEN = LocalDate.of(2017, 12, 4);
     private final TiltakRepositoryV3 tiltakRepositoryV3;
     private final AktorClient aktorClient;
@@ -167,6 +168,10 @@ public class TiltakService {
                 () ->
                         tiltakRepositoryV3.hentTiltakPaEnhet(enhet)
         );
+    }
+
+    public void slettOppfolgingData(AktorId aktorId) {
+        tiltakRepositoryV3.slettOppfolgingData(aktorId);
     }
 
     private boolean erGammelMelding(TiltakDTO kafkaMelding, TiltakInnhold innhold) {

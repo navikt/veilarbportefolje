@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
@@ -24,7 +25,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @RequiredArgsConstructor
 @Service
-public class HuskelappService {
+public class HuskelappService implements HandtereOppfolgingData<Fnr> {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final AktorClient aktorClient;
     private final BrukerServiceV2 brukerServiceV2;
@@ -114,7 +115,7 @@ public class HuskelappService {
         }
     }
 
-    public void slettAlleHuskelapperPaaBruker(Fnr fnr) {
+    public void slettOppfolgingData(Fnr fnr) {
         try {
             secureLog.info("Sletter alle huskelapper paa bruker med fnr: " + fnr);
             huskelappRepository.slettAlleHuskelappRaderPaaBruker(fnr);

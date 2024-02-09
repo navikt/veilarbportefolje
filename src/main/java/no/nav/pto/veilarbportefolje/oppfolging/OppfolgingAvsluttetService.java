@@ -4,25 +4,30 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
+import no.nav.pto.veilarbportefolje.cv.CVService;
+import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 
@@ -36,48 +41,38 @@ public class OppfolgingAvsluttetService {
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final RegistreringService registreringService;
     private final EndringIRegistreringService endringIRegistreringService;
-    private final CVRepositoryV2 cvRepositoryV2;
+    private final CVService cvService;
     private final PdlService pdlService;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final SisteEndringService sisteEndringService;
     private final Siste14aVedtakService siste14aVedtakService;
     private final EnsligeForsorgereService ensligeForsorgereService;
-    private final PdlIdentRepository pdlIdentRepository;
     private final ProfileringService profileringService;
+    private final OppfolgingsbrukerServiceV2 oppfolgingsbrukerService;
+    private final DialogService dialogService;
+    private final GruppeAktivitetService gruppeAktivitetService;
+    private final SkjermingService skjermingService;
+    private final YtelsesService ytelsesService;
+    private final TiltakService tiltakService;
+    private final AktivitetService aktivitetService;
 
-
+    @Transactional
     public void avsluttOppfolging(AktorId aktoerId) {
-        List<PDLIdent> alleIdenterForBruker = pdlIdentRepository.hentAlleIdenterForAktorId(aktoerId);
-        List<AktorId> alleAktoerIdForBruker = alleIdenterForBruker
-                .stream()
-                .filter(x -> x.getGruppe() == Gruppe.AKTORID)
-                .map(PDLIdent::getIdent).map(AktorId::of)
-                .toList();
-        List<Fnr> alleFolkeregisterIdenterForBruker = alleIdenterForBruker
-                .stream()
-                .filter(x -> x.getGruppe() == Gruppe.FOLKEREGISTERIDENT)
-                .map(PDLIdent::getIdent)
-                .map(Fnr::new)
-                .toList();
+        List<AktorId> alleAktoerIdForBruker = pdlService.hentAlleAktoerForBruker(aktoerId);
+        List<Fnr> alleFolkeregisterIdenterForBruker = pdlService.hentAlleFolkeregistreIdenterForBruker(aktoerId);
 
-        alleAktoerIdForBruker.forEach((aktorId) -> {
-            oppfolgingRepositoryV2.slettOppfolgingData(aktorId);
-            registreringService.slettRegistering(aktorId);
-            endringIRegistreringService.slettEndringIRegistering(aktorId);
-            arbeidslisteService.slettArbeidsliste(aktorId);
-            sisteEndringService.slettSisteEndringer(aktorId);
-            cvRepositoryV2.resetHarDeltCV(aktorId);
-            siste14aVedtakService.slettSiste14aVedtak(aktorId.get());
-            pdlService.slettPdlData(aktorId);
-            ensligeForsorgereService.slettEnsligeForsorgereData(aktorId);
-            profileringService.slettProfileringData(aktorId);
-            // TODO: Delete from rest of the tables which are missing
-        });
+        List<HandtereOppfolgingData<AktorId>> oppfolgingServicesAktorId
+                = List.of(oppfolgingRepositoryV2, registreringService, endringIRegistreringService, arbeidslisteService,
+                sisteEndringService, cvService, siste14aVedtakService, profileringService, dialogService,
+                gruppeAktivitetService, ytelsesService, tiltakService, aktivitetService, pdlService);
 
-        alleFolkeregisterIdenterForBruker.forEach(folkeregisterIdent -> {
-            huskelappService.slettAlleHuskelapperPaaBruker(folkeregisterIdent);
-            fargekategoriService.fjernFargekategoriForBruker(folkeregisterIdent);
-        });
+        List<HandtereOppfolgingData<Fnr>> oppfolgingServicesFnr = List.of(huskelappService, fargekategoriService,
+                oppfolgingsbrukerService, skjermingService, ensligeForsorgereService);
+
+
+        alleAktoerIdForBruker.forEach((aktorId) -> oppfolgingServicesAktorId.forEach(x -> x.slettOppfolgingData(aktorId)));
+
+        alleFolkeregisterIdenterForBruker.forEach(folkeregisterIdent -> oppfolgingServicesFnr.forEach(x -> x.slettOppfolgingData(folkeregisterIdent)));
 
         opensearchIndexerV2.slettDokumenter(alleAktoerIdForBruker);
         secureLog.info(

@@ -87,4 +87,8 @@ public class YtelsesRepositoryV2 {
 
         return db.queryForList(brukereSomStarterIDag, AktorId.class);
     }
+
+    public void slettOppfolgingData(AktorId aktorId) {
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTORID), aktorId.get());
+    }
 }

@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Stønadstype;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsstønadArbeidsoppfølging;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.mapping.AktivitetsTypeTilAktivitetsplikt;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,8 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakOvergangsstønadArbeidsoppfølging> {
+public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakOvergangsstønadArbeidsoppfølging>
+        implements HandtereOppfolgingData<Fnr> {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final EnsligeForsorgereRepository ensligeForsorgereRepository;
 
@@ -77,12 +79,9 @@ public class EnsligeForsorgereService extends KafkaCommonConsumerService<VedtakO
         return result;
     }
 
-    public void slettEnsligeForsorgereData(AktorId aktorId) {
-        Fnr fnr = aktorClient.hentFnr(aktorId);
+    public void slettOppfolgingData(Fnr fnr) {
+        ensligeForsorgereRepository.fjernTidligereOvergangsstønadVedtak(fnr.get());
 
-        if (fnr != null) {
-            ensligeForsorgereRepository.fjernTidligereOvergangsstønadVedtak(fnr.get());
-        }
     }
 
     private EnsligeForsorgerOvergangsstønadTiltakDto getEnsligeForsorgereDto(EnsligeForsorgerOvergangsstønadTiltak ensligeForsorgerOvergangsstønadTiltak) {

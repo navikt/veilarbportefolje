@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
@@ -24,7 +25,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class SisteEndringService {
+public class SisteEndringService implements HandtereOppfolgingData<AktorId> {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final SisteEndringRepositoryV2 sisteEndringRepositoryV2;
 
@@ -70,7 +71,7 @@ public class SisteEndringService {
         }
     }
 
-    public void slettSisteEndringer(AktorId aktoerId) {
+    public void slettOppfolgingData(AktorId aktoerId) {
         sisteEndringRepositoryV2.slettSisteEndringer(aktoerId);
     }
 

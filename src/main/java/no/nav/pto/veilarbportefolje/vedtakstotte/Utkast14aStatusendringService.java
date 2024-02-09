@@ -45,4 +45,8 @@ public class Utkast14aStatusendringService extends KafkaCommonConsumerService<Ka
     private void oppdaterUtkast(Kafka14aStatusendring melding) {
         utkast14aStatusRepository.update(melding);
     }
+
+    public void slettOppfolgingData(AktorId aktorId) {
+        utkast14aStatusRepository.slettUtkastForBruker(aktorId.get());
+    }
 }

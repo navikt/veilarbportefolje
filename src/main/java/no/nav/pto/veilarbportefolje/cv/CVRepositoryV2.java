@@ -54,7 +54,7 @@ public class CVRepositoryV2 {
         ).orElse(false);
     }
 
-    public int resetHarDeltCV(AktorId aktoerId) {
+    public int slettOppfolgingData(AktorId aktoerId) {
         secureLog.info("resetter CV for bruker: {}", aktoerId.get());
         final String updateSql = String.format(
                 "UPDATE %s SET %s = ? WHERE %s = ?",

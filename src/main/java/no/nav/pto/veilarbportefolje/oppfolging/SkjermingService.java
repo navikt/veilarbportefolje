@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SkjermingService {
+public class SkjermingService implements HandtereOppfolgingData<Fnr> {
     private final SkjermingRepository skjermingRepository;
     private final BrukerServiceV2 brukerService;
     private final OpensearchIndexerV2 opensearchIndexerV2;
@@ -62,4 +63,10 @@ public class SkjermingService {
                 opensearchIndexerV2.updateErSkjermet(aktorId, erSkjermet)
         );
     }
+
+    public void slettOppfolgingData(Fnr fnr) {
+        skjermingRepository.deleteSkjermingData(fnr);
+    }
+
+
 }
