@@ -11,6 +11,8 @@ import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
+import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 
@@ -39,22 +42,40 @@ public class OppfolgingAvsluttetService {
     private final Siste14aVedtakService siste14aVedtakService;
     private final EnsligeForsorgereService ensligeForsorgereService;
     private final PdlIdentRepository pdlIdentRepository;
+    private final ProfileringService profileringService;
 
     public void avsluttOppfolging(AktorId aktoerId) {
-        Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnr(aktoerId));
+        List<PDLIdent> alleIdenterForBruker = pdlIdentRepository.hentAlleIdenterForAktorId(aktoerId);
+        List<AktorId> alleAktoerIdForBruker = alleIdenterForBruker
+                .stream()
+                .filter(x -> x.getGruppe() == Gruppe.AKTORID)
+                .map(PDLIdent::getIdent).map(AktorId::of)
+                .toList();
+        List<Fnr> alleFolkeregisterIdenterForBruker = alleIdenterForBruker
+                .stream()
+                .filter(x -> x.getGruppe() == Gruppe.FOLKEREGISTERIDENT)
+                .map(PDLIdent::getIdent)
+                .map(Fnr::new)
+                .toList();
 
-        oppfolgingRepositoryV2.slettOppfolgingData(aktoerId);
-        registreringService.slettRegistering(aktoerId);
-        endringIRegistreringService.slettEndringIRegistering(aktoerId);
-        arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr);
-        huskelappService.slettAlleHuskelapperPaaBruker(aktoerId, maybeFnr);
-        sisteEndringService.slettSisteEndringer(aktoerId);
-        cvRepositoryV2.resetHarDeltCV(aktoerId);
-        siste14aVedtakService.slettSiste14aVedtak(aktoerId.get());
-        pdlService.slettPdlData(aktoerId);
-        ensligeForsorgereService.slettEnsligeForsorgereData(aktoerId);
+        for (AktorId aktorId : alleAktoerIdForBruker) {
+            Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnr(aktoerId));
 
-        opensearchIndexerV2.slettDokumenter(List.of(aktoerId));
-        secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);
+            oppfolgingRepositoryV2.slettOppfolgingData(aktorId);
+            registreringService.slettRegistering(aktorId);
+            endringIRegistreringService.slettEndringIRegistering(aktorId);
+            arbeidslisteService.slettArbeidsliste(aktorId, maybeFnr);
+            huskelappService.slettAlleHuskelapperPaaBruker(aktorId, maybeFnr);
+            sisteEndringService.slettSisteEndringer(aktorId);
+            cvRepositoryV2.resetHarDeltCV(aktorId);
+            siste14aVedtakService.slettSiste14aVedtak(aktorId.get());
+            pdlService.slettPdlData(aktorId);
+            ensligeForsorgereService.slettEnsligeForsorgereData(aktorId);
+            profileringService.slettProfileringData(aktorId);
+
+            opensearchIndexerV2.slettDokumenter(List.of(aktorId));
+            secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktorId);
+        }
+
     }
 }
