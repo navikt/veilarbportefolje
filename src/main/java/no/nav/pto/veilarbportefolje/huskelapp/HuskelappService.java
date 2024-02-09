@@ -114,6 +114,16 @@ public class HuskelappService {
         }
     }
 
+    public void slettAlleHuskelapperPaaBruker(Fnr fnr) {
+        try {
+            secureLog.info("Sletter alle huskelapper paa bruker med fnr: " + fnr);
+            huskelappRepository.slettAlleHuskelappRaderPaaBruker(fnr);
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke slette huskelapper for fnr: " + fnr.toString());
+            throw new RuntimeException("Kunne ikke slette huskelapper", e);
+        }
+    }
+
     public boolean brukerHarHuskelappPaForrigeNavkontor(AktorId aktoerId) {
 
         Fnr fnrBruker = aktorClient.hentFnr(aktoerId);

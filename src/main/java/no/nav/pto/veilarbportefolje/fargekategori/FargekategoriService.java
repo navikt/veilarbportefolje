@@ -85,6 +85,10 @@ public class FargekategoriService {
                 .orElse(false);
     }
 
+    public void fjernFargekategoriForBruker(Fnr fnr) {
+        fargekategoriRepository.deleteFargekategori(fnr);
+    }
+
     private Try<AktorId> hentAktorId(Fnr fnr) {
         return Try.of(() -> aktorClient.hentAktorId(fnr));
     }

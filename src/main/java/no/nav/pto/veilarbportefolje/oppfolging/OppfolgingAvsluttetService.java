@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
+import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
@@ -32,6 +33,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class OppfolgingAvsluttetService {
     private final ArbeidslisteService arbeidslisteService;
     private final HuskelappService huskelappService;
+    private final FargekategoriService fargekategoriService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final RegistreringService registreringService;
     private final EndringIRegistreringService endringIRegistreringService;
@@ -43,6 +45,7 @@ public class OppfolgingAvsluttetService {
     private final EnsligeForsorgereService ensligeForsorgereService;
     private final PdlIdentRepository pdlIdentRepository;
     private final ProfileringService profileringService;
+
 
     public void avsluttOppfolging(AktorId aktoerId) {
         List<PDLIdent> alleIdenterForBruker = pdlIdentRepository.hentAlleIdenterForAktorId(aktoerId);
@@ -65,13 +68,15 @@ public class OppfolgingAvsluttetService {
             registreringService.slettRegistering(aktorId);
             endringIRegistreringService.slettEndringIRegistering(aktorId);
             arbeidslisteService.slettArbeidsliste(aktorId, maybeFnr);
-            huskelappService.slettAlleHuskelapperPaaBruker(aktorId, maybeFnr);
+            maybeFnr.ifPresent(huskelappService::slettAlleHuskelapperPaaBruker);
+            maybeFnr.ifPresent(fargekategoriService::fjernFargekategoriForBruker);
             sisteEndringService.slettSisteEndringer(aktorId);
             cvRepositoryV2.resetHarDeltCV(aktorId);
             siste14aVedtakService.slettSiste14aVedtak(aktorId.get());
             pdlService.slettPdlData(aktorId);
             ensligeForsorgereService.slettEnsligeForsorgereData(aktorId);
             profileringService.slettProfileringData(aktorId);
+
 
             opensearchIndexerV2.slettDokumenter(List.of(aktorId));
             secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktorId);
