@@ -251,6 +251,12 @@
           },
           "frist": {
             "type": "date"
+          },
+          "endretDato": {
+            "type": "date"
+          },
+          "endretAv": {
+            "type": "keyword"
           }
         }
       }

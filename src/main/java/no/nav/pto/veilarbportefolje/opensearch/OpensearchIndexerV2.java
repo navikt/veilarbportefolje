@@ -99,6 +99,8 @@ public class OpensearchIndexerV2 {
                 .startObject("huskelapp")
                 .field("frist", huskelapp.frist())
                 .field("kommentar", huskelapp.kommentar())
+                .field("endretAv", huskelapp.endretAv())
+                .field("endretDato", huskelapp.endretDato())
                 .endObject()
                 .endObject();
 
