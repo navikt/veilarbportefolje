@@ -44,7 +44,7 @@ public class FargekategoriController {
         try {
             Optional<FargekategoriEntity> kanskjeFargekategori = fargekategoriService.hentFargekategoriForBruker(request);
 
-            return kanskjeFargekategori.map(ResponseEntity::ok).orElseThrow();
+            return kanskjeFargekategori.map(ResponseEntity::ok).orElse(ResponseEntity.ok(null));
         } catch (Exception e) {
             String melding = String.format("Klarte ikke å hente fargekategori for fnr %s", request.fnr.get());
             secureLog.error(melding, e);
