@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,9 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.FARGEKATEGORI.*;
 import static no.nav.pto.veilarbportefolje.fargekategori.FargekategoriControllerTestConfig.TESTBRUKER_AKTOR_ID;
@@ -341,6 +344,124 @@ public class FargekategoriControllerTest {
         assertThat(oppdatertFargekategoriEntity).isNull();
     }
 
+    @Test
+    void batchoppretting_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
+        String opprettMangeRequest = """
+                {
+                  "fnr":"[11111111111, 22222222222, 33333333333]",
+                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                }
+                """;
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategorier")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(opprettMangeRequest)
+                )
+                .andExpect(status().is(204));
+    }
+
+    @Test
+    void batchoppretting_av_fargekategori_skal_gi_riktig_tilstand_i_db() throws Exception {
+        String fnr1 = "11111111111";
+        String fnr2 = "22222222222";
+        String fnr3 = "33333333333";
+        List<String> fnrliste = List.of(fnr1, fnr2, fnr3);
+
+        String opprettMangeRequest = """
+                {
+                  "fnr":"[$fnr1, $fnr2, $fnr3]",
+                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                }
+                """.replace("$fnr1", fnr1)
+                .replace("$fnr2", fnr2)
+                .replace("$fnr3", fnr3);
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategorier")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(opprettMangeRequest)
+                )
+                .andExpect(status().is(204));
+
+        List<FargekategoriEntity> opprettedeFargekategorier = hentListeAvFargekategorier(fnrliste);
+
+        assertThat(opprettedeFargekategorier.size()).isEqualTo(fnrliste.size());
+        opprettedeFargekategorier.forEach(fargekategori ->
+                assertThat(fargekategori.fargekategoriVerdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_B)
+        );
+
+        List<String> kategorifødselsnummer = opprettedeFargekategorier.stream().map(fargekategori -> fargekategori.fnr().get()).toList();
+        fnrliste.forEach(fnr -> {
+                    assertThat(kategorifødselsnummer.contains(fnr)).isTrue();
+                }
+        );
+    }
+
+    @Test
+    void batchoppretting_av_fargekategori_skal_funke_når_en_bruker_allerede_har_fargekategori() throws Exception {
+        String fnr1 = "11111111111";
+        String fnr2 = "22222222222";
+        String fnr3 = "33333333333";
+        List<String> fnrliste = List.of(fnr1, fnr2, fnr3);
+
+        FargekategoriVerdi fargekategoriVerdiFnr1Gammel = FargekategoriVerdi.FARGEKATEGORI_A;
+        FargekategoriVerdi fargekategoriVerdiNy = FargekategoriVerdi.FARGEKATEGORI_B;
+
+        String eksisterendeFargekategoriSql = """
+                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
+                    VALUES (?, ?, ?, ?, ?)
+                """;
+
+        jdbcTemplate.update(eksisterendeFargekategoriSql,
+                UUID.randomUUID(),
+                fnr1,
+                fargekategoriVerdiFnr1Gammel.name(),
+                toTimestamp(LocalDate.now()),
+                AuthUtils.getInnloggetVeilederIdent().getValue());
+
+        String opprettMangeRequest = """
+                {
+                  "fnr":"[$fnr1, $fnr2, $fnr3]",
+                  "fargekategoriVerdi":"$fargekategori"
+                }
+                """.replace("$fnr1", fnr1)
+                .replace("$fnr2", fnr2)
+                .replace("$fnr3", fnr3)
+                .replace("$fargekategori", fargekategoriVerdiNy.name());
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategorier")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(opprettMangeRequest)
+                )
+                .andExpect(status().is(204));
+
+        List<FargekategoriEntity> opprettedeFargekategorier = hentListeAvFargekategorier(fnrliste);
+
+        assertThat(opprettedeFargekategorier.size()).isEqualTo(fnrliste.size());
+        opprettedeFargekategorier.forEach(fargekategori ->
+                assertThat(fargekategori.fargekategoriVerdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_B)
+        );
+
+        List<String> kategorifødselsnummer = opprettedeFargekategorier.stream().map(fargekategori -> fargekategori.fnr().get()).toList();
+        fnrliste.forEach(fnr -> {
+                    assertThat(kategorifødselsnummer.contains(fnr)).isTrue();
+                }
+        );
+    }
+
+    private List<FargekategoriEntity> hentListeAvFargekategorier(List<String> fnrliste) {
+        return fnrliste.stream().map(fnr ->
+                queryForObjectOrNull(() -> {
+                    return jdbcTemplate.queryForObject(
+                            "SELECT * FROM fargekategori WHERE fnr=?",
+                            mapTilFargekategoriEntity(),
+                            fnr);
+                })
+        ).collect(Collectors.toList());
+    }
+
     @NotNull
     private static RowMapper<FargekategoriEntity> mapTilFargekategoriEntity() {
         return (resultSet, rowNum) -> new FargekategoriEntity(
@@ -351,7 +472,6 @@ public class FargekategoriControllerTest {
                 NavIdent.of(resultSet.getString(SIST_ENDRET_AV_VEILEDERIDENT))
         );
     }
-
 
     @BeforeEach
     void setup() {
