@@ -111,6 +111,25 @@ public class FargekategoriControllerTest {
     }
 
     @Test
+    void henting_av_fargekategori_skal_returnere_forventet_respons_når_bruker_ikke_har_fargekategori() throws Exception {
+        Fnr fnr = TESTBRUKER_FNR;
+
+        String request = """
+                {
+                  "fnr": "$fnr"
+                }
+                """.replace("$fnr", fnr.get());
+
+        mockMvc.perform(
+                        post("/api/v1/hent-fargekategori")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(request)
+                )
+                .andExpect(status().is(200))
+                .andExpect(content().string(""));
+    }
+
+    @Test
     void opprettelse_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
         String request = """
                 {
