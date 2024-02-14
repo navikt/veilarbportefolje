@@ -11,7 +11,7 @@ class DataminimeringRepository(private val jdbcTemplate: JdbcTemplate) {
     /**
      * Sletter data i bruker_profilering-tabell for brukere som ikke er under oppfølging
      */
-    fun slettBrukerProfileringData() {
+    fun slettBrukerProfileringData(): Int {
         //language=postgresql
         val sqlQuery = """
             DELETE FROM ${BRUKER_PROFILERING.TABLE_NAME} WHERE ${BRUKER_PROFILERING.AKTOERID} NOT IN (
@@ -19,6 +19,6 @@ class DataminimeringRepository(private val jdbcTemplate: JdbcTemplate) {
             )
             """.trimIndent()
 
-        jdbcTemplate.update(sqlQuery)
+        return jdbcTemplate.update(sqlQuery)
     }
 }
