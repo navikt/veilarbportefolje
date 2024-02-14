@@ -346,7 +346,7 @@ public class FargekategoriControllerTest {
     void batchoppretting_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
         String opprettMangeRequest = """
                 {
-                  "fnr":"[11111111111,22222222222,33333333333]",
+                  "fnr":["11111111111","22222222222","33333333333"],
                   "fargekategoriVerdi":"FARGEKATEGORI_B"
                 }
                 """;
@@ -368,7 +368,7 @@ public class FargekategoriControllerTest {
 
         String opprettMangeRequest = """
                 {
-                  "fnr":"[$fnr1, $fnr2, $fnr3]",
+                  "fnr":[$fnr1, $fnr2, $fnr3],
                   "fargekategoriVerdi":"FARGEKATEGORI_B"
                 }
                 """.replace("$fnr1", fnr1)
@@ -420,7 +420,7 @@ public class FargekategoriControllerTest {
 
         String opprettMangeRequest = """
                 {
-                  "fnr":"[$fnr1, $fnr2, $fnr3]",
+                  "fnr":[$fnr1, $fnr2, $fnr3],
                   "fargekategoriVerdi":"$fargekategori"
                 }
                 """.replace("$fnr1", fnr1)
@@ -448,6 +448,8 @@ public class FargekategoriControllerTest {
                 }
         );
     }
+
+    //TODO test for å sjekke at batchsletting av fargekategori går fint
 
     private List<FargekategoriEntity> hentListeAvFargekategorier(List<String> fnrliste) {
         return fnrliste.stream().map(fnr ->
@@ -479,9 +481,11 @@ public class FargekategoriControllerTest {
 
         testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER_AKTOR_ID, TESTBRUKER_FNR, TESTENHET, VeilederId.of(TESTVEILEDER.get()));
         testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER2_AKTOR_ID, TESTBRUKER2_FNR, TESTENHET, VeilederId.of(TESTVEILEDER.get()));
-        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER3_AKTOR_ID, TESTBRUKER3_FNR, TESTENHET2, VeilederId.of(TESTVEILEDER.get()));
+        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER3_AKTOR_ID, TESTBRUKER3_FNR, TESTENHET, VeilederId.of(TESTVEILEDER.get()));
 
         when(aktorClient.hentAktorId(TESTBRUKER_FNR)).thenReturn(TESTBRUKER_AKTOR_ID);
+        when(aktorClient.hentAktorId(TESTBRUKER2_FNR)).thenReturn(TESTBRUKER2_AKTOR_ID);
+        when(aktorClient.hentAktorId(TESTBRUKER3_FNR)).thenReturn(TESTBRUKER3_AKTOR_ID);
         doNothing().when(authService).tilgangTilOppfolging();
         doNothing().when(authService).tilgangTilBruker(TESTBRUKER_FNR.get());
         doNothing().when(authService).tilgangTilEnhet(TESTENHET.getValue());
