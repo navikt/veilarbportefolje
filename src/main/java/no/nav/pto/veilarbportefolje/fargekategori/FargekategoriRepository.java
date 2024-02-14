@@ -86,4 +86,32 @@ public class FargekategoriRepository {
             }
         });
     }
+
+    public void batchupsertFargekategori(FargekategoriController.BatchoppdaterFargekategoriRequest request, VeilederId sisteEndretAv) {
+        String upsertSql = """
+                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON CONFLICT (fnr) DO UPDATE
+                    SET verdi=?, sist_endret=?, sist_endret_av_veilederident=?
+                """;
+
+        jdbcTemplate.batchUpdate(upsertSql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setObject(1, UUID.randomUUID().toString(), java.sql.Types.OTHER);
+                ps.setString(2, request.fnr().get(i).get());
+                ps.setString(3, request.fargekategoriVerdi().name());
+                ps.setTimestamp(4, toTimestamp(ZonedDateTime.now()));
+                ps.setString(5, sisteEndretAv.getValue());
+                ps.setString(6, request.fargekategoriVerdi().name());
+                ps.setTimestamp(7, toTimestamp(ZonedDateTime.now()));
+                ps.setString(8, sisteEndretAv.getValue());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return request.fnr().size();
+            }
+        });
+    }
 }

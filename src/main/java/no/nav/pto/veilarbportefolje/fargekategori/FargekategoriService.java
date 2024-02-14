@@ -33,8 +33,6 @@ public class FargekategoriService {
     private final BrukerServiceV2 brukerServiceV2;
 
     public Optional<FargekategoriEntity> hentFargekategoriForBruker(FargekategoriController.HentFargekategoriRequest request) {
-        // TODO skal vi returnere FARGEKATEGORIVERDI.INGEN_KATEGORI om vi ikkje finn kategori i databasen?
-
         return fargekategoriRepository.hentFargekategoriForBruker(request.fnr());
     }
 
@@ -48,35 +46,33 @@ public class FargekategoriService {
         } else {
             UUID oppdatertKategori = fargekategoriRepository.upsertFargekateori(request, sistEndretAv);
 
-            AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorId(request.fnr())).orElseThrow(RuntimeException::new);
-            opensearchIndexerV2.updateFargekategori(aktorId, request.fargekategoriVerdi().name());
+            oppdaterIOpensearch(request.fnr(), request.fargekategoriVerdi());
 
             return Optional.of(oppdatertKategori);
         }
     }
 
-    public Optional<UUID> batchoppdaterFargekategoriForBruker(FargekategoriController.BatchoppdaterFargekategoriRequest request, VeilederId innloggetVeileder) {
+    public void batchoppdaterFargekategoriForBruker(FargekategoriController.BatchoppdaterFargekategoriRequest request, VeilederId innloggetVeileder) {
         if (request.fargekategoriVerdi() == FargekategoriVerdi.INGEN_KATEGORI) {
             fargekategoriRepository.batchdeleteFargekategori(request.fnr());
 
             request.fnr().forEach(this::slettIOpensearch);
 
-            return Optional.empty();
         } else {
-//            TODO implementer oppdatering
-//            UUID oppdatertKategori = fargekategoriRepository.upsertFargekateori(request, sistEndretAv);
-//
-//            AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorId(request.fnr())).orElseThrow(RuntimeException::new);
-//            opensearchIndexerV2.updateFargekategori(aktorId, request.fargekategoriVerdi().name());
-//
-//            return Optional.of(oppdatertKategori);
-            return Optional.empty();
+            fargekategoriRepository.batchupsertFargekategori(request, innloggetVeileder);
+
+            request.fnr().forEach(fnr -> oppdaterIOpensearch(fnr, request.fargekategoriVerdi()));
         }
     }
 
     private void slettIOpensearch(Fnr fnr) {
         AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorId(fnr)).orElseThrow(RuntimeException::new);
         opensearchIndexerV2.slettFargekategori(aktorId);
+    }
+
+    private void oppdaterIOpensearch(Fnr fnr, FargekategoriVerdi fargekategoriVerdi) {
+        AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorId(fnr)).orElseThrow(RuntimeException::new);
+        opensearchIndexerV2.updateFargekategori(aktorId, fargekategoriVerdi.name());
     }
 
     public Validation<String, Fnr> erVeilederForBruker(String fnr) {

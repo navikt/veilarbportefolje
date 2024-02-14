@@ -369,7 +369,7 @@ public class FargekategoriControllerTest {
 
         String opprettMangeRequest = """
                 {
-                  "fnr":[$fnr1, $fnr2, $fnr3],
+                  "fnr":["$fnr1","$fnr2","$fnr3"],
                   "fargekategoriVerdi":"FARGEKATEGORI_B"
                 }
                 """.replace("$fnr1", fnr1)
@@ -398,7 +398,7 @@ public class FargekategoriControllerTest {
     }
 
     @Test
-    void batchoppretting_av_fargekategori_skal_funke_når_en_bruker_allerede_har_fargekategori() throws Exception {
+    void batchoppdatering_av_fargekategori_skal_funke_når_en_bruker_allerede_har_fargekategori_og_andre_ikke() throws Exception {
         String fnr1 = "11111111111";
         String fnr2 = "22222222222";
         String fnr3 = "33333333333";
@@ -421,7 +421,7 @@ public class FargekategoriControllerTest {
 
         String opprettMangeRequest = """
                 {
-                  "fnr":[$fnr1, $fnr2, $fnr3],
+                  "fnr":["$fnr1","$fnr2","$fnr3"],
                   "fargekategoriVerdi":"$fargekategori"
                 }
                 """.replace("$fnr1", fnr1)
