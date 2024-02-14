@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +28,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.FARGEKATEGORI.*;
-import static no.nav.pto.veilarbportefolje.fargekategori.FargekategoriControllerTestConfig.TESTBRUKER_AKTOR_ID;
-import static no.nav.pto.veilarbportefolje.fargekategori.FargekategoriControllerTestConfig.TESTBRUKER_FNR;
+import static no.nav.pto.veilarbportefolje.fargekategori.FargekategoriControllerTestConfig.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
@@ -182,7 +180,7 @@ public class FargekategoriControllerTest {
         assertThat(opprettetFargekategoriEntity.fargekategoriVerdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_A);
         // sistEndret genereres så vi sjekker bare på tilstedeværelse
         assertThat(opprettetFargekategoriEntity.sistEndret()).isNotNull();
-        assertThat(opprettetFargekategoriEntity.endretAv()).isEqualTo(FargekategoriControllerTestConfig.TESTVEILEDER);
+        assertThat(opprettetFargekategoriEntity.endretAv()).isEqualTo(TESTVEILEDER);
     }
 
     @Test
@@ -348,7 +346,7 @@ public class FargekategoriControllerTest {
     void batchoppretting_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
         String opprettMangeRequest = """
                 {
-                  "fnr":"[11111111111, 22222222222, 33333333333]",
+                  "fnr":"[11111111111,22222222222,33333333333]",
                   "fargekategoriVerdi":"FARGEKATEGORI_B"
                 }
                 """;
@@ -479,11 +477,13 @@ public class FargekategoriControllerTest {
         jdbcTemplate.update("TRUNCATE fargekategori");
         jdbcTemplate.update("TRUNCATE oppfolgingsbruker_arena_v2");
 
-        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER_AKTOR_ID, TESTBRUKER_FNR, FargekategoriControllerTestConfig.TESTENHET, VeilederId.of(FargekategoriControllerTestConfig.TESTVEILEDER.get()));
+        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER_AKTOR_ID, TESTBRUKER_FNR, TESTENHET, VeilederId.of(TESTVEILEDER.get()));
+        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER2_AKTOR_ID, TESTBRUKER2_FNR, TESTENHET, VeilederId.of(TESTVEILEDER.get()));
+        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER3_AKTOR_ID, TESTBRUKER3_FNR, TESTENHET2, VeilederId.of(TESTVEILEDER.get()));
 
         when(aktorClient.hentAktorId(TESTBRUKER_FNR)).thenReturn(TESTBRUKER_AKTOR_ID);
         doNothing().when(authService).tilgangTilOppfolging();
         doNothing().when(authService).tilgangTilBruker(TESTBRUKER_FNR.get());
-        doNothing().when(authService).tilgangTilEnhet(FargekategoriControllerTestConfig.TESTENHET.getValue());
+        doNothing().when(authService).tilgangTilEnhet(TESTENHET.getValue());
     }
 }
