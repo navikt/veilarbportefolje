@@ -114,20 +114,20 @@ public class FargekategoriController {
 
         brukerenheter.forEach(enhet ->  authService.tilgangTilEnhet(enhet.getValue()));
 
-        return ResponseEntity.noContent().build();
-
-       /* try {
-            Optional<UUID> fargekategoriId = fargekategoriService.oppdaterFargekategoriForBruker(request, innloggetVeileder);
+        try {
+            Optional<UUID> fargekategoriId = fargekategoriService.batchoppdaterFargekategoriForBruker(request, innloggetVeileder);
 
             return fargekategoriId
                     .map(uuid -> ResponseEntity.ok(new FargekategoriResponse(uuid)))
                     .orElseGet(() -> ResponseEntity.status(204).build());
         } catch (Exception e) {
-            String melding = String.format("Klarte ikke å opprette/oppdatere fargekategori med verdi %s for fnr %s", request.fargekategoriVerdi.name(), request.fnr.get());
+            String melding = String.format("Klarte ikke å opprette/oppdatere fargekategori med verdi %s for fnr %s",
+                    request.fargekategoriVerdi.name(),
+                    request.fnr);
             secureLog.error(melding, e);
 
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }*/
+        }
     }
 
     private static void validerRequest(Fnr fnr) {

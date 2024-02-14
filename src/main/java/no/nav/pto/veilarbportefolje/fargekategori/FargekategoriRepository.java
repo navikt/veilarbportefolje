@@ -4,12 +4,16 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController.OppdaterFargekategoriRequest;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -67,4 +71,19 @@ public class FargekategoriRepository {
     }
 
 
+    public void batchdeleteFargekategori(List<Fnr> fnr) {
+        String deleteSql = "DELETE FROM fargekategori WHERE fnr=?";
+
+        jdbcTemplate.batchUpdate(deleteSql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setString(1, fnr.get(i).get());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return fnr.size();
+            }
+        });
+    }
 }

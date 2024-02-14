@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -449,7 +450,49 @@ public class FargekategoriControllerTest {
         );
     }
 
-    //TODO test for å sjekke at batchsletting av fargekategori går fint
+    @Test
+    void batchsletting_av_fargekategori_skal_funke() throws Exception {
+        String fnr1 = "11111111111";
+        String fnr2 = "22222222222";
+        String fnr3 = "33333333333";
+        List<String> fnrliste = List.of(fnr1, fnr2, fnr3);
+
+        FargekategoriVerdi fargekategoriVerdiFnr1Gammel = FargekategoriVerdi.FARGEKATEGORI_A;
+        FargekategoriVerdi fargekategoriVerdiNy = FargekategoriVerdi.INGEN_KATEGORI;
+
+        String eksisterendeFargekategoriSql = """
+                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
+                    VALUES (?, ?, ?, ?, ?)
+                """;
+
+        jdbcTemplate.update(eksisterendeFargekategoriSql,
+                UUID.randomUUID(),
+                fnr1,
+                fargekategoriVerdiFnr1Gammel.name(),
+                toTimestamp(LocalDate.now()),
+                AuthUtils.getInnloggetVeilederIdent().getValue());
+
+        String deleteMangeRequest = """
+                {
+                  "fnr":["$fnr1","$fnr2","$fnr3"],
+                  "fargekategoriVerdi":"$fargekategori"
+                }
+                """.replace("$fnr1", fnr1)
+                .replace("$fnr2", fnr2)
+                .replace("$fnr3", fnr3)
+                .replace("$fargekategori", fargekategoriVerdiNy.name());
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategorier")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(deleteMangeRequest)
+                )
+                .andExpect(status().is(204));
+
+        List<FargekategoriEntity> fargekategorierIDatabase = hentListeAvFargekategorier(fnrliste);
+
+        assertThat(fargekategorierIDatabase.size()).isEqualTo(0);
+    }
 
     private List<FargekategoriEntity> hentListeAvFargekategorier(List<String> fnrliste) {
         return fnrliste.stream().map(fnr ->
@@ -459,7 +502,7 @@ public class FargekategoriControllerTest {
                             mapTilFargekategoriEntity(),
                             fnr);
                 })
-        ).collect(Collectors.toList());
+        ).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     @NotNull
