@@ -58,4 +58,7 @@ public class ProfileringRepositoryV2 {
                 .build();
     }
 
+    public void slettProfileringData(AktorId aktorId) {
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktorId.get());
+    }
 }
