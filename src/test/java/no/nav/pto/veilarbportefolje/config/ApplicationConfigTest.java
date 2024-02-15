@@ -57,6 +57,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinne
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
+import no.nav.pto.veilarbportefolje.profilering.ProfileringRepositoryV2;
+import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringRepository;
@@ -167,7 +169,9 @@ import static org.mockito.Mockito.when;
         HuskelappService.class,
         HuskelappRepository.class,
         FargekategoriService.class,
-        FargekategoriRepository.class
+        FargekategoriRepository.class,
+        ProfileringService.class,
+        ProfileringRepositoryV2.class
 })
 public class ApplicationConfigTest {
 
