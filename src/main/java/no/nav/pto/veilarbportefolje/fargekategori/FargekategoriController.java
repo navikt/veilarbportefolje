@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -97,14 +99,16 @@ public class FargekategoriController {
         try {
             fargekategoriService.batchoppdaterFargekategoriForBruker(request.fargekategoriVerdi, responseEtterValidering.data, innloggetVeileder);
 
-            return ResponseEntity.ok(responseEtterValidering); // TODO ta bort fra "data" dei som ikkje vart oppdatert i db (ish)
+            return responseEtterValidering.data.isEmpty()
+                    ? ResponseEntity.status(403).body(responseEtterValidering)
+                    : ResponseEntity.ok(responseEtterValidering);
         } catch (Exception e) {
             String melding = String.format("Klarte ikke å opprette/oppdatere fargekategori med verdi %s for fnr %s",
                     request.fargekategoriVerdi.name(),
                     request.fnr);
             secureLog.error(melding, e);
 
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.internalServerError().body(new BatchUpsertResponse(Collections.emptyList(), request.fnr.stream().map(Id::get).collect(Collectors.toList())));
         }
     }
 
