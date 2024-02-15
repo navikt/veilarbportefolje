@@ -71,13 +71,13 @@ public class FargekategoriRepository {
     }
 
 
-    public void batchdeleteFargekategori(List<Fnr> fnr) {
+    public void batchdeleteFargekategori(List<String> fnr) {
         String deleteSql = "DELETE FROM fargekategori WHERE fnr=?";
 
         jdbcTemplate.batchUpdate(deleteSql, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setString(1, fnr.get(i).get());
+                ps.setString(1, fnr.get(i));
             }
 
             @Override
@@ -87,7 +87,7 @@ public class FargekategoriRepository {
         });
     }
 
-    public void batchupsertFargekategori(FargekategoriController.BatchoppdaterFargekategoriRequest request, VeilederId sisteEndretAv) {
+    public void batchupsertFargekategori(FargekategoriVerdi fargekategoriVerdi, List<String> fnr, VeilederId sisteEndretAv) {
         String upsertSql = """
                     INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
                     VALUES (?, ?, ?, ?, ?)
@@ -99,18 +99,18 @@ public class FargekategoriRepository {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 ps.setObject(1, UUID.randomUUID().toString(), java.sql.Types.OTHER);
-                ps.setString(2, request.fnr().get(i).get());
-                ps.setString(3, request.fargekategoriVerdi().name());
+                ps.setString(2, fnr.get(i));
+                ps.setString(3, fargekategoriVerdi.name());
                 ps.setTimestamp(4, toTimestamp(ZonedDateTime.now()));
                 ps.setString(5, sisteEndretAv.getValue());
-                ps.setString(6, request.fargekategoriVerdi().name());
+                ps.setString(6, fargekategoriVerdi.name());
                 ps.setTimestamp(7, toTimestamp(ZonedDateTime.now()));
                 ps.setString(8, sisteEndretAv.getValue());
             }
 
             @Override
             public int getBatchSize() {
-                return request.fnr().size();
+                return fnr.size();
             }
         });
     }

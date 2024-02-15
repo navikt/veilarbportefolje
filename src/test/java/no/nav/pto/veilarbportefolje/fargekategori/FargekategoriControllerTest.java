@@ -357,7 +357,9 @@ public class FargekategoriControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(opprettMangeRequest)
                 )
-                .andExpect(status().is(204));
+                .andExpect(status().is(200));
+
+        // TODO faktisk test forma på innhaldet
     }
 
     @Test
@@ -381,7 +383,7 @@ public class FargekategoriControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(opprettMangeRequest)
                 )
-                .andExpect(status().is(204));
+                .andExpect(status().is(200));
 
         List<FargekategoriEntity> opprettedeFargekategorier = hentListeAvFargekategorier(fnrliste);
 
@@ -434,7 +436,7 @@ public class FargekategoriControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(opprettMangeRequest)
                 )
-                .andExpect(status().is(204));
+                .andExpect(status().is(200));
 
         List<FargekategoriEntity> opprettedeFargekategorier = hentListeAvFargekategorier(fnrliste);
 
@@ -487,7 +489,7 @@ public class FargekategoriControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(deleteMangeRequest)
                 )
-                .andExpect(status().is(204));
+                .andExpect(status().is(200));
 
         List<FargekategoriEntity> fargekategorierIDatabase = hentListeAvFargekategorier(fnrliste);
 
