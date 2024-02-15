@@ -45,6 +45,10 @@ public class ProfileringRepositoryV2 {
         );
     }
 
+    public void slettProfileringData(AktorId aktorId) {
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktorId.get());
+    }
+
     @SneakyThrows
     private ArbeidssokerProfilertEvent mapTilArbeidssokerProfilertEvent(ResultSet rs, int i) {
         return ArbeidssokerProfilertEvent.newBuilder()
@@ -52,9 +56,5 @@ public class ProfileringRepositoryV2 {
                 .setProfileringGjennomfort(toZonedDateTime(rs.getTimestamp("PROFILERING_TIDSPUNKT")).format(ISO_ZONED_DATE_TIME))
                 .setProfilertTil(ProfilertTil.valueOf(rs.getString("PROFILERING_RESULTAT")))
                 .build();
-    }
-
-    public void slettProfileringData(AktorId aktorId) {
-        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktorId.get());
     }
 }
