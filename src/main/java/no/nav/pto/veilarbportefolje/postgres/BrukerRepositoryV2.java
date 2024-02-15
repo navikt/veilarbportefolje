@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteMapper;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
@@ -72,7 +73,9 @@ public class BrukerRepositoryV2 {
                                ARB.NAV_KONTOR_FOR_ARBEIDSLISTE  as ARB_NAV_KONTOR_FOR_ARBEIDSLISTE,
                                FAR.verdi                        as FAR_VERDI,
                                HL.frist							as HL_FRIST,
-                               HL.kommentar						as HL_KOMMENTAR
+                               HL.kommentar						as HL_KOMMENTAR,
+                               HL.endret_dato                   as HL_ENDRET_DATO,
+                               hl.endret_av_veileder            as HL_ENDRET_AV
                         FROM OPPFOLGING_DATA OD
                                 inner join aktive_identer ai on OD.aktoerid = ai.aktorid
                                  left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
@@ -223,8 +226,10 @@ public class BrukerRepositoryV2 {
     private void setHuskelapp(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
         LocalDate frist = toLocalDate(rs.getTimestamp(HL_FRIST));
         String kommentar = rs.getString(HL_KOMMENTAR);
+        LocalDate endretDato = toLocalDate(rs.getTimestamp(HL_ENDRET_DATO));
+        VeilederId endretAv = VeilederId.veilederIdOrNull(rs.getString(HL_ENDRET_AV));
         if (frist != null || kommentar != null) {
-            oppfolgingsBruker.setHuskelapp(new HuskelappForBruker(frist, kommentar));
+            oppfolgingsBruker.setHuskelapp(new HuskelappForBruker(frist, kommentar, endretDato, endretAv.getValue()));
         }
     }
 
