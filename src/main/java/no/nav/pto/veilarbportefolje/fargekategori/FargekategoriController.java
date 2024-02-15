@@ -108,13 +108,13 @@ public class FargekategoriController {
                     request.fnr);
             secureLog.error(melding, e);
 
-            return ResponseEntity.internalServerError().body(new BatchUpsertResponse(Collections.emptyList(), request.fnr.stream().map(Id::get).collect(Collectors.toList())));
+            return ResponseEntity.internalServerError().body(new BatchUpsertResponse(Collections.emptyList(), request.fnr));
         }
     }
 
     private BatchUpsertResponse validerRequestOgVeiledertilgang(BatchoppdaterFargekategoriRequest request) {
-        Set<String> sjekkGikkOK = new java.util.HashSet<>(Collections.emptySet());
-        Set<String> sjekkFeilet = new java.util.HashSet<>(Collections.emptySet());
+        Set<Fnr> sjekkGikkOK = new java.util.HashSet<>(Collections.emptySet());
+        Set<Fnr> sjekkFeilet = new java.util.HashSet<>(Collections.emptySet());
 
         request.fnr.forEach(fnr -> {
             try {
@@ -139,9 +139,9 @@ public class FargekategoriController {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke tilordnet veileder");
                 }
 
-                sjekkGikkOK.add(fnr.get());
+                sjekkGikkOK.add(fnr);
             } catch (Exception e) {
-                sjekkFeilet.add(fnr.get());
+                sjekkFeilet.add(fnr);
             }
         });
 
@@ -176,6 +176,6 @@ public class FargekategoriController {
         public BatchoppdaterFargekategoriRequest {}
     }
 
-    public record BatchUpsertResponse(List<String> data, List<String> errors) {
+    public record BatchUpsertResponse(List<Fnr> data, List<Fnr> errors) {
     }
 }

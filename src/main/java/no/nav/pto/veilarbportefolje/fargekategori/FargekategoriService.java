@@ -41,19 +41,19 @@ public class FargekategoriService {
         if (request.fargekategoriVerdi() == FargekategoriVerdi.INGEN_KATEGORI) {
             fargekategoriRepository.deleteFargekategori(request.fnr());
 
-            slettIOpensearch(request.fnr().get());
+            slettIOpensearch(request.fnr());
 
             return Optional.empty();
         } else {
             UUID oppdatertKategori = fargekategoriRepository.upsertFargekateori(request, sistEndretAv);
 
-            oppdaterIOpensearch(request.fnr().get(), request.fargekategoriVerdi());
+            oppdaterIOpensearch(request.fnr(), request.fargekategoriVerdi());
 
             return Optional.of(oppdatertKategori);
         }
     }
 
-    public void batchoppdaterFargekategoriForBruker(FargekategoriVerdi fargekategoriVerdi, List<String> fnr, VeilederId innloggetVeileder) {
+    public void batchoppdaterFargekategoriForBruker(FargekategoriVerdi fargekategoriVerdi, List<Fnr> fnr, VeilederId innloggetVeileder) {
         if (fargekategoriVerdi == FargekategoriVerdi.INGEN_KATEGORI) {
             fargekategoriRepository.batchdeleteFargekategori(fnr);
 
@@ -66,13 +66,13 @@ public class FargekategoriService {
         }
     }
 
-    private void slettIOpensearch(String fnr) {
-        AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorId(Fnr.of(fnr))).orElseThrow(RuntimeException::new);
+    private void slettIOpensearch(Fnr fnr) {
+        AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorId(fnr)).orElseThrow(RuntimeException::new);
         opensearchIndexerV2.slettFargekategori(aktorId);
     }
 
-    private void oppdaterIOpensearch(String fnr, FargekategoriVerdi fargekategoriVerdi) {
-        AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorId(Fnr.of(fnr))).orElseThrow(RuntimeException::new);
+    private void oppdaterIOpensearch(Fnr fnr, FargekategoriVerdi fargekategoriVerdi) {
+        AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorId(fnr)).orElseThrow(RuntimeException::new);
         opensearchIndexerV2.updateFargekategori(aktorId, fargekategoriVerdi.name());
     }
 
