@@ -601,7 +601,7 @@ public class FargekategoriControllerTest {
 
         testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER_AKTOR_ID, TESTBRUKER_FNR, TESTENHET, VeilederId.of(TESTVEILEDER.get()));
         testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER2_AKTOR_ID, TESTBRUKER2_FNR, TESTENHET, VeilederId.of(TESTVEILEDER.get()));
-        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER3_AKTOR_ID, TESTBRUKER3_FNR, TESTENHET, VeilederId.of(TESTVEILEDER.get()));
+        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER3_AKTOR_ID, TESTBRUKER3_FNR, TESTENHET2, VeilederId.of(TESTVEILEDER.get()));
 
         when(aktorClient.hentAktorId(TESTBRUKER_FNR)).thenReturn(TESTBRUKER_AKTOR_ID);
         when(aktorClient.hentAktorId(TESTBRUKER2_FNR)).thenReturn(TESTBRUKER2_AKTOR_ID);
