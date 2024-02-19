@@ -408,7 +408,41 @@ public class FargekategoriControllerTest {
     }
 
     @Test
-    void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_noen_fnr_feiler_validering_eller_autentisering() throws Exception {
+    void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_noen_fnr_feiler_validering() throws Exception {
+        String fnr1 = "1";
+        String fnr2 = "dette er på ingen måte et fødselsnummer";
+        String fnr3 = "44444444444";
+
+        String opprettMangeRequest = """
+                {
+                  "fnr":["$fnr1","$fnr2","$fnr3"],
+                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                }
+                """.replace("$fnr1", fnr1)
+                .replace("$fnr2", fnr2)
+                .replace("$fnr3", fnr3);
+
+        String expected = """
+                {
+                    "data": ["$fnr3"],
+                    "errors": ["$fnr1", "$fnr2"],
+                }
+                """.replace("$fnr1", fnr1)
+                .replace("$fnr2", fnr2)
+                .replace("$fnr3", fnr3);
+
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategorier")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(opprettMangeRequest)
+                )
+                .andExpect(status().is(400))
+                .andExpect(content().json(expected));
+    }
+
+    @Test
+    void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_noen_fnr_feiler_autentisering() throws Exception {
         String fnr1 = "11111111111";
         String fnr2 = "22222222222";
         String fnr3 = "44444444444";
@@ -442,7 +476,7 @@ public class FargekategoriControllerTest {
     }
 
     @Test
-    void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_alle_fnr_feiler_validering_eller_autentisering() throws Exception {
+    void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_alle_fnr_feiler_autentisering() throws Exception {
         String fnr1 = "44444444444";
         String fnr2 = "55555555555";
         String fnr3 = "66666666666";

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
-import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -94,14 +92,19 @@ public class FargekategoriController {
         VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
         authService.tilgangTilOppfolging();
 
-        BatchUpsertResponse responseEtterValidering = validerRequestOgVeiledertilgang(request);
+        BatchUpsertResponse responseEtterValidering = validerRequest(request);
+        if (responseEtterValidering.errors.size() > 0) {
+            return ResponseEntity.status(400).body(responseEtterValidering);
+        }
+
+        BatchUpsertResponse responseEtterAutoriseringssjekk = sjekkVeilederautorisering(request);
 
         try {
-            fargekategoriService.batchoppdaterFargekategoriForBruker(request.fargekategoriVerdi, responseEtterValidering.data, innloggetVeileder);
+            fargekategoriService.batchoppdaterFargekategoriForBruker(request.fargekategoriVerdi, responseEtterAutoriseringssjekk.data, innloggetVeileder);
 
-            return responseEtterValidering.data.isEmpty()
-                    ? ResponseEntity.status(403).body(responseEtterValidering)
-                    : ResponseEntity.ok(responseEtterValidering);
+            return responseEtterAutoriseringssjekk.data.isEmpty()
+                    ? ResponseEntity.status(403).body(responseEtterAutoriseringssjekk)
+                    : ResponseEntity.ok(responseEtterAutoriseringssjekk);
         } catch (Exception e) {
             String melding = String.format("Klarte ikke å opprette/oppdatere fargekategori med verdi %s for fnr %s",
                     request.fargekategoriVerdi.name(),
@@ -112,30 +115,49 @@ public class FargekategoriController {
         }
     }
 
-    private BatchUpsertResponse validerRequestOgVeiledertilgang(BatchoppdaterFargekategoriRequest request) {
+    private BatchUpsertResponse validerRequest(BatchoppdaterFargekategoriRequest request) {
         Set<Fnr> sjekkGikkOK = new java.util.HashSet<>(Collections.emptySet());
         Set<Fnr> sjekkFeilet = new java.util.HashSet<>(Collections.emptySet());
 
         request.fnr.forEach(fnr -> {
             try {
-                // Gyldig fnr
                 validerRequest(fnr);
 
-                // Bruker er under oppfølging
+                sjekkGikkOK.add(fnr);
+            } catch (Exception e) {
+                sjekkFeilet.add(fnr);
+            }
+        });
+
+        return new BatchUpsertResponse(sjekkGikkOK.stream().toList(), sjekkFeilet.stream().toList());
+    }
+
+    private BatchUpsertResponse sjekkVeilederautorisering(BatchoppdaterFargekategoriRequest request) {
+        Set<Fnr> sjekkGikkOK = new java.util.HashSet<>(Collections.emptySet());
+        Set<Fnr> sjekkFeilet = new java.util.HashSet<>(Collections.emptySet());
+
+        request.fnr.forEach(fnr -> {
+            try {
                 Optional<NavKontor> brukerEnhet = brukerServiceV2.hentNavKontor(fnr);
-                if (brukerEnhet.isEmpty()) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker med oppgitt fnr er ikke under oppfølging");
+
+                /* Vi sjekkar om bruker er under oppfølging i autorisering i staden for i validering
+                 * for å unngå at feilmeldinga avslører om eit fnr er i systemet. (400 bad request vs 403 forbidden) */
+                boolean brukerErIkkeUnderOppfølging = brukerEnhet.isEmpty();
+                if (brukerErIkkeUnderOppfølging) {
+                    throw new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Bruker med oppgitt fnr er ikke under oppfølging"
+                    );
                 }
 
-                // Har tilgang til enheten til brukeren
+                // Veileder har tilgang til enheten til brukeren
                 authService.tilgangTilEnhet(brukerEnhet.get().getValue());
 
-                // Har lov til å se brukeren
+                // Veileder har lov til å se brukeren
                 authService.tilgangTilBruker(fnr.get());
 
-                // Er veileder til brukeren
-                Validation<String, Fnr> erVeilederForBrukerValidation = fargekategoriService.erVeilederForBruker(fnr.get());
-                if (erVeilederForBrukerValidation.isInvalid()) {
+                boolean erIkkeVeilederForBruker = fargekategoriService.erVeilederForBruker(fnr.get()).isInvalid();
+                if (erIkkeVeilederForBruker) {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke tilordnet veileder");
                 }
 
