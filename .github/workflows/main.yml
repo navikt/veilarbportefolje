@@ -6,6 +6,7 @@ env:
 permissions:
   packages: write
   contents: write
+  id-token: write
 jobs:
   test:
     name: Run tests
@@ -70,7 +71,6 @@ jobs:
       - name: Deploy application
         uses: nais/deploy/actions/deploy@v2
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
           RESOURCE: .nais/application/application-config-dev.yaml
           VAR: image=${{ needs.build-and-push.outputs.image }}
@@ -87,7 +87,6 @@ jobs:
       - name: Deploy application
         uses: nais/deploy/actions/deploy@v2
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
           RESOURCE: .nais/application/application-config-prod.yaml
           VAR: image=${{ needs.build-and-push.outputs.image }}
