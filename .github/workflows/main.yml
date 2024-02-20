@@ -35,8 +35,6 @@ jobs:
     if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master'
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
-    permissions:
-      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
