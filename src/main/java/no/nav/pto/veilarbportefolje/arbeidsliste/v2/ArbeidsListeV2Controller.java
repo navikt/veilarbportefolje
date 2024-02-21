@@ -152,7 +152,7 @@ public class ArbeidsListeV2Controller {
     private void validerOppfolgingOgBruker(String fnr) {
         authService.tilgangTilOppfolging();
         Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        authService.tilgangTilBruker(fnr);
+        authService.innloggetVeilederHarTilgangTilBruker(fnr);
         if (validateFnr.isInvalid()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }

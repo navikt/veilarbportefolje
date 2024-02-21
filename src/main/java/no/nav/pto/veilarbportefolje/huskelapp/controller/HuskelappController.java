@@ -139,7 +139,7 @@ public class HuskelappController {
     private void validerOppfolgingOgBrukerOgEnhet(String fnr, String enhetId) {
         authService.tilgangTilOppfolging();
         Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        authService.tilgangTilBruker(fnr);
+        authService.innloggetVeilederHarTilgangTilBruker(fnr);
         authService.innloggetVeilederHarTilgangTilEnhet(enhetId);
         if (validateFnr.isInvalid()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);

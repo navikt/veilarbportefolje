@@ -71,7 +71,7 @@ public class AuthService {
         return abacResponse;
     }
 
-    public void tilgangTilBruker(String fnr) {
+    public void innloggetVeilederHarTilgangTilBruker(String fnr) {
         boolean abacResponse = veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, Fnr.of(fnr));
         poaoTilgangWrapper.harTilgangTilPerson(Fnr.of(fnr));
         AuthUtils.test("tilgangTilBruker", fnr, abacResponse);

@@ -38,7 +38,7 @@ public class FargekategoriController {
         }
 
         authService.tilgangTilOppfolging();
-        authService.tilgangTilBruker(request.fnr.get());
+        authService.innloggetVeilederHarTilgangTilBruker(request.fnr.get());
         authService.innloggetVeilederHarTilgangTilEnhet(brukerEnhet.get().toString());
 
         try {
@@ -65,7 +65,7 @@ public class FargekategoriController {
         }
 
         authService.tilgangTilOppfolging();
-        authService.tilgangTilBruker(request.fnr.get());
+        authService.innloggetVeilederHarTilgangTilBruker(request.fnr.get());
         authService.innloggetVeilederHarTilgangTilEnhet(brukerEnhet.get().toString());
         Validation<String, Fnr> erVeilederForBrukerValidation = fargekategoriService.erVeilederForBruker(request.fnr.get());
 
@@ -154,7 +154,7 @@ public class FargekategoriController {
                 authService.innloggetVeilederHarTilgangTilEnhet(brukerEnhet.get().getValue());
 
                 // Veileder har lov til å se brukeren
-                authService.tilgangTilBruker(fnr.get());
+                authService.innloggetVeilederHarTilgangTilBruker(fnr.get());
 
                 boolean erIkkeVeilederForBruker = fargekategoriService.erVeilederForBruker(fnr.get()).isInvalid();
                 if (erIkkeVeilederForBruker) {
