@@ -59,7 +59,7 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         ValideringsRegler.sjekkSortering(sortDirection, sortField);
         ValideringsRegler.sjekkFiltervalg(filtervalg);
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);

@@ -37,7 +37,7 @@ public class FargekategoriController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker med oppgitt fnr er ikke under oppfølging");
         }
 
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
         authService.innloggetVeilederHarTilgangTilBruker(request.fnr.get());
         authService.innloggetVeilederHarTilgangTilEnhet(brukerEnhet.get().toString());
 
@@ -64,7 +64,7 @@ public class FargekategoriController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker med oppgitt fnr er ikke under oppfølging");
         }
 
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
         authService.innloggetVeilederHarTilgangTilBruker(request.fnr.get());
         authService.innloggetVeilederHarTilgangTilEnhet(brukerEnhet.get().toString());
         Validation<String, Fnr> erVeilederForBrukerValidation = fargekategoriService.erVeilederForBruker(request.fnr.get());
@@ -90,7 +90,7 @@ public class FargekategoriController {
     @PutMapping("/fargekategorier")
     public ResponseEntity<BatchUpsertResponse> batchoppdaterFargekategoriForBruker(@RequestBody BatchoppdaterFargekategoriRequest request) {
         VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
 
         BatchUpsertResponse responseEtterValidering = validerRequest(request);
         if (responseEtterValidering.errors.size() > 0) {

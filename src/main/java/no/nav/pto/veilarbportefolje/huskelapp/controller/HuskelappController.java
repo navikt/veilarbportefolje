@@ -137,7 +137,7 @@ public class HuskelappController {
     }
 
     private void validerOppfolgingOgBrukerOgEnhet(String fnr, String enhetId) {
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
         Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
         authService.innloggetVeilederHarTilgangTilBruker(fnr);
         authService.innloggetVeilederHarTilgangTilEnhet(enhetId);

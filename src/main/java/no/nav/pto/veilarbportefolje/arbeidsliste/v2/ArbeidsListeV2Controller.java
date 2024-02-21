@@ -150,7 +150,7 @@ public class ArbeidsListeV2Controller {
     }
 
     private void validerOppfolgingOgBruker(String fnr) {
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
         Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
         authService.innloggetVeilederHarTilgangTilBruker(fnr);
         if (validateFnr.isInvalid()) {

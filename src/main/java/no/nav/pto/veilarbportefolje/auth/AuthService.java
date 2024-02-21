@@ -52,7 +52,7 @@ public class AuthService {
                 .build();
     }
 
-    public void tilgangTilOppfolging() {
+    public void innloggetVeilederHarTilgangTilOppfolging() {
         VeilederId veilederId = getInnloggetVeilederIdent();
         Decision decisionPoaoTilgang = poaoTilgangWrapper.harVeilederTilgangTilModia();
         boolean harTilgang = Decision.Type.PERMIT.equals(decisionPoaoTilgang.getType());

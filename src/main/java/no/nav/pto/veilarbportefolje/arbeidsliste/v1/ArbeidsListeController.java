@@ -55,7 +55,7 @@ public class ArbeidsListeController {
 
     @PostMapping
     public ResponseEntity opprettArbeidsListe(@RequestBody List<ArbeidslisteRequest> arbeidsliste) {
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
         List<String> tilgangErrors = getTilgangErrors(arbeidsliste);
         if (tilgangErrors.size() > 0) {
             return RestResponse.of(tilgangErrors).forbidden();
@@ -159,7 +159,7 @@ public class ArbeidsListeController {
 
     @PostMapping("/delete")
     public RestResponse<String> deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
 
         java.util.List<String> feiledeFnrs = new ArrayList<>();
         java.util.List<String> okFnrs = new ArrayList<>();
@@ -239,7 +239,7 @@ public class ArbeidsListeController {
     }
 
     private void validerOppfolgingOgBruker(String fnr) {
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
         Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
         authService.innloggetVeilederHarTilgangTilBruker(fnr);
         if (validateFnr.isInvalid()) {
