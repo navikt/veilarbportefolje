@@ -60,7 +60,7 @@ public class EnhetController {
         ValideringsRegler.sjekkSortering(sortDirection, sortField);
         ValideringsRegler.sjekkFiltervalg(filtervalg);
         authService.tilgangTilOppfolging();
-        authService.tilgangTilEnhet(enhet);
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
@@ -74,7 +74,7 @@ public class EnhetController {
     @GetMapping("/{enhet}/portefoljestorrelser")
     public FacetResults hentPortefoljestorrelser(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
-        authService.tilgangTilEnhet(enhet);
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         return opensearchService.hentPortefoljestorrelser(enhet);
     }
@@ -82,7 +82,7 @@ public class EnhetController {
     @GetMapping("/{enhet}/portefolje/statustall")
     public EnhetPortefoljeStatustallRespons hentEnhetPortefoljeStatustall(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
-        authService.tilgangTilEnhet(enhet);
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         return new EnhetPortefoljeStatustallRespons(
                 opensearchService.hentStatusTallForEnhetPortefolje(enhet, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ),
@@ -93,7 +93,7 @@ public class EnhetController {
     @GetMapping("/{enhet}/tiltak")
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
-        authService.tilgangTilEnhet(enhet);
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         return tiltakService.hentEnhettiltak(EnhetId.of(enhet));
     }
@@ -103,7 +103,7 @@ public class EnhetController {
             @PathVariable("enhet")
             String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
-        authService.tilgangTilEnhet(enhet);
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         return tryCacheFirst(enhetFoedelandCache, enhet,
                 () -> personOpprinnelseService.hentFoedeland(enhet));
@@ -114,7 +114,7 @@ public class EnhetController {
             @PathVariable("enhet")
             String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
-        authService.tilgangTilEnhet(enhet);
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         return tryCacheFirst(enhetTolkSpraakCache, enhet,
                 () -> personOpprinnelseService.hentTolkSpraak(enhet));
@@ -126,7 +126,7 @@ public class EnhetController {
             @PathVariable("enhet")
             String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
-        authService.tilgangTilEnhet(enhet);
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         return tryCacheFirst(enhetGeografiskBostedCache, enhet,
                 () -> bostedService.hentGeografiskBosted(enhet));

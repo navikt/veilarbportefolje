@@ -642,6 +642,6 @@ public class FargekategoriControllerTest {
         when(aktorClient.hentAktorId(TESTBRUKER3_FNR)).thenReturn(TESTBRUKER3_AKTOR_ID);
         doNothing().when(authService).tilgangTilOppfolging();
         doNothing().when(authService).tilgangTilBruker(TESTBRUKER_FNR.get());
-        doNothing().when(authService).tilgangTilEnhet(TESTENHET.getValue());
+        doNothing().when(authService).innloggetVeilederHarTilgangTilEnhet(TESTENHET.getValue());
     }
 }

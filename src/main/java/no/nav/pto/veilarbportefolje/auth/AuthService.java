@@ -59,7 +59,7 @@ public class AuthService {
         AuthUtils.test("oppfølgingsbruker", veilederId, harTilgang);
     }
 
-    public void tilgangTilEnhet(String enhet) {
+    public void innloggetVeilederHarTilgangTilEnhet(String enhet) {
         String veilederId = getInnloggetVeilederIdent().toString();
         AuthUtils.test("tilgang til enhet", Tuple.of(enhet, veilederId), harVeilederTilgangTilEnhet(veilederId, enhet));
     }

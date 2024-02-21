@@ -79,7 +79,7 @@ public class HuskelappController {
 
     @PostMapping("/hent-huskelapp-for-veileder")
     public ResponseEntity<List<HuskelappResponse>> hentHuskelapp(@RequestBody HuskelappForVeilederRequest huskelappForVeilederRequest) {
-        authService.tilgangTilEnhet(huskelappForVeilederRequest.enhetId().get());
+        authService.innloggetVeilederHarTilgangTilEnhet(huskelappForVeilederRequest.enhetId().get());
         try {
             List<HuskelappResponse> huskelappList = huskelappService.hentHuskelapp(huskelappForVeilederRequest.veilederId(), huskelappForVeilederRequest.enhetId()).stream().map(this::mapToHuskelappResponse).collect(Collectors.toList());
             return ResponseEntity.ok(huskelappList);
@@ -140,7 +140,7 @@ public class HuskelappController {
         authService.tilgangTilOppfolging();
         Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
         authService.tilgangTilBruker(fnr);
-        authService.tilgangTilEnhet(enhetId);
+        authService.innloggetVeilederHarTilgangTilEnhet(enhetId);
         if (validateFnr.isInvalid()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }

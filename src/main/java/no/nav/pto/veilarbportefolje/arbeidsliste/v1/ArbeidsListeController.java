@@ -197,7 +197,7 @@ public class ArbeidsListeController {
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
         NavKontor enhet = brukerService.hentNavKontor(fnr).orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke hente enhet for denne brukeren"));
-        authService.tilgangTilEnhet(enhet.getValue());
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet.getValue());
     }
 
     private ArbeidslisteDTO data(ArbeidslisteRequest body, Fnr fnr) {
