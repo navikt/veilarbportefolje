@@ -150,10 +150,8 @@ public class FargekategoriController {
                     );
                 }
 
-                // Veileder har tilgang til enheten til brukeren
                 authService.innloggetVeilederHarTilgangTilEnhet(brukerEnhet.get().getValue());
 
-                // Veileder har lov til å se brukeren
                 authService.innloggetVeilederHarTilgangTilBruker(fnr.get());
 
                 boolean erIkkeVeilederForBruker = fargekategoriService.erVeilederForBruker(fnr.get()).isInvalid();
