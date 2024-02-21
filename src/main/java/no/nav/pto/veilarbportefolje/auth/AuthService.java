@@ -52,14 +52,14 @@ public class AuthService {
                 .build();
     }
 
-    public void tilgangTilOppfolging() {
+    public void innloggetVeilederHarTilgangTilOppfolging() {
         VeilederId veilederId = getInnloggetVeilederIdent();
         Decision decisionPoaoTilgang = poaoTilgangWrapper.harVeilederTilgangTilModia();
         boolean harTilgang = Decision.Type.PERMIT.equals(decisionPoaoTilgang.getType());
         AuthUtils.test("oppfølgingsbruker", veilederId, harTilgang);
     }
 
-    public void tilgangTilEnhet(String enhet) {
+    public void innloggetVeilederHarTilgangTilEnhet(String enhet) {
         String veilederId = getInnloggetVeilederIdent().toString();
         AuthUtils.test("tilgang til enhet", Tuple.of(enhet, veilederId), harVeilederTilgangTilEnhet(veilederId, enhet));
     }
@@ -71,7 +71,7 @@ public class AuthService {
         return abacResponse;
     }
 
-    public void tilgangTilBruker(String fnr) {
+    public void innloggetVeilederHarTilgangTilBruker(String fnr) {
         boolean abacResponse = veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, Fnr.of(fnr));
         poaoTilgangWrapper.harTilgangTilPerson(Fnr.of(fnr));
         AuthUtils.test("tilgangTilBruker", fnr, abacResponse);

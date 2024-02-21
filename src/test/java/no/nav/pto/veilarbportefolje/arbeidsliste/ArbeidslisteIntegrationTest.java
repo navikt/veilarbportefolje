@@ -710,7 +710,7 @@ class ArbeidslisteIntegrationTest {
         when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-        Mockito.doNothing().when(authService).tilgangTilOppfolging();
+        Mockito.doNothing().when(authService).innloggetVeilederHarTilgangTilOppfolging();
         when(brukerService.hentVeilederForBruker(AktorId.of(TEST_AKTORID))).thenReturn(Optional.of(VeilederId.of(
                 TEST_VEILEDERIDENT)));
         when(brukerService.hentVeilederForBruker(AktorId.of(TEST_AKTORID_2))).thenReturn(Optional.of(VeilederId.of(

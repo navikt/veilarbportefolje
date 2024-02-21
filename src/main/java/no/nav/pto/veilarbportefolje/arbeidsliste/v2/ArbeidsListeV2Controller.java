@@ -131,7 +131,7 @@ public class ArbeidsListeV2Controller {
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
         NavKontor enhet = brukerService.hentNavKontor(fnr).orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke hente enhet for denne brukeren"));
-        authService.tilgangTilEnhet(enhet.getValue());
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet.getValue());
     }
 
     private ArbeidslisteDTO data(ArbeidslisteV2Request body, Fnr fnr) {
@@ -150,9 +150,9 @@ public class ArbeidsListeV2Controller {
     }
 
     private void validerOppfolgingOgBruker(String fnr) {
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
         Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        authService.tilgangTilBruker(fnr);
+        authService.innloggetVeilederHarTilgangTilBruker(fnr);
         if (validateFnr.isInvalid()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
