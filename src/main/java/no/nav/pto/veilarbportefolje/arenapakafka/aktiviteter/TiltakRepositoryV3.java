@@ -7,7 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetIkkeAktivStatuser;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
-import no.nav.pto.veilarbportefolje.database.PostgresTable;
+import no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKERTILTAK_V2;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKERTILTAK;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.TILTAKKODEVERK;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapTiltakTilEntity;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -115,7 +117,7 @@ public class TiltakRepositoryV3 {
     }
 
     public Optional<String> hentTiltaksnavn(String tiltakskode) {
-        String sql = String.format("SELECT verdi FROM %s WHERE %s = ?", PostgresTable.TILTAKKODEVERK.TABLE_NAME, PostgresTable.TILTAKKODEVERK.KODE);
+        String sql = String.format("SELECT verdi FROM %s WHERE %s = ?", TILTAKKODEVERK.TABLE_NAME, TILTAKKODEVERK.KODE);
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, String.class, tiltakskode))
         );
@@ -171,8 +173,13 @@ public class TiltakRepositoryV3 {
         return verdiITiltakskodeVerk.map(lagretVerdi -> !lagretVerdi.equals(verdiFraKafka)).orElse(true);
     }
 
+    public void slettOppfolgingData(AktorId aktorId) {
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", BRUKERTILTAK.TABLE_NAME, BRUKERTILTAK.AKTOERID), aktorId.get());
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", BRUKERTILTAK_V2.TABLE_NAME, BRUKERTILTAK_V2.AKTOERID), aktorId.get());
+    }
+
     @SneakyThrows
     private Tiltakkodeverk mapTilTiltak(Map<String, Object> rs) {
-        return Tiltakkodeverk.of((String) rs.get(PostgresTable.TILTAKKODEVERK.KODE), (String) rs.get(PostgresTable.TILTAKKODEVERK.VERDI));
+        return Tiltakkodeverk.of((String) rs.get(TILTAKKODEVERK.KODE), (String) rs.get(TILTAKKODEVERK.VERDI));
     }
 }

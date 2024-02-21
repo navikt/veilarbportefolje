@@ -79,4 +79,8 @@ public class GruppeAktivitetRepositoryV2 {
                     return result;
                 });
     }
+
+    public void slettOppfolgingData(AktorId aktorId) {
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktorId);
+    }
 }

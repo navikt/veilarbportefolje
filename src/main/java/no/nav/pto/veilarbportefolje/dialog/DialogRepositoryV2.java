@@ -10,10 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.TABLE_NAME;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.VENTER_PA_BRUKER;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.VENTER_PA_NAV;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -49,5 +46,9 @@ public class DialogRepositoryV2 {
                 .setAktorId(rs.getString(AKTOERID))
                 .setTidspunktEldsteUbehandlede(toZonedDateTime(rs.getTimestamp(VENTER_PA_NAV)))
                 .setTidspunktEldsteVentende(toZonedDateTime(rs.getTimestamp(VENTER_PA_BRUKER)));
+    }
+
+    public void fjernOppfolgingData(AktorId aktorId) {
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktorId.get());
     }
 }

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -14,19 +15,14 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.MANUELL;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.NY_FOR_VEILEDER;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.OPPFOLGING;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.STARTDATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.VEILEDERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class OppfolgingRepositoryV2 {
+public class OppfolgingRepositoryV2 implements HandtereOppfolgingData<AktorId> {
     private final JdbcTemplate db;
 
     public int settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
@@ -53,6 +49,7 @@ public class OppfolgingRepositoryV2 {
         db.update("UPDATE oppfolging_data SET startdato = ? WHERE  aktoerid = ?", toTimestamp(startDato), aktoerId.get());
     }
 
+    @Override
     public void slettOppfolgingData(AktorId aktoerId) {
         db.update("DELETE FROM oppfolging_data WHERE aktoerid = ?", aktoerId.get());
     }

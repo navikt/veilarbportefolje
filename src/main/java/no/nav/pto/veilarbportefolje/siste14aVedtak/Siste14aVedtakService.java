@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.siste14aVedtak;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVedtakKafkaDto> {
+public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVedtakKafkaDto> implements HandtereOppfolgingData<AktorId> {
 
     private final PdlIdentRepository pdlIdentRepository;
     private final Siste14aVedtakRepository siste14aVedtakRepository;
@@ -29,8 +30,8 @@ public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVe
         }
     }
 
-    public void slettSiste14aVedtak(String brukerId) {
-        IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(brukerId);
+    public void slettOppfolgingData(AktorId aktorId) {
+        IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(aktorId.get());
         siste14aVedtakRepository.delete(identer);
     }
 

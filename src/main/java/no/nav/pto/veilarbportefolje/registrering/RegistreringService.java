@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,9 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class RegistreringService extends KafkaCommonConsumerService<ArbeidssokerRegistrertEvent> {
+public class RegistreringService
+        extends KafkaCommonConsumerService<ArbeidssokerRegistrertEvent>
+        implements HandtereOppfolgingData<AktorId> {
     private final RegistreringRepositoryV2 registreringRepositoryV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
@@ -26,7 +29,8 @@ public class RegistreringService extends KafkaCommonConsumerService<Arbeidssoker
         secureLog.info("Oppdatert brukerregistrering for bruker: {}", aktoerId);
     }
 
-    public void slettRegistering(AktorId aktoerId) {
+    @Override
+    public void slettOppfolgingData(AktorId aktoerId) {
         registreringRepositoryV2.slettBrukerRegistrering(aktoerId);
         secureLog.info("Slettet brukerregistrering for bruker: {}", aktoerId);
     }

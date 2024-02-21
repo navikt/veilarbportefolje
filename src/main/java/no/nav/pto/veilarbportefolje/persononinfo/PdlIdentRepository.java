@@ -73,6 +73,17 @@ public class PdlIdentRepository {
         return new IdenterForBruker(identer);
     }
 
+    public List<PDLIdent> hentAlleIdenterForAktorId(AktorId aktorId) {
+        return db.queryForList("""
+                        select * from bruker_identer
+                        where person = (select person from bruker_identer where ident= ?)             
+                        AND gruppe = ?
+                        """, aktorId.get(), PDLIdent.Gruppe.AKTORID.name())
+                .stream()
+                .map(PdlIdentRepository::mapTilident)
+                .toList();
+    }
+
     @SneakyThrows
     public static PDLIdent mapTilident(Map<String, Object> rs) {
         return new PDLIdent()

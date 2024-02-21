@@ -6,6 +6,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class GruppeAktivitetService {
+public class GruppeAktivitetService implements HandtereOppfolgingData<AktorId> {
     private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
     private final OpensearchIndexer opensearchIndexer;
     private final AktorClient aktorClient;
@@ -57,5 +58,9 @@ public class GruppeAktivitetService {
             return true;
         }
         return false;
+    }
+
+    public void slettOppfolgingData(AktorId aktorId) {
+        gruppeAktivitetRepositoryV2.slettOppfolgingData(aktorId);
     }
 }

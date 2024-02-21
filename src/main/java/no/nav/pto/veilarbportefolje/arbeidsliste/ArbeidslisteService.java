@@ -12,11 +12,10 @@ import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,8 +29,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
 @RequiredArgsConstructor
-public class ArbeidslisteService {
-    private static final Logger log = LoggerFactory.getLogger(ArbeidslisteService.class);
+public class ArbeidslisteService implements HandtereOppfolgingData<AktorId> {
 
     private final AktorClient aktorClient;
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
@@ -82,11 +80,16 @@ public class ArbeidslisteService {
             throw new SlettArbeidslisteException(String.format("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: %s", fnr.get()));
         }
 
-        slettArbeidsliste(aktoerId.get(), Optional.of(fnr));
+        slettArbeidslisteOgFargekategori(aktoerId.get(), Optional.of(fnr));
     }
 
-    public void slettArbeidsliste(AktorId aktoerId, Optional<Fnr> fnr) {
-        final int antallSlettedeArbeidslister = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId, fnr);
+    @Override
+    public void slettOppfolgingData(AktorId aktoerId) {
+        arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId);
+    }
+
+    public void slettArbeidslisteOgFargekategori(AktorId aktoerId, Optional<Fnr> fnr) {
+        final int antallSlettedeArbeidslister = arbeidslisteRepositoryV2.slettArbeidslisteOgFargekategori(aktoerId, fnr);
 
         if (antallSlettedeArbeidslister <= 0) {
             return;
@@ -163,4 +166,5 @@ public class ArbeidslisteService {
 
         return navkontorForBrukerUlikNavkontorForArbeidsliste;
     }
+
 }

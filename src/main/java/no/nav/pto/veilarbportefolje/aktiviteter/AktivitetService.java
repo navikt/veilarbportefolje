@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
@@ -25,7 +26,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> {
+public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> implements HandtereOppfolgingData<AktorId> {
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final SisteEndringService sisteEndringService;
@@ -100,6 +101,10 @@ public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetM
         List<Moteplan> moteplans = aktiviteterRepositoryV2.hentFremtidigeMoter(veilederIdent, enhet);
 
         return sensurerMoteplaner(moteplans, brukerInnsynTilganger);
+    }
+
+    public void slettOppfolgingData(AktorId aktorId) {
+        aktiviteterRepositoryV2.slettOppfolgingData(aktorId);
     }
 
     private List<Moteplan> sensurerMoteplaner(List<Moteplan> moteplans, BrukerinnsynTilganger brukerInnsynTilganger) {

@@ -6,6 +6,7 @@ import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
+import no.nav.pto.veilarbportefolje.interfaces.HandtereOppfolgingData;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,7 +19,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class CVService extends KafkaCommonConsumerService<Melding> {
+public class CVService extends KafkaCommonConsumerService<Melding> implements HandtereOppfolgingData<AktorId> {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final CVRepositoryV2 cvRepositoryV2;
 
@@ -60,5 +61,10 @@ public class CVService extends KafkaCommonConsumerService<Melding> {
 
     private boolean cvEksistere(Melding melding) {
         return melding.getMeldingstype() == Meldingstype.ENDRE || melding.getMeldingstype() == Meldingstype.OPPRETT;
+    }
+
+    @Override
+    public void slettOppfolgingData(AktorId aktorId) {
+        cvRepositoryV2.slettOppfolgingData(aktorId);
     }
 }

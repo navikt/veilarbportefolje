@@ -268,7 +268,7 @@ public class ArbeidslisteRepositoryV2Test {
     void skalSletteEksisterendeArbeidsliste() {
         insertArbeidslister();
 
-        final Integer rowsUpdated = repo.slettArbeidsliste(TEST_ARBEIDSLISTE_1.getAktorId(), Optional.of(TEST_ARBEIDSLISTE_1.getFnr()));
+        final Integer rowsUpdated = repo.slettArbeidslisteOgFargekategori(TEST_ARBEIDSLISTE_1.getAktorId(), Optional.of(TEST_ARBEIDSLISTE_1.getFnr()));
 
         assertThat(rowsUpdated).isEqualTo(1);
     }
@@ -278,7 +278,7 @@ public class ArbeidslisteRepositoryV2Test {
         insertArbeidslister();
         insertFargekategori(TEST_ARBEIDSLISTE_1, jdbcTemplate);
 
-        final Integer rowsUpdated = repo.slettArbeidsliste(TEST_ARBEIDSLISTE_1.getAktorId(), Optional.of(TEST_ARBEIDSLISTE_1.getFnr()));
+        final Integer rowsUpdated = repo.slettArbeidslisteOgFargekategori(TEST_ARBEIDSLISTE_1.getAktorId(), Optional.of(TEST_ARBEIDSLISTE_1.getFnr()));
 
         assertThat(rowsUpdated).isEqualTo(2);
     }
@@ -310,7 +310,7 @@ public class ArbeidslisteRepositoryV2Test {
         assertThat(arbeidsliste.isSuccess()).isTrue();
         assertThat(arbeidsliste.get()).isNotNull();
 
-        final Integer rowsUpdated = repo.slettArbeidsliste(aktoerId1, Optional.empty());
+        final Integer rowsUpdated = repo.slettArbeidslisteOgFargekategori(aktoerId1, Optional.empty());
         assertThat(rowsUpdated).isEqualTo(1);
 
         arbeidsliste = repo.retrieveArbeidsliste(fnr1);
@@ -491,7 +491,7 @@ public class ArbeidslisteRepositoryV2Test {
                 TEST_ARBEIDSLISTE_1.getNavKontorForArbeidsliste()
         );
 
-        repo.slettArbeidsliste(TEST_ARBEIDSLISTE_1.getAktorId(), Optional.of(TEST_ARBEIDSLISTE_1.getFnr()));
+        repo.slettArbeidslisteOgFargekategori(TEST_ARBEIDSLISTE_1.getAktorId(), Optional.of(TEST_ARBEIDSLISTE_1.getFnr()));
 
         String aktorId = TEST_ARBEIDSLISTE_1.getAktorId().get();
         String fnr = TEST_ARBEIDSLISTE_1.getFnr().get();

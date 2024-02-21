@@ -19,15 +19,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ENDRET_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -125,7 +117,7 @@ public class OppfolgingsbrukerRepositoryV3 {
                         excluded.endret_dato)
                         """,
                 oppfolgingsbruker.fodselsnr(), oppfolgingsbruker.formidlingsgruppekode(), toTimestamp(oppfolgingsbruker.iserv_fra_dato()),
-                 oppfolgingsbruker.nav_kontor(),
+                oppfolgingsbruker.nav_kontor(),
                 oppfolgingsbruker.kvalifiseringsgruppekode(), oppfolgingsbruker.rettighetsgruppekode(),
                 oppfolgingsbruker.hovedmaalkode(),
                 toTimestamp(oppfolgingsbruker.endret_dato())
@@ -167,6 +159,10 @@ public class OppfolgingsbrukerRepositoryV3 {
                                     OR (ns.er_skjermet AND NOT :tilgangTilEgenAnsatt::boolean)
                 )
                 """, params, String.class);
+    }
+
+    public void fjernOppfolgingData(Fnr fnr) {
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, FODSELSNR), fnr.get());
     }
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {
