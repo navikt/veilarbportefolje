@@ -10,6 +10,9 @@ on:
       - '.nais/application/unleash-apitoken-dev.yaml'
       - '.nais/application/unleash-apitoken-prod.yaml'
 
+permissions:
+  id-token: write
+
 jobs:
   deploy-dev:
     name: Deploy unleash-apitoken to dev
@@ -20,7 +23,6 @@ jobs:
       - name: Deploy unleash-apitoken
         uses: nais/deploy/actions/deploy@v2
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
           RESOURCE: .nais/application/unleash-apitoken-dev.yaml
           PRINT_PAYLOAD: true
@@ -36,7 +38,6 @@ jobs:
         uses: nais/deploy/actions/deploy@v2
         if: github.ref == 'refs/heads/master'
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
           RESOURCE: .nais/application/unleash-apitoken-prod.yaml
           PRINT_PAYLOAD: true

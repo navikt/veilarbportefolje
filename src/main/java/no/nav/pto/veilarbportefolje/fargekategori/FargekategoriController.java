@@ -37,9 +37,9 @@ public class FargekategoriController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker med oppgitt fnr er ikke under oppfølging");
         }
 
-        authService.tilgangTilOppfolging();
-        authService.tilgangTilBruker(request.fnr.get());
-        authService.tilgangTilEnhet(brukerEnhet.get().toString());
+        authService.innloggetVeilederHarTilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilBruker(request.fnr.get());
+        authService.innloggetVeilederHarTilgangTilEnhet(brukerEnhet.get().toString());
 
         try {
             Optional<FargekategoriEntity> kanskjeFargekategori = fargekategoriService.hentFargekategoriForBruker(request);
@@ -64,9 +64,9 @@ public class FargekategoriController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker med oppgitt fnr er ikke under oppfølging");
         }
 
-        authService.tilgangTilOppfolging();
-        authService.tilgangTilBruker(request.fnr.get());
-        authService.tilgangTilEnhet(brukerEnhet.get().toString());
+        authService.innloggetVeilederHarTilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilBruker(request.fnr.get());
+        authService.innloggetVeilederHarTilgangTilEnhet(brukerEnhet.get().toString());
         Validation<String, Fnr> erVeilederForBrukerValidation = fargekategoriService.erVeilederForBruker(request.fnr.get());
 
         if (erVeilederForBrukerValidation.isInvalid()) {
@@ -90,7 +90,7 @@ public class FargekategoriController {
     @PutMapping("/fargekategorier")
     public ResponseEntity<BatchUpsertResponse> batchoppdaterFargekategoriForBruker(@RequestBody BatchoppdaterFargekategoriRequest request) {
         VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
 
         BatchUpsertResponse responseEtterValidering = validerRequest(request);
         if (responseEtterValidering.errors.size() > 0) {
@@ -150,11 +150,9 @@ public class FargekategoriController {
                     );
                 }
 
-                // Veileder har tilgang til enheten til brukeren
-                authService.tilgangTilEnhet(brukerEnhet.get().getValue());
+                authService.innloggetVeilederHarTilgangTilEnhet(brukerEnhet.get().getValue());
 
-                // Veileder har lov til å se brukeren
-                authService.tilgangTilBruker(fnr.get());
+                authService.innloggetVeilederHarTilgangTilBruker(fnr.get());
 
                 boolean erIkkeVeilederForBruker = fargekategoriService.erVeilederForBruker(fnr.get()).isInvalid();
                 if (erIkkeVeilederForBruker) {
