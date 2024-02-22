@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.profilering;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -15,10 +14,7 @@ import java.sql.ResultSet;
 import java.util.Optional;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.PROFILERING_RESULTAT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.PROFILERING_TIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.TABLE_NAME;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
@@ -49,6 +45,10 @@ public class ProfileringRepositoryV2 {
         );
     }
 
+    public void slettProfileringData(AktorId aktorId) {
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktorId.get());
+    }
+
     @SneakyThrows
     private ArbeidssokerProfilertEvent mapTilArbeidssokerProfilertEvent(ResultSet rs, int i) {
         return ArbeidssokerProfilertEvent.newBuilder()
@@ -57,5 +57,4 @@ public class ProfileringRepositoryV2 {
                 .setProfilertTil(ProfilertTil.valueOf(rs.getString("PROFILERING_RESULTAT")))
                 .build();
     }
-
 }
