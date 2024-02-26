@@ -825,12 +825,12 @@ public class OpensearchQueryBuilder {
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriA", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_A.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriB", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_B.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriC", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_C.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriD", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_D.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriE", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_E.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriF", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_F.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriA", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_A.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriB", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_B.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriC", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_C.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriD", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_D.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriE", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_E.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriF", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_F.name()),
                 mustExistFilter(filtrereVeilederOgEnhet, "mineHuskelapper", "huskelapp")
         };
 
