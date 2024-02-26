@@ -61,7 +61,10 @@ public class ArbeidslisteService {
         dto.setNavKontorForArbeidsliste(navKontorForBruker.getValue());
 
         return arbeidslisteRepositoryV2.insertArbeidsliste(dto)
-                .onSuccess(opensearchIndexerV2::updateArbeidsliste);
+                .onSuccess((result) -> {
+                    opensearchIndexerV2.updateArbeidsliste(result);
+                    opensearchIndexerV2.updateFargekategori(result.getAktorId(), ArbeidslisteMapper.mapTilFargekategoriVerdi(result.kategori));
+                });
     }
 
     public Try<ArbeidslisteDTO> updateArbeidsliste(ArbeidslisteDTO data) {
@@ -72,7 +75,10 @@ public class ArbeidslisteService {
         data.setAktorId(aktoerId.get());
 
         return arbeidslisteRepositoryV2.updateArbeidsliste(data)
-                .onSuccess(opensearchIndexerV2::updateArbeidsliste);
+                .onSuccess((result) -> {
+                    opensearchIndexerV2.updateArbeidsliste(result);
+                    opensearchIndexerV2.updateFargekategori(result.getAktorId(), ArbeidslisteMapper.mapTilFargekategoriVerdi(result.kategori));
+                });
     }
 
     public void slettArbeidsliste(Fnr fnr) {
@@ -93,6 +99,7 @@ public class ArbeidslisteService {
         }
 
         opensearchIndexerV2.slettArbeidsliste(aktoerId);
+        opensearchIndexerV2.slettFargekategori(aktoerId);
     }
 
     private Try<AktorId> hentAktorId(Fnr fnr) {
