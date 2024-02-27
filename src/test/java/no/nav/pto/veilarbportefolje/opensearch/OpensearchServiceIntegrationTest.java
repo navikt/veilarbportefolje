@@ -556,7 +556,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0)
-                .setHuskelapp(new HuskelappForBruker(LocalDate.now(), "test huskelapp", LocalDate.now(), TEST_VEILEDER_0));
+                .setHuskelapp(new HuskelappForBruker(LocalDate.now(), "test huskelapp", LocalDate.now(), TEST_VEILEDER_0))
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
 
         var testBruker2 = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().toString())
@@ -572,7 +573,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setTrenger_vurdering(true)
                 .setVenterpasvarfranav("2018-05-09T22:00:00Z")
                 .setNyesteutlopteaktivitet("2018-05-09T22:00:00Z")
-                .setHuskelapp(null);
+                .setHuskelapp(null)
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name());
 
         var inaktivBruker = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().toString())
@@ -580,11 +582,18 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0)
-                .setFormidlingsgruppekode("ISERV");
+                .setFormidlingsgruppekode("ISERV")
+                .setFargekategori(FargekategoriVerdi.INGEN_KATEGORI.name());
 
-        var kode6BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
-        var kode7BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.FORTROLIG.diskresjonskode, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
-        var egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        var kode6BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode, false)
+                .setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()))
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
+        var kode7BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.FORTROLIG.diskresjonskode, false)
+                .setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()))
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name());
+        var egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true)
+                .setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()))
+                .setFargekategori(FargekategoriVerdi.INGEN_KATEGORI.name());
 
         var liste = List.of(testBruker1, testBruker2, inaktivBruker, kode6BrukerSomVeilederIkkeHarInnsynsrettPa, kode7BrukerSomVeilederIkkeHarInnsynsrettPa, egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa);
         skrivBrukereTilTestindeks(liste);
@@ -602,6 +611,12 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(statustall.getVenterPaSvarFraNAV()).isEqualTo(1);
         assertThat(statustall.getUtlopteAktiviteter()).isEqualTo(1);
         assertThat(statustall.getMineHuskelapper()).isEqualTo(1);
+        assertThat(statustall.getFargekategoriA()).isEqualTo(1);
+        assertThat(statustall.getFargekategoriB()).isEqualTo(1);
+        assertThat(statustall.getFargekategoriC()).isEqualTo(0);
+        assertThat(statustall.getFargekategoriD()).isEqualTo(0);
+        assertThat(statustall.getFargekategoriE()).isEqualTo(0);
+        assertThat(statustall.getFargekategoriF()).isEqualTo(0);
     }
 
     @Test
@@ -933,8 +948,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
-        var statustall = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
-        assertThat(statustall.getUfordelteBrukere()).isEqualTo(1);
+        var statustallForBrukereSomVeilederHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        var statustallForBrukereSomVeilederIkkeHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ);
+
+        assertThat(statustallForBrukereSomVeilederHarInnsynsrettPå.getUfordelteBrukere()).isEqualTo(1);
+        assertThat(statustallForBrukereSomVeilederIkkeHarInnsynsrettPå.getUfordelteBrukere()).isEqualTo(0);
     }
 
     @Test

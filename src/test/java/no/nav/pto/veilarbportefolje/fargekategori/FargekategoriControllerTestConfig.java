@@ -19,8 +19,13 @@ import java.util.UUID;
 public class FargekategoriControllerTestConfig {
 
     static final Fnr TESTBRUKER_FNR = Fnr.of("11111111111");
+    static final Fnr TESTBRUKER2_FNR = Fnr.of("22222222222");
+    static final Fnr TESTBRUKER3_FNR = Fnr.of("33333333333");
     static final AktorId TESTBRUKER_AKTOR_ID = AktorId.of("99988877766655");
+    static final AktorId TESTBRUKER2_AKTOR_ID = AktorId.of("99988877766656");
+    static final AktorId TESTBRUKER3_AKTOR_ID = AktorId.of("99988877766657");
     static final NavKontor TESTENHET = NavKontor.of("1234");
+    static final NavKontor TESTENHET2 = NavKontor.of("4321");
     static final NavIdent TESTVEILEDER = NavIdent.of("Z999999");
 
     @Bean

@@ -42,8 +42,8 @@ public class VeilederController {
         ValideringsRegler.sjekkEnhet(enhet);
         ValideringsRegler.sjekkSortering(sortDirection, sortField);
         ValideringsRegler.sjekkFiltervalg(filtervalg);
-        authService.tilgangTilOppfolging();
-        authService.tilgangTilEnhet(enhet);
+        authService.innloggetVeilederHarTilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
@@ -58,7 +58,7 @@ public class VeilederController {
     public VeilederPortefoljeStatustallRespons hentVeilederportefoljeStatustall(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
-        authService.tilgangTilEnhet(enhet);
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         return new VeilederPortefoljeStatustallRespons(
                 opensearchService.hentStatustallForVeilederPortefolje(veilederIdent, enhet)
@@ -69,7 +69,7 @@ public class VeilederController {
     public List<Arbeidsliste> hentArbeidslisteForVeileder(@PathVariable("veilederident") VeilederId veilederIdent, @RequestParam("enhet") EnhetId enhet) {
         ValideringsRegler.sjekkEnhet(enhet.get());
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
-        authService.tilgangTilEnhet(enhet.get());
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet.get());
 
         return arbeidslisteService.getArbeidslisteForVeilederPaEnhet(enhet, veilederIdent);
     }
@@ -79,7 +79,7 @@ public class VeilederController {
         ValideringsRegler.sjekkEnhet(enhet.get());
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
 
-        authService.tilgangTilEnhet(enhet.get());
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet.get());
         BrukerinnsynTilganger tilgangTilSkjermeteBrukere = authService.hentVeilederBrukerInnsynTilganger();
 
         return aktivitetService.hentMoteplan(veilederIdent, enhet, tilgangTilSkjermeteBrukere);
