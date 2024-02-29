@@ -101,6 +101,7 @@ public class OpensearchIndexerV2 {
                 .field("kommentar", huskelapp.kommentar())
                 .field("endretAv", huskelapp.endretAv())
                 .field("endretDato", huskelapp.endretDato())
+                .field("huskelappId", huskelapp.huskelappId())
                 .endObject()
                 .endObject();
 

@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -556,7 +557,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0)
-                .setHuskelapp(new HuskelappForBruker(LocalDate.now(), "test huskelapp", LocalDate.now(), TEST_VEILEDER_0))
+                .setHuskelapp(new HuskelappForBruker(LocalDate.now(), "test huskelapp", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString()))
                 .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
 
         var testBruker2 = new OppfolgingsBruker()
@@ -3793,10 +3794,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void test_sortering_huskelapp() {
-        var huskelapp1 = new HuskelappForBruker(LocalDate.now().plusDays(20), "dddd Ringe fastlege", LocalDate.now(), TEST_VEILEDER_0);
-        var huskelapp2 = new HuskelappForBruker(LocalDate.now().plusDays(30), "bbbb Ha et møte", LocalDate.now(), TEST_VEILEDER_0);
-        var huskelapp3 = new HuskelappForBruker(LocalDate.now().plusMonths(2), "aaaa Snakke om idrett", LocalDate.now(), TEST_VEILEDER_0);
-        var huskelapp4 = new HuskelappForBruker(LocalDate.now().plusDays(3), "cccc Huddle med Julie", LocalDate.now(), TEST_VEILEDER_0);
+        var huskelapp1 = new HuskelappForBruker(LocalDate.now().plusDays(20), "dddd Ringe fastlege", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString());
+        var huskelapp2 = new HuskelappForBruker(LocalDate.now().plusDays(30), "bbbb Ha et møte", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString());
+        var huskelapp3 = new HuskelappForBruker(LocalDate.now().plusMonths(2), "aaaa Snakke om idrett", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString());
+        var huskelapp4 = new HuskelappForBruker(LocalDate.now().plusDays(3), "cccc Huddle med Julie", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString());
 
         var bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
