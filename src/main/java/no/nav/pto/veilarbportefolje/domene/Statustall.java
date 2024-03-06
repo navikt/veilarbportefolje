@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse;
