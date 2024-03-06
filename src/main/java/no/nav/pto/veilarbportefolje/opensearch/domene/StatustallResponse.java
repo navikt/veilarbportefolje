@@ -47,6 +47,7 @@ public class StatustallResponse {
                 Bucket fargekategoriD;
                 Bucket fargekategoriE;
                 Bucket fargekategoriF;
+                Bucket fargekategoriIngenKategori;
             }
         }
     }
