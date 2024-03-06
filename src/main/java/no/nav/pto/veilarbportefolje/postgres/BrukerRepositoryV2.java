@@ -75,7 +75,8 @@ public class BrukerRepositoryV2 {
                                HL.frist							as HL_FRIST,
                                HL.kommentar						as HL_KOMMENTAR,
                                HL.endret_dato                   as HL_ENDRET_DATO,
-                               hl.endret_av_veileder            as HL_ENDRET_AV
+                               hl.endret_av_veileder            as HL_ENDRET_AV,
+                               HL.huskelapp_id                  as HL_HUSKELAPPID
                         FROM OPPFOLGING_DATA OD
                                 inner join aktive_identer ai on OD.aktoerid = ai.aktorid
                                  left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
@@ -226,10 +227,11 @@ public class BrukerRepositoryV2 {
     private void setHuskelapp(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
         LocalDate frist = toLocalDate(rs.getTimestamp(HL_FRIST));
         String kommentar = rs.getString(HL_KOMMENTAR);
+        String huskelappId = rs.getString(HL_HUSKELAPPID);
         LocalDate endretDato = toLocalDate(rs.getTimestamp(HL_ENDRET_DATO));
         VeilederId endretAv = VeilederId.veilederIdOrNull(rs.getString(HL_ENDRET_AV));
         if (frist != null || kommentar != null) {
-            oppfolgingsBruker.setHuskelapp(new HuskelappForBruker(frist, kommentar, endretDato, endretAv.getValue()));
+            oppfolgingsBruker.setHuskelapp(new HuskelappForBruker(frist, kommentar, endretDato, endretAv.getValue(), huskelappId));
         }
     }
 

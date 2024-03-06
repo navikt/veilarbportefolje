@@ -831,6 +831,7 @@ public class OpensearchQueryBuilder {
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriD", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_D.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriE", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_E.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriF", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_F.name()),
+                mustNotExistFilter(filtrereVeilederOgEnhet, "fargekategoriIngenKategori", "fargekategori"),
                 mustExistFilter(filtrereVeilederOgEnhet, "mineHuskelapper", "huskelapp")
         };
 
@@ -1085,6 +1086,15 @@ public class OpensearchQueryBuilder {
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
                         .must(existsQuery(value))
+        );
+    }
+
+    private static FiltersAggregator.KeyedFilter mustNotExistFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String value) {
+        return new FiltersAggregator.KeyedFilter(
+                key,
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .mustNot(existsQuery(value))
         );
     }
 
