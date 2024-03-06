@@ -617,6 +617,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(statustall.getFargekategoriD()).isEqualTo(0);
         assertThat(statustall.getFargekategoriE()).isEqualTo(0);
         assertThat(statustall.getFargekategoriF()).isEqualTo(0);
+        assertThat(statustall.getFargekategoriIngenKategori()).isEqualTo(1);
     }
 
     @Test

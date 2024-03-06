@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse;
@@ -32,6 +33,7 @@ public class Statustall {
     private long fargekategoriD;
     private long fargekategoriE;
     private long fargekategoriF;
+    private long fargekategoriIngenKategori;
 
     public Statustall() {
         this.totalt = 0;
@@ -59,6 +61,7 @@ public class Statustall {
         this.fargekategoriD = 0;
         this.fargekategoriE = 0;
         this.fargekategoriF = 0;
+        this.fargekategoriIngenKategori = 0;
     }
 
     public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
@@ -87,5 +90,6 @@ public class Statustall {
         this.fargekategoriD = buckets.getFargekategoriD().getDoc_count();
         this.fargekategoriE = buckets.getFargekategoriE().getDoc_count();
         this.fargekategoriF = buckets.getFargekategoriF().getDoc_count();
+        this.fargekategoriIngenKategori = buckets.getFargekategoriIngenKategori().getDoc_count();
     }
 }
