@@ -90,7 +90,8 @@ public class HuskelappControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         HuskelappForBrukerRequest hentForBrukerRequest = new HuskelappForBrukerRequest(fnr, enhetId);
-        HuskelappResponse expected = new HuskelappResponse(opprettetHuskelappId, fnr, enhetId, huskelappfrist, "Test", LocalDate.now(), veilederId.getValue());
+        HuskelappOpprettResponse huskelappId = fromJson(opprettetHuskelappId, HuskelappOpprettResponse.class);
+        HuskelappResponse expected = new HuskelappResponse(huskelappId.huskelappId(), fnr, enhetId, huskelappfrist, "Test", LocalDate.now(), veilederId.getValue());
 
         String hentHuskelappResult = mockMvc
                 .perform(
@@ -136,13 +137,13 @@ public class HuskelappControllerTest {
         );
         pdlIdentRepository.upsertIdenter(identer);
 
-        String opprettetHuskelappId = mockMvc
+        String opprettetHuskelappIdbody = mockMvc
                 .perform(
                         post("/api/v1/huskelapp")
                                 .contentType(APPLICATION_JSON)
                                 .content(toJson(opprettRequest))
                 ).andReturn().getResponse().getContentAsString();
-
+        HuskelappOpprettResponse huskelappIdBody = fromJson(opprettetHuskelappIdbody, HuskelappOpprettResponse.class);
         HuskelappForBrukerRequest hentForBrukerForRedigeringRequest = new HuskelappForBrukerRequest(fnr, enhetId);
         String hentHuskelappForRedigeringResult = mockMvc
                 .perform(
@@ -156,12 +157,12 @@ public class HuskelappControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         HuskelappResponse hentetHuskelappBody = fromJson(hentHuskelappForRedigeringResult, HuskelappResponse.class);
-        assertThat(hentetHuskelappBody.huskelappId()).isEqualTo(opprettetHuskelappId);
+        assertThat(hentetHuskelappBody.huskelappId()).isEqualTo(huskelappIdBody.huskelappId());
         assertThat(hentetHuskelappBody.frist()).isEqualTo(opprettRequest.frist());
         assertThat(hentetHuskelappBody.kommentar()).isEqualTo(opprettRequest.kommentar());
         assertThat(hentetHuskelappBody.endretAv()).isEqualTo(veilederId.getValue());
 
-        HuskelappRedigerRequest redigereRequest = new HuskelappRedigerRequest(UUID.fromString(opprettetHuskelappId), fnr, null, "Test at det blir en ny kommentar", enhetId);
+        HuskelappRedigerRequest redigereRequest = new HuskelappRedigerRequest(UUID.fromString(huskelappIdBody.huskelappId()), fnr, null, "Test at det blir en ny kommentar", enhetId);
         mockMvc
                 .perform(
                         put("/api/v1/huskelapp")
@@ -184,7 +185,7 @@ public class HuskelappControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         HuskelappResponse hentetHuskelappEtterRedigeringBody = fromJson(hentHuskelappEtterRedigeringResult, HuskelappResponse.class);
-        assertThat(hentetHuskelappEtterRedigeringBody.huskelappId()).isEqualTo(opprettetHuskelappId);
+        assertThat(hentetHuskelappEtterRedigeringBody.huskelappId()).isEqualTo(huskelappIdBody.huskelappId());
         assertThat(hentetHuskelappEtterRedigeringBody.frist()).isEqualTo(redigereRequest.frist());
         assertThat(hentetHuskelappEtterRedigeringBody.kommentar()).isEqualTo(redigereRequest.kommentar());
         assertThat(hentetHuskelappEtterRedigeringBody.endretAv()).isEqualTo(veilederId.getValue());
@@ -210,7 +211,7 @@ public class HuskelappControllerTest {
         );
         pdlIdentRepository.upsertIdenter(identer);
 
-        String opprettetHuskelappId1 = mockMvc
+        String opprettetHuskelappId1Body = mockMvc
                 .perform(
                         post("/api/v1/huskelapp")
                                 .contentType(APPLICATION_JSON)
@@ -220,8 +221,10 @@ public class HuskelappControllerTest {
                 )
                 .andExpect(status().is(201))
                 .andReturn().getResponse().getContentAsString();
+        HuskelappOpprettResponse huskelappId1Body = fromJson(opprettetHuskelappId1Body, HuskelappOpprettResponse.class);
 
-        String opprettetHuskelappId2 = mockMvc
+
+        String opprettetHuskelappId2Body = mockMvc
                 .perform(
                         post("/api/v1/huskelapp")
                                 .contentType(APPLICATION_JSON)
@@ -231,6 +234,8 @@ public class HuskelappControllerTest {
                 )
                 .andExpect(status().is(201))
                 .andReturn().getResponse().getContentAsString();
+
+        HuskelappOpprettResponse huskelappId2Body = fromJson(opprettetHuskelappId2Body, HuskelappOpprettResponse.class);
 
         HuskelappForVeilederRequest hentForVeilederRequest = new HuskelappForVeilederRequest(enhetId, veilederId);
 
@@ -249,7 +254,7 @@ public class HuskelappControllerTest {
         });
         assertThat(hentetHuskelappEtterRedigeringBody.size()).isEqualTo(2);
         assertThat(hentetHuskelappEtterRedigeringBody.stream().anyMatch(var -> var.equals(new HuskelappResponse(
-                opprettetHuskelappId1,
+                huskelappId1Body.huskelappId(),
                 opprettRequest1.brukerFnr(),
                 opprettRequest1.enhetId(),
                 opprettRequest1.frist(),
@@ -258,7 +263,7 @@ public class HuskelappControllerTest {
                 veilederId.getValue()
         )))).isTrue();
         assertThat(hentetHuskelappEtterRedigeringBody.stream().anyMatch(var -> var.equals(new HuskelappResponse(
-                opprettetHuskelappId2,
+                huskelappId2Body.huskelappId(),
                 opprettRequest2.brukerFnr(),
                 opprettRequest2.enhetId(),
                 opprettRequest2.frist(),
@@ -330,8 +335,9 @@ public class HuskelappControllerTest {
                 )
                 .andExpect(status().is(201))
                 .andReturn().getResponse().getContentAsString();
+        HuskelappOpprettResponse opprettetResponse = fromJson(opprettetBody, HuskelappOpprettResponse.class);
 
-        HuskelappSlettRequest slettRequest = new HuskelappSlettRequest(opprettetBody);
+        HuskelappSlettRequest slettRequest = new HuskelappSlettRequest(opprettetResponse.huskelappId());
         mockMvc
                 .perform(
                         delete("/api/v1/huskelapp")

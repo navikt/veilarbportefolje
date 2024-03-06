@@ -8,7 +8,8 @@ public record HuskelappForBruker(
     LocalDate frist,
     String kommentar,
     LocalDate endretDato,
-    String endretAv
+    String endretAv,
+    String huskelappId
 ) {
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public HuskelappForBruker {
