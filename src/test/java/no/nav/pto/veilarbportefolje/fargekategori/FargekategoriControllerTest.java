@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappResponse;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.FARGEKATEGORI.*;
 import static no.nav.pto.veilarbportefolje.fargekategori.FargekategoriControllerTestConfig.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -148,7 +150,7 @@ public class FargekategoriControllerTest {
                 .andExpect(status().is(200))
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat(responseJson.contains("\"id\":")).isTrue();
+        assertThat(responseJson.contains("{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"FARGEKATEGORI_A\"}")).isTrue();
     }
 
     @Test
@@ -199,6 +201,8 @@ public class FargekategoriControllerTest {
                 }
                 """;
 
+
+
         String opprettJson = mockMvc.perform(
                         put("/api/v1/fargekategori")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -206,14 +210,16 @@ public class FargekategoriControllerTest {
                 )
                 .andExpect(status().is(200))
                 .andReturn().getResponse().getContentAsString();
+        assertThat(opprettJson).isEqualTo("{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"FARGEKATEGORI_A\"}");
 
-        mockMvc.perform(
+        String resultatAvOppdatering = mockMvc.perform(
                         put("/api/v1/fargekategori")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(oppdaterRequest)
                 )
                 .andExpect(status().is(200))
-                .andExpect(content().json(opprettJson));
+                .andReturn().getResponse().getContentAsString();
+        assertThat(resultatAvOppdatering).isEqualTo("{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"FARGEKATEGORI_B\"}");
     }
 
     @Test
@@ -288,6 +294,7 @@ public class FargekategoriControllerTest {
                   "fargekategoriVerdi":"INGEN_KATEGORI"
                 }
                 """;
+        String expectedResponse = "{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"INGEN_KATEGORI\"}";
 
         mockMvc.perform(
                         put("/api/v1/fargekategori")
@@ -296,12 +303,13 @@ public class FargekategoriControllerTest {
                 )
                 .andExpect(status().is(200));
 
-        mockMvc.perform(
+        String result = mockMvc.perform(
                         put("/api/v1/fargekategori")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(slettRequest)
-                )
-                .andExpect(status().is(204));
+                ).andReturn().getResponse().getContentAsString();
+
+        assertThat(result).isEqualTo(expectedResponse);
     }
 
     @Test
@@ -318,7 +326,7 @@ public class FargekategoriControllerTest {
                   "fargekategoriVerdi":"INGEN_KATEGORI"
                 }
                 """;
-
+        String expectedResponse = "{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"INGEN_KATEGORI\"}";
         mockMvc.perform(
                         put("/api/v1/fargekategori")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -326,12 +334,12 @@ public class FargekategoriControllerTest {
                 )
                 .andExpect(status().is(200));
 
-        mockMvc.perform(
+        String result = mockMvc.perform(
                         put("/api/v1/fargekategori")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(slettRequest)
-                )
-                .andExpect(status().is(204));
+                ).andExpect(status().is(200)).andReturn().getResponse().getContentAsString();
+        assertThat(result).isEqualTo(expectedResponse);
 
         FargekategoriEntity oppdatertFargekategoriEntity = queryForObjectOrNull(() -> {
             return jdbcTemplate.queryForObject(
