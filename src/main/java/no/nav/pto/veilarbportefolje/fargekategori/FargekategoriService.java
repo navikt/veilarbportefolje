@@ -38,7 +38,7 @@ public class FargekategoriService {
         return fargekategoriRepository.hentFargekategoriForBruker(request.fnr());
     }
 
-    public Optional<UUID> oppdaterFargekategoriForBruker(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {
+    public Optional<FargekategoriEntity> oppdaterFargekategoriForBruker(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {
         if (request.fargekategoriVerdi() == FargekategoriVerdi.INGEN_KATEGORI) {
             fargekategoriRepository.deleteFargekategori(request.fnr());
 
@@ -46,7 +46,7 @@ public class FargekategoriService {
 
             return Optional.empty();
         } else {
-            UUID oppdatertKategori = fargekategoriRepository.upsertFargekateori(request, sistEndretAv);
+            FargekategoriEntity oppdatertKategori = fargekategoriRepository.upsertFargekateori(request, sistEndretAv);
 
             oppdaterIOpensearch(request.fnr(), request.fargekategoriVerdi());
 

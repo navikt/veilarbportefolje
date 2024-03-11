@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
+import org.springframework.boot.autoconfigure.amqp.AbstractRabbitListenerContainerFactoryConfigurer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -74,11 +75,11 @@ public class FargekategoriController {
         }
 
         try {
-            Optional<UUID> fargekategoriId = fargekategoriService.oppdaterFargekategoriForBruker(request, innloggetVeileder);
+            Optional<FargekategoriEntity> fargekategoriEntity = fargekategoriService.oppdaterFargekategoriForBruker(request, innloggetVeileder);
 
-            return fargekategoriId
-                    .map(uuid -> ResponseEntity.ok(new FargekategoriResponse(uuid)))
-                    .orElseGet(() -> ResponseEntity.status(204).build());
+            return fargekategoriEntity
+                    .map(fargekategori -> ResponseEntity.ok(new FargekategoriResponse(fargekategori.fnr(), fargekategori.fargekategoriVerdi())))
+                    .orElseGet(() ->  ResponseEntity.ok(new FargekategoriResponse(request.fnr(), FargekategoriVerdi.INGEN_KATEGORI)));
         } catch (Exception e) {
             String melding = String.format("Klarte ikke å opprette/oppdatere fargekategori med verdi %s for fnr %s", request.fargekategoriVerdi.name(), request.fnr.get());
             secureLog.error(melding, e);
@@ -179,7 +180,7 @@ public class FargekategoriController {
     ) {
     }
 
-    public record FargekategoriResponse(UUID id) {
+    public record FargekategoriResponse(Fnr fnr, FargekategoriVerdi fargekategoriVerdi) {
     }
 
     public record OppdaterFargekategoriRequest(
