@@ -94,7 +94,7 @@ public class FargekategoriController {
         authService.innloggetVeilederHarTilgangTilOppfolging();
 
         BatchUpsertResponse responseEtterValidering = validerRequest(request);
-        if (responseEtterValidering.errors.size() > 0) {
+        if (!responseEtterValidering.errors.isEmpty()) {
             return ResponseEntity.status(400).body(responseEtterValidering);
         }
 
@@ -112,7 +112,7 @@ public class FargekategoriController {
                     request.fnr);
             secureLog.error(melding, e);
 
-            return ResponseEntity.internalServerError().body(new BatchUpsertResponse(Collections.emptyList(), request.fnr));
+            return ResponseEntity.internalServerError().body(new BatchUpsertResponse(Collections.emptyList(), request.fnr, request.fargekategoriVerdi));
         }
     }
 
@@ -130,7 +130,7 @@ public class FargekategoriController {
             }
         });
 
-        return new BatchUpsertResponse(sjekkGikkOK.stream().toList(), sjekkFeilet.stream().toList());
+        return new BatchUpsertResponse(sjekkGikkOK.stream().toList(), sjekkFeilet.stream().toList(), request.fargekategoriVerdi);
     }
 
     private BatchUpsertResponse sjekkVeilederautorisering(BatchoppdaterFargekategoriRequest request) {
@@ -166,7 +166,7 @@ public class FargekategoriController {
             }
         });
 
-        return new BatchUpsertResponse(sjekkGikkOK.stream().toList(), sjekkFeilet.stream().toList());
+        return new BatchUpsertResponse(sjekkGikkOK.stream().toList(), sjekkFeilet.stream().toList(), request.fargekategoriVerdi);
     }
 
     private static void validerRequest(Fnr fnr) {
@@ -197,6 +197,6 @@ public class FargekategoriController {
         public BatchoppdaterFargekategoriRequest {}
     }
 
-    public record BatchUpsertResponse(List<Fnr> data, List<Fnr> errors) {
+    public record BatchUpsertResponse(List<Fnr> data, List<Fnr> errors, FargekategoriVerdi fargekategoriVerdi) {
     }
 }
