@@ -364,6 +364,7 @@ public class FargekategoriControllerTest {
                 {
                     "data": ["11111111111","22222222222","33333333333"],
                     "errors": [],
+                    "fargekategoriVerdi":"FARGEKATEGORI_B"
                 }
                 """;
 
