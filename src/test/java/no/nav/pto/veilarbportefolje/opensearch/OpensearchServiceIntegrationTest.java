@@ -3965,7 +3965,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setFargekategorier(List.of("INGEN"));
+                .setFargekategorier(List.of("INGEN_KATEGORI"));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
