@@ -267,9 +267,9 @@ public class OpensearchQueryBuilder {
         if (filtervalg.harFargeKategoriFilter()) {
             BoolQueryBuilder subQuery = boolQuery();
             BoolQueryBuilder subQueryUnkjent = boolQuery();
-            filtervalg.getFargekategori().forEach(
+            filtervalg.getFargekategorier().forEach(
                     fargeKategori -> {
-                        if (fargeKategori.equalsIgnoreCase("INGEN")) {
+                        if (FargekategoriVerdi.INGEN_KATEGORI.name().equals(fargeKategori)) {
                             subQueryUnkjent.mustNot(existsQuery("fargekategori"));
                             subQuery.should(subQueryUnkjent);
                         } else {
