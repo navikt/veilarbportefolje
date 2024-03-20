@@ -10,13 +10,13 @@ import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import org.springframework.boot.autoconfigure.amqp.AbstractRabbitListenerContainerFactoryConfigurer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -94,18 +94,23 @@ public class FargekategoriController {
         authService.innloggetVeilederHarTilgangTilOppfolging();
 
         BatchUpsertResponse responseEtterValidering = validerRequest(request);
-        if (!responseEtterValidering.errors.isEmpty()) {
+        if (responseEtterValidering.data.isEmpty()) {
             return ResponseEntity.status(400).body(responseEtterValidering);
         }
 
-        BatchUpsertResponse responseEtterAutoriseringssjekk = sjekkVeilederautorisering(request);
+        BatchUpsertResponse responseEtterAutoriseringssjekk = sjekkVeilederautorisering(responseEtterValidering.data, request.fargekategoriVerdi);
+        List<Fnr> feilFraValideringOgAutorisering = Stream.concat(responseEtterValidering.errors.stream(), responseEtterAutoriseringssjekk.errors.stream()).toList();
+        BatchUpsertResponse  resultatFraValideringOgAutorisering = new BatchUpsertResponse(responseEtterAutoriseringssjekk.data, feilFraValideringOgAutorisering, request.fargekategoriVerdi);
+
+        if(responseEtterAutoriseringssjekk.data.isEmpty()) {
+            return ResponseEntity.status(403).body(resultatFraValideringOgAutorisering);
+        }
 
         try {
             fargekategoriService.batchoppdaterFargekategoriForBruker(request.fargekategoriVerdi, responseEtterAutoriseringssjekk.data, innloggetVeileder);
 
-            return responseEtterAutoriseringssjekk.data.isEmpty()
-                    ? ResponseEntity.status(403).body(responseEtterAutoriseringssjekk)
-                    : ResponseEntity.ok(responseEtterAutoriseringssjekk);
+            return ResponseEntity.ok(resultatFraValideringOgAutorisering);
+
         } catch (Exception e) {
             String melding = String.format("Klarte ikke å opprette/oppdatere fargekategori med verdi %s for fnr %s",
                     request.fargekategoriVerdi.name(),
@@ -133,11 +138,11 @@ public class FargekategoriController {
         return new BatchUpsertResponse(sjekkGikkOK.stream().toList(), sjekkFeilet.stream().toList(), request.fargekategoriVerdi);
     }
 
-    private BatchUpsertResponse sjekkVeilederautorisering(BatchoppdaterFargekategoriRequest request) {
+    private BatchUpsertResponse sjekkVeilederautorisering(List<Fnr> fodselsnumre, FargekategoriVerdi fargekategoriVerdi) {
         Set<Fnr> sjekkGikkOK = new java.util.HashSet<>(Collections.emptySet());
         Set<Fnr> sjekkFeilet = new java.util.HashSet<>(Collections.emptySet());
 
-        request.fnr.forEach(fnr -> {
+        fodselsnumre.forEach(fnr -> {
             try {
                 Optional<NavKontor> brukerEnhet = brukerServiceV2.hentNavKontor(fnr);
 
@@ -166,7 +171,7 @@ public class FargekategoriController {
             }
         });
 
-        return new BatchUpsertResponse(sjekkGikkOK.stream().toList(), sjekkFeilet.stream().toList(), request.fargekategoriVerdi);
+        return new BatchUpsertResponse(sjekkGikkOK.stream().toList(), sjekkFeilet.stream().toList(), fargekategoriVerdi);
     }
 
     private static void validerRequest(Fnr fnr) {
