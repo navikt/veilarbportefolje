@@ -37,7 +37,7 @@ public class HuskelappController {
     private final PdlIdentRepository pdlIdentRepository;
 
     @PostMapping("/huskelapp")
-    public ResponseEntity<String> opprettHuskelapp(@RequestBody HuskelappOpprettRequest huskelappOpprettRequest) {
+    public ResponseEntity<HuskelappOpprettResponse> opprettHuskelapp(@RequestBody HuskelappOpprettRequest huskelappOpprettRequest) {
         validerOppfolgingOgBrukerOgEnhet(huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get());
         try {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
@@ -48,11 +48,11 @@ public class HuskelappController {
             }
 
             if ((huskelappOpprettRequest.kommentar() == null || huskelappOpprettRequest.kommentar().isEmpty()) && huskelappOpprettRequest.frist() == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Huskelapp mangler frist og kommentar");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
 
             UUID uuid = huskelappService.opprettHuskelapp(huskelappOpprettRequest, veilederId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(uuid.toString());
+            return ResponseEntity.status(HttpStatus.CREATED).body(new HuskelappOpprettResponse(uuid.toString()));
 
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);

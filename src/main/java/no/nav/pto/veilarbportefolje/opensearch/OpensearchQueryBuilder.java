@@ -267,9 +267,9 @@ public class OpensearchQueryBuilder {
         if (filtervalg.harFargeKategoriFilter()) {
             BoolQueryBuilder subQuery = boolQuery();
             BoolQueryBuilder subQueryUnkjent = boolQuery();
-            filtervalg.getFargekategori().forEach(
+            filtervalg.getFargekategorier().forEach(
                     fargeKategori -> {
-                        if (fargeKategori.equalsIgnoreCase("INGEN")) {
+                        if (FargekategoriVerdi.INGEN_KATEGORI.name().equals(fargeKategori)) {
                             subQueryUnkjent.mustNot(existsQuery("fargekategori"));
                             subQuery.should(subQueryUnkjent);
                         } else {
@@ -825,12 +825,13 @@ public class OpensearchQueryBuilder {
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriA", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_A.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriB", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_B.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriC", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_C.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriD", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_D.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriE", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_E.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargeKategoriF", "arbeidsliste_kategori", FargekategoriVerdi.FARGEKATEGORI_F.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriA", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_A.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriB", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_B.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriC", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_C.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriD", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_D.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriE", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_E.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriF", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_F.name()),
+                mustNotExistFilter(filtrereVeilederOgEnhet, "fargekategoriIngenKategori", "fargekategori"),
                 mustExistFilter(filtrereVeilederOgEnhet, "mineHuskelapper", "huskelapp")
         };
 
@@ -1085,6 +1086,15 @@ public class OpensearchQueryBuilder {
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
                         .must(existsQuery(value))
+        );
+    }
+
+    private static FiltersAggregator.KeyedFilter mustNotExistFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String value) {
+        return new FiltersAggregator.KeyedFilter(
+                key,
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .mustNot(existsQuery(value))
         );
     }
 

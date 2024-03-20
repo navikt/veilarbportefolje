@@ -41,6 +41,13 @@ public class StatustallResponse {
                 Bucket adressebeskyttelseEllerSkjermingUfordelte;
                 Bucket adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV;
                 Bucket mineHuskelapper;
+                Bucket fargekategoriA;
+                Bucket fargekategoriB;
+                Bucket fargekategoriC;
+                Bucket fargekategoriD;
+                Bucket fargekategoriE;
+                Bucket fargekategoriF;
+                Bucket fargekategoriIngenKategori;
             }
         }
     }

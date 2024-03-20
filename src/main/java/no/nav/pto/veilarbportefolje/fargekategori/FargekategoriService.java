@@ -22,6 +22,7 @@ import java.util.UUID;
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +38,7 @@ public class FargekategoriService {
         return fargekategoriRepository.hentFargekategoriForBruker(request.fnr());
     }
 
-    public Optional<UUID> oppdaterFargekategoriForBruker(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {
+    public Optional<FargekategoriEntity> oppdaterFargekategoriForBruker(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {
         if (request.fargekategoriVerdi() == FargekategoriVerdi.INGEN_KATEGORI) {
             fargekategoriRepository.deleteFargekategori(request.fnr());
 
@@ -45,7 +46,7 @@ public class FargekategoriService {
 
             return Optional.empty();
         } else {
-            UUID oppdatertKategori = fargekategoriRepository.upsertFargekateori(request, sistEndretAv);
+            FargekategoriEntity oppdatertKategori = fargekategoriRepository.upsertFargekateori(request, sistEndretAv);
 
             oppdaterIOpensearch(request.fnr(), request.fargekategoriVerdi());
 
@@ -74,6 +75,21 @@ public class FargekategoriService {
     private void oppdaterIOpensearch(Fnr fnr, FargekategoriVerdi fargekategoriVerdi) {
         AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorId(fnr)).orElseThrow(RuntimeException::new);
         opensearchIndexerV2.updateFargekategori(aktorId, fargekategoriVerdi.name());
+    }
+
+    public void slettFargekategoriPaaBruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
+        try {
+            secureLog.info("Sletter fargekategori på bruker med aktoerid: " + aktorId);
+            if (maybeFnr.isPresent()) {
+                fargekategoriRepository.deleteFargekategori(maybeFnr.get());
+                opensearchIndexerV2.slettFargekategori(aktorId);
+            } else {
+                secureLog.warn("Kunne ikke slette fargekategori for bruker med AktørID {}. Årsak fødselsnummer-parameter var tom.", aktorId.get());
+            }
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke slette fagekategori for aktoerId: " + aktorId.toString(), e);
+            throw new RuntimeException("Kunne ikke slette fagekategori");
+        }
     }
 
     public Validation<String, Fnr> erVeilederForBruker(String fnr) {

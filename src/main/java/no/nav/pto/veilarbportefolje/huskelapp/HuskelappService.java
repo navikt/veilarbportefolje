@@ -39,7 +39,7 @@ public class HuskelappService {
             UUID huskelappId = huskelappRepository.opprettHuskelapp(huskelappOpprettRequest, veilederId);
 
             AktorId aktorId = hentAktorId(huskelappOpprettRequest.brukerFnr()).orElseThrow(RuntimeException::new);
-            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappOpprettRequest.frist(), huskelappOpprettRequest.kommentar(), LocalDate.now(), veilederId.getValue()));
+            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappOpprettRequest.frist(), huskelappOpprettRequest.kommentar(), LocalDate.now(), veilederId.getValue(), huskelappId.toString()));
 
             return huskelappId;
         } catch (Exception e) {
@@ -53,7 +53,7 @@ public class HuskelappService {
             huskelappRepository.redigerHuskelapp(huskelappRedigerRequest, veilederId);
 
             AktorId aktorId = hentAktorId(huskelappRedigerRequest.brukerFnr()).orElseThrow(RuntimeException::new);
-            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar(), LocalDate.now(), veilederId.getValue()));
+            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar(), LocalDate.now(), veilederId.getValue(), huskelappRedigerRequest.huskelappId().toString()));
 
         } catch (Exception e) {
             secureLog.error("Kunne ikke redigere huskelapp for fnr: " + huskelappRedigerRequest.brukerFnr() + " HuskelappId: " + huskelappRedigerRequest.huskelappId().toString(), e);

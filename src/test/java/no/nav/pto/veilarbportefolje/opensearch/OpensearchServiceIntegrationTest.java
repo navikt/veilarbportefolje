@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -556,7 +557,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0)
-                .setHuskelapp(new HuskelappForBruker(LocalDate.now(), "test huskelapp", LocalDate.now(), TEST_VEILEDER_0));
+                .setHuskelapp(new HuskelappForBruker(LocalDate.now(), "test huskelapp", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString()))
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
 
         var testBruker2 = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().toString())
@@ -572,7 +574,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setTrenger_vurdering(true)
                 .setVenterpasvarfranav("2018-05-09T22:00:00Z")
                 .setNyesteutlopteaktivitet("2018-05-09T22:00:00Z")
-                .setHuskelapp(null);
+                .setHuskelapp(null)
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name());
 
         var inaktivBruker = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().toString())
@@ -582,9 +585,14 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setFormidlingsgruppekode("ISERV");
 
-        var kode6BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
-        var kode7BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.FORTROLIG.diskresjonskode, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
-        var egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        var kode6BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode, false)
+                .setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()))
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
+        var kode7BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.FORTROLIG.diskresjonskode, false)
+                .setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()))
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name());
+        var egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true)
+                .setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
         var liste = List.of(testBruker1, testBruker2, inaktivBruker, kode6BrukerSomVeilederIkkeHarInnsynsrettPa, kode7BrukerSomVeilederIkkeHarInnsynsrettPa, egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa);
         skrivBrukereTilTestindeks(liste);
@@ -602,6 +610,13 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(statustall.getVenterPaSvarFraNAV()).isEqualTo(1);
         assertThat(statustall.getUtlopteAktiviteter()).isEqualTo(1);
         assertThat(statustall.getMineHuskelapper()).isEqualTo(1);
+        assertThat(statustall.getFargekategoriA()).isEqualTo(1);
+        assertThat(statustall.getFargekategoriB()).isEqualTo(1);
+        assertThat(statustall.getFargekategoriC()).isEqualTo(0);
+        assertThat(statustall.getFargekategoriD()).isEqualTo(0);
+        assertThat(statustall.getFargekategoriE()).isEqualTo(0);
+        assertThat(statustall.getFargekategoriF()).isEqualTo(0);
+        assertThat(statustall.getFargekategoriIngenKategori()).isEqualTo(1);
     }
 
     @Test
@@ -933,8 +948,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
-        var statustall = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
-        assertThat(statustall.getUfordelteBrukere()).isEqualTo(1);
+        var statustallForBrukereSomVeilederHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        var statustallForBrukereSomVeilederIkkeHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ);
+
+        assertThat(statustallForBrukereSomVeilederHarInnsynsrettPå.getUfordelteBrukere()).isEqualTo(1);
+        assertThat(statustallForBrukereSomVeilederIkkeHarInnsynsrettPå.getUfordelteBrukere()).isEqualTo(0);
     }
 
     @Test
@@ -3775,10 +3793,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void test_sortering_huskelapp() {
-        var huskelapp1 = new HuskelappForBruker(LocalDate.now().plusDays(20), "dddd Ringe fastlege", LocalDate.now(), TEST_VEILEDER_0);
-        var huskelapp2 = new HuskelappForBruker(LocalDate.now().plusDays(30), "bbbb Ha et møte", LocalDate.now(), TEST_VEILEDER_0);
-        var huskelapp3 = new HuskelappForBruker(LocalDate.now().plusMonths(2), "aaaa Snakke om idrett", LocalDate.now(), TEST_VEILEDER_0);
-        var huskelapp4 = new HuskelappForBruker(LocalDate.now().plusDays(3), "cccc Huddle med Julie", LocalDate.now(), TEST_VEILEDER_0);
+        var huskelapp1 = new HuskelappForBruker(LocalDate.now().plusDays(20), "dddd Ringe fastlege", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString());
+        var huskelapp2 = new HuskelappForBruker(LocalDate.now().plusDays(30), "bbbb Ha et møte", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString());
+        var huskelapp3 = new HuskelappForBruker(LocalDate.now().plusMonths(2), "aaaa Snakke om idrett", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString());
+        var huskelapp4 = new HuskelappForBruker(LocalDate.now().plusDays(3), "cccc Huddle med Julie", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString());
 
         var bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3930,7 +3948,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setFargekategori(List.of(FargekategoriVerdi.FARGEKATEGORI_B.name(), FargekategoriVerdi.FARGEKATEGORI_A.name()));
+                .setFargekategorier(List.of(FargekategoriVerdi.FARGEKATEGORI_B.name(), FargekategoriVerdi.FARGEKATEGORI_A.name()));
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -3947,7 +3965,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setFargekategori(List.of("INGEN"));
+                .setFargekategorier(List.of("INGEN_KATEGORI"));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,

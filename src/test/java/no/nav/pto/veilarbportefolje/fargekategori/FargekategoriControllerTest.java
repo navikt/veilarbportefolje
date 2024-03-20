@@ -148,7 +148,7 @@ public class FargekategoriControllerTest {
                 .andExpect(status().is(200))
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat(responseJson.contains("\"id\":")).isTrue();
+        assertThat(responseJson.contains("{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"FARGEKATEGORI_A\"}")).isTrue();
     }
 
     @Test
@@ -199,6 +199,8 @@ public class FargekategoriControllerTest {
                 }
                 """;
 
+
+
         String opprettJson = mockMvc.perform(
                         put("/api/v1/fargekategori")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -206,14 +208,16 @@ public class FargekategoriControllerTest {
                 )
                 .andExpect(status().is(200))
                 .andReturn().getResponse().getContentAsString();
+        assertThat(opprettJson).isEqualTo("{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"FARGEKATEGORI_A\"}");
 
-        mockMvc.perform(
+        String resultatAvOppdatering = mockMvc.perform(
                         put("/api/v1/fargekategori")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(oppdaterRequest)
                 )
                 .andExpect(status().is(200))
-                .andExpect(content().json(opprettJson));
+                .andReturn().getResponse().getContentAsString();
+        assertThat(resultatAvOppdatering).isEqualTo("{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"FARGEKATEGORI_B\"}");
     }
 
     @Test
@@ -288,6 +292,7 @@ public class FargekategoriControllerTest {
                   "fargekategoriVerdi":"INGEN_KATEGORI"
                 }
                 """;
+        String expectedResponse = "{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"INGEN_KATEGORI\"}";
 
         mockMvc.perform(
                         put("/api/v1/fargekategori")
@@ -296,12 +301,13 @@ public class FargekategoriControllerTest {
                 )
                 .andExpect(status().is(200));
 
-        mockMvc.perform(
+        String result = mockMvc.perform(
                         put("/api/v1/fargekategori")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(slettRequest)
-                )
-                .andExpect(status().is(204));
+                ).andReturn().getResponse().getContentAsString();
+
+        assertThat(result).isEqualTo(expectedResponse);
     }
 
     @Test
@@ -318,7 +324,7 @@ public class FargekategoriControllerTest {
                   "fargekategoriVerdi":"INGEN_KATEGORI"
                 }
                 """;
-
+        String expectedResponse = "{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"INGEN_KATEGORI\"}";
         mockMvc.perform(
                         put("/api/v1/fargekategori")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -326,12 +332,12 @@ public class FargekategoriControllerTest {
                 )
                 .andExpect(status().is(200));
 
-        mockMvc.perform(
+        String result = mockMvc.perform(
                         put("/api/v1/fargekategori")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(slettRequest)
-                )
-                .andExpect(status().is(204));
+                ).andExpect(status().is(200)).andReturn().getResponse().getContentAsString();
+        assertThat(result).isEqualTo(expectedResponse);
 
         FargekategoriEntity oppdatertFargekategoriEntity = queryForObjectOrNull(() -> {
             return jdbcTemplate.queryForObject(
@@ -356,6 +362,7 @@ public class FargekategoriControllerTest {
                 {
                     "data": ["11111111111","22222222222","33333333333"],
                     "errors": [],
+                    "fargekategoriVerdi":"FARGEKATEGORI_B"
                 }
                 """;
 
@@ -408,10 +415,44 @@ public class FargekategoriControllerTest {
     }
 
     @Test
+    void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_alle_fnr_feiler_validering() throws Exception {
+        String fnr1 = "1";
+        String fnr2 = "dette er på ingen måte et fødselsnummer";
+        String fnr3 = "dette er heller ikke et fødselsnummer";
+
+        String opprettMangeRequest = """
+                {
+                  "fnr":["$fnr1","$fnr2","$fnr3"],
+                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                }
+                """.replace("$fnr1", fnr1)
+                .replace("$fnr2", fnr2)
+                .replace("$fnr3", fnr3);
+
+        String expected = """
+                {
+                    "data": [],
+                    "errors": ["$fnr1", "$fnr2", "$fnr3"],
+                }
+                """.replace("$fnr1", fnr1)
+                .replace("$fnr2", fnr2)
+                .replace("$fnr3", fnr3);
+
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategorier")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(opprettMangeRequest)
+                )
+                .andExpect(status().is(400))
+                .andExpect(content().json(expected));
+    }
+
+    @Test
     void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_noen_fnr_feiler_validering() throws Exception {
         String fnr1 = "1";
         String fnr2 = "dette er på ingen måte et fødselsnummer";
-        String fnr3 = "44444444444";
+        String fnr3 = "11111111111";
 
         String opprettMangeRequest = """
                 {
@@ -437,12 +478,81 @@ public class FargekategoriControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(opprettMangeRequest)
                 )
-                .andExpect(status().is(400))
+                .andExpect(status().is(200))
                 .andExpect(content().json(expected));
     }
 
     @Test
-    void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_noen_fnr_feiler_autentisering() throws Exception {
+    void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_noen_fnr_feiler_validering_og_andre_feiler_autorisering() throws Exception {
+        String fnr1 = "Dette er ikke et fødselsnummer";
+        String fnr2 = "22222222222";
+        String fnr3 = "44444444444";
+
+        String opprettMangeRequest = """
+                {
+                  "fnr":["$fnr1","$fnr2","$fnr3"],
+                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                }
+                """.replace("$fnr1", fnr1)
+                .replace("$fnr2", fnr2)
+                .replace("$fnr3", fnr3);
+
+        String expected = """
+                {
+                    "data": ["$fnr2"],
+                    "errors": ["$fnr1", "$fnr3"],
+                }
+                """.replace("$fnr1", fnr1)
+                .replace("$fnr2", fnr2)
+                .replace("$fnr3", fnr3);
+
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategorier")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(opprettMangeRequest)
+                )
+                .andExpect(status().is(200))
+                .andExpect(content().json(expected));
+    }
+
+    @Test
+    void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_alle_fnr_feiler_validering_eller_autorisering() throws Exception {
+        String fnr1 = "Dette er ikke et fødselsnummer";
+        String fnr2 = "1";
+        String fnr3 = "44444444444";
+
+        String opprettMangeRequest = """
+                {
+                  "fnr":["$fnr1","$fnr2","$fnr3"],
+                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                }
+                """.replace("$fnr1", fnr1)
+                .replace("$fnr2", fnr2)
+                .replace("$fnr3", fnr3);
+
+        String expected = """
+                {
+                    "data": [],
+                    "errors": ["$fnr1", "$fnr2", "$fnr3"],
+                }
+                """.replace("$fnr1", fnr1)
+                .replace("$fnr2", fnr2)
+                .replace("$fnr3", fnr3);
+
+
+        mockMvc.perform(
+                        put("/api/v1/fargekategorier")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(opprettMangeRequest)
+                )
+                .andExpect(status().is(403))
+                .andExpect(content().json(expected));
+    }
+
+
+    @Test
+    void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_noen_fnr_feiler_autorisering() throws Exception {
         String fnr1 = "11111111111";
         String fnr2 = "22222222222";
         String fnr3 = "44444444444";
@@ -476,7 +586,7 @@ public class FargekategoriControllerTest {
     }
 
     @Test
-    void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_alle_fnr_feiler_autentisering() throws Exception {
+    void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_alle_fnr_feiler_autorisering() throws Exception {
         String fnr1 = "44444444444";
         String fnr2 = "55555555555";
         String fnr3 = "66666666666";
