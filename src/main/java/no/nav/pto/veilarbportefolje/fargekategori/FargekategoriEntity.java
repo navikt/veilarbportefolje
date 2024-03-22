@@ -1,9 +1,11 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 public record FargekategoriEntity(
@@ -11,5 +13,7 @@ public record FargekategoriEntity(
         Fnr fnr,
         FargekategoriVerdi fargekategoriVerdi,
         LocalDate sistEndret,
-        NavIdent endretAv
+        NavIdent endretAv,
+        // TODO 22.03.2024: Fjern Optional når frontend har tatt i bruk enhetId
+        Optional<EnhetId> enhetId
 ) {}
