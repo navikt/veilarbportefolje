@@ -101,11 +101,11 @@ public class ArbeidslisteRepositoryV2 {
                             data.getKommentar(), data.getFrist(), null, data.getAktorId().get());
 
                     int fargekategoriRows = db.update("""
-                                    INSERT INTO FARGEKATEGORI (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
-                                    VALUES(?,?,?,?,?) ON CONFLICT (FNR) DO UPDATE SET
-                                    (VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT) = (excluded.VERDI, excluded.SIST_ENDRET, excluded.SIST_ENDRET_AV_VEILEDERIDENT)
+                                    INSERT INTO FARGEKATEGORI (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT, ENHET_ID)
+                                    VALUES(?,?,?,?,?,?) ON CONFLICT (FNR) DO UPDATE SET
+                                    (VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT, ENHET_ID) = (excluded.VERDI, excluded.SIST_ENDRET, excluded.SIST_ENDRET_AV_VEILEDERIDENT, excluded.ENHET_ID)
                                     """,
-                            UUID.randomUUID(), data.getFnr().get(), ArbeidslisteMapper.mapTilFargekategoriVerdi(data.getKategori()), endringsTidspunkt, data.getVeilederId().getValue());
+                            UUID.randomUUID(), data.getFnr().get(), ArbeidslisteMapper.mapTilFargekategoriVerdi(data.getKategori()), endringsTidspunkt, data.getVeilederId().getValue(), data.getNavKontorForArbeidsliste());
 
                     secureLog.info("Oppdaterte arbeidsliste pa bruker {}, rader: {}", data.getAktorId().get(), arbeidslisteRows + fargekategoriRows);
                     return data.setEndringstidspunkt(endringsTidspunkt);
@@ -157,11 +157,17 @@ public class ArbeidslisteRepositoryV2 {
                 aktoerId, dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), null, dto.getNavKontorForArbeidsliste());
 
         int oppdaterteRaderIFargekategori = db.update("""
-                        INSERT INTO FARGEKATEGORI (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
-                        VALUES(?,?,?,?,?) ON CONFLICT (FNR) DO UPDATE SET
-                        (VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT) = (excluded.VERDI, excluded.SIST_ENDRET, excluded.SIST_ENDRET_AV_VEILEDERIDENT)
+                        INSERT INTO FARGEKATEGORI (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT, ENHET_ID)
+                        VALUES(?,?,?,?,?,?) ON CONFLICT (FNR) DO UPDATE SET
+                        (VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT, ENHET_ID) = (excluded.VERDI, excluded.SIST_ENDRET, excluded.SIST_ENDRET_AV_VEILEDERIDENT, excluded.ENHET_ID)
                         """,
-                UUID.randomUUID(), dto.getFnr().get(), ArbeidslisteMapper.mapTilFargekategoriVerdi(dto.getKategori()), dto.getEndringstidspunkt(), dto.getVeilederId().getValue());
+                UUID.randomUUID(),
+                dto.getFnr().get(),
+                ArbeidslisteMapper.mapTilFargekategoriVerdi(dto.getKategori()),
+                dto.getEndringstidspunkt(),
+                dto.getVeilederId().getValue(),
+                dto.getNavKontorForArbeidsliste()
+        );
 
         if (oppdaterteRaderIArbeidsliste != oppdaterteRaderIFargekategori) {
             log.warn("Oppdaterte ulikt antall rader i henholdsvis ARBEIDSLISTE og FARGEKATEGORI. " +

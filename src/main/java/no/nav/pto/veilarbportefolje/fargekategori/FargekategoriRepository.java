@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController.OppdaterFargekategoriRequest;
@@ -38,12 +39,12 @@ public class FargekategoriRepository {
     }
 
     @Transactional
-    public FargekategoriEntity upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {
+    public FargekategoriEntity upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv, Optional<EnhetId> enhetId) {
         Timestamp sistEndret = toTimestamp(ZonedDateTime.now());
 
         String upsertSql = """
-                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident, enhet_id)
+                    VALUES (?, ?, ?, ?, ?, ?)
                     ON CONFLICT (fnr) DO UPDATE
                     SET verdi=?, sist_endret=?, sist_endret_av_veilederident=?
                 """;
@@ -54,6 +55,8 @@ public class FargekategoriRepository {
                 request.fargekategoriVerdi().name(),
                 sistEndret,
                 sistEndretAv.getValue(),
+                // TODO 22.03.2024: Fjern Optional/default-null handling når frontend har tatt i bruk enhetId
+                enhetId.map(EnhetId::get).orElse(null),
                 request.fargekategoriVerdi().name(),
                 sistEndret,
                 sistEndretAv.getValue());

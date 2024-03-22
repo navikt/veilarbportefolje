@@ -4,6 +4,7 @@ import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -46,7 +47,9 @@ public class FargekategoriService {
 
             return Optional.empty();
         } else {
-            FargekategoriEntity oppdatertKategori = fargekategoriRepository.upsertFargekateori(request, sistEndretAv);
+            // TODO 22.03.2024: Fjern Optional når frontend har tatt i bruk enhetId
+            Optional<EnhetId> maybeEnhetId = Optional.ofNullable(request.enhetId());
+            FargekategoriEntity oppdatertKategori = fargekategoriRepository.upsertFargekateori(request, sistEndretAv, maybeEnhetId);
 
             oppdaterIOpensearch(request.fnr(), request.fargekategoriVerdi());
 

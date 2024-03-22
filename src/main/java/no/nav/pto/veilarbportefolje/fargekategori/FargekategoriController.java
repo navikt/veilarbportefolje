@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
@@ -190,8 +191,9 @@ public class FargekategoriController {
 
     public record OppdaterFargekategoriRequest(
             @JsonProperty(required = true) Fnr fnr,
-            @JsonProperty(required = true) FargekategoriVerdi fargekategoriVerdi
-    ) {
+            @JsonProperty(required = true) FargekategoriVerdi fargekategoriVerdi,
+            @JsonProperty EnhetId enhetId
+        ) {
     }
 
     public record BatchoppdaterFargekategoriRequest(
