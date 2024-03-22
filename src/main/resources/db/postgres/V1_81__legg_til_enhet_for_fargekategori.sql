@@ -1,0 +1,1 @@
+ALTER TABLE fargekategori ADD COLUMN enhet_id VARCHAR(4) default null;
