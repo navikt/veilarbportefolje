@@ -23,6 +23,8 @@ class VeilarbarenaClient(
 ) {
 
     fun hentOppfolgingsbruker(fnr: Fnr): Optional<OppfolgingsbrukerDTO> {
+        // TODO: Endre fra OBO-token til STS-token
+
         val request: Request = Request.Builder()
             .url(joinPaths(veilarbarenaApiConfig.url, "/api/v2/hent-oppfolgingsbruker"))
             .header(HttpHeaders.AUTHORIZATION, authService.getOboToken(veilarbarenaApiConfig.tokenScope))
