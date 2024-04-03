@@ -29,25 +29,18 @@ class VeilarbarenaClient(
             .post(toJsonRequestBody(HentOppfolgingsbrukerRequest(fnr)))
             .build()
 
-        try {
-            client.newCall(request).execute().use { response ->
-                if (response.code == HttpStatus.NOT_FOUND.value()) {
-                    return Optional.empty()
-                }
-
-                RestUtils.throwIfNotSuccessful(response)
-
-                return Optional.ofNullable(
-                    parseJsonResponseOrThrow(
-                        response,
-                        OppfolgingsbrukerDTO::class.java
-                    )
-                )
+        client.newCall(request).execute().use { response ->
+            if (response.code == HttpStatus.NOT_FOUND.value()) {
+                return Optional.empty()
             }
-        } catch (e: Exception) {
-            throw ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Feil ved kall mot veilarbarena/oppfolgingsbruker"
+
+            RestUtils.throwIfNotSuccessful(response)
+
+            return Optional.ofNullable(
+                parseJsonResponseOrThrow(
+                    response,
+                    OppfolgingsbrukerDTO::class.java
+                )
             )
         }
     }
