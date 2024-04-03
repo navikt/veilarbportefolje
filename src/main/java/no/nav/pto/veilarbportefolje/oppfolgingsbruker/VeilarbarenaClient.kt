@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker
 
-import com.fasterxml.jackson.annotation.JsonAlias
+import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.ws.rs.core.HttpHeaders
 import no.nav.common.rest.client.RestUtils
 import no.nav.common.rest.client.RestUtils.parseJsonResponseOrThrow
@@ -60,25 +61,26 @@ data class VeilarbarenaApiConfig(
     val tokenScope: String
 )
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 data class OppfolgingsbrukerDTO(
     val fodselsnr: String? = null,
     val formidlingsgruppekode: String? = null,
-    @JsonAlias("nav_kontor")
+    @get:JsonProperty("nav_kontor")
     val navKontor: String? = null,
     val kvalifiseringsgruppekode: String? = null,
     val rettighetsgruppekode: String? = null,
     val hovedmaalkode: String? = null,
-    @JsonAlias("sikkerhetstiltak_type_kode")
+    @get:JsonProperty("sikkerhetstiltak_type_kode")
     val sikkerhetstiltakTypeKode: String? = null,
-    @JsonAlias("fr_kode")
+    @get:JsonProperty("fr_kode")
     val frKode: String? = null,
-    @JsonAlias("har_oppfolgingssak")
+    @get:JsonProperty("har_oppfolgingssak")
     val harOppfolgingssak: Boolean? = null,
-    @JsonAlias("sperret_ansatt")
+    @get:JsonProperty("sperret_ansatt")
     val sperretAnsatt: Boolean? = null,
-    @JsonAlias("er_doed")
+    @get:JsonProperty("er_doed")
     val erDoed: Boolean? = null,
-    @JsonAlias("doed_fra_dato")
+    @get:JsonProperty("doed_fra_dato")
     val doedFraDato: ZonedDateTime? = null
 )
 
