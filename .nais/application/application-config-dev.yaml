@@ -93,6 +93,10 @@ spec:
       value: "http://veilarbveileder.pto.svc.nais.local/veilarbveileder"
     - name: VEILARBVEILEDER_TOKEN_SCOPE
       value: "api://dev-fss.pto.veilarbveileder/.default"
+    - name: VEILARBARENA_URL
+      value: "http://veilarbarena.pto.svc.nais.local/veilarbarena"
+    - name: VEILARBARENA_TOKEN_SCOPE
+      value: "api://dev-fss.pto.veilarbarena/.default"
     - name: PDL_URL
       value: "http://pdl-api.pdl.svc.nais.local"
     - name: PDL_TOKEN_SCOPE

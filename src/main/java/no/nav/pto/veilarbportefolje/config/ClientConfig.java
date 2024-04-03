@@ -11,17 +11,20 @@ import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.net.http.HttpClient;
+import java.util.function.Supplier;
 
 import static no.nav.common.utils.NaisUtils.getCredentials;
 
@@ -91,4 +94,17 @@ public class ClientConfig {
         );
     }
 
+    @Bean
+    public VeilarbarenaClient veilarbarenaMachineToMachineClient(
+            AuthService authService,
+            EnvironmentProperties environmentProperties
+    ) {
+        Supplier<String> tokenSupplier = () -> authService.getM2MToken(environmentProperties.getVeilarbarenaScope());
+
+        return new VeilarbarenaClient(
+                environmentProperties.getVeilarbarenaUrl(),
+                tokenSupplier,
+                RestClient.baseClient()
+        );
+    }
 }

@@ -10,6 +10,7 @@ import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -35,14 +36,22 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 public class AuthService {
     private final AzureAdOnBehalfOfTokenClient aadOboTokenClient;
+    private final AzureAdMachineToMachineTokenClient aadM2MTokenClient;
     private final PoaoTilgangWrapper poaoTilgangWrapper;
     private final Pep veilarbPep;
     private final Cache<VeilederPaEnhet, Boolean> harVeilederTilgangTilEnhetCache;
     private final MetricsClient metricsClient;
 
     @Autowired
-    public AuthService(Pep veilarbPep, PoaoTilgangWrapper poaoTilgangWrapper, AzureAdOnBehalfOfTokenClient aadOboTokenClient, MetricsClient metricsClient) {
+    public AuthService(
+            AzureAdOnBehalfOfTokenClient aadOboTokenClient,
+            AzureAdMachineToMachineTokenClient aadM2MTokenClient,
+            PoaoTilgangWrapper poaoTilgangWrapper,
+            Pep veilarbPep,
+            MetricsClient metricsClient
+    ) {
         this.aadOboTokenClient = aadOboTokenClient;
+        this.aadM2MTokenClient = aadM2MTokenClient;
         this.poaoTilgangWrapper = poaoTilgangWrapper;
         this.veilarbPep = veilarbPep;
         this.metricsClient = metricsClient;
@@ -159,6 +168,10 @@ public class AuthService {
 
     public String getOboToken(String tokenScope) {
         return aadOboTokenClient.exchangeOnBehalfOfToken(tokenScope, getInnloggetBrukerToken());
+    }
+
+    public String getM2MToken(String tokenScope) {
+        return aadM2MTokenClient.createMachineToMachineToken(tokenScope);
     }
 
     public boolean harVeilederTilgangTilBarn(BarnUnder18AarData barn, String veilederIdent) {
