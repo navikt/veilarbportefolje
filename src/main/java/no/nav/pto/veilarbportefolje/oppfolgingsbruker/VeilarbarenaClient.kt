@@ -8,27 +8,25 @@ import no.nav.common.rest.client.RestUtils.parseJsonResponseOrThrow
 import no.nav.common.rest.client.RestUtils.toJsonRequestBody
 import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.UrlUtils.joinPaths
-import no.nav.pto.veilarbportefolje.auth.AuthService
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
 import java.util.*
+import java.util.function.Supplier
 
 
 class VeilarbarenaClient(
-    private val veilarbarenaApiConfig: VeilarbarenaApiConfig,
-    private val authService: AuthService,
+    private val url: String,
+    private val tokenSupplier: Supplier<String>,
     private val client: OkHttpClient
 ) {
 
     fun hentOppfolgingsbruker(fnr: Fnr): Optional<OppfolgingsbrukerDTO> {
-        // TODO: Endre fra OBO-token til STS-token
-
         val request: Request = Request.Builder()
-            .url(joinPaths(veilarbarenaApiConfig.url, "/api/v2/hent-oppfolgingsbruker"))
-            .header(HttpHeaders.AUTHORIZATION, authService.getOboToken(veilarbarenaApiConfig.tokenScope))
+            .url(joinPaths(url, "/api/v2/hent-oppfolgingsbruker"))
+            .header(HttpHeaders.AUTHORIZATION, tokenSupplier.get())
             .post(toJsonRequestBody(HentOppfolgingsbrukerRequest(fnr)))
             .build()
 
@@ -56,10 +54,6 @@ class VeilarbarenaClient(
     }
 }
 
-data class VeilarbarenaApiConfig(
-    val url: String,
-    val tokenScope: String
-)
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 data class OppfolgingsbrukerDTO(

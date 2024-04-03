@@ -4,16 +4,11 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import no.nav.common.rest.client.RestClient
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.auth.AuthService
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakApiDto
-import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
-import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 import org.assertj.core.api.Assertions
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito.*
-import java.time.ZonedDateTime
 import java.util.*
+import java.util.function.Supplier
 
 class VeilarbarenaClientTest {
 
@@ -24,12 +19,10 @@ class VeilarbarenaClientTest {
     @Test
     fun hentOppfolgingsbruker_gir_forventet_respons() {
         val fnr = Fnr.of("123")
-        val authServiceMock = mock(AuthService::class.java)
-        `when`(authServiceMock.getOboToken(any())).thenReturn("TOKEN")
 
         val client = VeilarbarenaClient(
-            VeilarbarenaApiConfig("http://localhost:" + wireMockRule.port(), "tokenScope"),
-            authServiceMock,
+            "http://localhost:" + wireMockRule.port(),
+            { "TOKEN" },
             RestClient.baseClient()
         )
 
