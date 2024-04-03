@@ -17,7 +17,7 @@ class VeilarbarenaClientTest {
     val wireMockRule: WireMockRule = WireMockRule(0)
 
     @Test
-    fun hentOppfolgingsbruker_gir_forventet_respons() {
+    fun hentOppfolgingsbruker_gir_forventet_respons_naar_bruker_eksisterer() {
         val fnr = Fnr.of("123")
 
         val client = VeilarbarenaClient(
@@ -70,5 +70,53 @@ class VeilarbarenaClientTest {
         )
 
         Assertions.assertThat(response).isEqualTo(Optional.of(forventet))
+    }
+
+    @Test
+    fun hentOppfolgingsbruker_gir_forventet_respons_naar_bruker_ikke_eksisterer() {
+        val fnr = Fnr.of("123")
+
+        val client = VeilarbarenaClient(
+            "http://localhost:" + wireMockRule.port(),
+            { "TOKEN" },
+            RestClient.baseClient()
+        )
+
+        WireMock.givenThat(
+            WireMock.post(WireMock.urlEqualTo("/api/v2/hent-oppfolgingsbruker")).withRequestBody(
+                WireMock.equalToJson(
+                    "{\"fnr\":\"$fnr\"}"
+                )
+            ).willReturn(WireMock.aResponse().withStatus(404))
+        )
+
+        val response = client.hentOppfolgingsbruker(fnr)
+
+        Assertions.assertThat(response).isEqualTo(Optional.empty<OppfolgingsbrukerDTO>())
+    }
+
+    @Test
+    fun hentOppfolgingsbruker_gir_forventet_respons_naar_downstream_server_har_feil() {
+        val fnr = Fnr.of("123")
+
+        val client = VeilarbarenaClient(
+            "http://localhost:" + wireMockRule.port(),
+            { "TOKEN" },
+            RestClient.baseClient()
+        )
+
+        WireMock.givenThat(
+            WireMock.post(WireMock.urlEqualTo("/api/v2/hent-oppfolgingsbruker")).withRequestBody(
+                WireMock.equalToJson(
+                    "{\"fnr\":\"$fnr\"}"
+                )
+            ).willReturn(WireMock.aResponse().withStatus(500))
+        )
+
+        try {
+            client.hentOppfolgingsbruker(fnr)
+        } catch (e: Exception) {
+            Assertions.assertThat(e).isInstanceOf(RuntimeException::class.java)
+        }
     }
 }
