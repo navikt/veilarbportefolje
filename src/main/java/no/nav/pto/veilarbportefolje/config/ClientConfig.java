@@ -97,7 +97,6 @@ public class ClientConfig {
     @Bean
     public VeilarbarenaClient veilarbarenaClient(
             AuthService authService,
-            AzureAdMachineToMachineTokenClient tokenClient,
             EnvironmentProperties environmentProperties
     ) {
         return new VeilarbarenaClient(
