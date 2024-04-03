@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.ws.rs.core.HttpHeaders
 import no.nav.common.rest.client.RestUtils
@@ -55,7 +54,6 @@ class VeilarbarenaClient(
 }
 
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 data class OppfolgingsbrukerDTO(
     val fodselsnr: String? = null,
     val formidlingsgruppekode: String? = null,
