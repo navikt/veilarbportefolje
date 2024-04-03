@@ -34,6 +34,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
     private final OpensearchIndexer opensearchIndexer;
     private final Utkast14aStatusRepository utkast14aStatusRepository;
     private final DefaultUnleash defaultUnleash;
+    private final VeilarbarenaClient veilarbarenaClient;
 
     @Override
     public void behandleKafkaMeldingLogikk(EndringPaaOppfoelgingsBrukerV2 kafkaMelding) {
@@ -69,6 +70,29 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
                 .map(Kafka14aStatusendring.Status::toString)
                 .orElse(null);
         opensearchIndexerV2.updateOppfolgingsbruker(aktorId, oppfolgingsbruker, utkast14aStatus);
+    }
+
+    public void hentOgLagreOppfolgingsbruker(AktorId aktorId) {
+        Fnr fnr = brukerServiceV2.hentFnr(aktorId)
+                .orElseThrow(() -> new RuntimeException("Fant ikke fnr for aktorId: " + aktorId));
+
+        OppfolgingsbrukerDTO oppfolgingsbrukerDTO = veilarbarenaClient.hentOppfolgingsbruker(fnr)
+                .orElseThrow(() -> new RuntimeException("Fant ikke oppfolgingsbruker for fnr: " + fnr));
+
+        OppfolgingsbrukerEntity oppfolgingsbrukerEntity = new OppfolgingsbrukerEntity(
+                oppfolgingsbrukerDTO.getFodselsnr(),
+                oppfolgingsbrukerDTO.getFormidlingsgruppekode(),
+                oppfolgingsbrukerDTO.getIservFraDato(),
+                oppfolgingsbrukerDTO.getNavKontor(),
+                oppfolgingsbrukerDTO.getKvalifiseringsgruppekode(),
+                oppfolgingsbrukerDTO.getRettighetsgruppekode(),
+                oppfolgingsbrukerDTO.getHovedmaalkode(),
+                oppfolgingsbrukerDTO.getSistEndretDato()
+        );
+
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity);
+        log.info("Oppfolgingsbruker hentet og lagret.");
+        secureLog.info("Oppfolgingsbruker hentet og lagret for aktorId: {} / fnr: {}.", aktorId, fnr);
     }
 }
 

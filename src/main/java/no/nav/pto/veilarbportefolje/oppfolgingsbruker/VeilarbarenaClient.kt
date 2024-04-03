@@ -45,7 +45,6 @@ class VeilarbarenaClient(
     }
 }
 
-
 data class OppfolgingsbrukerDTO(
     val fodselsnr: String? = null,
     val formidlingsgruppekode: String? = null,
