@@ -10,7 +10,6 @@ import no.nav.common.utils.UrlUtils.joinPaths
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
 import java.util.*
 import java.util.function.Supplier
