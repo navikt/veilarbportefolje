@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteMapper;
+import no.nav.pto.veilarbportefolje.domene.ArenaHovedmal;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
@@ -13,6 +14,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,7 +28,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.lang.Boolean.parseBoolean;
+import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
+import static no.nav.pto.veilarbportefolje.PortefoljeMapper.mapTilArenaHovedmal;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -76,7 +81,9 @@ public class BrukerRepositoryV2 {
                                HL.kommentar						as HL_KOMMENTAR,
                                HL.endret_dato                   as HL_ENDRET_DATO,
                                hl.endret_av_veileder            as HL_ENDRET_AV,
-                               HL.huskelapp_id                  as HL_HUSKELAPPID
+                               HL.huskelapp_id                  as HL_HUSKELAPPID,
+                               SAV.hovedmal                     as SAV_HOVEDMAL,
+                               SAV.fra_arena                    as SAV_FRA_ARENA
                         FROM OPPFOLGING_DATA OD
                                 inner join aktive_identer ai on OD.aktoerid = ai.aktorid
                                  left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
@@ -92,6 +99,7 @@ public class BrukerRepositoryV2 {
                                  LEFT JOIN ENDRING_I_REGISTRERING EiR on EiR.AKTOERID = ai.aktorid
                                  LEFT JOIN fargekategori far on far.fnr = ai.fnr
                                  LEFT JOIN HUSKELAPP HL on HL.fnr = ai.fnr and HL.status = 'AKTIV'
+                                 LEFT JOIN siste_14a_vedtak SAV on SAV.bruker_id = ai.aktorid
                                  where ai.aktorid = ANY (?::varchar[])
                         """,
                 (ResultSet rs) -> {
@@ -113,14 +121,19 @@ public class BrukerRepositoryV2 {
         long startTime = System.currentTimeMillis();
         OppfolgingsBruker brukerMedHistoriskData = queryForObjectOrNull(() ->
                 db.queryForObject("""
-                        select * from oppfolgingsbruker_arena_v2 ob
+                        select 
+                            ob.*, 
+                            SAV.hovedmal as SAV_HOVEDMAL, 
+                            SAV.fra_arena as SAV_FRA_ARENA 
+                        from oppfolgingsbruker_arena_v2 ob 
+                        LEFT JOIN siste_14a_vedtak SAV on SAV.bruker_id = ?
                         where ob.fodselsnr in
                             (select ident from bruker_identer where person =
                                 (select person from bruker_identer where ident = ?)
                             )
                         order by ob.endret_dato desc
                         limit 1
-                        """, (rs, i) -> flettInnOppfolgingsbruker(bruker, bruker.getUtkast_14a_status(), rs), bruker.getFnr())
+                        """, (rs, i) -> flettInnOppfolgingsbruker(bruker, bruker.getUtkast_14a_status(), rs), bruker.getAktoer_id(), bruker.getFnr())
         );
         long endTime = System.currentTimeMillis();
         log.info("Ytelse, søkte opp historisk arena data på: {}ms", endTime - startTime);
@@ -161,7 +174,7 @@ public class BrukerRepositoryV2 {
                 .setOppfolging_startdato(toIsoUTC(rs.getTimestamp(STARTDATO)))
                 .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp(VENTER_PA_BRUKER)))
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp(VENTER_PA_NAV)))
-                .setUtkast_14a_status(Optional.ofNullable(utkast14aStatus)
+                .setUtkast_14a_status(ofNullable(utkast14aStatus)
                         .map(Kafka14aStatusendring.Status::valueOf)
                         .map(Kafka14aStatusendring::statusTilTekst)
                         .orElse(null))
@@ -189,18 +202,18 @@ public class BrukerRepositoryV2 {
 
             bruker.setArbeidsliste_aktiv(true)
                     .setArbeidsliste_endringstidspunkt(arbeidslisteTidspunkt)
-                    .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp(ARB_FRIST))).orElse(getFarInTheFutureDate()))
+                    .setArbeidsliste_frist(ofNullable(toIsoUTC(rs.getTimestamp(ARB_FRIST))).orElse(getFarInTheFutureDate()))
                     .setArbeidsliste_kategori(resolvedFargekategori)
                     .setArbeidsliste_sist_endret_av_veilederid(rs.getString(ARB_SIST_ENDRET_AV_VEILEDERIDENT))
                     .setNavkontor_for_arbeidsliste(rs.getString(ARB_NAV_KONTOR_FOR_ARBEIDSLISTE));
             String overskrift = rs.getString(ARB_OVERSKRIFT);
 
             bruker.setArbeidsliste_tittel_lengde(
-                    Optional.ofNullable(overskrift)
+                    ofNullable(overskrift)
                             .map(String::length)
                             .orElse(0));
             bruker.setArbeidsliste_tittel_sortering(
-                    Optional.ofNullable(overskrift)
+                    ofNullable(overskrift)
                             .filter(s -> !s.isEmpty())
                             .map(s -> s.substring(0, Math.min(2, s.length())))
                             .orElse(""));
@@ -257,17 +270,31 @@ public class BrukerRepositoryV2 {
 
         String formidlingsgruppekode = rs.getString(FORMIDLINGSGRUPPEKODE);
         String kvalifiseringsgruppekode = rs.getString(KVALIFISERINGSGRUPPEKODE);
-        return bruker
+        OppfolgingsBruker oppfolgingsbrukerMedHovedmal = flettInnHovedmal(bruker, rs);
+        return oppfolgingsbrukerMedHovedmal
                 .setFnr(fnr)
                 .setEnhet_id(rs.getString(NAV_KONTOR))
                 .setIserv_fra_dato(toIsoUTC(rs.getTimestamp(ISERV_FRA_DATO)))
                 .setRettighetsgruppekode(rs.getString(RETTIGHETSGRUPPEKODE))
-                .setHovedmaalkode(rs.getString(HOVEDMAALKODE))
                 .setFormidlingsgruppekode(formidlingsgruppekode)
                 .setKvalifiseringsgruppekode(kvalifiseringsgruppekode)
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, utkast14aStatus));
+    }
+
+    @SneakyThrows
+    private OppfolgingsBruker flettInnHovedmal(OppfolgingsBruker oppfolgingsBruker, ResultSet resultSet) {
+        String vedtakFinnes = resultSet.getString(SAV_FRA_ARENA);
+        boolean vedtakFattetIArena = resultSet.getBoolean(SAV_FRA_ARENA);
+
+        if (vedtakFinnes != null && !vedtakFattetIArena) {
+            Optional<String> hovedmaalSiste14aVedtak = ofNullable(resultSet.getString(SAV_HOVEDMAL));
+            return oppfolgingsBruker.setHovedmaalkode(hovedmaalSiste14aVedtak.map(hovedmaal -> mapTilArenaHovedmal(Hovedmal.valueOf(hovedmaal)).name()).orElse(null));
+        }
+
+        String hovedmaalOppfolgingsbrukerArena = resultSet.getString(HOVEDMAALKODE);
+        return oppfolgingsBruker.setHovedmaalkode(hovedmaalOppfolgingsbrukerArena);
     }
 
     @SneakyThrows

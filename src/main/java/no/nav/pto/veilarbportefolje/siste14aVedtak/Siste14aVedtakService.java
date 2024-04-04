@@ -26,6 +26,9 @@ public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVe
         if (pdlIdentRepository.erBrukerUnderOppfolging(siste14aVedtak.brukerId)) {
             IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(siste14aVedtak.brukerId);
             siste14aVedtakRepository.upsert(siste14aVedtak, identer);
+       /*     if(!siste14aVedtak.fraArena) {
+                oppdaterOpenSearch med hovedmål fra dette vedtaket
+            }*/
         }
     }
 

@@ -15,9 +15,14 @@ import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +49,7 @@ public class BrukerRepositoryV2Test {
     private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     private HuskelappRepository huskelappRepository;
+    private Siste14aVedtakRepository siste14aVedtakRepository;
 
     @BeforeEach
     public void setUp() {
@@ -57,6 +63,7 @@ public class BrukerRepositoryV2Test {
         this.pdlPersonRepository = new PdlPersonRepository(db, db);
         this.oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
         this.huskelappRepository = new HuskelappRepository(db, null);
+        this.siste14aVedtakRepository = new Siste14aVedtakRepository(db, db);
     }
 
     @Test
@@ -129,6 +136,31 @@ public class BrukerRepositoryV2Test {
         Assertions.assertThat(oppfolgingsBrukers_pre_nyFnrIArena.get(0).getFnr()).isEqualTo(fnr_2.get());
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.get(0).getFnr()).isEqualTo(fnr_ny.get());
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.get(0).getEnhet_id()).isEqualTo("0001");
+    }
+    @Test
+    public void skalHenteHovedmalFraRiktigSted() {
+        IdenterForBruker identer = new IdenterForBruker(List.of("1"));
+        Fnr fnr_1 = Fnr.of("1");
+        Fnr fnr_2 = Fnr.of("2");
+        Fnr fnr_ny = Fnr.of("3");
+        AktorId aktorId1 = randomAktorId();
+        AktorId aktorId2 = randomAktorId();
+        AktorId aktorId3 = randomAktorId();
+        List<PDLIdent> identList = List.of(
+                new PDLIdent(fnr_1.get(), false, FOLKEREGISTERIDENT),
+        new PDLIdent(aktorId1.get(), false, AKTORID));
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId1, ZonedDateTime.now());
+        pdlPersonRepository.upsertPerson(fnr_1, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        pdlIdentRepository.upsertIdenter(identList);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
+                new OppfolgingsbrukerEntity(fnr_1.get(), null, null,
+                        "0321", "BATT", null,
+                        "SKAFFE_A", ZonedDateTime.now()));
+    //    siste14aVedtakRepository.upsert(new Siste14aVedtak(aktorId1.get(), Innsatsgruppe.SITUASJONSBESTEMT_INNSATS, Hovedmal.BEHOLDE_ARBEID, ZonedDateTime.now(), true), identer);
+        brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1));
+        String kode = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1)).get(0).getHovedmaalkode();
+        Assertions.assertThat(brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1)).get(0).getHovedmaalkode()).isEqualTo("BEHOLDE_ARBEID");
+
     }
 
 

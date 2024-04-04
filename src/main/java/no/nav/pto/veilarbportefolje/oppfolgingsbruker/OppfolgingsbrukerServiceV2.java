@@ -8,7 +8,10 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukOppfolgingsbrukerPaPostgres;
@@ -29,6 +33,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RequiredArgsConstructor
 public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<EndringPaaOppfoelgingsBrukerV2> {
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
+    private final Siste14aVedtakRepository siste14aVedtakRepository;
     private final BrukerServiceV2 brukerServiceV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OpensearchIndexer opensearchIndexer;
@@ -46,7 +51,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
                 iservDato,
                 kafkaMelding.getOppfolgingsenhet(), Optional.ofNullable(kafkaMelding.getKvalifiseringsgruppe()).map(Kvalifiseringsgruppe::name).orElse(null),
                 Optional.ofNullable(kafkaMelding.getRettighetsgruppe()).map(Rettighetsgruppe::name).orElse(null),
-                Optional.ofNullable(kafkaMelding.getHovedmaal()).map(Hovedmaal::name).orElse(null),
+                Optional.ofNullable(kafkaMelding.getHovedmaal()).map(Hovedmaal::name).orElse(null),//TODO dersom siste14avedtak fraArena=false bruk den i steden for denne inkommende
                 kafkaMelding.getSistEndretDato());
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
 
@@ -66,6 +71,10 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
                 .map(Kafka14aStatusendring::getVedtakStatusEndring)
                 .map(Kafka14aStatusendring.Status::toString)
                 .orElse(null);
+        if(oppfolgingsbruker.hovedmaalkode().isEmpty()) {
+          //  Optional<Siste14aVedtak> siste14aVedtakForBruker = siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get())));
+          //  Boolean vedtakFattetIArena = siste14aVedtakForBruker.map(Siste14aVedtak::isFraArena).orElse();
+        }
         opensearchIndexerV2.updateOppfolgingsbruker(aktorId, oppfolgingsbruker, utkast14aStatus);
     }
 }
