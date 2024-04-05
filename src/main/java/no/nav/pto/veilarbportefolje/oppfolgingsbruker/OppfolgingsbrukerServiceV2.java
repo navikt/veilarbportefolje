@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
@@ -35,15 +36,24 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
     private final Utkast14aStatusRepository utkast14aStatusRepository;
     private final DefaultUnleash defaultUnleash;
     private final VeilarbarenaClient veilarbarenaClient;
+    private final PdlIdentRepository pdlIdentRepository;
 
     @Override
     public void behandleKafkaMeldingLogikk(EndringPaaOppfoelgingsBrukerV2 kafkaMelding) {
+        String fodselsnummer = kafkaMelding.getFodselsnummer();
+
+        if (!pdlIdentRepository.erBrukerUnderOppfolging(fodselsnummer)) {
+            log.info("Bruker er ikke under oppfølging, ignorerer melding.");
+            secureLog.info("Bruker er ikke under oppfølging, ignorerer endring på bruker med fnr: {}", fodselsnummer);
+            return;
+        }
+
         ZonedDateTime iservDato = Optional.ofNullable(kafkaMelding.getIservFraDato())
                 .map(dato -> ZonedDateTime.of(dato.atStartOfDay(), ZoneId.systemDefault()))
                 .orElse(null);
 
         OppfolgingsbrukerEntity oppfolgingsbruker = new OppfolgingsbrukerEntity(
-                kafkaMelding.getFodselsnummer(),
+                fodselsnummer,
                 kafkaMelding.getFormidlingsgruppe().name(),
                 iservDato,
                 kafkaMelding.getOppfolgingsenhet(),
@@ -53,7 +63,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
                 kafkaMelding.getSistEndretDato());
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
 
-        brukerServiceV2.hentAktorId(Fnr.of(kafkaMelding.getFodselsnummer()))
+        brukerServiceV2.hentAktorId(Fnr.of(fodselsnummer))
                 .ifPresent(id -> {
                     secureLog.info("Fikk endring pa oppfolgingsbruker (V2): {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v2", id);
                     if (brukOppfolgingsbrukerPaPostgres(defaultUnleash)) {
