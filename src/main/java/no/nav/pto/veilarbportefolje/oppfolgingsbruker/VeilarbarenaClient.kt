@@ -23,7 +23,7 @@ class VeilarbarenaClient(
 
     fun hentOppfolgingsbruker(fnr: Fnr): Optional<OppfolgingsbrukerDTO> {
         val request: Request = Request.Builder()
-            .url(joinPaths(url, "/api/v2/hent-oppfolgingsbruker"))
+            .url(joinPaths(url, "/api/v3/hent-oppfolgingsbruker"))
             .header(HttpHeaders.AUTHORIZATION, tokenSupplier.get())
             .post(toJsonRequestBody(HentOppfolgingsbrukerRequest(fnr)))
             .build()
@@ -49,25 +49,18 @@ class VeilarbarenaClient(
 data class OppfolgingsbrukerDTO(
     val fodselsnr: String? = null,
     val formidlingsgruppekode: String? = null,
-    @get:JsonProperty("nav_kontor")
     val navKontor: String? = null,
-    @get:JsonProperty("iserv_fra_dato")
     val iservFraDato: ZonedDateTime? = null,
     val kvalifiseringsgruppekode: String? = null,
     val rettighetsgruppekode: String? = null,
     val hovedmaalkode: String? = null,
-    @get:JsonProperty("sikkerhetstiltak_type_kode")
     val sikkerhetstiltakTypeKode: String? = null,
-    @get:JsonProperty("fr_kode")
     val frKode: String? = null,
-    @get:JsonProperty("har_oppfolgingssak")
     val harOppfolgingssak: Boolean? = null,
-    @get:JsonProperty("sperret_ansatt")
     val sperretAnsatt: Boolean? = null,
-    @get:JsonProperty("er_doed")
     val erDoed: Boolean? = null,
-    @get:JsonProperty("doed_fra_dato")
-    val doedFraDato: ZonedDateTime? = null
+    val doedFraDato: ZonedDateTime? = null,
+    val sistEndretDato: ZonedDateTime? = null
 )
 
 data class HentOppfolgingsbrukerRequest(val fnr: Fnr)
