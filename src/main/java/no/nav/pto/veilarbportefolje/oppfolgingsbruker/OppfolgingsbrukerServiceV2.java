@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.PortefoljeMapper;
+import no.nav.pto.veilarbportefolje.domene.ArenaHovedmal;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -25,6 +27,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukOppfolgingsbrukerPaPostgres;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -51,7 +54,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
                 iservDato,
                 kafkaMelding.getOppfolgingsenhet(), Optional.ofNullable(kafkaMelding.getKvalifiseringsgruppe()).map(Kvalifiseringsgruppe::name).orElse(null),
                 Optional.ofNullable(kafkaMelding.getRettighetsgruppe()).map(Rettighetsgruppe::name).orElse(null),
-                Optional.ofNullable(kafkaMelding.getHovedmaal()).map(Hovedmaal::name).orElse(null),//TODO dersom siste14avedtak fraArena=false bruk den i steden for denne inkommende
+                Optional.ofNullable(kafkaMelding.getHovedmaal()).map(Hovedmaal::name).orElse(null),
                 kafkaMelding.getSistEndretDato());
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
 
@@ -71,11 +74,15 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
                 .map(Kafka14aStatusendring::getVedtakStatusEndring)
                 .map(Kafka14aStatusendring.Status::toString)
                 .orElse(null);
-        if(oppfolgingsbruker.hovedmaalkode().isEmpty()) {
-          //  Optional<Siste14aVedtak> siste14aVedtakForBruker = siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get())));
-          //  Boolean vedtakFattetIArena = siste14aVedtakForBruker.map(Siste14aVedtak::isFraArena).orElse();
-        }
         opensearchIndexerV2.updateOppfolgingsbruker(aktorId, oppfolgingsbruker, utkast14aStatus);
+        if(oppfolgingsbruker.hovedmaalkode().isEmpty()) {
+            Optional<Siste14aVedtak> siste14aVedtakForBruker = siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get())));
+            Boolean vedtakFattetIArena = siste14aVedtakForBruker.map(Siste14aVedtak::isFraArena).orElse(null);
+            if (Boolean.FALSE.equals(vedtakFattetIArena)) {
+                String hovedmaal = siste14aVedtakForBruker.map(Siste14aVedtak::getHovedmal).map(PortefoljeMapper::mapTilArenaHovedmal).map(ArenaHovedmal::name).orElse(null);
+                opensearchIndexerV2.updateHovedmaalkode(aktorId, hovedmaal);
+            }
+        }
     }
 }
 
