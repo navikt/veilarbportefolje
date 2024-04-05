@@ -8,6 +8,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
+import no.nav.pto.veilarbportefolje.domene.ArenaHovedmal;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
@@ -17,6 +18,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
+import no.nav.pto_schema.enums.arena.Hovedmaal;
 import org.opensearch.OpenSearchException;
 import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.update.UpdateRequest;
@@ -90,6 +92,16 @@ public class OpensearchIndexerV2 {
                 .endObject();
 
         update(aktoerId, content, "Oppdater oppfolgingsbruker");
+    }
+
+    @SneakyThrows
+    public void updateHovedmaalkode(AktorId aktoerId, String hovedmaal) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("hovedmaalkode", hovedmaal)
+                .endObject();
+
+        update(aktoerId, content, "Oppdater hovedmaalkode");
     }
 
     @SneakyThrows

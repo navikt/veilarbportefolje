@@ -155,11 +155,11 @@ public class BrukerRepositoryV2Test {
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_1.get(), null, null,
                         "0321", "BATT", null,
-                        "SKAFFE_A", ZonedDateTime.now()));
-    //    siste14aVedtakRepository.upsert(new Siste14aVedtak(aktorId1.get(), Innsatsgruppe.SITUASJONSBESTEMT_INNSATS, Hovedmal.BEHOLDE_ARBEID, ZonedDateTime.now(), true), identer);
+                        "SKAFFEA", ZonedDateTime.now()));
+        siste14aVedtakRepository.upsert(new Siste14aVedtak(aktorId1.get(), Innsatsgruppe.SITUASJONSBESTEMT_INNSATS, Hovedmal.BEHOLDE_ARBEID, ZonedDateTime.now(), false), identer);
         brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1));
         String kode = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1)).get(0).getHovedmaalkode();
-        Assertions.assertThat(brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1)).get(0).getHovedmaalkode()).isEqualTo("BEHOLDE_ARBEID");
+        Assertions.assertThat(brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1)).get(0).getHovedmaalkode()).isEqualTo("BEHOLDEA");
 
     }
 
