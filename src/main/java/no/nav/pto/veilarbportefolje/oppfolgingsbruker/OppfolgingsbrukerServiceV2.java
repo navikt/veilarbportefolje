@@ -27,7 +27,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.Optional.ofNullable;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukOppfolgingsbrukerPaPostgres;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -61,7 +60,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
         brukerServiceV2.hentAktorId(Fnr.of(kafkaMelding.getFodselsnummer()))
                 .ifPresent(id -> {
                     secureLog.info("Fikk endring pa oppfolgingsbruker (V2): {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v2", id);
-                    if (brukOppfolgingsbrukerPaPostgres(defaultUnleash)) {
+                    if (!brukOppfolgingsbrukerPaPostgres(defaultUnleash)) {
                         opensearchIndexer.indekser(id);
                     } else {
                         oppdaterOpensearch(id, oppfolgingsbruker);
@@ -75,7 +74,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
                 .map(Kafka14aStatusendring.Status::toString)
                 .orElse(null);
         opensearchIndexerV2.updateOppfolgingsbruker(aktorId, oppfolgingsbruker, utkast14aStatus);
-        if(oppfolgingsbruker.hovedmaalkode().isEmpty()) {
+        if(oppfolgingsbruker.hovedmaalkode() == null) {
             Optional<Siste14aVedtak> siste14aVedtakForBruker = siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get())));
             Boolean vedtakFattetIArena = siste14aVedtakForBruker.map(Siste14aVedtak::isFraArena).orElse(null);
             if (Boolean.FALSE.equals(vedtakFattetIArena)) {
