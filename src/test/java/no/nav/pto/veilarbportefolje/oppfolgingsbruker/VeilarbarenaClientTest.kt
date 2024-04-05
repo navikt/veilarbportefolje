@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr
 import org.assertj.core.api.Assertions
 import org.junit.Rule
 import org.junit.Test
+import java.time.ZonedDateTime
 import java.util.*
 import java.util.function.Supplier
 
@@ -30,7 +31,7 @@ class VeilarbarenaClientTest {
                     {
                       "fodselsnr": "17858998980",
                       "formidlingsgruppekode": "ARBS",
-                      "iserv_fra_dato": null,
+                      "iserv_fra_dato": "2024-04-04T00:00:00+02:00",
                       "nav_kontor": "0220",
                       "kvalifiseringsgruppekode": "BATT",
                       "rettighetsgruppekode": "INDS",
@@ -58,6 +59,7 @@ class VeilarbarenaClientTest {
             fodselsnr = "17858998980",
             formidlingsgruppekode = "ARBS",
             navKontor = "0220",
+            iservFraDato = ZonedDateTime.parse("2024-04-04T00:00:00+02:00"),
             kvalifiseringsgruppekode = "BATT",
             rettighetsgruppekode = "INDS",
             hovedmaalkode = "SKAFFEA",

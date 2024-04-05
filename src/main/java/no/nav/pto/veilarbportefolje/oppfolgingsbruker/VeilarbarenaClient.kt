@@ -51,6 +51,8 @@ data class OppfolgingsbrukerDTO(
     val formidlingsgruppekode: String? = null,
     @get:JsonProperty("nav_kontor")
     val navKontor: String? = null,
+    @get:JsonProperty("iserv_fra_dato")
+    val iservFraDato: ZonedDateTime? = null,
     val kvalifiseringsgruppekode: String? = null,
     val rettighetsgruppekode: String? = null,
     val hovedmaalkode: String? = null,
