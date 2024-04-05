@@ -28,7 +28,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 @RequiredArgsConstructor
 public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<EndringPaaOppfoelgingsBrukerV2> {
-    private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
+    private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
     private final BrukerServiceV2 brukerServiceV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OpensearchIndexer opensearchIndexer;
@@ -42,13 +42,15 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
                 .orElse(null);
 
         OppfolgingsbrukerEntity oppfolgingsbruker = new OppfolgingsbrukerEntity(
-                kafkaMelding.getFodselsnummer(), kafkaMelding.getFormidlingsgruppe().name(),
+                kafkaMelding.getFodselsnummer(),
+                kafkaMelding.getFormidlingsgruppe().name(),
                 iservDato,
-                kafkaMelding.getOppfolgingsenhet(), Optional.ofNullable(kafkaMelding.getKvalifiseringsgruppe()).map(Kvalifiseringsgruppe::name).orElse(null),
+                kafkaMelding.getOppfolgingsenhet(),
+                Optional.ofNullable(kafkaMelding.getKvalifiseringsgruppe()).map(Kvalifiseringsgruppe::name).orElse(null),
                 Optional.ofNullable(kafkaMelding.getRettighetsgruppe()).map(Rettighetsgruppe::name).orElse(null),
                 Optional.ofNullable(kafkaMelding.getHovedmaal()).map(Hovedmaal::name).orElse(null),
                 kafkaMelding.getSistEndretDato());
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
 
         brukerServiceV2.hentAktorId(Fnr.of(kafkaMelding.getFodselsnummer()))
                 .ifPresent(id -> {
