@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
@@ -13,7 +12,6 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
@@ -43,6 +41,7 @@ public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
     @BeforeEach
     public void setup() {
         db.update("truncate oppfolgingsbruker_arena_v2");
+        db.update("truncate oppfolging_data");
         db.update("truncate bruker_identer");
     }
 
@@ -76,6 +75,20 @@ public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
     }
 
     @Test
+    public void skalIkkeKonsumereOgLagreDataNaarBrukerIkkeErUnderOppfolging() {
+        LocalDate iserv_fra_dato = ZonedDateTime.now().minusDays(2).toLocalDate();
+        ZonedDateTime endret_dato = DateUtils.now();
+
+        EndringPaaOppfoelgingsBrukerV2 kafkaMelding = EndringPaaOppfoelgingsBrukerV2.builder().fodselsnummer(fnr.get()).formidlingsgruppe(Formidlingsgruppe.RARBS).iservFraDato(iserv_fra_dato)
+                .oppfolgingsenhet("007").kvalifiseringsgruppe(Kvalifiseringsgruppe.BKART).rettighetsgruppe(Rettighetsgruppe.AAP).hovedmaal(Hovedmaal.SKAFFEA)
+                .sperretAnsatt(false).sistEndretDato(endret_dato)
+                .build();
+        oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        assertTrue(oppfolgingsBruker.isEmpty());
+    }
+
+    @Test
     public void skalKonsumereDataNaarBrukerErUnderOppfolging() {
         insertOppfolgingsInformasjon(aktorId, fnr);
 
@@ -90,4 +103,16 @@ public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
         assertTrue(oppfolgingsBruker.isPresent());
     }
 
+    @Test
+    public void skalIkkeKonsumereDataNaarBrukerIkkeErUnderOppfolging() {
+        ZonedDateTime endret_dato = DateUtils.now();
+
+        EndringPaaOppfoelgingsBrukerV2 kafkaMelding = EndringPaaOppfoelgingsBrukerV2.builder().fodselsnummer(fnr.get()).formidlingsgruppe(Formidlingsgruppe.ARBS).iservFraDato(null)
+                .etternavn("Testerson").fornavn("Test").oppfolgingsenhet("0220").kvalifiseringsgruppe(Kvalifiseringsgruppe.IVURD).rettighetsgruppe(Rettighetsgruppe.IYT).hovedmaal(Hovedmaal.SKAFFEA).sikkerhetstiltakType(null)
+                .diskresjonskode(null).harOppfolgingssak(false).sperretAnsatt(false).erDoed(false).doedFraDato(null).sistEndretDato(endret_dato)
+                .build();
+        oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        assertTrue(oppfolgingsBruker.isEmpty());
+    }
 }
