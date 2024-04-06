@@ -92,19 +92,33 @@ public class PdlIdentRepository {
                 .stream().map(rs -> (String) rs.get("person")).toList();
     }
 
-    public Fnr hentFnr(AktorId aktorId) {
+    /**
+     * Henter fnr for en aktiv bruker/ident. Dvs. det må eksistere en aktiv {@code fnr<-->aktorId} mapping for brukeren.
+     * Denne metoden vil f.eks. returnere {@code null} dersom {@code bruker} er en historisk aktorId.
+     *
+     * @param bruker {@code AktorId} for brukeren
+     * @return {@code Fnr} for brukeren, eller {@code null} hvis brukeren ikke er aktiv
+     */
+    public Fnr hentFnrForAktivBruker(AktorId bruker) {
         return queryForObjectOrNull(
                 () -> db.queryForObject("select fnr from aktive_identer where aktorid = ?",
                         (rs, i) -> Optional.ofNullable(rs.getString("fnr")).map(Fnr::of).orElse(null),
-                        aktorId.get()
+                        bruker.get()
                 ));
     }
 
-    public AktorId hentAktorId(Fnr fnr) {
+    /**
+     * Henter aktorId for en aktiv bruker/ident. Dvs. det må eksistere en aktiv {@code fnr<-->aktorId} mapping for brukeren.
+     * Denne metoden vil f.eks. returnere {@code null} dersom {@code bruker} er et historisk fnr.
+     *
+     * @param bruker {@code Fnr} for brukeren
+     * @return {@code AktorId} for brukeren, eller {@code null} hvis brukeren ikke er aktiv
+     */
+    public AktorId hentAktorIdForAktivBruker(Fnr bruker) {
         return queryForObjectOrNull(
                 () -> db.queryForObject("select aktorid from aktive_identer where fnr = ?",
                         (rs, i) -> Optional.ofNullable(rs.getString("aktorid")).map(AktorId::of).orElse(null),
-                        fnr.get())
+                        bruker.get())
         );
     }
 

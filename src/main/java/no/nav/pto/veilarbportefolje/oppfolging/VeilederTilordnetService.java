@@ -47,7 +47,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         secureLog.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
         final boolean harByttetNavKontor = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
-        Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnr(aktoerId));
+        Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));
         if (harByttetNavKontor) {
             arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr);
         }

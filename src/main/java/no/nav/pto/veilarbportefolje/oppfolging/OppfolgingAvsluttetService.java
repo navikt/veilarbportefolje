@@ -44,7 +44,7 @@ public class OppfolgingAvsluttetService {
     private final FargekategoriService fargekategoriService;
 
     public void avsluttOppfolging(AktorId aktoerId) {
-        Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnr(aktoerId));
+        Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));
 
         oppfolgingRepositoryV2.slettOppfolgingData(aktoerId);
         registreringService.slettRegistering(aktoerId);
