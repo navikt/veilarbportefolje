@@ -1,8 +1,10 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
+import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
@@ -19,16 +21,17 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(classes = ApplicationConfigTest.class)
-public class OppfolgingsbrukerServiceV2Test {
+public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
     private final JdbcTemplate db;
     private final OppfolgingsbrukerServiceV2 oppfolginsbrukerService;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
     private final Fnr fnr = randomFnr();
+    private final AktorId aktorId = randomAktorId();
 
     @Autowired
     public OppfolgingsbrukerServiceV2Test(JdbcTemplate db, OppfolgingsbrukerServiceV2 oppfolginsbrukerService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3) {
@@ -45,12 +48,22 @@ public class OppfolgingsbrukerServiceV2Test {
 
 
     @Test
-    public void skalKonsumereOgLagreData() {
+    public void skalKonsumereOgLagreDataNaarBrukerErUnderOppfolging() {
+        insertOppfolgingsInformasjon(aktorId, fnr);
+
         LocalDate iserv_fra_dato = ZonedDateTime.now().minusDays(2).toLocalDate();
         ZonedDateTime endret_dato = DateUtils.now();
 
-        OppfolgingsbrukerEntity forventetResultat = new OppfolgingsbrukerEntity(fnr.get(), "RARBS", ZonedDateTime.of(iserv_fra_dato.atStartOfDay(), ZoneId.systemDefault()),
-                 "007", "BKART", "AAP", "SKAFFEA", endret_dato);
+        OppfolgingsbrukerEntity forventetResultat = new OppfolgingsbrukerEntity(
+                fnr.get(),
+                "RARBS",
+                ZonedDateTime.of(iserv_fra_dato.atStartOfDay(), ZoneId.systemDefault()),
+                "007",
+                "BKART",
+                "AAP",
+                "SKAFFEA",
+                endret_dato
+        );
 
         EndringPaaOppfoelgingsBrukerV2 kafkaMelding = EndringPaaOppfoelgingsBrukerV2.builder().fodselsnummer(fnr.get()).formidlingsgruppe(Formidlingsgruppe.RARBS).iservFraDato(iserv_fra_dato)
                 .oppfolgingsenhet("007").kvalifiseringsgruppe(Kvalifiseringsgruppe.BKART).rettighetsgruppe(Rettighetsgruppe.AAP).hovedmaal(Hovedmaal.SKAFFEA)
@@ -63,7 +76,9 @@ public class OppfolgingsbrukerServiceV2Test {
     }
 
     @Test
-    public void skalKonsumereData() {
+    public void skalKonsumereDataNaarBrukerErUnderOppfolging() {
+        insertOppfolgingsInformasjon(aktorId, fnr);
+
         ZonedDateTime endret_dato = DateUtils.now();
 
         EndringPaaOppfoelgingsBrukerV2 kafkaMelding = EndringPaaOppfoelgingsBrukerV2.builder().fodselsnummer(fnr.get()).formidlingsgruppe(Formidlingsgruppe.ARBS).iservFraDato(null)
