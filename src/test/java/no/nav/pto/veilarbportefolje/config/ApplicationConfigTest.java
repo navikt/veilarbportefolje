@@ -43,6 +43,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
@@ -350,5 +351,8 @@ public class ApplicationConfigTest {
         return poaoTilgangWrapper;
     }
 
-
+    @Bean
+    public VeilarbarenaClient veilarbarenaClient() {
+        return mock(VeilarbarenaClient.class);
+    }
 }
