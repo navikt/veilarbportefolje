@@ -137,15 +137,32 @@ public class BrukerRepositoryV2Test {
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.get(0).getFnr()).isEqualTo(fnr_ny.get());
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.get(0).getEnhet_id()).isEqualTo("0001");
     }
+
     @Test
-    public void skalHenteHovedmalFraRiktigSted() {
+    public void hovedmaalFraRettKilde_HovedmalFraModiaVelges() {
         IdenterForBruker identer = new IdenterForBruker(List.of("1"));
         Fnr fnr_1 = Fnr.of("1");
-        Fnr fnr_2 = Fnr.of("2");
-        Fnr fnr_ny = Fnr.of("3");
         AktorId aktorId1 = randomAktorId();
-        AktorId aktorId2 = randomAktorId();
-        AktorId aktorId3 = randomAktorId();
+        List<PDLIdent> identList = List.of(
+                new PDLIdent(fnr_1.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId1.get(), false, AKTORID));
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId1, ZonedDateTime.now());
+        pdlPersonRepository.upsertPerson(fnr_1, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        pdlIdentRepository.upsertIdenter(identList);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
+                new OppfolgingsbrukerEntity(fnr_1.get(), null, null,
+                        "0321", "BATT", null,
+                        null, ZonedDateTime.now()));
+        siste14aVedtakRepository.upsert(new Siste14aVedtak(aktorId1.get(), Innsatsgruppe.SITUASJONSBESTEMT_INNSATS, Hovedmal.BEHOLDE_ARBEID, ZonedDateTime.now(), false), identer);
+        brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1));
+        Assertions.assertThat(brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1)).get(0).getHovedmaalkode()).isEqualTo("BEHOLDEA");
+
+    }
+    @Test
+    public void hovedmaalFraRettKilde_HovedmalFraModiaVelgesSelvomHovedmalEndretIArenaEtterpaa() {
+        IdenterForBruker identer = new IdenterForBruker(List.of("1"));
+        Fnr fnr_1 = Fnr.of("1");
+        AktorId aktorId1 = randomAktorId();
         List<PDLIdent> identList = List.of(
                 new PDLIdent(fnr_1.get(), false, FOLKEREGISTERIDENT),
         new PDLIdent(aktorId1.get(), false, AKTORID));
@@ -158,10 +175,69 @@ public class BrukerRepositoryV2Test {
                         "SKAFFEA", ZonedDateTime.now()));
         siste14aVedtakRepository.upsert(new Siste14aVedtak(aktorId1.get(), Innsatsgruppe.SITUASJONSBESTEMT_INNSATS, Hovedmal.BEHOLDE_ARBEID, ZonedDateTime.now(), false), identer);
         brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1));
-        String kode = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1)).get(0).getHovedmaalkode();
         Assertions.assertThat(brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1)).get(0).getHovedmaalkode()).isEqualTo("BEHOLDEA");
 
     }
 
+    @Test
+    public void hovedmaalFraRettKilde_HovedmalFraArenaVelgesDersomIkkeFattetFraModia() {
+        IdenterForBruker identer = new IdenterForBruker(List.of("1"));
+        Fnr fnr_1 = Fnr.of("1");
+        AktorId aktorId1 = randomAktorId();
+        List<PDLIdent> identList = List.of(
+                new PDLIdent(fnr_1.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId1.get(), false, AKTORID));
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId1, ZonedDateTime.now());
+        pdlPersonRepository.upsertPerson(fnr_1, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        pdlIdentRepository.upsertIdenter(identList);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
+                new OppfolgingsbrukerEntity(fnr_1.get(), null, null,
+                        "0321", "BATT", null,
+                        "SKAFFEA", ZonedDateTime.now()));
+        siste14aVedtakRepository.upsert(new Siste14aVedtak(aktorId1.get(), Innsatsgruppe.SITUASJONSBESTEMT_INNSATS, Hovedmal.BEHOLDE_ARBEID, ZonedDateTime.now(), true), identer);
+        brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1));
+        Assertions.assertThat(brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1)).get(0).getHovedmaalkode()).isEqualTo("SKAFFEA");
+
+    }
+
+    @Test
+    public void hovedmaalFraRettKilde_HovedmalFraArenaVelgesDersomIkkeFattetVedtak() {
+        Fnr fnr_1 = Fnr.of("1");
+        AktorId aktorId1 = randomAktorId();
+        List<PDLIdent> identList = List.of(
+                new PDLIdent(fnr_1.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId1.get(), false, AKTORID));
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId1, ZonedDateTime.now());
+        pdlPersonRepository.upsertPerson(fnr_1, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        pdlIdentRepository.upsertIdenter(identList);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
+                new OppfolgingsbrukerEntity(fnr_1.get(), null, null,
+                        "0321", "BATT", null,
+                        "SKAFFEA", ZonedDateTime.now()));
+        brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1));
+        Assertions.assertThat(brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1)).get(0).getHovedmaalkode()).isEqualTo("SKAFFEA");
+
+    }
+
+    @Test
+    public void hovedmaalFraRettKilde_HovedmalFraModiaVelgesDersomVedtakFattetIModaiaSelvOmHovedmaalErNull() {
+        IdenterForBruker identer = new IdenterForBruker(List.of("1"));
+        Fnr fnr_1 = Fnr.of("1");
+        AktorId aktorId1 = randomAktorId();
+        List<PDLIdent> identList = List.of(
+                new PDLIdent(fnr_1.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId1.get(), false, AKTORID));
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId1, ZonedDateTime.now());
+        pdlPersonRepository.upsertPerson(fnr_1, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        pdlIdentRepository.upsertIdenter(identList);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
+                new OppfolgingsbrukerEntity(fnr_1.get(), null, null,
+                        "0321", "BATT", null,
+                        "SKAFFEA", ZonedDateTime.now()));
+        siste14aVedtakRepository.upsert(new Siste14aVedtak(aktorId1.get(), Innsatsgruppe.SITUASJONSBESTEMT_INNSATS, null, ZonedDateTime.now(), false), identer);
+        brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1));
+        Assertions.assertThat(brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId1)).get(0).getHovedmaalkode()).isEqualTo(null);
+
+    }
 
 }
