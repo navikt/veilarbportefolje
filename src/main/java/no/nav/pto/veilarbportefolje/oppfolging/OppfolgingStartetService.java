@@ -30,6 +30,13 @@ public class OppfolgingStartetService {
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
 
         siste14aVedtakService.hentOgLagreSiste14aVedtak(aktorId);
+
+        // TODO: Håndtere identer; hva hvis aktorId er historisk?
+        //  Dette er et litt søkt scenario, men teoretisk sett kan en ident (her gitt ved aktorId-argumentet)
+        //  bli satt som historisk før linjen under blir utført (fordi di vi lever i en multi-trådet verden osv.)
+        //  Dersom man skal hesynta dette kan det være interessant å få litt innsikt i hvordan dette skjer, og
+        //  eventuelt hvor vanlig det er med historiske Aktør-IDer
+        //  Dersom det viser seg at Aktør-IDer aldri blir historiske, kan dette ignoreres.
         oppfolgingsbrukerServiceV2.hentOgLagreOppfolgingsbruker(aktorId);
 
         opensearchIndexer.indekser(aktorId);
