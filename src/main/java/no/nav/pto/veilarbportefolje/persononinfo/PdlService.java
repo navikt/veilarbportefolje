@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarSe
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +26,7 @@ public class PdlService {
 
     private final BarnUnder18AarService barnUnder18AarService;
     private final PdlPortefoljeClient pdlClient;
-    
+
     public void hentOgLagrePdlData(AktorId aktorId) {
         List<PDLIdent> identer = hentOgLagreIdenter(aktorId);
         Fnr fnr = hentAktivFnr(identer);
@@ -41,6 +40,7 @@ public class PdlService {
             lagreBrukerData(fnrPerson, personData);
         } catch (Exception e) {
             secureLog.error("Kan ikke lagre bruker data for person: " + fnrPerson, e);
+            throw new RuntimeException("Kunne ikke hente data fra PDL", e);
         }
     }
 
