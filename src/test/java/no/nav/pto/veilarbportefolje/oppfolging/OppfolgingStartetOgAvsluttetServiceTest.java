@@ -91,6 +91,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @MockBean
     private VeilarbarenaClient veilarbarenaClient;
 
+    private final Fnr fnr = Fnr.of("17858998980");
+    private final AktorId aktorId = randomAktorId();
+
     @BeforeEach
     public void cleanup() {
         jdbcTemplate.update("truncate bruker_data CASCADE");
@@ -101,12 +104,10 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void når_oppfolging_startes_skal_bruker_settes_under_oppfølging_i_databasen() {
-        final AktorId aktorId = randomAktorId();
-        final Fnr fnr = TestDataUtils.randomFnr();
-
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
+        mockHentOppfolgingsbrukerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -117,12 +118,10 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void når_oppfolging_startes_skal_brukeridenter_hentes_og_lagres() {
-        final AktorId aktorId = TestDataUtils.randomAktorId();
-        final Fnr fnr = TestDataUtils.randomFnr();
-
         mockPdlIdenterRespons(aktorId, fnr);
         PDLPerson pdlPerson = mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
+        mockHentOppfolgingsbrukerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -140,12 +139,10 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void når_oppfolging_startes_skal_siste_14a_vedtak_hentes_og_lagres() {
-        final AktorId aktorId = TestDataUtils.randomAktorId();
-        final Fnr fnr = TestDataUtils.randomFnr();
-
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
+        mockHentOppfolgingsbrukerResponse(fnr);
 
         Siste14aVedtakApiDto siste14aVedtakApiDto = new Siste14aVedtakApiDto(
                 Innsatsgruppe.SITUASJONSBESTEMT_INNSATS,
@@ -165,9 +162,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void når_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_lagres() {
-        final AktorId aktorId = TestDataUtils.randomAktorId();
-        final Fnr fnr = Fnr.of("17858998980");
-
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
@@ -183,43 +177,41 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void når_oppfølging_avsluttes_skal_arbeidsliste_registrering_og_oppfølgingsdata_slettes() {
-        final AktorId aktoerId = randomAktorId();
-        when(aktorClient.hentFnr(aktoerId)).thenReturn(randomFnr());
-        when(aktorClient.hentAktorId(any())).thenReturn(aktoerId);
+        when(aktorClient.hentFnr(aktorId)).thenReturn(randomFnr());
+        when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
 
         testDataClient.setupBrukerMedArbeidsliste(
-                aktoerId,
+                aktorId,
                 randomNavKontor(),
                 randomVeilederId(),
                 ZonedDateTime.parse("2020-12-01T00:00:00+02:00")
         );
 
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktoerId));
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId));
 
         List<String> arbeidsliste =
                 jdbcTemplate.queryForList(
                         "SELECT aktoerid from arbeidsliste where aktoerid = ?",
                         String.class,
-                        aktoerId.get()
+                        aktorId.get()
                 );
 
         List<String> registrering =
                 jdbcTemplate.query(
                         "select * from bruker_registrering where aktoerid = ?",
                         (r, i) -> r.getString("aktoerid"),
-                        aktoerId.get()
+                        aktorId.get()
                 );
 
         assertThat(arbeidsliste.isEmpty()).isTrue();
         assertThat(registrering.size()).isEqualTo(0);
-        assertThat(testDataClient.hentUnderOppfolgingOgAktivIdent(aktoerId)).isFalse();
-        Map<String, Object> source = opensearchTestClient.fetchDocument(aktoerId).getSourceAsMap();
+        assertThat(testDataClient.hentUnderOppfolgingOgAktivIdent(aktorId)).isFalse();
+        Map<String, Object> source = opensearchTestClient.fetchDocument(aktorId).getSourceAsMap();
         assertThat(source).isNull();
     }
 
     @Test
     void når_oppfølging_avsluttes_skal_siste_14a_vedtak_slettes() {
-        final AktorId aktorId = randomAktorId();
         when(aktorClient.hentFnr(aktorId)).thenReturn(randomFnr());
         when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
 
@@ -238,12 +230,10 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void skal_ikke_avslutte_bruker_som_har_startdato_senere_enn_sluttdato() {
-        final AktorId aktorId = randomAktorId();
-        final Fnr fnr = TestDataUtils.randomFnr();
-
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
+        mockHentOppfolgingsbrukerResponse(fnr);
 
         ZonedDateTime sluttDato = tilfeldigDatoTilbakeITid();
 
@@ -262,14 +252,13 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void skal_avslutte_bruker_som_har_en_tidligere_startdato_enn_sluttdato() {
-        final AktorId aktorId = randomAktorId();
-        final Fnr fnr = TestDataUtils.randomFnr();
         when(aktorClient.hentFnr(aktorId)).thenReturn(randomFnr());
         when(aktorClient.hentAktorId(randomFnr())).thenReturn(aktorId);
 
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
+        mockHentOppfolgingsbrukerResponse(fnr);
 
         SisteOppfolgingsperiodeV1 periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigDatoTilbakeITid());
 
