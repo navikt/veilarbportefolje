@@ -1,0 +1,16 @@
+{
+  "fodselsnr": "17858998980",
+  "formidlingsgruppekode": "ARBS",
+  "iservFraDato": "2024-04-04T00:00:00+02:00",
+  "navKontor": "0220",
+  "kvalifiseringsgruppekode": "BATT",
+  "rettighetsgruppekode": "INDS",
+  "hovedmaalkode": "SKAFFEA",
+  "sikkerhetstiltakTypeKode": "TFUS",
+  "frKode": "6",
+  "harOppfolgingssak": true,
+  "sperretAnsatt": false,
+  "erDoed": false,
+  "doedFraDato": null,
+  "sistEndretDato": "2024-04-04T00:00:00+02:00"
+}

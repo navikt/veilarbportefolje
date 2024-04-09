@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import jakarta.ws.rs.core.HttpHeaders
 import no.nav.common.rest.client.RestUtils
 import no.nav.common.rest.client.RestUtils.parseJsonResponseOrThrow
@@ -9,6 +10,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.UrlUtils.joinPaths
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import org.springframework.http.HttpStatus
 import java.time.ZonedDateTime
 import java.util.*
@@ -20,6 +22,20 @@ class VeilarbarenaClient(
     private val tokenSupplier: Supplier<String>,
     private val client: OkHttpClient
 ) {
+    companion object {
+        // Objectmapperen i common-java-modules har p.t ikke mulighet til å konfigureres. Vi trenger å registrere jackson-kotlin-module for at deserialisering skal fungere med kotlin.
+        val objectMapper: ObjectMapper =
+            no.nav.common.json.JsonUtils.getMapper().registerModule(KotlinModule.Builder().build())
+
+        inline fun <reified T> Response.deserializeJson(): T? {
+            return RestUtils.getBodyStr(this)
+                .map { objectMapper.readValue(it, T::class.java) }
+                .orElse(null)
+        }
+        inline fun <reified T> Response.deserializeJsonOrThrow(): T {
+            return this.deserializeJson() ?: throw IllegalStateException("Unable to parse JSON object from response body")
+        }
+    }
 
     fun hentOppfolgingsbruker(fnr: Fnr): Optional<OppfolgingsbrukerDTO> {
         val request: Request = Request.Builder()
@@ -36,10 +52,7 @@ class VeilarbarenaClient(
             RestUtils.throwIfNotSuccessful(response)
 
             return Optional.ofNullable(
-                parseJsonResponseOrThrow(
-                    response,
-                    OppfolgingsbrukerDTO::class.java
-                )
+                response.deserializeJsonOrThrow()
             )
         }
     }

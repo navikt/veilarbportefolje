@@ -24,6 +24,10 @@ public class OppfolgingStartetService {
     private final Siste14aVedtakService siste14aVedtakService;
     private final OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2;
 
+        // TODO: Dersom en eller flere av disse operasjonene feiler og kaster exception vil
+        //  kafka-meldingen bli lagret og retryet. Dette kan resultere i at vi mellomlagrer data
+        //  vi ikke skal. Mulig vi burde wrappe dette i en try-catch slik at vi kan rydde opp
+        //  i catch-en.
     public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate) {
         pdlService.hentOgLagrePdlData(aktorId);
 

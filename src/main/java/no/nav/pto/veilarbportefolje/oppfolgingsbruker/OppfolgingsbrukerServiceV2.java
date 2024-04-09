@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
@@ -20,7 +21,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukOppfolgingsbrukerPaPostgres;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -83,8 +86,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
     }
 
     public void hentOgLagreOppfolgingsbruker(AktorId aktorId) {
-        Fnr fnr = brukerServiceV2.hentFnr(aktorId)
-                .orElseThrow(() -> new RuntimeException("Fant ikke fnr for aktorId: " + aktorId));
+        Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktorId);
 
         OppfolgingsbrukerDTO oppfolgingsbrukerDTO = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 .orElseThrow(() -> new RuntimeException("Fant ikke oppfolgingsbruker for fnr: " + fnr));

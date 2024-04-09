@@ -6,6 +6,11 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
@@ -74,11 +79,17 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @Autowired
     private AktorClient aktorClient;
 
+    @Autowired
+    private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
+
     @MockBean
     private PdlPortefoljeClient pdlPortefoljeClient;
 
     @MockBean
     private VedtaksstotteClient vedtaksstotteClient;
+
+    @MockBean
+    private VeilarbarenaClient veilarbarenaClient;
 
     @BeforeEach
     public void cleanup() {
@@ -112,7 +123,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockPdlIdenterRespons(aktorId, fnr);
         PDLPerson pdlPerson = mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
-
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -151,6 +161,24 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         Optional<Siste14aVedtak> siste14aVedtak = siste14aVedtakRepository.hentSiste14aVedtak(identerForBruker);
         assertThat(siste14aVedtak).isNotEmpty();
         assertThat(siste14aVedtak).isEqualTo(Optional.of(Siste14aVedtak.fraApiDto(siste14aVedtakApiDto, aktorId.get())));
+    }
+
+    @Test
+    void når_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_lagres() {
+        final AktorId aktorId = TestDataUtils.randomAktorId();
+        final Fnr fnr = Fnr.of("17858998980");
+
+        mockPdlIdenterRespons(aktorId, fnr);
+        mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
+        mockSiste14aVedtakResponse(fnr);
+        mockHentOppfolgingsbrukerResponse(fnr);
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
+
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        assertThat(oppfolgingsbrukerEntity).isPresent();
+
     }
 
     @Test
@@ -289,5 +317,21 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         when(pdlPortefoljeClient.hentBrukerBarnDataFraPdl(any())).thenReturn(pdlPersonBarn);
 
         return pdlPersonBarn;
+    }
+
+    private void mockSiste14aVedtakResponse(Fnr fnr) {
+        Siste14aVedtakApiDto siste14aVedtakApiDto = new Siste14aVedtakApiDto(
+                Innsatsgruppe.SITUASJONSBESTEMT_INNSATS,
+                Hovedmal.OKE_DELTAKELSE,
+                tilfeldigDatoTilbakeITid(),
+                true
+        );
+        when(vedtaksstotteClient.hentSiste14aVedtak(fnr)).thenReturn(Optional.of(siste14aVedtakApiDto));
+    }
+
+    private void mockHentOppfolgingsbrukerResponse(Fnr fnr) {
+        String file = readFileAsJsonString("/oppfolgingsbruker.json", getClass());
+        OppfolgingsbrukerDTO oppfolgingsbrukerDTO = JsonUtils.fromJson(file, OppfolgingsbrukerDTO.class);
+        when(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(oppfolgingsbrukerDTO));
     }
 }
