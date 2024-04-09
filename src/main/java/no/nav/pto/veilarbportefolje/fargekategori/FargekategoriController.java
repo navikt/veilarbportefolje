@@ -2,6 +2,8 @@ package no.nav.pto.veilarbportefolje.fargekategori;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
@@ -23,12 +25,14 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
+@Tag(name = "Fargekategori", description = "Fargekategori-funksjonalitet")
 public class FargekategoriController {
 
     private final FargekategoriService fargekategoriService;
     private final AuthService authService;
     private final BrukerServiceV2 brukerServiceV2;
 
+    @Operation(summary = "Hent fargekategori for bruker", description = "Hent fargekategorien en gitt bruker er merket med.")
     @PostMapping("/hent-fargekategori")
     public ResponseEntity<FargekategoriEntity> hentFargekategoriForBruker(@RequestBody HentFargekategoriRequest request) {
         validerRequest(request.fnr);
@@ -54,6 +58,7 @@ public class FargekategoriController {
         }
     }
 
+    @Operation(summary = "Sett fargekategori", description = "Sett fargekategori for en gitt bruker.")
     @PutMapping("/fargekategori")
     public ResponseEntity<FargekategoriResponse> oppdaterFargekategoriForBruker(@RequestBody OppdaterFargekategoriRequest request) {
         VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
@@ -88,6 +93,7 @@ public class FargekategoriController {
         }
     }
 
+    @Operation(summary = "Sett fargekategori for brukere", description = "Sett en fargekategori for flere brukere i samme operasjon.")
     @PutMapping("/fargekategorier")
     public ResponseEntity<BatchUpsertResponse> batchoppdaterFargekategoriForBruker(@RequestBody BatchoppdaterFargekategoriRequest request) {
         VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();

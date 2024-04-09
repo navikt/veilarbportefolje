@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.huskelapp.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Huskelapp", description = "Huskelapp-funksjonalitet")
 public class HuskelappController {
 
     private final HuskelappService huskelappService;
@@ -37,6 +40,7 @@ public class HuskelappController {
     private final PdlIdentRepository pdlIdentRepository;
 
     @PostMapping("/huskelapp")
+    @Operation(summary = "Opprett huskelapp", description = "Opprett en huskelapp for en gitt bruker på en gitt enhet")
     public ResponseEntity<HuskelappOpprettResponse> opprettHuskelapp(@RequestBody HuskelappOpprettRequest huskelappOpprettRequest) {
         validerOppfolgingOgBrukerOgEnhet(huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get());
         try {
@@ -60,6 +64,7 @@ public class HuskelappController {
     }
 
     @PutMapping("/huskelapp")
+    @Operation(summary = "Oppdater huskelapp", description = "Oppdater en huskelapp med nye felter")
     public ResponseEntity redigerHuskelapp(@RequestBody HuskelappRedigerRequest huskelappRedigerRequest) {
         validerOppfolgingOgBrukerOgEnhet(huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get());
         try {
@@ -78,6 +83,7 @@ public class HuskelappController {
 
 
     @PostMapping("/hent-huskelapp-for-veileder")
+    @Operation(summary = "Hent huskelapp for veileder", description = "Hent alle aktive huskelapper for en gitt veileder på en gitt enhet")
     public ResponseEntity<List<HuskelappResponse>> hentHuskelapp(@RequestBody HuskelappForVeilederRequest huskelappForVeilederRequest) {
         authService.innloggetVeilederHarTilgangTilEnhet(huskelappForVeilederRequest.enhetId().get());
         try {
@@ -90,6 +96,7 @@ public class HuskelappController {
     }
 
     @PostMapping("/hent-huskelapp-for-bruker")
+    @Operation(summary = "Hent huskelapp for bruker", description = "Hent aktiv huskelapp for en gitt bruker")
     public ResponseEntity<HuskelappResponse> hentHuskelapp(@RequestBody HuskelappForBrukerRequest huskelappForBrukerRequest) {
         validerOppfolgingOgBrukerOgEnhet(huskelappForBrukerRequest.fnr().get(), huskelappForBrukerRequest.enhetId().get());
         try {
@@ -101,6 +108,7 @@ public class HuskelappController {
     }
 
     @DeleteMapping("/huskelapp")
+    @Operation(summary = "Slett huskelapp", description = "Slett en huskelapp")
     public ResponseEntity<String> slettHuskelapp(@RequestBody HuskelappSlettRequest huskelappSlettRequest) {
         Optional<Huskelapp> huskelappOptional = huskelappService.hentHuskelapp(UUID.fromString(huskelappSlettRequest.huskelappId()));
 

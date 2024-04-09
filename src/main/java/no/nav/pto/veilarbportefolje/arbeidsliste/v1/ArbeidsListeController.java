@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste.v1;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -35,6 +37,7 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 @Slf4j
 @RestController
 @RequestMapping("/api/arbeidsliste")
+@Tag(name = "Arbeidsliste", description = "Arbeidsliste-funksjonalitet")
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerServiceV2 brukerService;
@@ -53,6 +56,7 @@ public class ArbeidsListeController {
     }
 
 
+    @Operation(summary = "Opprett arbeidslister", description = "Opprett arbeidslister for et sett med brukere.")
     @PostMapping
     public ResponseEntity opprettArbeidsListe(@RequestBody List<ArbeidslisteRequest> arbeidsliste) {
         authService.innloggetVeilederHarTilgangTilOppfolging();
@@ -75,6 +79,7 @@ public class ArbeidsListeController {
         return response.data.isEmpty() ? response.badRequest() : response.created();
     }
 
+    @Operation(summary = "Hent arbeidsliste", description = "Hent arbeidsliste for en gitt bruker.")
     @GetMapping("{fnr}")
     public Arbeidsliste getArbeidsListe(@PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
@@ -97,6 +102,7 @@ public class ArbeidsListeController {
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
     }
 
+    @Operation(summary = "Opprett arbeidsliste", description = "Opprett en arbeidsliste for en gitt bruker.")
     @PostMapping("{fnr}")
     public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
@@ -112,6 +118,7 @@ public class ArbeidsListeController {
                 .setIsOppfolgendeVeileder(true);
     }
 
+    @Operation(summary = "Oppdater arbeidsliste", description = "Oppdater en arbeidsliste med nye felter for en gitt bruker.")
     @PutMapping("{fnr}")
     public Arbeidsliste oppdaterArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
@@ -138,6 +145,7 @@ public class ArbeidsListeController {
                         AuthUtils.getInnloggetVeilederIdent()));
     }
 
+    @Operation(summary = "Slett arbeidsliste", description = "Slett en arbeidsliste for en gitt bruker.")
     @DeleteMapping("{fnr}")
     public Arbeidsliste deleteArbeidsliste(@PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
@@ -157,6 +165,7 @@ public class ArbeidsListeController {
         return emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true);
     }
 
+    @Operation(summary = "Slett arbeidslister", description = "Slett arbeidslister for et sett med brukere.")
     @PostMapping("/delete")
     public RestResponse<String> deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
         authService.innloggetVeilederHarTilgangTilOppfolging();

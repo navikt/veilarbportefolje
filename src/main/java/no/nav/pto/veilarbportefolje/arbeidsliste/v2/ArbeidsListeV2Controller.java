@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste.v2;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
@@ -28,6 +30,7 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 @Slf4j
 @RestController
 @RequestMapping("/api/v2")
+@Tag(name = "Arbeidsliste", description = "Arbeidsliste-funksjonalitet")
 public class ArbeidsListeV2Controller {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerServiceV2 brukerService;
@@ -44,6 +47,7 @@ public class ArbeidsListeV2Controller {
         this.authService = authService;
     }
 
+    @Operation(summary = "Hent arbeidsliste for bruker", description = "Hent arbeidsliste for en gitt bruker.")
     @PostMapping("/hent-arbeidsliste")
     public Arbeidsliste getArbeidsListe(@RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest) {
         validerOppfolgingOgBruker(arbeidslisteForBrukerRequest.fnr().get());
@@ -67,6 +71,7 @@ public class ArbeidsListeV2Controller {
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
     }
 
+    @Operation(summary = "Opprett arbeidsliste for bruker", description = "Opprett en ny arbeidsliste for en gitt bruker.")
     @PostMapping("/arbeidsliste")
     public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteV2Request body) {
         validerOppfolgingOgBruker(body.fnr().get());
@@ -83,6 +88,7 @@ public class ArbeidsListeV2Controller {
                 .setIsOppfolgendeVeileder(true);
     }
 
+    @Operation(summary = "Oppdater arbeidsliste", description = "Oppdater en arbeidsliste med nye felter for en gitt bruker.")
     @PutMapping("/arbeidsliste")
     public Arbeidsliste oppdaterArbeidsListe(@RequestBody ArbeidslisteV2Request body) {
         validerOppfolgingOgBruker(body.fnr().get());
@@ -109,6 +115,7 @@ public class ArbeidsListeV2Controller {
                         AuthUtils.getInnloggetVeilederIdent()));
     }
 
+    @Operation(summary = "Slett arbeidsliste", description = "Slett en arbeidsliste for en gitt bruker.")
     @DeleteMapping("/arbeidsliste")
     public Arbeidsliste deleteArbeidsliste(@RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest) {
         validerOppfolgingOgBruker(arbeidslisteForBrukerRequest.fnr().get());
