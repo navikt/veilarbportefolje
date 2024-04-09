@@ -9,12 +9,10 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
-import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.springframework.stereotype.Service;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.pto.veilarbportefolje.PortefoljeMapper.mapTilArenaHovedmal;
 
 @Service
 @RequiredArgsConstructor

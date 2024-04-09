@@ -95,10 +95,10 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void updateHovedmaalkode(AktorId aktoerId, String hovedmaal) {
+    public void updateHovedmaalkode(AktorId aktoerId, String arenahovedmalkode) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("hovedmaalkode", hovedmaal)
+                .field("hovedmaalkode", arenahovedmalkode)
                 .endObject();
 
         update(aktoerId, content, "Oppdater hovedmaalkode");
