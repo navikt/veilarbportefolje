@@ -76,7 +76,6 @@ public class PdlIdentRepositoryTest {
                 new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
         );
         pdlIdentRepository.upsertIdenter(identer);
-//        IdenterForBruker _identer = pdlIdentRepository.hentIdenterForBruker(historiskIdent.get());
 
         var historiskOppfolgingStart = new SisteOppfolgingsperiodeV1(null, historiskIdent.get(), ZonedDateTime.now(), null);
         var nyOppfolgingStart = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), null);
