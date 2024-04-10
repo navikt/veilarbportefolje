@@ -56,7 +56,7 @@ public class Avvik14aVedtakService {
     private Vedtak14aInfo mapTilVedtak14aInfo(Map<Fnr, OppfolgingsbrukerEntity> fnrOppfolgingsbrukerEntityMap, Map<AktorId, Siste14aVedtak> aktorIdSiste14aVedtakMap, GjeldendeIdenter identer) {
         Optional<OppfolgingsbrukerEntity> oppfolgingsbruker = Optional.ofNullable(fnrOppfolgingsbrukerEntityMap.getOrDefault(identer.getFnr(), null));
         Optional<Siste14aVedtak> siste14aVedtak = Optional.ofNullable(aktorIdSiste14aVedtakMap.getOrDefault(identer.getAktorId(), null));
-//hvor blir dette brukt? må man sjekke noe her??
+
         return Vedtak14aInfo.builder()
                 .arenaInnsatsgruppe(oppfolgingsbruker.map(OppfolgingsbrukerEntity::kvalifiseringsgruppekode).map(kvalifiseringsgruppeKode -> valueOfOrNull(ArenaInnsatsgruppe.class, kvalifiseringsgruppeKode)).orElse(null))
                 .arenaHovedmal(oppfolgingsbruker.map(OppfolgingsbrukerEntity::hovedmaalkode).map(hovedmaal -> valueOfOrNull(ArenaHovedmal.class, hovedmaal)).orElse(null))
