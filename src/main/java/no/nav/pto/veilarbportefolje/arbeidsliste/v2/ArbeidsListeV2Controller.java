@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste.v2;
 
 import io.vavr.control.Validation;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.QueryParam;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
@@ -110,14 +112,14 @@ public class ArbeidsListeV2Controller {
     }
 
     @DeleteMapping("/arbeidsliste")
-    public Arbeidsliste deleteArbeidsliste(@RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest) {
+    public Arbeidsliste deleteArbeidsliste(@RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest, @RequestParam(value = "slettFargekategori", required = false, defaultValue = "true") Boolean slettFargekategori) {
         validerOppfolgingOgBruker(arbeidslisteForBrukerRequest.fnr().get());
         validerErVeilederForBruker(arbeidslisteForBrukerRequest.fnr().get());
         Fnr gyldigFnr = Fnr.ofValidFnr(arbeidslisteForBrukerRequest.fnr().get());
         sjekkTilgangTilEnhet(gyldigFnr);
 
         try {
-            arbeidslisteService.slettArbeidsliste(gyldigFnr);
+            arbeidslisteService.slettArbeidsliste(gyldigFnr, slettFargekategori);
         } catch (SlettArbeidslisteException e) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(gyldigFnr).orElse(null);
