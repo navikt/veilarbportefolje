@@ -70,6 +70,8 @@ public class PostgresTable {
 
         public static final String ER_SKJERMET = "ER_SKJERMET";
         public static final String SKJERMET_TIL = "SKJERMET_TIL";
+        public static final String SAV_HOVEDMAL = "sav_hovedmal";
+        public static final String SAV_FRA_ARENA = "sav_fra_arena";
     }
 
     public static final class OPPFOLGING_DATA {

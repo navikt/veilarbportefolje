@@ -5,10 +5,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.PortefoljeMapper;
+import no.nav.pto.veilarbportefolje.domene.ArenaHovedmal;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
@@ -19,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukOppfolgingsbrukerPaPostgres;
@@ -29,6 +35,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RequiredArgsConstructor
 public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<EndringPaaOppfoelgingsBrukerV2> {
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
+    private final Siste14aVedtakRepository siste14aVedtakRepository;
     private final BrukerServiceV2 brukerServiceV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OpensearchIndexer opensearchIndexer;
@@ -67,6 +74,12 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
                 .map(Kafka14aStatusendring.Status::toString)
                 .orElse(null);
         opensearchIndexerV2.updateOppfolgingsbruker(aktorId, oppfolgingsbruker, utkast14aStatus);
+        Optional<Siste14aVedtak> siste14aVedtakForBruker = siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get())));
+        Boolean vedtakFattetIArena = siste14aVedtakForBruker.map(Siste14aVedtak::isFraArena).orElse(null);
+        if (Boolean.FALSE.equals(vedtakFattetIArena)) {
+            String hovedmaal = siste14aVedtakForBruker.map(Siste14aVedtak::getHovedmal).map(PortefoljeMapper::mapTilArenaHovedmal).map(ArenaHovedmal::name).orElse(null);
+            opensearchIndexerV2.updateHovedmaalkode(aktorId, hovedmaal);
+        }
     }
 }
 
