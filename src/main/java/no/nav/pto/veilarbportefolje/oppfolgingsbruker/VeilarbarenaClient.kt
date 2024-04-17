@@ -20,7 +20,8 @@ import java.util.function.Supplier
 class VeilarbarenaClient(
     private val url: String,
     private val tokenSupplier: Supplier<String>,
-    private val client: OkHttpClient
+    private val client: OkHttpClient,
+    private val consumerId: String
 ) {
     companion object {
         // Objectmapperen i common-java-modules har p.t ikke mulighet til å konfigureres. Vi trenger å registrere jackson-kotlin-module for at deserialisering skal fungere med kotlin.
@@ -41,6 +42,7 @@ class VeilarbarenaClient(
         val request: Request = Request.Builder()
             .url(joinPaths(url, "/api/v3/hent-oppfolgingsbruker"))
             .header(HttpHeaders.AUTHORIZATION, tokenSupplier.get())
+            .header("Nav-Consumer-Id", consumerId)
             .post(toJsonRequestBody(HentOppfolgingsbrukerRequest(fnr)))
             .build()
 

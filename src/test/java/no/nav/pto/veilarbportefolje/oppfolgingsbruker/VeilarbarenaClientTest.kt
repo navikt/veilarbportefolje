@@ -24,7 +24,8 @@ class VeilarbarenaClientTest {
         val client = VeilarbarenaClient(
             "http://localhost:" + wireMockRule.port(),
             { "TOKEN" },
-            RestClient.baseClient()
+            RestClient.baseClient(),
+            "veilarbportefolje"
         )
 
         val responseBody = """
@@ -83,7 +84,8 @@ class VeilarbarenaClientTest {
         val client = VeilarbarenaClient(
             "http://localhost:" + wireMockRule.port(),
             { "TOKEN" },
-            RestClient.baseClient()
+            RestClient.baseClient(),
+            "veilarbportefolje"
         )
 
         WireMock.givenThat(
@@ -106,7 +108,8 @@ class VeilarbarenaClientTest {
         val client = VeilarbarenaClient(
             "http://localhost:" + wireMockRule.port(),
             { "TOKEN" },
-            RestClient.baseClient()
+            RestClient.baseClient(),
+            "veilarbportefolje"
         )
 
         WireMock.givenThat(
