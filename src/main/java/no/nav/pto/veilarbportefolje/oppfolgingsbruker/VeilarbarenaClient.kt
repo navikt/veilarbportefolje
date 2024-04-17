@@ -41,7 +41,7 @@ class VeilarbarenaClient(
     fun hentOppfolgingsbruker(fnr: Fnr): Optional<OppfolgingsbrukerDTO> {
         val request: Request = Request.Builder()
             .url(joinPaths(url, "/api/v3/hent-oppfolgingsbruker"))
-            .header(HttpHeaders.AUTHORIZATION, tokenSupplier.get())
+            .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenSupplier.get()}")
             .header("Nav-Consumer-Id", consumerId)
             .post(toJsonRequestBody(HentOppfolgingsbrukerRequest(fnr)))
             .build()
