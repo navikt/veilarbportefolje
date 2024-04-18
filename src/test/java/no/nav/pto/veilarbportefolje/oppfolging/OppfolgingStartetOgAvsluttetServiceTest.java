@@ -29,7 +29,12 @@ import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
+import no.nav.pto_schema.enums.arena.Hovedmaal;
+import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
+import no.nav.pto_schema.enums.arena.Rettighetsgruppe;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +42,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
@@ -173,6 +179,60 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntity).isPresent();
 
+    }
+
+    @Test
+    void når_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_oppdateres_naar_vi_har_oppfolgingsbruker_data_fra_foer() {
+        OppfolgingsbrukerEntity oppfolgingsbruker = new OppfolgingsbrukerEntity(
+                fnr.get(),
+                Formidlingsgruppe.ARBS.name(),
+                null,
+                "1234",
+                Kvalifiseringsgruppe.BATT.name(),
+                null,
+                Hovedmaal.BEHOLDEA.name(),
+                ZonedDateTime.parse("2024-04-04T00:00:00+02:00").minusDays(2)
+        );
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+
+        mockPdlIdenterRespons(aktorId, fnr);
+        mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
+        mockSiste14aVedtakResponse(fnr);
+        mockHentOppfolgingsbrukerResponse(fnr);
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
+
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        assertThat(oppfolgingsbrukerEntity).isPresent();
+        assertThat(oppfolgingsbrukerEntity.get().endret_dato()).isEqualTo(ZonedDateTime.parse("2024-04-04T00:00:00+02:00"));
+    }
+
+    @Test
+    void når_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_ignoreres_naar_vi_har_oppfolgingsbruker_data_fra_foer() {
+        OppfolgingsbrukerEntity oppfolgingsbruker = new OppfolgingsbrukerEntity(
+                fnr.get(),
+                Formidlingsgruppe.ARBS.name(),
+                null,
+                "1234",
+                Kvalifiseringsgruppe.BATT.name(),
+                null,
+                Hovedmaal.BEHOLDEA.name(),
+                ZonedDateTime.parse("2024-04-04T00:00:00+02:00").plusDays(2)
+        );
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+
+        mockPdlIdenterRespons(aktorId, fnr);
+        mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
+        mockSiste14aVedtakResponse(fnr);
+        mockHentOppfolgingsbrukerResponse(fnr);
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
+
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        assertThat(oppfolgingsbrukerEntity).isPresent();
+        assertThat(oppfolgingsbrukerEntity.get().endret_dato()).isEqualTo(ZonedDateTime.parse("2024-04-04T00:00:00+02:00").plusDays(2));
     }
 
     @Test
