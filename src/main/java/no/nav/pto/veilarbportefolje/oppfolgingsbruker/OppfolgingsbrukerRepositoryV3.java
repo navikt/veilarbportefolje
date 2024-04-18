@@ -53,8 +53,14 @@ public class OppfolgingsbrukerRepositoryV3 {
         return upsert(oppfolgingsbruker);
     }
 
-    private record OppfolgingsbrukerEntityMedOppslagFnr(Fnr oppslagFnr,
-                                                        OppfolgingsbrukerEntity oppfolgingsbrukerEntity) {
+    public int slettOppfolgingsbruker(Fnr fnr) {
+        return db.update("DELETE FROM oppfolgingsbruker_arena_v2 WHERE fodselsnr = ?", fnr.get());
+    }
+
+    private record OppfolgingsbrukerEntityMedOppslagFnr(
+            Fnr oppslagFnr,
+            OppfolgingsbrukerEntity oppfolgingsbrukerEntity
+    ) {
     }
 
     public Map<Fnr, OppfolgingsbrukerEntity> hentOppfolgingsBrukere(Set<Fnr> fnrs) {
@@ -125,7 +131,7 @@ public class OppfolgingsbrukerRepositoryV3 {
                         excluded.endret_dato)
                         """,
                 oppfolgingsbruker.fodselsnr(), oppfolgingsbruker.formidlingsgruppekode(), toTimestamp(oppfolgingsbruker.iserv_fra_dato()),
-                 oppfolgingsbruker.nav_kontor(),
+                oppfolgingsbruker.nav_kontor(),
                 oppfolgingsbruker.kvalifiseringsgruppekode(), oppfolgingsbruker.rettighetsgruppekode(),
                 oppfolgingsbruker.hovedmaalkode(),
                 toTimestamp(oppfolgingsbruker.endret_dato())

@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -41,6 +42,7 @@ public class OppfolgingAvsluttetService {
     private final EnsligeForsorgereService ensligeForsorgereService;
     private final PdlIdentRepository pdlIdentRepository;
     private final FargekategoriService fargekategoriService;
+    private final OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2;
 
     public void avsluttOppfolging(AktorId aktoerId) {
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));
@@ -56,6 +58,7 @@ public class OppfolgingAvsluttetService {
         pdlService.slettPdlData(aktoerId);
         ensligeForsorgereService.slettEnsligeForsorgereData(aktoerId);
         fargekategoriService.slettFargekategoriPaaBruker(aktoerId, maybeFnr);
+        oppfolgingsbrukerServiceV2.slettOppfolgingsbruker(aktoerId, maybeFnr);
 
         opensearchIndexerV2.slettDokumenter(List.of(aktoerId));
         secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);
