@@ -183,17 +183,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void når_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_oppdateres_naar_vi_har_oppfolgingsbruker_data_fra_foer() {
-        OppfolgingsbrukerEntity oppfolgingsbruker = new OppfolgingsbrukerEntity(
-                fnr.get(),
-                Formidlingsgruppe.ARBS.name(),
-                null,
-                "1234",
-                Kvalifiseringsgruppe.BATT.name(),
-                null,
-                Hovedmaal.BEHOLDEA.name(),
-                ZonedDateTime.parse("2024-04-04T00:00:00+02:00").minusDays(2)
-        );
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+        insertOppfolgingsbrukerEntity(ZonedDateTime.parse("2024-04-04T00:00:00+02:00").minusDays(2));
 
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
@@ -210,17 +200,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void når_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_ignoreres_naar_vi_har_oppfolgingsbruker_data_fra_foer() {
-        OppfolgingsbrukerEntity oppfolgingsbruker = new OppfolgingsbrukerEntity(
-                fnr.get(),
-                Formidlingsgruppe.ARBS.name(),
-                null,
-                "1234",
-                Kvalifiseringsgruppe.BATT.name(),
-                null,
-                Hovedmaal.BEHOLDEA.name(),
-                ZonedDateTime.parse("2024-04-04T00:00:00+02:00").plusDays(2)
-        );
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+        insertOppfolgingsbrukerEntity(ZonedDateTime.parse("2024-04-04T00:00:00+02:00").plusDays(2));
 
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
@@ -382,5 +362,19 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         String file = readFileAsJsonString("/oppfolgingsbruker.json", getClass());
         OppfolgingsbrukerDTO oppfolgingsbrukerDTO = JsonUtils.fromJson(file, OppfolgingsbrukerDTO.class);
         when(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(oppfolgingsbrukerDTO));
+    }
+
+    private void insertOppfolgingsbrukerEntity(ZonedDateTime endret_dato) {
+        OppfolgingsbrukerEntity oppfolgingsbruker = new OppfolgingsbrukerEntity(
+                fnr.get(),
+                Formidlingsgruppe.ARBS.name(),
+                null,
+                "1234",
+                Kvalifiseringsgruppe.BATT.name(),
+                null,
+                Hovedmaal.BEHOLDEA.name(),
+                endret_dato
+        );
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
     }
 }
