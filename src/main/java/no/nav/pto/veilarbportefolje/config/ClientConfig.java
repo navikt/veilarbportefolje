@@ -32,6 +32,7 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 @Configuration
 public class ClientConfig {
 
+    static final String APPLICATION_NAME = "veilarbportefolje";
     @Bean
     public PoaoTilgangWrapper poaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
         return new PoaoTilgangWrapper(authContextHolder, tokenClient, environmentProperties);
@@ -104,7 +105,8 @@ public class ClientConfig {
         return new VeilarbarenaClient(
                 environmentProperties.getVeilarbarenaUrl(),
                 tokenSupplier,
-                RestClient.baseClient()
+                RestClient.baseClient(),
+                APPLICATION_NAME
         );
     }
 }

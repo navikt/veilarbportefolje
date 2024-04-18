@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr
 import org.assertj.core.api.Assertions
 import org.junit.Rule
 import org.junit.Test
+import java.time.ZonedDateTime
 import java.util.*
 import java.util.function.Supplier
 
@@ -23,29 +24,31 @@ class VeilarbarenaClientTest {
         val client = VeilarbarenaClient(
             "http://localhost:" + wireMockRule.port(),
             { "TOKEN" },
-            RestClient.baseClient()
+            RestClient.baseClient(),
+            "veilarbportefolje"
         )
 
         val responseBody = """
                     {
                       "fodselsnr": "17858998980",
                       "formidlingsgruppekode": "ARBS",
-                      "iserv_fra_dato": null,
-                      "nav_kontor": "0220",
+                      "iservFraDato": "2024-04-04T00:00:00+02:00",
+                      "navKontor": "0220",
                       "kvalifiseringsgruppekode": "BATT",
                       "rettighetsgruppekode": "INDS",
                       "hovedmaalkode": "SKAFFEA",
-                      "sikkerhetstiltak_type_kode": "TFUS",
-                      "fr_kode": "6",
-                      "har_oppfolgingssak": true,
-                      "sperret_ansatt": false,
-                      "er_doed": false,
-                      "doed_fra_dato": null
+                      "sikkerhetstiltakTypeKode": "TFUS",
+                      "frKode": "6",
+                      "harOppfolgingssak": true,
+                      "sperretAnsatt": false,
+                      "erDoed": false,
+                      "doedFraDato": null,
+                      "sistEndretDato": "2024-04-04T00:00:00+02:00"
                     }
                 """.trimIndent()
 
         WireMock.givenThat(
-            WireMock.post(WireMock.urlEqualTo("/api/v2/hent-oppfolgingsbruker")).withRequestBody(
+            WireMock.post(WireMock.urlEqualTo("/api/v3/hent-oppfolgingsbruker")).withRequestBody(
                 WireMock.equalToJson(
                     "{\"fnr\":\"$fnr\"}"
                 )
@@ -58,6 +61,7 @@ class VeilarbarenaClientTest {
             fodselsnr = "17858998980",
             formidlingsgruppekode = "ARBS",
             navKontor = "0220",
+            iservFraDato = ZonedDateTime.parse("2024-04-04T00:00:00+02:00"),
             kvalifiseringsgruppekode = "BATT",
             rettighetsgruppekode = "INDS",
             hovedmaalkode = "SKAFFEA",
@@ -66,7 +70,8 @@ class VeilarbarenaClientTest {
             harOppfolgingssak = true,
             sperretAnsatt = false,
             erDoed = false,
-            doedFraDato = null
+            doedFraDato = null,
+            sistEndretDato = ZonedDateTime.parse("2024-04-04T00:00:00+02:00")
         )
 
         Assertions.assertThat(response).isEqualTo(Optional.of(forventet))
@@ -79,11 +84,12 @@ class VeilarbarenaClientTest {
         val client = VeilarbarenaClient(
             "http://localhost:" + wireMockRule.port(),
             { "TOKEN" },
-            RestClient.baseClient()
+            RestClient.baseClient(),
+            "veilarbportefolje"
         )
 
         WireMock.givenThat(
-            WireMock.post(WireMock.urlEqualTo("/api/v2/hent-oppfolgingsbruker")).withRequestBody(
+            WireMock.post(WireMock.urlEqualTo("/api/v3/hent-oppfolgingsbruker")).withRequestBody(
                 WireMock.equalToJson(
                     "{\"fnr\":\"$fnr\"}"
                 )
@@ -102,11 +108,12 @@ class VeilarbarenaClientTest {
         val client = VeilarbarenaClient(
             "http://localhost:" + wireMockRule.port(),
             { "TOKEN" },
-            RestClient.baseClient()
+            RestClient.baseClient(),
+            "veilarbportefolje"
         )
 
         WireMock.givenThat(
-            WireMock.post(WireMock.urlEqualTo("/api/v2/hent-oppfolgingsbruker")).withRequestBody(
+            WireMock.post(WireMock.urlEqualTo("/api/v3/hent-oppfolgingsbruker")).withRequestBody(
                 WireMock.equalToJson(
                     "{\"fnr\":\"$fnr\"}"
                 )

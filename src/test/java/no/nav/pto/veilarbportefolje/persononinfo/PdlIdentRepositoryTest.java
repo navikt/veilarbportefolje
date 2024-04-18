@@ -69,15 +69,17 @@ public class PdlIdentRepositoryTest {
     public void oppfolgingAvsluttet_flereIdenterUnderOppfolging_lokalIdentLagringSkalIkkeSlettes() {
         AktorId historiskIdent = randomAktorId();
         AktorId ident = randomAktorId();
+        Fnr fnr = randomFnr();
         List<PDLIdent> identer = List.of(
                 new PDLIdent(historiskIdent.get(), true, AKTORID),
                 new PDLIdent(ident.get(), false, AKTORID),
-                new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT)
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
         );
         pdlIdentRepository.upsertIdenter(identer);
 
         var historiskOppfolgingStart = new SisteOppfolgingsperiodeV1(null, historiskIdent.get(), ZonedDateTime.now(), null);
         var nyOppfolgingStart = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), null);
+
         var nyOppfolgingAvslutt = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), ZonedDateTime.now());
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(historiskOppfolgingStart);

@@ -143,7 +143,7 @@ public class HuskelappService {
     }
 
     private Optional<AktorId> hentAktorId(Fnr fnr) {
-        return Optional.ofNullable(pdlIdentRepository.hentAktorId(fnr));
+        return Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr));
     }
 
 }

@@ -41,8 +41,10 @@ import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
 import no.nav.pto.veilarbportefolje.opensearch.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
@@ -90,6 +92,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.common.utils.IdUtils.generateId;
@@ -350,5 +353,10 @@ public class ApplicationConfigTest {
         return poaoTilgangWrapper;
     }
 
-
+    @Bean
+    public VeilarbarenaClient veilarbarenaClient() {
+        VeilarbarenaClient veilarbarenaClientMock = mock(VeilarbarenaClient.class);
+        when(veilarbarenaClientMock.hentOppfolgingsbruker(any())).thenReturn(Optional.of(mock(OppfolgingsbrukerDTO.class)));
+        return veilarbarenaClientMock;
+    }
 }
