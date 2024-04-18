@@ -35,7 +35,7 @@ public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVe
     }
 
     public void hentOgLagreSiste14aVedtak(AktorId aktorId) {
-        Fnr fnr = pdlIdentRepository.hentFnr(aktorId);
+        Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktorId);
 
         vedtaksstotteClient.hentSiste14aVedtak(fnr)
                 .map(siste14aVedtak -> Siste14aVedtak.fraApiDto(siste14aVedtak, aktorId.get()))

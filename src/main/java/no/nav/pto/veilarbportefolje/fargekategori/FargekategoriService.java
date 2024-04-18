@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
@@ -68,12 +67,12 @@ public class FargekategoriService {
     }
 
     private void slettIOpensearch(Fnr fnr) {
-        AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorId(fnr)).orElseThrow(RuntimeException::new);
+        AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr)).orElseThrow(RuntimeException::new);
         opensearchIndexerV2.slettFargekategori(aktorId);
     }
 
     private void oppdaterIOpensearch(Fnr fnr, FargekategoriVerdi fargekategoriVerdi) {
-        AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorId(fnr)).orElseThrow(RuntimeException::new);
+        AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr)).orElseThrow(RuntimeException::new);
         opensearchIndexerV2.updateFargekategori(aktorId, fargekategoriVerdi.name());
     }
 

@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import jakarta.ws.rs.core.HttpHeaders
 import no.nav.common.rest.client.RestUtils
 import no.nav.common.rest.client.RestUtils.parseJsonResponseOrThrow
@@ -9,6 +10,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.UrlUtils.joinPaths
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import org.springframework.http.HttpStatus
 import java.time.ZonedDateTime
 import java.util.*
@@ -18,13 +20,29 @@ import java.util.function.Supplier
 class VeilarbarenaClient(
     private val url: String,
     private val tokenSupplier: Supplier<String>,
-    private val client: OkHttpClient
+    private val client: OkHttpClient,
+    private val consumerId: String
 ) {
+    companion object {
+        // Objectmapperen i common-java-modules har p.t ikke mulighet til å konfigureres. Vi trenger å registrere jackson-kotlin-module for at deserialisering skal fungere med kotlin.
+        val objectMapper: ObjectMapper =
+            no.nav.common.json.JsonUtils.getMapper().registerModule(KotlinModule.Builder().build())
+
+        inline fun <reified T> Response.deserializeJson(): T? {
+            return RestUtils.getBodyStr(this)
+                .map { objectMapper.readValue(it, T::class.java) }
+                .orElse(null)
+        }
+        inline fun <reified T> Response.deserializeJsonOrThrow(): T {
+            return this.deserializeJson() ?: throw IllegalStateException("Unable to parse JSON object from response body")
+        }
+    }
 
     fun hentOppfolgingsbruker(fnr: Fnr): Optional<OppfolgingsbrukerDTO> {
         val request: Request = Request.Builder()
-            .url(joinPaths(url, "/api/v2/hent-oppfolgingsbruker"))
-            .header(HttpHeaders.AUTHORIZATION, tokenSupplier.get())
+            .url(joinPaths(url, "/api/v3/hent-oppfolgingsbruker"))
+            .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenSupplier.get()}")
+            .header("Nav-Consumer-Id", consumerId)
             .post(toJsonRequestBody(HentOppfolgingsbrukerRequest(fnr)))
             .build()
 
@@ -36,36 +54,27 @@ class VeilarbarenaClient(
             RestUtils.throwIfNotSuccessful(response)
 
             return Optional.ofNullable(
-                parseJsonResponseOrThrow(
-                    response,
-                    OppfolgingsbrukerDTO::class.java
-                )
+                response.deserializeJsonOrThrow()
             )
         }
     }
 }
 
-
 data class OppfolgingsbrukerDTO(
     val fodselsnr: String? = null,
     val formidlingsgruppekode: String? = null,
-    @get:JsonProperty("nav_kontor")
     val navKontor: String? = null,
+    val iservFraDato: ZonedDateTime? = null,
     val kvalifiseringsgruppekode: String? = null,
     val rettighetsgruppekode: String? = null,
     val hovedmaalkode: String? = null,
-    @get:JsonProperty("sikkerhetstiltak_type_kode")
     val sikkerhetstiltakTypeKode: String? = null,
-    @get:JsonProperty("fr_kode")
     val frKode: String? = null,
-    @get:JsonProperty("har_oppfolgingssak")
     val harOppfolgingssak: Boolean? = null,
-    @get:JsonProperty("sperret_ansatt")
     val sperretAnsatt: Boolean? = null,
-    @get:JsonProperty("er_doed")
     val erDoed: Boolean? = null,
-    @get:JsonProperty("doed_fra_dato")
-    val doedFraDato: ZonedDateTime? = null
+    val doedFraDato: ZonedDateTime? = null,
+    val sistEndretDato: ZonedDateTime? = null
 )
 
 data class HentOppfolgingsbrukerRequest(val fnr: Fnr)

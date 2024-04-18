@@ -22,15 +22,15 @@ public class BrukerServiceV2 {
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     public Optional<AktorId> hentAktorId(Fnr fnr) {
-        return Optional.ofNullable(pdlIdentRepository.hentAktorId(fnr));
+        return Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr));
     }
 
     public Optional<Fnr> hentFnr(AktorId aktorId) {
-        return Optional.ofNullable(pdlIdentRepository.hentFnr(aktorId));
+        return Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktorId));
     }
 
     public Optional<NavKontor> hentNavKontor(AktorId aktoerId) {
-        Fnr fnr = pdlIdentRepository.hentFnr(aktoerId);
+        Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktoerId);
         return hentNavKontor(fnr);
     }
 
