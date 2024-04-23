@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.arbeidssokerprofilering;
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.arbeidssoker.profilering.ArbeidssokerProfileringRepositoryV2;
+import no.nav.pto.veilarbportefolje.arbeidssoker.v1.profilering.ArbeidssokerProfileringRepositoryV2;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.Before;
 import org.junit.Test;

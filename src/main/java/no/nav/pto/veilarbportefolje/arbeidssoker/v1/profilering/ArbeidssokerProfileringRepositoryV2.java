@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arbeidssoker.profilering;
+package no.nav.pto.veilarbportefolje.arbeidssoker.v1.profilering;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;

@@ -59,10 +59,10 @@ import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinne
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
-import no.nav.pto.veilarbportefolje.arbeidssoker.registrering.ArbeidssokerRegistreringRepositoryV2;
-import no.nav.pto.veilarbportefolje.arbeidssoker.registrering.ArbeidssokerRegistreringService;
-import no.nav.pto.veilarbportefolje.arbeidssoker.registrering.endring.EndringIArbeidssokerRegistreringRepository;
-import no.nav.pto.veilarbportefolje.arbeidssoker.registrering.endring.EndringIArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoker.v1.registrering.ArbeidssokerRegistreringRepositoryV2;
+import no.nav.pto.veilarbportefolje.arbeidssoker.v1.registrering.ArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoker.v1.registrering.endring.EndringIArbeidssokerRegistreringRepository;
+import no.nav.pto.veilarbportefolje.arbeidssoker.v1.registrering.endring.EndringIArbeidssokerRegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;

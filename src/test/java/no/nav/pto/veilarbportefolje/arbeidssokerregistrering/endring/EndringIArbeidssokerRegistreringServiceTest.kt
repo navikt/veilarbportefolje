@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.arbeidssokerregistrering.endring
 
-import no.nav.pto.veilarbportefolje.arbeidssoker.registrering.endring.EndringIArbeidssokerRegistreringService
+import no.nav.pto.veilarbportefolje.arbeidssoker.v1.registrering.endring.EndringIArbeidssokerRegistreringService
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataUtils
