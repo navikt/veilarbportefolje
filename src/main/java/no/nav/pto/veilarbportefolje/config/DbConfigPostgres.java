@@ -66,6 +66,7 @@ public class DbConfigPostgres {
         DataSource dataSource = createDataSource(environmentProperties.getDbUrl(), true);
 
         Flyway.configure()
+                .validateMigrationNaming(true)
                 .dataSource(dataSource)
                 .locations("db/postgres")
                 .initSql("SET ROLE '" + getSqlAdminRole() + "';")

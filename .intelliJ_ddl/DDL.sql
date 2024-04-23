@@ -1121,6 +1121,13 @@ CREATE INDEX flyway_schema_history_s_idx ON public.flyway_schema_history USING b
 
 
 --
+-- Name: huskelapp_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX huskelapp_status ON public.huskelapp USING btree (status);
+
+
+--
 -- Name: huskelappenhetid; Type: INDEX; Schema: public; Owner: -
 --
 
