@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.profilering;
+package no.nav.pto.veilarbportefolje.arbeidssoker.profilering;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,11 +12,11 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProfileringService extends KafkaCommonConsumerService<ArbeidssokerProfilertEvent> {
-    private final ProfileringRepositoryV2 profileringRepositoryV2;
+public class ArbeidssokerProfileringService extends KafkaCommonConsumerService<ArbeidssokerProfilertEvent> {
+    private final ArbeidssokerProfileringRepositoryV2 arbeidssokerProfileringRepositoryV2;
 
     public void behandleKafkaMeldingLogikk(ArbeidssokerProfilertEvent kafkaMelding) {
-        profileringRepositoryV2.upsertBrukerProfilering(kafkaMelding);
+        arbeidssokerProfileringRepositoryV2.upsertBrukerProfilering(kafkaMelding);
         secureLog.info("Oppdaterer brukerprofilering i postgres for: {}, {}, {}", kafkaMelding.getAktorid(), kafkaMelding.getProfilertTil().name(), DateUtils.zonedDateStringToTimestamp(kafkaMelding.getProfileringGjennomfort()));
     }
 }

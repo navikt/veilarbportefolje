@@ -19,7 +19,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
+import no.nav.pto.veilarbportefolje.arbeidssoker.registrering.ArbeidssokerRegistreringRepositoryV2;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
@@ -32,7 +32,7 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 
 public class TestDataClient {
     private final JdbcTemplate jdbcTemplatePostgres;
-    private final RegistreringRepositoryV2 registreringRepositoryV2;
+    private final ArbeidssokerRegistreringRepositoryV2 arbeidssokerRegistreringRepositoryV2;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
     private final OpensearchTestClient opensearchTestClient;
@@ -42,9 +42,9 @@ public class TestDataClient {
 
     private final HuskelappRepository huskelappRepository;
 
-    public TestDataClient(JdbcTemplate jdbcTemplatePostgres, RegistreringRepositoryV2 registreringRepositoryV2, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository) {
+    public TestDataClient(JdbcTemplate jdbcTemplatePostgres, ArbeidssokerRegistreringRepositoryV2 arbeidssokerRegistreringRepositoryV2, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2, OpensearchTestClient opensearchTestClient, OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
-        this.registreringRepositoryV2 = registreringRepositoryV2;
+        this.arbeidssokerRegistreringRepositoryV2 = arbeidssokerRegistreringRepositoryV2;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
         this.arbeidslisteRepositoryV2 = arbeidslisteRepositoryV2;
         this.opensearchTestClient = opensearchTestClient;
@@ -134,7 +134,7 @@ public class TestDataClient {
         pdlPersonRepository.upsertPerson(fnr, new PDLPerson().setFoedsel(LocalDate.now()).setKjonn(Kjonn.K).setDiskresjonskode(diskresjonKode));
         oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato);
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
-        registreringRepositoryV2.upsertBrukerRegistrering(
+        arbeidssokerRegistreringRepositoryV2.upsertBrukerRegistrering(
                 new ArbeidssokerRegistrertEvent(aktoerId.get(), null, null, null, null, null)
         );
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(

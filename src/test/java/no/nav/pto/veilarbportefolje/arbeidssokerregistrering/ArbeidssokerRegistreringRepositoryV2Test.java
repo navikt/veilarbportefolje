@@ -1,10 +1,11 @@
-package no.nav.pto.veilarbportefolje.registrering;
+package no.nav.pto.veilarbportefolje.arbeidssokerregistrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.arbeidssoker.registrering.ArbeidssokerRegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.jupiter.api.Test;
@@ -18,9 +19,9 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class RegistreringRepositoryV2Test {
+public class ArbeidssokerRegistreringRepositoryV2Test {
     @Autowired
-    private RegistreringRepositoryV2 registreringRepositoryV2;
+    private ArbeidssokerRegistreringRepositoryV2 arbeidssokerRegistreringRepositoryV2;
     private final static String AKTORID = randomAktorId().get();
 
     @Test
@@ -34,9 +35,9 @@ public class RegistreringRepositoryV2Test {
                 .setRegistreringOpprettet(DateUtils.nowToStr())
                 .build();
 
-        registreringRepositoryV2.upsertBrukerRegistrering(event);
+        arbeidssokerRegistreringRepositoryV2.upsertBrukerRegistrering(event);
 
-        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepositoryV2.hentBrukerRegistrering(AktorId.of(AKTORID));
+        Optional<ArbeidssokerRegistrertEvent> registrering = arbeidssokerRegistreringRepositoryV2.hentBrukerRegistrering(AktorId.of(AKTORID));
         assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event);
     }
 
@@ -59,10 +60,10 @@ public class RegistreringRepositoryV2Test {
                 .setRegistreringOpprettet(DateUtils.nowToStr())
                 .build();
 
-        registreringRepositoryV2.upsertBrukerRegistrering(event1);
-        registreringRepositoryV2.upsertBrukerRegistrering(event2);
+        arbeidssokerRegistreringRepositoryV2.upsertBrukerRegistrering(event1);
+        arbeidssokerRegistreringRepositoryV2.upsertBrukerRegistrering(event2);
 
-        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepositoryV2.hentBrukerRegistrering(AktorId.of(AKTORID));
+        Optional<ArbeidssokerRegistrertEvent> registrering = arbeidssokerRegistreringRepositoryV2.hentBrukerRegistrering(AktorId.of(AKTORID));
         assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event2);
     }
 
@@ -85,10 +86,10 @@ public class RegistreringRepositoryV2Test {
                 .setRegistreringOpprettet(DateUtils.nowToStr())
                 .build();
 
-        registreringRepositoryV2.upsertBrukerRegistrering(event1);
-        registreringRepositoryV2.upsertBrukerRegistrering(event2);
+        arbeidssokerRegistreringRepositoryV2.upsertBrukerRegistrering(event1);
+        arbeidssokerRegistreringRepositoryV2.upsertBrukerRegistrering(event2);
 
-        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepositoryV2.hentBrukerRegistrering(AktorId.of(AKTORID));
+        Optional<ArbeidssokerRegistrertEvent> registrering = arbeidssokerRegistreringRepositoryV2.hentBrukerRegistrering(AktorId.of(AKTORID));
         assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event2);
     }
 

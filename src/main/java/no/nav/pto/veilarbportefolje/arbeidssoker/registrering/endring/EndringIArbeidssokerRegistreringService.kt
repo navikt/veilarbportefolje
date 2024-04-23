@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.registrering.endring
+package no.nav.pto.veilarbportefolje.arbeidssoker.registrering.endring
 
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
@@ -12,19 +12,19 @@ import org.springframework.stereotype.Service
 @RequiredArgsConstructor
 @Service
 @Slf4j
-class EndringIRegistreringService(private val endringIRegistreringRepository: EndringIRegistreringRepository, private val opensearchIndexerV2: OpensearchIndexerV2) : KafkaCommonConsumerService<ArbeidssokerBesvarelseEvent>() {
+class EndringIArbeidssokerRegistreringService(private val endringIArbeidssokerRegistreringRepository: EndringIArbeidssokerRegistreringRepository, private val opensearchIndexerV2: OpensearchIndexerV2) : KafkaCommonConsumerService<ArbeidssokerBesvarelseEvent>() {
 
     public override fun behandleKafkaMeldingLogikk(kafkaMelding: ArbeidssokerBesvarelseEvent) {
         if (kafkaMelding.endret && kafkaMelding.besvarelse != null && kafkaMelding.aktorId != null) {
             val aktoerId = AktorId.of(kafkaMelding.aktorId)
-            endringIRegistreringRepository.upsertEndringIRegistrering(kafkaMelding)
+            endringIArbeidssokerRegistreringRepository.upsertEndringIRegistrering(kafkaMelding)
             opensearchIndexerV2.updateEndringerIRegistering(aktoerId, kafkaMelding)
             SecureLog.secureLog.info("Oppdatert endring i registrering for bruker: {}", aktoerId)
         }
     }
 
     fun slettEndringIRegistering(aktoerId: AktorId) {
-        endringIRegistreringRepository.slettEndringIRegistrering(aktoerId)
+        endringIArbeidssokerRegistreringRepository.slettEndringIRegistrering(aktoerId)
         SecureLog.secureLog.info("Slettet endring i registrering for bruker: {}", aktoerId)
     }
 }

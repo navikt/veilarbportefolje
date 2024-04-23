@@ -1,8 +1,9 @@
-package no.nav.pto.veilarbportefolje.profilering;
+package no.nav.pto.veilarbportefolje.arbeidssokerprofilering;
 
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.arbeidssoker.profilering.ArbeidssokerProfileringRepositoryV2;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,9 +14,9 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.nowToStr;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProfileringRepositoryV2Test {
+public class ArbeidssokerProfileringRepositoryV2Test {
     private JdbcTemplate db;
-    private ProfileringRepositoryV2 profileringRepositoryV2;
+    private ArbeidssokerProfileringRepositoryV2 arbeidssokerProfileringRepositoryV2;
 
     private static String AKTORID = "123456789";
     private static String AKTORID1 = "1234567892";
@@ -23,7 +24,7 @@ public class ProfileringRepositoryV2Test {
     @Before
     public void setup() {
         db = SingletonPostgresContainer.init().createJdbcTemplate();
-        profileringRepositoryV2 = new ProfileringRepositoryV2(db);
+        arbeidssokerProfileringRepositoryV2 = new ArbeidssokerProfileringRepositoryV2(db);
     }
 
     @Test
@@ -34,8 +35,8 @@ public class ProfileringRepositoryV2Test {
                 .setProfileringGjennomfort(nowToStr())
                 .build();
 
-        profileringRepositoryV2.upsertBrukerProfilering(arbeidssokerProfilertEvent);
-        assertThat(profileringRepositoryV2.hentBrukerProfilering(AktorId.of(AKTORID)).get()).isEqualTo(arbeidssokerProfilertEvent);
+        arbeidssokerProfileringRepositoryV2.upsertBrukerProfilering(arbeidssokerProfilertEvent);
+        assertThat(arbeidssokerProfileringRepositoryV2.hentBrukerProfilering(AktorId.of(AKTORID)).get()).isEqualTo(arbeidssokerProfilertEvent);
     }
 
     @Test
@@ -46,7 +47,7 @@ public class ProfileringRepositoryV2Test {
                 .setProfileringGjennomfort(now().minusDays(30).format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        profileringRepositoryV2.upsertBrukerProfilering(event1);
+        arbeidssokerProfileringRepositoryV2.upsertBrukerProfilering(event1);
 
         ArbeidssokerProfilertEvent event2 = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID1)
@@ -54,8 +55,8 @@ public class ProfileringRepositoryV2Test {
                 .setProfileringGjennomfort(nowToStr())
                 .build();
 
-        profileringRepositoryV2.upsertBrukerProfilering(event2);
-        assertThat(profileringRepositoryV2.hentBrukerProfilering(AktorId.of(AKTORID1)).get()).isEqualTo(event2);
+        arbeidssokerProfileringRepositoryV2.upsertBrukerProfilering(event2);
+        assertThat(arbeidssokerProfileringRepositoryV2.hentBrukerProfilering(AktorId.of(AKTORID1)).get()).isEqualTo(event2);
 
     }
 }

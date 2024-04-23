@@ -1,6 +1,5 @@
-package no.nav.pto.veilarbportefolje.profilering;
+package no.nav.pto.veilarbportefolje.arbeidssoker.profilering;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class ProfileringRepositoryV2 {
+public class ArbeidssokerProfileringRepositoryV2 {
     private final JdbcTemplate db;
 
     public void upsertBrukerProfilering(ArbeidssokerProfilertEvent kafkaMelding) {

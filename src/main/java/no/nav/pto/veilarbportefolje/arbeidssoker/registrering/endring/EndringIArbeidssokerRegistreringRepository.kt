@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.registrering.endring
+package no.nav.pto.veilarbportefolje.arbeidssoker.registrering.endring
 
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
@@ -18,7 +18,7 @@ import java.util.*
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-class EndringIRegistreringRepository(private val db: JdbcTemplate) {
+class EndringIArbeidssokerRegistreringRepository(private val db: JdbcTemplate) {
     fun upsertEndringIRegistrering(kafkaRegistreringMelding: ArbeidssokerBesvarelseEvent) {
         val brukersSituasjonSistEndret =
             Optional.ofNullable(kafkaRegistreringMelding.besvarelse?.dinSituasjon?.endretTidspunkt)
@@ -44,7 +44,7 @@ class EndringIRegistreringRepository(private val db: JdbcTemplate) {
         return db.update("DELETE FROM ENDRING_I_REGISTRERING WHERE AKTOERID = ?", aktoerId.get())
     }
 
-    fun hentBrukerEndringIRegistrering(aktoerId: AktorId): Optional<EndringIRegistreringDTO> {
+    fun hentBrukerEndringIRegistrering(aktoerId: AktorId): Optional<EndringIArbeidssokerRegistreringDTO> {
         SecureLog.secureLog.info("Hent endring i registreringsdata for bruker: {}", aktoerId.get())
         val sql = "SELECT * FROM ENDRING_I_REGISTRERING WHERE AKTOERID = ?"
         return Optional.ofNullable(
@@ -59,8 +59,8 @@ class EndringIRegistreringRepository(private val db: JdbcTemplate) {
     }
 
     @Throws(SQLException::class)
-    private fun mapTilEndringIRegistreringDTO(rs: ResultSet): EndringIRegistreringDTO {
-        return EndringIRegistreringDTO(
+    private fun mapTilEndringIRegistreringDTO(rs: ResultSet): EndringIArbeidssokerRegistreringDTO {
+        return EndringIArbeidssokerRegistreringDTO(
             rs.getString("AKTOERID"), rs.getString("BRUKERS_SITUASJON"), DateUtils.toLocalDate(
                 rs.getTimestamp("BRUKERS_SITUASJON_SIST_ENDRET")
             )

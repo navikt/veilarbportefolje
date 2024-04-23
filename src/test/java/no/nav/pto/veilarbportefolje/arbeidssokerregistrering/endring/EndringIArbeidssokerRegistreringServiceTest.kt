@@ -1,5 +1,6 @@
-package no.nav.pto.veilarbportefolje.registrering.endring
+package no.nav.pto.veilarbportefolje.arbeidssokerregistrering.endring
 
+import no.nav.pto.veilarbportefolje.arbeidssoker.registrering.endring.EndringIArbeidssokerRegistreringService
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataUtils
@@ -10,17 +11,17 @@ import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
 
-class EndringIRegistreringServiceTest : EndToEndTest() {
+class EndringIArbeidssokerRegistreringServiceTest : EndToEndTest() {
 
     @Autowired
-    lateinit var endringIRegistreringService: EndringIRegistreringService
+    lateinit var endringIArbeidssokerRegistreringService: EndringIArbeidssokerRegistreringService
 
     @Test
     fun behandleKafkaMeldingLogikk() {
         val aktorId = TestDataUtils.randomAktorId()
         testDataClient.lagreBrukerUnderOppfolging(aktorId, ZonedDateTime.now())
         val kafkaRegistreringMelding = getArbeidssokerBesvarelseEvent(aktorId.get())
-        endringIRegistreringService.behandleKafkaMeldingLogikk(kafkaRegistreringMelding)
+        endringIArbeidssokerRegistreringService.behandleKafkaMeldingLogikk(kafkaRegistreringMelding)
 
         val getResponse = opensearchTestClient.fetchDocument(aktorId)
         AssertionsForClassTypes.assertThat(getResponse.isExists).isTrue

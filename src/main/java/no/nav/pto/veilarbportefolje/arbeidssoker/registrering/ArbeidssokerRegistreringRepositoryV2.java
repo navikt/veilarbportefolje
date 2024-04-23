@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.registrering;
+package no.nav.pto.veilarbportefolje.arbeidssoker.registrering;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -26,7 +26,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class RegistreringRepositoryV2 {
+public class ArbeidssokerRegistreringRepositoryV2 {
     private final JdbcTemplate db;
 
     public void upsertBrukerRegistrering(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
