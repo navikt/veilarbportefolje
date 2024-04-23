@@ -15,6 +15,7 @@ public class TestUtil {
 
     public static void testMigrate(DataSource dataSource) {
         Flyway.configure()
+                .validateMigrationNaming(true)
                 .dataSource(dataSource)
                 .locations("db/postgres")
                 .baselineOnMigrate(true)
