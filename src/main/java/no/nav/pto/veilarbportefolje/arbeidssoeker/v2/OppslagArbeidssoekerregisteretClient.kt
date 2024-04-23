@@ -20,7 +20,7 @@ class OppslagArbeidssoekerregisteretClient(
     private val consumerId: String
 ) {
     // TODO: Map til intern type som gir mening for oss
-    fun hentArbeidssokerPerioder(identitetsnummer: String): Optional<List<ArbeidssokerperiodeResponse>> {
+    fun hentArbeidssokerPerioder(identitetsnummer: String): List<ArbeidssokerperiodeResponse>? {
         val request: Request = Request.Builder()
             .url(UrlUtils.joinPaths(url, "/api/v1/veileder/arbeidssoekerperioder"))
             .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenSupplier.get()}")
@@ -30,19 +30,20 @@ class OppslagArbeidssoekerregisteretClient(
 
         client.newCall(request).execute().use { response ->
             if (response.code == HttpStatus.NOT_FOUND.value()) {
-                return Optional.empty()
+                return null
             }
 
             RestUtils.throwIfNotSuccessful(response)
 
-            return Optional.ofNullable(
-                response.deserializeJsonOrThrow()
-            )
+            return response.deserializeJsonOrThrow()
         }
     }
 
     // TODO: Map til intern type som gir mening for oss
-    fun hentOpplysningerOmArbeidssoeker(identitetsnummer: String, periodeId: UUID): Optional<OpplysningerOmArbeidssoekerResponse> {
+    fun hentOpplysningerOmArbeidssoeker(
+        identitetsnummer: String,
+        periodeId: UUID
+    ): OpplysningerOmArbeidssoekerResponse? {
         val request: Request = Request.Builder()
             .url(UrlUtils.joinPaths(url, "/api/v1/veileder/opplysninger-om-arbeidssoeker"))
             .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenSupplier.get()}")
@@ -52,19 +53,17 @@ class OppslagArbeidssoekerregisteretClient(
 
         client.newCall(request).execute().use { response ->
             if (response.code == HttpStatus.NOT_FOUND.value()) {
-                return Optional.empty()
+                return null
             }
 
             RestUtils.throwIfNotSuccessful(response)
 
-            return Optional.ofNullable(
-                response.deserializeJsonOrThrow()
-            )
+            return response.deserializeJsonOrThrow()
         }
     }
 
     // TODO: Map til intern type som gir mening for oss
-    fun hentProfilering(identitetsnummer: String, periodeId: UUID): Optional<ProfileringResponse> {
+    fun hentProfilering(identitetsnummer: String, periodeId: UUID): ProfileringResponse? {
         val request: Request = Request.Builder()
             .url(UrlUtils.joinPaths(url, "/api/v1/veileder/profilering"))
             .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenSupplier.get()}")
@@ -74,14 +73,12 @@ class OppslagArbeidssoekerregisteretClient(
 
         client.newCall(request).execute().use { response ->
             if (response.code == HttpStatus.NOT_FOUND.value()) {
-                return Optional.empty()
+                return null
             }
 
             RestUtils.throwIfNotSuccessful(response)
 
-            return Optional.ofNullable(
-                response.deserializeJsonOrThrow()
-            )
+            return response.deserializeJsonOrThrow()
         }
     }
 }
