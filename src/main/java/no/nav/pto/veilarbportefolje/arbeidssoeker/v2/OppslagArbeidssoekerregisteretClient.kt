@@ -20,12 +20,12 @@ class OppslagArbeidssoekerregisteretClient(
     private val consumerId: String
 ) {
     // TODO: Map til intern type som gir mening for oss
-    fun hentArbeidssokerPerioder(fnr: Fnr): Optional<List<ArbeidssokerperiodeResponse>> {
+    fun hentArbeidssokerPerioder(identitetsnummer: String): Optional<List<ArbeidssokerperiodeResponse>> {
         val request: Request = Request.Builder()
             .url(UrlUtils.joinPaths(url, "/api/v1/veileder/arbeidssoekerperioder"))
             .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenSupplier.get()}")
             .header("Nav-Consumer-Id", consumerId)
-            .post(RestUtils.toJsonRequestBody(ArbeidssoekerperiodeRequest(fnr.get())))
+            .post(RestUtils.toJsonRequestBody(ArbeidssoekerperiodeRequest(identitetsnummer)))
             .build()
 
         client.newCall(request).execute().use { response ->
