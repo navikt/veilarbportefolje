@@ -31,5 +31,7 @@ public class EnvironmentProperties {
     private String pdlScope;
     private String poaoTilgangUrl;
     private String poaoTilgangScope;
+    private String oppslagArbeidssoekerregisteretScope;
+    private String oppslagArbeidssoekerregisteretUrl;
 }
 

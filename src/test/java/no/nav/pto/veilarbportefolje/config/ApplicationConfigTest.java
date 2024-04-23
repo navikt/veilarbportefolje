@@ -16,6 +16,8 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
@@ -170,7 +172,8 @@ import static org.mockito.Mockito.when;
         HuskelappService.class,
         HuskelappRepository.class,
         FargekategoriService.class,
-        FargekategoriRepository.class
+        FargekategoriRepository.class,
+        ArbeidssoekerService.class
 })
 public class ApplicationConfigTest {
 
@@ -358,5 +361,10 @@ public class ApplicationConfigTest {
         VeilarbarenaClient veilarbarenaClientMock = mock(VeilarbarenaClient.class);
         when(veilarbarenaClientMock.hentOppfolgingsbruker(any())).thenReturn(Optional.of(mock(OppfolgingsbrukerDTO.class)));
         return veilarbarenaClientMock;
+    }
+
+    @Bean
+    public OppslagArbeidssoekerregisteretClient oppslagArbeidssoekerregisteretClient() {
+        return mock(OppslagArbeidssoekerregisteretClient.class);
     }
 }
