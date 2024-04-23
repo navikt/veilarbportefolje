@@ -89,7 +89,7 @@ data class ArbeidssoekerperiodeRequest(val identitetsnummer: String)
 data class ArbeidssokerperiodeResponse(
     val periodeId: UUID,
     val metadata: MetadataResponse,
-    val avsluttet: MetadataResponse
+    val avsluttet: MetadataResponse?
 )
 
 // Opplysninger om arbeidssøker typer
@@ -99,9 +99,9 @@ data class OpplysningerOmArbeidssoekerResponse(
     val oppysningerOmArbeidssoekerId: UUID,
     val periodeId: UUID,
     val sendtInnAv: MetadataResponse,
-    val utdanning: UtdanningResponse,
-    val helse: HelseResponse,
-    val annet: AnnetResponse,
+    val utdanning: UtdanningResponse?,
+    val helse: HelseResponse?,
+    val annet: AnnetResponse?,
     val jobbsituasjon: List<BeskrivelseMedDetaljerResponse>
 )
 
@@ -129,7 +129,7 @@ enum class JobbSituasjonBeskrivelse {
 }
 
 data class AnnetResponse(
-    val andreForholdHindrerArbeid: JaNeiVetIkke
+    val andreForholdHindrerArbeid: JaNeiVetIkke?
 )
 
 data class HelseResponse(
@@ -138,8 +138,8 @@ data class HelseResponse(
 
 data class UtdanningResponse(
     val nus: String,    // TODO: Legg til kommentar som beskriver hva nus er
-    val bestaatt: JaNeiVetIkke,
-    val godkjent: JaNeiVetIkke
+    val bestaatt: JaNeiVetIkke?,
+    val godkjent: JaNeiVetIkke?
 )
 
 // Profilering typer
@@ -151,8 +151,8 @@ data class ProfileringResponse(
     val opplysningerOmArbeidssoekerId: UUID,
     val sendtInnAv: MetadataResponse,
     val profilertTil: ProfileringsResultat,
-    val jobbetSammenhengendeSeksAvTolvSisteManeder: Boolean,
-    val alder: Int
+    val jobbetSammenhengendeSeksAvTolvSisteManeder: Boolean?,
+    val alder: Int?
 )
 
 enum class ProfileringsResultat {
