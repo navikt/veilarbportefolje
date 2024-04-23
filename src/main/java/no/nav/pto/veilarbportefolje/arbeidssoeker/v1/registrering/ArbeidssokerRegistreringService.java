@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arbeidssoker.v1.registrering;
+package no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

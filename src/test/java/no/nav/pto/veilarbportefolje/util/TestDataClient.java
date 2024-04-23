@@ -19,7 +19,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
-import no.nav.pto.veilarbportefolje.arbeidssoker.v1.registrering.ArbeidssokerRegistreringRepositoryV2;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringRepositoryV2;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;

@@ -5,7 +5,7 @@ import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.arbeidssoker.v1.registrering.ArbeidssokerRegistreringRepositoryV2;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.jupiter.api.Test;

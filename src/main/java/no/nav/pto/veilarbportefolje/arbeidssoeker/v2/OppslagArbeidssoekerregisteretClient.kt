@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arbeidssoker.v2
+package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
 
 import jakarta.ws.rs.core.HttpHeaders

@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.arbeidssokerregistrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.arbeidssoker.v1.registrering.ArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
