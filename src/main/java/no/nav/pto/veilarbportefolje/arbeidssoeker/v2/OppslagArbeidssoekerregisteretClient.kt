@@ -1,15 +1,16 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
 
+import com.fasterxml.jackson.core.type.TypeReference
 import jakarta.ws.rs.core.HttpHeaders
 import no.nav.common.rest.client.RestUtils
-import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.UrlUtils
 import no.nav.pto.veilarbportefolje.util.deserializeJsonOrThrow
+import no.nav.pto.veilarbportefolje.util.objectMapper
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpStatus
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.util.*
 import java.util.function.Supplier
 
@@ -88,7 +89,7 @@ data class ArbeidssoekerperiodeRequest(val identitetsnummer: String)
 
 data class ArbeidssokerperiodeResponse(
     val periodeId: UUID,
-    val metadata: MetadataResponse,
+    val startet: MetadataResponse,
     val avsluttet: MetadataResponse?
 )
 
@@ -169,8 +170,8 @@ enum class JaNeiVetIkke {
 }
 
 data class MetadataResponse(
-    val tidspunkt: LocalDateTime,
-    val brukerResponse: BrukerResponse,
+    val tidspunkt: ZonedDateTime,
+    val utfoertAv: BrukerResponse,
     val kilde: String,
     val aarsak: String
 )
