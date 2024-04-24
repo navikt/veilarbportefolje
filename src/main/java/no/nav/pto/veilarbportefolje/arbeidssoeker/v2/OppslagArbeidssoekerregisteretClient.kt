@@ -1,12 +1,10 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
 
-import com.fasterxml.jackson.core.type.TypeReference
 import jakarta.ws.rs.core.HttpHeaders
 import no.nav.common.rest.client.RestUtils
 import no.nav.common.utils.UrlUtils
 import no.nav.pto.veilarbportefolje.util.deserializeJsonOrThrow
-import no.nav.pto.veilarbportefolje.util.objectMapper
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpStatus
@@ -97,7 +95,7 @@ data class ArbeidssokerperiodeResponse(
 data class OpplysningerOmArbeidssoekerRequest(val identitetsnummer: String, val periodeId: UUID)
 
 data class OpplysningerOmArbeidssoekerResponse(
-    val oppysningerOmArbeidssoekerId: UUID,
+    val opplysningerOmArbeidssoekerId: UUID,
     val periodeId: UUID,
     val sendtInnAv: MetadataResponse,
     val utdanning: UtdanningResponse?,
