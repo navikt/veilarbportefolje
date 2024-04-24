@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arbeidssokerregistrering;
+package no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;

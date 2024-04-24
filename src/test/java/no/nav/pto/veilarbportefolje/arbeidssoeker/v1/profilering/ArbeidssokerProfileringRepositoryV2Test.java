@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arbeidssokerprofilering;
+package no.nav.pto.veilarbportefolje.arbeidssoeker.v1.profilering;
 
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.profilering.ProfilertTil;

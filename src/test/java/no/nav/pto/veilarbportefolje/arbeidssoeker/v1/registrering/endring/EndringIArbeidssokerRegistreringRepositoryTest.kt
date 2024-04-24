@@ -1,8 +1,7 @@
-package no.nav.pto.veilarbportefolje.arbeidssokerregistrering.endring
+package no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.utils.AssertUtils
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringRepository
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.util.TestDataUtils
 import org.assertj.core.api.AssertionsForClassTypes
