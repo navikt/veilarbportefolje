@@ -44,7 +44,7 @@ class OppslagArbeidssoekerregisteretClient(
     fun hentOpplysningerOmArbeidssoeker(
         identitetsnummer: String,
         periodeId: UUID
-    ): OpplysningerOmArbeidssoekerResponse? {
+    ): List<OpplysningerOmArbeidssoekerResponse>? {
         val request: Request = Request.Builder()
             .url(UrlUtils.joinPaths(url, "/api/v1/veileder/opplysninger-om-arbeidssoeker"))
             .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenSupplier.get()}")
@@ -64,7 +64,7 @@ class OppslagArbeidssoekerregisteretClient(
     }
 
     // TODO: Map til intern type som gir mening for oss
-    fun hentProfilering(identitetsnummer: String, periodeId: UUID): ProfileringResponse? {
+    fun hentProfilering(identitetsnummer: String, periodeId: UUID): List<ProfileringResponse>? {
         val request: Request = Request.Builder()
             .url(UrlUtils.joinPaths(url, "/api/v1/veileder/profilering"))
             .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenSupplier.get()}")
