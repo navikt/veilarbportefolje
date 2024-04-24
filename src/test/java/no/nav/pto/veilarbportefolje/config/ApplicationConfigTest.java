@@ -17,6 +17,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerRepository;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
@@ -98,6 +99,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.common.utils.IdUtils.generateId;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_NYTT_ARBEIDSSOEKERREGISTER;
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchUtils.createClient;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
@@ -173,7 +175,8 @@ import static org.mockito.Mockito.when;
         HuskelappRepository.class,
         FargekategoriService.class,
         FargekategoriRepository.class,
-        ArbeidssoekerService.class
+        ArbeidssoekerService.class,
+        OpplysningerOmArbeidssoekerRepository.class
 })
 public class ApplicationConfigTest {
 
@@ -228,6 +231,8 @@ public class ApplicationConfigTest {
     public DefaultUnleash defaultUnleash() {
         final DefaultUnleash mock = mock(DefaultUnleash.class);
         when(mock.isEnabled(anyString())).thenReturn(true);
+        when(mock.isEnabled(BRUK_NYTT_ARBEIDSSOEKERREGISTER)).thenReturn(false);
+
         return mock;
     }
 

@@ -235,6 +235,28 @@ public class PostgresTable {
         public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
     }
 
+    public static final class OPPLYSNINGER_OM_ARBEIDSSOEKER {
+        private OPPLYSNINGER_OM_ARBEIDSSOEKER() { /* no-op */ }
+
+        public static final String TABLE_NAME = "OPPLYSNINGER_OM_ARBEIDSSOEKER";
+        public static final String OPPLYSNINGER_OM_ARBEIDSSOEKER_ID = "OPPLYSNINGER_OM_ARBEIDSSOEKER_ID";
+        public static final String PERIODE_ID = "PERIODE_ID";
+        public static final String SENDT_INN_TIDSPUNKT = "SENDT_INN_TIDSPUNKT";
+        public static final String UTDANNING_NUS_KODE = "UTDANNING_NUS_KODE";
+        public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
+        public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
+
+    }
+
+    public static final class OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON {
+        private OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON() { /* no-op */ }
+
+        public static final String TABLE_NAME = "OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON";
+        public static final String OPPLYSNINGER_OM_ARBEIDSSOEKER_ID = "OPPLYSNINGER_OM_ARBEIDSSOEKER_ID";
+        public static final String JOBBSITUASJON = "JOBBSITUASJON";
+
+    }
+
     public static final class BRUKER_CV {
 
         private BRUKER_CV() { /* no-op */ }
