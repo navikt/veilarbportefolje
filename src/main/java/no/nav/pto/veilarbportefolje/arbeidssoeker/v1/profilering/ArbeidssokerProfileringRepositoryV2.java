@@ -14,10 +14,7 @@ import java.sql.ResultSet;
 import java.util.Optional;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.PROFILERING_RESULTAT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.PROFILERING_TIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.TABLE_NAME;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
