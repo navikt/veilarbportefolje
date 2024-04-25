@@ -3,9 +3,14 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER
 import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON
 import no.nav.pto.veilarbportefolje.util.DateUtils
+import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import java.sql.PreparedStatement
+import java.sql.SQLException
+import java.sql.Types
+import java.util.*
 
 @Repository
 class OpplysningerOmArbeidssoekerRepository(
@@ -14,7 +19,7 @@ class OpplysningerOmArbeidssoekerRepository(
     @Transactional
     fun upsertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker) {
         insertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoeker)
-        insertOpplysningerOmArbeidssoekerJobbsituasjon(opplysningerOmArbeidssoeker.jobbsituasjon)
+        insertOpplysningerOmArbeidssoekerJobbsituasjon(opplysningerOmArbeidssoeker.opplysningerOmJobbsituasjon)
     }
 
     fun insertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker) {
@@ -44,10 +49,17 @@ class OpplysningerOmArbeidssoekerRepository(
                     ${OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.JOBBSITUASJON}
                 )
                 VALUES (?, ?)"""
-        db.update(
-            sqlString,
-            opplysningerOmArbeidssoekerJobbsituasjon.opplysningerOmArbeidssoekerId,
-            opplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon
-        )
+
+        db.batchUpdate(sqlString, object : BatchPreparedStatementSetter {
+            @Throws(SQLException::class)
+            override fun setValues(ps: PreparedStatement, i: Int) {
+                ps.setObject(1, opplysningerOmArbeidssoekerJobbsituasjon.opplysningerOmArbeidssoekerId, Types.OTHER)
+                ps.setString(2, opplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon[i])
+            }
+
+            override fun getBatchSize(): Int {
+                return opplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon.size
+            }
+        })
     }
 }

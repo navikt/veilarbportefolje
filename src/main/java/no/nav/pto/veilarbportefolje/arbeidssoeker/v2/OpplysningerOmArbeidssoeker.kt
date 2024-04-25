@@ -10,7 +10,7 @@ data class OpplysningerOmArbeidssoeker(
     val utdanningNusKode: String,
     val utdanningBestatt: String,
     val utdanningGodkjent: String,
-    val jobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon
+    val opplysningerOmJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon
 )
 
 
@@ -27,5 +27,5 @@ fun OpplysningerOmArbeidssoekerResponse.toOpplysningerOmArbeidssoeker() = Opplys
     utdanningNusKode = this.utdanning?.nus.orEmpty(),
     utdanningBestatt = this.utdanning?.bestaatt?.name.orEmpty(),
     utdanningGodkjent = this.utdanning?.godkjent?.name.orEmpty(),
-    jobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(this.opplysningerOmArbeidssoekerId, this.jobbsituasjon.map { it.beskrivelse.name })
+    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(this.opplysningerOmArbeidssoekerId, this.jobbsituasjon.map { it.beskrivelse.name })
 )
