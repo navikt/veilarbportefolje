@@ -257,6 +257,15 @@ public class PostgresTable {
 
     }
 
+    public static final class SISTE_ARBEIDSSOEKER_PERIODE {
+        private SISTE_ARBEIDSSOEKER_PERIODE() { /* no-op */ }
+
+        public static final String TABLE_NAME = "SISTE_ARBEIDSSOEKER_PERIODE";
+        public static final String ARBEIDSSOKER_PERIODE_ID = "ARBEIDSSOKER_PERIODE_ID";
+        public static final String FNR = "FNR";
+
+    }
+
     public static final class BRUKER_CV {
 
         private BRUKER_CV() { /* no-op */ }

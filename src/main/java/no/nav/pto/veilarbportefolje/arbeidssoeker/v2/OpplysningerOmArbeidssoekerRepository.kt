@@ -6,7 +6,6 @@ import no.nav.pto.veilarbportefolje.util.DateUtils
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Transactional
 import java.sql.PreparedStatement
 import java.sql.SQLException
 import java.sql.Types
@@ -16,7 +15,6 @@ import java.util.*
 class OpplysningerOmArbeidssoekerRepository(
     private val db: JdbcTemplate
 ) {
-    @Transactional
     fun upsertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker) {
         insertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoeker)
         insertOpplysningerOmArbeidssoekerJobbsituasjon(opplysningerOmArbeidssoeker.opplysningerOmJobbsituasjon)

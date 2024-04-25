@@ -19,6 +19,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerRepository;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.SisteArbeidssoekerPeriodeRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
@@ -176,7 +177,8 @@ import static org.mockito.Mockito.when;
         FargekategoriService.class,
         FargekategoriRepository.class,
         ArbeidssoekerService.class,
-        OpplysningerOmArbeidssoekerRepository.class
+        OpplysningerOmArbeidssoekerRepository.class,
+        SisteArbeidssoekerPeriodeRepository.class
 })
 public class ApplicationConfigTest {
 

@@ -5,13 +5,16 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ArbeidssoekerService(
     private val oppslagArbeidssoekerregisteretClient: OppslagArbeidssoekerregisteretClient,
     private val pdlIdentRepository: PdlIdentRepository,
-    private val opplysningerOmArbeidssoekerRepository : OpplysningerOmArbeidssoekerRepository,
+    private val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
+    private val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
 ) {
+    @Transactional
     fun hentOgLagreSisteArbeidssoekerPeriodeForBruker(aktorId: AktorId) {
         val fnr: Fnr? = pdlIdentRepository.hentFnrForAktivBruker(aktorId)
         if (fnr == null) {
@@ -28,6 +31,9 @@ class ArbeidssoekerService(
             secureLog.info("Fant ingen aktiv arbeidssøkerperiode for bruker med fnr: $fnr")
             return
         }
+
+        sisteArbeidssoekerPeriodeRepository.upsertSisteArbeidssoekerPeriode(fnr, aktivArbeidssoekerperiode.periodeId)
+        secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
 
         val opplysningerOmArbeidssoeker: List<OpplysningerOmArbeidssoekerResponse>? =
             oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(fnr.get(), aktivArbeidssoekerperiode.periodeId)

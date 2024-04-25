@@ -730,12 +730,12 @@ CREATE TABLE public.siste_14a_vedtak (
 
 
 --
--- Name: siste_arbeidssoker_periode; Type: TABLE; Schema: public; Owner: -
+-- Name: siste_arbeidssoeker_periode; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.siste_arbeidssoker_periode (
-    fnr character varying(11) NOT NULL,
-    arbeidssoker_periode_id uuid NOT NULL
+CREATE TABLE public.siste_arbeidssoeker_periode (
+    arbeidssoker_periode_id uuid,
+    fnr character varying(11) NOT NULL
 );
 
 
@@ -1139,19 +1139,19 @@ ALTER TABLE ONLY public.siste_14a_vedtak
 
 
 --
--- Name: siste_arbeidssoker_periode siste_arbeidssoker_periode_arbeidssoker_periode_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: siste_arbeidssoeker_periode siste_arbeidssoeker_periode_arbeidssoker_periode_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.siste_arbeidssoker_periode
-    ADD CONSTRAINT siste_arbeidssoker_periode_arbeidssoker_periode_id_key UNIQUE (arbeidssoker_periode_id);
+ALTER TABLE ONLY public.siste_arbeidssoeker_periode
+    ADD CONSTRAINT siste_arbeidssoeker_periode_arbeidssoker_periode_id_key UNIQUE (arbeidssoker_periode_id);
 
 
 --
--- Name: siste_arbeidssoker_periode siste_arbeidssoker_periode_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: siste_arbeidssoeker_periode siste_arbeidssoeker_periode_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.siste_arbeidssoker_periode
-    ADD CONSTRAINT siste_arbeidssoker_periode_pkey PRIMARY KEY (fnr);
+ALTER TABLE ONLY public.siste_arbeidssoeker_periode
+    ADD CONSTRAINT siste_arbeidssoeker_periode_pkey PRIMARY KEY (fnr);
 
 
 --
@@ -1425,6 +1425,14 @@ ALTER TABLE ONLY public.enslige_forsorgere
 
 
 --
+-- Name: opplysninger_om_arbeidssoeker fk_arbeidssoeker_periode_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker
+    ADD CONSTRAINT fk_arbeidssoeker_periode_id FOREIGN KEY (periode_id) REFERENCES public.siste_arbeidssoeker_periode(arbeidssoker_periode_id) ON DELETE CASCADE;
+
+
+--
 -- Name: foreldreansvar fk_barn_ident; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1454,14 +1462,6 @@ ALTER TABLE ONLY public.bruker_statsborgerskap
 
 ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker_jobbsituasjon
     ADD CONSTRAINT opplysninger_om_arbeidssoeker_opplysninger_om_arbeidssoeke_fkey FOREIGN KEY (opplysninger_om_arbeidssoeker_id) REFERENCES public.opplysninger_om_arbeidssoeker(opplysninger_om_arbeidssoeker_id) ON DELETE CASCADE;
-
-
---
--- Name: opplysninger_om_arbeidssoeker opplysninger_om_arbeidssoeker_periode_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker
-    ADD CONSTRAINT opplysninger_om_arbeidssoeker_periode_id_fkey FOREIGN KEY (periode_id) REFERENCES public.siste_arbeidssoker_periode(arbeidssoker_periode_id) ON DELETE CASCADE;
 
 
 --
