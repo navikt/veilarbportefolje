@@ -116,9 +116,6 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
         try {
             int raderSlettet = oppfolgingsbrukerRepositoryV3.slettOppfolgingsbruker(maybeFnr.get());
 
-            // TODO: Opprydning i OpenSearch
-            //  opensearchIndexerV2.slettOppfolgingsbruker(aktorId);
-
             if(raderSlettet != 0) {
                 log.info("Oppfolgingsbruker slettet.");
                 secureLog.info("Oppfolgingsbruker slettet for fnr: {} / Aktør-ID: {}.", maybeFnr.get(), aktorId.get());
