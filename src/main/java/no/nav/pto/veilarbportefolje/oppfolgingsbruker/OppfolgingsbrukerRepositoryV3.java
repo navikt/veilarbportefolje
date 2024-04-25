@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
+import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -54,7 +55,10 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     public int slettOppfolgingsbruker(Fnr fnr) {
-        return db.update("DELETE FROM oppfolgingsbruker_arena_v2 WHERE fodselsnr = ?", fnr.get());
+        return db.update(
+                String.format("DELETE FROM %s WHERE fodselsnr = ?", PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.TABLE_NAME),
+                fnr.get()
+        );
     }
 
     private record OppfolgingsbrukerEntityMedOppslagFnr(
