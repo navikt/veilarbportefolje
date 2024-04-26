@@ -114,7 +114,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
     public void slettOppfolgingsbruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
         if (maybeFnr.isEmpty()) {
             secureLog.warn("Kunne ikke slette oppfolgingsbruker med Aktør-ID {}. Årsak fødselsnummer-parameter var tom.", aktorId.get());
-            throw new IllegalStateException("Fødselsnummer mangler");
+            return;
         }
 
         try {
