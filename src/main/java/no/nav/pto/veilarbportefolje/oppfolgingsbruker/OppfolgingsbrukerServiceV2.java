@@ -106,6 +106,31 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
         log.info("Oppfolgingsbruker hentet og lagret.");
         secureLog.info("Oppfolgingsbruker hentet og lagret for aktorId: {} / fnr: {}.", aktorId, fnr);
     }
+
+    public void slettOppfolgingsbruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
+        if (maybeFnr.isEmpty()) {
+            secureLog.warn("Kunne ikke slette oppfolgingsbruker med Aktør-ID {}. Årsak fødselsnummer-parameter var tom.", aktorId.get());
+            throw new IllegalStateException("Fødselsnummer mangler");
+        }
+
+        try {
+            int raderSlettet = oppfolgingsbrukerRepositoryV3.slettOppfolgingsbruker(maybeFnr.get());
+
+            if(raderSlettet != 0) {
+                log.info("Oppfolgingsbruker slettet.");
+                secureLog.info("Oppfolgingsbruker slettet for fnr: {} / Aktør-ID: {}.", maybeFnr.get(), aktorId.get());
+            } else {
+                log.info("Fant ingen oppfolgingsbruker å slette.");
+                secureLog.info("Fant ingen oppfolgingsbruker å slette for fnr: {} / Aktør-ID: {}.", maybeFnr.get(), aktorId.get());
+            }
+        } catch (Exception e) {
+            secureLog.error(
+                    String.format("Kunne ikke slette oppfolgingsbruker for fnr: %s / Aktør-ID: %s.", maybeFnr.get(), aktorId.get()),
+                    e
+            );
+            throw new RuntimeException("Kunne ikke slette oppfolgingsbruker");
+        }
+    }
 }
 
 

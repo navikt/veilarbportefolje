@@ -90,7 +90,7 @@ public class PostgresTable {
 
         private OPPFOLGINGSBRUKER_ARENA_V2() { /* no-op */ }
 
-        public static final String TABLE_NAME = "OPPFOLGINGSBRUKER_ARENA";
+        public static final String TABLE_NAME = "OPPFOLGINGSBRUKER_ARENA_V2";
         public static final String FODSELSNR = "FODSELSNR";
         public static final String FORMIDLINGSGRUPPEKODE = "FORMIDLINGSGRUPPEKODE";
         public static final String ISERV_FRA_DATO = "ISERV_FRA_DATO";

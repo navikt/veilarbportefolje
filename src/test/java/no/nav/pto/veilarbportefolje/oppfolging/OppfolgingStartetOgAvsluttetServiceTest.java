@@ -7,10 +7,7 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.*;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
@@ -87,6 +84,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Autowired
     private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
+
+    @Autowired
+    private OppfolgingsbrukerServiceV2 oppfolgingsbrukerService;
 
     @MockBean
     private PdlPortefoljeClient pdlPortefoljeClient;
@@ -266,6 +266,25 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId));
 
         assertTrue(siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get()))).isEmpty());
+    }
+
+    @Test
+    void når_oppfølging_avsluttes_skal_oppfolgingsbrukerdata_slettes() {
+        when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
+        when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
+        mockHentOppfolgingsbrukerResponse(fnr);
+
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr);
+
+        oppfolgingsbrukerService.hentOgLagreOppfolgingsbruker(aktorId);
+
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityFørAvsluttet = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        assertThat(oppfolgingsbrukerEntityFørAvsluttet).isPresent();
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId));
+
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityEtterAvsluttet = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        assertThat(oppfolgingsbrukerEntityEtterAvsluttet).isEmpty();
     }
 
     @Test
