@@ -28,7 +28,7 @@ import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 
 public class TestDataClient {
     private final JdbcTemplate jdbcTemplatePostgres;
@@ -94,6 +94,10 @@ public class TestDataClient {
     public void lagreBrukerUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
         final Fnr fnr = TestDataUtils.randomFnr();
         lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), VeilederId.of(null), startDato, null);
+    }
+
+    public void lagreBrukerUnderOppfolging(AktorId aktoerId, Fnr fnr) {
+        lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), randomVeilederId(), tilfeldigDatoTilbakeITid(), null);
     }
 
     public void lagreBrukerUnderOppfolging(AktorId aktoerId,
