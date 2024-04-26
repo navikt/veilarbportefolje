@@ -88,18 +88,22 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
     public void hentOgLagreOppfolgingsbruker(AktorId aktorId) {
         Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktorId);
 
-        OppfolgingsbrukerDTO oppfolgingsbrukerDTO = veilarbarenaClient.hentOppfolgingsbruker(fnr)
-                .orElseThrow(() -> new RuntimeException("Fant ikke oppfolgingsbruker for fnr: " + fnr));
+        Optional<OppfolgingsbrukerDTO> oppfolgingsbrukerDTO = veilarbarenaClient.hentOppfolgingsbruker(fnr);
+
+        if(oppfolgingsbrukerDTO.isEmpty()) {
+            secureLog.error("Fant ingen oppfølgingsbrukerdata for bruker med fnr: {}.", fnr);
+            throw new RuntimeException("Fant ingen oppfølgingsbrukerdata for brukeren.");
+        }
 
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity = new OppfolgingsbrukerEntity(
-                oppfolgingsbrukerDTO.getFodselsnr(),
-                oppfolgingsbrukerDTO.getFormidlingsgruppekode(),
-                oppfolgingsbrukerDTO.getIservFraDato(),
-                oppfolgingsbrukerDTO.getNavKontor(),
-                oppfolgingsbrukerDTO.getKvalifiseringsgruppekode(),
-                oppfolgingsbrukerDTO.getRettighetsgruppekode(),
-                oppfolgingsbrukerDTO.getHovedmaalkode(),
-                oppfolgingsbrukerDTO.getSistEndretDato()
+                oppfolgingsbrukerDTO.get().getFodselsnr(),
+                oppfolgingsbrukerDTO.get().getFormidlingsgruppekode(),
+                oppfolgingsbrukerDTO.get().getIservFraDato(),
+                oppfolgingsbrukerDTO.get().getNavKontor(),
+                oppfolgingsbrukerDTO.get().getKvalifiseringsgruppekode(),
+                oppfolgingsbrukerDTO.get().getRettighetsgruppekode(),
+                oppfolgingsbrukerDTO.get().getHovedmaalkode(),
+                oppfolgingsbrukerDTO.get().getSistEndretDato()
         );
 
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity);
