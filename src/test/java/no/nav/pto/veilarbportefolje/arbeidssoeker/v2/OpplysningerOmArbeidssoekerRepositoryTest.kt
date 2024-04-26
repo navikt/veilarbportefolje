@@ -2,8 +2,7 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
 import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer
-import no.nav.pto.veilarbportefolje.util.TestDataUtils.getOpplysningerOmArbeidssoekerFraDb
-import no.nav.pto.veilarbportefolje.util.TestDataUtils.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb
+import no.nav.pto.veilarbportefolje.util.TestDataClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -64,12 +63,17 @@ class OpplysningerOmArbeidssoekerRepositoryTest {
         opplysningerOmArbeidssoeker.upsertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoekerObjekt)
 
 
-        val resultatOpplysninger: OpplysningerOmArbeidssoeker? = getOpplysningerOmArbeidssoekerFraDb(db,opplysningerOmArbeidssoekerObjekt.periodeId)
+        val resultatOpplysninger: OpplysningerOmArbeidssoeker? =
+            TestDataClient.getOpplysningerOmArbeidssoekerFraDb(db, opplysningerOmArbeidssoekerObjekt.periodeId)
 
-        val resultatJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon = getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(db, resultatOpplysninger!!.opplysningerOmArbeidssoekerId)
+        val resultatJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon? =
+            TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(
+                db,
+                resultatOpplysninger!!.opplysningerOmArbeidssoekerId
+            )
 
         assertThat(resultatOpplysninger.opplysningerOmArbeidssoekerId).isEqualTo(opplysningerOmArbeidssoekerObjekt.opplysningerOmArbeidssoekerId)
-        assertThat(resultatJobbsituasjon.jobbsituasjon.size).isEqualTo(opplysningerOmArbeidssoekerObjekt.opplysningerOmJobbsituasjon.jobbsituasjon.size)
+        assertThat(resultatJobbsituasjon?.jobbsituasjon?.size).isEqualTo(opplysningerOmArbeidssoekerObjekt.opplysningerOmJobbsituasjon.jobbsituasjon.size)
     }
 }
 

@@ -17,4 +17,11 @@ class SisteArbeidssoekerPeriodeRepository(
             fnr.get()
         )
     }
+
+    fun slettSisteArbeidssoekerPeriode(fnr: Fnr) {
+        db.update(
+            """DELETE FROM ${PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} WHERE FNR = ?""",
+            fnr.get()
+        )
+    }
 }

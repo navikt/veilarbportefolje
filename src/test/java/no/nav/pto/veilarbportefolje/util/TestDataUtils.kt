@@ -22,6 +22,7 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1
 import org.apache.commons.lang3.RandomUtils
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import java.security.KeyPairGenerator
 import java.security.SecureRandom
@@ -146,55 +147,6 @@ object TestDataUtils {
     @JvmStatic
     fun randomHovedmal(): Hovedmal {
         return Hovedmal.entries[random.nextInt(Hovedmal.entries.size)]
-    }
-
-    @JvmStatic
-    fun getArbeidssoekerPeriodeFraDb(jdbcTemplate: JdbcTemplate, arbeidssoekerPeriodeId: UUID): ArbeidssoekerPeriode? {
-        return jdbcTemplate.queryForObject(
-            """SELECT * FROM ${PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} WHERE ${PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.ARBEIDSSOKER_PERIODE_ID} =?""",
-            { rs: ResultSet, _ ->
-                ArbeidssoekerPeriode(
-                    rs.getObject(PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.ARBEIDSSOKER_PERIODE_ID, UUID::class.java),
-                    Fnr.of(rs.getString(PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.FNR))
-                )
-            },
-            arbeidssoekerPeriodeId
-        )
-    }
-    @JvmStatic
-    fun getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate: JdbcTemplate, arbeidssoekerPeriode: UUID): OpplysningerOmArbeidssoeker? {
-        return jdbcTemplate.queryForObject(
-            """SELECT * FROM ${PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.TABLE_NAME} WHERE ${PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.PERIODE_ID} =?""",
-            { rs: ResultSet, _ ->
-                val opplysningerOmArbeidssoekerId =
-                    rs.getObject(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.OPPLYSNINGER_OM_ARBEIDSSOEKER_ID, UUID::class.java)
-                OpplysningerOmArbeidssoeker(
-                    opplysningerOmArbeidssoekerId,
-                    rs.getObject(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.PERIODE_ID, UUID::class.java),
-                    DateUtils.toZonedDateTime(rs.getTimestamp(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.SENDT_INN_TIDSPUNKT)),
-                    rs.getString(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_NUS_KODE),
-                    rs.getString(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_BESTATT),
-                    rs.getString(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_GODKJENT),
-                    OpplysningerOmArbeidssoekerJobbsituasjon(opplysningerOmArbeidssoekerId, emptyList())
-                )
-            },
-            arbeidssoekerPeriode
-        )
-    }
-
-    @JvmStatic
-    fun getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate: JdbcTemplate, opplysningerOmArbeidssoekerId: UUID): OpplysningerOmArbeidssoekerJobbsituasjon {
-        val jobbSituasjoner: List<String> = jdbcTemplate.queryForList(
-            """SELECT * FROM ${PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.TABLE_NAME} WHERE ${PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.OPPLYSNINGER_OM_ARBEIDSSOEKER_ID} =?""",
-            opplysningerOmArbeidssoekerId
-        ).map { rs ->
-                rs[PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.JOBBSITUASJON] as String
-        }
-
-        return OpplysningerOmArbeidssoekerJobbsituasjon(
-            opplysningerOmArbeidssoekerId,
-            jobbSituasjoner
-        )
     }
 
     @JvmStatic

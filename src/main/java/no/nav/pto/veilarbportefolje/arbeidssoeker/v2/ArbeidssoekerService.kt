@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Service
 class ArbeidssoekerService(
@@ -36,13 +37,16 @@ class ArbeidssoekerService(
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
 
         val opplysningerOmArbeidssoeker: List<OpplysningerOmArbeidssoekerResponse>? =
-            oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(fnr.get(), aktivArbeidssoekerperiode.periodeId)
+            oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(
+                fnr.get(),
+                aktivArbeidssoekerperiode.periodeId
+            )
         val sisteOpplysningerOmArbeidssoeker = opplysningerOmArbeidssoeker?.maxByOrNull {
             it.sendtInnAv.tidspunkt
         }
 
         secureLog.info("Henter opplysninger om arbeidssøker for bruker med fnr: $fnr")
-        if(sisteOpplysningerOmArbeidssoeker == null) {
+        if (sisteOpplysningerOmArbeidssoeker == null) {
             secureLog.info("Fant ingen opplysninger om arbeidssøker for bruker med fnr: $fnr")
             return
         }
@@ -50,5 +54,17 @@ class ArbeidssoekerService(
         opplysningerOmArbeidssoekerRepository.upsertOpplysningerOmArbeidssoeker(sisteOpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoeker())
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
 
+    }
+
+    fun slettArbeidssoekerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
+        if (maybeFnr.isEmpty) {
+            secureLog.warn(
+                "Kunne ikke slette oppfolgingsbruker med Aktør-ID {}. Årsak fødselsnummer-parameter var tom.",
+                aktorId.get()
+            )
+            throw IllegalStateException("Fødselsnummer mangler")
+        }
+
+        sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(maybeFnr.get())
     }
 }
