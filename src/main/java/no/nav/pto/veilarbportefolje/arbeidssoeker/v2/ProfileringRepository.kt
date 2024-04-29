@@ -9,7 +9,7 @@ import java.util.*
 
 @Repository
 class ProfileringRepository(private val db: JdbcTemplate) {
-    fun upsertProfilering(sisteProfilering: Profilering) {
+    fun insertProfilering(sisteProfilering: Profilering) {
         db.update(
             """INSERT INTO ${PostgresTable.PROFILERING.TABLE_NAME} values (?,?,?)""",
             sisteProfilering.periodeId,

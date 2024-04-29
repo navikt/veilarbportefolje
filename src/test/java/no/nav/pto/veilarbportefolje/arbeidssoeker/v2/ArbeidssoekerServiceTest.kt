@@ -37,12 +37,12 @@ class ArbeidssoekerServiceTest {
         val opplysningerOmArbeidssoekerId2 = UUID.randomUUID()
         `when`(pdlIdentRepository.hentFnrForAktivBruker(aktorId)).thenReturn(fnr1)
 
-        sisteArbeidssoekerPeriodeRepository.upsertSisteArbeidssoekerPeriode(fnr1, periodeId1)
-        sisteArbeidssoekerPeriodeRepository.upsertSisteArbeidssoekerPeriode(fnr2, periodeId2)
-        opplysningerOmArbeidssoekerRepository.upsertOpplysningerOmArbeidssoeker(
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr1, periodeId1)
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr2, periodeId2)
+        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
             genererRandomOpplysningerOmArbeidssoeker(periodeId1, opplysningerOmArbeidssoekerId1)
         )
-        opplysningerOmArbeidssoekerRepository.upsertOpplysningerOmArbeidssoeker(
+        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
             genererRandomOpplysningerOmArbeidssoeker(periodeId2, opplysningerOmArbeidssoekerId2)
         )
 

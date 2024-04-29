@@ -42,7 +42,7 @@ class ArbeidssoekerService(
             return
         }
 
-        sisteArbeidssoekerPeriodeRepository.upsertSisteArbeidssoekerPeriode(fnr, aktivArbeidssoekerperiode.periodeId)
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr, aktivArbeidssoekerperiode.periodeId)
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
 
         val opplysningerOmArbeidssoeker: List<OpplysningerOmArbeidssoekerResponse>? =
@@ -60,7 +60,7 @@ class ArbeidssoekerService(
             return
         }
 
-        opplysningerOmArbeidssoekerRepository.upsertOpplysningerOmArbeidssoeker(sisteOpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoeker())
+        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(sisteOpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoeker())
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
 
         secureLog.info("Henter opplysninger om arbeidssøker for bruker med fnr: $fnr")
@@ -74,7 +74,7 @@ class ArbeidssoekerService(
             return
         }
 
-        profileringRepository.upsertProfilering(sisteProfilering.toProfilering())
+        profileringRepository.insertProfilering(sisteProfilering.toProfilering())
         secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 
