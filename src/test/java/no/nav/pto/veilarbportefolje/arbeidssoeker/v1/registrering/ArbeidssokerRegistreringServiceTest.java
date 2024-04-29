@@ -1,7 +1,8 @@
-package no.nav.pto.veilarbportefolje.registrering;
+package no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
@@ -28,14 +29,14 @@ import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-class RegistreringServiceTest extends EndToEndTest {
-    private final RegistreringService registreringService;
+class ArbeidssokerRegistreringServiceTest extends EndToEndTest {
+    private final ArbeidssokerRegistreringService arbeidssokerRegistreringService;
     private final OpensearchService opensearchService;
     private final OpensearchIndexer indexer;
 
     @Autowired
-    public RegistreringServiceTest(RegistreringService registreringService, OpensearchService opensearchService, OpensearchIndexer indexer) {
-        this.registreringService = registreringService;
+    public ArbeidssokerRegistreringServiceTest(ArbeidssokerRegistreringService arbeidssokerRegistreringService, OpensearchService opensearchService, OpensearchIndexer indexer) {
+        this.arbeidssokerRegistreringService = arbeidssokerRegistreringService;
         this.opensearchService = opensearchService;
         this.indexer = indexer;
     }
@@ -54,7 +55,7 @@ class RegistreringServiceTest extends EndToEndTest {
                 .setRegistreringOpprettet(ZonedDateTime.now().format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        registreringService.behandleKafkaMeldingLogikk(kafkaMessage);
+        arbeidssokerRegistreringService.behandleKafkaMeldingLogikk(kafkaMessage);
 
         GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
 

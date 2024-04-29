@@ -14,6 +14,7 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
@@ -104,6 +105,21 @@ public class ClientConfig {
 
         return new VeilarbarenaClient(
                 environmentProperties.getVeilarbarenaUrl(),
+                tokenSupplier,
+                RestClient.baseClient(),
+                APPLICATION_NAME
+        );
+    }
+
+    @Bean
+    public OppslagArbeidssoekerregisteretClient oppslagArbeidssoekerregisteretClient(
+            AuthService authService,
+            EnvironmentProperties environmentProperties
+    ) {
+        Supplier<String> tokenSupplier = () -> authService.getM2MToken(environmentProperties.getOppslagArbeidssoekerregisteretScope());
+
+        return new OppslagArbeidssoekerregisteretClient(
+                environmentProperties.getOppslagArbeidssoekerregisteretUrl(),
                 tokenSupplier,
                 RestClient.baseClient(),
                 APPLICATION_NAME

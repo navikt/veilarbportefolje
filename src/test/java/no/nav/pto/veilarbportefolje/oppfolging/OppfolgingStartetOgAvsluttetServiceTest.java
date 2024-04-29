@@ -1,12 +1,15 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.*;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
@@ -22,16 +25,14 @@ import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakApiDto;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
-import no.nav.pto.veilarbportefolje.util.TestDataUtils;
+import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
-import no.nav.pto_schema.enums.arena.Rettighetsgruppe;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
-import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,19 +40,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
+import static no.nav.pto.veilarbportefolje.util.SerialiseringOgDeserialiseringUtilsKt.getObjectMapper;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal.BEHOLDE_ARBEID;
 import static no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe.STANDARD_INNSATS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -88,6 +89,12 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @Autowired
     private OppfolgingsbrukerServiceV2 oppfolgingsbrukerService;
 
+    @Autowired
+    private ArbeidssoekerService arbeidssoekerService;
+
+    @Autowired
+    private SisteArbeidssoekerPeriodeRepository sisteArbeidssoekerPeriodeRepository;
+
     @MockBean
     private PdlPortefoljeClient pdlPortefoljeClient;
 
@@ -97,15 +104,19 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @MockBean
     private VeilarbarenaClient veilarbarenaClient;
 
+    @MockBean
+    private OppslagArbeidssoekerregisteretClient oppslagArbeidssoekerregisteretClient;
+
     private final Fnr fnr = Fnr.of("17858998980");
     private final AktorId aktorId = randomAktorId();
+
 
     @BeforeEach
     public void cleanup() {
         jdbcTemplate.update("truncate bruker_data CASCADE");
         jdbcTemplate.update("truncate bruker_data_barn CASCADE");
         jdbcTemplate.update("truncate foreldreansvar");
-
+        jdbcTemplate.update("truncate siste_arbeidssoeker_periode cascade");
     }
 
     @Test
@@ -216,6 +227,32 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     }
 
     @Test
+    void når_oppfolging_startes_skal_arbeidssoekerdata_hentes_lagres() throws JsonProcessingException {
+        UUID periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16");
+        when(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true);
+        mockPdlIdenterRespons(aktorId, fnr);
+        mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
+        mockSiste14aVedtakResponse(fnr);
+        mockHentOppfolgingsbrukerResponse(fnr);
+        mockHentArbeidssoekerPerioderResponse(fnr);
+        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeId);
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
+
+        ArbeidssoekerPeriode arbeidssoekerPeriode = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, periodeId);
+
+        assertNotNull(arbeidssoekerPeriode);
+        OpplysningerOmArbeidssoeker opplysningerOmArbeidssoeker = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, arbeidssoekerPeriode.getArbeidssoekerperiodeId());
+
+        assertNotNull(opplysningerOmArbeidssoeker);
+        OpplysningerOmArbeidssoekerJobbsituasjon opplysningerOmArbeidssoekerJobbsituasjon = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoeker.getOpplysningerOmArbeidssoekerId());
+
+        assertThat(opplysningerOmArbeidssoekerJobbsituasjon.getJobbsituasjon().get(1)).isEqualTo(JobbSituasjonBeskrivelse.ER_PERMITTERT.name());
+
+    }
+
+    @Test
     void når_oppfølging_avsluttes_skal_arbeidsliste_registrering_og_oppfølgingsdata_slettes() {
         when(aktorClient.hentFnr(aktorId)).thenReturn(randomFnr());
         when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
@@ -285,6 +322,35 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityEtterAvsluttet = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntityEtterAvsluttet).isEmpty();
+    }
+
+    @Test
+    void når_oppfølging_avsluttes_skal_arbeidssøkerdata_slettes() throws JsonProcessingException {
+        when(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true);
+        when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
+        when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
+        mockHentArbeidssoekerPerioderResponse(fnr);
+        mockHentOpplysningerOmArbeidssoekerResponse(fnr, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
+
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr);
+
+        arbeidssoekerService.hentOgLagreSisteArbeidssoekerPeriodeForBruker(aktorId);
+
+        ArbeidssoekerPeriode sisteArbeidssoekerPeriodeFørAvsluttet = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
+        assertThat(sisteArbeidssoekerPeriodeFørAvsluttet).isNotNull();
+        OpplysningerOmArbeidssoeker opplysningerOmArbeidssoekerFørAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, sisteArbeidssoekerPeriodeFørAvsluttet.getArbeidssoekerperiodeId());
+        assertThat(opplysningerOmArbeidssoekerFørAvsluttet).isNotNull();
+        OpplysningerOmArbeidssoekerJobbsituasjon opplysningerOmArbeidssoekerJobbsituasjonFørAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerFørAvsluttet.getOpplysningerOmArbeidssoekerId());
+        assertThat(opplysningerOmArbeidssoekerJobbsituasjonFørAvsluttet).isNotNull();
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId));
+
+        ArbeidssoekerPeriode sisteArbeidssoekerPeriodeEtterAvsluttet = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
+        assertThat(sisteArbeidssoekerPeriodeEtterAvsluttet).isNull();
+        OpplysningerOmArbeidssoeker opplysningerOmArbeidssoekerEtterAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, sisteArbeidssoekerPeriodeFørAvsluttet.getArbeidssoekerperiodeId());
+        assertThat(opplysningerOmArbeidssoekerEtterAvsluttet).isNull();
+        OpplysningerOmArbeidssoekerJobbsituasjon opplysningerOmArbeidssoekerJobbsituasjonEtterAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerFørAvsluttet.getOpplysningerOmArbeidssoekerId());
+        assertThat(opplysningerOmArbeidssoekerJobbsituasjonEtterAvsluttet).isNull();
     }
 
     @Test
@@ -381,6 +447,20 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         String file = readFileAsJsonString("/oppfolgingsbruker.json", getClass());
         OppfolgingsbrukerDTO oppfolgingsbrukerDTO = JsonUtils.fromJson(file, OppfolgingsbrukerDTO.class);
         when(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(oppfolgingsbrukerDTO));
+    }
+
+    private void mockHentArbeidssoekerPerioderResponse(Fnr fnr) throws JsonProcessingException {
+        String file = readFileAsJsonString("/arbeidssoekerperioder.json", getClass());
+        List<ArbeidssokerperiodeResponse> arbeidssoekerResponse = getObjectMapper().readValue(file, new TypeReference<>() {
+        });
+        when(oppslagArbeidssoekerregisteretClient.hentArbeidssokerPerioder(fnr.get())).thenReturn(arbeidssoekerResponse);
+    }
+
+    private void mockHentOpplysningerOmArbeidssoekerResponse(Fnr fnr, UUID periodeId) throws JsonProcessingException {
+        String file = readFileAsJsonString("/opplysningerOmArbeidssoeker.json", getClass());
+        List<OpplysningerOmArbeidssoekerResponse> opplysningerOmArbeidssoekerResponse = getObjectMapper().readValue(file, new TypeReference<>() {
+        });
+        when(oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(fnr.get(), periodeId)).thenReturn(opplysningerOmArbeidssoekerResponse);
     }
 
     private void insertOppfolgingsbrukerEntity(ZonedDateTime endret_dato) {

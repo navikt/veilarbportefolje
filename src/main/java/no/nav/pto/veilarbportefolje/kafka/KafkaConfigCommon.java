@@ -42,9 +42,9 @@ import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
-import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
-import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.profilering.ArbeidssokerProfileringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDto;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
@@ -137,8 +137,8 @@ public class KafkaConfigCommon {
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
-                             SistLestService sistLestService, RegistreringService registreringService, EndringIRegistreringService endringIRegistreringService,
-                             ProfileringService profileringService, AktivitetService aktivitetService,
+                             SistLestService sistLestService, ArbeidssokerRegistreringService arbeidssokerRegistreringService, EndringIArbeidssokerRegistreringService endringIArbeidssokerRegistreringService,
+                             ArbeidssokerProfileringService arbeidssokerProfileringService, AktivitetService aktivitetService,
                              Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
                              DialogService dialogService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
@@ -199,7 +199,7 @@ public class KafkaConfigCommon {
                                         Topic.AIVEN_REGISTRERING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         new AivenAvroDeserializer<ArbeidssokerRegistrertEvent>().getDeserializer(),
-                                        registreringService::behandleKafkaRecord
+                                        arbeidssokerRegistreringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerBesvarelseEvent>()
                                 .withLogging()
@@ -209,7 +209,7 @@ public class KafkaConfigCommon {
                                         Topic.ENRING_I_REGISTRERINGSDATA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         new AivenAvroDeserializer<ArbeidssokerBesvarelseEvent>().getDeserializer(),
-                                        endringIRegistreringService::behandleKafkaRecord
+                                        endringIArbeidssokerRegistreringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerProfilertEvent>()
                                 .withLogging()
@@ -219,7 +219,7 @@ public class KafkaConfigCommon {
                                         Topic.AIVEN_PROFILERING_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         new AivenAvroDeserializer<ArbeidssokerProfilertEvent>().getDeserializer(),
-                                        profileringService::behandleKafkaRecord
+                                        arbeidssokerProfileringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
                                 .withLogging()

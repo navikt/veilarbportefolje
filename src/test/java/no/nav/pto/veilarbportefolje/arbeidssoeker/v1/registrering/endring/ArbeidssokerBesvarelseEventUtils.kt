@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.registrering.endring
+package no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring
 
 import no.nav.paw.besvarelse.AndreForhold
 import no.nav.paw.besvarelse.AndreForholdSvar
