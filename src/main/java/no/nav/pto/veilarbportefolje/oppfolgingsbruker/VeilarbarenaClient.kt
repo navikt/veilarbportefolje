@@ -1,16 +1,13 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import jakarta.ws.rs.core.HttpHeaders
 import no.nav.common.rest.client.RestUtils
-import no.nav.common.rest.client.RestUtils.parseJsonResponseOrThrow
 import no.nav.common.rest.client.RestUtils.toJsonRequestBody
 import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.UrlUtils.joinPaths
+import no.nav.pto.veilarbportefolje.util.deserializeJsonOrThrow
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
 import org.springframework.http.HttpStatus
 import java.time.ZonedDateTime
 import java.util.*
@@ -23,21 +20,6 @@ class VeilarbarenaClient(
     private val client: OkHttpClient,
     private val consumerId: String
 ) {
-    companion object {
-        // Objectmapperen i common-java-modules har p.t ikke mulighet til å konfigureres. Vi trenger å registrere jackson-kotlin-module for at deserialisering skal fungere med kotlin.
-        val objectMapper: ObjectMapper =
-            no.nav.common.json.JsonUtils.getMapper().registerModule(KotlinModule.Builder().build())
-
-        inline fun <reified T> Response.deserializeJson(): T? {
-            return RestUtils.getBodyStr(this)
-                .map { objectMapper.readValue(it, T::class.java) }
-                .orElse(null)
-        }
-        inline fun <reified T> Response.deserializeJsonOrThrow(): T {
-            return this.deserializeJson() ?: throw IllegalStateException("Unable to parse JSON object from response body")
-        }
-    }
-
     fun hentOppfolgingsbruker(fnr: Fnr): Optional<OppfolgingsbrukerDTO> {
         val request: Request = Request.Builder()
             .url(joinPaths(url, "/api/v3/hent-oppfolgingsbruker"))

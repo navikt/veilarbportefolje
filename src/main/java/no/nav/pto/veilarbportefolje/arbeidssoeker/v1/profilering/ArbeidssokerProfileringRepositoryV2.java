@@ -1,6 +1,5 @@
-package no.nav.pto.veilarbportefolje.profilering;
+package no.nav.pto.veilarbportefolje.arbeidssoeker.v1.profilering;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -15,17 +14,14 @@ import java.sql.ResultSet;
 import java.util.Optional;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.PROFILERING_RESULTAT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.PROFILERING_TIDSPUNKT;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.TABLE_NAME;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_PROFILERING.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class ProfileringRepositoryV2 {
+public class ArbeidssokerProfileringRepositoryV2 {
     private final JdbcTemplate db;
 
     public void upsertBrukerProfilering(ArbeidssokerProfilertEvent kafkaMelding) {
