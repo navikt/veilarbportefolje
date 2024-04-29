@@ -43,7 +43,7 @@ public class OppfolgingStartetService {
         siste14aVedtakService.hentOgLagreSiste14aVedtak(aktorId);
         oppfolgingsbrukerServiceV2.hentOgLagreOppfolgingsbruker(aktorId);
         if ( FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)) {
-            arbeidssoekerService.hentOgLagreSisteArbeidssoekerPeriodeForBruker(aktorId);
+            arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
         }
 
         opensearchIndexer.indekser(aktorId);

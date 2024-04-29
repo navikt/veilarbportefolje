@@ -22,7 +22,7 @@ class ArbeidssoekerServiceTest {
         oppslagArbeidssoekerregisteretClient,
         pdlIdentRepository,
         opplysningerOmArbeidssoekerRepository,
-        sisteArbeidssoekerPeriodeRepository
+        sisteArbeidssoekerPeriodeRepository,
     )
 
     @Test

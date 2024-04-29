@@ -334,7 +334,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr);
 
-        arbeidssoekerService.hentOgLagreSisteArbeidssoekerPeriodeForBruker(aktorId);
+        arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
 
         ArbeidssoekerPeriode sisteArbeidssoekerPeriodeFørAvsluttet = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
         assertThat(sisteArbeidssoekerPeriodeFørAvsluttet).isNotNull();
