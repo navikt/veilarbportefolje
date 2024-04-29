@@ -18,7 +18,6 @@ class OppslagArbeidssoekerregisteretClient(
     private val client: OkHttpClient,
     private val consumerId: String
 ) {
-    // TODO: Map til intern type som gir mening for oss
     fun hentArbeidssokerPerioder(identitetsnummer: String): List<ArbeidssokerperiodeResponse>? {
         val request: Request = Request.Builder()
             .url(UrlUtils.joinPaths(url, "/api/v1/veileder/arbeidssoekerperioder"))
@@ -38,7 +37,6 @@ class OppslagArbeidssoekerregisteretClient(
         }
     }
 
-    // TODO: Map til intern type som gir mening for oss
     fun hentOpplysningerOmArbeidssoeker(
         identitetsnummer: String,
         periodeId: UUID
@@ -61,7 +59,6 @@ class OppslagArbeidssoekerregisteretClient(
         }
     }
 
-    // TODO: Map til intern type som gir mening for oss
     fun hentProfilering(identitetsnummer: String, periodeId: UUID): List<ProfileringResponse>? {
         val request: Request = Request.Builder()
             .url(UrlUtils.joinPaths(url, "/api/v1/veileder/profilering"))
