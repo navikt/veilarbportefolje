@@ -62,7 +62,7 @@ class ArbeidssoekerService(
                 "Kunne ikke slette oppfolgingsbruker med Aktør-ID {}. Årsak fødselsnummer-parameter var tom.",
                 aktorId.get()
             )
-            throw IllegalStateException("Fødselsnummer mangler")
+            return
         }
 
         sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(maybeFnr.get())
