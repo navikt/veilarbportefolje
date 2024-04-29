@@ -146,12 +146,12 @@ data class ProfileringResponse(
     val periodeId: UUID,
     val opplysningerOmArbeidssoekerId: UUID,
     val sendtInnAv: MetadataResponse,
-    val profilertTil: ProfileringsResultat,
+    val profilertTil: ProfilertTil,
     val jobbetSammenhengendeSeksAvTolvSisteManeder: Boolean?,
     val alder: Int?
 )
 
-enum class ProfileringsResultat {
+enum class ProfilertTil {
     UKJENT_VERDI,
     UDEFINERT,
     ANTATT_GODE_MULIGHETER,

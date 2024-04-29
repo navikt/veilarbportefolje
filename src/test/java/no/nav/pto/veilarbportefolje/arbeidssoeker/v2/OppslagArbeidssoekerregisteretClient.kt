@@ -216,7 +216,7 @@ class OppslagArbeidssoekerregisteretClientTest {
                     kilde = "null-null",
                     aarsak = "opplysninger-mottatt"
                 ),
-                profilertTil = ProfileringsResultat.ANTATT_BEHOV_FOR_VEILEDNING,
+                profilertTil = ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING,
                 jobbetSammenhengendeSeksAvTolvSisteManeder = false,
                 alder = 42
             )
