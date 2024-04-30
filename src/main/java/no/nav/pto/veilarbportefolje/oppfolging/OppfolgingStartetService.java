@@ -30,11 +30,11 @@ public class OppfolgingStartetService {
     private final DefaultUnleash defaultUnleash;
 
     // TODO: Dersom en eller flere av disse operasjonene feiler og kaster exception vil
-        //  kafka-meldingen bli lagret og retryet. Dette kan resultere i at vi mellomlagrer data
-        //  vi ikke skal. Mulig vi burde wrappe dette i en try-catch slik at vi kan rydde opp
-        //  i catch-en.
-        //  Dette vil også muligens bidra til å gjøre usikkerheten rundt hvordan vi håndterer
-        //  scenarier der AktorID/Fnr blir historisk før startOppfolging fullfører.
+    //  kafka-meldingen bli lagret og retryet. Dette kan resultere i at vi mellomlagrer data
+    //  vi ikke skal. Mulig vi burde wrappe dette i en try-catch slik at vi kan rydde opp
+    //  i catch-en.
+    //  Dette vil også muligens bidra til å gjøre usikkerheten rundt hvordan vi håndterer
+    //  scenarier der AktorID/Fnr blir historisk før startOppfolging fullfører.
     public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate) {
         pdlService.hentOgLagrePdlData(aktorId);
 
@@ -42,7 +42,8 @@ public class OppfolgingStartetService {
 
         siste14aVedtakService.hentOgLagreSiste14aVedtak(aktorId);
         oppfolgingsbrukerServiceV2.hentOgLagreOppfolgingsbruker(aktorId);
-        if ( FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)) {
+
+        if (FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)) {
             arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
         }
 
