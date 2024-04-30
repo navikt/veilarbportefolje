@@ -266,6 +266,16 @@ public class PostgresTable {
 
     }
 
+    public static final class PROFILERING {
+        private PROFILERING() { /* no-op */ }
+
+        public static final String TABLE_NAME = "PROFILERING";
+        public static final String PERIODE_ID = "PERIODE_ID";
+        public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
+        public static final String SENDT_INN_TIDSPUNKT = "SENDT_INN_TIDSPUNKT";
+
+    }
+
     public static final class BRUKER_CV {
 
         private BRUKER_CV() { /* no-op */ }

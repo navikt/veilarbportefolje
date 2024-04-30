@@ -1,0 +1,7 @@
+CREATE TABLE PROFILERING
+(
+    ID                   SERIAL PRIMARY KEY,
+    PERIODE_ID            UUID        NOT NULL REFERENCES siste_arbeidssoeker_periode (arbeidssoker_periode_id) ON DELETE CASCADE,
+    PROFILERING_RESULTAT VARCHAR(40) NOT NULL,
+    SENDT_INN_TIDSPUNKT  TIMESTAMP   NOT NULL
+);

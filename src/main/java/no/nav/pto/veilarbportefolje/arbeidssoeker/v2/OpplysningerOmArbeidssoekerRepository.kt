@@ -15,12 +15,12 @@ import java.util.*
 class OpplysningerOmArbeidssoekerRepository(
     private val db: JdbcTemplate
 ) {
-    fun upsertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker) {
+    fun insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker) {
         insertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoeker)
         insertOpplysningerOmArbeidssoekerJobbsituasjon(opplysningerOmArbeidssoeker.opplysningerOmJobbsituasjon)
     }
 
-    fun insertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker) {
+    private fun insertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker) {
         val sqlString = """INSERT INTO ${OPPLYSNINGER_OM_ARBEIDSSOEKER.TABLE_NAME} ( 
                     ${OPPLYSNINGER_OM_ARBEIDSSOEKER.OPPLYSNINGER_OM_ARBEIDSSOEKER_ID}, 
                     ${OPPLYSNINGER_OM_ARBEIDSSOEKER.PERIODE_ID},
@@ -41,7 +41,7 @@ class OpplysningerOmArbeidssoekerRepository(
         )
     }
 
-    fun insertOpplysningerOmArbeidssoekerJobbsituasjon(opplysningerOmArbeidssoekerJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon) {
+    private fun insertOpplysningerOmArbeidssoekerJobbsituasjon(opplysningerOmArbeidssoekerJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon) {
         val sqlString = """INSERT INTO ${OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.TABLE_NAME} ( 
                     ${OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.OPPLYSNINGER_OM_ARBEIDSSOEKER_ID}, 
                     ${OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.JOBBSITUASJON}

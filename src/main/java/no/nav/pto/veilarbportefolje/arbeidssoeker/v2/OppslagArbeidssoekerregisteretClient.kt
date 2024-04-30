@@ -103,7 +103,7 @@ data class OpplysningerOmArbeidssoekerResponse(
 
 data class BeskrivelseMedDetaljerResponse(
     val beskrivelse: JobbSituasjonBeskrivelse,
-    val detaljer: Map<String, String>   // TODO: Litt usikker på om typene er riktig for key/value
+    val detaljer: Map<String, String>
 )
 
 enum class JobbSituasjonBeskrivelse {
@@ -133,7 +133,7 @@ data class HelseResponse(
 )
 
 data class UtdanningResponse(
-    val nus: String,    // TODO: Legg til kommentar som beskriver hva nus er
+    val nus: String,    // NUS = Standard for utdanningsgruppering (https://www.ssb.no/klass/klassifikasjoner/36/)
     val bestaatt: JaNeiVetIkke?,
     val godkjent: JaNeiVetIkke?
 )
@@ -141,17 +141,7 @@ data class UtdanningResponse(
 // Profilering typer
 data class ProfileringRequest(val identitetsnummer: String, val periodeId: UUID)
 
-data class ProfileringResponse(
-    val profileringId: UUID,
-    val periodeId: UUID,
-    val opplysningerOmArbeidssoekerId: UUID,
-    val sendtInnAv: MetadataResponse,
-    val profilertTil: ProfileringsResultat,
-    val jobbetSammenhengendeSeksAvTolvSisteManeder: Boolean?,
-    val alder: Int?
-)
-
-enum class ProfileringsResultat {
+enum class ProfilertTil {
     UKJENT_VERDI,
     UDEFINERT,
     ANTATT_GODE_MULIGHETER,

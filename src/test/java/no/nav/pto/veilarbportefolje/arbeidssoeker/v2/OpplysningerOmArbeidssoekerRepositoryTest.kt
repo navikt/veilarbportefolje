@@ -60,7 +60,7 @@ class OpplysningerOmArbeidssoekerRepositoryTest {
                 andreForholdHindrerArbeid = JaNeiVetIkke.NEI
             )
         ).toOpplysningerOmArbeidssoeker()
-        opplysningerOmArbeidssoeker.upsertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoekerObjekt)
+        opplysningerOmArbeidssoeker.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysningerOmArbeidssoekerObjekt)
 
 
         val resultatOpplysninger: OpplysningerOmArbeidssoeker? =

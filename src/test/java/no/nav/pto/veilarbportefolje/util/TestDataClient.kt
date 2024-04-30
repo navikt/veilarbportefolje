@@ -8,6 +8,8 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringRepositoryV2
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profilering
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriode
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoeker
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerJobbsituasjon
@@ -268,6 +270,25 @@ class TestDataClient(
                     jobbSituasjoner
                 )
 
+        }
+
+        @JvmStatic
+        fun getProfileringFraDb(jdbcTemplate: JdbcTemplate, periodeId: UUID): Profilering? {
+            return try {
+                jdbcTemplate.queryForObject(
+                    """SELECT * FROM ${PostgresTable.PROFILERING.TABLE_NAME} WHERE ${PostgresTable.PROFILERING.PERIODE_ID} =?""",
+                    { rs: ResultSet, _ ->
+                        Profilering(
+                            rs.getObject(PostgresTable.PROFILERING.PERIODE_ID, UUID::class.java),
+                            Profileringsresultat.valueOf(rs.getString(PostgresTable.PROFILERING.PROFILERING_RESULTAT)),
+                            DateUtils.toZonedDateTime(rs.getTimestamp(PostgresTable.PROFILERING.SENDT_INN_TIDSPUNKT))
+                        )
+                    },
+                    periodeId
+                )
+            } catch (e: EmptyResultDataAccessException) {
+                null
+            }
         }
     }
 }
