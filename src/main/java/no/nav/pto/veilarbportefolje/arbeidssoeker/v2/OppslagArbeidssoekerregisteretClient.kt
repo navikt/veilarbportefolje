@@ -133,7 +133,7 @@ data class HelseResponse(
 )
 
 data class UtdanningResponse(
-    val nus: String,    // TODO: Legg til kommentar som beskriver hva nus er
+    val nus: String,    // NUS = Standard for utdanningsgruppering (https://www.ssb.no/klass/klassifikasjoner/36/)
     val bestaatt: JaNeiVetIkke?,
     val godkjent: JaNeiVetIkke?
 )
