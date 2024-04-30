@@ -63,7 +63,7 @@ class ArbeidssoekerService(
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(sisteOpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoeker())
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
 
-        secureLog.info("Henter opplysninger om arbeidssøker for bruker med fnr: $fnr")
+        secureLog.info("Henter profilering for bruker med fnr: $fnr")
         val sisteProfilering: ProfileringResponse? =
             oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), aktivArbeidssoekerperiode.periodeId)
                 ?.filter { it.opplysningerOmArbeidssoekerId == sisteOpplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId }
