@@ -237,6 +237,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentArbeidssoekerPerioderResponse(fnr);
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeId);
+        mockHentProfileringResponse(fnr, periodeId);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -250,6 +251,8 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         assertThat(opplysningerOmArbeidssoekerJobbsituasjon.getJobbsituasjon().get(1)).isEqualTo(JobbSituasjonBeskrivelse.ER_PERMITTERT.name());
 
+        Profilering profilering = TestDataClient.getProfileringFraDb(jdbcTemplate, periodeId);
+        assertNotNull(profilering);
     }
 
     @Test
@@ -334,7 +337,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr);
 
-        arbeidssoekerService.hentOgLagreSisteArbeidssoekerPeriodeForBruker(aktorId);
+        arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
 
         ArbeidssoekerPeriode sisteArbeidssoekerPeriodeFørAvsluttet = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
         assertThat(sisteArbeidssoekerPeriodeFørAvsluttet).isNotNull();
@@ -461,6 +464,13 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         List<OpplysningerOmArbeidssoekerResponse> opplysningerOmArbeidssoekerResponse = getObjectMapper().readValue(file, new TypeReference<>() {
         });
         when(oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(fnr.get(), periodeId)).thenReturn(opplysningerOmArbeidssoekerResponse);
+    }
+
+    private void mockHentProfileringResponse(Fnr fnr, UUID periodeId) throws JsonProcessingException {
+        String file = readFileAsJsonString("/profilering.json", getClass());
+        List<ProfileringResponse> profileringResponse = getObjectMapper().readValue(file, new TypeReference<>() {
+        });
+        when(oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), periodeId)).thenReturn(profileringResponse);
     }
 
     private void insertOppfolgingsbrukerEntity(ZonedDateTime endret_dato) {

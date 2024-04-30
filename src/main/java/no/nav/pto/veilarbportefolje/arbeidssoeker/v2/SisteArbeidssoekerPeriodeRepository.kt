@@ -10,7 +10,7 @@ import java.util.*
 class SisteArbeidssoekerPeriodeRepository(
     private val db: JdbcTemplate
 ) {
-    fun upsertSisteArbeidssoekerPeriode(fnr: Fnr, periodeId: UUID) {
+    fun insertSisteArbeidssoekerPeriode(fnr: Fnr, periodeId: UUID) {
         db.update(
             """INSERT INTO ${PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} values (?,?)""",
             periodeId,

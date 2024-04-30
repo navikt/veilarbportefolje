@@ -14,9 +14,18 @@ class ArbeidssoekerService(
     private val pdlIdentRepository: PdlIdentRepository,
     private val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
     private val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
+    private val profileringRepository: ProfileringRepository,
 ) {
+    /**
+     * Henter og lagrer arbeidssøkerdata for bruker med aktørId.
+     * Med arbeidssøkerdata menes:
+     *
+     * - Siste arbeidssøkerperiode
+     * - Siste opplysninger om arbeidssøker
+     * - Siste profilering av bruker
+     */
     @Transactional
-    fun hentOgLagreSisteArbeidssoekerPeriodeForBruker(aktorId: AktorId) {
+    fun hentOgLagreArbeidssoekerdataForBruker(aktorId: AktorId) {
         val fnr: Fnr? = pdlIdentRepository.hentFnrForAktivBruker(aktorId)
         if (fnr == null) {
             secureLog.info("Fant ingen fødselsnummer for bruker med aktorId: $aktorId")
@@ -33,7 +42,7 @@ class ArbeidssoekerService(
             return
         }
 
-        sisteArbeidssoekerPeriodeRepository.upsertSisteArbeidssoekerPeriode(fnr, aktivArbeidssoekerperiode.periodeId)
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr, aktivArbeidssoekerperiode.periodeId)
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
 
         val opplysningerOmArbeidssoeker: List<OpplysningerOmArbeidssoekerResponse>? =
@@ -51,9 +60,22 @@ class ArbeidssoekerService(
             return
         }
 
-        opplysningerOmArbeidssoekerRepository.upsertOpplysningerOmArbeidssoeker(sisteOpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoeker())
+        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(sisteOpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoeker())
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
 
+        secureLog.info("Henter profilering for bruker med fnr: $fnr")
+        val sisteProfilering: ProfileringResponse? =
+            oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), aktivArbeidssoekerperiode.periodeId)
+                ?.filter { it.opplysningerOmArbeidssoekerId == sisteOpplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId }
+                ?.maxByOrNull { it.sendtInnAv.tidspunkt }
+
+        if(sisteProfilering == null) {
+            secureLog.info("Fant ingen profilering for bruker med fnr: $fnr")
+            return
+        }
+
+        profileringRepository.insertProfilering(sisteProfilering.toProfilering())
+        secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 
     fun slettArbeidssoekerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
