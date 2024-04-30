@@ -78,6 +78,54 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>${maven-dependency-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>unpack-arbeidssoker-arena</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>no.nav.paw.arbeidssokerregisteret.api</groupId>
+                                    <artifactId>main-avro-schema</artifactId>
+                                    <version>1.8657441125.42-1</version>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/unpacked-schemas/avdl/arbeidssoker-main</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <includes>**/*.avdl</includes>
+                            <overWriteReleases>true</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro-maven-plugin</artifactId>
+                <version>1.11.1</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>schema</goal>
+                            <goal>protocol</goal>
+                            <goal>idl-protocol</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <sourceDirectory>${project.build.directory}/unpacked-schemas/avdl/arbeidssoker-main</sourceDirectory>
+                    <outputDirectory>${project.build.directory}/generated-sources/avro</outputDirectory>
+                </configuration>
+            </plugin>
         </plugins>
         <finalName>veilarbportefolje</finalName>
     </build>
@@ -251,6 +299,11 @@
             <version>2024.02.20_07.34-4dbbf67d478e</version>
         </dependency>
 
+        <dependency>
+            <groupId>no.nav.paw.arbeidssokerregisteret.api</groupId>
+            <artifactId>main-avro-schema</artifactId>
+            <version>1.8657441125.42-1</version>
+        </dependency>
         <!--Logging-->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -378,6 +431,15 @@
                     <id>jitpack</id>
                     <url>https://jitpack.io</url>
                 </repository>
+                <repository>
+                    <id>github-package-registry-navikt</id>
+                    <url>https://maven.pkg.github.com/navikt/maven-release</url>
+                </repository>
+                <!-- Bruk denne når du kjører lokalt og ikke ønsker å bruke personal access token for å gå mot github package registry (maven.pkg.github.com) -->
+               <!-- <repository>
+                    <id>external-mirror-github-navikt</id>
+                    <url>https://github-package-registry-mirror.gc.nav.no/cached/maven-release</url>
+                </repository> -->
             </repositories>
         </profile>
     </profiles>
