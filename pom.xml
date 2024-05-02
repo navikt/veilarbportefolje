@@ -436,10 +436,10 @@
                     <url>https://maven.pkg.github.com/navikt/maven-release</url>
                 </repository>
                 <!-- Bruk denne når du kjører lokalt og ikke ønsker å bruke personal access token for å gå mot github package registry (maven.pkg.github.com) -->
-               <!-- <repository>
+                <repository>
                     <id>external-mirror-github-navikt</id>
                     <url>https://github-package-registry-mirror.gc.nav.no/cached/maven-release</url>
-                </repository> -->
+                </repository>
             </repositories>
         </profile>
     </profiles>
