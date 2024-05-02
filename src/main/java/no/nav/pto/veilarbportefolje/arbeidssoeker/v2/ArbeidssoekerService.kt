@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
@@ -10,6 +11,25 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
+
+
+@Service
+class ArbeidssoekerPeriodeKafkaMeldingService(
+    private val arbeidssoekerService: ArbeidssoekerService
+) : KafkaCommonConsumerService<Periode>() {
+    override fun behandleKafkaMeldingLogikk(kafkaMelding: Periode) {
+        arbeidssoekerService.behandleKafkaMeldingLogikk(kafkaMelding)
+    }
+}
+
+@Service
+class ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService(
+    private val arbeidssoekerService: ArbeidssoekerService
+) : KafkaCommonConsumerService<OpplysningerOmArbeidssoekerKafkaMelding>() {
+    override fun behandleKafkaMeldingLogikk(kafkaMelding: OpplysningerOmArbeidssoekerKafkaMelding) {
+        arbeidssoekerService.behandleKafkaMeldingLogikk(kafkaMelding)
+    }
+}
 
 @Service
 class ArbeidssoekerService(

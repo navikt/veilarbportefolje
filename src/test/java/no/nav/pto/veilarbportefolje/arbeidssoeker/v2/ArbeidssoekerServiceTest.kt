@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer
 import no.nav.pto.veilarbportefolje.util.TestDataClient
 import no.nav.pto.veilarbportefolje.util.TestDataUtils
@@ -18,13 +19,15 @@ class ArbeidssoekerServiceTest {
     private val profileringRepository = ProfileringRepository(db)
     private val oppslagArbeidssoekerregisteretClient = mock(OppslagArbeidssoekerregisteretClient::class.java)
     private val pdlIdentRepository = mock(PdlIdentRepository::class.java)
+    private val siste14aVedtakRepository = mock(Siste14aVedtakRepository::class.java)
 
     private val arbeidssoekerService = ArbeidssoekerService(
         oppslagArbeidssoekerregisteretClient,
         pdlIdentRepository,
         opplysningerOmArbeidssoekerRepository,
         sisteArbeidssoekerPeriodeRepository,
-        profileringRepository
+        profileringRepository,
+        siste14aVedtakRepository
     )
 
     @Test
