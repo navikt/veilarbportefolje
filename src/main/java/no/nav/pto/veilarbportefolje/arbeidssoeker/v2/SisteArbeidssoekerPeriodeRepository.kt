@@ -19,7 +19,7 @@ class SisteArbeidssoekerPeriodeRepository(
         )
     }
 
-    fun hentSisteArbeidsperiodeId(periodeId: UUID): ArbeidssoekerPeriode? {
+    fun hentSisteArbeidssoekerPeriode(periodeId: UUID): ArbeidssoekerPeriode? {
         return queryForObjectOrNull {
             db.queryForObject(
                 """SELECT * FROM $TABLE_NAME WHERE $ARBEIDSSOKER_PERIODE_ID = ?""",

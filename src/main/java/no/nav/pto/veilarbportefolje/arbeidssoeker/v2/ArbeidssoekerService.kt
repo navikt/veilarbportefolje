@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
@@ -70,6 +69,38 @@ class ArbeidssoekerService(
         }
     }
 
+    fun behandleKafkaMeldingLogikk(opplysninger: OpplysningerOmArbeidssoekerKafkaMelding) {
+        val arbeidssoekerPeriodeId = opplysninger.periodeId
+        val opplysningerOmArbeidssoekerId = opplysninger.id
+
+        val sisteArbeidssoekerPeriode =
+            sisteArbeidssoekerPeriodeRepository.hentSisteArbeidssoekerPeriode(arbeidssoekerPeriodeId)
+
+        if (sisteArbeidssoekerPeriode == null) {
+            secureLog.info("Ingen arbeidssøkerperiode lagret med arbeidssoekerPeriodeId: $arbeidssoekerPeriodeId")
+            return
+        }
+
+        val fnr = sisteArbeidssoekerPeriode.fnr
+        if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr.get())) {
+            secureLog.info(
+                "Bruker med fnr ${fnr.get()} er ikke under oppfølging, men har arbeidssøkerpeiode lagret. " +
+                        "Dette betyr at arbeidssøkerdata ikke har blitt slettet riktig når bruker gikk ut av oppfølging. " +
+                        "Ignorer melding, data må slettes manuelt og slettelogikk ved utgang av oppfølging bør kontrollsjekkes for feil."
+            )
+            return
+        }
+
+        val opplysningerOmArbeidssoeker = opplysningerOmArbeidssoekerRepository.harSisteOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoekerId)
+        if (opplysningerOmArbeidssoeker) {
+            secureLog.info("Opplysninger om arbeidssøker allerede lagret for bruker med fnr: $fnr")
+            return
+        }
+
+        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysninger.toOpplysningerOmArbeidssoeker())
+        secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
+    }
+
     /**
      * Henter og lagrer arbeidssøkerdata for bruker med aktørId.
      * Med arbeidssøkerdata menes:
@@ -129,6 +160,18 @@ class ArbeidssoekerService(
         secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 
+    fun slettArbeidssoekerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
+        if (maybeFnr.isEmpty) {
+            secureLog.warn(
+                "Kunne ikke slette oppfolgingsbruker med Aktør-ID {}. Årsak fødselsnummer-parameter var tom.",
+                aktorId.get()
+            )
+            return
+        }
+
+        sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(maybeFnr.get())
+    }
+
     private fun hentSisteProfilering(
         fnr: Fnr,
         arbeidssoekerPeriodeId: UUID,
@@ -155,17 +198,5 @@ class ArbeidssoekerService(
             it.sendtInnAv.tidspunkt
         }
         return sisteOpplysningerOmArbeidssoeker
-    }
-
-    fun slettArbeidssoekerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
-        if (maybeFnr.isEmpty) {
-            secureLog.warn(
-                "Kunne ikke slette oppfolgingsbruker med Aktør-ID {}. Årsak fødselsnummer-parameter var tom.",
-                aktorId.get()
-            )
-            return
-        }
-
-        sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(maybeFnr.get())
     }
 }

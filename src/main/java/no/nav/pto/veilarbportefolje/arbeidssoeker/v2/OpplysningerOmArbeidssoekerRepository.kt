@@ -1,7 +1,10 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
 import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER
+import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.OPPLYSNINGER_OM_ARBEIDSSOEKER_ID
+import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.TABLE_NAME
 import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON
+import no.nav.pto.veilarbportefolje.postgres.PostgresUtils
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
@@ -59,5 +62,14 @@ class OpplysningerOmArbeidssoekerRepository(
                 return opplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon.size
             }
         })
+    }
+
+    fun harSisteOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoekerId: UUID): Boolean {
+        val sqlString = """SELECT COUNT(*) FROM $TABLE_NAME WHERE $OPPLYSNINGER_OM_ARBEIDSSOEKER_ID = ?"""
+        val count: Int = PostgresUtils.queryForObjectOrNull {
+            db.queryForObject(sqlString, Int::class.java, opplysningerOmArbeidssoekerId)
+        } ?: 0
+
+        return count != 0
     }
 }
