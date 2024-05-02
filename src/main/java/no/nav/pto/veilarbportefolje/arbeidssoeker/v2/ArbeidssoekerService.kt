@@ -117,6 +117,7 @@ class ArbeidssoekerService(
             return
         }
 
+        opplysningerOmArbeidssoekerRepository.slettOpplysningerOmArbeidssoeker(sisteArbeidssoekerPeriode.arbeidssoekerperiodeId)
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysninger.toOpplysningerOmArbeidssoeker())
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
     }

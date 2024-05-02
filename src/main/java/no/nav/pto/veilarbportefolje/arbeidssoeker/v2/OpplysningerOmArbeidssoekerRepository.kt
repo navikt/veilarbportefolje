@@ -1,8 +1,7 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
 import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER
-import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.OPPLYSNINGER_OM_ARBEIDSSOEKER_ID
-import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.TABLE_NAME
+import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.*
 import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON
 import no.nav.pto.veilarbportefolje.postgres.PostgresUtils
 import no.nav.pto.veilarbportefolje.util.DateUtils
@@ -71,5 +70,10 @@ class OpplysningerOmArbeidssoekerRepository(
         } ?: 0
 
         return count != 0
+    }
+
+    fun slettOpplysningerOmArbeidssoeker(arbeidssoekerPeriodeId: UUID?): Int {
+        val sqlString = """DELETE FROM $TABLE_NAME WHERE $PERIODE_ID = ?"""
+        return db.update(sqlString, arbeidssoekerPeriodeId)
     }
 }
