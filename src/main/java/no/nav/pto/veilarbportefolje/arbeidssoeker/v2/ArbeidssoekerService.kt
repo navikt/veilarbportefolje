@@ -89,6 +89,7 @@ class ArbeidssoekerService(
         }
     }
 
+    @Transactional
     fun behandleKafkaMeldingLogikk(opplysninger: OpplysningerOmArbeidssoekerKafkaMelding) {
         val arbeidssoekerPeriodeId = opplysninger.periodeId
         val opplysningerOmArbeidssoekerId = opplysninger.id
