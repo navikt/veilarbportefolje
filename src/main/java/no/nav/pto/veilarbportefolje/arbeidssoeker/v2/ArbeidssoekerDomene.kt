@@ -18,8 +18,26 @@ data class OpplysningerOmArbeidssoeker(
 
 data class OpplysningerOmArbeidssoekerJobbsituasjon(
     val opplysningerOmArbeidssoekerId: UUID,
-    val jobbsituasjon: List<String>
+    val jobbsituasjon: List<JobbSituasjonBeskrivelse>
 )
+
+enum class JobbSituasjonBeskrivelse {
+    UKJENT_VERDI,
+    UDEFINERT,
+    HAR_SAGT_OPP,
+    HAR_BLITT_SAGT_OPP,
+    ER_PERMITTERT,
+    ALDRI_HATT_JOBB,
+    IKKE_VAERT_I_JOBB_SISTE_2_AAR,
+    AKKURAT_FULLFORT_UTDANNING,
+    VIL_BYTTE_JOBB,
+    USIKKER_JOBBSITUASJON,
+    MIDLERTIDIG_JOBB,
+    DELTIDSJOBB_VIL_MER,
+    NY_JOBB,
+    KONKURS,
+    ANNET
+}
 
 data class ArbeidssoekerPeriode(
     val arbeidssoekerperiodeId: UUID,
@@ -65,7 +83,7 @@ fun OpplysningerOmArbeidssoekerResponse.toOpplysningerOmArbeidssoeker() = Opplys
     utdanningNusKode = this.utdanning?.nus,
     utdanningBestatt = this.utdanning?.bestaatt?.name,
     utdanningGodkjent = this.utdanning?.godkjent?.name,
-    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(this.opplysningerOmArbeidssoekerId, this.jobbsituasjon.map { it.beskrivelse.name })
+    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(this.opplysningerOmArbeidssoekerId, this.jobbsituasjon.map { JobbSituasjonBeskrivelse.valueOf(it.beskrivelse.name) })
 )
 
 fun OpplysningerOmArbeidssoekerKafkaMelding.toOpplysningerOmArbeidssoeker() = OpplysningerOmArbeidssoeker(
@@ -75,5 +93,5 @@ fun OpplysningerOmArbeidssoekerKafkaMelding.toOpplysningerOmArbeidssoeker() = Op
     utdanningNusKode = this.utdanning?.nus?.toString(),
     utdanningBestatt = this.utdanning?.bestaatt?.name,
     utdanningGodkjent = this.utdanning?.godkjent?.name,
-    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(this.id, this.jobbsituasjon.beskrivelser.map { it.beskrivelse.name })
+    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(this.id, this.jobbsituasjon.beskrivelser.map { JobbSituasjonBeskrivelse.valueOf(it.beskrivelse.name) })
 )

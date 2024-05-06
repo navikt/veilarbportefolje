@@ -205,7 +205,7 @@ class ArbeidssoekerServiceTest(
             opplysningerOmArbeidssoeker!!.opplysningerOmArbeidssoekerId
         )
 
-        assertThat(opplysningerOmArbeidssoekerJobbsituasjon!!.jobbsituasjon[1]).isEqualTo(JobbSituasjonBeskrivelse.ER_PERMITTERT.name)
+        assertThat(opplysningerOmArbeidssoekerJobbsituasjon!!.jobbsituasjon[1]).isEqualTo(JobbSituasjonBeskrivelse.ER_PERMITTERT)
 
         val profilering = getProfileringFraDb(db, periodeId)
         assertNotNull(profilering)
@@ -492,7 +492,7 @@ class ArbeidssoekerServiceTest(
         assertThat(lagredeOpplysningerOmArbeidssoekerJobbsituasjon!!.opplysningerOmArbeidssoekerId).isEqualTo(
             nyOpplysningerOmArbeidssoekerId
         )
-        assertThat(lagredeOpplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon[0]).isEqualTo("DELTIDSJOBB_VIL_MER")
+        assertThat(lagredeOpplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon[0]).isEqualTo(JobbSituasjonBeskrivelse.DELTIDSJOBB_VIL_MER)
     }
 
     private fun mockPdlIdenterRespons(aktorId: AktorId, fnr: Fnr) {
@@ -627,11 +627,11 @@ fun genererRandomOpplysningerOmArbeidssoeker(
         ),
         jobbsituasjon = listOf(
             BeskrivelseMedDetaljerResponse(
-                beskrivelse = JobbSituasjonBeskrivelse.ER_PERMITTERT,
+                beskrivelse = JobbSituasjonBeskrivelseResponse.ER_PERMITTERT,
                 detaljer = mapOf(Pair("prosent", "25"))
             ),
             BeskrivelseMedDetaljerResponse(
-                beskrivelse = JobbSituasjonBeskrivelse.MIDLERTIDIG_JOBB,
+                beskrivelse = JobbSituasjonBeskrivelseResponse.MIDLERTIDIG_JOBB,
                 detaljer = mapOf(Pair("prosent", "75"))
             )
         ),

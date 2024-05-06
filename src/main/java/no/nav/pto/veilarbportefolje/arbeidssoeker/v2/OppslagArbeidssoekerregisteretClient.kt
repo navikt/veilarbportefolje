@@ -102,11 +102,11 @@ data class OpplysningerOmArbeidssoekerResponse(
 )
 
 data class BeskrivelseMedDetaljerResponse(
-    val beskrivelse: JobbSituasjonBeskrivelse,
+    val beskrivelse: JobbSituasjonBeskrivelseResponse,
     val detaljer: Map<String, String>
 )
 
-enum class JobbSituasjonBeskrivelse {
+enum class JobbSituasjonBeskrivelseResponse {
     UKJENT_VERDI,
     UDEFINERT,
     HAR_SAGT_OPP,

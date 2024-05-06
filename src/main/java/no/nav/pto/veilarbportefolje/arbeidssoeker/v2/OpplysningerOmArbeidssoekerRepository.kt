@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
-import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER
 import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.*
 import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON
 import no.nav.pto.veilarbportefolje.postgres.PostgresUtils
@@ -23,13 +22,13 @@ class OpplysningerOmArbeidssoekerRepository(
     }
 
     private fun insertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker) {
-        val sqlString = """INSERT INTO ${OPPLYSNINGER_OM_ARBEIDSSOEKER.TABLE_NAME} ( 
-                    ${OPPLYSNINGER_OM_ARBEIDSSOEKER.OPPLYSNINGER_OM_ARBEIDSSOEKER_ID}, 
-                    ${OPPLYSNINGER_OM_ARBEIDSSOEKER.PERIODE_ID},
-                    ${OPPLYSNINGER_OM_ARBEIDSSOEKER.SENDT_INN_TIDSPUNKT},
-                    ${OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_NUS_KODE},
-                    ${OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_BESTATT},
-                    ${OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_GODKJENT}
+        val sqlString = """INSERT INTO $TABLE_NAME ( 
+                    $OPPLYSNINGER_OM_ARBEIDSSOEKER_ID, 
+                    $PERIODE_ID,
+                    $SENDT_INN_TIDSPUNKT,
+                    $UTDANNING_NUS_KODE,
+                    $UTDANNING_BESTATT,
+                    $UTDANNING_GODKJENT
                 )
                 VALUES (?, ?, ?, ?, ?, ?)"""
         db.update(
@@ -54,7 +53,7 @@ class OpplysningerOmArbeidssoekerRepository(
             @Throws(SQLException::class)
             override fun setValues(ps: PreparedStatement, i: Int) {
                 ps.setObject(1, opplysningerOmArbeidssoekerJobbsituasjon.opplysningerOmArbeidssoekerId, Types.OTHER)
-                ps.setString(2, opplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon[i])
+                ps.setString(2, opplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon[i].name)
             }
 
             override fun getBatchSize(): Int {
