@@ -48,6 +48,8 @@ class ArbeidssoekerService(
 
         val fnr: Fnr = Fnr.ofValidFnr(identitetsnummer.toString())
 
+        secureLog.info("Behandler endring på arbeidssøkerperiode for bruker med fnr: $fnr, periodeId: $periodeId")
+
         if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr.get())) {
             secureLog.info("Bruker er ikke under oppfølging, ignorerer endring på bruker med fnr: {}", fnr.get())
             return
@@ -93,6 +95,8 @@ class ArbeidssoekerService(
     fun behandleKafkaMeldingLogikk(opplysninger: OpplysningerOmArbeidssoekerKafkaMelding) {
         val arbeidssoekerPeriodeId = opplysninger.periodeId
         val opplysningerOmArbeidssoekerId = opplysninger.id
+
+        secureLog.info("Behandler endring på opplysninger om arbeidssøker for bruker med arbeidssoekerPeriodeId: $arbeidssoekerPeriodeId, opplysningerOmArbeidssoekerId: $opplysningerOmArbeidssoekerId")
 
         val sisteArbeidssoekerPeriode =
             sisteArbeidssoekerPeriodeRepository.hentSisteArbeidssoekerPeriode(arbeidssoekerPeriodeId)
