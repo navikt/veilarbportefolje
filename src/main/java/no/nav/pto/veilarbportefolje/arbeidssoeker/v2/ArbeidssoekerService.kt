@@ -15,6 +15,7 @@ class ArbeidssoekerService(
     private val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
     private val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
     private val profileringRepository: ProfileringRepository,
+    private val arbeidssoekerDataRepository: ArbeidssoekerDataRepository
 ) {
     /**
      * Henter og lagrer arbeidssøkerdata for bruker med aktørId.
@@ -78,15 +79,18 @@ class ArbeidssoekerService(
         secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 
-//    fun hentOpplysningerOmArbeidssoeker(fnr: Fnr): OpplysningerOmArbeidssoekerEntity? {
-//        val opplysningerOmArbeidssoeker = opplysningerOmArbeidssoekerRepository.hentOpplysningerOmArbeidssoeker(fnr)
-//        if (opplysningerOmArbeidssoeker == null) {
-//            secureLog.info("Fant ingen opplysninger om arbeidssøker for bruker med fnr: $fnr")
-//            return null
-//        }
-//
-//        return opplysningerOmArbeidssoeker
-//    }
+    fun hentArbeidssoekerData(fnrList: List<Fnr>): List<ArbeidssoekerData> {
+        val opplysningerOmArbeidssoekerPaaBrukere = arbeidssoekerDataRepository.hentOpplysningerOmArbeidssoeker(fnrList)
+        val profileringPaaBrukere = arbeidssoekerDataRepository.hentProfileringsresultatListe(fnrList)
+
+        return opplysningerOmArbeidssoekerPaaBrukere.map { (fnr, opplysning) ->
+            ArbeidssoekerData(
+                fnr = Fnr.of(fnr),
+                opplysningerOmArbeidssoeker = opplysning,
+                profilering = profileringPaaBrukere[fnr]
+            )
+        }
+    }
 
     fun slettArbeidssoekerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
         if (maybeFnr.isEmpty) {
@@ -97,6 +101,12 @@ class ArbeidssoekerService(
             return
         }
 
-        sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(maybeFnr.get())
+        try {
+            sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(maybeFnr.get())
+        } catch (e: Exception) {
+            secureLog.error("Feil ved sletting av siste arbeidssøkerperiode for bruker med fnr: ${maybeFnr.get()}", e)
+            return
+        }
+
     }
 }

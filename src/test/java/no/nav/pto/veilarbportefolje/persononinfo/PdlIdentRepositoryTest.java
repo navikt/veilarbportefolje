@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.persononinfo;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
@@ -11,6 +12,7 @@ import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -34,6 +36,9 @@ public class PdlIdentRepositoryTest {
 
     @Autowired
     private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+
+    @MockBean
+    private ArbeidssoekerService arbeidssoekerService;
 
     @Test
     public void identSplitt_allePersonerMedTidligereIdenterSkalSlettes() {

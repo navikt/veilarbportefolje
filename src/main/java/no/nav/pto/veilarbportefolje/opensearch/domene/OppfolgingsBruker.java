@@ -2,6 +2,8 @@ package no.nav.pto.veilarbportefolje.opensearch.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
@@ -103,6 +105,7 @@ public class OppfolgingsBruker {
     boolean er_sykmeldt_med_arbeidsgiver;
     List<String> brukers_situasjoner;
     LocalDate brukers_situasjon_sist_endret;
+    LocalDate utdanning_og_situasjon_sist_endret;
     String profilering_resultat;
     String utdanning;
     String utdanning_bestatt;

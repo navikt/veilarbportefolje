@@ -16,6 +16,7 @@ class ArbeidssoekerServiceTest {
     private val sisteArbeidssoekerPeriodeRepository = SisteArbeidssoekerPeriodeRepository(db)
     private val opplysningerOmArbeidssoekerRepository = OpplysningerOmArbeidssoekerRepository(db)
     private val profileringRepository = ProfileringRepository(db)
+    private val arbeidssoekerDataRepository = ArbeidssoekerDataRepository(db)
     private val oppslagArbeidssoekerregisteretClient = mock(OppslagArbeidssoekerregisteretClient::class.java)
     private val pdlIdentRepository = mock(PdlIdentRepository::class.java)
 
@@ -24,7 +25,8 @@ class ArbeidssoekerServiceTest {
         pdlIdentRepository,
         opplysningerOmArbeidssoekerRepository,
         sisteArbeidssoekerPeriodeRepository,
-        profileringRepository
+        profileringRepository,
+        arbeidssoekerDataRepository
     )
 
     @Test

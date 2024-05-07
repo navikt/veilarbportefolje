@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
@@ -281,7 +282,7 @@ class ArbeidssokerRegistreringServiceTest extends EndToEndTest {
     private static Filtervalg getFiltervalgSituasjonsDataMix() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.registreringstype.add(DinSituasjonSvar.MISTET_JOBBEN);
+        filtervalg.registreringstype.add(DinSituasjonSvar.ER_PERMITTERT);
         filtervalg.registreringstype.add(DinSituasjonSvar.INGEN_DATA);
         return filtervalg;
     }
@@ -312,7 +313,7 @@ class ArbeidssokerRegistreringServiceTest extends EndToEndTest {
                         .setEnhet_id(enhet)
                         .setUtdanning_bestatt("NEI")
                         .setUtdanning_godkjent("NEI")
-                        .setBrukers_situasjoner(List.of("MISTET_JOBBEN")),
+                        .setBrukers_situasjoner(List.of(JobbSituasjonBeskrivelse.ER_PERMITTERT.name())),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId2.get())
@@ -321,7 +322,7 @@ class ArbeidssokerRegistreringServiceTest extends EndToEndTest {
                         .setUtdanning_bestatt("NEI")
                         .setUtdanning_godkjent("JA")
                         .setUtdanning("GRUNNSKOLE")
-                        .setBrukers_situasjoner(List.of("ALDRI_HATT_JOBB")),
+                        .setBrukers_situasjoner(List.of(JobbSituasjonBeskrivelse.ALDRI_HATT_JOBB.name())),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId3.get())
@@ -330,7 +331,7 @@ class ArbeidssokerRegistreringServiceTest extends EndToEndTest {
                         .setUtdanning_bestatt("NEI")
                         .setUtdanning_godkjent("JA")
                         .setUtdanning("VIDEREGAENDE_GRUNNUTDANNING")
-                        .setBrukers_situasjoner(List.of("MISTET_JOBBEN")),
+                        .setBrukers_situasjoner(List.of(JobbSituasjonBeskrivelse.ER_PERMITTERT.name())),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId4.get())
@@ -362,7 +363,7 @@ class ArbeidssokerRegistreringServiceTest extends EndToEndTest {
                         .setUtdanning("INGEN_SVAR")
                         .setUtdanning_bestatt("NEI")
                         .setUtdanning_godkjent("JA")
-                        .setBrukers_situasjoner(List.of("ALDRI_HATT_JOBB"))
+                        .setBrukers_situasjoner(List.of(JobbSituasjonBeskrivelse.ALDRI_HATT_JOBB.name()))
         );
 
         brukere.forEach(bruker -> {

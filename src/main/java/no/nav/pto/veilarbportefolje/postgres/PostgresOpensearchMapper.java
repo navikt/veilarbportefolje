@@ -172,24 +172,30 @@ public class PostgresOpensearchMapper {
         });
     }
 
-//    public void flettInnOpplysningerOmArbeidssoekerData(List<OppfolgingsBruker> brukere) {
-//        List<Fnr> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).map(Fnr::of).toList();
-//        List<ArbeidssoekerData> arbeidssoekerDataList = arbeidssoekerService.hentOpplysningerOmArbeidssoekerBatch(fnrs);
-//
-//        brukere.forEach(bruker -> {
-//            Optional<ArbeidssoekerData> arbeidssoekerData = arbeidssoekerDataList.stream()
-//                    .filter(data -> data.getArbeidssoekerPeriode().getFnr().get().equals(bruker.getFnr()))
-//                    .findFirst();
-//
-//            arbeidssoekerData.ifPresent(data -> {
-//                OpplysningerOmArbeidssoeker opplysningerOmArbeidssoeker = data.getOpplysningerOmArbeidssoeker();
-//                ProfileringEntity profileringEntity = data.getProfilering();
-//
-//                bruker.setUtdanning(opplysningerOmArbeidssoeker.getUtdanning().name());
-//                bruker.setUtdanning_godkjent(opplysningerOmArbeidssoeker.getUtdanningGodkjent().name());
-//                bruker.setUtdanning_bestatt(opplysningerOmArbeidssoeker.getUtdanningBestatt().name());
-//                bruker.setBrukers_situasjoner(opplysningerOmArbeidssoeker.getJobbsituasjoner());
-//            });
-//        });
-//    }
+    public void flettInnOpplysningerOmArbeidssoekerData(List<OppfolgingsBruker> brukere) {
+        List<Fnr> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).map(Fnr::of).toList();
+        List<ArbeidssoekerData> arbeidssoekerDataList = arbeidssoekerService.hentArbeidssoekerData(fnrs);
+
+        brukere.forEach(bruker -> {
+            Optional<ArbeidssoekerData> arbeidssoekerData = arbeidssoekerDataList.stream()
+                    .filter(data -> data.getFnr().get().equals(bruker.getFnr()))
+                    .findFirst();
+
+            arbeidssoekerData.ifPresent(data -> {
+                OpplysningerOmArbeidssoeker opplysningerOmArbeidssoeker = data.getOpplysningerOmArbeidssoeker();
+                Profilering profilering = data.getProfilering();
+
+                if (opplysningerOmArbeidssoeker != null ) {
+                    bruker.setUtdanning(opplysningerOmArbeidssoeker.getUtdanning().name());
+                    bruker.setUtdanning_godkjent(opplysningerOmArbeidssoeker.getUtdanningGodkjent().name());
+                    bruker.setUtdanning_bestatt(opplysningerOmArbeidssoeker.getUtdanningBestatt().name());
+                    bruker.setBrukers_situasjoner(opplysningerOmArbeidssoeker.getJobbsituasjoner().stream().map(JobbSituasjonBeskrivelse::name).toList());
+                    bruker.setUtdanning_og_situasjon_sist_endret(opplysningerOmArbeidssoeker.getSendtInnTidspunkt().toLocalDate());
+                }
+                if (profilering != null) {
+                    bruker.setProfilering_resultat(profilering.getProfileringsresultat().name());
+                }
+            });
+        });
+    }
 }

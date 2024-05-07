@@ -7,7 +7,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.*;
@@ -92,9 +91,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Autowired
     private ArbeidssoekerService arbeidssoekerService;
-
-    @Autowired
-    private SisteArbeidssoekerPeriodeRepository sisteArbeidssoekerPeriodeRepository;
 
     @MockBean
     private PdlPortefoljeClient pdlPortefoljeClient;
@@ -230,7 +226,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @Test
     void når_oppfolging_startes_skal_arbeidssoekerdata_hentes_lagres() throws JsonProcessingException {
         UUID periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16");
-        when(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true);
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
@@ -330,7 +325,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void når_oppfølging_avsluttes_skal_arbeidssøkerdata_slettes() throws JsonProcessingException {
-        when(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true);
         when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         mockHentArbeidssoekerPerioderResponse(fnr);

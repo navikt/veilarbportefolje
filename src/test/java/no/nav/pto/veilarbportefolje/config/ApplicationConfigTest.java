@@ -176,7 +176,8 @@ import static org.mockito.Mockito.when;
         ArbeidssoekerService.class,
         OpplysningerOmArbeidssoekerRepository.class,
         SisteArbeidssoekerPeriodeRepository.class,
-        ProfileringRepository.class
+        ProfileringRepository.class,
+        ArbeidssoekerDataRepository.class
 })
 public class ApplicationConfigTest {
 
@@ -231,7 +232,6 @@ public class ApplicationConfigTest {
     public DefaultUnleash defaultUnleash() {
         final DefaultUnleash mock = mock(DefaultUnleash.class);
         when(mock.isEnabled(anyString())).thenReturn(true);
-        when(mock.isEnabled(BRUK_NYTT_ARBEIDSSOEKERREGISTER)).thenReturn(false);
 
         return mock;
     }

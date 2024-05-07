@@ -48,8 +48,8 @@ enum class JobbSituasjonBeskrivelse {
 
 data class ArbeidssoekerData(
     val fnr: Fnr,
-    val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker,
-    val profilering: Profilering
+    val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker? = null,
+    val profilering: Profilering? = null
 )
 
 data class Profilering(
