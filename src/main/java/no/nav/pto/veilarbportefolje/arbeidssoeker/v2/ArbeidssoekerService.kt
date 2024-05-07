@@ -33,7 +33,7 @@ class ArbeidssoekerService(
         }
 
         secureLog.info("Henter arbeidssøkerperioder for bruker med fnr: $fnr")
-        val aktivArbeidssoekerperiode: ArbeidssokerperiodeResponse? =
+        val aktivArbeidssoekerperiode: OppslagArbeidssoekerregisteretClient.ArbeidssokerperiodeResponse? =
             oppslagArbeidssoekerregisteretClient.hentArbeidssokerPerioder(fnr.get())
                 ?.find { it.avsluttet == null }
 
@@ -42,10 +42,10 @@ class ArbeidssoekerService(
             return
         }
 
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr, aktivArbeidssoekerperiode.periodeId)
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(aktivArbeidssoekerperiode.periodeId, fnr.get()))
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
 
-        val opplysningerOmArbeidssoeker: List<OpplysningerOmArbeidssoekerResponse>? =
+        val opplysningerOmArbeidssoeker: List<OppslagArbeidssoekerregisteretClient.OpplysningerOmArbeidssoekerResponse>? =
             oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(
                 fnr.get(),
                 aktivArbeidssoekerperiode.periodeId
@@ -77,6 +77,16 @@ class ArbeidssoekerService(
         profileringRepository.insertProfilering(sisteProfilering.toProfilering())
         secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
+
+//    fun hentOpplysningerOmArbeidssoeker(fnr: Fnr): OpplysningerOmArbeidssoekerEntity? {
+//        val opplysningerOmArbeidssoeker = opplysningerOmArbeidssoekerRepository.hentOpplysningerOmArbeidssoeker(fnr)
+//        if (opplysningerOmArbeidssoeker == null) {
+//            secureLog.info("Fant ingen opplysninger om arbeidssøker for bruker med fnr: $fnr")
+//            return null
+//        }
+//
+//        return opplysningerOmArbeidssoeker
+//    }
 
     fun slettArbeidssoekerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
         if (maybeFnr.isEmpty) {

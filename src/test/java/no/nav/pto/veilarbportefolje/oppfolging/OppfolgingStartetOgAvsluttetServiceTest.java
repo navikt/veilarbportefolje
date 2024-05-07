@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient.*;
 import static no.nav.pto.veilarbportefolje.util.SerialiseringOgDeserialiseringUtilsKt.getObjectMapper;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
@@ -241,18 +242,18 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
-        ArbeidssoekerPeriode arbeidssoekerPeriode = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, periodeId);
+        ArbeidssoekerPeriodeEntity arbeidssoekerPeriodeEntity = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, periodeId);
 
-        assertNotNull(arbeidssoekerPeriode);
-        OpplysningerOmArbeidssoeker opplysningerOmArbeidssoeker = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, arbeidssoekerPeriode.getArbeidssoekerperiodeId());
+        assertNotNull(arbeidssoekerPeriodeEntity);
+        OpplysningerOmArbeidssoekerEntity opplysningerOmArbeidssoekerEntity = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, arbeidssoekerPeriodeEntity.getArbeidssoekerperiodeId());
 
-        assertNotNull(opplysningerOmArbeidssoeker);
-        OpplysningerOmArbeidssoekerJobbsituasjon opplysningerOmArbeidssoekerJobbsituasjon = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoeker.getOpplysningerOmArbeidssoekerId());
+        assertNotNull(opplysningerOmArbeidssoekerEntity);
+        OpplysningerOmArbeidssoekerJobbsituasjonEntity opplysningerOmArbeidssoekerJobbsituasjonEntity = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerEntity.getOpplysningerOmArbeidssoekerId());
 
-        assertThat(opplysningerOmArbeidssoekerJobbsituasjon.getJobbsituasjon().get(1)).isEqualTo(JobbSituasjonBeskrivelse.ER_PERMITTERT.name());
+        assertThat(opplysningerOmArbeidssoekerJobbsituasjonEntity.getJobbsituasjon().get(1)).isEqualTo(OppslagArbeidssoekerregisteretClient.JobbSituasjonBeskrivelse.ER_PERMITTERT.name());
 
-        Profilering profilering = TestDataClient.getProfileringFraDb(jdbcTemplate, periodeId);
-        assertNotNull(profilering);
+        ProfileringEntity profileringEntity = TestDataClient.getProfileringFraDb(jdbcTemplate, periodeId);
+        assertNotNull(profileringEntity);
     }
 
     @Test
@@ -339,21 +340,21 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
 
-        ArbeidssoekerPeriode sisteArbeidssoekerPeriodeFørAvsluttet = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
-        assertThat(sisteArbeidssoekerPeriodeFørAvsluttet).isNotNull();
-        OpplysningerOmArbeidssoeker opplysningerOmArbeidssoekerFørAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, sisteArbeidssoekerPeriodeFørAvsluttet.getArbeidssoekerperiodeId());
-        assertThat(opplysningerOmArbeidssoekerFørAvsluttet).isNotNull();
-        OpplysningerOmArbeidssoekerJobbsituasjon opplysningerOmArbeidssoekerJobbsituasjonFørAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerFørAvsluttet.getOpplysningerOmArbeidssoekerId());
-        assertThat(opplysningerOmArbeidssoekerJobbsituasjonFørAvsluttet).isNotNull();
+        ArbeidssoekerPeriodeEntity sisteArbeidssoekerPeriodeEntityFørAvsluttet = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
+        assertThat(sisteArbeidssoekerPeriodeEntityFørAvsluttet).isNotNull();
+        OpplysningerOmArbeidssoekerEntity opplysningerOmArbeidssoekerEntityFørAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, sisteArbeidssoekerPeriodeEntityFørAvsluttet.getArbeidssoekerperiodeId());
+        assertThat(opplysningerOmArbeidssoekerEntityFørAvsluttet).isNotNull();
+        OpplysningerOmArbeidssoekerJobbsituasjonEntity opplysningerOmArbeidssoekerJobbsituasjonEntityFørAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerEntityFørAvsluttet.getOpplysningerOmArbeidssoekerId());
+        assertThat(opplysningerOmArbeidssoekerJobbsituasjonEntityFørAvsluttet).isNotNull();
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId));
 
-        ArbeidssoekerPeriode sisteArbeidssoekerPeriodeEtterAvsluttet = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
-        assertThat(sisteArbeidssoekerPeriodeEtterAvsluttet).isNull();
-        OpplysningerOmArbeidssoeker opplysningerOmArbeidssoekerEtterAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, sisteArbeidssoekerPeriodeFørAvsluttet.getArbeidssoekerperiodeId());
-        assertThat(opplysningerOmArbeidssoekerEtterAvsluttet).isNull();
-        OpplysningerOmArbeidssoekerJobbsituasjon opplysningerOmArbeidssoekerJobbsituasjonEtterAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerFørAvsluttet.getOpplysningerOmArbeidssoekerId());
-        assertThat(opplysningerOmArbeidssoekerJobbsituasjonEtterAvsluttet).isNull();
+        ArbeidssoekerPeriodeEntity sisteArbeidssoekerPeriodeEntityEtterAvsluttet = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
+        assertThat(sisteArbeidssoekerPeriodeEntityEtterAvsluttet).isNull();
+        OpplysningerOmArbeidssoekerEntity opplysningerOmArbeidssoekerEntityEtterAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, sisteArbeidssoekerPeriodeEntityFørAvsluttet.getArbeidssoekerperiodeId());
+        assertThat(opplysningerOmArbeidssoekerEntityEtterAvsluttet).isNull();
+        OpplysningerOmArbeidssoekerJobbsituasjonEntity opplysningerOmArbeidssoekerJobbsituasjonEntityEtterAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerEntityFørAvsluttet.getOpplysningerOmArbeidssoekerId());
+        assertThat(opplysningerOmArbeidssoekerJobbsituasjonEntityEtterAvsluttet).isNull();
     }
 
     @Test

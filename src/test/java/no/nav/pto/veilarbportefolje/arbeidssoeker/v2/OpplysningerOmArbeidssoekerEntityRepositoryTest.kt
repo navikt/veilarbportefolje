@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import java.time.ZonedDateTime
 import java.util.*
 
-class OpplysningerOmArbeidssoekerRepositoryTest {
+class OpplysningerOmArbeidssoekerEntityRepositoryTest {
     private val db: JdbcTemplate = SingletonPostgresContainer.init().createJdbcTemplate()
     private val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerRepository =
         OpplysningerOmArbeidssoekerRepository(db)
@@ -27,46 +27,46 @@ class OpplysningerOmArbeidssoekerRepositoryTest {
             UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"),
             "12345671231"
         )
-        val opplysningerOmArbeidssoekerObjekt = OpplysningerOmArbeidssoekerResponse(
+        val opplysningerOmArbeidssoekerObjekt = OppslagArbeidssoekerregisteretClient.OpplysningerOmArbeidssoekerResponse(
             opplysningerOmArbeidssoekerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd"),
             periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"),
-            sendtInnAv = MetadataResponse(
+            sendtInnAv = OppslagArbeidssoekerregisteretClient.MetadataResponse(
                 tidspunkt = ZonedDateTime.parse("2024-04-23T13:22:58.089Z"),
-                utfoertAv = BrukerResponse(
-                    type = BrukerType.SLUTTBRUKER
+                utfoertAv = OppslagArbeidssoekerregisteretClient.BrukerResponse(
+                    type = OppslagArbeidssoekerregisteretClient.BrukerType.SLUTTBRUKER
                 ),
                 kilde = "paw-arbeidssoekerregisteret-inngang",
                 aarsak = "opplysning om arbeidssøker sendt inn"
             ),
             jobbsituasjon = listOf(
-                BeskrivelseMedDetaljerResponse(
-                    beskrivelse = JobbSituasjonBeskrivelse.ER_PERMITTERT,
+                OppslagArbeidssoekerregisteretClient.BeskrivelseMedDetaljerResponse(
+                    beskrivelse = OppslagArbeidssoekerregisteretClient.JobbSituasjonBeskrivelse.ER_PERMITTERT,
                     detaljer = mapOf(Pair("prosent", "25"))
                 ),
-                BeskrivelseMedDetaljerResponse(
-                    beskrivelse = JobbSituasjonBeskrivelse.MIDLERTIDIG_JOBB,
+                OppslagArbeidssoekerregisteretClient.BeskrivelseMedDetaljerResponse(
+                    beskrivelse = OppslagArbeidssoekerregisteretClient.JobbSituasjonBeskrivelse.MIDLERTIDIG_JOBB,
                     detaljer = mapOf(Pair("prosent", "75"))
                 )
             ),
-            utdanning = UtdanningResponse(
+            utdanning = OppslagArbeidssoekerregisteretClient.UtdanningResponse(
                 nus = "3",
-                bestaatt = JaNeiVetIkke.JA,
-                godkjent = JaNeiVetIkke.JA
+                bestaatt = OppslagArbeidssoekerregisteretClient.JaNeiVetIkke.JA,
+                godkjent = OppslagArbeidssoekerregisteretClient.JaNeiVetIkke.JA
             ),
-            helse = HelseResponse(
-                helsetilstandHindrerArbeid = JaNeiVetIkke.NEI
+            helse = OppslagArbeidssoekerregisteretClient.HelseResponse(
+                helsetilstandHindrerArbeid = OppslagArbeidssoekerregisteretClient.JaNeiVetIkke.NEI
             ),
-            annet = AnnetResponse(
-                andreForholdHindrerArbeid = JaNeiVetIkke.NEI
+            annet = OppslagArbeidssoekerregisteretClient.AnnetResponse(
+                andreForholdHindrerArbeid = OppslagArbeidssoekerregisteretClient.JaNeiVetIkke.NEI
             )
         ).toOpplysningerOmArbeidssoeker()
         opplysningerOmArbeidssoeker.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysningerOmArbeidssoekerObjekt)
 
 
-        val resultatOpplysninger: OpplysningerOmArbeidssoeker? =
+        val resultatOpplysninger: OpplysningerOmArbeidssoekerEntity? =
             TestDataClient.getOpplysningerOmArbeidssoekerFraDb(db, opplysningerOmArbeidssoekerObjekt.periodeId)
 
-        val resultatJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon? =
+        val resultatJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjonEntity? =
             TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(
                 db,
                 resultatOpplysninger!!.opplysningerOmArbeidssoekerId

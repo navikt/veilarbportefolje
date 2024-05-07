@@ -14,7 +14,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.nowToStr;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ArbeidssokerProfileringRepositoryV2Test {
+public class ArbeidssokerProfileringRepositoryV2TestEntity {
     private JdbcTemplate db;
     private ArbeidssokerProfileringRepositoryV2 arbeidssokerProfileringRepositoryV2;
 

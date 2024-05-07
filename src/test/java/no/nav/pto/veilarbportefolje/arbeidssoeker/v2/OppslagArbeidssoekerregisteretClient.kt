@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import no.nav.common.rest.client.RestClient
 import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient.*
 import org.assertj.core.api.Assertions
 import org.junit.Rule
 import org.junit.Test
@@ -140,20 +141,20 @@ class OppslagArbeidssoekerregisteretClientTest {
                 ),
                 jobbsituasjon = listOf(
                     BeskrivelseMedDetaljerResponse(
-                        beskrivelse = JobbSituasjonBeskrivelse.ALDRI_HATT_JOBB,
+                        beskrivelse = OppslagArbeidssoekerregisteretClient.JobbSituasjonBeskrivelse.ALDRI_HATT_JOBB,
                         detaljer = emptyMap()
                     )
                 ),
                 utdanning = UtdanningResponse(
                     nus = "3",
-                    bestaatt = JaNeiVetIkke.JA,
-                    godkjent = JaNeiVetIkke.JA
+                    bestaatt = OppslagArbeidssoekerregisteretClient.JaNeiVetIkke.JA,
+                    godkjent = OppslagArbeidssoekerregisteretClient.JaNeiVetIkke.JA
                 ),
                 helse = HelseResponse(
-                    helsetilstandHindrerArbeid = JaNeiVetIkke.NEI
+                    helsetilstandHindrerArbeid = OppslagArbeidssoekerregisteretClient.JaNeiVetIkke.NEI
                 ),
                 annet = AnnetResponse(
-                    andreForholdHindrerArbeid = JaNeiVetIkke.NEI
+                    andreForholdHindrerArbeid = OppslagArbeidssoekerregisteretClient.JaNeiVetIkke.NEI
                 )
             )
         )

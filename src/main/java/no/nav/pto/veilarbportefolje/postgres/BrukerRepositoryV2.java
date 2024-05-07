@@ -22,10 +22,12 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
@@ -244,7 +246,7 @@ public class BrukerRepositoryV2 {
         String brukersSisteSituasjon = harEndretSituasjonEttterRegistrering ? rs.getString(ENDRET_BRUKERS_SITUASJON) : rs.getString(BRUKERS_SITUASJON);
         LocalDate brukersSituasjonSistEndretDato = harEndretSituasjonEttterRegistrering ? oppdatertBrukesSituasjonSistEndretDato : brukesSituasjonOpprettetDato;
 
-        oppfolgingsBruker.setBrukers_situasjon(brukersSisteSituasjon);
+        oppfolgingsBruker.setBrukers_situasjoner(brukersSisteSituasjon == null ? emptyList() : List.of(brukersSisteSituasjon));
         oppfolgingsBruker.setBrukers_situasjon_sist_endret(brukersSituasjonSistEndretDato);
     }
 

@@ -7,16 +7,16 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class ProfileringRepository(private val db: JdbcTemplate) {
-    fun insertProfilering(sisteProfilering: Profilering) {
+    fun insertProfilering(sisteProfileringEntity: ProfileringEntity) {
         db.update(
             """INSERT INTO ${PROFILERING.TABLE_NAME} (
                     ${PROFILERING.PERIODE_ID}, 
                     ${PROFILERING.PROFILERING_RESULTAT}, 
                     ${PROFILERING.SENDT_INN_TIDSPUNKT}
                 ) VALUES (?,?,?)""",
-            sisteProfilering.periodeId,
-            sisteProfilering.profileringsresultat.name,
-            DateUtils.toTimestamp(sisteProfilering.sendtInnTidspunkt)
+            sisteProfileringEntity.periodeId,
+            sisteProfileringEntity.profileringsresultat,
+            sisteProfileringEntity.sendtInnTidspunkt
         )
     }
 }

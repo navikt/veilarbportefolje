@@ -350,9 +350,9 @@ public class OpensearchQueryBuilder {
             BoolQueryBuilder brukerensSituasjonSubQuery = boolQuery();
             filtervalg.registreringstype.forEach(dinSituasjonSvar -> {
                 if (dinSituasjonSvar == DinSituasjonSvar.INGEN_DATA) {
-                    brukerensSituasjonSubQuery.should(boolQuery().mustNot(existsQuery("brukers_situasjon")));
+                    brukerensSituasjonSubQuery.should(boolQuery().mustNot(existsQuery("brukers_situasjoner")));
                 } else {
-                    brukerensSituasjonSubQuery.should(matchQuery("brukers_situasjon", dinSituasjonSvar));
+                    brukerensSituasjonSubQuery.should(matchQuery("brukers_situasjoner", dinSituasjonSvar));
                 }
 
             });

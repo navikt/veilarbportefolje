@@ -121,6 +121,7 @@ public class OpensearchIndexer {
         postgresOpensearchMapper.flettInnStatsborgerskapData(brukere);
         postgresOpensearchMapper.flettInnEnsligeForsorgereData(brukere);
         postgresOpensearchMapper.flettInnBarnUnder18Aar(brukere);
+//        postgresOpensearchMapper.flettInnOpplysningerOmArbeidssoekerData(brukere);
 
         if (brukere.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");

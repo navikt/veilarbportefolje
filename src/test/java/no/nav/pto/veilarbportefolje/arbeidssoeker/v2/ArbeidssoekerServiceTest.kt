@@ -39,8 +39,8 @@ class ArbeidssoekerServiceTest {
         val opplysningerOmArbeidssoekerId2 = UUID.randomUUID()
         `when`(pdlIdentRepository.hentFnrForAktivBruker(aktorId)).thenReturn(fnr1)
 
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr1, periodeId1)
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr2, periodeId2)
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId1, fnr1.get()))
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId2, fnr2.get()))
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
             genererRandomOpplysningerOmArbeidssoeker(periodeId1, opplysningerOmArbeidssoekerId1)
         )
@@ -69,38 +69,38 @@ class ArbeidssoekerServiceTest {
     }
 }
 
-fun genererRandomOpplysningerOmArbeidssoeker(periodeId: UUID, opplysningerOmArbeidssoekerId: UUID): OpplysningerOmArbeidssoeker {
-    return OpplysningerOmArbeidssoekerResponse(
+fun genererRandomOpplysningerOmArbeidssoeker(periodeId: UUID, opplysningerOmArbeidssoekerId: UUID): OpplysningerOmArbeidssoekerEntity {
+    return OppslagArbeidssoekerregisteretClient.OpplysningerOmArbeidssoekerResponse(
         periodeId = periodeId,
         opplysningerOmArbeidssoekerId = opplysningerOmArbeidssoekerId,
-        sendtInnAv = MetadataResponse(
+        sendtInnAv = OppslagArbeidssoekerregisteretClient.MetadataResponse(
             tidspunkt = ZonedDateTime.now(),
-            utfoertAv = BrukerResponse(
-                type = BrukerType.SLUTTBRUKER
+            utfoertAv = OppslagArbeidssoekerregisteretClient.BrukerResponse(
+                type = OppslagArbeidssoekerregisteretClient.BrukerType.SLUTTBRUKER
             ),
             kilde = "paw-arbeidssoekerregisteret-inngang",
             aarsak = "opplysning om arbeidssøker sendt inn"
         ),
         jobbsituasjon = listOf(
-            BeskrivelseMedDetaljerResponse(
-                beskrivelse = JobbSituasjonBeskrivelse.ER_PERMITTERT,
+            OppslagArbeidssoekerregisteretClient.BeskrivelseMedDetaljerResponse(
+                beskrivelse = OppslagArbeidssoekerregisteretClient.JobbSituasjonBeskrivelse.ER_PERMITTERT,
                 detaljer = mapOf(Pair("prosent", "25"))
             ),
-            BeskrivelseMedDetaljerResponse(
-                beskrivelse = JobbSituasjonBeskrivelse.MIDLERTIDIG_JOBB,
+            OppslagArbeidssoekerregisteretClient.BeskrivelseMedDetaljerResponse(
+                beskrivelse = OppslagArbeidssoekerregisteretClient.JobbSituasjonBeskrivelse.MIDLERTIDIG_JOBB,
                 detaljer = mapOf(Pair("prosent", "75"))
             )
         ),
-        annet = AnnetResponse(
-            andreForholdHindrerArbeid = JaNeiVetIkke.NEI
+        annet = OppslagArbeidssoekerregisteretClient.AnnetResponse(
+            andreForholdHindrerArbeid = OppslagArbeidssoekerregisteretClient.JaNeiVetIkke.NEI
         ),
-        utdanning = UtdanningResponse(
+        utdanning = OppslagArbeidssoekerregisteretClient.UtdanningResponse(
             nus = "3",
-            bestaatt = JaNeiVetIkke.JA,
-            godkjent = JaNeiVetIkke.JA
+            bestaatt = OppslagArbeidssoekerregisteretClient.JaNeiVetIkke.JA,
+            godkjent = OppslagArbeidssoekerregisteretClient.JaNeiVetIkke.JA
         ),
-        helse = HelseResponse(
-            helsetilstandHindrerArbeid = JaNeiVetIkke.NEI
+        helse = OppslagArbeidssoekerregisteretClient.HelseResponse(
+            helsetilstandHindrerArbeid = OppslagArbeidssoekerregisteretClient.JaNeiVetIkke.NEI
         )
     ).toOpplysningerOmArbeidssoeker()
 }

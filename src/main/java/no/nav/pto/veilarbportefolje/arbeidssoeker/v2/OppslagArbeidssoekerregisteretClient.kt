@@ -77,94 +77,95 @@ class OppslagArbeidssoekerregisteretClient(
             return response.deserializeJsonOrThrow()
         }
     }
-}
 
-// Arbeidssøkerperioder typer
-data class ArbeidssoekerperiodeRequest(val identitetsnummer: String)
+    // Arbeidssøkerperioder typer
+    data class ArbeidssoekerperiodeRequest(val identitetsnummer: String)
 
-data class ArbeidssokerperiodeResponse(
-    val periodeId: UUID,
-    val startet: MetadataResponse,
-    val avsluttet: MetadataResponse?
-)
+    data class ArbeidssokerperiodeResponse(
+        val periodeId: UUID,
+        val startet: MetadataResponse,
+        val avsluttet: MetadataResponse?
+    )
 
-// Opplysninger om arbeidssøker typer
-data class OpplysningerOmArbeidssoekerRequest(val identitetsnummer: String, val periodeId: UUID)
+    // Opplysninger om arbeidssøker typer
+    data class OpplysningerOmArbeidssoekerRequest(val identitetsnummer: String, val periodeId: UUID)
 
-data class OpplysningerOmArbeidssoekerResponse(
-    val opplysningerOmArbeidssoekerId: UUID,
-    val periodeId: UUID,
-    val sendtInnAv: MetadataResponse,
-    val utdanning: UtdanningResponse?,
-    val helse: HelseResponse?,
-    val annet: AnnetResponse?,
-    val jobbsituasjon: List<BeskrivelseMedDetaljerResponse>
-)
+    data class OpplysningerOmArbeidssoekerResponse(
+        val opplysningerOmArbeidssoekerId: UUID,
+        val periodeId: UUID,
+        val sendtInnAv: MetadataResponse,
+        val utdanning: UtdanningResponse?,
+        val helse: HelseResponse?,
+        val annet: AnnetResponse?,
+        val jobbsituasjon: List<BeskrivelseMedDetaljerResponse>
+    )
 
-data class BeskrivelseMedDetaljerResponse(
-    val beskrivelse: JobbSituasjonBeskrivelse,
-    val detaljer: Map<String, String>
-)
+    data class BeskrivelseMedDetaljerResponse(
+        val beskrivelse: JobbSituasjonBeskrivelse,
+        val detaljer: Map<String, String>
+    )
 
-enum class JobbSituasjonBeskrivelse {
-    UKJENT_VERDI,
-    UDEFINERT,
-    HAR_SAGT_OPP,
-    HAR_BLITT_SAGT_OPP,
-    ER_PERMITTERT,
-    ALDRI_HATT_JOBB,
-    IKKE_VAERT_I_JOBB_SISTE_2_AAR,
-    AKKURAT_FULLFORT_UTDANNING,
-    VIL_BYTTE_JOBB,
-    USIKKER_JOBBSITUASJON,
-    MIDLERTIDIG_JOBB,
-    DELTIDSJOBB_VIL_MER,
-    NY_JOBB,
-    KONKURS,
-    ANNET
-}
+    enum class JobbSituasjonBeskrivelse {
+        UKJENT_VERDI,
+        UDEFINERT,
+        HAR_SAGT_OPP,
+        HAR_BLITT_SAGT_OPP,
+        ER_PERMITTERT,
+        ALDRI_HATT_JOBB,
+        IKKE_VAERT_I_JOBB_SISTE_2_AAR,
+        AKKURAT_FULLFORT_UTDANNING,
+        VIL_BYTTE_JOBB,
+        USIKKER_JOBBSITUASJON,
+        MIDLERTIDIG_JOBB,
+        DELTIDSJOBB_VIL_MER,
+        NY_JOBB,
+        KONKURS,
+        ANNET
+    }
 
-data class AnnetResponse(
-    val andreForholdHindrerArbeid: JaNeiVetIkke?
-)
+    data class AnnetResponse(
+        val andreForholdHindrerArbeid: JaNeiVetIkke?
+    )
 
-data class HelseResponse(
-    val helsetilstandHindrerArbeid: JaNeiVetIkke
-)
+    data class HelseResponse(
+        val helsetilstandHindrerArbeid: JaNeiVetIkke
+    )
 
-data class UtdanningResponse(
-    val nus: String,    // NUS = Standard for utdanningsgruppering (https://www.ssb.no/klass/klassifikasjoner/36/)
-    val bestaatt: JaNeiVetIkke?,
-    val godkjent: JaNeiVetIkke?
-)
+    data class UtdanningResponse(
+        val nus: String,    // NUS = Standard for utdanningsgruppering (https://www.ssb.no/klass/klassifikasjoner/36/)
+        val bestaatt: JaNeiVetIkke?,
+        val godkjent: JaNeiVetIkke?
+    )
 
-// Profilering typer
-data class ProfileringRequest(val identitetsnummer: String, val periodeId: UUID)
+    // Profilering typer
+    data class ProfileringRequest(val identitetsnummer: String, val periodeId: UUID)
 
-enum class ProfilertTil {
-    UKJENT_VERDI,
-    UDEFINERT,
-    ANTATT_GODE_MULIGHETER,
-    ANTATT_BEHOV_FOR_VEILEDNING,
-    OPPGITT_HINDRINGER
-}
+    enum class ProfilertTil {
+        UKJENT_VERDI,
+        UDEFINERT,
+        ANTATT_GODE_MULIGHETER,
+        ANTATT_BEHOV_FOR_VEILEDNING,
+        OPPGITT_HINDRINGER
+    }
 
-// Felles typer
-enum class JaNeiVetIkke {
-    JA, NEI, VET_IKKE
-}
+    // Felles typer
+    enum class JaNeiVetIkke {
+        JA, NEI, VET_IKKE
+    }
 
-data class MetadataResponse(
-    val tidspunkt: ZonedDateTime,
-    val utfoertAv: BrukerResponse,
-    val kilde: String,
-    val aarsak: String
-)
+    data class MetadataResponse(
+        val tidspunkt: ZonedDateTime,
+        val utfoertAv: BrukerResponse,
+        val kilde: String,
+        val aarsak: String
+    )
 
-data class BrukerResponse(
-    val type: BrukerType
-)
+    data class BrukerResponse(
+        val type: BrukerType
+    )
 
-enum class BrukerType {
-    UKJENT_VERDI, UDEFINERT, VEILEDER, SYSTEM, SLUTTBRUKER
+    enum class BrukerType {
+        UKJENT_VERDI, UDEFINERT, VEILEDER, SYSTEM, SLUTTBRUKER
+    }
+
 }
