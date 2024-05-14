@@ -5,11 +5,11 @@ import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
+import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
 
 
@@ -32,13 +32,21 @@ class ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService(
 }
 
 @Service
+class ArbeidssoekerProfileringKafkaMeldingService(
+    private val arbeidssoekerService: ArbeidssoekerService
+) : KafkaCommonConsumerService<ProfileringKafkaMelding>() {
+    override fun behandleKafkaMeldingLogikk(kafkaMelding: ProfileringKafkaMelding) {
+        arbeidssoekerService.behandleKafkaMeldingLogikk(kafkaMelding)
+    }
+}
+
+@Service
 class ArbeidssoekerService(
     private val oppslagArbeidssoekerregisteretClient: OppslagArbeidssoekerregisteretClient,
     private val pdlIdentRepository: PdlIdentRepository,
     private val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
     private val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
-    private val profileringRepository: ProfileringRepository,
-    private val siste14aVedtakRepository: Siste14aVedtakRepository
+    private val profileringRepository: ProfileringRepository
 ) {
 
     @Transactional
@@ -55,7 +63,6 @@ class ArbeidssoekerService(
             return
         }
 
-        secureLog.info("Behandler endring på arbeidssøkerpeiode for bruker med fnr: $fnr")
         sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(fnr)
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr, periodeId)
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
@@ -71,24 +78,20 @@ class ArbeidssoekerService(
         )
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
 
-        val identerForBruker = pdlIdentRepository.hentIdenterForBruker(fnr.get())
-        val har14aVedtak = siste14aVedtakRepository.hentSiste14aVedtak(identerForBruker).isPresent
 
-        if (!har14aVedtak) {
-            val profilering: Profilering? = hentSisteProfilering(
-                fnr,
-                periodeId,
-                opplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId
-            )?.toProfilering()
+        val profilering: Profilering? = hentSisteProfilering(
+            fnr,
+            periodeId,
+            opplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId
+        )?.toProfilering()
 
-            if (profilering == null) {
-                secureLog.info("Fant ingen profilering for bruker med fnr: $fnr")
-                return
-            }
-
-            profileringRepository.insertProfilering(profilering)
-            secureLog.info("Lagret profilering for bruker med fnr: $fnr")
+        if (profilering == null) {
+            secureLog.info("Fant ingen profilering for bruker med fnr: $fnr")
+            return
         }
+
+        profileringRepository.insertProfilering(profilering)
+        secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 
     @Transactional
@@ -125,6 +128,31 @@ class ArbeidssoekerService(
         opplysningerOmArbeidssoekerRepository.slettOpplysningerOmArbeidssoeker(sisteArbeidssoekerPeriode.arbeidssoekerperiodeId)
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysninger.toOpplysningerOmArbeidssoeker())
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
+    }
+
+    fun behandleKafkaMeldingLogikk(kafkaMelding: ProfileringKafkaMelding) {
+        secureLog.info("Behandler endring på profilering for bruker med arbeidssoekerPeriodeId: ${kafkaMelding.periodeId}")
+
+        val sisteArbeidssoekerPeriode =
+            sisteArbeidssoekerPeriodeRepository.hentSisteArbeidssoekerPeriode(kafkaMelding.periodeId)
+
+        if (sisteArbeidssoekerPeriode == null) {
+            secureLog.info("Ingen arbeidssøkerperiode lagret med arbeidssoekerPeriodeId: ${kafkaMelding.periodeId}")
+            return
+        }
+
+        val fnr = sisteArbeidssoekerPeriode.fnr
+        if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr.get())) {
+            secureLog.info(
+                "Bruker med fnr ${fnr.get()} er ikke under oppfølging, men har arbeidssøkerpeiode lagret. " +
+                        "Dette betyr at arbeidssøkerdata ikke har blitt slettet riktig når bruker gikk ut av oppfølging. " +
+                        "Ignorer melding, data må slettes manuelt og slettelogikk ved utgang av oppfølging bør kontrollsjekkes for feil."
+            )
+            return
+        }
+
+        profileringRepository.insertProfilering(kafkaMelding.toProfilering())
+        secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 
     /**

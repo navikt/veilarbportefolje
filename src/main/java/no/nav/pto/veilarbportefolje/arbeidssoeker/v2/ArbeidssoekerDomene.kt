@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.util.DateUtils
 import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
+import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
 
 data class OpplysningerOmArbeidssoeker(
     val opplysningerOmArbeidssoekerId: UUID,
@@ -94,4 +95,10 @@ fun OpplysningerOmArbeidssoekerKafkaMelding.toOpplysningerOmArbeidssoeker() = Op
     utdanningBestatt = this.utdanning?.bestaatt?.name,
     utdanningGodkjent = this.utdanning?.godkjent?.name,
     opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(this.id, this.jobbsituasjon.beskrivelser.map { JobbSituasjonBeskrivelse.valueOf(it.beskrivelse.name) })
+)
+
+fun ProfileringKafkaMelding.toProfilering() = Profilering(
+    periodeId = this.periodeId,
+    profileringsresultat = Profileringsresultat.valueOf(this.profilertTil.name),
+    sendtInnTidspunkt = DateUtils.toZonedDateTime(this.sendtInnAv.tidspunkt)
 )

@@ -6,6 +6,7 @@ import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.*
+import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil
 import no.nav.paw.arbeidssokerregisteret.api.v2.Annet
 import no.nav.paw.arbeidssokerregisteret.api.v4.Utdanning
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
@@ -21,7 +22,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn
 import no.nav.pto.veilarbportefolje.postgres.PostgresUtils
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakApiDto
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getArbeidssoekerPeriodeFraDb
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getOpplysningerOmArbeidssoekerFraDb
@@ -30,12 +30,8 @@ import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getProfilering
 import no.nav.pto.veilarbportefolje.util.TestDataUtils
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.genererStartetOppfolgingsperiode
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
-import no.nav.pto.veilarbportefolje.util.TestDataUtils.tilfeldigDatoTilbakeITid
 import no.nav.pto.veilarbportefolje.util.TestUtil
 import no.nav.pto.veilarbportefolje.util.objectMapper
-import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
-import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -50,6 +46,7 @@ import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke as JaNeiVetIkkeEkstern
+import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkamelding
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkamelding
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
@@ -57,13 +54,11 @@ class ArbeidssoekerServiceTest(
     @Autowired private val db: JdbcTemplate,
     @Autowired private val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
     @Autowired private val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
+    @Autowired private val profileringRepository: ProfileringRepository,
     @Autowired private val oppslagArbeidssoekerregisteretClient: OppslagArbeidssoekerregisteretClient,
     @Autowired private val arbeidssoekerService: ArbeidssoekerService,
     @Autowired private val oppfolgingPeriodeService: OppfolgingPeriodeService,
 ) : EndToEndTest() {
-
-    @MockBean
-    private lateinit var vedtaksstotteClient: VedtaksstotteClient
 
     @MockBean
     private lateinit var pdlPortefoljeClient: PdlPortefoljeClient
@@ -100,6 +95,20 @@ class ArbeidssoekerServiceTest(
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
             genererRandomOpplysningerOmArbeidssoeker(periodeId2, opplysningerOmArbeidssoekerId2)
         )
+        profileringRepository.insertProfilering(
+            Profilering(
+                periodeId1,
+                Profileringsresultat.ANTATT_GODE_MULIGHETER,
+                ZonedDateTime.now()
+            )
+        )
+        profileringRepository.insertProfilering(
+            Profilering(
+                periodeId2,
+                Profileringsresultat.OPPGITT_HINDRINGER,
+                ZonedDateTime.now()
+            )
+        )
 
         // Act
         arbeidssoekerService.slettArbeidssoekerData(aktorId, Optional.of(fnr1))
@@ -121,6 +130,10 @@ class ArbeidssoekerServiceTest(
         val opplysningerOmArbeidssoekerJobbsituasjon2 =
             getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(db, opplysningerOmArbeidssoekerId2)
         assertThat(opplysningerOmArbeidssoekerJobbsituasjon2).isNotNull()
+        val profilering1 = getProfileringFraDb(db, periodeId1)
+        assertThat(profilering1).isNull()
+        val profilering2 = getProfileringFraDb(db, periodeId2)
+        assertThat(profilering2).isNotNull()
     }
 
 
@@ -134,8 +147,7 @@ class ArbeidssoekerServiceTest(
 
         mockPdlIdenterRespons(aktorId, fnr)
         mockPdlPersonRespons(fnr)
-        mockPdlPersonBarnRespons(fnr)
-        mockSiste14aVedtakResponse(fnr)
+        mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
         mockHentArbeidssoekerPerioderResponse(fnr)
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeId)
@@ -191,6 +203,28 @@ class ArbeidssoekerServiceTest(
             opplysningerOmArbeidssoekerRepository.harSisteOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoekerId)
         assertFalse(harOpplysninger)
 
+        val profileringKafkamelding = ProfileringKafkamelding(
+            UUID.randomUUID(),
+            periodeId,
+            opplysningerOmArbeidssoekerId,
+            Metadata(
+                Instant.now(),
+                Bruker(
+                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    "APP_NAVN:VERSJON"
+                ),
+                "APP_NAVN:VERSJON",
+                "startet periode"
+            ),
+            ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING,
+            true,
+            35
+        )
+
+        arbeidssoekerService.behandleKafkaMeldingLogikk(profileringKafkamelding)
+        val harProfilering = getProfileringFraDb(db, periodeId) != null
+        assertFalse(harProfilering)
+
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
 
         val arbeidssoekerPeriode = getArbeidssoekerPeriodeFraDb(db, periodeId)
@@ -212,90 +246,9 @@ class ArbeidssoekerServiceTest(
     }
 
     @Test
-    fun ved_kafkamelding_om_ny_arbeidssoekerperiode_slettes_gammel_arbeidssokerdata_og_ny_lagres_utenom_profilering() {
-        /* Gitt at:
-         - Bruker er under oppfølging
-         - Bruker har § 14 a-vedtak
-         - Bruker har arbeidssøkerdata (siste arbeidssøkerperiode, opplysninger om arbeidssøker og profilering) lagret i databasen
-
-         Når:
-         - Det kommer en melding om ny arbeidssøkerperiode
-
-         Så:
-         - Skal gammel arbeidssøkerdata slettes fra databasen
-         - Skal ny arbeidssøkerdata lagres i databasen, med unntak av profilering (profileringsdata er kun relevant dersom brukeren ikke har § 14 a-vedtak)
-         */
-
-        // Arrange
-        `when`(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true)
-        val gammelPeriodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
-        val nyPeriodeId = UUID.randomUUID()
-        val gammelOpplysningerOmArbeidssoekerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
-        val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
-        val fnr = Fnr.of("17858998980")
-        val aktorId = randomAktorId()
-
-        mockPdlIdenterRespons(aktorId, fnr)
-        mockPdlPersonRespons(fnr)
-        mockPdlPersonBarnRespons(fnr)
-        mockSiste14aVedtakResponse(fnr)
-        mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, gammelPeriodeId)
-        mockHentProfileringResponse(fnr, gammelPeriodeId)
-
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
-
-        mockHentArbeidssoekerPerioderResponse(fnr, nyPeriodeId)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, nyPeriodeId, nyOpplysningerOmArbeidssoekerId)
-        mockHentProfileringResponse(fnr, nyPeriodeId)
-
-        val arbeidssoekerPeriodeMelding = Periode(
-            nyPeriodeId,
-            fnr.get(),
-            Metadata(
-                Instant.now(), null, null, null
-            ),
-            null
-        )
-
-        // Act
-        arbeidssoekerService.behandleKafkaMeldingLogikk(arbeidssoekerPeriodeMelding)
-
-        // Assert
-        val gammelPeriodeEksistererIDb: Boolean = (PostgresUtils.queryForObjectOrNull {
-            db.queryForObject(
-                "SELECT COUNT(*) FROM ${SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} WHERE ${SISTE_ARBEIDSSOEKER_PERIODE.ARBEIDSSOKER_PERIODE_ID} = ?",
-                Int::class.java,
-                gammelPeriodeId
-            )
-        } ?: 0) > 0
-        val nyPeriodeEksistererIDb: Boolean = (PostgresUtils.queryForObjectOrNull {
-            db.queryForObject(
-                "SELECT COUNT(*) FROM ${SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} WHERE ${SISTE_ARBEIDSSOEKER_PERIODE.ARBEIDSSOKER_PERIODE_ID} = ?",
-                Int::class.java,
-                nyPeriodeId
-            )
-        } ?: 0) > 0
-        val harGammelOpplysninger = opplysningerOmArbeidssoekerRepository.harSisteOpplysningerOmArbeidssoeker(
-            gammelOpplysningerOmArbeidssoekerId
-        )
-        val harNyOpplysninger =
-            opplysningerOmArbeidssoekerRepository.harSisteOpplysningerOmArbeidssoeker(nyOpplysningerOmArbeidssoekerId)
-        val profilering = getProfileringFraDb(db, gammelPeriodeId)
-
-        assertFalse(gammelPeriodeEksistererIDb)
-        assertTrue(nyPeriodeEksistererIDb)
-        assertFalse(harGammelOpplysninger)
-        assertTrue(harNyOpplysninger)
-        assertNull(profilering)
-    }
-
-    @Test
     fun ved_kafkamelding_om_ny_arbeidssoekerperiode_slettes_gammel_arbeidssokerdata_og_ny_lagres() {
         /* Gitt at:
          - Bruker er under oppfølging
-         - Bruker ikke har § 14 a-vedtak
          - Bruker har arbeidssøkerdata (siste arbeidssøkerperiode, opplysninger om arbeidssøker og profilering) lagret i databasen
 
          Når:
@@ -317,8 +270,7 @@ class ArbeidssoekerServiceTest(
 
         mockPdlIdenterRespons(aktorId, fnr)
         mockPdlPersonRespons(fnr)
-        mockPdlPersonBarnRespons(fnr)
-        mockSiste14aVedtakResponse(fnr, false)
+        mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
         mockHentArbeidssoekerPerioderResponse(fnr)
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, gammelPeriodeId)
@@ -362,13 +314,15 @@ class ArbeidssoekerServiceTest(
         )
         val harNyOpplysninger =
             opplysningerOmArbeidssoekerRepository.harSisteOpplysningerOmArbeidssoeker(nyOpplysningerOmArbeidssoekerId)
-        val harProfilering = getProfileringFraDb(db, nyPeriodeId) != null
+        val harGammelProfilering = getProfileringFraDb(db, gammelPeriodeId) != null
+        val harNyProfilering = getProfileringFraDb(db, nyPeriodeId) != null
 
         assertFalse(gammelPeriodeEksistererIDb)
         assertTrue(nyPeriodeEksistererIDb)
         assertFalse(harGammelOpplysninger)
         assertTrue(harNyOpplysninger)
-        assertTrue(harProfilering)
+        assertFalse(harGammelProfilering)
+        assertTrue(harNyProfilering)
     }
 
     @Test
@@ -384,8 +338,7 @@ class ArbeidssoekerServiceTest(
 
         mockPdlIdenterRespons(aktorId, fnr)
         mockPdlPersonRespons(fnr)
-        mockPdlPersonBarnRespons(fnr)
-        mockSiste14aVedtakResponse(fnr)
+        mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
         mockHentArbeidssoekerPerioderResponse(fnr)
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
@@ -442,8 +395,7 @@ class ArbeidssoekerServiceTest(
 
         mockPdlIdenterRespons(aktorId, fnr)
         mockPdlPersonRespons(fnr)
-        mockPdlPersonBarnRespons(fnr)
-        mockSiste14aVedtakResponse(fnr)
+        mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
         mockHentArbeidssoekerPerioderResponse(fnr)
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
@@ -495,6 +447,104 @@ class ArbeidssoekerServiceTest(
         assertThat(lagredeOpplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon[0]).isEqualTo(JobbSituasjonBeskrivelse.DELTIDSJOBB_VIL_MER)
     }
 
+    @Test
+    fun ved_kafkamelding_om_ny_profilering_for_arbeidssoeker_paa_eksisterende_arbeidssoekerperiode_slettes_gammel_profilering_om_arbiedssoeker_og_ny_lagres() {
+        // Arrange
+        `when`(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true)
+        val periodeIdVedOppfolgingStartet = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
+        val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
+        val fnr = Fnr.of("17858998980")
+        val aktorId = randomAktorId()
+
+        mockPdlIdenterRespons(aktorId, fnr)
+        mockPdlPersonRespons(fnr)
+        mockPdlPersonBarnRespons()
+        mockHentOppfolgingsbrukerResponse(fnr)
+        mockHentArbeidssoekerPerioderResponse(fnr)
+        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
+        mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
+        val lagretProfileringForKafkaMelding = getProfileringFraDb(db, periodeIdVedOppfolgingStartet)
+        assertThat(lagretProfileringForKafkaMelding!!.profileringsresultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER)
+
+        val profileringKafkamelding = ProfileringKafkamelding(
+            UUID.randomUUID(),
+            periodeIdVedOppfolgingStartet,
+            nyOpplysningerOmArbeidssoekerId,
+            Metadata(
+                Instant.now(),
+                Bruker(
+                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    "APP_NAVN:VERSJON"
+                ),
+                "APP_NAVN:VERSJON",
+                "startet periode"
+            ),
+            ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING,
+            true,
+            35
+        )
+
+        // Act
+        arbeidssoekerService.behandleKafkaMeldingLogikk(profileringKafkamelding)
+
+        // Assert
+        val lagretProfileringEtterMelding = getProfileringFraDb(db, periodeIdVedOppfolgingStartet)
+        assertThat(lagretProfileringEtterMelding!!.profileringsresultat).isEqualTo(Profileringsresultat.ANTATT_BEHOV_FOR_VEILEDNING)
+    }
+
+    @Test
+    fun ved_kafkamelding_om_ny_profilering_for_arbeidssoeker_paa_ny_arbeidssoekerperiode_ignoreres_dersom_vi_ikke_har_priodeId() {
+        // Arrange
+        `when`(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true)
+        val periodeIdVedOppfolgingStartet = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
+        val periodeIdVedEndring = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab20a45")
+        val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
+        val fnr = Fnr.of("17858998980")
+        val aktorId = randomAktorId()
+
+        mockPdlIdenterRespons(aktorId, fnr)
+        mockPdlPersonRespons(fnr)
+        mockPdlPersonBarnRespons()
+        mockHentOppfolgingsbrukerResponse(fnr)
+        mockHentArbeidssoekerPerioderResponse(fnr)
+        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
+        mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
+        val lagretProfileringForKafkaMelding = getProfileringFraDb(db, periodeIdVedOppfolgingStartet)
+        assertThat(lagretProfileringForKafkaMelding!!.profileringsresultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER)
+        assertThat(lagretProfileringForKafkaMelding.periodeId).isEqualTo(periodeIdVedOppfolgingStartet)
+
+        val profileringKafkamelding = ProfileringKafkamelding(
+            UUID.randomUUID(),
+            periodeIdVedEndring,
+            nyOpplysningerOmArbeidssoekerId,
+            Metadata(
+                Instant.now(),
+                Bruker(
+                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    "APP_NAVN:VERSJON"
+                ),
+                "APP_NAVN:VERSJON",
+                "startet periode"
+            ),
+            ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING,
+            true,
+            35
+        )
+
+        // Act
+        arbeidssoekerService.behandleKafkaMeldingLogikk(profileringKafkamelding)
+
+        // Assert
+        val lagretProfileringEtterMeldingSkalVæreSamme = getProfileringFraDb(db, periodeIdVedOppfolgingStartet)
+        assertThat(lagretProfileringEtterMeldingSkalVæreSamme!!.profileringsresultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER)
+        assertThat(lagretProfileringEtterMeldingSkalVæreSamme.periodeId).isEqualTo(periodeIdVedOppfolgingStartet)
+
+    }
+
     private fun mockPdlIdenterRespons(aktorId: AktorId, fnr: Fnr) {
         val identer = listOf(
             PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
@@ -515,7 +565,7 @@ class ArbeidssoekerServiceTest(
         return pdlPerson
     }
 
-    private fun mockPdlPersonBarnRespons(fnr: Fnr): PDLPersonBarn {
+    private fun mockPdlPersonBarnRespons(): PDLPersonBarn {
         val file = TestUtil.readFileAsJsonString("/PDL_Files/person_barn_pdl.json", javaClass)
         val pdlPersonBarn = PDLPersonBarn.genererFraApiRespons(
             JsonUtils.fromJson(file, PdlBarnResponse::class.java).data.hentPerson
@@ -524,24 +574,6 @@ class ArbeidssoekerServiceTest(
         `when`(pdlPortefoljeClient.hentBrukerBarnDataFraPdl(ArgumentMatchers.any())).thenReturn(pdlPersonBarn)
 
         return pdlPersonBarn
-    }
-
-    private fun mockSiste14aVedtakResponse(fnr: Fnr, harSiste14aVedtak: Boolean = true) {
-        val siste14aVedtakApiDto = Siste14aVedtakApiDto(
-            Innsatsgruppe.SITUASJONSBESTEMT_INNSATS,
-            Hovedmal.OKE_DELTAKELSE,
-            tilfeldigDatoTilbakeITid(),
-            true
-        )
-        `when`<Optional<Siste14aVedtakApiDto>>(vedtaksstotteClient.hentSiste14aVedtak(fnr)).thenReturn(
-            if (harSiste14aVedtak) {
-                Optional.of<Siste14aVedtakApiDto>(
-                    siste14aVedtakApiDto
-                )
-            } else {
-                Optional.empty()
-            }
-        )
     }
 
     private fun mockHentOppfolgingsbrukerResponse(fnr: Fnr) {

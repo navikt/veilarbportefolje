@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
-import no.nav.pto.veilarbportefolje.database.PostgresTable.*
+import no.nav.pto.veilarbportefolje.database.PostgresTable.PROFILERING
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
@@ -13,7 +13,10 @@ class ProfileringRepository(private val db: JdbcTemplate) {
                     ${PROFILERING.PERIODE_ID}, 
                     ${PROFILERING.PROFILERING_RESULTAT}, 
                     ${PROFILERING.SENDT_INN_TIDSPUNKT}
-                ) VALUES (?,?,?)""",
+                ) VALUES (?,?,?)
+                 ON CONFLICT (${PROFILERING.PERIODE_ID}) DO UPDATE SET
+                 (${PROFILERING.PROFILERING_RESULTAT}, ${PROFILERING.SENDT_INN_TIDSPUNKT}) = (excluded.${PROFILERING.PROFILERING_RESULTAT}, excluded.${PROFILERING.SENDT_INN_TIDSPUNKT})
+                """,
             sisteProfilering.periodeId,
             sisteProfilering.profileringsresultat.name,
             DateUtils.toTimestamp(sisteProfilering.sendtInnTidspunkt)
