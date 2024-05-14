@@ -3,16 +3,15 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 import io.getunleash.DefaultUnleash
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.Periode
-import no.nav.pto.veilarbportefolje.config.FeatureToggle
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
-import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.Profilering as ProfileringKafkaMelding
-import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
+import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
 
 
 @Service

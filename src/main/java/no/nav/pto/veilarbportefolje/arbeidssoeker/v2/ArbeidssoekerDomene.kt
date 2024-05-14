@@ -3,9 +3,9 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import java.time.ZonedDateTime
-import java.util.*
-import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.Profilering as ProfileringKafkaMelding
-import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
+import java.util.UUID
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
+import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
 
 data class OpplysningerOmArbeidssoeker(
     val opplysningerOmArbeidssoekerId: UUID,
