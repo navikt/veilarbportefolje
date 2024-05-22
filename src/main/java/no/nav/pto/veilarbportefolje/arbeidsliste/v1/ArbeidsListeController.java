@@ -145,7 +145,7 @@ public class ArbeidsListeController {
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
         try {
-            arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr));
+            arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr), true);
         } catch (SlettArbeidslisteException e) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(Fnr.ofValidFnr(fnr)).orElse(null);
@@ -180,7 +180,7 @@ public class ArbeidsListeController {
                     .orElse(new AktorId("uten aktør-ID"));
 
             try {
-                arbeidslisteService.slettArbeidsliste(fnr);
+                arbeidslisteService.slettArbeidsliste(fnr, true);
                 okFnrs.add(fnr.get());
                 secureLog.info("Arbeidsliste for aktoerid {} slettet", aktoerId.get());
             } catch (SlettArbeidslisteException e) {
