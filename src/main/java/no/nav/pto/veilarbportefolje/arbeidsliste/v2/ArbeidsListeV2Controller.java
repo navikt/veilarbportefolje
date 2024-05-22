@@ -35,17 +35,19 @@ public class ArbeidsListeV2Controller {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerServiceV2 brukerService;
     private final AuthService authService;
-    private FargekategoriService fargekategoriService;
+    private final FargekategoriService fargekategoriService;
 
     @Autowired
     public ArbeidsListeV2Controller(
             ArbeidslisteService arbeidslisteService,
             BrukerServiceV2 brukerService,
-            AuthService authService
+            AuthService authService,
+            FargekategoriService fargekategoriService
     ) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerService = brukerService;
         this.authService = authService;
+        this.fargekategoriService = fargekategoriService;
     }
 
     @PostMapping("/hent-arbeidsliste")
