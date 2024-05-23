@@ -90,4 +90,19 @@ public class Arbeidsliste {
         this.kategori = kategori;
         this.navkontorForArbeidsliste = navkontorForArbeidsliste;
     }
+
+    public Arbeidsliste(
+            Kategori kategori
+    ) {
+        this.sistEndretAv = null;
+        this.endringstidspunkt = null;
+        this.overskrift = null;
+        this.kommentar = null;
+        this.frist = null;
+        this.isOppfolgendeVeileder = null;
+        this.arbeidslisteAktiv = null;
+        this.harVeilederTilgang = null;
+        this.kategori = kategori;
+        this.navkontorForArbeidsliste = null;
+    }
 }
