@@ -39,57 +39,6 @@
         </pluginManagement>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>${maven-dependency-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>unpack-arbeidssoker</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>no.nav.paw.arbeidssokerregisteret.api</groupId>
-                                    <artifactId>main-avro-schema</artifactId>
-                                    <version>1.8891222137.43-1</version>
-                                    <type>jar</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>
-                                        ${project.build.directory}/unpacked-schemas/avdl/arbeidssoker-main
-                                    </outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                            <includes>**/*.avdl</includes>
-                            <overWriteReleases>true</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.avro</groupId>
-                <artifactId>avro-maven-plugin</artifactId>
-                <version>1.11.1</version>
-                <configuration>
-                    <sourceDirectory>${project.build.directory}/unpacked-schemas/avdl/arbeidssoker-main
-                    </sourceDirectory>
-                    <outputDirectory>${project.build.directory}/generated-sources/avro</outputDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>schema</goal>
-                            <goal>protocol</goal>
-                            <goal>idl-protocol</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <version>${kotlin.version}</version>
@@ -103,7 +52,7 @@
                     </execution>
                     <execution>
                         <id>test-compile</id>
-                        <phase>test-compile</phase>
+                        <phase>process-test-sources</phase>
                         <goals>
                             <goal>test-compile</goal>
                         </goals>
@@ -125,42 +74,8 @@
                 </dependencies>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-                <configuration>
-                    <source>21</source>
-                    <target>21</target>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>default-compile</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>default-testCompile</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>java-compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>java-test-compile</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>3.3.0</version>
             </plugin>
         </plugins>
         <finalName>veilarbportefolje</finalName>
@@ -420,14 +335,17 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -439,6 +357,7 @@
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock-jre8-standalone</artifactId>
             <version>3.0.1</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

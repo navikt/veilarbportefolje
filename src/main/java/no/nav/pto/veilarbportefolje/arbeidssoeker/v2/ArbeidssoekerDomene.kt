@@ -3,9 +3,9 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import java.time.ZonedDateTime
-import java.util.UUID
-import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
-import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
+import java.util.*
+import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.Profilering as ProfileringKafkaMelding
+import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
 
 data class OpplysningerOmArbeidssoeker(
     val opplysningerOmArbeidssoekerId: UUID,
@@ -84,7 +84,9 @@ fun OpplysningerOmArbeidssoekerResponse.toOpplysningerOmArbeidssoeker() = Opplys
     utdanningNusKode = this.utdanning?.nus,
     utdanningBestatt = this.utdanning?.bestaatt?.name,
     utdanningGodkjent = this.utdanning?.godkjent?.name,
-    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(this.opplysningerOmArbeidssoekerId, this.jobbsituasjon.map { JobbSituasjonBeskrivelse.valueOf(it.beskrivelse.name) })
+    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(
+        this.opplysningerOmArbeidssoekerId,
+        this.jobbsituasjon.map { JobbSituasjonBeskrivelse.valueOf(it.beskrivelse.name) })
 )
 
 fun OpplysningerOmArbeidssoekerKafkaMelding.toOpplysningerOmArbeidssoeker() = OpplysningerOmArbeidssoeker(
@@ -94,7 +96,9 @@ fun OpplysningerOmArbeidssoekerKafkaMelding.toOpplysningerOmArbeidssoeker() = Op
     utdanningNusKode = this.utdanning?.nus?.toString(),
     utdanningBestatt = this.utdanning?.bestaatt?.name,
     utdanningGodkjent = this.utdanning?.godkjent?.name,
-    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(this.id, this.jobbsituasjon.beskrivelser.map { JobbSituasjonBeskrivelse.valueOf(it.beskrivelse.name) })
+    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(
+        this.id,
+        this.jobbsituasjon.beskrivelser.map { JobbSituasjonBeskrivelse.valueOf(it.beskrivelse.name) })
 )
 
 fun ProfileringKafkaMelding.toProfilering() = Profilering(

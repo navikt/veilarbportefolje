@@ -5,10 +5,10 @@ import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.paw.arbeidssokerregisteret.api.v1.*
-import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil
-import no.nav.paw.arbeidssokerregisteret.api.v2.Annet
-import no.nav.paw.arbeidssokerregisteret.api.v4.Utdanning
+import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.*
+import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.ProfilertTil
+import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v2.Annet
+import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v4.Utdanning
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE
@@ -45,9 +45,9 @@ import org.springframework.jdbc.core.JdbcTemplate
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.*
-import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke as JaNeiVetIkkeEkstern
-import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkamelding
-import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkamelding
+import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.JaNeiVetIkke as JaNeiVetIkkeEkstern
+import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.Profilering as ProfileringKafkamelding
+import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkamelding
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class ArbeidssoekerServiceTest(
@@ -159,7 +159,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -186,7 +186,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -210,7 +210,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -352,7 +352,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -409,7 +409,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -475,7 +475,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -524,7 +524,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
