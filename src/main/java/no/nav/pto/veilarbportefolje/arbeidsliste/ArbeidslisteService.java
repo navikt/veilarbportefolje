@@ -81,14 +81,18 @@ public class ArbeidslisteService {
                 });
     }
 
-    public void slettArbeidsliste(Fnr fnr) {
+    public void slettArbeidsliste(Fnr fnr, Boolean slettFargekategori) {
         Optional<AktorId> aktoerId = brukerServiceV2.hentAktorId(fnr);
 
         if (aktoerId.isEmpty()) {
             throw new SlettArbeidslisteException(String.format("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: %s", fnr.get()));
         }
 
-        slettArbeidsliste(aktoerId.get(), Optional.of(fnr));
+        if(slettFargekategori) {
+            slettArbeidsliste(aktoerId.get(), Optional.of(fnr));
+        } else {
+            slettArbeidslisteUtenFargekategori(aktoerId.get());
+        }
     }
 
     public void slettArbeidsliste(AktorId aktoerId, Optional<Fnr> fnr) {
@@ -100,6 +104,16 @@ public class ArbeidslisteService {
 
         opensearchIndexerV2.slettArbeidsliste(aktoerId);
         opensearchIndexerV2.slettFargekategori(aktoerId);
+    }
+
+    public void slettArbeidslisteUtenFargekategori(AktorId aktoerId) {
+        final int antallSlettedeArbeidslister = arbeidslisteRepositoryV2.slettArbeidslisteUtenFargekategori(aktoerId);
+
+        if (antallSlettedeArbeidslister <= 0) {
+            return;
+        }
+
+        opensearchIndexerV2.slettArbeidsliste(aktoerId);
     }
 
     private Try<AktorId> hentAktorId(Fnr fnr) {

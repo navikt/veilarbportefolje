@@ -3,16 +3,18 @@ package no.nav.pto.veilarbportefolje.arbeidsliste.v2;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.vavr.control.Validation;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.QueryParam;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.arbeidsliste.SlettArbeidslisteException;
+import no.nav.pto.veilarbportefolje.arbeidsliste.*;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController;
+import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriEntity;
+import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Optional;
 
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -35,16 +38,19 @@ public class ArbeidsListeV2Controller {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerServiceV2 brukerService;
     private final AuthService authService;
+    private final FargekategoriService fargekategoriService;
 
     @Autowired
     public ArbeidsListeV2Controller(
             ArbeidslisteService arbeidslisteService,
             BrukerServiceV2 brukerService,
-            AuthService authService
+            AuthService authService,
+            FargekategoriService fargekategoriService
     ) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerService = brukerService;
         this.authService = authService;
+        this.fargekategoriService = fargekategoriService;
     }
 
     @Operation(summary = "Hent arbeidsliste for bruker", description = "Hent arbeidsliste for en gitt bruker.")
@@ -117,14 +123,17 @@ public class ArbeidsListeV2Controller {
 
     @Operation(summary = "Slett arbeidsliste", description = "Slett en arbeidsliste for en gitt bruker.")
     @DeleteMapping("/arbeidsliste")
-    public Arbeidsliste deleteArbeidsliste(@RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest) {
+    public Arbeidsliste deleteArbeidsliste(
+            @RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest,
+            @RequestParam(value = "slettFargekategori", required = false, defaultValue = "true") Boolean slettFargekategori
+    ) {
         validerOppfolgingOgBruker(arbeidslisteForBrukerRequest.fnr().get());
         validerErVeilederForBruker(arbeidslisteForBrukerRequest.fnr().get());
         Fnr gyldigFnr = Fnr.ofValidFnr(arbeidslisteForBrukerRequest.fnr().get());
         sjekkTilgangTilEnhet(gyldigFnr);
 
         try {
-            arbeidslisteService.slettArbeidsliste(gyldigFnr);
+            arbeidslisteService.slettArbeidsliste(gyldigFnr, slettFargekategori);
         } catch (SlettArbeidslisteException e) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(gyldigFnr).orElse(null);
@@ -133,7 +142,17 @@ public class ArbeidsListeV2Controller {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke slette. Fant ikke arbeidsliste for bruker");
         }
 
-        return emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true);
+        if (slettFargekategori) {
+            return emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true);
+        } else {
+            Optional<FargekategoriEntity> maybeKategori = fargekategoriService.hentFargekategoriForBruker(new FargekategoriController.HentFargekategoriRequest(gyldigFnr));
+
+            return maybeKategori.map(kategori ->
+                    new Arbeidsliste(ArbeidslisteMapper.mapFraFargekategoriTilKategori(kategori.fargekategoriVerdi().name()))
+                            .setHarVeilederTilgang(true)
+                            .setIsOppfolgendeVeileder(true)
+            ).orElse(emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true));
+        }
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
