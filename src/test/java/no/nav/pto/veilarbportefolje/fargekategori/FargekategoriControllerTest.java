@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +34,7 @@ import static no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -70,16 +72,18 @@ public class FargekategoriControllerTest {
         FargekategoriVerdi fargekategoriVerdi = FargekategoriVerdi.FARGEKATEGORI_D;
         LocalDate sistEndret = LocalDate.now();
         VeilederId sistEndretAv = AuthUtils.getInnloggetVeilederIdent();
+        NavKontor navKontor = randomNavKontor();
 
         String request = """
                 {
-                  "fnr": "$fnr"
+                  "fnr": "$fnr",
+                  "enhetId": "$navKontor"
                 }
-                """.replace("$fnr", fnr.get());
+                """.replace("$fnr", fnr.get()).replace("$navKontor", navKontor.getValue());
 
         String fargekategoriSql = """
-                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident, enhet_id)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 """;
 
         jdbcTemplate.update(fargekategoriSql,
@@ -87,7 +91,8 @@ public class FargekategoriControllerTest {
                 fnr.get(),
                 fargekategoriVerdi.name(),
                 toTimestamp(sistEndret),
-                sistEndretAv.getValue());
+                sistEndretAv.getValue(),
+                navKontor.getValue());
 
         String expected = """
                 {
@@ -115,12 +120,14 @@ public class FargekategoriControllerTest {
     @Test
     void henting_av_fargekategori_skal_returnere_forventet_respons_når_bruker_ikke_har_fargekategori() throws Exception {
         Fnr fnr = TESTBRUKER_FNR;
+        NavKontor navKontor = randomNavKontor();
 
         String request = """
                 {
-                  "fnr": "$fnr"
+                  "fnr": "$fnr",
+                  "enhetId": "$navKontor"
                 }
-                """.replace("$fnr", fnr.get());
+                """.replace("$fnr", fnr.get()).replace("$navKontor", navKontor.getValue());
 
         mockMvc.perform(
                         post("/api/v1/hent-fargekategori")
@@ -136,7 +143,8 @@ public class FargekategoriControllerTest {
         String request = """
                 {
                   "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_A"
+                  "fargekategoriVerdi":"FARGEKATEGORI_A",
+                  "enhetId": "0001"
                 }
                 """;
 
@@ -156,7 +164,8 @@ public class FargekategoriControllerTest {
         String request = """
                 {
                   "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_A"
+                  "fargekategoriVerdi":"FARGEKATEGORI_A",
+                  "enhetId": "0001"
                 }
                 """;
 
@@ -189,16 +198,17 @@ public class FargekategoriControllerTest {
         String opprettRequest = """
                 {
                   "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_A"
+                  "fargekategoriVerdi":"FARGEKATEGORI_A",
+                  "enhetId": "0001"
                 }
                 """;
         String oppdaterRequest = """
                 {
                   "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                  "fargekategoriVerdi":"FARGEKATEGORI_B",
+                  "enhetId": "0001"
                 }
                 """;
-
 
 
         String opprettJson = mockMvc.perform(
@@ -243,7 +253,8 @@ public class FargekategoriControllerTest {
         String oppdaterRequest = """
                 {
                   "fnr":"$fnr",
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                  "fargekategoriVerdi":"FARGEKATEGORI_B",
+                  "enhetId": "0001"
                 }
                 """
                 .replace("$fnr", fnr.get());
@@ -283,13 +294,15 @@ public class FargekategoriControllerTest {
         String opprettRequest = """
                 {
                   "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_A"
+                  "fargekategoriVerdi":"FARGEKATEGORI_A",
+                  "enhetId": "0001"
                 }
                 """;
         String slettRequest = """
                 {
                   "fnr":"11111111111",
-                  "fargekategoriVerdi":"INGEN_KATEGORI"
+                  "fargekategoriVerdi":"INGEN_KATEGORI",
+                  "enhetId": "0001"
                 }
                 """;
         String expectedResponse = "{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"INGEN_KATEGORI\"}";
@@ -302,10 +315,10 @@ public class FargekategoriControllerTest {
                 .andExpect(status().is(200));
 
         String result = mockMvc.perform(
-                        put("/api/v1/fargekategori")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(slettRequest)
-                ).andReturn().getResponse().getContentAsString();
+                put("/api/v1/fargekategori")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(slettRequest)
+        ).andReturn().getResponse().getContentAsString();
 
         assertThat(result).isEqualTo(expectedResponse);
     }
@@ -315,13 +328,15 @@ public class FargekategoriControllerTest {
         String opprettRequest = """
                 {
                   "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_A"
+                  "fargekategoriVerdi":"FARGEKATEGORI_A",
+                  "enhetId": "0001"
                 }
                 """;
         String slettRequest = """
                 {
                   "fnr":"11111111111",
-                  "fargekategoriVerdi":"INGEN_KATEGORI"
+                  "fargekategoriVerdi":"INGEN_KATEGORI",
+                  "enhetId": "0001"
                 }
                 """;
         String expectedResponse = "{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"INGEN_KATEGORI\"}";
@@ -333,10 +348,10 @@ public class FargekategoriControllerTest {
                 .andExpect(status().is(200));
 
         String result = mockMvc.perform(
-                        put("/api/v1/fargekategori")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(slettRequest)
-                ).andExpect(status().is(200)).andReturn().getResponse().getContentAsString();
+                put("/api/v1/fargekategori")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(slettRequest)
+        ).andExpect(status().is(200)).andReturn().getResponse().getContentAsString();
         assertThat(result).isEqualTo(expectedResponse);
 
         FargekategoriEntity oppdatertFargekategoriEntity = queryForObjectOrNull(() -> {
@@ -354,7 +369,8 @@ public class FargekategoriControllerTest {
         String opprettMangeRequest = """
                 {
                   "fnr":["11111111111","22222222222","33333333333"],
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                  "fargekategoriVerdi":"FARGEKATEGORI_B",
+                  "enhetId": "0001"
                 }
                 """;
 
@@ -387,7 +403,8 @@ public class FargekategoriControllerTest {
         String opprettMangeRequest = """
                 {
                   "fnr":["$fnr1","$fnr2","$fnr3"],
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                  "fargekategoriVerdi":"FARGEKATEGORI_B",
+                  "enhetId": "0001"
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -423,7 +440,8 @@ public class FargekategoriControllerTest {
         String opprettMangeRequest = """
                 {
                   "fnr":["$fnr1","$fnr2","$fnr3"],
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                  "fargekategoriVerdi":"FARGEKATEGORI_B",
+                  "enhetId": "0001"
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -432,7 +450,7 @@ public class FargekategoriControllerTest {
         String expected = """
                 {
                     "data": [],
-                    "errors": ["$fnr1", "$fnr2", "$fnr3"],
+                    "errors": ["$fnr1", "$fnr2", "$fnr3"]
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -457,7 +475,8 @@ public class FargekategoriControllerTest {
         String opprettMangeRequest = """
                 {
                   "fnr":["$fnr1","$fnr2","$fnr3"],
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                  "fargekategoriVerdi":"FARGEKATEGORI_B",
+                  "enhetId": "0001"
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -466,7 +485,7 @@ public class FargekategoriControllerTest {
         String expected = """
                 {
                     "data": ["$fnr3"],
-                    "errors": ["$fnr1", "$fnr2"],
+                    "errors": ["$fnr1", "$fnr2"]
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -491,7 +510,8 @@ public class FargekategoriControllerTest {
         String opprettMangeRequest = """
                 {
                   "fnr":["$fnr1","$fnr2","$fnr3"],
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                  "fargekategoriVerdi":"FARGEKATEGORI_B",
+                  "enhetId": "0001"
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -500,7 +520,7 @@ public class FargekategoriControllerTest {
         String expected = """
                 {
                     "data": ["$fnr2"],
-                    "errors": ["$fnr1", "$fnr3"],
+                    "errors": ["$fnr1", "$fnr3"]
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -525,7 +545,8 @@ public class FargekategoriControllerTest {
         String opprettMangeRequest = """
                 {
                   "fnr":["$fnr1","$fnr2","$fnr3"],
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                  "fargekategoriVerdi":"FARGEKATEGORI_B",
+                  "enhetId": "0001"
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -534,7 +555,7 @@ public class FargekategoriControllerTest {
         String expected = """
                 {
                     "data": [],
-                    "errors": ["$fnr1", "$fnr2", "$fnr3"],
+                    "errors": ["$fnr1", "$fnr2", "$fnr3"]
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -560,7 +581,8 @@ public class FargekategoriControllerTest {
         String opprettMangeRequest = """
                 {
                   "fnr":["$fnr1","$fnr2","$fnr3"],
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                  "fargekategoriVerdi":"FARGEKATEGORI_B",
+                  "enhetId": "0001"
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -569,7 +591,7 @@ public class FargekategoriControllerTest {
         String expected = """
                 {
                     "data": ["$fnr1", "$fnr2"],
-                    "errors": ["$fnr3"],
+                    "errors": ["$fnr3"]
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -594,7 +616,8 @@ public class FargekategoriControllerTest {
         String opprettMangeRequest = """
                 {
                   "fnr":["$fnr1","$fnr2","$fnr3"],
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
+                  "fargekategoriVerdi":"FARGEKATEGORI_B",
+                  "enhetId": "0001"
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -603,7 +626,7 @@ public class FargekategoriControllerTest {
         String expected = """
                 {
                     "data": [],
-                    "errors": ["$fnr1", "$fnr2", "$fnr3"],
+                    "errors": ["$fnr1", "$fnr2", "$fnr3"]
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -643,7 +666,8 @@ public class FargekategoriControllerTest {
         String opprettMangeRequest = """
                 {
                   "fnr":["$fnr1","$fnr2","$fnr3"],
-                  "fargekategoriVerdi":"$fargekategori"
+                  "fargekategoriVerdi":"$fargekategori",
+                  "enhetId": "0001"
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -696,7 +720,8 @@ public class FargekategoriControllerTest {
         String deleteMangeRequest = """
                 {
                   "fnr":["$fnr1","$fnr2","$fnr3"],
-                  "fargekategoriVerdi":"$fargekategori"
+                  "fargekategoriVerdi":"$fargekategori",
+                  "enhetId": "0001"
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)

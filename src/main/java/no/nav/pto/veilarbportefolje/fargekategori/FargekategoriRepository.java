@@ -42,10 +42,10 @@ public class FargekategoriRepository {
         Timestamp sistEndret = toTimestamp(ZonedDateTime.now());
 
         String upsertSql = """
-                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident, enhet_id)
+                    VALUES (?, ?, ?, ?, ?, ?)
                     ON CONFLICT (fnr) DO UPDATE
-                    SET verdi=?, sist_endret=?, sist_endret_av_veilederident=?
+                    SET verdi=excluded.verdi, sist_endret=excluded.sist_endret, sist_endret_av_veilederident=excluded.sist_endret_av_veilederident, enhet_id=excluded.enhet_id
                 """;
 
         jdbcTemplate.update(upsertSql,
@@ -54,9 +54,7 @@ public class FargekategoriRepository {
                 request.fargekategoriVerdi().name(),
                 sistEndret,
                 sistEndretAv.getValue(),
-                request.fargekategoriVerdi().name(),
-                sistEndret,
-                sistEndretAv.getValue());
+                request.enhetId().get());
 
         return jdbcTemplate.queryForObject(
                 "SELECT * FROM fargekategori WHERE fnr=?",
@@ -113,5 +111,16 @@ public class FargekategoriRepository {
                 return fnr.size();
             }
         });
+    }
+
+    public Optional<String> hentNavkontorPaFargekategori(Fnr fnr) {
+        String hentSql = "SELECT enhet_id FROM fargekategori WHERE fnr=?";
+
+        return Optional.ofNullable(queryForObjectOrNull(() ->
+                jdbcTemplate.queryForObject(
+                        hentSql,
+                        (resultSet, rowNumber) -> resultSet.getString("enhet_id"),
+                        fnr.get())
+        ));
     }
 }

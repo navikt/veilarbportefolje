@@ -7,6 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController.OppdaterFargekategoriRequest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -118,6 +119,32 @@ public class FargekategoriService {
                 .hentVeilederForBruker(aktoerId)
                 .map(currentVeileder -> currentVeileder.equals(veilederId))
                 .orElse(false);
+    }
+
+    public boolean brukerHarFargekategoriPaForrigeNavkontor(AktorId aktoerId) {
+        Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktoerId);
+        Optional<String> navkontorPaFargekategori = fargekategoriRepository.hentNavkontorPaFargekategori(fnr);
+
+        if (navkontorPaFargekategori.isEmpty()) {
+            secureLog.info("Bruker {} har ikke NAV-kontor på fargekategori", aktoerId.toString());
+            return false;
+        }
+
+        final Optional<String> navKontorForBruker = brukerServiceV2.hentNavKontor(aktoerId).map(NavKontor::getValue);
+        if (navKontorForBruker.isEmpty()) {
+            secureLog.error("Kunne ikke hente NAV-kontor for bruker {}", aktoerId.toString());
+            return false;
+        }
+
+        boolean navkontorForBrukerUlikNavkontorPaFargekategori = !navKontorForBruker.orElseThrow().equals(navkontorPaFargekategori.orElseThrow());
+
+        if (navkontorForBrukerUlikNavkontorPaFargekategori) {
+            secureLog.info("Bruker {} er på kontor {} mens fargekategori er lagret på et annet kontor {}", aktoerId.toString(), navKontorForBruker.get(), navkontorPaFargekategori.get());
+        } else {
+            secureLog.info("Bruker {} er på kontor {} og fargekategori er lagret på samme kontor {}", aktoerId.toString(), navKontorForBruker.get(), navkontorPaFargekategori.get());
+        }
+
+        return navkontorForBrukerUlikNavkontorPaFargekategori;
     }
 
     private Try<AktorId> hentAktorId(Fnr fnr) {
