@@ -69,6 +69,13 @@ public class DateUtils {
         return ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.systemDefault());
     }
 
+    public static ZonedDateTime toZonedDateTime(Instant instant) {
+        if (instant == null) {
+            return null;
+        }
+        return ZonedDateTime.ofInstant(instant, ZoneOffset.UTC);
+    }
+
     public static ZonedDateTime toZonedDateTime(LocalDate localDate) {
         if (localDate == null) {
             return null;
