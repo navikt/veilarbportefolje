@@ -16,12 +16,12 @@ import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProce
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
+import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering;
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker;
 import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.Periode;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.Profilering;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v4.OpplysningerOmArbeidssoeker;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.profilering.ArbeidssokerProfileringService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringService;
