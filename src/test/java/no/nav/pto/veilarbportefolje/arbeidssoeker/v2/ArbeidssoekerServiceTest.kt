@@ -6,6 +6,7 @@ import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.*
+import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil
 import no.nav.paw.arbeidssokerregisteret.api.v2.Annet
 import no.nav.paw.arbeidssokerregisteret.api.v4.Utdanning
@@ -475,7 +476,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.BrukerType.SYSTEM,
+                    BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -524,7 +525,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.pto.veilarbportefolje.arbeidssoeker.dto.v1.BrukerType.SYSTEM,
+                    BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -652,7 +653,7 @@ fun genererRandomOpplysningerOmArbeidssoeker(
         sendtInnAv = MetadataResponse(
             tidspunkt = ZonedDateTime.now(),
             utfoertAv = BrukerResponse(
-                type = BrukerType.SLUTTBRUKER
+                type = no.nav.pto.veilarbportefolje.arbeidssoeker.v2.BrukerType.SLUTTBRUKER
             ),
             kilde = "paw-arbeidssoekerregisteret-inngang",
             aarsak = "opplysning om arbeidssøker sendt inn"
