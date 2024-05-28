@@ -14,14 +14,14 @@ import java.util.function.Supplier
 
 class OppslagArbeidssoekerregisteretClient(
     private val url: String,
-    private val tokenSupplier: Supplier<String>,
+    private val machineToMachinetokenSupplier: Supplier<String>,
     private val client: OkHttpClient,
     private val consumerId: String
 ) {
     fun hentArbeidssokerPerioder(identitetsnummer: String): List<ArbeidssokerperiodeResponse>? {
         val request: Request = Request.Builder()
             .url(UrlUtils.joinPaths(url, "/api/v1/veileder/arbeidssoekerperioder"))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenSupplier.get()}")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer ${machineToMachinetokenSupplier.get()}")
             .header("Nav-Consumer-Id", consumerId)
             .post(RestUtils.toJsonRequestBody(ArbeidssoekerperiodeRequest(identitetsnummer)))
             .build()
@@ -43,7 +43,7 @@ class OppslagArbeidssoekerregisteretClient(
     ): List<OpplysningerOmArbeidssoekerResponse>? {
         val request: Request = Request.Builder()
             .url(UrlUtils.joinPaths(url, "/api/v1/veileder/opplysninger-om-arbeidssoeker"))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenSupplier.get()}")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer ${machineToMachinetokenSupplier.get()}")
             .header("Nav-Consumer-Id", consumerId)
             .post(RestUtils.toJsonRequestBody(OpplysningerOmArbeidssoekerRequest(identitetsnummer, periodeId)))
             .build()
@@ -62,7 +62,7 @@ class OppslagArbeidssoekerregisteretClient(
     fun hentProfilering(identitetsnummer: String, periodeId: UUID): List<ProfileringResponse>? {
         val request: Request = Request.Builder()
             .url(UrlUtils.joinPaths(url, "/api/v1/veileder/profilering"))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenSupplier.get()}")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer ${machineToMachinetokenSupplier.get()}")
             .header("Nav-Consumer-Id", consumerId)
             .post(RestUtils.toJsonRequestBody(ProfileringRequest(identitetsnummer, periodeId)))
             .build()
@@ -102,11 +102,11 @@ data class OpplysningerOmArbeidssoekerResponse(
 )
 
 data class BeskrivelseMedDetaljerResponse(
-    val beskrivelse: JobbSituasjonBeskrivelse,
+    val beskrivelse: JobbSituasjonBeskrivelseResponse,
     val detaljer: Map<String, String>
 )
 
-enum class JobbSituasjonBeskrivelse {
+enum class JobbSituasjonBeskrivelseResponse {
     UKJENT_VERDI,
     UDEFINERT,
     HAR_SAGT_OPP,

@@ -249,7 +249,8 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         assertNotNull(opplysningerOmArbeidssoeker);
         OpplysningerOmArbeidssoekerJobbsituasjon opplysningerOmArbeidssoekerJobbsituasjon = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoeker.getOpplysningerOmArbeidssoekerId());
 
-        assertThat(opplysningerOmArbeidssoekerJobbsituasjon.getJobbsituasjon().get(1)).isEqualTo(JobbSituasjonBeskrivelse.ER_PERMITTERT.name());
+        assertNotNull(opplysningerOmArbeidssoekerJobbsituasjon);
+        assertThat(opplysningerOmArbeidssoekerJobbsituasjon.getJobbsituasjon().get(1)).isEqualTo(JobbSituasjonBeskrivelse.ER_PERMITTERT);
 
         Profilering profilering = TestDataClient.getProfileringFraDb(jdbcTemplate, periodeId);
         assertNotNull(profilering);

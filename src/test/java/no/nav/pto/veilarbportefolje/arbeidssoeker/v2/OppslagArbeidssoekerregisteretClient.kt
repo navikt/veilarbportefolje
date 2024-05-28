@@ -140,7 +140,7 @@ class OppslagArbeidssoekerregisteretClientTest {
                 ),
                 jobbsituasjon = listOf(
                     BeskrivelseMedDetaljerResponse(
-                        beskrivelse = JobbSituasjonBeskrivelse.ALDRI_HATT_JOBB,
+                        beskrivelse = JobbSituasjonBeskrivelseResponse.ALDRI_HATT_JOBB,
                         detaljer = emptyMap()
                     )
                 ),

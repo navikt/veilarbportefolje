@@ -83,6 +83,13 @@ public class DateUtils {
         return Timestamp.from(zonedDateTime.toInstant());
     }
 
+    public static ZonedDateTime toZonedDateTime(Instant instant) {
+        if (instant == null) {
+            return null;
+        }
+        return ZonedDateTime.ofInstant(instant, ZoneOffset.UTC);
+    }
+
     public static Timestamp toTimestamp(LocalDate localDate) {
         if (localDate == null) {
             return null;

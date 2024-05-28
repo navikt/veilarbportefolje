@@ -1,23 +1,44 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
 import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.util.DateUtils
 import java.time.ZonedDateTime
 import java.util.UUID
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
+import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
 
 data class OpplysningerOmArbeidssoeker(
     val opplysningerOmArbeidssoekerId: UUID,
     val periodeId: UUID,
     val sendtInnTidspunkt: ZonedDateTime,
-    val utdanningNusKode: String,
-    val utdanningBestatt: String,
-    val utdanningGodkjent: String,
+    val utdanningNusKode: String?,
+    val utdanningBestatt: String?,
+    val utdanningGodkjent: String?,
     val opplysningerOmJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon
 )
 
 data class OpplysningerOmArbeidssoekerJobbsituasjon(
     val opplysningerOmArbeidssoekerId: UUID,
-    val jobbsituasjon: List<String>
+    val jobbsituasjon: List<JobbSituasjonBeskrivelse>
 )
+
+enum class JobbSituasjonBeskrivelse {
+    UKJENT_VERDI,
+    UDEFINERT,
+    HAR_SAGT_OPP,
+    HAR_BLITT_SAGT_OPP,
+    ER_PERMITTERT,
+    ALDRI_HATT_JOBB,
+    IKKE_VAERT_I_JOBB_SISTE_2_AAR,
+    AKKURAT_FULLFORT_UTDANNING,
+    VIL_BYTTE_JOBB,
+    USIKKER_JOBBSITUASJON,
+    MIDLERTIDIG_JOBB,
+    DELTIDSJOBB_VIL_MER,
+    NY_JOBB,
+    KONKURS,
+    ANNET
+}
 
 data class ArbeidssoekerPeriode(
     val arbeidssoekerperiodeId: UUID,
@@ -60,8 +81,28 @@ fun OpplysningerOmArbeidssoekerResponse.toOpplysningerOmArbeidssoeker() = Opplys
     opplysningerOmArbeidssoekerId = this.opplysningerOmArbeidssoekerId,
     periodeId = this.periodeId,
     sendtInnTidspunkt = this.sendtInnAv.tidspunkt,
-    utdanningNusKode = this.utdanning?.nus.orEmpty(),
-    utdanningBestatt = this.utdanning?.bestaatt?.name.orEmpty(),
-    utdanningGodkjent = this.utdanning?.godkjent?.name.orEmpty(),
-    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(this.opplysningerOmArbeidssoekerId, this.jobbsituasjon.map { it.beskrivelse.name })
+    utdanningNusKode = this.utdanning?.nus,
+    utdanningBestatt = this.utdanning?.bestaatt?.name,
+    utdanningGodkjent = this.utdanning?.godkjent?.name,
+    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(
+        this.opplysningerOmArbeidssoekerId,
+        this.jobbsituasjon.map { JobbSituasjonBeskrivelse.valueOf(it.beskrivelse.name) })
+)
+
+fun OpplysningerOmArbeidssoekerKafkaMelding.toOpplysningerOmArbeidssoeker() = OpplysningerOmArbeidssoeker(
+    opplysningerOmArbeidssoekerId = this.id,
+    periodeId = this.periodeId,
+    sendtInnTidspunkt = DateUtils.toZonedDateTime(this.sendtInnAv.tidspunkt),
+    utdanningNusKode = this.utdanning?.nus?.toString(),
+    utdanningBestatt = this.utdanning?.bestaatt?.name,
+    utdanningGodkjent = this.utdanning?.godkjent?.name,
+    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(
+        this.id,
+        this.jobbsituasjon.beskrivelser.map { JobbSituasjonBeskrivelse.valueOf(it.beskrivelse.name) })
+)
+
+fun ProfileringKafkaMelding.toProfilering() = Profilering(
+    periodeId = this.periodeId,
+    profileringsresultat = Profileringsresultat.valueOf(this.profilertTil.name),
+    sendtInnTidspunkt = DateUtils.toZonedDateTime(this.sendtInnAv.tidspunkt)
 )

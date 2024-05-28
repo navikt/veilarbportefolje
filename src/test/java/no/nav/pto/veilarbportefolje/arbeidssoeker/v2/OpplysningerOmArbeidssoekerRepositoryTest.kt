@@ -40,11 +40,11 @@ class OpplysningerOmArbeidssoekerRepositoryTest {
             ),
             jobbsituasjon = listOf(
                 BeskrivelseMedDetaljerResponse(
-                    beskrivelse = JobbSituasjonBeskrivelse.ER_PERMITTERT,
+                    beskrivelse = JobbSituasjonBeskrivelseResponse.ER_PERMITTERT,
                     detaljer = mapOf(Pair("prosent", "25"))
                 ),
                 BeskrivelseMedDetaljerResponse(
-                    beskrivelse = JobbSituasjonBeskrivelse.MIDLERTIDIG_JOBB,
+                    beskrivelse = JobbSituasjonBeskrivelseResponse.MIDLERTIDIG_JOBB,
                     detaljer = mapOf(Pair("prosent", "75"))
                 )
             ),

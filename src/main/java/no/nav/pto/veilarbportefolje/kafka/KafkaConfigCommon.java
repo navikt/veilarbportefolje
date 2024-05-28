@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import io.getunleash.DefaultUnleash;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.arbeid.cv.avro.Melding;
@@ -15,9 +16,18 @@ import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProce
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
+import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering;
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker;
 import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.profilering.ArbeidssokerProfileringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeKafkaMeldingService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerProfileringKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
@@ -42,9 +52,6 @@ import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.profilering.ArbeidssokerProfileringService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakKafkaDto;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
@@ -56,7 +63,6 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -97,11 +103,17 @@ public class KafkaConfigCommon {
 
         OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
 
+        // Arbeidssøkerregisteret
         AIVEN_REGISTRERING_TOPIC("paw.arbeidssoker-registrert-v1"),
 
         AIVEN_PROFILERING_TOPIC("paw.arbeidssoker-profilert-v1"),
 
         ENRING_I_REGISTRERINGSDATA_TOPIC("paw.arbeidssoker-besvarelse-v2"),
+
+        ARBEIDSSOKERPERIODER_TOPIC("paw.arbeidssokerperioder-v1"),
+
+        OPPLYSNINGER_OM_ARBEIDSSOEKER_TOPIC("paw.opplysninger-om-arbeidssoeker-v1"),
+        ARBEIDSSOEKER_PROFILERING_TOPIC("paw.arbeidssoker-profilering-v1"),
 
         AIVEN_AKTIVITER_TOPIC("pto.aktivitet-portefolje-v1"),
 
@@ -137,7 +149,8 @@ public class KafkaConfigCommon {
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
-                             SistLestService sistLestService, ArbeidssokerRegistreringService arbeidssokerRegistreringService, EndringIArbeidssokerRegistreringService endringIArbeidssokerRegistreringService,
+                             SistLestService sistLestService, ArbeidssokerRegistreringService arbeidssokerRegistreringService,
+                             EndringIArbeidssokerRegistreringService endringIArbeidssokerRegistreringService,
                              ArbeidssokerProfileringService arbeidssokerProfileringService, AktivitetService aktivitetService,
                              Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
                              DialogService dialogService, ManuellStatusService manuellStatusService,
@@ -146,7 +159,10 @@ public class KafkaConfigCommon {
                              UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
                              YtelsesService ytelsesService, OppfolgingPeriodeService oppfolgingPeriodeService, SkjermingService skjermingService,
                              JdbcTemplate jdbcTemplate, DefaultUnleash defaultUnleash, PdlBrukerdataKafkaService pdlBrukerdataKafkaService,
-                             EnsligeForsorgereService ensligeForsorgereService) {
+                             EnsligeForsorgereService ensligeForsorgereService, ArbeidssoekerPeriodeKafkaMeldingService arbeidssoekerPeriodeKafkaMeldingService,
+                             ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService,
+                             ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService
+    ) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
@@ -220,6 +236,36 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         new AivenAvroDeserializer<ArbeidssokerProfilertEvent>().getDeserializer(),
                                         arbeidssokerProfileringService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, Periode>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.ARBEIDSSOKERPERIODER_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new AivenAvroDeserializer<Periode>().getDeserializer(),
+                                        arbeidssoekerPeriodeKafkaMeldingService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, OpplysningerOmArbeidssoeker>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.OPPLYSNINGER_OM_ARBEIDSSOEKER_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new AivenAvroDeserializer<OpplysningerOmArbeidssoeker>().getDeserializer(),
+                                        arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, Profilering>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.ARBEIDSSOEKER_PROFILERING_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new AivenAvroDeserializer<Profilering>().getDeserializer(),
+                                        arbeidssoekerProfileringKafkaMeldingService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
                                 .withLogging()
