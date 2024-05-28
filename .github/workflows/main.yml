@@ -27,7 +27,7 @@ jobs:
         env:
           MAVEN_OPTS: -Xss1024M -Xmx2048M
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn --settings maven-settings.xml -B verify
+        run: mvn -B verify
 
   build-and-push:
     name: Build and push
@@ -47,9 +47,7 @@ jobs:
           cache: 'maven'
 
       - name: Build maven artifacts
-        run: mvn --settings maven-settings.xml -Dgithub.token=${{ secrets.GITHUB_TOKEN }} -B package -D skipTests
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn -Dgithub.token=${{ secrets.GITHUB_TOKEN }} -B package -D skipTests
 
       - name: Build and push Docker image
         uses: nais/docker-build-push@v0
