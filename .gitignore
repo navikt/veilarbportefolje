@@ -4,4 +4,3 @@
 *.log
 target
 .DS_Store
-/src/main/java/no/nav/paw/arbeidssokerregisteret/api/
