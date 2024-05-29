@@ -142,6 +142,7 @@ class ArbeidssoekerService(
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
     }
 
+    @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: ProfileringKafkaMelding) {
         if (!FeatureToggle.brukNyttArbeidssoekerregisterKafka(defaultUnleash)) {
             secureLog.info("Bryter for å lytte på kafkameldinger fra nytt arbeidssøkerregister er skrudd av. Ignorerer melding.")
@@ -197,6 +198,7 @@ class ArbeidssoekerService(
             return
         }
 
+        sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(fnr)
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr, aktivArbeidssoekerperiode.periodeId)
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
 
