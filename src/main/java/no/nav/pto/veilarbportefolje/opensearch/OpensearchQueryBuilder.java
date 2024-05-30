@@ -623,11 +623,16 @@ public class OpensearchQueryBuilder {
 
     private static void sorterHuskelappEksistere(SearchSourceBuilder builder, SortOrder order) {
         String expresion = """
-                if (!doc['huskelapp.kommentar'].empty || !doc['huskelapp.frist'].empty) {
-                    return 1;
+                if (!doc['huskelapp.frist'].empty) {
+                    // Når man sorterer huskelapp-kolonnen (ikon-knappen), skal de som har frist sorteres først, med nærmeste utløpsdato øverst
+                    // Trekker fra 01.01.2050 i millis
+                    return doc['huskelapp.frist'].value.toInstant().toEpochMilli() - 2524653462000.0;
+                }
+                else if (!doc['huskelapp.kommentar'].empty) {
+                    return 0;
                 }
                 else {
-                  return 0;
+                  return 1;
                 }
                 """;
         Script script = new Script(expresion);
