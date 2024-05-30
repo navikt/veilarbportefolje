@@ -631,8 +631,12 @@ public class OpensearchQueryBuilder {
                 else if (!doc['huskelapp.kommentar'].empty) {
                     return 0;
                 }
+                else if (doc['arbeidsliste_aktiv'].value == true) {
+                    return doc['arbeidsliste_frist'].value.toInstant().toEpochMilli();
+                }
                 else {
-                  return 1;
+                    // Returnerer 01.01.2050 i millis
+                    return 2524653462000.0;
                 }
                 """;
         Script script = new Script(expresion);
