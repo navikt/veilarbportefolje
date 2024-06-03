@@ -623,11 +623,21 @@ public class OpensearchQueryBuilder {
 
     private static void sorterHuskelappEksistere(SearchSourceBuilder builder, SortOrder order) {
         String expresion = """
-                if (!doc['huskelapp.kommentar'].empty || !doc['huskelapp.frist'].empty) {
-                    return 1;
+                // Når man sorterer huskelapp-kolonnen (ikon-knappen), skal de som har frist sorteres først, med nærmeste utløpsdato øverst
+                if (!doc['huskelapp.frist'].empty) {
+                    // Trekker fra (fra DateUtils.java) FAR_IN_THE_FUTURE_DATE = "3017-10-07T00:00:00Z" i millis
+                    return doc['huskelapp.frist'].value.toInstant().toEpochMilli() - 33064243200000.0;
+                }
+                else if (!doc['huskelapp.kommentar'].empty) {
+                    return 0;
+                }
+                else if (doc['arbeidsliste_aktiv'].value == true) {
+                    // Hvis en arbeidsliste ikke har frist setter indekseringen den til FAR_IN_THE_FUTURE_DATE
+                    return doc['arbeidsliste_frist'].value.toInstant().toEpochMilli();
                 }
                 else {
-                  return 0;
+                    // Returnerer 3017.10.07 + 1 i millis
+                    return 33064243200001.0;
                 }
                 """;
         Script script = new Script(expresion);
