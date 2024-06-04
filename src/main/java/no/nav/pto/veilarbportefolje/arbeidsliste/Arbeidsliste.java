@@ -26,7 +26,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 public class Arbeidsliste {
 
     public enum Kategori {
-        BLA, GRONN, GUL, LILLA
+        BLA, GRONN, GUL, LILLA, LYSEBLA, ORANSJE
     }
 
     final VeilederId sistEndretAv;
