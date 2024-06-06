@@ -165,7 +165,7 @@ public class HuskelappRepositoryTest {
         List<Huskelapp> alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId());
         assertThat(alleHuskelappRader.size()).isEqualTo(4);
 
-        repo.slettAlleHuskelappRaderPaaBruker(huskelapp2.brukerFnr());
+        repo.deaktivereAlleHuskelappRaderPaaBruker(huskelapp2.brukerFnr());
 
         List<Huskelapp> alleHuskelappRader2 = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId());
         assertThat(alleHuskelappRader2.size()).isEqualTo(0);
