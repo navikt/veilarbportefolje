@@ -1,26 +1,30 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.util.DateUtils
 import java.time.ZonedDateTime
-import java.util.UUID
-import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
-import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
+data class ArbeidssoekerData(
+    val fnr: Fnr,
+    val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker? = null,
+    val profilering: Profilering? = null
+)
 
-/*data class OpplysningerOmArbeidssoeker(
-    val opplysningerOmArbeidssoekerId: UUID,
-    val periodeId: UUID,
+data class OpplysningerOmArbeidssoeker(
     val sendtInnTidspunkt: ZonedDateTime,
-    val utdanningNusKode: String?,
-    val utdanningBestatt: String?,
-    val utdanningGodkjent: String?,
-    val opplysningerOmJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon
-)*/
+    val utdanning: Utdanning,
+    val utdanningBestatt: JaNeiVetIkke,
+    val utdanningGodkjent: JaNeiVetIkke,
+    val jobbsituasjoner: List<JobbSituasjonBeskrivelse>
+)
 
-/*data class OpplysningerOmArbeidssoekerJobbsituasjon(
-    val opplysningerOmArbeidssoekerId: UUID,
-    val jobbsituasjon: List<JobbSituasjonBeskrivelse>
-)*/
+enum class Utdanning {
+    INGEN_UTDANNING,
+    GRUNNSKOLE,
+    VIDEREGAENDE_GRUNNUTDANNING,
+    VIDEREGAENDE_FAGBREV_SVENNEBREV,
+    HOYERE_UTDANNING_1_TIL_4,
+    HOYERE_UTDANNING_5_ELLER_MER,
+    INGEN_SVAR
+}
 
 enum class JobbSituasjonBeskrivelse {
     UKJENT_VERDI,
@@ -40,16 +44,10 @@ enum class JobbSituasjonBeskrivelse {
     ANNET
 }
 
-/*data class ArbeidssoekerPeriode(
-    val arbeidssoekerperiodeId: UUID,
-    val fnr: Fnr
-)*/
-
-/*data class Profilering(
-    val periodeId: UUID,
+data class Profilering(
     val profileringsresultat: Profileringsresultat,
     val sendtInnTidspunkt: ZonedDateTime
-)*/
+)
 
 enum class Profileringsresultat {
     UKJENT_VERDI,
