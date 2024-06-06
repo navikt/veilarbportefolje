@@ -62,12 +62,12 @@ class ArbeidssokerRegistreringServiceTest extends EndToEndTest {
         assertThat(getResponse.isExists()).isTrue();
 
         String utdanning = (String) getResponse.getSourceAsMap().get("utdanning");
-        String situasjon = (String) getResponse.getSourceAsMap().get("brukers_situasjon");
+        List<String> situasjon = (List<String>) getResponse.getSourceAsMap().get("brukers_situasjoner");
         String utdanningBestatt = (String) getResponse.getSourceAsMap().get("utdanning_bestatt");
         String utdanningGodkjent = (String) getResponse.getSourceAsMap().get("utdanning_godkjent");
 
         assertThat(utdanning).isEqualTo(no.nav.arbeid.soker.registrering.UtdanningSvar.GRUNNSKOLE.toString());
-        assertThat(situasjon).isEqualTo("Permittert");
+        assertThat(situasjon).isEqualTo(List.of("Permittert"));
         assertThat(utdanningBestatt).isEqualTo(UtdanningBestattSvar.INGEN_SVAR.toString());
         assertThat(utdanningGodkjent).isEqualTo(UtdanningGodkjentSvar.JA.toString());
     }
@@ -312,7 +312,7 @@ class ArbeidssokerRegistreringServiceTest extends EndToEndTest {
                         .setEnhet_id(enhet)
                         .setUtdanning_bestatt("NEI")
                         .setUtdanning_godkjent("NEI")
-                        .setBrukers_situasjon("MISTET_JOBBEN"),
+                        .setBrukers_situasjoner(List.of("MISTET_JOBBEN")),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId2.get())
@@ -321,7 +321,7 @@ class ArbeidssokerRegistreringServiceTest extends EndToEndTest {
                         .setUtdanning_bestatt("NEI")
                         .setUtdanning_godkjent("JA")
                         .setUtdanning("GRUNNSKOLE")
-                        .setBrukers_situasjon("ALDRI_HATT_JOBB"),
+                        .setBrukers_situasjoner(List.of("ALDRI_HATT_JOBB")),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId3.get())
@@ -330,7 +330,7 @@ class ArbeidssokerRegistreringServiceTest extends EndToEndTest {
                         .setUtdanning_bestatt("NEI")
                         .setUtdanning_godkjent("JA")
                         .setUtdanning("VIDEREGAENDE_GRUNNUTDANNING")
-                        .setBrukers_situasjon("MISTET_JOBBEN"),
+                        .setBrukers_situasjoner(List.of("MISTET_JOBBEN")),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId4.get())
@@ -362,7 +362,7 @@ class ArbeidssokerRegistreringServiceTest extends EndToEndTest {
                         .setUtdanning("INGEN_SVAR")
                         .setUtdanning_bestatt("NEI")
                         .setUtdanning_godkjent("JA")
-                        .setBrukers_situasjon("ALDRI_HATT_JOBB")
+                        .setBrukers_situasjoner(List.of("ALDRI_HATT_JOBB"))
         );
 
         brukere.forEach(bruker -> {

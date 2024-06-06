@@ -49,7 +49,7 @@ public class OpensearchIndexerV2 {
     public void updateRegistering(AktorId aktoerId, ArbeidssokerRegistrertEvent arbeidssokerRegistrertEvent) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("brukers_situasjon", arbeidssokerRegistrertEvent.getBrukersSituasjon())
+                .field("brukers_situasjoner", List.of(arbeidssokerRegistrertEvent.getBrukersSituasjon()))
                 .field("utdanning", arbeidssokerRegistrertEvent.getUtdanning())
                 .field("utdanning_bestatt", arbeidssokerRegistrertEvent.getUtdanningBestatt())
                 .field("utdanning_godkjent", arbeidssokerRegistrertEvent.getUtdanningGodkjent())
@@ -63,7 +63,7 @@ public class OpensearchIndexerV2 {
     public void updateEndringerIRegistering(AktorId aktoerId, ArbeidssokerBesvarelseEvent endringIRegistreringsdataEvent) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("brukers_situasjon", endringIRegistreringsdataEvent.getBesvarelse().getDinSituasjon().getVerdi())
+                .field("brukers_situasjoner", List.of(endringIRegistreringsdataEvent.getBesvarelse().getDinSituasjon().getVerdi()))
                 .field("brukers_situasjon_sist_endret", endringIRegistreringsdataEvent.getBesvarelse().getDinSituasjon().getEndretTidspunkt())
                 .endObject();
 
