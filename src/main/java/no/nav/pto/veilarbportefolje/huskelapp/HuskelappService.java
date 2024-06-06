@@ -100,11 +100,11 @@ public class HuskelappService {
         }
     }
 
-    public void slettAlleHuskelapperPaaBruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
+    public void deaktivereAlleHuskelapperPaaBruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
         try {
             secureLog.info("Sletter alle huskelapper paa bruker med aktoerid: " + aktorId);
             if (maybeFnr.isPresent()) {
-                huskelappRepository.slettAlleHuskelappRaderPaaBruker(maybeFnr.get());
+                huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(maybeFnr.get());
                 opensearchIndexerV2.slettHuskelapp(aktorId);
             } else {
                 secureLog.warn("Kunne ikke slette huskelapper for bruker med AktørID {}. Årsak fødselsnummer-parameter var tom.", aktorId.get());
