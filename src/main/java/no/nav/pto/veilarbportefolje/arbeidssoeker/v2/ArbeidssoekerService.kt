@@ -71,11 +71,11 @@ class ArbeidssoekerService(
         }
 
         sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(fnr)
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr, periodeId)
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId, fnr.get()))
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
 
-        val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker? =
-            hentSisteOpplysningerOmArbeidssoeker(fnr, periodeId)?.toOpplysningerOmArbeidssoeker()
+        val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity? =
+            hentSisteOpplysningerOmArbeidssoeker(fnr, periodeId)?.toOpplysningerOmArbeidssoekerEntity()
         if (opplysningerOmArbeidssoeker == null) {
             secureLog.info("Fant ingen opplysninger om arbeidssøker for bruker med fnr: $fnr")
             return
@@ -86,11 +86,11 @@ class ArbeidssoekerService(
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
 
 
-        val profilering: Profilering? = hentSisteProfilering(
+        val profilering: ProfileringEntity? = hentSisteProfilering(
             fnr,
             periodeId,
             opplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId
-        )?.toProfilering()
+        )?.toProfileringEntity()
 
         if (profilering == null) {
             secureLog.info("Fant ingen profilering for bruker med fnr: $fnr")
@@ -121,9 +121,9 @@ class ArbeidssoekerService(
         }
 
         val fnr = sisteArbeidssoekerPeriode.fnr
-        if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr.get())) {
+        if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr)) {
             secureLog.info(
-                "Bruker med fnr ${fnr.get()} er ikke under oppfølging, men har arbeidssøkerpeiode lagret. " +
+                "Bruker med fnr ${fnr} er ikke under oppfølging, men har arbeidssøkerpeiode lagret. " +
                         "Dette betyr at arbeidssøkerdata ikke har blitt slettet riktig når bruker gikk ut av oppfølging. " +
                         "Ignorer melding, data må slettes manuelt og slettelogikk ved utgang av oppfølging bør kontrollsjekkes for feil."
             )
@@ -138,7 +138,7 @@ class ArbeidssoekerService(
         }
 
         opplysningerOmArbeidssoekerRepository.slettOpplysningerOmArbeidssoeker(sisteArbeidssoekerPeriode.arbeidssoekerperiodeId)
-        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysninger.toOpplysningerOmArbeidssoeker())
+        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysninger.toOpplysningerOmArbeidssoekerEntity())
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
     }
 
@@ -159,16 +159,16 @@ class ArbeidssoekerService(
         }
 
         val fnr = sisteArbeidssoekerPeriode.fnr
-        if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr.get())) {
+        if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr)) {
             secureLog.info(
-                "Bruker med fnr ${fnr.get()} er ikke under oppfølging, men har arbeidssøkerpeiode lagret. " +
+                "Bruker med fnr ${fnr} er ikke under oppfølging, men har arbeidssøkerpeiode lagret. " +
                         "Dette betyr at arbeidssøkerdata ikke har blitt slettet riktig når bruker gikk ut av oppfølging. " +
                         "Ignorer melding, data må slettes manuelt og slettelogikk ved utgang av oppfølging bør kontrollsjekkes for feil."
             )
             return
         }
 
-        profileringRepository.insertProfilering(kafkaMelding.toProfilering())
+        profileringRepository.insertProfilering(kafkaMelding.toProfileringEntity())
         secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 
@@ -199,7 +199,7 @@ class ArbeidssoekerService(
         }
 
         sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(fnr)
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr, aktivArbeidssoekerperiode.periodeId)
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(aktivArbeidssoekerperiode.periodeId, fnr.get()))
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
 
         val sisteOpplysningerOmArbeidssoeker =
@@ -212,7 +212,7 @@ class ArbeidssoekerService(
         }
 
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
-            sisteOpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoeker()
+            sisteOpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoekerEntity()
         )
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
 
@@ -228,7 +228,7 @@ class ArbeidssoekerService(
             return
         }
 
-        profileringRepository.insertProfilering(sisteProfilering.toProfilering())
+        profileringRepository.insertProfilering(sisteProfilering.toProfileringEntity())
         secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 

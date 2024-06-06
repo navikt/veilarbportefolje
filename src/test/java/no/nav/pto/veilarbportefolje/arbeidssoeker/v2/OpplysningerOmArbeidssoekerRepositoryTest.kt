@@ -59,14 +59,14 @@ class OpplysningerOmArbeidssoekerRepositoryTest {
             annet = AnnetResponse(
                 andreForholdHindrerArbeid = JaNeiVetIkke.NEI
             )
-        ).toOpplysningerOmArbeidssoeker()
+        ).toOpplysningerOmArbeidssoekerEntity()
         opplysningerOmArbeidssoeker.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysningerOmArbeidssoekerObjekt)
 
 
-        val resultatOpplysninger: OpplysningerOmArbeidssoeker? =
+        val resultatOpplysninger: OpplysningerOmArbeidssoekerEntity? =
             TestDataClient.getOpplysningerOmArbeidssoekerFraDb(db, opplysningerOmArbeidssoekerObjekt.periodeId)
 
-        val resultatJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon? =
+        val resultatJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjonEntity? =
             TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(
                 db,
                 resultatOpplysninger!!.opplysningerOmArbeidssoekerId

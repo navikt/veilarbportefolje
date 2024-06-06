@@ -7,7 +7,7 @@ import java.util.UUID
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
 
-data class OpplysningerOmArbeidssoeker(
+/*data class OpplysningerOmArbeidssoeker(
     val opplysningerOmArbeidssoekerId: UUID,
     val periodeId: UUID,
     val sendtInnTidspunkt: ZonedDateTime,
@@ -15,12 +15,12 @@ data class OpplysningerOmArbeidssoeker(
     val utdanningBestatt: String?,
     val utdanningGodkjent: String?,
     val opplysningerOmJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon
-)
+)*/
 
-data class OpplysningerOmArbeidssoekerJobbsituasjon(
+/*data class OpplysningerOmArbeidssoekerJobbsituasjon(
     val opplysningerOmArbeidssoekerId: UUID,
     val jobbsituasjon: List<JobbSituasjonBeskrivelse>
-)
+)*/
 
 enum class JobbSituasjonBeskrivelse {
     UKJENT_VERDI,
@@ -40,16 +40,16 @@ enum class JobbSituasjonBeskrivelse {
     ANNET
 }
 
-data class ArbeidssoekerPeriode(
+/*data class ArbeidssoekerPeriode(
     val arbeidssoekerperiodeId: UUID,
     val fnr: Fnr
-)
+)*/
 
-data class Profilering(
+/*data class Profilering(
     val periodeId: UUID,
     val profileringsresultat: Profileringsresultat,
     val sendtInnTidspunkt: ZonedDateTime
-)
+)*/
 
 enum class Profileringsresultat {
     UKJENT_VERDI,
@@ -59,50 +59,9 @@ enum class Profileringsresultat {
     OPPGITT_HINDRINGER
 }
 
-data class ProfileringResponse(
-    val profileringId: UUID,
-    val periodeId: UUID,
-    val opplysningerOmArbeidssoekerId: UUID,
-    val sendtInnAv: MetadataResponse,
-    val profilertTil: ProfilertTil,
-    val jobbetSammenhengendeSeksAvTolvSisteManeder: Boolean?,
-    val alder: Int?
-)
 
-fun ProfileringResponse.toProfilering(): Profilering {
-    return Profilering(
-        periodeId = this.periodeId,
-        profileringsresultat = Profileringsresultat.valueOf(this.profilertTil.name),
-        sendtInnTidspunkt = this.sendtInnAv.tidspunkt
-    )
-}
 
-fun OpplysningerOmArbeidssoekerResponse.toOpplysningerOmArbeidssoeker() = OpplysningerOmArbeidssoeker(
-    opplysningerOmArbeidssoekerId = this.opplysningerOmArbeidssoekerId,
-    periodeId = this.periodeId,
-    sendtInnTidspunkt = this.sendtInnAv.tidspunkt,
-    utdanningNusKode = this.utdanning?.nus,
-    utdanningBestatt = this.utdanning?.bestaatt?.name,
-    utdanningGodkjent = this.utdanning?.godkjent?.name,
-    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(
-        this.opplysningerOmArbeidssoekerId,
-        this.jobbsituasjon.map { JobbSituasjonBeskrivelse.valueOf(it.beskrivelse.name) })
-)
 
-fun OpplysningerOmArbeidssoekerKafkaMelding.toOpplysningerOmArbeidssoeker() = OpplysningerOmArbeidssoeker(
-    opplysningerOmArbeidssoekerId = this.id,
-    periodeId = this.periodeId,
-    sendtInnTidspunkt = DateUtils.toZonedDateTime(this.sendtInnAv.tidspunkt),
-    utdanningNusKode = this.utdanning?.nus?.toString(),
-    utdanningBestatt = this.utdanning?.bestaatt?.name,
-    utdanningGodkjent = this.utdanning?.godkjent?.name,
-    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjon(
-        this.id,
-        this.jobbsituasjon.beskrivelser.map { JobbSituasjonBeskrivelse.valueOf(it.beskrivelse.name) })
-)
 
-fun ProfileringKafkaMelding.toProfilering() = Profilering(
-    periodeId = this.periodeId,
-    profileringsresultat = Profileringsresultat.valueOf(this.profilertTil.name),
-    sendtInnTidspunkt = DateUtils.toZonedDateTime(this.sendtInnAv.tidspunkt)
-)
+
+

@@ -141,6 +141,16 @@ data class UtdanningResponse(
 // Profilering typer
 data class ProfileringRequest(val identitetsnummer: String, val periodeId: UUID)
 
+data class ProfileringResponse(
+    val profileringId: UUID,
+    val periodeId: UUID,
+    val opplysningerOmArbeidssoekerId: UUID,
+    val sendtInnAv: MetadataResponse,
+    val profilertTil: ProfilertTil,
+    val jobbetSammenhengendeSeksAvTolvSisteManeder: Boolean?,
+    val alder: Int?
+)
+
 enum class ProfilertTil {
     UKJENT_VERDI,
     UDEFINERT,

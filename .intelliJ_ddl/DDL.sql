@@ -417,7 +417,8 @@ CREATE TABLE public.fargekategori (
     fnr character varying(11) NOT NULL,
     verdi character varying(25),
     sist_endret timestamp without time zone NOT NULL,
-    sist_endret_av_veilederident character varying(7)
+    sist_endret_av_veilederident character varying(7),
+    enhet_id character varying(4)
 );
 
 
