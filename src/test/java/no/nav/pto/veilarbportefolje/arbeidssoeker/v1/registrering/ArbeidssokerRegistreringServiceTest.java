@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
@@ -274,15 +275,15 @@ class ArbeidssokerRegistreringServiceTest extends EndToEndTest {
     private static Filtervalg getFiltervalgIngenSituasjonsData() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.registreringstype.add(DinSituasjonSvar.INGEN_DATA);
+        filtervalg.registreringstype.add(JobbSituasjonBeskrivelse.INGEN_DATA);
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgSituasjonsDataMix() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.registreringstype.add(DinSituasjonSvar.MISTET_JOBBEN);
-        filtervalg.registreringstype.add(DinSituasjonSvar.INGEN_DATA);
+        filtervalg.registreringstype.add(JobbSituasjonBeskrivelse.ALDRI_HATT_JOBB);
+        filtervalg.registreringstype.add(JobbSituasjonBeskrivelse.INGEN_DATA);
         return filtervalg;
     }
 

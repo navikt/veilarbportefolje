@@ -41,7 +41,8 @@ enum class JobbSituasjonBeskrivelse {
     DELTIDSJOBB_VIL_MER,
     NY_JOBB,
     KONKURS,
-    ANNET
+    ANNET,
+    INGEN_DATA
 }
 
 data class Profilering(

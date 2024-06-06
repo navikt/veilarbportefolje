@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
+import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 
 @Slf4j
 @Service
