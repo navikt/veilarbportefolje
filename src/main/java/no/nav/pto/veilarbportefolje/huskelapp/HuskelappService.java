@@ -100,11 +100,11 @@ public class HuskelappService {
         }
     }
 
-    public void deaktivereAlleHuskelapperPaaBruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
+    public void sletteAlleHuskelapperPaaBruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
         try {
             secureLog.info("Sletter alle huskelapper paa bruker med aktoerid: " + aktorId);
             if (maybeFnr.isPresent()) {
-                huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(maybeFnr.get());
+                huskelappRepository.slettAlleHuskelappRaderPaaBruker(maybeFnr.get());
                 opensearchIndexerV2.slettHuskelapp(aktorId);
             } else {
                 secureLog.warn("Kunne ikke slette huskelapper for bruker med AktørID {}. Årsak fødselsnummer-parameter var tom.", aktorId.get());
@@ -112,6 +112,21 @@ public class HuskelappService {
         } catch (Exception e) {
             secureLog.error("Kunne ikke slette huskelapper for aktoerId: " + aktorId.toString());
             throw new RuntimeException("Kunne ikke slette huskelapper", e);
+        }
+    }
+
+    public void deaktivereAlleHuskelapperPaaBruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
+        try {
+            secureLog.info("Deaktiverer alle huskelapper paa bruker med aktoerid: " + aktorId);
+            if (maybeFnr.isPresent()) {
+                huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(maybeFnr.get());
+                opensearchIndexerV2.slettHuskelapp(aktorId);
+            } else {
+                secureLog.warn("Kunne ikke deaktivere huskelapper for bruker med AktørID {}. Årsak fødselsnummer-parameter var tom.", aktorId.get());
+            }
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke deaktivere huskelapper for aktoerId: " + aktorId.toString());
+            throw new RuntimeException("Kunne ikke deaktivere huskelapper", e);
         }
     }
 

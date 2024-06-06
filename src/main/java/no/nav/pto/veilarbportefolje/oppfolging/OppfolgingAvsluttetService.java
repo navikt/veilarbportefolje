@@ -56,7 +56,7 @@ public class OppfolgingAvsluttetService {
         arbeidssokerRegistreringService.slettRegistering(aktoerId);
         endringIArbeidssokerRegistreringService.slettEndringIRegistering(aktoerId);
         arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr);
-        huskelappService.deaktivereAlleHuskelapperPaaBruker(aktoerId, maybeFnr);
+        huskelappService.sletteAlleHuskelapperPaaBruker(aktoerId, maybeFnr);
         sisteEndringService.slettSisteEndringer(aktoerId);
         cvRepositoryV2.resetHarDeltCV(aktoerId);
         siste14aVedtakService.slettSiste14aVedtak(aktoerId.get());
