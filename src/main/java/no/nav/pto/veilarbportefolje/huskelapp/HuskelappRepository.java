@@ -110,6 +110,10 @@ public class HuskelappRepository {
         return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappMapper).toList();
     }
 
+    public void slettAlleHuskelappRaderPaaBruker(Fnr fnr) {
+        String sql = String.format("DELETE FROM %s WHERE %s=? ", TABLE_NAME, FNR);
+        db.update(sql, fnr.get());
+    }
 
     public void deaktivereAlleHuskelappRaderPaaBruker(Fnr fnr) {
         String sql = String.format("UPDATE %s SET %s = ? WHERE %s = ? AND %s = ? ", TABLE_NAME, STATUS, FNR, STATUS);
