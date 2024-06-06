@@ -6,6 +6,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
@@ -50,7 +51,8 @@ class ArbeidssoekerService(
     private val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
     private val profileringRepository: ProfileringRepository,
     private val defaultUnleash: DefaultUnleash,
-    private val arbeidssoekerDataRepository: ArbeidssoekerDataRepository
+    private val arbeidssoekerDataRepository: ArbeidssoekerDataRepository,
+    private val opensearchIndexerV2: OpensearchIndexerV2
 ) {
 
     @Transactional
@@ -71,6 +73,8 @@ class ArbeidssoekerService(
             return
         }
 
+        val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(fnr)
+
         sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(fnr)
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId, fnr.get()))
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
@@ -84,6 +88,10 @@ class ArbeidssoekerService(
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
             opplysningerOmArbeidssoeker
         )
+        if (aktorId != null) {
+            opensearchIndexerV2.updateOpplysningerOmArbeidssoeker(aktorId,opplysningerOmArbeidssoeker)
+        }
+
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
 
 
@@ -99,6 +107,9 @@ class ArbeidssoekerService(
         }
 
         profileringRepository.insertProfilering(profilering)
+        if (aktorId != null) {
+            opensearchIndexerV2.updateProfilering(aktorId, profilering)
+        }
         secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 
@@ -131,6 +142,8 @@ class ArbeidssoekerService(
             return
         }
 
+        val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(fnr))
+
         val opplysningerOmArbeidssoeker =
             opplysningerOmArbeidssoekerRepository.harSisteOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoekerId)
         if (opplysningerOmArbeidssoeker) {
@@ -138,8 +151,14 @@ class ArbeidssoekerService(
             return
         }
 
+        val opplysningerOmArbeidssoekerEntity = opplysninger.toOpplysningerOmArbeidssoekerEntity()
         opplysningerOmArbeidssoekerRepository.slettOpplysningerOmArbeidssoeker(sisteArbeidssoekerPeriode.arbeidssoekerperiodeId)
-        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysninger.toOpplysningerOmArbeidssoekerEntity())
+        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysningerOmArbeidssoekerEntity)
+
+        if (aktorId != null) {
+            opensearchIndexerV2.updateOpplysningerOmArbeidssoeker(aktorId, opplysningerOmArbeidssoekerEntity)
+        }
+
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
     }
 
@@ -168,8 +187,13 @@ class ArbeidssoekerService(
             )
             return
         }
+        val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(fnr))
+        val profileringEntity = kafkaMelding.toProfileringEntity()
 
-        profileringRepository.insertProfilering(kafkaMelding.toProfileringEntity())
+        profileringRepository.insertProfilering(profileringEntity)
+        if (aktorId != null) {
+            opensearchIndexerV2.updateProfilering(aktorId, profileringEntity)
+        }
         secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 

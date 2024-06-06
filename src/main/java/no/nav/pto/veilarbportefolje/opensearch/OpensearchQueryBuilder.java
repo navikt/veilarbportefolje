@@ -465,6 +465,7 @@ public class OpensearchQueryBuilder {
             case "barn_under_18_aar" ->
                     sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger, filtervalg);
             case "brukersSituasjonSistEndret" -> searchSourceBuilder.sort("brukers_situasjon_sist_endret", order);
+            case "utdanningOgSituasjonSistEndret" -> searchSourceBuilder.sort("utdanning_og_situasjon_sist_endret", order);
             case "huskelapp_frist" -> sorterHuskelappFrist(searchSourceBuilder, order);
             case "huskelapp" -> sorterHuskelappEksistere(searchSourceBuilder, order);
             case "huskelapp_kommentar" -> searchSourceBuilder.sort("huskelapp.kommentar", order);

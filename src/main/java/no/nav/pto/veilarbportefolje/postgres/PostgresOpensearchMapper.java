@@ -190,9 +190,11 @@ public class PostgresOpensearchMapper {
                 Profilering profilering = data.getProfilering();
 
                 if (opplysningerOmArbeidssoeker != null ) {
+                    String utdanningBestatt = opplysningerOmArbeidssoeker.getUtdanningBestatt() != null ? opplysningerOmArbeidssoeker.getUtdanningBestatt().name() : null;
+                    String utdanningGodkjent = opplysningerOmArbeidssoeker.getUtdanningGodkjent() != null ? opplysningerOmArbeidssoeker.getUtdanningGodkjent().name() : null;
                     bruker.setUtdanning(opplysningerOmArbeidssoeker.getUtdanning().name());
-                    bruker.setUtdanning_godkjent(opplysningerOmArbeidssoeker.getUtdanningGodkjent().name());
-                    bruker.setUtdanning_bestatt(opplysningerOmArbeidssoeker.getUtdanningBestatt().name());
+                    bruker.setUtdanning_godkjent(utdanningGodkjent);
+                    bruker.setUtdanning_bestatt(utdanningBestatt);
                     bruker.setBrukers_situasjoner(opplysningerOmArbeidssoeker.getJobbsituasjoner().stream().map(JobbSituasjonBeskrivelse::name).toList());
                     bruker.setUtdanning_og_situasjon_sist_endret(opplysningerOmArbeidssoeker.getSendtInnTidspunkt().toLocalDate());
                 }

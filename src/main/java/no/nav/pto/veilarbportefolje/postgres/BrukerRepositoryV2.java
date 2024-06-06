@@ -153,6 +153,7 @@ public class BrukerRepositoryV2 {
                 .setUtdanning(rs.getString(UTDANNING))
                 .setUtdanning_bestatt(rs.getString(UTDANNING_BESTATT))
                 .setUtdanning_godkjent(rs.getString(UTDANNING_GODKJENT))
+                .setUtdanning_og_situasjon_sist_endret(toLocalDate(rs.getTimestamp(REGISTRERING_OPPRETTET)))
                 .setHar_delt_cv(rs.getBoolean(HAR_DELT_CV))
                 .setCv_eksistere(rs.getBoolean(CV_EKSISTERER))
                 .setOppfolging(rs.getBoolean(OPPFOLGING))

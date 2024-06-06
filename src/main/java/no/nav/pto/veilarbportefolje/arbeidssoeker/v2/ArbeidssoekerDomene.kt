@@ -11,8 +11,8 @@ data class ArbeidssoekerData(
 data class OpplysningerOmArbeidssoeker(
     val sendtInnTidspunkt: ZonedDateTime,
     val utdanning: Utdanning,
-    val utdanningBestatt: JaNeiVetIkke,
-    val utdanningGodkjent: JaNeiVetIkke,
+    val utdanningBestatt: JaNeiVetIkke? = null,
+    val utdanningGodkjent: JaNeiVetIkke? = null,
     val jobbsituasjoner: List<JobbSituasjonBeskrivelse>
 )
 

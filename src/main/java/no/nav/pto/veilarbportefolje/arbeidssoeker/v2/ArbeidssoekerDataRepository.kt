@@ -42,11 +42,13 @@ class ArbeidssoekerDataRepository(
                     )
                 )
             } else {
+                val utdanningBestatt = rs.getString(OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_BESTATT)
+                val utdanningGodkjent = rs.getString(OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_GODKJENT)
                 arbeidssoekerDataPaaBruker[fnr] = OpplysningerOmArbeidssoeker(
                     sendtInnTidspunkt = DateUtils.toZonedDateTime(rs.getTimestamp(OPPLYSNINGER_OM_ARBEIDSSOEKER.SENDT_INN_TIDSPUNKT)),
                     utdanning = mapTilUtdanning(rs.getString(OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_NUS_KODE)),
-                    utdanningBestatt = JaNeiVetIkke.valueOf(rs.getString(OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_BESTATT)),
-                    utdanningGodkjent = JaNeiVetIkke.valueOf(rs.getString(OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_GODKJENT)),
+                    utdanningBestatt = if(utdanningBestatt != null) JaNeiVetIkke.valueOf(utdanningBestatt) else null,
+                    utdanningGodkjent = if (utdanningGodkjent != null) JaNeiVetIkke.valueOf(utdanningGodkjent) else null,
                     jobbsituasjoner = listOf(
                         JobbSituasjonBeskrivelse.valueOf(
                             rs.getString(

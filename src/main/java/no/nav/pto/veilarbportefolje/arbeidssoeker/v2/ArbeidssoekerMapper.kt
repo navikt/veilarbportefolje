@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
-fun mapTilUtdanning(nus: String): Utdanning {
+fun mapTilUtdanning(nus: String?): Utdanning {
     return when (nus) {
         "0" -> Utdanning.INGEN_UTDANNING
         "2" -> Utdanning.GRUNNSKOLE
