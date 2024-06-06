@@ -54,7 +54,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
 
         final boolean brukerHarByttetNavkontorHuskelapp = huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktoerId);
         if (brukerHarByttetNavkontorHuskelapp) {
-            huskelappService.slettAlleHuskelapperPaaBruker(aktoerId, maybeFnr);
+            huskelappService.deaktivereAlleHuskelapperPaaBruker(aktoerId, maybeFnr);
         }
     }
 
