@@ -99,7 +99,7 @@ public class FargekategoriController {
         }
 
         try {
-            fargekategoriService.batchoppdaterFargekategoriForBruker(request.fargekategoriVerdi, responseEtterAutoriseringssjekk.data, innloggetVeileder);
+            fargekategoriService.batchoppdaterFargekategoriForBruker(request.fargekategoriVerdi, responseEtterAutoriseringssjekk.data, innloggetVeileder, request.enhetId);
 
             return ResponseEntity.ok(resultatFraValideringOgAutorisering);
 

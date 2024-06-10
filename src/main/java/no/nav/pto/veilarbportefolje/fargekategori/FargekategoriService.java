@@ -4,6 +4,7 @@ import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -54,14 +55,14 @@ public class FargekategoriService {
         }
     }
 
-    public void batchoppdaterFargekategoriForBruker(FargekategoriVerdi fargekategoriVerdi, List<Fnr> fnr, VeilederId innloggetVeileder) {
+    public void batchoppdaterFargekategoriForBruker(FargekategoriVerdi fargekategoriVerdi, List<Fnr> fnr, VeilederId innloggetVeileder, EnhetId enhetId) {
         if (fargekategoriVerdi == FargekategoriVerdi.INGEN_KATEGORI) {
             fargekategoriRepository.batchdeleteFargekategori(fnr);
 
             fnr.forEach(this::slettIOpensearch);
 
         } else {
-            fargekategoriRepository.batchupsertFargekategori(fargekategoriVerdi, fnr, innloggetVeileder);
+            fargekategoriRepository.batchupsertFargekategori(fargekategoriVerdi, fnr, innloggetVeileder, enhetId);
 
             fnr.forEach(f -> oppdaterIOpensearch(f, fargekategoriVerdi));
         }
