@@ -39,7 +39,7 @@ public class HuskelappStats implements MeterBinder {
 
     }
 
-    @Scheduled(cron = "0 */6 * * * *")
+    @Scheduled(cron = "0 */1 * * * *")
     public void oppdaterMetrikk() {
         try {
             huskelappStats.clear();
@@ -48,7 +48,7 @@ public class HuskelappStats implements MeterBinder {
             Map<String, Integer> huskelappAntall = this.jdbcTemplate.queryForObject(query, (rs, rowNum) -> {
                         Map<String, Integer> stats = new HashMap<>();
                         while (rs.next()) {
-                            huskelappStats.put(rs.getString(HUSKELAPP.ENHET_ID), rs.getInt("huskelapp_antall"));
+                            stats.put(rs.getString(HUSKELAPP.ENHET_ID), rs.getInt("huskelapp_antall"));
                         }
                         return stats;
                     }
