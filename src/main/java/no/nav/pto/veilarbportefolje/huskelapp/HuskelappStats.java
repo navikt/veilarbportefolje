@@ -39,7 +39,7 @@ public class HuskelappStats implements MeterBinder {
 
     }
 
-    @Scheduled(cron = "0 */6 * * 1-5")
+    @Scheduled(cron = "0 */6 * * * *")
     public void oppdaterMetrikk() {
         try {
             huskelappStats.clear();
