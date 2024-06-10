@@ -38,7 +38,6 @@ public class FargekategoriController {
 
         authService.innloggetVeilederHarTilgangTilOppfolging();
         authService.innloggetVeilederHarTilgangTilBruker(request.fnr.get());
-        authService.innloggetVeilederHarTilgangTilEnhet(request.enhetId.get());
 
         try {
             Optional<FargekategoriEntity> kanskjeFargekategori = fargekategoriService.hentFargekategoriForBruker(request);
@@ -165,8 +164,7 @@ public class FargekategoriController {
     }
 
     public record HentFargekategoriRequest(
-            @JsonProperty(required = true) Fnr fnr,
-            @JsonProperty(required = true) EnhetId enhetId
+            @JsonProperty(required = true) Fnr fnr
     ) {
     }
 

@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.arbeidsliste.v2;
 
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.*;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
@@ -137,7 +136,7 @@ public class ArbeidsListeV2Controller {
         if (slettFargekategori) {
             return emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true);
         } else {
-            Optional<FargekategoriEntity> maybeKategori = fargekategoriService.hentFargekategoriForBruker(new FargekategoriController.HentFargekategoriRequest(gyldigFnr, new EnhetId(enhet.getValue())));
+            Optional<FargekategoriEntity> maybeKategori = fargekategoriService.hentFargekategoriForBruker(new FargekategoriController.HentFargekategoriRequest(gyldigFnr));
 
             return maybeKategori.map(kategori ->
                     new Arbeidsliste(ArbeidslisteMapper.mapFraFargekategoriTilKategori(kategori.fargekategoriVerdi().name()))
