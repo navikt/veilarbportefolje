@@ -23,6 +23,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn
 import no.nav.pto.veilarbportefolje.postgres.PostgresUtils
+import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getArbeidssoekerPeriodeFraDb
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getOpplysningerOmArbeidssoekerFraDb
@@ -88,26 +89,26 @@ class ArbeidssoekerServiceTest(
                 PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID)
             )
         )
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr1, periodeId1)
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(fnr2, periodeId2)
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId1, fnr1.get()))
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId2, fnr2.get()))
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
-            genererRandomOpplysningerOmArbeidssoeker(periodeId1, opplysningerOmArbeidssoekerId1)
+            genererRandomOpplysningerOmArbeidssoekerEntity(periodeId1, opplysningerOmArbeidssoekerId1)
         )
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
-            genererRandomOpplysningerOmArbeidssoeker(periodeId2, opplysningerOmArbeidssoekerId2)
+            genererRandomOpplysningerOmArbeidssoekerEntity(periodeId2, opplysningerOmArbeidssoekerId2)
         )
         profileringRepository.insertProfilering(
-            Profilering(
+            ProfileringEntity(
                 periodeId1,
-                Profileringsresultat.ANTATT_GODE_MULIGHETER,
-                ZonedDateTime.now()
+                Profileringsresultat.ANTATT_GODE_MULIGHETER.name,
+                DateUtils.toTimestamp(ZonedDateTime.now())
             )
         )
         profileringRepository.insertProfilering(
-            Profilering(
+            ProfileringEntity(
                 periodeId2,
-                Profileringsresultat.OPPGITT_HINDRINGER,
-                ZonedDateTime.now()
+                Profileringsresultat.OPPGITT_HINDRINGER.name,
+                DateUtils.toTimestamp(ZonedDateTime.now())
             )
         )
 
@@ -160,7 +161,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -187,7 +188,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -211,7 +212,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -240,7 +241,7 @@ class ArbeidssoekerServiceTest(
             opplysningerOmArbeidssoeker!!.opplysningerOmArbeidssoekerId
         )
 
-        assertThat(opplysningerOmArbeidssoekerJobbsituasjon!!.jobbsituasjon[1]).isEqualTo(JobbSituasjonBeskrivelse.ER_PERMITTERT)
+        assertThat(opplysningerOmArbeidssoekerJobbsituasjon!!.jobbsituasjon[1]).isEqualTo(JobbSituasjonBeskrivelse.ER_PERMITTERT.name)
 
         val profilering = getProfileringFraDb(db, periodeId)
         assertNotNull(profilering)
@@ -353,7 +354,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -410,7 +411,7 @@ class ArbeidssoekerServiceTest(
             Metadata(
                 Instant.now(),
                 Bruker(
-                    no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SYSTEM,
+                    BrukerType.SYSTEM,
                     "APP_NAVN:VERSJON"
                 ),
                 "APP_NAVN:VERSJON",
@@ -445,7 +446,7 @@ class ArbeidssoekerServiceTest(
         assertThat(lagredeOpplysningerOmArbeidssoekerJobbsituasjon!!.opplysningerOmArbeidssoekerId).isEqualTo(
             nyOpplysningerOmArbeidssoekerId
         )
-        assertThat(lagredeOpplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon[0]).isEqualTo(JobbSituasjonBeskrivelse.DELTIDSJOBB_VIL_MER)
+        assertThat(lagredeOpplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon[0]).isEqualTo(JobbSituasjonBeskrivelse.DELTIDSJOBB_VIL_MER.name)
     }
 
     @Test
@@ -467,7 +468,7 @@ class ArbeidssoekerServiceTest(
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
         val lagretProfileringForKafkaMelding = getProfileringFraDb(db, periodeIdVedOppfolgingStartet)
-        assertThat(lagretProfileringForKafkaMelding!!.profileringsresultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER)
+        assertThat(lagretProfileringForKafkaMelding!!.profileringsresultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER.name)
 
         val profileringKafkamelding = ProfileringKafkamelding(
             UUID.randomUUID(),
@@ -492,7 +493,7 @@ class ArbeidssoekerServiceTest(
 
         // Assert
         val lagretProfileringEtterMelding = getProfileringFraDb(db, periodeIdVedOppfolgingStartet)
-        assertThat(lagretProfileringEtterMelding!!.profileringsresultat).isEqualTo(Profileringsresultat.ANTATT_BEHOV_FOR_VEILEDNING)
+        assertThat(lagretProfileringEtterMelding!!.profileringsresultat).isEqualTo(Profileringsresultat.ANTATT_BEHOV_FOR_VEILEDNING.name)
     }
 
     @Test
@@ -515,7 +516,7 @@ class ArbeidssoekerServiceTest(
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
         val lagretProfileringForKafkaMelding = getProfileringFraDb(db, periodeIdVedOppfolgingStartet)
-        assertThat(lagretProfileringForKafkaMelding!!.profileringsresultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER)
+        assertThat(lagretProfileringForKafkaMelding!!.profileringsresultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER.name)
         assertThat(lagretProfileringForKafkaMelding.periodeId).isEqualTo(periodeIdVedOppfolgingStartet)
 
         val profileringKafkamelding = ProfileringKafkamelding(
@@ -540,9 +541,9 @@ class ArbeidssoekerServiceTest(
         arbeidssoekerService.behandleKafkaMeldingLogikk(profileringKafkamelding)
 
         // Assert
-        val lagretProfileringEtterMeldingSkalVæreSamme = getProfileringFraDb(db, periodeIdVedOppfolgingStartet)
-        assertThat(lagretProfileringEtterMeldingSkalVæreSamme!!.profileringsresultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER)
-        assertThat(lagretProfileringEtterMeldingSkalVæreSamme.periodeId).isEqualTo(periodeIdVedOppfolgingStartet)
+        val lagretProfileringEtterMeldingSkalVereSamme = getProfileringFraDb(db, periodeIdVedOppfolgingStartet)
+        assertThat(lagretProfileringEtterMeldingSkalVereSamme!!.profileringsresultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER.name)
+        assertThat(lagretProfileringEtterMeldingSkalVereSamme.periodeId).isEqualTo(periodeIdVedOppfolgingStartet)
 
     }
 
@@ -643,10 +644,10 @@ class ArbeidssoekerServiceTest(
     }
 }
 
-fun genererRandomOpplysningerOmArbeidssoeker(
+fun genererRandomOpplysningerOmArbeidssoekerEntity(
     periodeId: UUID,
     opplysningerOmArbeidssoekerId: UUID
-): OpplysningerOmArbeidssoeker {
+): OpplysningerOmArbeidssoekerEntity {
     return OpplysningerOmArbeidssoekerResponse(
         periodeId = periodeId,
         opplysningerOmArbeidssoekerId = opplysningerOmArbeidssoekerId,
@@ -679,6 +680,6 @@ fun genererRandomOpplysningerOmArbeidssoeker(
         helse = HelseResponse(
             helsetilstandHindrerArbeid = JaNeiVetIkke.NEI
         )
-    ).toOpplysningerOmArbeidssoeker()
+    ).toOpplysningerOmArbeidssoekerEntity()
 }
 

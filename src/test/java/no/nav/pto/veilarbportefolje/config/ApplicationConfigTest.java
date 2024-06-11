@@ -176,7 +176,8 @@ import static org.mockito.Mockito.when;
         ArbeidssoekerService.class,
         OpplysningerOmArbeidssoekerRepository.class,
         SisteArbeidssoekerPeriodeRepository.class,
-        ProfileringRepository.class
+        ProfileringRepository.class,
+        ArbeidssoekerDataRepository.class
 })
 public class ApplicationConfigTest {
 

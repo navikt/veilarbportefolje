@@ -4,6 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerData;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoeker;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profilering;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
@@ -41,6 +46,7 @@ public class PostgresOpensearchMapper {
 
     private final BarnUnder18AarService barnUnder18AarService;
     private final EnsligeForsorgereService ensligeForsorgereService;
+    private final ArbeidssoekerService arbeidssoekerService;
 
     public void flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -167,6 +173,35 @@ public class PostgresOpensearchMapper {
             if (fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(Fnr.of(bruker.getFnr()))) {
                 bruker.setEnslige_forsorgere_overgangsstonad(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.get(Fnr.of(bruker.getFnr())).toEnsligeForsorgereOpensearchDto());
             }
+        });
+    }
+
+    public void flettInnOpplysningerOmArbeidssoekerData(List<OppfolgingsBruker> brukere) {
+        List<Fnr> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).map(Fnr::of).toList();
+        List<ArbeidssoekerData> arbeidssoekerDataList = arbeidssoekerService.hentArbeidssoekerData(fnrs);
+
+        brukere.forEach(bruker -> {
+            Optional<ArbeidssoekerData> arbeidssoekerData = arbeidssoekerDataList.stream()
+                    .filter(data -> data.getFnr().get().equals(bruker.getFnr()))
+                    .findFirst();
+
+            arbeidssoekerData.ifPresent(data -> {
+                OpplysningerOmArbeidssoeker opplysningerOmArbeidssoeker = data.getOpplysningerOmArbeidssoeker();
+                Profilering profilering = data.getProfilering();
+
+                if (opplysningerOmArbeidssoeker != null ) {
+                    String utdanningBestatt = opplysningerOmArbeidssoeker.getUtdanningBestatt() != null ? opplysningerOmArbeidssoeker.getUtdanningBestatt().name() : null;
+                    String utdanningGodkjent = opplysningerOmArbeidssoeker.getUtdanningGodkjent() != null ? opplysningerOmArbeidssoeker.getUtdanningGodkjent().name() : null;
+                    bruker.setUtdanning(opplysningerOmArbeidssoeker.getUtdanning().name());
+                    bruker.setUtdanning_godkjent(utdanningGodkjent);
+                    bruker.setUtdanning_bestatt(utdanningBestatt);
+                    bruker.setBrukers_situasjoner(opplysningerOmArbeidssoeker.getJobbsituasjoner().stream().map(JobbSituasjonBeskrivelse::name).toList());
+                    bruker.setUtdanning_og_situasjon_sist_endret(opplysningerOmArbeidssoeker.getSendtInnTidspunkt().toLocalDate());
+                }
+                if (profilering != null) {
+                    bruker.setProfilering_resultat(profilering.getProfileringsresultat().name());
+                }
+            });
         });
     }
 }

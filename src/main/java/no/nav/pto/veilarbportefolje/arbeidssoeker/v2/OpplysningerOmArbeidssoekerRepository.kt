@@ -16,12 +16,12 @@ import java.util.*
 class OpplysningerOmArbeidssoekerRepository(
     private val db: JdbcTemplate
 ) {
-    fun insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker) {
-        insertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoeker)
-        insertOpplysningerOmArbeidssoekerJobbsituasjon(opplysningerOmArbeidssoeker.opplysningerOmJobbsituasjon)
+    fun insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysningerOmArbeidssoekerEntity: OpplysningerOmArbeidssoekerEntity) {
+        insertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoekerEntity)
+        insertOpplysningerOmArbeidssoekerJobbsituasjon(opplysningerOmArbeidssoekerEntity.opplysningerOmJobbsituasjon)
     }
 
-    private fun insertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker) {
+    private fun insertOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoekerEntity: OpplysningerOmArbeidssoekerEntity) {
         val sqlString = """INSERT INTO $TABLE_NAME ( 
                     $OPPLYSNINGER_OM_ARBEIDSSOEKER_ID, 
                     $PERIODE_ID,
@@ -33,16 +33,16 @@ class OpplysningerOmArbeidssoekerRepository(
                 VALUES (?, ?, ?, ?, ?, ?)"""
         db.update(
             sqlString,
-            opplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId,
-            opplysningerOmArbeidssoeker.periodeId,
-            DateUtils.toTimestamp(opplysningerOmArbeidssoeker.sendtInnTidspunkt),
-            opplysningerOmArbeidssoeker.utdanningNusKode,
-            opplysningerOmArbeidssoeker.utdanningBestatt,
-            opplysningerOmArbeidssoeker.utdanningGodkjent
+            opplysningerOmArbeidssoekerEntity.opplysningerOmArbeidssoekerId,
+            opplysningerOmArbeidssoekerEntity.periodeId,
+            opplysningerOmArbeidssoekerEntity.sendtInnTidspunkt,
+            opplysningerOmArbeidssoekerEntity.utdanningNusKode,
+            opplysningerOmArbeidssoekerEntity.utdanningBestatt,
+            opplysningerOmArbeidssoekerEntity.utdanningGodkjent
         )
     }
 
-    private fun insertOpplysningerOmArbeidssoekerJobbsituasjon(opplysningerOmArbeidssoekerJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon) {
+    private fun insertOpplysningerOmArbeidssoekerJobbsituasjon(opplysningerOmArbeidssoekerJobbsituasjonEntity: OpplysningerOmArbeidssoekerJobbsituasjonEntity) {
         val sqlString = """INSERT INTO ${OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.TABLE_NAME} ( 
                     ${OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.OPPLYSNINGER_OM_ARBEIDSSOEKER_ID}, 
                     ${OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.JOBBSITUASJON}
@@ -52,12 +52,12 @@ class OpplysningerOmArbeidssoekerRepository(
         db.batchUpdate(sqlString, object : BatchPreparedStatementSetter {
             @Throws(SQLException::class)
             override fun setValues(ps: PreparedStatement, i: Int) {
-                ps.setObject(1, opplysningerOmArbeidssoekerJobbsituasjon.opplysningerOmArbeidssoekerId, Types.OTHER)
-                ps.setString(2, opplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon[i].name)
+                ps.setObject(1, opplysningerOmArbeidssoekerJobbsituasjonEntity.opplysningerOmArbeidssoekerId, Types.OTHER)
+                ps.setString(2, opplysningerOmArbeidssoekerJobbsituasjonEntity.jobbsituasjon[i])
             }
 
             override fun getBatchSize(): Int {
-                return opplysningerOmArbeidssoekerJobbsituasjon.jobbsituasjon.size
+                return opplysningerOmArbeidssoekerJobbsituasjonEntity.jobbsituasjon.size
             }
         })
     }

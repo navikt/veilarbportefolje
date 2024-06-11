@@ -1,9 +1,11 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
@@ -36,6 +38,7 @@ public class OpensearchIndexer {
     private final IndexName alias;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final DefaultUnleash defaultUnleash;
 
     public void indekser(AktorId aktoerId) {
         Optional<OppfolgingsBruker> bruker;
@@ -121,6 +124,9 @@ public class OpensearchIndexer {
         postgresOpensearchMapper.flettInnStatsborgerskapData(brukere);
         postgresOpensearchMapper.flettInnEnsligeForsorgereData(brukere);
         postgresOpensearchMapper.flettInnBarnUnder18Aar(brukere);
+        if (FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)) {
+            postgresOpensearchMapper.flettInnOpplysningerOmArbeidssoekerData(brukere);
+        }
 
         if (brukere.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");

@@ -106,6 +106,7 @@ public class Bruker {
     EnsligeForsorgereOvergangsstonad ensligeForsorgereOvergangsstonad;
 
     LocalDate brukersSituasjonSistEndret;
+    LocalDate utdanningOgSituasjonSistEndret;
 
     HuskelappForBruker huskelapp;
     String fargekategori;
@@ -203,6 +204,7 @@ public class Bruker {
                 .setBarnUnder18AarData(bruker.getBarn_under_18_aar())
                 .setEnsligeForsorgereOvergangsstonad(bruker.getEnslige_forsorgere_overgangsstonad())
                 .setBrukersSituasjonSistEndret(bruker.getBrukers_situasjon_sist_endret())
+                .setUtdanningOgSituasjonSistEndret(bruker.getUtdanning_og_situasjon_sist_endret())
                 .setHuskelapp(bruker.getHuskelapp())
                 .setFargekategori(bruker.getFargekategori());
     }

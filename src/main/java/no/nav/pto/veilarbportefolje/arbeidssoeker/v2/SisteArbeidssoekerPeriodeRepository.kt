@@ -11,22 +11,22 @@ import java.util.*
 class SisteArbeidssoekerPeriodeRepository(
     private val db: JdbcTemplate
 ) {
-    fun insertSisteArbeidssoekerPeriode(fnr: Fnr, periodeId: UUID) {
+    fun insertSisteArbeidssoekerPeriode(sisteArbeidssoekerPeriode: ArbeidssoekerPeriodeEntity) {
         db.update(
             """INSERT INTO $TABLE_NAME values (?,?)""",
-            periodeId,
-            fnr.get()
+            sisteArbeidssoekerPeriode.arbeidssoekerperiodeId,
+            sisteArbeidssoekerPeriode.fnr
         )
     }
 
-    fun hentSisteArbeidssoekerPeriode(periodeId: UUID): ArbeidssoekerPeriode? {
+    fun hentSisteArbeidssoekerPeriode(periodeId: UUID): ArbeidssoekerPeriodeEntity? {
         return queryForObjectOrNull {
             db.queryForObject(
                 """SELECT * FROM $TABLE_NAME WHERE $ARBEIDSSOKER_PERIODE_ID = ?""",
                 { rs, _ ->
-                    ArbeidssoekerPeriode(
+                    ArbeidssoekerPeriodeEntity(
                         rs.getObject(ARBEIDSSOKER_PERIODE_ID, UUID::class.java),
-                        Fnr.of(rs.getString(FNR))
+                        rs.getString(FNR)
                     )
                 },
                 periodeId
