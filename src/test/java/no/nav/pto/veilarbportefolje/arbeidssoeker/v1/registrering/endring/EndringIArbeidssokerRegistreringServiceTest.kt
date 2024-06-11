@@ -25,12 +25,12 @@ class EndringIArbeidssokerRegistreringServiceTest : EndToEndTest() {
         val getResponse = opensearchTestClient.fetchDocument(aktorId)
         AssertionsForClassTypes.assertThat(getResponse.isExists).isTrue
 
-        val endretSituasjon: String = getResponse.sourceAsMap["brukers_situasjon"] as String
+        val endretSituasjon = getResponse.sourceAsMap["brukers_situasjoner"] as List<*>
         val endretSituasjonSistEndret: LocalDateTime =
             DateUtils.toLocalDateTimeOrNull(getResponse.sourceAsMap["brukers_situasjon_sist_endret"] as String);
 
         AssertionsForClassTypes.assertThat(endretSituasjon)
-            .isEqualTo(kafkaRegistreringMelding.besvarelse.dinSituasjon.verdi.toString())
+            .isEqualTo(listOf(kafkaRegistreringMelding.besvarelse.dinSituasjon.verdi.toString()))
         AssertionsForClassTypes.assertThat(endretSituasjonSistEndret)
             .isEqualTo(DateUtils.toLocalDateTimeOrNull(kafkaRegistreringMelding.besvarelse.dinSituasjon.endretTidspunkt.toString()))
 

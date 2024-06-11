@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
@@ -152,6 +153,7 @@ public class BrukerRepositoryV2 {
                 .setUtdanning(rs.getString(UTDANNING))
                 .setUtdanning_bestatt(rs.getString(UTDANNING_BESTATT))
                 .setUtdanning_godkjent(rs.getString(UTDANNING_GODKJENT))
+                .setUtdanning_og_situasjon_sist_endret(toLocalDate(rs.getTimestamp(REGISTRERING_OPPRETTET)))
                 .setHar_delt_cv(rs.getBoolean(HAR_DELT_CV))
                 .setCv_eksistere(rs.getBoolean(CV_EKSISTERER))
                 .setOppfolging(rs.getBoolean(OPPFOLGING))
@@ -244,7 +246,7 @@ public class BrukerRepositoryV2 {
         String brukersSisteSituasjon = harEndretSituasjonEttterRegistrering ? rs.getString(ENDRET_BRUKERS_SITUASJON) : rs.getString(BRUKERS_SITUASJON);
         LocalDate brukersSituasjonSistEndretDato = harEndretSituasjonEttterRegistrering ? oppdatertBrukesSituasjonSistEndretDato : brukesSituasjonOpprettetDato;
 
-        oppfolgingsBruker.setBrukers_situasjon(brukersSisteSituasjon);
+        oppfolgingsBruker.setBrukers_situasjoner(brukersSisteSituasjon == null ? emptyList() : List.of(brukersSisteSituasjon));
         oppfolgingsBruker.setBrukers_situasjon_sist_endret(brukersSituasjonSistEndretDato);
     }
 

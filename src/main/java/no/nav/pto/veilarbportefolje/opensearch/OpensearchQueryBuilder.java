@@ -2,9 +2,9 @@ package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
@@ -33,6 +33,7 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerMapperKt.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
@@ -348,11 +349,13 @@ public class OpensearchQueryBuilder {
 
         if (filtervalg.harDinSituasjonSvar()) {
             BoolQueryBuilder brukerensSituasjonSubQuery = boolQuery();
-            filtervalg.registreringstype.forEach(dinSituasjonSvar -> {
-                if (dinSituasjonSvar == DinSituasjonSvar.INGEN_DATA) {
-                    brukerensSituasjonSubQuery.should(boolQuery().mustNot(existsQuery("brukers_situasjon")));
+            filtervalg.registreringstype.forEach(jobbSituasjonBeskrivelse -> {
+                if (jobbSituasjonBeskrivelse == JobbSituasjonBeskrivelse.INGEN_DATA) {
+                    brukerensSituasjonSubQuery.should(boolQuery().mustNot(existsQuery("brukers_situasjoner")));
                 } else {
-                    brukerensSituasjonSubQuery.should(matchQuery("brukers_situasjon", dinSituasjonSvar));
+                    inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering(jobbSituasjonBeskrivelse).forEach(sokerOrd ->
+                            brukerensSituasjonSubQuery.should(matchQuery("brukers_situasjoner", sokerOrd))
+                    );
                 }
 
             });
@@ -465,6 +468,8 @@ public class OpensearchQueryBuilder {
             case "barn_under_18_aar" ->
                     sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger, filtervalg);
             case "brukersSituasjonSistEndret" -> searchSourceBuilder.sort("brukers_situasjon_sist_endret", order);
+            case "utdanningOgSituasjonSistEndret" ->
+                    searchSourceBuilder.sort("utdanning_og_situasjon_sist_endret", order);
             case "huskelapp_frist" -> sorterHuskelappFrist(searchSourceBuilder, order);
             case "huskelapp" -> sorterHuskelappEksistere(searchSourceBuilder, order);
             case "huskelapp_kommentar" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
