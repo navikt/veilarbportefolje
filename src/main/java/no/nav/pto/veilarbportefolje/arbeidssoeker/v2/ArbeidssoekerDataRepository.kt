@@ -6,12 +6,13 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPLYSNINGER_OM_ARBEI
 import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE
 import no.nav.pto.veilarbportefolje.database.PostgresTable.PROFILERING
 import no.nav.pto.veilarbportefolje.util.DateUtils
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 
 @Repository
 class ArbeidssoekerDataRepository(
-    private val db: JdbcTemplate
+    @Qualifier("PostgresJdbcReadOnly") private val db: JdbcTemplate
 ) {
 
     fun hentOpplysningerOmArbeidssoeker(fnrs: List<Fnr>): Map<String, OpplysningerOmArbeidssoeker> {

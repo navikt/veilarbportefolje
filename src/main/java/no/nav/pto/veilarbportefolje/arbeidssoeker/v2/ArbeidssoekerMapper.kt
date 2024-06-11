@@ -14,23 +14,13 @@ fun mapTilUtdanning(nus: String?): Utdanning {
     }
 }
 
-
-fun mapJobbsituasjonTilSituasjonFraGammelRegistrering(jobbsituasjon: String?): List<String> {
-    if(JobbSituasjonBeskrivelse.HAR_BLITT_SAGT_OPP.name == jobbsituasjon) {
-        return listOf(JobbSituasjonBeskrivelse.HAR_BLITT_SAGT_OPP.name, DinSituasjonSvar.MISTET_JOBBEN.name, DinSituasjonSvar.OPPSIGELSE.name, )
+fun inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering(jobbsituasjon: JobbSituasjonBeskrivelse?): List<String> {
+    return when(jobbsituasjon) {
+        JobbSituasjonBeskrivelse.HAR_BLITT_SAGT_OPP -> listOf(JobbSituasjonBeskrivelse.HAR_BLITT_SAGT_OPP.name, DinSituasjonSvar.MISTET_JOBBEN.name, DinSituasjonSvar.OPPSIGELSE.name)
+        JobbSituasjonBeskrivelse.ER_PERMITTERT -> listOf(JobbSituasjonBeskrivelse.ER_PERMITTERT.name, DinSituasjonSvar.ENDRET_PERMITTERINGSPROSENT.name, DinSituasjonSvar.TILBAKE_TIL_JOBB.name )
+        JobbSituasjonBeskrivelse.HAR_SAGT_OPP -> listOf(JobbSituasjonBeskrivelse.HAR_SAGT_OPP.name, DinSituasjonSvar.SAGT_OPP.name)
+        JobbSituasjonBeskrivelse.IKKE_VAERT_I_JOBB_SISTE_2_AAR -> listOf(JobbSituasjonBeskrivelse.IKKE_VAERT_I_JOBB_SISTE_2_AAR.name, DinSituasjonSvar.JOBB_OVER_2_AAR.name)
+        JobbSituasjonBeskrivelse.ANNET -> listOf(JobbSituasjonBeskrivelse.ANNET.name, DinSituasjonSvar.VIL_FORTSETTE_I_JOBB.name)
+        else -> if (jobbsituasjon != null) listOf(jobbsituasjon.name) else emptyList()
     }
-    if(JobbSituasjonBeskrivelse.ER_PERMITTERT.name == jobbsituasjon) {
-        return listOf(JobbSituasjonBeskrivelse.ER_PERMITTERT.name, DinSituasjonSvar.ENDRET_PERMITTERINGSPROSENT.name, DinSituasjonSvar.TILBAKE_TIL_JOBB.name )
-    }
-    if(JobbSituasjonBeskrivelse.HAR_SAGT_OPP.name == jobbsituasjon) {
-        return listOf(JobbSituasjonBeskrivelse.HAR_SAGT_OPP.name, DinSituasjonSvar.SAGT_OPP.name)
-    }
-    if(JobbSituasjonBeskrivelse.IKKE_VAERT_I_JOBB_SISTE_2_AAR.name == jobbsituasjon) {
-        return listOf(JobbSituasjonBeskrivelse.IKKE_VAERT_I_JOBB_SISTE_2_AAR.name, DinSituasjonSvar.JOBB_OVER_2_AAR.name)
-    }
-    if(JobbSituasjonBeskrivelse.ANNET.name == jobbsituasjon) {
-        return listOf(JobbSituasjonBeskrivelse.ANNET.name, DinSituasjonSvar.VIL_FORTSETTE_I_JOBB.name)
-    }
-    return if (jobbsituasjon != null) listOf(jobbsituasjon) else emptyList()
-
 }

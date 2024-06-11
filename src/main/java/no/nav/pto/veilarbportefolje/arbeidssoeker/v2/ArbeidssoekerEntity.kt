@@ -35,9 +35,9 @@ fun OpplysningerOmArbeidssoekerResponse.toOpplysningerOmArbeidssoekerEntity() = 
     opplysningerOmArbeidssoekerId = this.opplysningerOmArbeidssoekerId,
     periodeId = this.periodeId,
     sendtInnTidspunkt = DateUtils.toTimestamp(this.sendtInnAv.tidspunkt),
-    utdanningNusKode = this.utdanning?.nus.orEmpty(),
-    utdanningBestatt = this.utdanning?.bestaatt?.name.orEmpty(),
-    utdanningGodkjent = this.utdanning?.godkjent?.name.orEmpty(),
+    utdanningNusKode = this.utdanning?.nus,
+    utdanningBestatt = this.utdanning?.bestaatt?.name,
+    utdanningGodkjent = this.utdanning?.godkjent?.name,
     opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjonEntity(
         this.opplysningerOmArbeidssoekerId,
         this.jobbsituasjon.map { it.beskrivelse.name })
