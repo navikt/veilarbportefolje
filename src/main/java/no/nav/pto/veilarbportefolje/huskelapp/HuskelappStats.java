@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,11 +31,11 @@ public class HuskelappStats implements MeterBinder {
 
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
+        log.info("Reporting huskelapp metrikker");
+        Gauge.builder("huskelapp_enheter", () -> huskelappStats.size());
         huskelappStats.keySet().forEach(enhet_id -> {
             Tags tags = Tags.of("enhet_id", enhet_id);
-            Gauge.builder("huskelapp_antall", huskelappStats, map -> map.get(enhet_id))
-                    .tags(tags)
-                    .register(meterRegistry);
+            meterRegistry.gauge("huskelapp_antall", List.of(tags), map -> huskelappStats.get(enhet_id));
         });
 
     }
