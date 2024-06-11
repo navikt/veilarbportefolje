@@ -39,7 +39,7 @@ public class FargekategoriRepository {
     }
 
     @Transactional
-    public FargekategoriEntity upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {
+    public FargekategoriEntity upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv, EnhetId enhetId) {
         Timestamp sistEndret = toTimestamp(ZonedDateTime.now());
 
         String upsertSql = """
@@ -55,7 +55,7 @@ public class FargekategoriRepository {
                 request.fargekategoriVerdi().name(),
                 sistEndret,
                 sistEndretAv.getValue(),
-                request.enhetId().get());
+                enhetId.get());
 
         return jdbcTemplate.queryForObject(
                 "SELECT * FROM fargekategori WHERE fnr=?",
