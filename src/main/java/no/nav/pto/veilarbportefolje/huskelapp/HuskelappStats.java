@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.huskelapp;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,8 @@ public class HuskelappStats implements MeterBinder {
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
         huskelappStats.keySet().forEach(enhet_id -> {
-            Gauge.builder("huskelapp_antall_" + enhet_id, () -> huskelappStats.get(enhet_id));
+            Gauge.builder("huskelapp.antall", () -> huskelappStats.get(enhet_id)).tags(Tags.of("enhetId", enhet_id))
+                    .register(meterRegistry);
         });
     }
 
