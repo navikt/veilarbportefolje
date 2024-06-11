@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.huskelapp;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,13 +29,9 @@ public class HuskelappStats implements MeterBinder {
 
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
-        log.info("Reporting huskelapp metrikker");
-        Gauge.builder("huskelapp_enheter", () -> huskelappStats.size()).register(meterRegistry);
         huskelappStats.keySet().forEach(enhet_id -> {
-            Tags tags = Tags.of("enhet_id", enhet_id);
-            meterRegistry.gauge("huskelapp_antall", List.of(tags), map -> huskelappStats.get(enhet_id));
+            Gauge.builder("huskelapp_antall_" + enhet_id, () -> huskelappStats.get(enhet_id));
         });
-
     }
 
     @Scheduled(cron = "0 */1 * * * *")
