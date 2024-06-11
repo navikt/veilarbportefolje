@@ -32,7 +32,7 @@ public class HuskelappStats implements MeterBinder {
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
         log.info("Reporting huskelapp metrikker");
-        Gauge.builder("huskelapp_enheter", () -> huskelappStats.size());
+        Gauge.builder("huskelapp_enheter", () -> huskelappStats.size()).register(meterRegistry);
         huskelappStats.keySet().forEach(enhet_id -> {
             Tags tags = Tags.of("enhet_id", enhet_id);
             meterRegistry.gauge("huskelapp_antall", List.of(tags), map -> huskelappStats.get(enhet_id));
