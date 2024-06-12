@@ -48,7 +48,6 @@ public class HuskelappStats implements MeterBinder {
             Map<String, Integer> huskelappAntall = this.jdbcTemplate.query(query, rs -> {
                         Map<String, Integer> stats = new HashMap<>();
                         while (rs.next()) {
-                            log.info("huskelapp " + rs.getString(HUSKELAPP.ENHET_ID));
                             stats.put(rs.getString(HUSKELAPP.ENHET_ID), rs.getInt("huskelapp_antall"));
                         }
                         return stats;
@@ -69,7 +68,6 @@ public class HuskelappStats implements MeterBinder {
             Map<String, Integer> arbeidslisteAntall = this.jdbcTemplate.query(query, rs -> {
                         Map<String, Integer> stats = new HashMap<>();
                         while (rs.next()) {
-                            log.info("arbeidsliste " + rs.getString(ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE));
                             stats.put(rs.getString(ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE), rs.getInt("arbeidsliste_antall"));
                         }
                         return stats;
