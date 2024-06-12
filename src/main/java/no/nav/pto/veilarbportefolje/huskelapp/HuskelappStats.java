@@ -30,6 +30,7 @@ public class HuskelappStats implements MeterBinder {
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
         huskelappStats.keySet().forEach(enhet_id -> {
+            log.info("Reporting metrics fro huskelapp antall " + enhet_id);
             Gauge.builder("huskelapp_antall", () -> huskelappStats.get(enhet_id))
                     .tags("enhetId", enhet_id)
                     .description("Antall av aktive huskelapper")
