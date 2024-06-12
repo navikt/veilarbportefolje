@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.huskelapp;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.MultiGauge;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.NonNull;
@@ -13,8 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP;
 
@@ -26,25 +26,16 @@ public class HuskelappStats implements MeterBinder {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate jdbcTemplate;
 
-    private static final ConcurrentMap<String, Integer> huskelappStats = new ConcurrentHashMap<>();
+    private MultiGauge huskelapp_stats;
 
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
-        log.info("Reporting metrics for huskelapp " + huskelappStats);
-        try {
-            log.info("Reporting metrics for huskelapp " + huskelappStats.size());
-            huskelappStats.forEach((key, value) -> {
-                log.info("Reporting metrics for huskelapp antall " + key);
-                meterRegistry.gauge("huskelapp_antall", Tags.of("enhet_id", key),
-                        value
-                );
-            });
-        } catch (Exception e) {
-            log.error("Report huskelapp metrics error " + e, e);
-        }
+        huskelapp_stats = MultiGauge.builder("huskelapp_antall")
+                .description("The number of active huskelapper")
+                .register(meterRegistry);
     }
 
-    @Scheduled(cron = "0 */1 * * * *")
+    @Scheduled(cron = "0 */2 * * * *")
     public void oppdaterMetrikk() {
         try {
             String query = String.format("select %s, count(*) as huskelapp_antall from %s where %s = 'AKTIV' group by %s", HUSKELAPP.ENHET_ID, HUSKELAPP.TABLE_NAME, HUSKELAPP.STATUS, HUSKELAPP.ENHET_ID);
@@ -56,9 +47,8 @@ public class HuskelappStats implements MeterBinder {
                         return stats;
                     }
             );
-            if (huskelappAntall != null) {
-                huskelappStats.clear();
-                huskelappStats.putAll(huskelappAntall);
+            if (huskelappAntall != null && huskelapp_stats != null) {
+                huskelapp_stats.register(huskelappAntall.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
             }
         } catch (Exception e) {
             log.error("Can not fetch huskelapp metrics " + e, e);
