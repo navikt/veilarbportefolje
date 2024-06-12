@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP;
 
@@ -24,11 +26,11 @@ public class HuskelappStats implements MeterBinder {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate jdbcTemplate;
 
-    private static final Map<String, Integer> huskelappStats = new HashMap<>();
+    private static final ConcurrentMap<String, Integer> huskelappStats = new ConcurrentHashMap<>();
 
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
-        log.info("Reporting metrics for huskelapp");
+        log.info("Reporting metrics for huskelapp " + huskelappStats);
         try {
             log.info("Reporting metrics for huskelapp " + huskelappStats.size());
             huskelappStats.forEach((key, value) -> {
