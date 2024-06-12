@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.huskelapp;
 
-import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -25,26 +25,23 @@ public class HuskelappStats implements MeterBinder {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate jdbcTemplate;
 
-    Map<String, Integer> huskelappStats = new ConcurrentHashMap<>();
+    private final Map<String, Integer> huskelappStats = new ConcurrentHashMap<>();
 
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
+        log.info("Reporting metrics for huskelapp");
         huskelappStats.keySet().forEach(enhet_id -> {
-            log.info("Reporting metrics fro huskelapp antall " + enhet_id);
-            Gauge.builder("huskelapp_antall", () -> huskelappStats.get(enhet_id))
-                    .tags("enhetId", enhet_id)
-                    .description("Antall av aktive huskelapper")
-                    .register(meterRegistry);
+            log.info("Reporting metrics for huskelapp antall " + enhet_id);
+            meterRegistry.gauge("huskelapp_antall", Tags.of("enhet_id", enhet_id),
+                    huskelappStats.get(enhet_id)
+            );
         });
     }
 
-    @Scheduled(cron = "0 */1 * * * *")
+    @Scheduled(cron = "0 */5 * * * *")
     public void oppdaterMetrikk() {
         try {
-            huskelappStats.clear();
-
             String query = String.format("select %s, count(*) as huskelapp_antall from %s where %s = 'AKTIV' group by %s", HUSKELAPP.ENHET_ID, HUSKELAPP.TABLE_NAME, HUSKELAPP.STATUS, HUSKELAPP.ENHET_ID);
-            log.info(query);
             Map<String, Integer> huskelappAntall = this.jdbcTemplate.queryForObject(query, (rs, rowNum) -> {
                         Map<String, Integer> stats = new HashMap<>();
                         while (rs.next()) {
@@ -54,7 +51,7 @@ public class HuskelappStats implements MeterBinder {
                     }
             );
             if (huskelappAntall != null) {
-                log.info("copy antall to map " + huskelappAntall.size());
+                huskelappStats.clear();
                 huskelappStats.putAll(huskelappAntall);
             }
         } catch (Exception e) {
