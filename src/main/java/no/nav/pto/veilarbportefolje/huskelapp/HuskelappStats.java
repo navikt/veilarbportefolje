@@ -24,13 +24,14 @@ public class HuskelappStats implements MeterBinder {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate jdbcTemplate;
 
-    private final Map<String, Integer> huskelappStats = new HashMap<>();
+    private static final Map<String, Integer> huskelappStats = new HashMap<>();
 
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
+        log.info("Reporting metrics for huskelapp");
         try {
-            log.info("Reporting metrics for huskelapp " + this.huskelappStats.size());
-            this.huskelappStats.forEach((key, value) -> {
+            log.info("Reporting metrics for huskelapp " + huskelappStats.size());
+            huskelappStats.forEach((key, value) -> {
                 log.info("Reporting metrics for huskelapp antall " + key);
                 meterRegistry.gauge("huskelapp_antall", Tags.of("enhet_id", key),
                         value
@@ -54,10 +55,8 @@ public class HuskelappStats implements MeterBinder {
                     }
             );
             if (huskelappAntall != null) {
-                this.huskelappStats.clear();
-                this.huskelappStats.putAll(huskelappAntall);
-                log.info("Updated huskelapp stat " + huskelappStats.size());
-                log.info("Updated huskelapp stat " + huskelappAntall.size());
+                huskelappStats.clear();
+                huskelappStats.putAll(huskelappAntall);
             }
         } catch (Exception e) {
             log.error("Can not fetch huskelapp metrics " + e, e);
