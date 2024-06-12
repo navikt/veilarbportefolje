@@ -110,6 +110,7 @@ public class Bruker {
 
     HuskelappForBruker huskelapp;
     String fargekategori;
+    String fargekategoriEnhetId;
 
 
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
@@ -206,7 +207,9 @@ public class Bruker {
                 .setBrukersSituasjonSistEndret(bruker.getBrukers_situasjon_sist_endret())
                 .setUtdanningOgSituasjonSistEndret(bruker.getUtdanning_og_situasjon_sist_endret())
                 .setHuskelapp(bruker.getHuskelapp())
-                .setFargekategori(bruker.getFargekategori());
+                .setFargekategori(bruker.getFargekategori())
+                .setFargekategoriEnhetId(bruker.getFargekategori_enhetId());
+
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {

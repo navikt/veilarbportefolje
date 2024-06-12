@@ -7,7 +7,6 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
 import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoeker;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
@@ -130,6 +129,7 @@ public class OpensearchIndexerV2 {
                 .field("endretAv", huskelapp.endretAv())
                 .field("endretDato", huskelapp.endretDato())
                 .field("huskelappId", huskelapp.huskelappId())
+                .field("enhetId", huskelapp.enhetId())
                 .endObject()
                 .endObject();
 
@@ -148,10 +148,11 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void updateFargekategori(AktorId aktoerId, String fargekategori) {
+    public void updateFargekategori(AktorId aktoerId, String fargekategori, String enhetId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("fargekategori", fargekategori)
+                .field("fargekategori_enhetId", enhetId)
                 .endObject();
 
         update(aktoerId, content, "Oppretter/redigerer fargekategori");
@@ -163,6 +164,7 @@ public class OpensearchIndexerV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .nullField("fargekategori")
+                .nullField("fargekategori_enhetId")
                 .endObject();
 
         update(aktoerId, content, "Sletter fargekategori");

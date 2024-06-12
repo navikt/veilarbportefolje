@@ -128,5 +128,5 @@ public class OppfolgingsBruker {
     EnsligeForsorgereOvergangsstonad enslige_forsorgere_overgangsstonad;
     HuskelappForBruker huskelapp;
     String fargekategori;
-
+    String fargekategori_enhetId;
 }
