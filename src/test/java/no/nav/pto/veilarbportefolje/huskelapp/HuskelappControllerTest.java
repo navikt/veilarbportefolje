@@ -252,8 +252,16 @@ public class HuskelappControllerTest {
 
         List<HuskelappResponse> hentetHuskelappEtterRedigeringBody = fromJson(result, new TypeReference<>() {
         });
-        assertThat(hentetHuskelappEtterRedigeringBody.size()).isEqualTo(1);
-        
+        assertThat(hentetHuskelappEtterRedigeringBody.size()).isEqualTo(2);
+        assertThat(hentetHuskelappEtterRedigeringBody.stream().anyMatch(var -> var.equals(new HuskelappResponse(
+                huskelappId1Body.huskelappId(),
+                opprettRequest1.brukerFnr(),
+                opprettRequest1.enhetId(),
+                opprettRequest1.frist(),
+                opprettRequest1.kommentar(),
+                LocalDate.now(),
+                veilederId.getValue()
+        )))).isTrue();
         assertThat(hentetHuskelappEtterRedigeringBody.stream().anyMatch(var -> var.equals(new HuskelappResponse(
                 huskelappId2Body.huskelappId(),
                 opprettRequest2.brukerFnr(),
@@ -284,7 +292,7 @@ public class HuskelappControllerTest {
         );
         pdlIdentRepository.upsertIdenter(identer);
 
-        mockMvc
+       mockMvc
                 .perform(
                         post("/api/v1/huskelapp")
                                 .contentType(APPLICATION_JSON)

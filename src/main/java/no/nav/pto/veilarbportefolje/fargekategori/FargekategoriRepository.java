@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController.OppdaterFargekategoriRequest;
@@ -39,14 +38,14 @@ public class FargekategoriRepository {
     }
 
     @Transactional
-    public FargekategoriEntity upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv, EnhetId enhetId) {
+    public FargekategoriEntity upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {
         Timestamp sistEndret = toTimestamp(ZonedDateTime.now());
 
         String upsertSql = """
-                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident, enhet_id)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
+                    VALUES (?, ?, ?, ?, ?)
                     ON CONFLICT (fnr) DO UPDATE
-                    SET verdi=excluded.verdi, sist_endret=excluded.sist_endret, sist_endret_av_veilederident=excluded.sist_endret_av_veilederident, enhet_id=excluded.enhet_id
+                    SET verdi=?, sist_endret=?, sist_endret_av_veilederident=?
                 """;
 
         jdbcTemplate.update(upsertSql,
@@ -55,7 +54,9 @@ public class FargekategoriRepository {
                 request.fargekategoriVerdi().name(),
                 sistEndret,
                 sistEndretAv.getValue(),
-                enhetId.get());
+                request.fargekategoriVerdi().name(),
+                sistEndret,
+                sistEndretAv.getValue());
 
         return jdbcTemplate.queryForObject(
                 "SELECT * FROM fargekategori WHERE fnr=?",
@@ -86,12 +87,12 @@ public class FargekategoriRepository {
         });
     }
 
-    public void batchupsertFargekategori(FargekategoriVerdi fargekategoriVerdi, List<Fnr> fnr, VeilederId sisteEndretAv, EnhetId enhetId) {
+    public void batchupsertFargekategori(FargekategoriVerdi fargekategoriVerdi, List<Fnr> fnr, VeilederId sisteEndretAv) {
         String upsertSql = """
-                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident, enhet_id)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
+                    VALUES (?, ?, ?, ?, ?)
                     ON CONFLICT (fnr) DO UPDATE
-                    SET verdi=excluded.verdi, sist_endret=excluded.sist_endret, sist_endret_av_veilederident=excluded.sist_endret_av_veilederident
+                    SET verdi=?, sist_endret=?, sist_endret_av_veilederident=?
                 """;
 
         jdbcTemplate.batchUpdate(upsertSql, new BatchPreparedStatementSetter() {
@@ -102,7 +103,9 @@ public class FargekategoriRepository {
                 ps.setString(3, fargekategoriVerdi.name());
                 ps.setTimestamp(4, toTimestamp(ZonedDateTime.now()));
                 ps.setString(5, sisteEndretAv.getValue());
-                ps.setString(6, enhetId.get());
+                ps.setString(6, fargekategoriVerdi.name());
+                ps.setTimestamp(7, toTimestamp(ZonedDateTime.now()));
+                ps.setString(8, sisteEndretAv.getValue());
             }
 
             @Override
@@ -110,16 +113,5 @@ public class FargekategoriRepository {
                 return fnr.size();
             }
         });
-    }
-
-    public Optional<String> hentNavkontorPaFargekategori(Fnr fnr) {
-        String hentSql = "SELECT enhet_id FROM fargekategori WHERE fnr=?";
-
-        return Optional.ofNullable(queryForObjectOrNull(() ->
-                jdbcTemplate.queryForObject(
-                        hentSql,
-                        (resultSet, rowNumber) -> resultSet.getString("enhet_id"),
-                        fnr.get())
-        ));
     }
 }

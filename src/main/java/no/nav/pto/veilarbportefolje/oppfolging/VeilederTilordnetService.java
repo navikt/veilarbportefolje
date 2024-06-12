@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -26,8 +26,8 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final ArbeidslisteService arbeidslisteService;
     private final HuskelappService huskelappService;
-    private final FargekategoriService fargekategoriService;
     private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final AktorClient aktorClient;
     private final PdlIdentRepository pdlIdentRepository;
 
 
@@ -55,11 +55,6 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         final boolean brukerHarByttetNavkontorHuskelapp = huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktoerId);
         if (brukerHarByttetNavkontorHuskelapp) {
             huskelappService.deaktivereAlleHuskelapperPaaBruker(aktoerId, maybeFnr);
-        }
-
-        final boolean brukerHarByttetNavkontorFargekategori = fargekategoriService.brukerHarFargekategoriPaForrigeNavkontor(aktoerId);
-        if (brukerHarByttetNavkontorFargekategori) {
-            fargekategoriService.slettFargekategoriPaaBruker(aktoerId, maybeFnr);
         }
     }
 
