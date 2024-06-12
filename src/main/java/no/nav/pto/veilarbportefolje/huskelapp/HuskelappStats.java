@@ -57,6 +57,8 @@ public class HuskelappStats implements MeterBinder {
             if (huskelappAntall != null) {
                 this.huskelappStats.clear();
                 this.huskelappStats.putAll(huskelappAntall);
+                log.info("Updated huskelapp stat " + huskelappStats.size());
+                log.info("Updated huskelapp stat " + huskelappAntall.size());
             }
         } catch (Exception e) {
             log.error("Can not fetch huskelapp metrics " + e, e);
