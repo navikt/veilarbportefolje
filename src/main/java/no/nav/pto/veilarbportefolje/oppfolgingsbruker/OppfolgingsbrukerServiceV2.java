@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
@@ -21,9 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukOppfolgingsbrukerPaPostgres;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -90,7 +87,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
 
         Optional<OppfolgingsbrukerDTO> oppfolgingsbrukerDTO = veilarbarenaClient.hentOppfolgingsbruker(fnr);
 
-        if(oppfolgingsbrukerDTO.isEmpty()) {
+        if (oppfolgingsbrukerDTO.isEmpty()) {
             secureLog.error("Fant ingen oppfølgingsbrukerdata for bruker med fnr: {}.", fnr);
             throw new RuntimeException("Fant ingen oppfølgingsbrukerdata for brukeren.");
         }
@@ -107,7 +104,6 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
         );
 
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity);
-        log.info("Oppfolgingsbruker hentet og lagret.");
         secureLog.info("Oppfolgingsbruker hentet og lagret for aktorId: {} / fnr: {}.", aktorId, fnr);
     }
 
@@ -120,7 +116,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
         try {
             int raderSlettet = oppfolgingsbrukerRepositoryV3.slettOppfolgingsbruker(maybeFnr.get());
 
-            if(raderSlettet != 0) {
+            if (raderSlettet != 0) {
                 log.info("Oppfolgingsbruker slettet.");
                 secureLog.info("Oppfolgingsbruker slettet for fnr: {} / Aktør-ID: {}.", maybeFnr.get(), aktorId.get());
             } else {
