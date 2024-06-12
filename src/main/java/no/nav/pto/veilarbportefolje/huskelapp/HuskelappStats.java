@@ -44,6 +44,7 @@ public class HuskelappStats implements MeterBinder {
             huskelappStats.clear();
 
             String query = String.format("select %s, count(*) as huskelapp_antall from %s where %s = 'AKTIV' group by %s", HUSKELAPP.ENHET_ID, HUSKELAPP.TABLE_NAME, HUSKELAPP.STATUS, HUSKELAPP.ENHET_ID);
+            log.info(query);
             Map<String, Integer> huskelappAntall = this.jdbcTemplate.queryForObject(query, (rs, rowNum) -> {
                         Map<String, Integer> stats = new HashMap<>();
                         while (rs.next()) {
@@ -53,10 +54,11 @@ public class HuskelappStats implements MeterBinder {
                     }
             );
             if (huskelappAntall != null) {
+                log.info("copy antall to map " + huskelappAntall.size());
                 huskelappStats.putAll(huskelappAntall);
             }
         } catch (Exception e) {
-            log.error("Can not fetch huskelapp metrics");
+            log.error("Can not fetch huskelapp metrics " + e, e);
         }
     }
 }
