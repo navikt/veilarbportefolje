@@ -122,9 +122,12 @@ public class FargekategoriService {
                 .orElse(false);
     }
 
-    public boolean brukerHarFargekategoriPaForrigeNavkontor(AktorId aktoerId) {
-        Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktoerId);
-        Optional<String> navkontorPaFargekategori = fargekategoriRepository.hentNavkontorPaFargekategori(fnr);
+    public boolean brukerHarFargekategoriPaForrigeNavkontor(AktorId aktoerId, Optional<Fnr> maybeFnr) {
+        if (maybeFnr.isEmpty()) {
+            return false;
+        }
+
+        Optional<String> navkontorPaFargekategori = fargekategoriRepository.hentNavkontorPaFargekategori(maybeFnr.get());
 
         if (navkontorPaFargekategori.isEmpty()) {
             secureLog.info("Bruker {} har ikke NAV-kontor på fargekategori", aktoerId.toString());

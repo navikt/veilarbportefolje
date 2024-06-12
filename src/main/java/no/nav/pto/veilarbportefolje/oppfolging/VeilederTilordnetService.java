@@ -52,12 +52,12 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
             arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr);
         }
 
-        final boolean brukerHarByttetNavkontorHuskelapp = huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktoerId);
+        final boolean brukerHarByttetNavkontorHuskelapp = huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktoerId, maybeFnr);
         if (brukerHarByttetNavkontorHuskelapp) {
             huskelappService.deaktivereAlleHuskelapperPaaBruker(aktoerId, maybeFnr);
         }
 
-        final boolean brukerHarByttetNavkontorFargekategori = fargekategoriService.brukerHarFargekategoriPaForrigeNavkontor(aktoerId);
+        final boolean brukerHarByttetNavkontorFargekategori = fargekategoriService.brukerHarFargekategoriPaForrigeNavkontor(aktoerId, maybeFnr);
         if (brukerHarByttetNavkontorFargekategori) {
             fargekategoriService.slettFargekategoriPaaBruker(aktoerId, maybeFnr);
         }
