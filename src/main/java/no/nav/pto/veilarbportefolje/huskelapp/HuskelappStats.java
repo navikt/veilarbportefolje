@@ -29,11 +29,11 @@ public class HuskelappStats implements MeterBinder {
 
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
-        log.info("Reporting metrics for huskelapp");
-        huskelappStats.keySet().forEach(enhet_id -> {
+        log.info("Reporting metrics for huskelapp " + this.huskelappStats.keySet().size());
+        this.huskelappStats.keySet().forEach(enhet_id -> {
             log.info("Reporting metrics for huskelapp antall " + enhet_id);
             meterRegistry.gauge("huskelapp_antall", Tags.of("enhet_id", enhet_id),
-                    huskelappStats.get(enhet_id)
+                    this.huskelappStats.get(enhet_id)
             );
         });
     }
@@ -51,8 +51,8 @@ public class HuskelappStats implements MeterBinder {
                     }
             );
             if (huskelappAntall != null) {
-                huskelappStats.clear();
-                huskelappStats.putAll(huskelappAntall);
+                this.huskelappStats.clear();
+                this.huskelappStats.putAll(huskelappAntall);
             }
         } catch (Exception e) {
             log.error("Can not fetch huskelapp metrics " + e, e);
