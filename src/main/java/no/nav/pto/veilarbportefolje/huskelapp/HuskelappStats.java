@@ -45,7 +45,7 @@ public class HuskelappStats implements MeterBinder {
     public void oppdaterHuskelappMetrikk() {
         try {
             String query = String.format("select %s, count(*) as huskelapp_antall from %s where %s = 'AKTIV' group by %s", HUSKELAPP.ENHET_ID, HUSKELAPP.TABLE_NAME, HUSKELAPP.STATUS, HUSKELAPP.ENHET_ID);
-            Map<String, Integer> huskelappAntall = this.jdbcTemplate.queryForObject(query, (rs, rowNum) -> {
+            Map<String, Integer> huskelappAntall = this.jdbcTemplate.query(query, rs -> {
                         Map<String, Integer> stats = new HashMap<>();
                         while (rs.next()) {
                             log.info("huskelapp " + rs.getString(HUSKELAPP.ENHET_ID));
@@ -66,7 +66,7 @@ public class HuskelappStats implements MeterBinder {
     public void oppdaterArbeidslisteMetrikk() {
         try {
             String query = String.format("select %s, count(*) as arbeidsliste_antall from %s group by %s;", ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE, ARBEIDSLISTE.TABLE_NAME, ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE);
-            Map<String, Integer> arbeidslisteAntall = this.jdbcTemplate.queryForObject(query, (rs, rowNum) -> {
+            Map<String, Integer> arbeidslisteAntall = this.jdbcTemplate.query(query, rs -> {
                         Map<String, Integer> stats = new HashMap<>();
                         while (rs.next()) {
                             log.info("arbeidsliste " + rs.getString(ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE));
