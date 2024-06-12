@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -33,9 +34,10 @@ public class HuskelappService {
     private final PdlIdentRepository pdlIdentRepository;
 
 
+    @Transactional
     public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId) {
         try {
-
+            huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(huskelappOpprettRequest.brukerFnr());
             UUID huskelappId = huskelappRepository.opprettHuskelapp(huskelappOpprettRequest, veilederId);
 
             AktorId aktorId = hentAktorId(huskelappOpprettRequest.brukerFnr()).orElseThrow(RuntimeException::new);
@@ -130,10 +132,12 @@ public class HuskelappService {
         }
     }
 
-    public boolean brukerHarHuskelappPaForrigeNavkontor(AktorId aktoerId) {
+    public boolean brukerHarHuskelappPaForrigeNavkontor(AktorId aktoerId, Optional<Fnr> maybeFnr) {
+        if (maybeFnr.isEmpty()) {
+            return false;
+        }
 
-        Fnr fnrBruker = aktorClient.hentFnr(aktoerId);
-        Optional<String> navKontorPaHuskelapp = huskelappRepository.hentNavkontorPaHuskelapp(fnrBruker);
+        Optional<String> navKontorPaHuskelapp = huskelappRepository.hentNavkontorPaHuskelapp(maybeFnr.get());
 
         if (navKontorPaHuskelapp.isEmpty()) {
             secureLog.info("Bruker {} har ikke NAV-kontor på huskelapp", aktoerId.toString());
