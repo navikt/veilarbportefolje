@@ -41,7 +41,7 @@ public class HuskelappStats implements MeterBinder {
                 .register(meterRegistry);
     }
 
-    @Scheduled(cron = "0 * */3 * * *")
+    @Scheduled(cron = "0 */3 * * * *")
     public void oppdaterHuskelappMetrikk() {
         try {
             String query = String.format("select %s, count(*) as huskelapp_antall from %s where %s = 'AKTIV' group by %s", HUSKELAPP.ENHET_ID, HUSKELAPP.TABLE_NAME, HUSKELAPP.STATUS, HUSKELAPP.ENHET_ID);
@@ -61,7 +61,7 @@ public class HuskelappStats implements MeterBinder {
         }
     }
 
-    @Scheduled(cron = "0 * */3 * * *")
+    @Scheduled(cron = "0 */3 * * * *")
     public void oppdaterArbeidslisteMetrikk() {
         try {
             String query = String.format("select %s, count(*) as arbeidsliste_antall from %s group by %s;", ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE, ARBEIDSLISTE.TABLE_NAME, ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE);
