@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP;
 
 @Component
@@ -27,16 +28,21 @@ public class HuskelappStats implements MeterBinder {
     private final JdbcTemplate jdbcTemplate;
 
     private MultiGauge huskelapp_stats;
+    private MultiGauge arbeidsliste_stats;
 
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
         huskelapp_stats = MultiGauge.builder("huskelapp_antall")
                 .description("The number of active huskelapper")
                 .register(meterRegistry);
+
+        arbeidsliste_stats = MultiGauge.builder("arbeidsliste_antall")
+                .description("The number of active arbeidsliste")
+                .register(meterRegistry);
     }
 
-    @Scheduled(cron = "0 */2 * * * *")
-    public void oppdaterMetrikk() {
+    @Scheduled(cron = "0 * */3 * * *")
+    public void oppdaterHuskelappMetrikk() {
         try {
             String query = String.format("select %s, count(*) as huskelapp_antall from %s where %s = 'AKTIV' group by %s", HUSKELAPP.ENHET_ID, HUSKELAPP.TABLE_NAME, HUSKELAPP.STATUS, HUSKELAPP.ENHET_ID);
             Map<String, Integer> huskelappAntall = this.jdbcTemplate.queryForObject(query, (rs, rowNum) -> {
@@ -52,6 +58,26 @@ public class HuskelappStats implements MeterBinder {
             }
         } catch (Exception e) {
             log.error("Can not fetch huskelapp metrics " + e, e);
+        }
+    }
+
+    @Scheduled(cron = "0 * */3 * * *")
+    public void oppdaterArbeidslisteMetrikk() {
+        try {
+            String query = String.format("select %s, count(*) as arbeidsliste_antall from %s group by %s;", ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE, ARBEIDSLISTE.TABLE_NAME, ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE);
+            Map<String, Integer> arbeidslisteAntall = this.jdbcTemplate.queryForObject(query, (rs, rowNum) -> {
+                        Map<String, Integer> stats = new HashMap<>();
+                        while (rs.next()) {
+                            stats.put(rs.getString(ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE), rs.getInt("arbeidsliste_antall"));
+                        }
+                        return stats;
+                    }
+            );
+            if (arbeidslisteAntall != null && arbeidsliste_stats != null) {
+                arbeidsliste_stats.register(arbeidslisteAntall.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
+            }
+        } catch (Exception e) {
+            log.error("Can not fetch huskelapp and arbeidsliste metrics " + e, e);
         }
     }
 }
