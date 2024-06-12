@@ -29,11 +29,11 @@ public class HuskelappStats implements MeterBinder {
 
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
-        log.info("Reporting metrics for huskelapp " + this.huskelappStats.keySet().size());
-        this.huskelappStats.keySet().forEach(enhet_id -> {
-            log.info("Reporting metrics for huskelapp antall " + enhet_id);
-            meterRegistry.gauge("huskelapp_antall", Tags.of("enhet_id", enhet_id),
-                    this.huskelappStats.get(enhet_id)
+        log.info("Reporting metrics for huskelapp " + this.huskelappStats.size());
+        this.huskelappStats.forEach((key, value) -> {
+            log.info("Reporting metrics for huskelapp antall " + key);
+            meterRegistry.gauge("huskelapp_antall", Tags.of("enhet_id", key),
+                    value
             );
         });
     }
