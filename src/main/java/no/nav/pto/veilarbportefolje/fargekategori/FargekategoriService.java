@@ -49,7 +49,7 @@ public class FargekategoriService {
         } else {
             FargekategoriEntity oppdatertKategori = fargekategoriRepository.upsertFargekateori(request, sistEndretAv, enhetId);
 
-            oppdaterIOpensearch(request.fnr(), request.fargekategoriVerdi());
+            oppdaterIOpensearch(request.fnr(), request.fargekategoriVerdi().name(), enhetId.get());
 
             return Optional.of(oppdatertKategori);
         }
@@ -64,7 +64,7 @@ public class FargekategoriService {
         } else {
             fargekategoriRepository.batchupsertFargekategori(fargekategoriVerdi, fnr, innloggetVeileder, enhetId);
 
-            fnr.forEach(f -> oppdaterIOpensearch(f, fargekategoriVerdi));
+            fnr.forEach(f -> oppdaterIOpensearch(f,fargekategoriVerdi.name(), enhetId.get()));
         }
     }
 
@@ -73,9 +73,9 @@ public class FargekategoriService {
         opensearchIndexerV2.slettFargekategori(aktorId);
     }
 
-    private void oppdaterIOpensearch(Fnr fnr, FargekategoriVerdi fargekategoriVerdi) {
+    private void oppdaterIOpensearch(Fnr fnr, String fargekategori, String enhetId) {
         AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr)).orElseThrow(RuntimeException::new);
-        opensearchIndexerV2.updateFargekategori(aktorId, fargekategoriVerdi.name());
+        opensearchIndexerV2.updateFargekategori(aktorId, fargekategori, enhetId);
     }
 
     public void slettFargekategoriPaaBruker(AktorId aktorId, Optional<Fnr> maybeFnr) {

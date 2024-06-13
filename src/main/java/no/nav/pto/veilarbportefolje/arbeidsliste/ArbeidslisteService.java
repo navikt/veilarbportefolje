@@ -63,7 +63,7 @@ public class ArbeidslisteService {
         return arbeidslisteRepositoryV2.insertArbeidsliste(dto)
                 .onSuccess((result) -> {
                     opensearchIndexerV2.updateArbeidsliste(result);
-                    opensearchIndexerV2.updateFargekategori(result.getAktorId(), ArbeidslisteMapper.mapTilFargekategoriVerdi(result.kategori));
+                    opensearchIndexerV2.updateFargekategori(result.getAktorId(), ArbeidslisteMapper.mapTilFargekategoriVerdi(result.kategori), navKontorForBruker.toString());
                 });
     }
 
@@ -77,7 +77,7 @@ public class ArbeidslisteService {
         return arbeidslisteRepositoryV2.updateArbeidsliste(data)
                 .onSuccess((result) -> {
                     opensearchIndexerV2.updateArbeidsliste(result);
-                    opensearchIndexerV2.updateFargekategori(result.getAktorId(), ArbeidslisteMapper.mapTilFargekategoriVerdi(result.kategori));
+                    opensearchIndexerV2.updateFargekategori(result.getAktorId(), ArbeidslisteMapper.mapTilFargekategoriVerdi(result.kategori), data.getNavKontorForArbeidsliste());
                 });
     }
 

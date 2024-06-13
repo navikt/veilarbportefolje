@@ -73,11 +73,13 @@ public class BrukerRepositoryV2 {
                                ARB.KATEGORI                     as ARB_KATEGORI,
                                ARB.NAV_KONTOR_FOR_ARBEIDSLISTE  as ARB_NAV_KONTOR_FOR_ARBEIDSLISTE,
                                FAR.verdi                        as FAR_VERDI,
+                               FAR.enhet_id                     as FAR_ENHET_ID,
                                HL.frist							as HL_FRIST,
                                HL.kommentar						as HL_KOMMENTAR,
                                HL.endret_dato                   as HL_ENDRET_DATO,
                                hl.endret_av_veileder            as HL_ENDRET_AV,
-                               HL.huskelapp_id                  as HL_HUSKELAPPID
+                               HL.huskelapp_id                  as HL_HUSKELAPPID,
+                               HL.enhet_id                      as HL_ENHET_ID
                         FROM OPPFOLGING_DATA OD
                                 inner join aktive_identer ai on OD.aktoerid = ai.aktorid
                                  left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
@@ -176,7 +178,8 @@ public class BrukerRepositoryV2 {
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
                 .setAapordinerutlopsdato(aapordinerutlopsdato)
                 .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)))
-                .setFargekategori(rs.getString(FAR_VERDI));
+                .setFargekategori(rs.getString(FAR_VERDI))
+                .setFargekategori_enhetId(rs.getString(FAR_ENHET_ID));
 
         setHuskelapp(bruker, rs);
         setBrukersSituasjon(bruker, rs);
@@ -232,8 +235,9 @@ public class BrukerRepositoryV2 {
         String huskelappId = rs.getString(HL_HUSKELAPPID);
         LocalDate endretDato = toLocalDate(rs.getTimestamp(HL_ENDRET_DATO));
         VeilederId endretAv = VeilederId.veilederIdOrNull(rs.getString(HL_ENDRET_AV));
+        String enhetId = rs.getString(HL_ENHET_ID);
         if (frist != null || kommentar != null) {
-            oppfolgingsBruker.setHuskelapp(new HuskelappForBruker(frist, kommentar, endretDato, endretAv.getValue(), huskelappId));
+            oppfolgingsBruker.setHuskelapp(new HuskelappForBruker(frist, kommentar, endretDato, endretAv.getValue(), huskelappId, enhetId));
         }
     }
 
