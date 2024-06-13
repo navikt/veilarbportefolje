@@ -17,6 +17,7 @@ spec:
     - https://veilarbportefolje.dev.intern.nav.no
     - https://veilarbportefolje.dev-fss-pub.nais.io
   webproxy: true
+  leaderElection: true
   secureLogs:
     enabled: true
   kafka:

@@ -19,6 +19,7 @@ spec:
     - https://veilarbportefolje.nais.adeo.no
     - https://app.adeo.no/veilarbportefolje
   webproxy: true
+  leaderElection: true
   secureLogs:
     enabled: true
   kafka:
