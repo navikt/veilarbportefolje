@@ -6,6 +6,7 @@ import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
@@ -16,6 +17,10 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringRepositoryV2;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringRepository;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
@@ -60,10 +65,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinne
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringRepositoryV2;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringRepository;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
@@ -372,5 +373,12 @@ public class ApplicationConfigTest {
     @Bean
     public OppslagArbeidssoekerregisteretClient oppslagArbeidssoekerregisteretClient() {
         return mock(OppslagArbeidssoekerregisteretClient.class);
+    }
+
+    @Bean
+    public LeaderElectionClient leaderElectionClient() {
+        LeaderElectionClient mockLeaderElectionClient = mock(LeaderElectionClient.class);
+        when(mockLeaderElectionClient.isLeader()).thenReturn(true);
+        return mockLeaderElectionClient;
     }
 }
