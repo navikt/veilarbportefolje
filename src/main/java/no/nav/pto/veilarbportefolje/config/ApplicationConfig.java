@@ -1,11 +1,13 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import io.getunleash.DefaultUnleash;
+import io.getunleash.util.UnleashConfig;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import io.getunleash.DefaultUnleash;
-import io.getunleash.util.UnleashConfig;
+import no.nav.common.job.leader_election.LeaderElectionClient;
+import no.nav.common.job.leader_election.LeaderElectionHttpClient;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.EnvironmentUtils;
@@ -21,7 +23,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.List;
 import java.util.concurrent.Executor;
 
 @EnableScheduling
@@ -59,6 +60,11 @@ public class ApplicationConfig {
         return AzureAdTokenClientBuilder.builder()
                 .withNaisDefaults()
                 .buildMachineToMachineTokenClient();
+    }
+
+    @Bean
+    public LeaderElectionClient leaderElectionClient() {
+        return new LeaderElectionHttpClient();
     }
 
     @Bean
