@@ -36,26 +36,24 @@ public class HuskelappStats implements MeterBinder {
 
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
-        if (leaderElection.isLeader()) {
-            if (huskelapp_stats == null) {
-                huskelapp_stats = MultiGauge.builder("huskelapp_antall")
-                        .description("The number of active huskelapper")
-                        .register(meterRegistry);
-            }
+        if (huskelapp_stats == null) {
+            huskelapp_stats = MultiGauge.builder("huskelapp_antall")
+                    .description("The number of active huskelapper")
+                    .register(meterRegistry);
+        }
 
-            if (arbeidsliste_stats == null) {
-                arbeidsliste_stats = MultiGauge.builder("arbeidsliste_antall")
-                        .description("The number of active arbeidsliste")
-                        .register(meterRegistry);
-            }
+        if (arbeidsliste_stats == null) {
+            arbeidsliste_stats = MultiGauge.builder("arbeidsliste_antall")
+                    .description("The number of active arbeidsliste")
+                    .register(meterRegistry);
+        }
 
-            if (!huskelappAntallPerEnhet.isEmpty()) {
-                huskelapp_stats.register(huskelappAntallPerEnhet.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
-            }
+        if (!huskelappAntallPerEnhet.isEmpty()) {
+            huskelapp_stats.register(huskelappAntallPerEnhet.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
+        }
 
-            if (!arbeidslisteAntallPerEnhet.isEmpty()) {
-                arbeidsliste_stats.register(arbeidslisteAntallPerEnhet.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
-            }
+        if (!arbeidslisteAntallPerEnhet.isEmpty()) {
+            arbeidsliste_stats.register(arbeidslisteAntallPerEnhet.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
         }
     }
 
