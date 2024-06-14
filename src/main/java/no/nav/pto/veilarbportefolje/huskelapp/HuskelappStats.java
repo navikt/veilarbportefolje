@@ -31,20 +31,35 @@ public class HuskelappStats implements MeterBinder {
     private MultiGauge huskelapp_stats;
     private MultiGauge arbeidsliste_stats;
 
+    private final Map<String, Integer> arbeidslisteAntallPerEnhet = new HashMap<>();
+    private final Map<String, Integer> huskelappAntallPerEnhet = new HashMap<>();
+
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
         if (leaderElection.isLeader()) {
-            huskelapp_stats = MultiGauge.builder("huskelapp_antall")
-                    .description("The number of active huskelapper")
-                    .register(meterRegistry);
+            if (huskelapp_stats == null) {
+                huskelapp_stats = MultiGauge.builder("huskelapp_antall")
+                        .description("The number of active huskelapper")
+                        .register(meterRegistry);
+            }
 
-            arbeidsliste_stats = MultiGauge.builder("arbeidsliste_antall")
-                    .description("The number of active arbeidsliste")
-                    .register(meterRegistry);
+            if (arbeidsliste_stats == null) {
+                arbeidsliste_stats = MultiGauge.builder("arbeidsliste_antall")
+                        .description("The number of active arbeidsliste")
+                        .register(meterRegistry);
+            }
+
+            if (!huskelappAntallPerEnhet.isEmpty()) {
+                huskelapp_stats.register(huskelappAntallPerEnhet.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
+            }
+
+            if (!arbeidslisteAntallPerEnhet.isEmpty()) {
+                arbeidsliste_stats.register(arbeidslisteAntallPerEnhet.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
+            }
         }
     }
 
-    @Scheduled(cron = "* */3 6-18 * * *")
+    @Scheduled(cron = "* */5 6-18 * * *")
     public void oppdaterHuskelappMetrikk() {
         try {
             if (leaderElection.isLeader()) {
@@ -57,8 +72,9 @@ public class HuskelappStats implements MeterBinder {
                             return stats;
                         }
                 );
-                if (huskelappAntall != null && huskelapp_stats != null) {
-                    huskelapp_stats.register(huskelappAntall.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
+                if (huskelappAntall != null) {
+                    huskelappAntallPerEnhet.clear();
+                    huskelappAntallPerEnhet.putAll(huskelappAntall);
                 }
             }
         } catch (Exception e) {
@@ -66,7 +82,7 @@ public class HuskelappStats implements MeterBinder {
         }
     }
 
-    @Scheduled(cron = "* */3 6-18 * * *")
+    @Scheduled(cron = "* */5 6-18 * * *")
     public void oppdaterArbeidslisteMetrikk() {
         try {
             if (leaderElection.isLeader()) {
@@ -79,8 +95,9 @@ public class HuskelappStats implements MeterBinder {
                             return stats;
                         }
                 );
-                if (arbeidslisteAntall != null && arbeidsliste_stats != null) {
-                    arbeidsliste_stats.register(arbeidslisteAntall.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
+                if (arbeidslisteAntall != null) {
+                    arbeidslisteAntallPerEnhet.clear();
+                    arbeidslisteAntallPerEnhet.putAll(arbeidslisteAntall);
                 }
             }
         } catch (Exception e) {
