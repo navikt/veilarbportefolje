@@ -49,10 +49,12 @@ public class HuskelappStats implements MeterBinder {
         }
 
         if (!huskelappAntallPerEnhet.isEmpty()) {
+            log.info("Reporting huskelapp metrikker");
             huskelapp_stats.register(huskelappAntallPerEnhet.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
         }
 
         if (!arbeidslisteAntallPerEnhet.isEmpty()) {
+            log.info("Reporting arbeidsliste metrikker");
             arbeidsliste_stats.register(arbeidslisteAntallPerEnhet.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
         }
     }
@@ -71,6 +73,7 @@ public class HuskelappStats implements MeterBinder {
                         }
                 );
                 if (huskelappAntall != null) {
+                    log.info("Updating huskelapp stats");
                     huskelappAntallPerEnhet.clear();
                     huskelappAntallPerEnhet.putAll(huskelappAntall);
                 }
@@ -94,6 +97,7 @@ public class HuskelappStats implements MeterBinder {
                         }
                 );
                 if (arbeidslisteAntall != null) {
+                    log.info("Updating arbeidsliste stats");
                     arbeidslisteAntallPerEnhet.clear();
                     arbeidslisteAntallPerEnhet.putAll(arbeidslisteAntall);
                 }
