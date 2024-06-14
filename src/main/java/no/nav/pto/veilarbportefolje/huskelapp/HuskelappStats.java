@@ -44,7 +44,7 @@ public class HuskelappStats implements MeterBinder {
         }
     }
 
-    @Scheduled(cron = "0 */30 7-17 * * MON-FRI")
+    @Scheduled(cron = "* */15 7-17 * * MON-FRI")
     public void oppdaterHuskelappMetrikk() {
         try {
             if (leaderElection.isLeader()) {
@@ -66,7 +66,7 @@ public class HuskelappStats implements MeterBinder {
         }
     }
 
-    @Scheduled(cron = "0 */30 7-17 * * MON-FRI")
+    @Scheduled(cron = "* */15 7-17 * * MON-FRI")
     public void oppdaterArbeidslisteMetrikk() {
         try {
             if (leaderElection.isLeader()) {
