@@ -1,0 +1,14 @@
+[
+  {
+    "periodeId": "ea0ad984-8b99-4fff-afd6-07737ab19d16",
+    "startet": {
+      "tidspunkt": "2024-04-23T13:04:40.739Z",
+      "utfoertAv": {
+        "type": "SLUTTBRUKER"
+      },
+      "kilde": "europe-north1-docker.pkg.dev/nais-management-233d/paw/paw-arbeidssokerregisteret-api-inngang:24.04.23.118-1",
+      "aarsak": "Er over 18 år, er bosatt i Norge i hendhold Folkeregisterloven"
+    },
+    "avsluttet": null
+  }
+]

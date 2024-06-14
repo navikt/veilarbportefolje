@@ -19,6 +19,7 @@ spec:
     - https://veilarbportefolje.nais.adeo.no
     - https://app.adeo.no/veilarbportefolje
   webproxy: true
+  leaderElection: true
   secureLogs:
     enabled: true
   kafka:
@@ -92,6 +93,10 @@ spec:
       value: "http://veilarbveileder.pto.svc.nais.local/veilarbveileder"
     - name: VEILARBVEILEDER_TOKEN_SCOPE
       value: "api://prod-fss.pto.veilarbveileder/.default"
+    - name: VEILARBARENA_URL
+      value: "http://veilarbarena.pto.svc.nais.local/veilarbarena"
+    - name: VEILARBARENA_TOKEN_SCOPE
+      value: "api://prod-fss.pto.veilarbarena/.default"
     - name: PDL_URL
       value: "http://pdl-api.pdl.svc.nais.local"
     - name: PDL_TOKEN_SCOPE
@@ -104,3 +109,7 @@ spec:
       value: "https://kodeverk-api.nav.no"
     - name: KODEVERK_SCOPE
       value: "api://prod-gcp.team-rocket.kodeverk-api/.default"
+    - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_URL
+      value: "https://oppslag-arbeidssoekerregisteret.intern.nav.no"
+    - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_SCOPE
+      value: "api://prod-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"

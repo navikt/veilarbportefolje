@@ -6,6 +6,7 @@ import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
@@ -16,6 +17,11 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringRepositoryV2;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringRepository;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
@@ -41,8 +47,10 @@ import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
 import no.nav.pto.veilarbportefolje.opensearch.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
@@ -57,10 +65,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinne
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringRepositoryV2;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
-import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringRepository;
-import no.nav.pto.veilarbportefolje.registrering.endring.EndringIRegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
@@ -90,9 +94,11 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.common.utils.IdUtils.generateId;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_NYTT_ARBEIDSSOEKERREGISTER;
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchUtils.createClient;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
@@ -109,7 +115,7 @@ import static org.mockito.Mockito.when;
         ArbeidslisteService.class,
         BrukerServiceV2.class,
         BrukerRepositoryV2.class,
-        RegistreringService.class,
+        ArbeidssokerRegistreringService.class,
         AktivitetService.class,
         OppfolgingAvsluttetService.class,
         OpensearchService.class,
@@ -126,7 +132,7 @@ import static org.mockito.Mockito.when;
         DialogRepositoryV2.class,
         CVRepositoryV2.class,
         CVService.class,
-        RegistreringRepositoryV2.class,
+        ArbeidssokerRegistreringRepositoryV2.class,
         NyForVeilederService.class,
         VeilederTilordnetService.class,
         OppfolgingStartetService.class,
@@ -162,12 +168,17 @@ import static org.mockito.Mockito.when;
         BarnUnder18AarRepository.class,
         BarnUnder18AarService.class,
         AuthService.class,
-        EndringIRegistreringService.class,
-        EndringIRegistreringRepository.class,
+        EndringIArbeidssokerRegistreringService.class,
+        EndringIArbeidssokerRegistreringRepository.class,
         HuskelappService.class,
         HuskelappRepository.class,
         FargekategoriService.class,
-        FargekategoriRepository.class
+        FargekategoriRepository.class,
+        ArbeidssoekerService.class,
+        OpplysningerOmArbeidssoekerRepository.class,
+        SisteArbeidssoekerPeriodeRepository.class,
+        ProfileringRepository.class,
+        ArbeidssoekerDataRepository.class
 })
 public class ApplicationConfigTest {
 
@@ -185,9 +196,9 @@ public class ApplicationConfigTest {
     @Bean
     public TestDataClient dbTestClient(JdbcTemplate jdbcTemplatePostgres,
                                        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2,
-                                       RegistreringRepositoryV2 registreringRepositoryV2, OpensearchTestClient opensearchTestClient,
+                                       ArbeidssokerRegistreringRepositoryV2 arbeidssokerRegistreringRepositoryV2, OpensearchTestClient opensearchTestClient,
                                        OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository) {
-        return new TestDataClient(jdbcTemplatePostgres, registreringRepositoryV2, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlIdentRepository, pdlPersonRepository, huskelappRepository);
+        return new TestDataClient(jdbcTemplatePostgres, arbeidssokerRegistreringRepositoryV2, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlIdentRepository, pdlPersonRepository, huskelappRepository);
     }
 
     @Bean
@@ -222,6 +233,8 @@ public class ApplicationConfigTest {
     public DefaultUnleash defaultUnleash() {
         final DefaultUnleash mock = mock(DefaultUnleash.class);
         when(mock.isEnabled(anyString())).thenReturn(true);
+        when(mock.isEnabled(BRUK_NYTT_ARBEIDSSOEKERREGISTER)).thenReturn(false);
+
         return mock;
     }
 
@@ -350,5 +363,22 @@ public class ApplicationConfigTest {
         return poaoTilgangWrapper;
     }
 
+    @Bean
+    public VeilarbarenaClient veilarbarenaClient() {
+        VeilarbarenaClient veilarbarenaClientMock = mock(VeilarbarenaClient.class);
+        when(veilarbarenaClientMock.hentOppfolgingsbruker(any())).thenReturn(Optional.of(mock(OppfolgingsbrukerDTO.class)));
+        return veilarbarenaClientMock;
+    }
 
+    @Bean
+    public OppslagArbeidssoekerregisteretClient oppslagArbeidssoekerregisteretClient() {
+        return mock(OppslagArbeidssoekerregisteretClient.class);
+    }
+
+    @Bean
+    public LeaderElectionClient leaderElectionClient() {
+        LeaderElectionClient mockLeaderElectionClient = mock(LeaderElectionClient.class);
+        when(mockLeaderElectionClient.isLeader()).thenReturn(true);
+        return mockLeaderElectionClient;
+    }
 }
