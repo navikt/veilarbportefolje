@@ -28,15 +28,12 @@ import java.util.stream.Collectors;
 public class HuskelappStats implements MeterBinder {
 
     @Qualifier("PostgresJdbcReadOnly")
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate dbReadOnly;
 
     private final LeaderElectionClient leaderElection;
 
     private MultiGauge huskelapp_stats;
     private MultiGauge arbeidsliste_stats;
-
-    private final Map<String, Integer> arbeidslisteAntallPerEnhet = new HashMap<>();
-    private final Map<String, Integer> huskelappAntallPerEnhet = new HashMap<>();
 
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
@@ -51,16 +48,6 @@ public class HuskelappStats implements MeterBinder {
                     .description("The number of active arbeidsliste")
                     .register(meterRegistry);
         }
-
-        if (!huskelappAntallPerEnhet.isEmpty()) {
-            log.info("Reporting huskelapp metrikker");
-            huskelapp_stats.register(huskelappAntallPerEnhet.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
-        }
-
-        if (!arbeidslisteAntallPerEnhet.isEmpty()) {
-            log.info("Reporting arbeidsliste metrikker");
-            arbeidsliste_stats.register(arbeidslisteAntallPerEnhet.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
-        }
     }
 
     @Async
@@ -69,7 +56,7 @@ public class HuskelappStats implements MeterBinder {
         try {
             if (leaderElection.isLeader()) {
                 String query = String.format("select %s, count(*) as huskelapp_antall from %s where %s = 'AKTIV' group by %s", PostgresTable.HUSKELAPP.ENHET_ID, PostgresTable.HUSKELAPP.TABLE_NAME, PostgresTable.HUSKELAPP.STATUS, PostgresTable.HUSKELAPP.ENHET_ID);
-                Map<String, Integer> huskelappAntall = this.jdbcTemplate.query(query, rs -> {
+                Map<String, Integer> huskelappAntall = dbReadOnly.query(query, rs -> {
                             Map<String, Integer> stats = new HashMap<>();
                             while (rs.next()) {
                                 stats.put(rs.getString(PostgresTable.HUSKELAPP.ENHET_ID), rs.getInt("huskelapp_antall"));
@@ -79,8 +66,7 @@ public class HuskelappStats implements MeterBinder {
                 );
                 if (huskelappAntall != null) {
                     log.info("Updating huskelapp stats");
-                    huskelappAntallPerEnhet.clear();
-                    huskelappAntallPerEnhet.putAll(huskelappAntall);
+                    huskelapp_stats.register(huskelappAntall.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
                 }
             }
         } catch (Exception e) {
@@ -94,7 +80,7 @@ public class HuskelappStats implements MeterBinder {
         try {
             if (leaderElection.isLeader()) {
                 String query = String.format("select %s, count(*) as arbeidsliste_antall from %s group by %s;", PostgresTable.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE, PostgresTable.ARBEIDSLISTE.TABLE_NAME, PostgresTable.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE);
-                Map<String, Integer> arbeidslisteAntall = this.jdbcTemplate.query(query, rs -> {
+                Map<String, Integer> arbeidslisteAntall = dbReadOnly.query(query, rs -> {
                             Map<String, Integer> stats = new HashMap<>();
                             while (rs.next()) {
                                 stats.put(rs.getString(PostgresTable.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE), rs.getInt("arbeidsliste_antall"));
@@ -104,8 +90,7 @@ public class HuskelappStats implements MeterBinder {
                 );
                 if (arbeidslisteAntall != null) {
                     log.info("Updating arbeidsliste stats");
-                    arbeidslisteAntallPerEnhet.clear();
-                    arbeidslisteAntallPerEnhet.putAll(arbeidslisteAntall);
+                    arbeidsliste_stats.register(arbeidslisteAntall.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
                 }
             }
         } catch (Exception e) {
