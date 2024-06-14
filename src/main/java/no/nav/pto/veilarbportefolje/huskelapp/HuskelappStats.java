@@ -30,6 +30,7 @@ public class HuskelappStats implements MeterBinder {
     private MultiGauge huskelapp_stats;
     private MultiGauge arbeidsliste_stats;
 
+
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
         if (huskelapp_stats == null) {
@@ -60,7 +61,7 @@ public class HuskelappStats implements MeterBinder {
                 );
                 if (huskelappAntall != null) {
                     log.info("Updating huskelapp stats");
-                    huskelapp_stats.register(huskelappAntall.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
+                    huskelapp_stats.register(huskelappAntall.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()), true);
                 }
             }
         } catch (Exception e) {
@@ -83,7 +84,7 @@ public class HuskelappStats implements MeterBinder {
                 );
                 if (arbeidslisteAntall != null) {
                     log.info("Updating arbeidsliste stats");
-                    arbeidsliste_stats.register(arbeidslisteAntall.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()));
+                    arbeidsliste_stats.register(arbeidslisteAntall.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()), true);
                 }
             }
         } catch (Exception e) {
