@@ -11,11 +11,15 @@ import no.nav.common.job.leader_election.LeaderElectionHttpClient;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.EnvironmentUtils;
+import no.nav.pto.veilarbportefolje.huskelapp.HuskelappStats;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClientImpl;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -66,6 +70,13 @@ public class ApplicationConfig {
     public LeaderElectionClient leaderElectionClient() {
         return new LeaderElectionHttpClient();
     }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public HuskelappStats huskelapp(@Qualifier("PostgresJdbcReadOnly") JdbcTemplate db, LeaderElectionClient leaderElection) {
+        return new HuskelappStats(db, leaderElection);
+    }
+
 
     @Bean
     public DefaultUnleash defaultUnleash(EnvironmentProperties properties) {
