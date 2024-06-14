@@ -17,6 +17,7 @@ public class PostgresDDLTest {
     public void kan_generere_postgres_DDL() throws IOException {
         var postgresContainer = new PostgresContainer();
         Flyway.configure()
+                .validateMigrationNaming(true)
                 .dataSource(postgresContainer.createDataSource())
                 .locations("db/postgres")
                 .baselineOnMigrate(true)

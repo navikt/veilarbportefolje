@@ -1,0 +1,35 @@
+[
+  {
+    "opplysningerOmArbeidssoekerId": "913161a3-dde9-4448-abf8-2a01a043f8cd",
+    "periodeId": "ea0ad984-8b99-4fff-afd6-07737ab19d16",
+    "sendtInnAv": {
+      "tidspunkt": "2024-04-23T13:22:58.089Z",
+      "utfoertAv": {
+        "type": "SLUTTBRUKER"
+      },
+      "kilde": "paw-arbeidssoekerregisteret-inngang",
+      "aarsak": "opplysning om arbeidssøker sendt inn"
+    },
+    "jobbsituasjon": [
+      {
+        "beskrivelse": "ALDRI_HATT_JOBB",
+        "detaljer": { "prosent":  "25" }
+      },
+      {
+        "beskrivelse": "ER_PERMITTERT",
+        "detaljer": { "prosent":  "75" }
+      }
+    ],
+    "utdanning": {
+      "nus": "3",
+      "bestaatt": "JA",
+      "godkjent": "JA"
+    },
+    "helse": {
+      "helsetilstandHindrerArbeid": "NEI"
+    },
+    "annet": {
+      "andreForholdHindrerArbeid": "NEI"
+    }
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "profileringId": "7c9a2feb-0b31-4101-825a-0c4a3d465e01",
+    "periodeId": "ea0ad984-8b99-4fff-afd6-07737ab19d16",
+    "opplysningerOmArbeidssoekerId": "913161a3-dde9-4448-abf8-2a01a043f8cd",
+    "sendtInnAv": {
+      "tidspunkt": "2024-04-25T08:19:53.612Z",
+      "utfoertAv": {
+        "type": "SYSTEM"
+      },
+      "kilde": "null-null",
+      "aarsak": "opplysninger-mottatt"
+    },
+    "profilertTil": "OPPGITT_HINDRINGER",
+    "jobbetSammenhengendeSeksAvTolvSisteManeder": false,
+    "alder": 33
+  }
+]

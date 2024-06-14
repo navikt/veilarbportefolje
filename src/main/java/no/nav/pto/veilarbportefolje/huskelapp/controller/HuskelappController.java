@@ -133,7 +133,7 @@ public class HuskelappController {
     }
 
     private Optional<AktorId> hentAktorId(Fnr fnr) {
-        return Optional.ofNullable(pdlIdentRepository.hentAktorId(fnr));
+        return Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr));
     }
 
     private void validerOppfolgingOgBrukerOgEnhet(String fnr, String enhetId) {

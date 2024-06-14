@@ -31,13 +31,14 @@ public class PostgresTable {
         public static final String ARB_OVERSKRIFT = "ARB_OVERSKRIFT";
         public static final String ARB_NAV_KONTOR_FOR_ARBEIDSLISTE = "ARB_NAV_KONTOR_FOR_ARBEIDSLISTE";
         public static final String FAR_VERDI = "FAR_VERDI";
-        public static final String FAR_SIST_ENDRET = "FAR_SIST_ENDRET";
+        public static final String FAR_ENHET_ID = "FAR_ENHET_ID";
 
         public static final String HL_FRIST = "HL_FRIST";
         public static final String HL_KOMMENTAR = "HL_KOMMENTAR";
         public static final String HL_ENDRET_DATO = "HL_ENDRET_DATO";
         public static final String HL_ENDRET_AV = "HL_ENDRET_AV";
-        public static final String HL_HUSKELAPPID= "HL_HUSKELAPPID";
+        public static final String HL_HUSKELAPPID = "HL_HUSKELAPPID";
+        public static final String HL_ENHET_ID = "HL_ENHET_ID";
         public static final String BRUKERS_SITUASJON = "BRUKERS_SITUASJON";
         public static final String UTDANNING = "UTDANNING";
         public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
@@ -90,7 +91,7 @@ public class PostgresTable {
 
         private OPPFOLGINGSBRUKER_ARENA_V2() { /* no-op */ }
 
-        public static final String TABLE_NAME = "OPPFOLGINGSBRUKER_ARENA";
+        public static final String TABLE_NAME = "OPPFOLGINGSBRUKER_ARENA_V2";
         public static final String FODSELSNR = "FODSELSNR";
         public static final String FORMIDLINGSGRUPPEKODE = "FORMIDLINGSGRUPPEKODE";
         public static final String ISERV_FRA_DATO = "ISERV_FRA_DATO";
@@ -233,6 +234,47 @@ public class PostgresTable {
         public static final String UTDANNING = "UTDANNING";
         public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
         public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
+    }
+
+    public static final class OPPLYSNINGER_OM_ARBEIDSSOEKER {
+        private OPPLYSNINGER_OM_ARBEIDSSOEKER() { /* no-op */ }
+
+        public static final String TABLE_NAME = "OPPLYSNINGER_OM_ARBEIDSSOEKER";
+        public static final String OPPLYSNINGER_OM_ARBEIDSSOEKER_ID = "OPPLYSNINGER_OM_ARBEIDSSOEKER_ID";
+        public static final String PERIODE_ID = "PERIODE_ID";
+        public static final String SENDT_INN_TIDSPUNKT = "SENDT_INN_TIDSPUNKT";
+        public static final String UTDANNING_NUS_KODE = "UTDANNING_NUS_KODE";
+        public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
+        public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
+
+    }
+
+    public static final class OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON {
+        private OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON() { /* no-op */ }
+
+        public static final String TABLE_NAME = "OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON";
+        public static final String OPPLYSNINGER_OM_ARBEIDSSOEKER_ID = "OPPLYSNINGER_OM_ARBEIDSSOEKER_ID";
+        public static final String JOBBSITUASJON = "JOBBSITUASJON";
+
+    }
+
+    public static final class SISTE_ARBEIDSSOEKER_PERIODE {
+        private SISTE_ARBEIDSSOEKER_PERIODE() { /* no-op */ }
+
+        public static final String TABLE_NAME = "SISTE_ARBEIDSSOEKER_PERIODE";
+        public static final String ARBEIDSSOKER_PERIODE_ID = "ARBEIDSSOKER_PERIODE_ID";
+        public static final String FNR = "FNR";
+
+    }
+
+    public static final class PROFILERING {
+        private PROFILERING() { /* no-op */ }
+
+        public static final String TABLE_NAME = "PROFILERING";
+        public static final String PERIODE_ID = "PERIODE_ID";
+        public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
+        public static final String SENDT_INN_TIDSPUNKT = "SENDT_INN_TIDSPUNKT";
+
     }
 
     public static final class BRUKER_CV {

@@ -101,8 +101,9 @@ public class OppfolgingsBruker {
     String utkast_14a_ansvarlig_veileder;
     boolean trenger_revurdering;
     boolean er_sykmeldt_med_arbeidsgiver;
-    String brukers_situasjon;
+    List<String> brukers_situasjoner;
     LocalDate brukers_situasjon_sist_endret;
+    LocalDate utdanning_og_situasjon_sist_endret;
     String profilering_resultat;
     String utdanning;
     String utdanning_bestatt;
@@ -127,5 +128,5 @@ public class OppfolgingsBruker {
     EnsligeForsorgereOvergangsstonad enslige_forsorgere_overgangsstonad;
     HuskelappForBruker huskelapp;
     String fargekategori;
-
+    String fargekategori_enhetId;
 }

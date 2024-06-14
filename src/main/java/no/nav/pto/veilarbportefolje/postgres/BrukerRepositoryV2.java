@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OpensearchData.*;
@@ -72,11 +73,13 @@ public class BrukerRepositoryV2 {
                                ARB.KATEGORI                     as ARB_KATEGORI,
                                ARB.NAV_KONTOR_FOR_ARBEIDSLISTE  as ARB_NAV_KONTOR_FOR_ARBEIDSLISTE,
                                FAR.verdi                        as FAR_VERDI,
+                               FAR.enhet_id                     as FAR_ENHET_ID,
                                HL.frist							as HL_FRIST,
                                HL.kommentar						as HL_KOMMENTAR,
                                HL.endret_dato                   as HL_ENDRET_DATO,
                                hl.endret_av_veileder            as HL_ENDRET_AV,
-                               HL.huskelapp_id                  as HL_HUSKELAPPID
+                               HL.huskelapp_id                  as HL_HUSKELAPPID,
+                               HL.enhet_id                      as HL_ENHET_ID
                         FROM OPPFOLGING_DATA OD
                                 inner join aktive_identer ai on OD.aktoerid = ai.aktorid
                                  left join oppfolgingsbruker_arena_v2 ob on ob.fodselsnr = ai.fnr
@@ -152,6 +155,7 @@ public class BrukerRepositoryV2 {
                 .setUtdanning(rs.getString(UTDANNING))
                 .setUtdanning_bestatt(rs.getString(UTDANNING_BESTATT))
                 .setUtdanning_godkjent(rs.getString(UTDANNING_GODKJENT))
+                .setUtdanning_og_situasjon_sist_endret(toLocalDate(rs.getTimestamp(REGISTRERING_OPPRETTET)))
                 .setHar_delt_cv(rs.getBoolean(HAR_DELT_CV))
                 .setCv_eksistere(rs.getBoolean(CV_EKSISTERER))
                 .setOppfolging(rs.getBoolean(OPPFOLGING))
@@ -174,7 +178,8 @@ public class BrukerRepositoryV2 {
                 .setAapmaxtiduke(rs.getObject(AAPMAXTIDUKE, Integer.class))
                 .setAapordinerutlopsdato(aapordinerutlopsdato)
                 .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(AAPUNNTAKDAGERIGJEN, Integer.class)))
-                .setFargekategori(rs.getString(FAR_VERDI));
+                .setFargekategori(rs.getString(FAR_VERDI))
+                .setFargekategori_enhetId(rs.getString(FAR_ENHET_ID));
 
         setHuskelapp(bruker, rs);
         setBrukersSituasjon(bruker, rs);
@@ -230,8 +235,9 @@ public class BrukerRepositoryV2 {
         String huskelappId = rs.getString(HL_HUSKELAPPID);
         LocalDate endretDato = toLocalDate(rs.getTimestamp(HL_ENDRET_DATO));
         VeilederId endretAv = VeilederId.veilederIdOrNull(rs.getString(HL_ENDRET_AV));
+        String enhetId = rs.getString(HL_ENHET_ID);
         if (frist != null || kommentar != null) {
-            oppfolgingsBruker.setHuskelapp(new HuskelappForBruker(frist, kommentar, endretDato, endretAv.getValue(), huskelappId));
+            oppfolgingsBruker.setHuskelapp(new HuskelappForBruker(frist, kommentar, endretDato, endretAv.getValue(), huskelappId, enhetId));
         }
     }
 
@@ -244,7 +250,7 @@ public class BrukerRepositoryV2 {
         String brukersSisteSituasjon = harEndretSituasjonEttterRegistrering ? rs.getString(ENDRET_BRUKERS_SITUASJON) : rs.getString(BRUKERS_SITUASJON);
         LocalDate brukersSituasjonSistEndretDato = harEndretSituasjonEttterRegistrering ? oppdatertBrukesSituasjonSistEndretDato : brukesSituasjonOpprettetDato;
 
-        oppfolgingsBruker.setBrukers_situasjon(brukersSisteSituasjon);
+        oppfolgingsBruker.setBrukers_situasjoner(brukersSisteSituasjon == null ? emptyList() : List.of(brukersSisteSituasjon));
         oppfolgingsBruker.setBrukers_situasjon_sist_endret(brukersSituasjonSistEndretDato);
     }
 

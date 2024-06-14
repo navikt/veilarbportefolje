@@ -309,7 +309,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
     }
 
     private void settSperretAnsatt(AktorId aktorId, NavKontor navKontor) {
-        Fnr fnr = pdlIdentRepository.hentFnr(aktorId);
+        Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktorId);
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         navKontor.getValue(),  null, null,

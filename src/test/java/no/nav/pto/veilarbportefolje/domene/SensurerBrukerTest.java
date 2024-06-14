@@ -4,6 +4,7 @@ package no.nav.pto.veilarbportefolje.domene;
 import io.getunleash.DefaultUnleash;
 import no.nav.common.abac.Pep;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
@@ -34,6 +35,7 @@ public class SensurerBrukerTest {
 
     private AuthService authService;
     private AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient;
+    private AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient;
 
     private PoaoTilgangWrapper poaoTilgangWrapper;
 
@@ -42,7 +44,13 @@ public class SensurerBrukerTest {
         DefaultUnleash defaultUnleash = mock(DefaultUnleash.class);
 
         poaoTilgangWrapper = mock(PoaoTilgangWrapper.class);
-        authService = new AuthService(pep, poaoTilgangWrapper, azureAdOnBehalfOfTokenClient, mock(MetricsClient.class));
+        authService = new AuthService(
+                azureAdOnBehalfOfTokenClient,
+                azureAdMachineToMachineTokenClient,
+                poaoTilgangWrapper,
+                pep,
+                mock(MetricsClient.class)
+        );
     }
 
     @Test

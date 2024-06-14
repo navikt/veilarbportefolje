@@ -7,6 +7,8 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
 import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerMapperKt.mapTilUtdanning;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
@@ -49,7 +52,7 @@ public class OpensearchIndexerV2 {
     public void updateRegistering(AktorId aktoerId, ArbeidssokerRegistrertEvent arbeidssokerRegistrertEvent) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("brukers_situasjon", arbeidssokerRegistrertEvent.getBrukersSituasjon())
+                .field("brukers_situasjoner", List.of(arbeidssokerRegistrertEvent.getBrukersSituasjon()))
                 .field("utdanning", arbeidssokerRegistrertEvent.getUtdanning())
                 .field("utdanning_bestatt", arbeidssokerRegistrertEvent.getUtdanningBestatt())
                 .field("utdanning_godkjent", arbeidssokerRegistrertEvent.getUtdanningGodkjent())
@@ -63,11 +66,35 @@ public class OpensearchIndexerV2 {
     public void updateEndringerIRegistering(AktorId aktoerId, ArbeidssokerBesvarelseEvent endringIRegistreringsdataEvent) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("brukers_situasjon", endringIRegistreringsdataEvent.getBesvarelse().getDinSituasjon().getVerdi())
+                .field("brukers_situasjoner", List.of(endringIRegistreringsdataEvent.getBesvarelse().getDinSituasjon().getVerdi()))
                 .field("brukers_situasjon_sist_endret", endringIRegistreringsdataEvent.getBesvarelse().getDinSituasjon().getEndretTidspunkt())
                 .endObject();
 
         update(aktoerId, content, "Oppdater endring i registrering");
+    }
+
+    @SneakyThrows
+    public void updateOpplysningerOmArbeidssoeker(AktorId aktoerId, OpplysningerOmArbeidssoekerEntity opplysningerOmArbeidssoeker) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("brukers_situasjoner", opplysningerOmArbeidssoeker.getOpplysningerOmJobbsituasjon().getJobbsituasjon())
+                .field("utdanning", mapTilUtdanning(opplysningerOmArbeidssoeker.getUtdanningNusKode()))
+                .field("utdanning_bestatt", opplysningerOmArbeidssoeker.getUtdanningBestatt())
+                .field("utdanning_godkjent", opplysningerOmArbeidssoeker.getUtdanningGodkjent())
+                .field("utdanning_og_situasjon_sist_endret", toLocalDate(opplysningerOmArbeidssoeker.getSendtInnTidspunkt()))
+                .endObject();
+
+        update(aktoerId, content, "Oppdater opplysninger om arbeidssøker");
+    }
+
+    @SneakyThrows
+    public void updateProfilering(AktorId aktoerId, ProfileringEntity profileringEntity) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("profilering_resultat", profileringEntity.getProfileringsresultat())
+                .endObject();
+
+        update(aktoerId, content, "Oppdater profileringsresultat");
     }
 
     @SneakyThrows
@@ -102,6 +129,7 @@ public class OpensearchIndexerV2 {
                 .field("endretAv", huskelapp.endretAv())
                 .field("endretDato", huskelapp.endretDato())
                 .field("huskelappId", huskelapp.huskelappId())
+                .field("enhetId", huskelapp.enhetId())
                 .endObject()
                 .endObject();
 
@@ -120,10 +148,11 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void updateFargekategori(AktorId aktoerId, String fargekategori) {
+    public void updateFargekategori(AktorId aktoerId, String fargekategori, String enhetId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("fargekategori", fargekategori)
+                .field("fargekategori_enhetId", enhetId)
                 .endObject();
 
         update(aktoerId, content, "Oppretter/redigerer fargekategori");
@@ -135,6 +164,7 @@ public class OpensearchIndexerV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .nullField("fargekategori")
+                .nullField("fargekategori_enhetId")
                 .endObject();
 
         update(aktoerId, content, "Sletter fargekategori");
