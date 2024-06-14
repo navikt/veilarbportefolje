@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.admin.v2;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -20,6 +22,7 @@ import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraCont
 @RestController
 @RequestMapping("/api/v2/admin")
 @RequiredArgsConstructor
+@Tag(name = "Admin V2", description = "Admin-funksjonalitet V2 som ikke er tilgjengelig for vanlige brukere. Funksjonaliteten er kun tilgjengelig for medlemmer av applikasjonens forvaltningsteam.")
 public class AdminV2Controller {
     private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
             "prod-fss" : "dev-fss", "pto", "pto-admin").toString();
@@ -27,6 +30,7 @@ public class AdminV2Controller {
     private final OpensearchIndexer opensearchIndexer;
     private final AuthContextHolder authContextHolder;
 
+    @Operation(summary = "Indekser bruker med fødselsnummer", description = "Hent og skriv oppdatert data for bruker, gitt ved fødselsnummer, til søkemotoren (OpenSearch).")
     @PutMapping("/indeks/bruker/fnr")
     public String indeks(@RequestBody AdminIndeksBrukerRequest adminIndeksBrukerRequest) {
         sjekkTilgangTilAdmin();
@@ -35,6 +39,7 @@ public class AdminV2Controller {
         return "Indeksering fullfort";
     }
 
+    @Operation(summary = "Indekser bruker med Aktør-ID", description = "Hent og skriv oppdatert data for bruker, gitt ved Aktør-ID, til søkemotoren (OpenSearch).")
     @PutMapping("/indeks/bruker")
     public String indeksAktoerId(@RequestBody AdminIndexAktorRequest adminIndexAktorRequest) {
         sjekkTilgangTilAdmin();
