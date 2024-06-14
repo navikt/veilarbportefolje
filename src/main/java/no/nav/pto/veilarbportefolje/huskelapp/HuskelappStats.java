@@ -11,8 +11,6 @@ import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.HashMap;
@@ -22,7 +20,6 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
-@EnableAsync
 public class HuskelappStats implements MeterBinder {
 
     @Qualifier("PostgresJdbcReadOnly")
@@ -48,8 +45,7 @@ public class HuskelappStats implements MeterBinder {
         }
     }
 
-    @Async
-    @Scheduled(fixedRate = 5, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(initialDelay = 1, fixedRate = 5, timeUnit = TimeUnit.MINUTES)
     public void oppdaterHuskelappMetrikk() {
         try {
             if (leaderElection.isLeader()) {
@@ -72,8 +68,7 @@ public class HuskelappStats implements MeterBinder {
         }
     }
 
-    @Async
-    @Scheduled(fixedRate = 5, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(initialDelay = 1, fixedRate = 5, timeUnit = TimeUnit.MINUTES)
     public void oppdaterArbeidslisteMetrikk() {
         try {
             if (leaderElection.isLeader()) {

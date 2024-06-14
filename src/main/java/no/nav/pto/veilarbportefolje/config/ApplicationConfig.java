@@ -73,7 +73,7 @@ public class ApplicationConfig {
 
     @Bean
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-    public HuskelappStats huskelapp(@Qualifier("PostgresJdbcReadOnly") JdbcTemplate db, LeaderElectionClient leaderElection) {
+    public HuskelappStats huskelappStats(@Qualifier("PostgresJdbcReadOnly") JdbcTemplate db, LeaderElectionClient leaderElection) {
         return new HuskelappStats(db, leaderElection);
     }
 
