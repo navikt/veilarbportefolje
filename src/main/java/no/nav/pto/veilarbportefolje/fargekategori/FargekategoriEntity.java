@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 
@@ -11,5 +12,6 @@ public record FargekategoriEntity(
         Fnr fnr,
         FargekategoriVerdi fargekategoriVerdi,
         LocalDate sistEndret,
-        NavIdent endretAv
+        NavIdent endretAv,
+        EnhetId enhetId
 ) {}

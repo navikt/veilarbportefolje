@@ -4,9 +4,11 @@ import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.*;
@@ -25,6 +27,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 @Controller
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
@@ -35,6 +39,7 @@ public class HuskelappController {
     private final AuthService authService;
     private final BrukerServiceV2 brukerServiceV2;
     private final PdlIdentRepository pdlIdentRepository;
+    private final VeilarbVeilederClient veilarbVeilederClient;
 
     @PostMapping("/huskelapp")
     public ResponseEntity<HuskelappOpprettResponse> opprettHuskelapp(@RequestBody HuskelappOpprettRequest huskelappOpprettRequest) {
@@ -76,19 +81,6 @@ public class HuskelappController {
         }
     }
 
-
-    @PostMapping("/hent-huskelapp-for-veileder")
-    public ResponseEntity<List<HuskelappResponse>> hentHuskelapp(@RequestBody HuskelappForVeilederRequest huskelappForVeilederRequest) {
-        authService.innloggetVeilederHarTilgangTilEnhet(huskelappForVeilederRequest.enhetId().get());
-        try {
-            List<HuskelappResponse> huskelappList = huskelappService.hentHuskelapp(huskelappForVeilederRequest.veilederId(), huskelappForVeilederRequest.enhetId()).stream().map(this::mapToHuskelappResponse).collect(Collectors.toList());
-            return ResponseEntity.ok(huskelappList);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-    }
-
     @PostMapping("/hent-huskelapp-for-bruker")
     public ResponseEntity<HuskelappResponse> hentHuskelapp(@RequestBody HuskelappForBrukerRequest huskelappForBrukerRequest) {
         validerOppfolgingOgBrukerOgEnhet(huskelappForBrukerRequest.fnr().get(), huskelappForBrukerRequest.enhetId().get());
@@ -118,6 +110,21 @@ public class HuskelappController {
         huskelappService.settHuskelappIkkeAktiv(UUID.fromString(huskelappSlettRequest.huskelappId()), huskelappOptional.get().brukerFnr());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    @PostMapping("/hent-er-bruker-ufordelt")
+    public ResponseEntity<Boolean> hentErBrukerUfordelt(@RequestBody HentErBrukerUfordelt request) {
+        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(request.enhetId);
+        Optional<AktorId> aktorId = brukerServiceV2.hentAktorId(request.fnr);
+        if (aktorId.isEmpty()) {
+            secureLog.info("Kunne ikke mappe fnr til aktorId: {}", request.fnr);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        Optional<VeilederId> veilederId  = brukerServiceV2.hentVeilederForBruker(aktorId.get());
+        boolean harVeilederPaaSammeEnhet = veilederId.isPresent() && veiledereMedTilgangTilEnhet.contains(veilederId.get().getValue());
+        return ResponseEntity.ok(!harVeilederPaaSammeEnhet);
+    }
+
+    public record HentErBrukerUfordelt(Fnr fnr, EnhetId enhetId) {}
 
     private boolean validerErVeilederForBruker(Fnr fnr) {
         VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
