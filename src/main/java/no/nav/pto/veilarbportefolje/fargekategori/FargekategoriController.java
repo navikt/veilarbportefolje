@@ -58,35 +58,6 @@ public class FargekategoriController {
         }
     }
 
-    @PutMapping("/fargekategori")
-    public ResponseEntity<FargekategoriResponse> oppdaterFargekategoriForBruker(@RequestBody OppdaterFargekategoriRequest request) {
-        VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
-        validerRequest(request.fnr);
-
-        NavKontor navKontorForBruker = brukerServiceV2.hentNavKontor(request.fnr).orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke tilordnet enhet"));
-
-        authService.innloggetVeilederHarTilgangTilOppfolging();
-        authService.innloggetVeilederHarTilgangTilBruker(request.fnr.get());
-        authService.innloggetVeilederHarTilgangTilEnhet(navKontorForBruker.getValue());
-
-        try {
-            if (!harBrukerenTildeltVeileder(request.fnr())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-
-            Optional<FargekategoriEntity> fargekategoriEntity = fargekategoriService.oppdaterFargekategoriForBruker(request, innloggetVeileder, EnhetId.of(navKontorForBruker.getValue()));
-
-            return fargekategoriEntity
-                    .map(fargekategori -> ResponseEntity.ok(new FargekategoriResponse(fargekategori.fnr(), fargekategori.fargekategoriVerdi())))
-                    .orElseGet(() -> ResponseEntity.ok(new FargekategoriResponse(request.fnr(), FargekategoriVerdi.INGEN_KATEGORI)));
-        } catch (Exception e) {
-            String melding = String.format("Klarte ikke å opprette/oppdatere fargekategori med verdi %s for fnr %s", request.fargekategoriVerdi.name(), request.fnr.get());
-            secureLog.error(melding, e);
-
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
     @PutMapping("/fargekategorier")
     public ResponseEntity<BatchUpsertResponse> batchoppdaterFargekategoriForBruker(@RequestBody BatchoppdaterFargekategoriRequest request) {
         VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
