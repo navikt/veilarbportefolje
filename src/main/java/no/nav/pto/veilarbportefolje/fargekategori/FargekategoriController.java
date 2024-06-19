@@ -42,8 +42,9 @@ public class FargekategoriController {
 
         try {
             if (!harBrukerenTildeltVeileder(request.fnr())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
+
             Optional<FargekategoriEntity> kanskjeFargekategori = fargekategoriService.hentFargekategoriForBruker(request);
 
             return kanskjeFargekategori.map(ResponseEntity::ok).orElse(ResponseEntity.ok(null));
@@ -67,6 +68,10 @@ public class FargekategoriController {
         authService.innloggetVeilederHarTilgangTilEnhet(navKontorForBruker.getValue());
 
         try {
+            if (!harBrukerenTildeltVeileder(request.fnr())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             Optional<FargekategoriEntity> fargekategoriEntity = fargekategoriService.oppdaterFargekategoriForBruker(request, innloggetVeileder, EnhetId.of(navKontorForBruker.getValue()));
 
             return fargekategoriEntity

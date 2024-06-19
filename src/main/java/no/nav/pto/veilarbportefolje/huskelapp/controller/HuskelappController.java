@@ -40,6 +40,10 @@ public class HuskelappController {
         try {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
 
+            if (!harBrukerenTildeltVeileder(huskelappOpprettRequest.brukerFnr())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             if ((huskelappOpprettRequest.kommentar() == null || huskelappOpprettRequest.kommentar().isEmpty()) && huskelappOpprettRequest.frist() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
@@ -57,6 +61,10 @@ public class HuskelappController {
         validerOppfolgingOgBrukerOgEnhet(huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get());
         try {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
+
+            if (!harBrukerenTildeltVeileder(huskelappRedigerRequest.brukerFnr())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
 
             if ((huskelappRedigerRequest.kommentar() == null || huskelappRedigerRequest.kommentar().isEmpty()) && huskelappRedigerRequest.frist() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Huskelapp mangler frist og kommentar");
@@ -87,7 +95,7 @@ public class HuskelappController {
         validerOppfolgingOgBrukerOgEnhet(huskelappForBrukerRequest.fnr().get(), huskelappForBrukerRequest.enhetId().get());
         try {
             if (!harBrukerenTildeltVeileder(huskelappForBrukerRequest.fnr())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
             Optional<Huskelapp> huskelapp = huskelappService.hentHuskelapp(huskelappForBrukerRequest.fnr());
             return huskelapp.map(value -> ResponseEntity.ok(mapToHuskelappResponse(value))).orElseGet(() -> ResponseEntity.ok(null));
@@ -102,6 +110,10 @@ public class HuskelappController {
 
         if (huskelappOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.GONE).build();
+        }
+
+        if (!harBrukerenTildeltVeileder(huskelappOptional.get().brukerFnr())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         validerOppfolgingOgBrukerOgEnhet(huskelappOptional.get().brukerFnr().get(), huskelappOptional.get().enhetId().get());
