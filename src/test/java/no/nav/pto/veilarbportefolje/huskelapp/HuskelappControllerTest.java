@@ -280,6 +280,7 @@ public class HuskelappControllerTest {
         when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
+        when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
 
         List<PDLIdent> identer = List.of(
                 new PDLIdent(aktorId.get(), false, AKTORID),
