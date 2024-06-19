@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -28,7 +27,6 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 public class HuskelappService {
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final AktorClient aktorClient;
     private final BrukerServiceV2 brukerServiceV2;
     private final HuskelappRepository huskelappRepository;
     private final PdlIdentRepository pdlIdentRepository;

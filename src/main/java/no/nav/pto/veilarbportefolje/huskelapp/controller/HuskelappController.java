@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.*;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.http.HttpStatus;
@@ -34,18 +33,12 @@ public class HuskelappController {
     private final HuskelappService huskelappService;
     private final AuthService authService;
     private final BrukerServiceV2 brukerServiceV2;
-    private final PdlIdentRepository pdlIdentRepository;
 
     @PostMapping("/huskelapp")
     public ResponseEntity<HuskelappOpprettResponse> opprettHuskelapp(@RequestBody HuskelappOpprettRequest huskelappOpprettRequest) {
         validerOppfolgingOgBrukerOgEnhet(huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get());
         try {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
-            boolean erVeilederForBruker = validerErVeilederForBruker(huskelappOpprettRequest.brukerFnr());
-
-            if (!erVeilederForBruker) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
 
             if ((huskelappOpprettRequest.kommentar() == null || huskelappOpprettRequest.kommentar().isEmpty()) && huskelappOpprettRequest.frist() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -65,7 +58,7 @@ public class HuskelappController {
         try {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
 
-            if ((huskelappRedigerRequest.kommentar() == null || huskelappRedigerRequest.kommentar().isEmpty()) && huskelappRedigerRequest.frist() == null){
+            if ((huskelappRedigerRequest.kommentar() == null || huskelappRedigerRequest.kommentar().isEmpty()) && huskelappRedigerRequest.frist() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Huskelapp mangler frist og kommentar");
             }
 
@@ -93,6 +86,9 @@ public class HuskelappController {
     public ResponseEntity<HuskelappResponse> hentHuskelapp(@RequestBody HuskelappForBrukerRequest huskelappForBrukerRequest) {
         validerOppfolgingOgBrukerOgEnhet(huskelappForBrukerRequest.fnr().get(), huskelappForBrukerRequest.enhetId().get());
         try {
+            if (!harBrukerenTildeltVeileder(huskelappForBrukerRequest.fnr())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
             Optional<Huskelapp> huskelapp = huskelappService.hentHuskelapp(huskelappForBrukerRequest.fnr());
             return huskelapp.map(value -> ResponseEntity.ok(mapToHuskelappResponse(value))).orElseGet(() -> ResponseEntity.ok(null));
         } catch (Exception e) {
@@ -109,31 +105,18 @@ public class HuskelappController {
         }
 
         validerOppfolgingOgBrukerOgEnhet(huskelappOptional.get().brukerFnr().get(), huskelappOptional.get().enhetId().get());
-        boolean erVeilederForBruker = validerErVeilederForBruker(huskelappOptional.get().brukerFnr());
-
-        if (!erVeilederForBruker) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
 
         huskelappService.settHuskelappIkkeAktiv(UUID.fromString(huskelappSlettRequest.huskelappId()), huskelappOptional.get().brukerFnr());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    private boolean validerErVeilederForBruker(Fnr fnr) {
-        VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
-
-        return ValideringsRegler
-                .validerFnr(fnr.get())
-                .map(this::hentAktorId)
-                .get()
-                .map(brukerServiceV2::hentVeilederForBruker)
-                .flatMap(id -> id.map(currentVeileder -> currentVeileder.equals(veilederId)))
-                .orElse(false);
-
-    }
-
-    private Optional<AktorId> hentAktorId(Fnr fnr) {
-        return Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr));
+    public Boolean harBrukerenTildeltVeileder(Fnr fnr) {
+        Optional<AktorId> aktorId = brukerServiceV2.hentAktorId(fnr);
+        if (aktorId.isPresent()) {
+            Optional<VeilederId> veilederId = brukerServiceV2.hentVeilederForBruker(aktorId.get());
+            return veilederId.isPresent();
+        }
+        return false;
     }
 
     private void validerOppfolgingOgBrukerOgEnhet(String fnr, String enhetId) {

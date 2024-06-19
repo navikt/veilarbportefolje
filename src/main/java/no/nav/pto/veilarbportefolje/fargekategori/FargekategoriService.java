@@ -1,28 +1,20 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
-import io.vavr.control.Try;
-import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController.OppdaterFargekategoriRequest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-import static io.vavr.control.Validation.invalid;
-import static io.vavr.control.Validation.valid;
-import static java.lang.String.format;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
@@ -32,7 +24,6 @@ public class FargekategoriService {
     private final FargekategoriRepository fargekategoriRepository;
     private final PdlIdentRepository pdlIdentRepository;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final AktorClient aktorClient;
     private final BrukerServiceV2 brukerServiceV2;
 
     public Optional<FargekategoriEntity> hentFargekategoriForBruker(FargekategoriController.HentFargekategoriRequest request) {
@@ -64,7 +55,7 @@ public class FargekategoriService {
         } else {
             fargekategoriRepository.batchupsertFargekategori(fargekategoriVerdi, fnr, innloggetVeileder, enhetId);
 
-            fnr.forEach(f -> oppdaterIOpensearch(f,fargekategoriVerdi.name(), enhetId.get()));
+            fnr.forEach(f -> oppdaterIOpensearch(f, fargekategoriVerdi.name(), enhetId.get()));
         }
     }
 
@@ -91,35 +82,6 @@ public class FargekategoriService {
             secureLog.error("Kunne ikke slette fagekategori for aktoerId: " + aktorId.toString(), e);
             throw new RuntimeException("Kunne ikke slette fagekategori");
         }
-    }
-
-    public Validation<String, Fnr> erVeilederForBruker(String fnr) {
-        VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
-
-        boolean erVeilederForBruker =
-                ValideringsRegler
-                        .validerFnr(fnr)
-                        .map(validFnr -> erVeilederForBruker(validFnr, veilederId))
-                        .getOrElse(false);
-
-        if (erVeilederForBruker) {
-            return valid(Fnr.ofValidFnr(fnr));
-        }
-        return invalid(format("Veileder %s er ikke veileder for bruker med fnr %s", veilederId, fnr));
-    }
-
-
-    public Boolean erVeilederForBruker(Fnr fnr, VeilederId veilederId) {
-        return hentAktorId(fnr)
-                .map(aktoerId -> erVeilederForBruker(aktoerId, veilederId))
-                .getOrElse(false);
-    }
-
-    public Boolean erVeilederForBruker(AktorId aktoerId, VeilederId veilederId) {
-        return brukerServiceV2
-                .hentVeilederForBruker(aktoerId)
-                .map(currentVeileder -> currentVeileder.equals(veilederId))
-                .orElse(false);
     }
 
     public boolean brukerHarFargekategoriPaForrigeNavkontor(AktorId aktoerId, Optional<Fnr> maybeFnr) {
@@ -149,9 +111,5 @@ public class FargekategoriService {
         }
 
         return navkontorForBrukerUlikNavkontorPaFargekategori;
-    }
-
-    private Try<AktorId> hentAktorId(Fnr fnr) {
-        return Try.of(() -> aktorClient.hentAktorId(fnr));
     }
 }

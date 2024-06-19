@@ -78,6 +78,7 @@ public class HuskelappControllerTest {
         when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
+        when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
 
         HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, huskelappfrist, "Test", enhetId);
         String opprettetHuskelappId = mockMvc
@@ -130,6 +131,7 @@ public class HuskelappControllerTest {
         when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
+        when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
 
         List<PDLIdent> identer = List.of(
                 new PDLIdent(aktorId.get(), false, AKTORID),
@@ -204,6 +206,7 @@ public class HuskelappControllerTest {
         when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
+        when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
 
         List<PDLIdent> identer = List.of(
                 new PDLIdent(aktorId.get(), false, AKTORID),
@@ -253,7 +256,7 @@ public class HuskelappControllerTest {
         List<HuskelappResponse> hentetHuskelappEtterRedigeringBody = fromJson(result, new TypeReference<>() {
         });
         assertThat(hentetHuskelappEtterRedigeringBody.size()).isEqualTo(1);
-        
+
         assertThat(hentetHuskelappEtterRedigeringBody.stream().anyMatch(var -> var.equals(new HuskelappResponse(
                 huskelappId2Body.huskelappId(),
                 opprettRequest2.brukerFnr(),
@@ -310,6 +313,7 @@ public class HuskelappControllerTest {
         when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(AuthUtils.getInnloggetVeilederIdent()));
+        when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
 
         List<PDLIdent> identer = List.of(
                 new PDLIdent(aktorId.get(), false, AKTORID),
