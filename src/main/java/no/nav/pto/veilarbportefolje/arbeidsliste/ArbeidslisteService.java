@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -88,7 +87,7 @@ public class ArbeidslisteService {
             throw new SlettArbeidslisteException(String.format("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: %s", fnr.get()));
         }
 
-        if(slettFargekategori) {
+        if (slettFargekategori) {
             slettArbeidsliste(aktoerId.get(), Optional.of(fnr));
         } else {
             slettArbeidslisteUtenFargekategori(aktoerId.get());
@@ -118,17 +117,6 @@ public class ArbeidslisteService {
 
     private Try<AktorId> hentAktorId(Fnr fnr) {
         return Try.of(() -> aktorClient.hentAktorId(fnr));
-    }
-
-    public Validation<String, List<Fnr>> erVeilederForBrukere(List<Fnr> fnrs) {
-        List<Fnr> validerteFnrs = new ArrayList<>(fnrs.size());
-        fnrs.forEach(fnr -> {
-            if (erVeilederForBruker(fnr.toString()).isValid()) {
-                validerteFnrs.add(fnr);
-            }
-        });
-
-        return validerteFnrs.size() == fnrs.size() ? valid(validerteFnrs) : invalid(format("Veileder har ikke tilgang til alle brukerene i listen: %s", fnrs));
     }
 
     public Validation<String, Fnr> erVeilederForBruker(String fnr) {

@@ -168,8 +168,7 @@ public class ArbeidsListeController {
                 .collect(Collectors.toList());
 
         Validation<List<Fnr>, List<Fnr>> validerteFnrs = ValideringsRegler.validerFnrs(fnrs);
-        Validation<String, List<Fnr>> veilederForBrukere = arbeidslisteService.erVeilederForBrukere(fnrs);
-        if (validerteFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
+        if (validerteFnrs.isInvalid()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, format("%s inneholder ett eller flere ugyldige fødselsnummer", validerteFnrs.getError()));
         }
 
