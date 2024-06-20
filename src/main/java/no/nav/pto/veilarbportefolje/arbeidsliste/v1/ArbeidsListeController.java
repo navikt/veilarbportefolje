@@ -57,7 +57,7 @@ public class ArbeidsListeController {
     public ResponseEntity opprettArbeidsListe(@RequestBody List<ArbeidslisteRequest> arbeidsliste) {
         authService.innloggetVeilederHarTilgangTilOppfolging();
         List<String> tilgangErrors = getTilgangErrors(arbeidsliste);
-        if (tilgangErrors.size() > 0) {
+        if (!tilgangErrors.isEmpty()) {
             return RestResponse.of(tilgangErrors).forbidden();
         }
 
@@ -100,7 +100,6 @@ public class ArbeidsListeController {
     @PostMapping("{fnr}")
     public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
-        validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
         arbeidslisteService.createArbeidsliste(data(body, Fnr.ofValidFnr(fnr)))
@@ -141,7 +140,6 @@ public class ArbeidsListeController {
     @DeleteMapping("{fnr}")
     public Arbeidsliste deleteArbeidsliste(@PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
-        validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
         try {
@@ -244,13 +242,6 @@ public class ArbeidsListeController {
         authService.innloggetVeilederHarTilgangTilBruker(fnr);
         if (validateFnr.isInvalid()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    private void validerErVeilederForBruker(String fnr) {
-        Validation<String, Fnr> validateVeileder = arbeidslisteService.erVeilederForBruker(fnr);
-        if (validateVeileder.isInvalid()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
 }
