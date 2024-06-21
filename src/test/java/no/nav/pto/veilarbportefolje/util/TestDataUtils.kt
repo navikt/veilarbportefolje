@@ -11,10 +11,6 @@ import com.nimbusds.jwt.SignedJWT
 import lombok.SneakyThrows
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriode
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoeker
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerJobbsituasjon
-import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor
 import no.nav.pto.veilarbportefolje.domene.value.PersonId
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId
@@ -22,11 +18,8 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1
 import org.apache.commons.lang3.RandomUtils
-import org.springframework.dao.EmptyResultDataAccessException
-import org.springframework.jdbc.core.JdbcTemplate
 import java.security.KeyPairGenerator
 import java.security.SecureRandom
-import java.sql.ResultSet
 import java.time.*
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
@@ -38,7 +31,6 @@ object TestDataUtils {
     fun randomFnr(): Fnr {
         return Fnr.ofValidFnr("010101" + randomDigits(5))
     }
-
 
     @JvmStatic
     fun randomAktorId(): AktorId {

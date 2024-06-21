@@ -13,6 +13,7 @@ import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test;
+import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
@@ -77,6 +78,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     private final OpensearchIndexer opensearchIndexer;
     private final VeilarbVeilederClient veilarbVeilederClientMock;
     private final Pep pep;
+    private final AuthService authService;
     private final AuthContextHolder authContextHolder;
     private final PoaoTilgangWrapper poaoTilgangWrapper;
     private final JdbcTemplate db;
@@ -88,6 +90,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
             VeilarbVeilederClient veilarbVeilederClientMock,
             AuthContextHolder authContextHolder,
             Pep pep,
+            AuthService authService,
             PoaoTilgangWrapper poaoTilgangWrapper,
             JdbcTemplate db
     ) {
@@ -95,6 +98,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         this.opensearchIndexer = opensearchIndexer;
         this.veilarbVeilederClientMock = veilarbVeilederClientMock;
         this.authContextHolder = authContextHolder;
+        this.authService = mock(AuthService.class);
         this.pep = pep;
         this.poaoTilgangWrapper = mock(PoaoTilgangWrapper.class);
         this.db = db;
@@ -112,21 +116,37 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
         doReturn(true).when(defaultUnleash).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
 
-        doReturn(true).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_0));
-        doReturn(false).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_0));
-        doReturn(false).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_0));
+        //doReturn(true).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_0));
+        //doReturn(false).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_0));
+        //doReturn(false).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_0));
 
-        doReturn(false).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_1));
-        doReturn(true).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_1));
-        doReturn(false).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_1));
+        doReturn(true).when(authService).harVeilederTilgangTilKode6();
+        doReturn(false).when(authService).harVeilederTilgangTilKode7();
+        doReturn(false).when(authService).harVeilederTilgangTilEgenAnsatt();
 
-        doReturn(false).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_2));
-        doReturn(false).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_2));
-        doReturn(true).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_2));
+        //doReturn(false).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_1));
+        //doReturn(true).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_1));
+        //doReturn(false).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_1));
 
-        doReturn(false).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_3));
-        doReturn(true).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_3));
-        doReturn(true).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_3));
+        doReturn(false).when(authService).harVeilederTilgangTilKode6();
+        doReturn(true).when(authService).harVeilederTilgangTilKode7();
+        doReturn(false).when(authService).harVeilederTilgangTilEgenAnsatt();
+
+        //doReturn(false).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_2));
+        //doReturn(false).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_2));
+        //doReturn(true).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_2));
+
+        doReturn(false).when(authService).harVeilederTilgangTilKode6();
+        doReturn(false).when(authService).harVeilederTilgangTilKode7();
+        doReturn(true).when(authService).harVeilederTilgangTilEgenAnsatt();
+
+        //doReturn(false).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_3));
+        //doReturn(true).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_3));
+        //doReturn(true).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_3));
+
+        doReturn(false).when(authService).harVeilederTilgangTilKode6();
+        doReturn(true).when(authService).harVeilederTilgangTilKode7();
+        doReturn(true).when(authService).harVeilederTilgangTilEgenAnsatt();
 
         OppfolgingsBruker kode6Bruker_0 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
         OppfolgingsBruker kode6Bruker_1 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
@@ -3344,11 +3364,16 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var liste = List.of(bruker1B, bruker2barnU, bruker3barn1m6_2U, bruker4barn, bruker5barn, bruker6b, brukerTomListe, brukerIngenListe, brukerMedBarnMedKode19);
 
-
-        when(pep.harVeilederTilgangTilKode6(any())).thenReturn(true);
-        when(pep.harVeilederTilgangTilKode7(any())).thenReturn(true);
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Decision.Permit.INSTANCE);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(true).when(authService).harVeilederTilgangTilKode6();
+        doReturn(true).when(authService).harVeilederTilgangTilKode7();
+        //when(poaoTilgangWrapper.harVeilederTilgangTilKode7().isDeny()).thenReturn(false);
+        when(authService.harVeilederTilgangTilKode6()).thenReturn(true);
+        when(authService.harVeilederTilgangTilKode7()).thenReturn(true);
+        //when(authService.harVeilederTilgangTilEgenAnsatt()).thenReturn(true);
 
         skrivBrukereTilTestindeks(liste);
 

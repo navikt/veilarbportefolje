@@ -23,15 +23,11 @@ import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SensurerBrukerTest {
-
-    @Mock
-    private Pep pep;
 
     private AuthService authService;
     private AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient;
@@ -47,41 +43,35 @@ public class SensurerBrukerTest {
         authService = new AuthService(
                 azureAdOnBehalfOfTokenClient,
                 azureAdMachineToMachineTokenClient,
-                poaoTilgangWrapper,
-                pep,
-                mock(MetricsClient.class)
+                poaoTilgangWrapper
         );
     }
 
     @Test
     public void skalIkkeSeKode6Bruker() {
-        when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(false);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker(), "X123456");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker());
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalIkkeSeKode7Bruker() {
-        when(pep.harVeilederTilgangTilKode7(eq(NavIdent.of("X123456")))).thenReturn(false);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker(), "X123456");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker());
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalIkkeSeEgenAnsatt() {
-        when(pep.harVeilederTilgangTilEgenAnsatt(eq(NavIdent.of("X123456")))).thenReturn(false);
         when(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt(), "X123456");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt());
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalSeKode6Bruker() {
-        when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(true);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker(), "X123456");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker());
         assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
         assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKode6");
         assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvKode6");
@@ -89,9 +79,8 @@ public class SensurerBrukerTest {
 
     @Test
     public void skalSeKode7Bruker() {
-        when(pep.harVeilederTilgangTilKode7(eq(NavIdent.of("X123456")))).thenReturn(true);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Decision.Permit.INSTANCE);
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker(), "X123456");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker());
         assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
         assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKode7");
         assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvKode7");
@@ -99,9 +88,8 @@ public class SensurerBrukerTest {
 
     @Test
     public void skalSeEgenAnsatt() {
-        when(pep.harVeilederTilgangTilEgenAnsatt(eq(NavIdent.of("X123456")))).thenReturn(true);
         when(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(Decision.Permit.INSTANCE);
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt(), "X123456");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt());
         assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
         assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKodeEgenAnsatt");
         assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvEgenAnsatt");
@@ -109,7 +97,7 @@ public class SensurerBrukerTest {
 
     @Test
     public void skalSeIkkeKonfidensiellBruker() {
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(ikkeKonfidensiellBruker(), "X123456");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(ikkeKonfidensiellBruker());
         assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
         assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnIkkeKonfidensiellBruker");
         assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvIkkeKonfidensiellBruker");
@@ -117,27 +105,23 @@ public class SensurerBrukerTest {
 
     @Test
     public void skalIkkeSeKode6Barn() {
-        when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(false);
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6Barn(), "X123456");
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("",""));
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6Barn());
         sjekkAtBarnMedKode6ErFjernet(filtrerteBrukere);
     }
 
     @Test
     public void skalIkkeSeKode7Barn() {
-        when(pep.harVeilederTilgangTilKode7(eq(NavIdent.of("X123456")))).thenReturn(false);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode7Barn(), "X123456");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode7Barn());
         sjekkAtBarnMedKode7ErFjernet(filtrerteBrukere);
     }
 
     @Test
     public void skalFjerneKode7BarnMenIkkeKode6() {
-        when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(true);
-        when(pep.harVeilederTilgangTilKode7(eq(NavIdent.of("X123456")))).thenReturn(false);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrertBruker = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6og7Barn(), "X123456");
+        Bruker filtrertBruker = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6og7Barn());
         sjekkAtBarnMedKode7ErFjernet(filtrertBruker);
         sjekkAtBarnMedKode6IkkeErFjernet(filtrertBruker);
         assertEquals(2, filtrertBruker.barnUnder18AarData.size());
@@ -145,17 +129,16 @@ public class SensurerBrukerTest {
 
     @Test
     public void skalIkkeSeKode19Barn() {
-        when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(false);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn(), "X123456");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn());
         sjekkAtBarnMedKode19ErFjernet(filtrerteBrukere);
     }
 
     @Test
     public void skalSeKode19Barn() {
-        when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(true);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn(), "X123456");
+        when(authService.harVeilederTilgangTilKode6()).thenReturn(true);
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn());
         sjekkAtBarnMedKode19ErIkkeFjernet(filtrerteBrukere);
     }
 
