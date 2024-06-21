@@ -48,8 +48,10 @@ public class HuskelappService {
         }
     }
 
+    @Transactional
     public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
         try {
+            huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(huskelappRedigerRequest.brukerFnr());
             huskelappRepository.redigerHuskelapp(huskelappRedigerRequest, veilederId);
 
             AktorId aktorId = hentAktorId(huskelappRedigerRequest.brukerFnr()).orElseThrow(RuntimeException::new);

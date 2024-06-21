@@ -12,7 +12,6 @@ import no.nav.pto.veilarbportefolje.huskelapp.domain.HuskelappStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -54,10 +53,7 @@ public class HuskelappRepository {
         return huskelappId;
     }
 
-    @Transactional
     public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
-        settSisteHuskelappRadIkkeAktiv(huskelappRedigerRequest.huskelappId());
-
         String sqlRedigerHuskelapp = """
                 INSERT INTO HUSKELAPP (
                     HUSKELAPP_ID,
