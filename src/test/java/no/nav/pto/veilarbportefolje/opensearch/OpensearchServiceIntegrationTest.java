@@ -577,8 +577,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0)
-                .setHuskelapp(new HuskelappForBruker(LocalDate.now(), "test huskelapp", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString()))
-                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
+                .setHuskelapp(new HuskelappForBruker(LocalDate.now(), "test huskelapp", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET))
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name())
+                .setFargekategori_enhetId(TEST_ENHET);
 
         var testBruker2 = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().toString())
@@ -595,7 +596,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVenterpasvarfranav("2018-05-09T22:00:00Z")
                 .setNyesteutlopteaktivitet("2018-05-09T22:00:00Z")
                 .setHuskelapp(null)
-                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name());
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name())
+                .setFargekategori_enhetId(TEST_ENHET);
 
         var inaktivBruker = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().toString())
@@ -607,10 +609,12 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var kode6BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode, false)
                 .setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()))
-                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name())
+                .setFargekategori_enhetId(TEST_ENHET);
         var kode7BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.FORTROLIG.diskresjonskode, false)
                 .setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()))
-                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name());
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name())
+                .setFargekategori_enhetId(TEST_ENHET);
         var egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true)
                 .setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
@@ -3818,10 +3822,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void test_sortering_huskelapp() {
-        var huskelapp1 = new HuskelappForBruker(LocalDate.now().plusDays(20), "dddd Ringe fastlege", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString());
-        var huskelapp2 = new HuskelappForBruker(LocalDate.now().plusDays(30), "bbbb Ha et møte", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString());
-        var huskelapp3 = new HuskelappForBruker(LocalDate.now().plusMonths(2), "aaaa Snakke om idrett", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString());
-        var huskelapp4 = new HuskelappForBruker(LocalDate.now().plusDays(3), "cccc Huddle med Julie", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString());
+        var huskelapp1 = new HuskelappForBruker(LocalDate.now().plusDays(20), "dddd Ringe fastlege", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
+        var huskelapp2 = new HuskelappForBruker(LocalDate.now().plusDays(30), "bbbb Ha et møte", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
+        var huskelapp3 = new HuskelappForBruker(LocalDate.now().plusMonths(2), "aaaa Snakke om idrett", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
+        var huskelapp4 = new HuskelappForBruker(LocalDate.now().plusDays(3), "cccc Huddle med Julie", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
 
         var bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3924,7 +3928,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_D.name());
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_D.name())
+                .setFargekategori_enhetId(TEST_ENHET);
 
         var bruker2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3933,7 +3938,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name())
+                .setFargekategori_enhetId(TEST_ENHET);
 
         var bruker3 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3941,7 +3947,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name());
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name())
+                .setFargekategori_enhetId(TEST_ENHET);
 
         var bruker4 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3949,7 +3956,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name());
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name())
+                .setFargekategori_enhetId(TEST_ENHET);
 
         var bruker5 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())

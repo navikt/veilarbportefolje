@@ -40,11 +40,11 @@ class OpplysningerOmArbeidssoekerRepositoryTest {
             ),
             jobbsituasjon = listOf(
                 BeskrivelseMedDetaljerResponse(
-                    beskrivelse = JobbSituasjonBeskrivelse.ER_PERMITTERT,
+                    beskrivelse = JobbSituasjonBeskrivelseResponse.ER_PERMITTERT,
                     detaljer = mapOf(Pair("prosent", "25"))
                 ),
                 BeskrivelseMedDetaljerResponse(
-                    beskrivelse = JobbSituasjonBeskrivelse.MIDLERTIDIG_JOBB,
+                    beskrivelse = JobbSituasjonBeskrivelseResponse.MIDLERTIDIG_JOBB,
                     detaljer = mapOf(Pair("prosent", "75"))
                 )
             ),
@@ -59,14 +59,14 @@ class OpplysningerOmArbeidssoekerRepositoryTest {
             annet = AnnetResponse(
                 andreForholdHindrerArbeid = JaNeiVetIkke.NEI
             )
-        ).toOpplysningerOmArbeidssoeker()
+        ).toOpplysningerOmArbeidssoekerEntity()
         opplysningerOmArbeidssoeker.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysningerOmArbeidssoekerObjekt)
 
 
-        val resultatOpplysninger: OpplysningerOmArbeidssoeker? =
+        val resultatOpplysninger: OpplysningerOmArbeidssoekerEntity? =
             TestDataClient.getOpplysningerOmArbeidssoekerFraDb(db, opplysningerOmArbeidssoekerObjekt.periodeId)
 
-        val resultatJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjon? =
+        val resultatJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjonEntity? =
             TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(
                 db,
                 resultatOpplysninger!!.opplysningerOmArbeidssoekerId
