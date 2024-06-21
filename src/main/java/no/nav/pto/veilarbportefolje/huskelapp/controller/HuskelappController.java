@@ -66,8 +66,11 @@ public class HuskelappController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
+            if (huskelappRedigerRequest.huskelappId() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Huskelapp kan ikke redigeres nå.");
+            }
             if ((huskelappRedigerRequest.kommentar() == null || huskelappRedigerRequest.kommentar().isEmpty()) && huskelappRedigerRequest.frist() == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Huskelapp mangler frist og kommentar");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Huskelapp mangler frist og kommentar.");
             }
 
             huskelappService.redigerHuskelapp(huskelappRedigerRequest, veilederId);
