@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettReq
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +28,6 @@ public class HuskelappService {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final BrukerServiceV2 brukerServiceV2;
     private final HuskelappRepository huskelappRepository;
-    private final PdlIdentRepository pdlIdentRepository;
 
 
     @Transactional
@@ -162,7 +160,7 @@ public class HuskelappService {
     }
 
     private Optional<AktorId> hentAktorId(Fnr fnr) {
-        return Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr));
+        return brukerServiceV2.hentAktorId(fnr);
     }
 
 }

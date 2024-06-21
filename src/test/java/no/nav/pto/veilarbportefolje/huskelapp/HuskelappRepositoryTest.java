@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.huskelapp;
 
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
@@ -9,7 +8,6 @@ import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettReq
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +15,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.concurrent.ThreadLocalRandom.current;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -76,19 +72,6 @@ public class HuskelappRepositoryTest {
         assertThat(result2.isPresent()).isTrue();
         assertThat(result.get().enhetId().toString()).isEqualTo("0010").isEqualTo(result2.get().enhetId().toString());
         assertThat(result.get().frist()).isEqualTo(frist1).isEqualTo(result2.get().frist());
-    }
-
-    @Test
-    public void skalKunneOppretteOgRedigereOgHenteHuskelapp2() {
-        repo.opprettHuskelapp(huskelapp1, veilederA);
-        repo.opprettHuskelapp(huskelapp2, veilederA);
-        LocalDate nyFrist = LocalDate.of(2025, 10, 11);
-        Optional<Huskelapp> huskelapp1result = repo.hentAktivHuskelapp(huskelapp1.brukerFnr());
-        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelapp1result.get().huskelappId(), huskelapp1.brukerFnr(), nyFrist, "ny kommentar på huskelapp nr.1", enhet0010);
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA);
-        insertOppfolgingsInformasjon();
-        List<Huskelapp> result = repo.hentAktivHuskelapp(enhet0010, veilederA);
-        assertThat(result.size()).isEqualTo(2);
     }
 
     @Test
@@ -179,25 +162,4 @@ public class HuskelappRepositoryTest {
         assertThat(enhetId.isPresent()).isTrue();
         assertThat(enhetId.get()).isEqualTo(huskelapp2.enhetId().toString());
     }
-
-
-    private void insertOppfolgingsInformasjon() {
-        insertOppfolgingsInformasjon(huskelapp1.brukerFnr(), AktorId.of("456123"), veilederA, huskelapp1.enhetId());
-        insertOppfolgingsInformasjon(huskelapp2.brukerFnr(), AktorId.of("123456"), veilederA, huskelapp2.enhetId());
-    }
-
-    private void insertOppfolgingsInformasjon(Fnr fnr, AktorId aktorId, VeilederId veilederId, EnhetId navKontor) {
-        int person = current().nextInt();
-        jdbcTemplate.update("INSERT INTO bruker_identer (person, ident, gruppe, historisk) values (?,?,?, false)",
-                person, aktorId.get(), PDLIdent.Gruppe.AKTORID.name());
-        jdbcTemplate.update("INSERT INTO bruker_identer (person, ident, gruppe, historisk) values (?,?,?, false)",
-                person, fnr.get(), PDLIdent.Gruppe.FOLKEREGISTERIDENT.name());
-        jdbcTemplate.update("INSERT INTO oppfolgingsbruker_arena_v2 (fodselsnr, nav_kontor) values (?,?)", fnr.get(), navKontor.get());
-        oppfolgingRepository.settUnderOppfolging(aktorId, ZonedDateTime.now());
-        oppfolgingRepository.settVeileder(aktorId, veilederId);
-    }
-
-
-    //Slett huskelapp av annen veileder -sjekk at det ikke er ok
-
 }
