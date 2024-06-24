@@ -88,9 +88,6 @@ public class HuskelappController {
     public ResponseEntity<HuskelappResponse> hentHuskelapp(@RequestBody HuskelappForBrukerRequest huskelappForBrukerRequest) {
         validerOppfolgingOgBrukerOgEnhet(huskelappForBrukerRequest.fnr().get(), huskelappForBrukerRequest.enhetId().get());
         try {
-            if (!harBrukerenTildeltVeileder(huskelappForBrukerRequest.fnr())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
             Optional<Huskelapp> huskelapp = huskelappService.hentHuskelapp(huskelappForBrukerRequest.fnr());
             return huskelapp.map(value -> ResponseEntity.ok(mapToHuskelappResponse(value))).orElseGet(() -> ResponseEntity.ok(null));
         } catch (Exception e) {

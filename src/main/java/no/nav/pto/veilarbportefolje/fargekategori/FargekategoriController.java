@@ -43,12 +43,7 @@ public class FargekategoriController {
         authService.innloggetVeilederHarTilgangTilBruker(request.fnr.get());
         authService.innloggetVeilederHarTilgangTilEnhet(navKontorForBruker.getValue());
         try {
-            if (!harBrukerenTildeltVeileder(request.fnr())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-
             Optional<FargekategoriEntity> kanskjeFargekategori = fargekategoriService.hentFargekategoriForBruker(request);
-
             return kanskjeFargekategori.map(ResponseEntity::ok).orElse(ResponseEntity.ok(null));
         } catch (Exception e) {
             String melding = String.format("Klarte ikke å hente fargekategori for fnr %s", request.fnr.get());
