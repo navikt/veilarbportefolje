@@ -419,7 +419,7 @@ class ArbeidslisteIntegrationTest {
     void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v1()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
-                null,
+                "",
                 null,
                 null,
                 null
@@ -445,7 +445,7 @@ class ArbeidslisteIntegrationTest {
     void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v2()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
-                null,
+                "",
                 null,
                 null,
                 null
@@ -535,7 +535,7 @@ class ArbeidslisteIntegrationTest {
     void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v1()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
-                null,
+                "",
                 null,
                 null,
                 null
@@ -567,7 +567,7 @@ class ArbeidslisteIntegrationTest {
     void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v2()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
-                null,
+                "",
                 null,
                 null,
                 null

@@ -14,17 +14,20 @@ import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
+import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
@@ -146,6 +149,21 @@ public class ArbeidslisteService {
                 .hentVeilederForBruker(aktoerId)
                 .map(currentVeileder -> currentVeileder.equals(veilederId))
                 .orElse(false);
+    }
+
+    public void oppdaterEnhetPaaArbeidsliste(Fnr fnr, EnhetId enhetId, VeilederId veilederId) {
+        Try<Arbeidsliste> arbeidsliste = getArbeidsliste(fnr);
+        if (arbeidsliste.isSuccess()) {
+            ArbeidslisteDTO arbeidslisteDTO = ArbeidslisteDTO.of(
+                    fnr,
+                    AktorId.of(arbeidsliste.get().getAktoerid()),
+                    veilederId,
+                    Timestamp.from(now()),
+                    enhetId.get()
+            );
+            arbeidslisteRepositoryV2.updateArbeidslisteUtenFargekategori(arbeidslisteDTO)
+                    .onSuccess(opensearchIndexerV2::updateArbeidsliste);
+        }
     }
 
     public boolean brukerHarByttetNavKontor(AktorId aktoerId) {

@@ -30,22 +30,6 @@ public class FargekategoriService {
         return fargekategoriRepository.hentFargekategoriForBruker(request.fnr());
     }
 
-    public Optional<FargekategoriEntity> oppdaterFargekategoriForBruker(OppdaterFargekategoriRequest request, VeilederId sistEndretAv, EnhetId enhetId) {
-        if (request.fargekategoriVerdi() == FargekategoriVerdi.INGEN_KATEGORI) {
-            fargekategoriRepository.deleteFargekategori(request.fnr());
-
-            slettIOpensearch(request.fnr());
-
-            return Optional.empty();
-        } else {
-            FargekategoriEntity oppdatertKategori = fargekategoriRepository.upsertFargekateori(request, sistEndretAv, enhetId);
-
-            oppdaterIOpensearch(request.fnr(), request.fargekategoriVerdi().name(), enhetId.get());
-
-            return Optional.of(oppdatertKategori);
-        }
-    }
-
     public void batchoppdaterFargekategoriForBruker(FargekategoriVerdi fargekategoriVerdi, List<Fnr> fnr, VeilederId innloggetVeileder, EnhetId enhetId) {
         if (fargekategoriVerdi == FargekategoriVerdi.INGEN_KATEGORI) {
             fargekategoriRepository.batchdeleteFargekategori(fnr);
@@ -81,6 +65,20 @@ public class FargekategoriService {
         } catch (Exception e) {
             secureLog.error("Kunne ikke slette fagekategori for aktoerId: " + aktorId.toString(), e);
             throw new RuntimeException("Kunne ikke slette fagekategori");
+        }
+    }
+
+    public void oppdaterEnhetPaaFargekategori(Fnr fnr, EnhetId enhetId, VeilederId veilederId) {
+        try {
+            Optional<FargekategoriEntity> fargekategoriForBruker = fargekategoriRepository.hentFargekategoriForBruker(fnr);
+            fargekategoriForBruker.ifPresent(fargekategoriEntity -> {
+                OppdaterFargekategoriRequest fargekategoriMedNyEnhet = new OppdaterFargekategoriRequest(fnr, fargekategoriForBruker.get().fargekategoriVerdi());
+                fargekategoriRepository.upsertFargekateori( fargekategoriMedNyEnhet, veilederId, enhetId);
+                oppdaterIOpensearch(fargekategoriMedNyEnhet.fnr(), fargekategoriMedNyEnhet.fargekategoriVerdi().name(), enhetId.get());
+            });
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke oppdatere enhet på fargekategori for bruker: " + fnr, e);
+            throw new RuntimeException("Kunne ikke oppdatere enhet på fargekategori");
         }
     }
 

@@ -72,25 +72,6 @@ public class HuskelappRepository {
         db.update(sqlRedigerHuskelapp, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappRedigerRequest.frist()), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
     }
 
-    public List<Huskelapp> hentAktivHuskelapp(EnhetId enhetId, VeilederId veilederId) {
-        return dbReadOnly.queryForList("""
-                                SELECT hl.* FROM HUSKELAPP hl
-                                INNER JOIN aktive_identer ai on ai.fnr = hl.fnr
-                                INNER JOIN oppfolging_data o ON ai.aktorid = o.aktoerid
-                                INNER JOIN oppfolgingsbruker_arena_v2 ob on ai.fnr = ob.fodselsnr
-                                WHERE ob.nav_kontor = ?
-                                AND o.veilederid = ?
-                                AND hl.status = ?""",
-                        enhetId.get(),
-                        veilederId.getValue(),
-                        HuskelappStatus.AKTIV.name()
-                )
-                .stream()
-                .map(HuskelappRepository::huskelappMapper)
-                .toList();
-
-    }
-
     public Optional<Huskelapp> hentAktivHuskelapp(Fnr brukerFnr) {
         String sql = String.format("SELECT * FROM %s WHERE %s=? AND STATUS = ?", TABLE_NAME, FNR);
         return dbReadOnly.queryForList(sql, brukerFnr.get(), HuskelappStatus.AKTIV.name()).stream().map(HuskelappRepository::huskelappMapper).findFirst();

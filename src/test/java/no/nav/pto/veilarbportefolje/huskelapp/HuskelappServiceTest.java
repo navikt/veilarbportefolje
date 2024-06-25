@@ -79,8 +79,10 @@ public class HuskelappServiceTest {
         HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelapp1result.get().huskelappId(), huskelapp1.brukerFnr(), nyFrist, "ny kommentar på huskelapp nr.1", enhetId);
         huskelappService.redigerHuskelapp(huskelappRedigerRequest, veilederId1);
 
-        List<Huskelapp> result = huskelappService.hentHuskelapp(veilederId1, enhetId);
-        assertThat(result.size()).isEqualTo(2);
+        Optional<Huskelapp> result1 = huskelappService.hentHuskelapp(fnr1);
+        assertThat(result1.isPresent()).isTrue();
+        Optional<Huskelapp> result2 = huskelappService.hentHuskelapp(fnr2);
+        assertThat(result2.isPresent()).isTrue();
     }
 
     @Test
@@ -101,9 +103,8 @@ public class HuskelappServiceTest {
         HuskelappRedigerRequest huskelapp2 = new HuskelappRedigerRequest(huskelappUUID, fnr1, LocalDate.of(2026, 1, 1), "Husk nr 2", enhetId);
         huskelappService.redigerHuskelapp(huskelapp2, veilederId2);
 
-        List<Huskelapp> result = huskelappService.hentHuskelapp(veilederId1, enhetId);
-        assertThat(result.size()).isEqualTo(1);
-
+        Optional<Huskelapp> result1 = huskelappService.hentHuskelapp(fnr1);
+        assertThat(result1.isPresent()).isTrue();
     }
 
     private void insertOppfolgingsInformasjon(Fnr fnr, AktorId aktorId, VeilederId veilederId, EnhetId navKontor) {

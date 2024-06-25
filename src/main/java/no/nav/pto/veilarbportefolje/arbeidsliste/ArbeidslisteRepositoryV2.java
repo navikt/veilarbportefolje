@@ -113,6 +113,22 @@ public class ArbeidslisteRepositoryV2 {
         ).onFailure(e -> secureLog.warn("Kunne ikke oppdatere arbeidsliste i db", e));
     }
 
+    public Try<ArbeidslisteDTO> updateArbeidslisteUtenFargekategori(ArbeidslisteDTO data) {
+        final String updateSql = String.format(
+                "UPDATE %s SET %s = ?, %s = ?, %s = ? WHERE %s = ?",
+                TABLE_NAME, SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT, NAV_KONTOR_FOR_ARBEIDSLISTE, AKTOERID
+        );
+
+        return Try.of(
+                () -> {
+                    int arbeidslisteRows = db.update(updateSql, data.getVeilederId().getValue(), data.getEndringstidspunkt(), data.getNavKontorForArbeidsliste(), data.getAktorId().get());
+
+                    secureLog.info("Oppdaterte arbeidsliste pa bruker {}, rader: {}", data.getAktorId().get(), arbeidslisteRows);
+                    return data;
+                }
+        ).onFailure(e -> secureLog.warn("Kunne ikke oppdatere arbeidsliste i db", e));
+    }
+
     @Transactional
     public int slettArbeidsliste(AktorId aktoerId, Optional<Fnr> maybeFnr) {
         if (aktoerId == null) {

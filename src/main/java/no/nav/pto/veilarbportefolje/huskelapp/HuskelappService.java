@@ -61,15 +61,6 @@ public class HuskelappService {
         }
     }
 
-    public List<Huskelapp> hentHuskelapp(VeilederId veilederId, EnhetId enhetId) {
-        try {
-            return huskelappRepository.hentAktivHuskelapp(enhetId, veilederId);
-        } catch (Exception e) {
-            secureLog.error("Kunne ikke hente huskelapper for enhet: " + enhetId + ", og veileder: " + veilederId, e);
-            throw new RuntimeException("Kunne ikke hente huskelapper");
-        }
-    }
-
     public Optional<Huskelapp> hentHuskelapp(UUID huskelappId) {
         try {
             return huskelappRepository.hentAktivHuskelapp(huskelappId);
@@ -127,6 +118,20 @@ public class HuskelappService {
         } catch (Exception e) {
             secureLog.error("Kunne ikke deaktivere huskelapper for aktoerId: " + aktorId.toString());
             throw new RuntimeException("Kunne ikke deaktivere huskelapper", e);
+        }
+    }
+
+    @Transactional
+    public void oppdaterEnhetPaaHuskelapp(Fnr fnr, EnhetId enhetId, VeilederId veilederId) {
+        try {
+            Optional<Huskelapp> huskelappForBruker = huskelappRepository.hentAktivHuskelapp(fnr);
+            huskelappForBruker.ifPresent( huskelapp -> {
+                HuskelappRedigerRequest huskelappMedNyEnhet = new HuskelappRedigerRequest(huskelapp.huskelappId(), fnr, huskelapp.frist(), huskelapp.kommentar(), enhetId);
+                redigerHuskelapp(huskelappMedNyEnhet, veilederId);
+            });
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke oppdatere enhet på huskelapp for fnr: " + fnr, e);
+            throw new RuntimeException("Kunne ikke oppdatere enhet på huskelapp");
         }
     }
 
