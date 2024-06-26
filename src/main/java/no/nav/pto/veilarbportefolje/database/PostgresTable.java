@@ -137,6 +137,7 @@ public class PostgresTable {
         public static final String VERDI = "VERDI";
         public static final String SIST_ENDRET = "SIST_ENDRET";
         public static final String SIST_ENDRET_AV_VEILEDERIDENT = "SIST_ENDRET_AV_VEILEDERIDENT";
+        public static final String ENHET_ID = "ENHET_ID";
     }
 
     public static final class HUSKELAPP {
