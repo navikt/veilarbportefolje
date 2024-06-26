@@ -12,7 +12,6 @@ import no.nav.pto.veilarbportefolje.huskelapp.domain.HuskelappStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -54,10 +53,7 @@ public class HuskelappRepository {
         return huskelappId;
     }
 
-    @Transactional
     public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
-        settSisteHuskelappRadIkkeAktiv(huskelappRedigerRequest.huskelappId());
-
         String sqlRedigerHuskelapp = """
                 INSERT INTO HUSKELAPP (
                     HUSKELAPP_ID,
@@ -74,25 +70,6 @@ public class HuskelappRepository {
                 )
                 """;
         db.update(sqlRedigerHuskelapp, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappRedigerRequest.frist()), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
-    }
-
-    public List<Huskelapp> hentAktivHuskelapp(EnhetId enhetId, VeilederId veilederId) {
-        return dbReadOnly.queryForList("""
-                                SELECT hl.* FROM HUSKELAPP hl
-                                INNER JOIN aktive_identer ai on ai.fnr = hl.fnr
-                                INNER JOIN oppfolging_data o ON ai.aktorid = o.aktoerid
-                                INNER JOIN oppfolgingsbruker_arena_v2 ob on ai.fnr = ob.fodselsnr
-                                WHERE ob.nav_kontor = ?
-                                AND o.veilederid = ?
-                                AND hl.status = ?""",
-                        enhetId.get(),
-                        veilederId.getValue(),
-                        HuskelappStatus.AKTIV.name()
-                )
-                .stream()
-                .map(HuskelappRepository::huskelappMapper)
-                .toList();
-
     }
 
     public Optional<Huskelapp> hentAktivHuskelapp(Fnr brukerFnr) {

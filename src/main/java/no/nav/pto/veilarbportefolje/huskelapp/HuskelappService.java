@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -12,7 +11,6 @@ import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettReq
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,10 +26,8 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 public class HuskelappService {
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final AktorClient aktorClient;
     private final BrukerServiceV2 brukerServiceV2;
     private final HuskelappRepository huskelappRepository;
-    private final PdlIdentRepository pdlIdentRepository;
 
 
     @Transactional
@@ -50,8 +46,10 @@ public class HuskelappService {
         }
     }
 
+    @Transactional
     public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
         try {
+            huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(huskelappRedigerRequest.brukerFnr());
             huskelappRepository.redigerHuskelapp(huskelappRedigerRequest, veilederId);
 
             AktorId aktorId = hentAktorId(huskelappRedigerRequest.brukerFnr()).orElseThrow(RuntimeException::new);
@@ -60,15 +58,6 @@ public class HuskelappService {
         } catch (Exception e) {
             secureLog.error("Kunne ikke redigere huskelapp for fnr: " + huskelappRedigerRequest.brukerFnr() + " HuskelappId: " + huskelappRedigerRequest.huskelappId().toString(), e);
             throw new RuntimeException("Kunne ikke redigere huskelapp");
-        }
-    }
-
-    public List<Huskelapp> hentHuskelapp(VeilederId veilederId, EnhetId enhetId) {
-        try {
-            return huskelappRepository.hentAktivHuskelapp(enhetId, veilederId);
-        } catch (Exception e) {
-            secureLog.error("Kunne ikke hente huskelapper for enhet: " + enhetId + ", og veileder: " + veilederId, e);
-            throw new RuntimeException("Kunne ikke hente huskelapper");
         }
     }
 
@@ -132,6 +121,20 @@ public class HuskelappService {
         }
     }
 
+    @Transactional
+    public void oppdaterEnhetPaaHuskelapp(Fnr fnr, EnhetId enhetId, VeilederId veilederId) {
+        try {
+            Optional<Huskelapp> huskelappForBruker = huskelappRepository.hentAktivHuskelapp(fnr);
+            huskelappForBruker.ifPresent( huskelapp -> {
+                HuskelappRedigerRequest huskelappMedNyEnhet = new HuskelappRedigerRequest(huskelapp.huskelappId(), fnr, huskelapp.frist(), huskelapp.kommentar(), enhetId);
+                redigerHuskelapp(huskelappMedNyEnhet, veilederId);
+            });
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke oppdatere enhet på huskelapp for fnr: " + fnr, e);
+            throw new RuntimeException("Kunne ikke oppdatere enhet på huskelapp");
+        }
+    }
+
     public boolean brukerHarHuskelappPaForrigeNavkontor(AktorId aktoerId, Optional<Fnr> maybeFnr) {
         if (maybeFnr.isEmpty()) {
             return false;
@@ -162,7 +165,7 @@ public class HuskelappService {
     }
 
     private Optional<AktorId> hentAktorId(Fnr fnr) {
-        return Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr));
+        return brukerServiceV2.hentAktorId(fnr);
     }
 
 }
