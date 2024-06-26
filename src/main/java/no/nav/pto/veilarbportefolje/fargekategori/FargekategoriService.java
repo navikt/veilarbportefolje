@@ -73,7 +73,7 @@ public class FargekategoriService {
             Optional<FargekategoriEntity> fargekategoriForBruker = fargekategoriRepository.hentFargekategoriForBruker(fnr);
             fargekategoriForBruker.ifPresent(fargekategoriEntity -> {
                 OppdaterFargekategoriRequest fargekategoriMedNyEnhet = new OppdaterFargekategoriRequest(fnr, fargekategoriForBruker.get().fargekategoriVerdi());
-                fargekategoriRepository.upsertFargekateori( fargekategoriMedNyEnhet, veilederId, enhetId);
+                fargekategoriRepository.upsertFargekateori(fargekategoriMedNyEnhet, veilederId, enhetId);
                 oppdaterIOpensearch(fargekategoriMedNyEnhet.fnr(), fargekategoriMedNyEnhet.fargekategoriVerdi().name(), enhetId.get());
             });
         } catch (Exception e) {

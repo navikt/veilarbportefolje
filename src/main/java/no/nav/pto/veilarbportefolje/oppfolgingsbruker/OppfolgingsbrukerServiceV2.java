@@ -98,7 +98,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonConsumerService<Endri
                 Optional<NavKontor> navKontorForBruker = brukerServiceV2.hentNavKontor(fnr);
                 if (navKontorForBruker.isPresent() && !Objects.equals(navKontorForBruker.get().getValue(), enhetForBruker.get())) {
                     brukerServiceV2.hentVeilederForBruker(aktorId).ifPresent( veilederForBruker -> {
-                        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetForBruker);
+                        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhetMachineToMachine(enhetForBruker);
                         boolean brukerBlirAutomatiskTilordnetVeileder = veiledereMedTilgangTilEnhet.contains(veilederForBruker.getValue());
                         if (brukerBlirAutomatiskTilordnetVeileder) {
                             fargekategoriService.oppdaterEnhetPaaFargekategori(fnr, enhetForBruker, veilederForBruker);

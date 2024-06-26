@@ -26,6 +26,7 @@ public class VeilarbVeilederClient {
     private final OkHttpClient client;
     private final AuthService authService;
     private final Cache<EnhetId, List<String>> hentVeilederePaaEnhetCache;
+    private final Cache<EnhetId, List<String>> hentVeilederePaaEnhetMachineToMachineCache;
     private final EnvironmentProperties environmentProperties;
 
     public VeilarbVeilederClient(AuthService authService, EnvironmentProperties environmentProperties) {
@@ -38,11 +39,21 @@ public class VeilarbVeilederClient {
                 .expireAfterWrite(10, TimeUnit.MINUTES)
                 .maximumSize(600)
                 .build();
+
+        hentVeilederePaaEnhetMachineToMachineCache = Caffeine.newBuilder()
+                .expireAfterWrite(10, TimeUnit.MINUTES)
+                .maximumSize(600)
+                .build();
     }
 
     public List<String> hentVeilederePaaEnhet(EnhetId enhet) {
         return tryCacheFirst(hentVeilederePaaEnhetCache, enhet,
                 () -> hentVeilederePaaEnhetQuery(enhet));
+    }
+
+    public List<String> hentVeilederePaaEnhetMachineToMachine(EnhetId enhet) {
+        return tryCacheFirst(hentVeilederePaaEnhetMachineToMachineCache, enhet,
+                () -> hentVeilederePaaEnhetQueryMachineToMachine(enhet));
     }
 
     @SneakyThrows
@@ -51,6 +62,21 @@ public class VeilarbVeilederClient {
         String tokenScope = environmentProperties.getVeilarbveilederScope();
         Request request = new Request.Builder()
                 .header(AUTHORIZATION, "Bearer " + authService.getOboToken(tokenScope))
+                .url(url + path)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            return RestUtils.parseJsonResponseArrayOrThrow(response, String.class);
+        }
+    }
+
+    @SneakyThrows
+    private List<String> hentVeilederePaaEnhetQueryMachineToMachine(EnhetId enhet) {
+        String path = format("/api/enhet/%s/identer", enhet);
+        String tokenScope = environmentProperties.getVeilarbveilederScope();
+        Request request = new Request.Builder()
+                .header(AUTHORIZATION, "Bearer " + authService.getM2MToken(tokenScope))
                 .url(url + path)
                 .build();
 
