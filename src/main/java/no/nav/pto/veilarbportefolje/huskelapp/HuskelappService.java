@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,11 +32,14 @@ public class HuskelappService {
     @Transactional
     public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId) {
         try {
+            Optional<NavKontor> navKontorOptional = brukerServiceV2.hentNavKontor(huskelappOpprettRequest.brukerFnr());
+            NavKontor navKontor = navKontorOptional.orElseThrow(RuntimeException::new);
+
             huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(huskelappOpprettRequest.brukerFnr());
-            UUID huskelappId = huskelappRepository.opprettHuskelapp(huskelappOpprettRequest, veilederId);
+            UUID huskelappId = huskelappRepository.opprettHuskelapp(huskelappOpprettRequest, veilederId, EnhetId.of(navKontor.getValue()));
 
             AktorId aktorId = hentAktorId(huskelappOpprettRequest.brukerFnr()).orElseThrow(RuntimeException::new);
-            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappOpprettRequest.frist(), huskelappOpprettRequest.kommentar(), LocalDate.now(), veilederId.getValue(), huskelappId.toString(), huskelappOpprettRequest.enhetId().get()));
+            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappOpprettRequest.frist(), huskelappOpprettRequest.kommentar(), LocalDate.now(), veilederId.getValue(), huskelappId.toString(), navKontor.getValue()));
 
             return huskelappId;
         } catch (Exception e) {
@@ -49,11 +51,14 @@ public class HuskelappService {
     @Transactional
     public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
         try {
+            Optional<NavKontor> navKontorOptional = brukerServiceV2.hentNavKontor(huskelappRedigerRequest.brukerFnr());
+            NavKontor navKontor = navKontorOptional.orElseThrow(RuntimeException::new);
+
             huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(huskelappRedigerRequest.brukerFnr());
-            huskelappRepository.redigerHuskelapp(huskelappRedigerRequest, veilederId);
+            huskelappRepository.redigerHuskelapp(huskelappRedigerRequest, veilederId, EnhetId.of(navKontor.getValue()));
 
             AktorId aktorId = hentAktorId(huskelappRedigerRequest.brukerFnr()).orElseThrow(RuntimeException::new);
-            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar(), LocalDate.now(), veilederId.getValue(), huskelappRedigerRequest.huskelappId().toString(), huskelappRedigerRequest.enhetId().get()));
+            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar(), LocalDate.now(), veilederId.getValue(), huskelappRedigerRequest.huskelappId().toString(), navKontor.getValue()));
 
         } catch (Exception e) {
             secureLog.error("Kunne ikke redigere huskelapp for fnr: " + huskelappRedigerRequest.brukerFnr() + " HuskelappId: " + huskelappRedigerRequest.huskelappId().toString(), e);
@@ -122,12 +127,17 @@ public class HuskelappService {
     }
 
     @Transactional
-    public void oppdaterEnhetPaaHuskelapp(Fnr fnr, EnhetId enhetId, VeilederId veilederId) {
+    public void oppdaterEnhetPaaHuskelapp(Fnr fnr, EnhetId nyEnhetId, VeilederId veilederId) {
         try {
             Optional<Huskelapp> huskelappForBruker = huskelappRepository.hentAktivHuskelapp(fnr);
-            huskelappForBruker.ifPresent( huskelapp -> {
-                HuskelappRedigerRequest huskelappMedNyEnhet = new HuskelappRedigerRequest(huskelapp.huskelappId(), fnr, huskelapp.frist(), huskelapp.kommentar(), enhetId);
-                redigerHuskelapp(huskelappMedNyEnhet, veilederId);
+            huskelappForBruker.ifPresent(huskelapp -> {
+                HuskelappRedigerRequest huskelappRequest = new HuskelappRedigerRequest(huskelapp.huskelappId(), fnr, huskelapp.frist(), huskelapp.kommentar());
+
+                huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(fnr);
+                huskelappRepository.redigerHuskelapp(huskelappRequest, veilederId, nyEnhetId);
+
+                AktorId aktorId = hentAktorId(huskelappRequest.brukerFnr()).orElseThrow(RuntimeException::new);
+                opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappRequest.frist(), huskelappRequest.kommentar(), LocalDate.now(), veilederId.getValue(), huskelappRequest.huskelappId().toString(), nyEnhetId.get()));
             });
         } catch (Exception e) {
             secureLog.error("Kunne ikke oppdatere enhet på huskelapp for fnr: " + fnr, e);

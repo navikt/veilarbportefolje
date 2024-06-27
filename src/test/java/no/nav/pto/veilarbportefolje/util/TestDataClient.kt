@@ -8,7 +8,10 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringRepositoryV2
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerJobbsituasjonEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity
 import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor
@@ -98,9 +101,8 @@ class TestDataClient(
             HuskelappOpprettRequest(
                 fnr,
                 LocalDate.now(),
-                "test",
-                EnhetId.of(navKontor.value)
-            ), veilederId
+                "test"
+            ), veilederId, EnhetId.of(navKontor.value)
         )
 
         lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, startDato, null)
