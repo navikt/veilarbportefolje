@@ -66,17 +66,17 @@ public class HuskelappServiceTest {
         insertOppfolgingsInformasjon(fnr2, aktorId2, veilederId1, enhetId);
 
         HuskelappOpprettRequest huskelapp1 = new HuskelappOpprettRequest(fnr1,
-                LocalDate.of(2026, 1, 1), ("Huskelapp nr.1 sin kommentar"), enhetId);
+                LocalDate.of(2026, 1, 1), ("Huskelapp nr.1 sin kommentar"));
 
         HuskelappOpprettRequest huskelapp2 = new HuskelappOpprettRequest(fnr2,
-                LocalDate.of(2017, 2, 27), ("Huskelapp nr.2 sin kommentar"), enhetId);
+                LocalDate.of(2017, 2, 27), ("Huskelapp nr.2 sin kommentar"));
 
         huskelappService.opprettHuskelapp(huskelapp1, veilederId1);
         huskelappService.opprettHuskelapp(huskelapp2, veilederId1);
 
         LocalDate nyFrist = LocalDate.of(2025, 10, 11);
         Optional<Huskelapp> huskelapp1result = huskelappService.hentHuskelapp(huskelapp1.brukerFnr());
-        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelapp1result.get().huskelappId(), huskelapp1.brukerFnr(), nyFrist, "ny kommentar på huskelapp nr.1", enhetId);
+        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelapp1result.get().huskelappId(), huskelapp1.brukerFnr(), nyFrist, "ny kommentar på huskelapp nr.1");
         huskelappService.redigerHuskelapp(huskelappRedigerRequest, veilederId1);
 
         Optional<Huskelapp> result1 = huskelappService.hentHuskelapp(fnr1);
@@ -98,9 +98,9 @@ public class HuskelappServiceTest {
         insertOppfolgingsInformasjon(fnr1, aktorId1, veilederId1, enhetId);
         insertOppfolgingsInformasjon(fnr2, aktorId2, veilederId2, enhetId);
 
-        HuskelappOpprettRequest huskelapp1 = new HuskelappOpprettRequest(fnr1, LocalDate.of(2024, 2, 10), "Husk nr 1", enhetId);
+        HuskelappOpprettRequest huskelapp1 = new HuskelappOpprettRequest(fnr1, LocalDate.of(2024, 2, 10), "Husk nr 1");
         UUID huskelappUUID = huskelappService.opprettHuskelapp(huskelapp1, veilederId1);
-        HuskelappRedigerRequest huskelapp2 = new HuskelappRedigerRequest(huskelappUUID, fnr1, LocalDate.of(2026, 1, 1), "Husk nr 2", enhetId);
+        HuskelappRedigerRequest huskelapp2 = new HuskelappRedigerRequest(huskelappUUID, fnr1, LocalDate.of(2026, 1, 1), "Husk nr 2");
         huskelappService.redigerHuskelapp(huskelapp2, veilederId2);
 
         Optional<Huskelapp> result1 = huskelappService.hentHuskelapp(fnr1);

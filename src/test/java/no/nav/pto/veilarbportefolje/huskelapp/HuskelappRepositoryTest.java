@@ -43,16 +43,16 @@ public class HuskelappRepositoryTest {
     VeilederId veilederB = VeilederId.of("Z987654");
 
     private final HuskelappOpprettRequest huskelapp1 = new HuskelappOpprettRequest(fnr1,
-            frist1, ("Huskelapp nr.1 sin kommentar"), enhet0010);
+            frist1, ("Huskelapp nr.1 sin kommentar"));
 
     private final HuskelappOpprettRequest huskelapp2 = new HuskelappOpprettRequest(fnr2,
-            LocalDate.of(2017, 2, 27), ("Huskelapp nr.2 sin kommentar"), enhet0010);
+            LocalDate.of(2017, 2, 27), ("Huskelapp nr.2 sin kommentar"));
 
     private final HuskelappOpprettRequest huskelapp3 = new HuskelappOpprettRequest(fnr3,
-            LocalDate.of(2026, 10, 11), ("Huskelapp nr.3 sin kommentar"), enhet2420);
+            LocalDate.of(2026, 10, 11), ("Huskelapp nr.3 sin kommentar"));
 
     private final HuskelappOpprettRequest huskelappUtenKommentar = new HuskelappOpprettRequest(fnr4,
-            LocalDate.of(2030, 1, 1), (null), enhet0010);
+            LocalDate.of(2030, 1, 1), (null));
 
     @BeforeEach
     public void setUp() {
@@ -65,7 +65,7 @@ public class HuskelappRepositoryTest {
 
     @Test
     public void skalKunneOppretteOgHenteHuskelapp() {
-        repo.opprettHuskelapp(huskelapp1, veilederA);
+        repo.opprettHuskelapp(huskelapp1, veilederA, enhet0010);
         Optional<Huskelapp> result = repo.hentAktivHuskelapp(fnr1);
         assertThat(result.isPresent()).isTrue();
         Optional<Huskelapp> result2 = repo.hentAktivHuskelapp(result.get().huskelappId());
@@ -76,13 +76,13 @@ public class HuskelappRepositoryTest {
 
     @Test
     public void skalKunneOppretteOgRedigereOgHenteHuskelappUtenKommentar() {
-        repo.opprettHuskelapp(huskelappUtenKommentar, veilederA);
+        repo.opprettHuskelapp(huskelappUtenKommentar, veilederA, enhet0010);
         Optional<Huskelapp> huskelappUtenKommentar_ = repo.hentAktivHuskelapp(huskelappUtenKommentar.brukerFnr());
         assertThat(huskelappUtenKommentar_.isPresent()).isTrue();
         assertThat(huskelappUtenKommentar_.get().kommentar()).isEqualTo(null);
         LocalDate nyFrist = LocalDate.of(2025, 10, 11);
-        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappUtenKommentar_.get().huskelappId(), huskelappUtenKommentar.brukerFnr(), nyFrist, null, enhet0010);
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederB);
+        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappUtenKommentar_.get().huskelappId(), huskelappUtenKommentar.brukerFnr(), nyFrist, null);
+        repo.redigerHuskelapp(huskelappRedigerRequest, veilederB, enhet0010);
         Optional<Huskelapp> oppdatertHuskelappUtenKommentar = repo.hentAktivHuskelapp(fnr4);
         assertThat(oppdatertHuskelappUtenKommentar.isPresent()).isTrue();
         assertThat(oppdatertHuskelappUtenKommentar.get().kommentar()).isEqualTo(null);
@@ -92,13 +92,13 @@ public class HuskelappRepositoryTest {
     @Test
     public void annenVeilederSkalKunneRedigereHuskelapp() {
         LocalDate nyFrist = LocalDate.of(2025, 10, 11);
-        repo.opprettHuskelapp(huskelapp3, veilederA);
+        repo.opprettHuskelapp(huskelapp3, veilederA, enhet2420);
         Optional<Huskelapp> huskelappOriginal = repo.hentAktivHuskelapp(huskelapp3.brukerFnr());
         assertThat(huskelappOriginal.isPresent()).isTrue();
         assertThat(huskelappOriginal.get().kommentar()).isEqualTo("Huskelapp nr.3 sin kommentar");
         assertThat(huskelappOriginal.get().endretAv()).isEqualTo(veilederA);
-        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappOriginal.get().huskelappId(), huskelapp3.brukerFnr(), nyFrist, "ny kommentar på huskelapp nr.3", huskelapp3.enhetId());
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederB);
+        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappOriginal.get().huskelappId(), huskelapp3.brukerFnr(), nyFrist, "ny kommentar på huskelapp nr.3");
+        repo.redigerHuskelapp(huskelappRedigerRequest, veilederB, enhet0010);
         Optional<Huskelapp> huskelappOppdatertAvNyVeileder = repo.hentAktivHuskelapp(huskelapp3.brukerFnr());
         assertThat(huskelappOppdatertAvNyVeileder.isPresent()).isTrue();
         assertThat(huskelappOppdatertAvNyVeileder.get().kommentar()).isEqualTo("ny kommentar på huskelapp nr.3");
@@ -108,7 +108,7 @@ public class HuskelappRepositoryTest {
 
     @Test
     public void skalKunneSletteHuskelapp() {
-        repo.opprettHuskelapp(huskelapp2, veilederA);
+        repo.opprettHuskelapp(huskelapp2, veilederA, enhet0010);
         Optional<Huskelapp> huskelapp = repo.hentAktivHuskelapp(fnr2);
         assertThat(huskelapp.isPresent()).isTrue();
         assertThat(huskelapp.get().kommentar()).isEqualTo("Huskelapp nr.2 sin kommentar");
@@ -119,12 +119,12 @@ public class HuskelappRepositoryTest {
 
     @Test
     public void skalKunneInaktivereNyesteHuskelappRadNaarFlereRader() {
-        repo.opprettHuskelapp(huskelapp2, veilederA);
+        repo.opprettHuskelapp(huskelapp2, veilederA, enhet0010);
         Optional<Huskelapp> huskelappFoer = repo.hentAktivHuskelapp(fnr2);
         assertThat(huskelappFoer.isPresent()).isTrue();
         assertThat(huskelappFoer.get().kommentar()).isEqualTo("Huskelapp nr.2 sin kommentar");
-        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappFoer.get().huskelappId(), fnr2, huskelappFoer.get().frist(), "ny kommentar på huskelapp nr.2", enhet0010);
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA);
+        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappFoer.get().huskelappId(), fnr2, huskelappFoer.get().frist(), "ny kommentar på huskelapp nr.2");
+        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010);
         List<Huskelapp> alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId());
         assertThat(alleHuskelappRader.size()).isEqualTo(2);
         repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId());
@@ -135,15 +135,15 @@ public class HuskelappRepositoryTest {
 
     @Test
     public void sletterAlleHuskelappRader() {
-        repo.opprettHuskelapp(huskelapp2, veilederA);
+        repo.opprettHuskelapp(huskelapp2, veilederA, enhet0010);
         Optional<Huskelapp> huskelappFoer = repo.hentAktivHuskelapp(huskelapp2.brukerFnr());
         assertThat(huskelappFoer.isPresent()).isTrue();
         assertThat(huskelappFoer.get().kommentar()).isEqualTo("Huskelapp nr.2 sin kommentar");
 
-        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappFoer.get().huskelappId(), huskelapp2.brukerFnr(), huskelappFoer.get().frist(), "ny kommentar på huskelapp nr.2", huskelapp2.enhetId());
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA);
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA);
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA);
+        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappFoer.get().huskelappId(), huskelapp2.brukerFnr(), huskelappFoer.get().frist(), "ny kommentar på huskelapp nr.2");
+        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010);
+        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010);
+        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010);
 
         List<Huskelapp> alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId());
         assertThat(alleHuskelappRader.size()).isEqualTo(4);
@@ -157,9 +157,8 @@ public class HuskelappRepositoryTest {
 
     @Test
     public void faarHentetNavkontorPaHuskelapp() {
-        repo.opprettHuskelapp(huskelapp2, veilederA);
+        repo.opprettHuskelapp(huskelapp2, veilederA, enhet0010);
         Optional<String> enhetId = repo.hentNavkontorPaHuskelapp(huskelapp2.brukerFnr());
         assertThat(enhetId.isPresent()).isTrue();
-        assertThat(enhetId.get()).isEqualTo(huskelapp2.enhetId().toString());
     }
 }
