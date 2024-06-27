@@ -32,7 +32,7 @@ public class HuskelappRepository {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate dbReadOnly;
 
-    public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId) {
+    public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId, EnhetId enhetId) {
         UUID huskelappId = UUID.randomUUID();
         String sql = """
                 INSERT INTO HUSKELAPP (
@@ -49,11 +49,11 @@ public class HuskelappRepository {
                     ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        db.update(sql, huskelappId, huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappOpprettRequest.frist()), huskelappOpprettRequest.kommentar(), HuskelappStatus.AKTIV.name());
+        db.update(sql, huskelappId, huskelappOpprettRequest.brukerFnr().get(), enhetId.get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappOpprettRequest.frist()), huskelappOpprettRequest.kommentar(), HuskelappStatus.AKTIV.name());
         return huskelappId;
     }
 
-    public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
+    public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId, EnhetId enhetId) {
         String sqlRedigerHuskelapp = """
                 INSERT INTO HUSKELAPP (
                     HUSKELAPP_ID,
@@ -69,7 +69,7 @@ public class HuskelappRepository {
                     ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        db.update(sqlRedigerHuskelapp, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappRedigerRequest.frist()), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
+        db.update(sqlRedigerHuskelapp, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), enhetId.get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappRedigerRequest.frist()), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
     }
 
     public Optional<Huskelapp> hentAktivHuskelapp(Fnr brukerFnr) {
