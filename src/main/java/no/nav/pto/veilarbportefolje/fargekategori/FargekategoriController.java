@@ -76,6 +76,13 @@ public class FargekategoriController {
             return ResponseEntity.status(403).body(resultatFraValideringOgAutorisering);
         }
 
+
+        responseEtterAutoriseringssjekk.data.forEach(fnr -> {
+            if (!harBrukerenTildeltVeileder(fnr)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker har ikke tildelt veileder");
+            }
+        });
+
         Set<NavKontor> brukerEnheter = responseEtterAutoriseringssjekk.data.stream()
                 .map(brukerServiceV2::hentNavKontor)
                 .filter(Optional::isPresent)
@@ -111,10 +118,6 @@ public class FargekategoriController {
         request.fnr.forEach(fnr -> {
             try {
                 validerRequest(fnr);
-
-                if (!harBrukerenTildeltVeileder(fnr)) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bruker har ikke tildelt veileder");
-                }
 
                 sjekkGikkOK.add(fnr);
             } catch (Exception e) {
