@@ -112,9 +112,9 @@ public class FargekategoriController {
             try {
                 validerRequest(fnr);
 
-                if (!harBrukerenTildeltVeileder(fnr)) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bruker har ikke tildelt veileder");
-                }
+                //if (!harBrukerenTildeltVeileder(fnr)) {
+                //    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bruker har ikke tildelt veileder");
+                //}
 
                 sjekkGikkOK.add(fnr);
             } catch (Exception e) {
