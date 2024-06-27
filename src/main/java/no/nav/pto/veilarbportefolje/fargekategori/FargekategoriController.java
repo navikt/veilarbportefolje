@@ -44,9 +44,9 @@ public class FargekategoriController {
         authService.innloggetVeilederHarTilgangTilEnhet(navKontorForBruker.getValue());
 
         try {
-            if (!harBrukerenTildeltVeileder(request.fnr)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
+            //if (!harBrukerenTildeltVeileder(request.fnr)) {
+            //    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            //}
 
             Optional<FargekategoriEntity> kanskjeFargekategori = fargekategoriService.hentFargekategoriForBruker(request);
             return kanskjeFargekategori.map(ResponseEntity::ok).orElse(ResponseEntity.ok(null));
@@ -112,9 +112,9 @@ public class FargekategoriController {
             try {
                 validerRequest(fnr);
 
-                //if (!harBrukerenTildeltVeileder(fnr)) {
-                //    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bruker har ikke tildelt veileder");
-                //}
+                if (!harBrukerenTildeltVeileder(fnr)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bruker har ikke tildelt veileder");
+                }
 
                 sjekkGikkOK.add(fnr);
             } catch (Exception e) {
