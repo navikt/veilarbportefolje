@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.huskelapp.controller.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import lombok.Setter;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 
@@ -12,6 +13,7 @@ public record HuskelappOpprettRequest(
     @JsonSerialize(using = LocalDateSerializer.class)
     LocalDate frist,
     String kommentar,
+    @Setter
     EnhetId enhetId
 ) {
 }
