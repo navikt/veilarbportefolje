@@ -79,6 +79,7 @@ public class HuskelappControllerTest {
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
         when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
+        when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of(enhetId.get())));
 
         HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, huskelappfrist, "Test", enhetId);
         String opprettetHuskelappId = mockMvc
@@ -90,7 +91,7 @@ public class HuskelappControllerTest {
                 .andExpect(status().is(201))
                 .andReturn().getResponse().getContentAsString();
 
-        HuskelappForBrukerRequest hentForBrukerRequest = new HuskelappForBrukerRequest(fnr, enhetId);
+        HuskelappForBrukerRequest hentForBrukerRequest = new HuskelappForBrukerRequest(fnr);
         HuskelappOpprettResponse huskelappId = fromJson(opprettetHuskelappId, HuskelappOpprettResponse.class);
         HuskelappResponse expected = new HuskelappResponse(huskelappId.huskelappId(), fnr, enhetId, huskelappfrist, "Test", LocalDate.now(), veilederId.getValue());
 
@@ -132,6 +133,7 @@ public class HuskelappControllerTest {
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
         when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
+        when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of(enhetId.get())));
 
         List<PDLIdent> identer = List.of(
                 new PDLIdent(aktorId.get(), false, AKTORID),
@@ -146,7 +148,7 @@ public class HuskelappControllerTest {
                                 .content(toJson(opprettRequest))
                 ).andReturn().getResponse().getContentAsString();
         HuskelappOpprettResponse huskelappIdBody = fromJson(opprettetHuskelappIdbody, HuskelappOpprettResponse.class);
-        HuskelappForBrukerRequest hentForBrukerForRedigeringRequest = new HuskelappForBrukerRequest(fnr, enhetId);
+        HuskelappForBrukerRequest hentForBrukerForRedigeringRequest = new HuskelappForBrukerRequest(fnr);
         String hentHuskelappForRedigeringResult = mockMvc
                 .perform(
                         post("/api/v1/hent-huskelapp-for-bruker")
@@ -174,7 +176,7 @@ public class HuskelappControllerTest {
                                 .header("test_ident_type", "INTERN")
                 ).andExpect(status().is(204));
 
-        HuskelappForBrukerRequest hentForBrukerEtterRedigeringRequest = new HuskelappForBrukerRequest(fnr, enhetId);
+        HuskelappForBrukerRequest hentForBrukerEtterRedigeringRequest = new HuskelappForBrukerRequest(fnr);
         String hentHuskelappEtterRedigeringResult = mockMvc
                 .perform(
                         post("/api/v1/hent-huskelapp-for-bruker")
@@ -206,6 +208,7 @@ public class HuskelappControllerTest {
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
         when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
+        when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of(enhetId.get())));
 
         List<PDLIdent> identer = List.of(
                 new PDLIdent(aktorId.get(), false, AKTORID),
@@ -240,6 +243,7 @@ public class HuskelappControllerTest {
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(AuthUtils.getInnloggetVeilederIdent()));
         when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
+        when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of(enhetId.get())));
 
         List<PDLIdent> identer = List.of(
                 new PDLIdent(aktorId.get(), false, AKTORID),
@@ -270,7 +274,7 @@ public class HuskelappControllerTest {
                 )
                 .andExpect(status().is(204));
 
-        HuskelappForBrukerRequest hentForBrukerRequest = new HuskelappForBrukerRequest(fnr, enhetId);
+        HuskelappForBrukerRequest hentForBrukerRequest = new HuskelappForBrukerRequest(fnr);
         mockMvc
                 .perform(
                         post("/api/v1/hent-huskelapp-for-bruker")
