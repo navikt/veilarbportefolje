@@ -16,9 +16,7 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -66,9 +64,9 @@ public class AuthService {
     public boolean harVeilederTilgangTilEnhet(String veilederId, String enhet) {
         //Først catcher veiledertilgang til enheten så returnerer responsen, da unngår vi veiledertilgang sjekk hver gang når det skjer endring
         return tryCacheFirst(
-                    harVeilederTilgangTilEnhetCache,
-                    new VeilederPaEnhet(veilederId, enhet),
-                    poaoTilgangWrapper.harVeilederTilgangTilEnhet(EnhetId.of(enhet))::isPermit
+                harVeilederTilgangTilEnhetCache,
+                new VeilederPaEnhet(veilederId, enhet),
+                poaoTilgangWrapper.harVeilederTilgangTilEnhet(EnhetId.of(enhet))::isPermit
         );
     }
 

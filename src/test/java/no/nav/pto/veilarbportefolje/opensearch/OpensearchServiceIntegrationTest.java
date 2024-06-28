@@ -1,19 +1,16 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.SneakyThrows;
-import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test;
-import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
@@ -38,11 +35,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -60,11 +53,11 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 public class OpensearchServiceIntegrationTest extends EndToEndTest {
     private static String TEST_ENHET = randomNavKontor().getValue();
@@ -110,57 +103,25 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
         doReturn(true).when(defaultUnleash).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
 
-        //doReturn(true).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_0));
-        //doReturn(false).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_0));
-        //doReturn(false).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_0));
+        OppfolgingsBruker kode6Bruker_0 = genererRandomBruker(TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode6Bruker_1 = genererRandomBruker(TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode6Bruker_2 = genererRandomBruker(TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode6Bruker_3 = genererRandomBruker(TEST_ENHET, null, "6", false);
 
-        doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
+        OppfolgingsBruker kode7Bruker_0 = genererRandomBruker(TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode7Bruker_1 = genererRandomBruker(TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode7Bruker_2 = genererRandomBruker(TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode7Bruker_3 = genererRandomBruker(TEST_ENHET, null, "7", false);
 
-        doReturn(false).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_1));
-        //doReturn(true).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_1));
-        //doReturn(false).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_1));
+        OppfolgingsBruker egenAnsattBruker_0 = genererRandomBruker(TEST_ENHET, null, null, true);
+        OppfolgingsBruker egenAnsattBruker_1 = genererRandomBruker(TEST_ENHET, null, null, true);
+        OppfolgingsBruker egenAnsattBruker_2 = genererRandomBruker(TEST_ENHET, null, null, true);
+        OppfolgingsBruker egenAnsattBruker_3 = genererRandomBruker(TEST_ENHET, null, null, true);
 
-        //doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
-        //doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        //doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
-
-        //doReturn(false).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_2));
-        //doReturn(false).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_2));
-        //doReturn(true).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_2));
-
-        //doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
-        //doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        //doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
-
-        //doReturn(false).when(pep).harVeilederTilgangTilKode6(NavIdent.of(TEST_VEILEDER_3));
-        //doReturn(true).when(pep).harVeilederTilgangTilKode7(NavIdent.of(TEST_VEILEDER_3));
-        //doReturn(true).when(pep).harVeilederTilgangTilEgenAnsatt(NavIdent.of(TEST_VEILEDER_3));
-
-        //doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
-        //doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        //doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
-
-        OppfolgingsBruker kode6Bruker_0 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
-        OppfolgingsBruker kode6Bruker_1 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
-        OppfolgingsBruker kode6Bruker_2 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
-        OppfolgingsBruker kode6Bruker_3 = genererRandomBruker(true, TEST_ENHET, null, "6", false);
-
-        OppfolgingsBruker kode7Bruker_0 = genererRandomBruker(true, TEST_ENHET, null, "7", false);
-        OppfolgingsBruker kode7Bruker_1 = genererRandomBruker(true, TEST_ENHET, null, "7", false);
-        OppfolgingsBruker kode7Bruker_2 = genererRandomBruker(true, TEST_ENHET, null, "7", false);
-        OppfolgingsBruker kode7Bruker_3 = genererRandomBruker(true, TEST_ENHET, null, "7", false);
-
-        OppfolgingsBruker egenAnsattBruker_0 = genererRandomBruker(true, TEST_ENHET, null, null, true);
-        OppfolgingsBruker egenAnsattBruker_1 = genererRandomBruker(true, TEST_ENHET, null, null, true);
-        OppfolgingsBruker egenAnsattBruker_2 = genererRandomBruker(true, TEST_ENHET, null, null, true);
-        OppfolgingsBruker egenAnsattBruker_3 = genererRandomBruker(true, TEST_ENHET, null, null, true);
-
-        OppfolgingsBruker egenAnsattOgKode7Bruker_0 = genererRandomBruker(true, TEST_ENHET, null, "7", true);
-        OppfolgingsBruker egenAnsattOgKode7Bruker_1 = genererRandomBruker(true, TEST_ENHET, null, "7", true);
-        OppfolgingsBruker egenAnsattOgKode7Bruker_2 = genererRandomBruker(true, TEST_ENHET, null, "7", true);
-        OppfolgingsBruker egenAnsattOgKode7Bruker_3 = genererRandomBruker(true, TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_0 = genererRandomBruker(TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_1 = genererRandomBruker(TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_2 = genererRandomBruker(TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_3 = genererRandomBruker(TEST_ENHET, null, "7", true);
 
         List<OppfolgingsBruker> brukere = List.of(
                 kode6Bruker_0,
@@ -185,9 +146,24 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
         BrukereMedAntall brukereSomVeilederMedKode6TilgangHarInnsynsrettPa = loggInnVeilederOgHentEnhetPortefolje(opensearchService, TEST_VEILEDER_0, authContextHolder);
+
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
         BrukereMedAntall brukereSomVeilederMedKode7TilgangHarInnsynsrettPa = loggInnVeilederOgHentEnhetPortefolje(opensearchService, TEST_VEILEDER_1, authContextHolder);
+
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
         BrukereMedAntall brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa = loggInnVeilederOgHentEnhetPortefolje(opensearchService, TEST_VEILEDER_2, authContextHolder);
+
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
         BrukereMedAntall brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa = loggInnVeilederOgHentEnhetPortefolje(opensearchService, TEST_VEILEDER_3, authContextHolder);
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.getAntall()).isEqualTo(4);
@@ -236,41 +212,25 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
         doReturn(true).when(defaultUnleash).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
 
-        doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
+        OppfolgingsBruker kode6Bruker_medVeileder0Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "6", false);
+        OppfolgingsBruker kode7Bruker_medVeileder0Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "7", false);
+        OppfolgingsBruker egenAnsattBruker_medVeileder0Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_medVeileder0Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "7", true);
 
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
-        doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
+        OppfolgingsBruker kode6Bruker_medVeileder1Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "6", false);
+        OppfolgingsBruker kode7Bruker_medVeileder1Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "7", false);
+        OppfolgingsBruker egenAnsattBruker_medVeileder1Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, null, true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_medVeileder1Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "7", true);
 
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
+        OppfolgingsBruker kode6Bruker_medVeileder2Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_2, "6", false);
+        OppfolgingsBruker kode7Bruker_medVeileder2Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_2, "7", false);
+        OppfolgingsBruker egenAnsattBruker_medVeileder2Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_2, null, true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_medVeileder2Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_2, "7", true);
 
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
-        doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
-
-        OppfolgingsBruker kode6Bruker_medVeileder0Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false);
-        OppfolgingsBruker kode7Bruker_medVeileder0Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", false);
-        OppfolgingsBruker egenAnsattBruker_medVeileder0Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true);
-        OppfolgingsBruker egenAnsattOgKode7Bruker_medVeileder0Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", true);
-
-        OppfolgingsBruker kode6Bruker_medVeileder1Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "6", false);
-        OppfolgingsBruker kode7Bruker_medVeileder1Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", false);
-        OppfolgingsBruker egenAnsattBruker_medVeileder1Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, null, true);
-        OppfolgingsBruker egenAnsattOgKode7Bruker_medVeileder1Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", true);
-
-        OppfolgingsBruker kode6Bruker_medVeileder2Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, "6", false);
-        OppfolgingsBruker kode7Bruker_medVeileder2Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, "7", false);
-        OppfolgingsBruker egenAnsattBruker_medVeileder2Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, null, true);
-        OppfolgingsBruker egenAnsattOgKode7Bruker_medVeileder2Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, "7", true);
-
-        OppfolgingsBruker kode6Bruker_medVeileder3Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "6", false);
-        OppfolgingsBruker kode7Bruker_medVeileder3Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "7", false);
-        OppfolgingsBruker egenAnsattBruker_medVeileder3Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, null, true);
-        OppfolgingsBruker egenAnsattOgKode7Bruker_medVeileder3Tilordnet = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "7", true);
+        OppfolgingsBruker kode6Bruker_medVeileder3Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_3, "6", false);
+        OppfolgingsBruker kode7Bruker_medVeileder3Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_3, "7", false);
+        OppfolgingsBruker egenAnsattBruker_medVeileder3Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_3, null, true);
+        OppfolgingsBruker egenAnsattOgKode7Bruker_medVeileder3Tilordnet = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_3, "7", true);
 
         List<OppfolgingsBruker> brukere = List.of(
                 kode6Bruker_medVeileder0Tilordnet,
@@ -295,9 +255,24 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
         BrukereMedAntall brukereSomVeilederMedKode6TilgangHarInnsynsrettPa = loggInnVeilederOgHentVeilederPortefolje(opensearchService, TEST_VEILEDER_0, authContextHolder);
+
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
         BrukereMedAntall brukereSomVeilederMedKode7TilgangHarInnsynsrettPa = loggInnVeilederOgHentVeilederPortefolje(opensearchService, TEST_VEILEDER_1, authContextHolder);
+
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
         BrukereMedAntall brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa = loggInnVeilederOgHentVeilederPortefolje(opensearchService, TEST_VEILEDER_2, authContextHolder);
+
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
         BrukereMedAntall brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa = loggInnVeilederOgHentVeilederPortefolje(opensearchService, TEST_VEILEDER_3, authContextHolder);
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.getAntall()).isEqualTo(1);
@@ -401,7 +376,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Bruker ufordeltBruker = response.getBrukere().stream()
                 .filter(b -> TEST_VEILEDER_1.equals(b.getVeilederId()))
-                .collect(toList()).get(0);
+                .toList().getFirst();
 
         assertThat(ufordeltBruker.isNyForEnhet()).isTrue();
     }
@@ -561,9 +536,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_hente_riktige_statustall_for_veileder() {
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
 
         var testBruker1 = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().toString())
@@ -601,15 +576,15 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setFormidlingsgruppekode("ISERV");
 
-        var kode6BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode, false)
+        var kode6BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode, false)
                 .setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()))
                 .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name())
                 .setFargekategori_enhetId(TEST_ENHET);
-        var kode7BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.FORTROLIG.diskresjonskode, false)
+        var kode7BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.FORTROLIG.diskresjonskode, false)
                 .setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()))
                 .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name())
                 .setFargekategori_enhetId(TEST_ENHET);
-        var egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true)
+        var egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, true)
                 .setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
         var liste = List.of(testBruker1, testBruker2, inaktivBruker, kode6BrukerSomVeilederIkkeHarInnsynsrettPa, kode7BrukerSomVeilederIkkeHarInnsynsrettPa, egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa);
@@ -643,29 +618,30 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
         doReturn(true).when(defaultUnleash).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
 
-        OppfolgingsBruker kode_6_bruker = genererRandomBruker(true, TEST_ENHET, null, "6", false);
-        OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false);
-        OppfolgingsBruker kode_6_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
 
-        OppfolgingsBruker kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", false);
-        OppfolgingsBruker kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", false);
-        OppfolgingsBruker kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker kode_6_bruker = genererRandomBruker(TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "6", false);
+        OppfolgingsBruker kode_6_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "6", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker egen_ansatt_bruker = genererRandomBruker(true, TEST_ENHET, null, null, true);
-        OppfolgingsBruker egen_ansatt_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, null, true);
-        OppfolgingsBruker egen_ansatt_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_2, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker kode_7_bruker = genererRandomBruker(TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "7", false);
+        OppfolgingsBruker kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "7", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", true);
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "7", true);
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker egen_ansatt_bruker = genererRandomBruker(TEST_ENHET, null, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_2, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_2, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker fordelt_bruker_som_ikke_skal_inkluderes = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_3, null, false);
-        OppfolgingsBruker ufordelt_bruker_som_ikke_skal_inkluderes = genererRandomBruker(true, TEST_ENHET, null, null, false);
-        OppfolgingsBruker bruker_som_venter_pa_svar_fra_nav_som_ikke_skal_inkluderes = genererRandomBruker(true, TEST_ENHET, null, null, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker = genererRandomBruker(TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_3, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_3, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
+        OppfolgingsBruker fordelt_bruker_som_ikke_skal_inkluderes = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_3, null, false);
+        OppfolgingsBruker ufordelt_bruker_som_ikke_skal_inkluderes = genererRandomBruker(TEST_ENHET, null, null, false);
+        OppfolgingsBruker bruker_som_venter_pa_svar_fra_nav_som_ikke_skal_inkluderes = genererRandomBruker(TEST_ENHET, null, null, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
         List<OppfolgingsBruker> brukere = List.of(
                 kode_6_bruker,
@@ -701,29 +677,30 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
-        doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        doReturn(false).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
 
-        OppfolgingsBruker kode_6_bruker = genererRandomBruker(true, TEST_ENHET, null, "6", false);
-        OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false);
-        OppfolgingsBruker kode_6_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "6", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(new Decision.Deny("", "")).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
 
-        OppfolgingsBruker kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", false);
-        OppfolgingsBruker kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", false);
-        OppfolgingsBruker kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker kode_6_bruker = genererRandomBruker(TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "6", false);
+        OppfolgingsBruker kode_6_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "6", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker egen_ansatt_bruker = genererRandomBruker(true, TEST_ENHET, null, null, true);
-        OppfolgingsBruker egen_ansatt_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true);
-        OppfolgingsBruker egen_ansatt_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker kode_7_bruker = genererRandomBruker(TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "7", false);
+        OppfolgingsBruker kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "7", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", true);
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", true);
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker egen_ansatt_bruker = genererRandomBruker(TEST_ENHET, null, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker tilfeldig_fordelt_bruker = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, false);
-        OppfolgingsBruker tilfeldig_ufordelt_bruker = genererRandomBruker(true, TEST_ENHET, null, null, false);
-        OppfolgingsBruker tilfeldig_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker = genererRandomBruker(TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
+        OppfolgingsBruker tilfeldig_fordelt_bruker = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, false);
+        OppfolgingsBruker tilfeldig_ufordelt_bruker = genererRandomBruker(TEST_ENHET, null, null, false);
+        OppfolgingsBruker tilfeldig_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
         List<OppfolgingsBruker> brukere = List.of(
                 kode_6_bruker,
@@ -749,8 +726,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Statustall respons = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
 
-        assertThat(respons.getTotalt()).isEqualTo(3);
-        assertThat(respons.getVenterPaSvarFraNAV()).isEqualTo(1);
+        assertThat(respons.getTotalt()).isEqualTo(6);
+        assertThat(respons.getVenterPaSvarFraNAV()).isEqualTo(2);
     }
 
     @Test
@@ -758,29 +735,30 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         List<String> veilederePaEnhet = List.of(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3);
 
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
-        doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
-        doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        doReturn(true).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
 
-        OppfolgingsBruker kode_6_bruker = genererRandomBruker(true, TEST_ENHET, null, "6", false);
-        OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false);
-        OppfolgingsBruker kode_6_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "6", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt();
 
-        OppfolgingsBruker kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", false);
-        OppfolgingsBruker kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", false);
-        OppfolgingsBruker kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker kode_6_bruker = genererRandomBruker(TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "6", false);
+        OppfolgingsBruker kode_6_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "6", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker egen_ansatt_bruker = genererRandomBruker(true, TEST_ENHET, null, null, true);
-        OppfolgingsBruker egen_ansatt_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true);
-        OppfolgingsBruker egen_ansatt_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker kode_7_bruker = genererRandomBruker(TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "7", false);
+        OppfolgingsBruker kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "7", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", true);
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", true);
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker egen_ansatt_bruker = genererRandomBruker(TEST_ENHET, null, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker tilfeldig_fordelt_bruker = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, false);
-        OppfolgingsBruker tilfeldig_ufordelt_bruker = genererRandomBruker(true, TEST_ENHET, null, null, false);
-        OppfolgingsBruker tilfeldig_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker = genererRandomBruker(TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+
+        OppfolgingsBruker tilfeldig_fordelt_bruker = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, false);
+        OppfolgingsBruker tilfeldig_ufordelt_bruker = genererRandomBruker(TEST_ENHET, null, null, false);
+        OppfolgingsBruker tilfeldig_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
         List<OppfolgingsBruker> brukere = List.of(
                 kode_6_bruker,
@@ -828,25 +806,25 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
         doReturn(false).when(defaultUnleash).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
 
-        OppfolgingsBruker kode_6_bruker = genererRandomBruker(true, TEST_ENHET, null, "6", false);
-        OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false);
-        OppfolgingsBruker kode_6_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "6", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker kode_6_bruker = genererRandomBruker(TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "6", false);
+        OppfolgingsBruker kode_6_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "6", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", false);
-        OppfolgingsBruker kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", false);
-        OppfolgingsBruker kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker kode_7_bruker = genererRandomBruker(TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "7", false);
+        OppfolgingsBruker kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "7", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker egen_ansatt_bruker = genererRandomBruker(true, TEST_ENHET, null, null, true);
-        OppfolgingsBruker egen_ansatt_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true);
-        OppfolgingsBruker egen_ansatt_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker egen_ansatt_bruker = genererRandomBruker(TEST_ENHET, null, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", true);
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", true);
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker = genererRandomBruker(TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker tilfeldig_fordelt_bruker = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, false);
-        OppfolgingsBruker tilfeldig_ufordelt_bruker = genererRandomBruker(true, TEST_ENHET, null, null, false);
-        OppfolgingsBruker tilfeldig_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker tilfeldig_fordelt_bruker = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, false);
+        OppfolgingsBruker tilfeldig_ufordelt_bruker = genererRandomBruker(TEST_ENHET, null, null, false);
+        OppfolgingsBruker tilfeldig_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
         List<OppfolgingsBruker> brukere = List.of(
                 kode_6_bruker,
@@ -886,25 +864,25 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         doReturn(veilederePaEnhet).when(veilarbVeilederClientMock).hentVeilederePaaEnhet(EnhetId.of(TEST_ENHET));
         doReturn(false).when(defaultUnleash).isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
 
-        OppfolgingsBruker kode_6_bruker = genererRandomBruker(true, TEST_ENHET, null, "6", false);
-        OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "6", false);
-        OppfolgingsBruker kode_6_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "6", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker kode_6_bruker = genererRandomBruker(TEST_ENHET, null, "6", false);
+        OppfolgingsBruker kode_6_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "6", false);
+        OppfolgingsBruker kode_6_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "6", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", false);
-        OppfolgingsBruker kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", false);
-        OppfolgingsBruker kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker kode_7_bruker = genererRandomBruker(TEST_ENHET, null, "7", false);
+        OppfolgingsBruker kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "7", false);
+        OppfolgingsBruker kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "7", false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker egen_ansatt_bruker = genererRandomBruker(true, TEST_ENHET, null, null, true);
-        OppfolgingsBruker egen_ansatt_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, true);
-        OppfolgingsBruker egen_ansatt_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker egen_ansatt_bruker = genererRandomBruker(TEST_ENHET, null, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, true);
+        OppfolgingsBruker egen_ansatt_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, null, true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker = genererRandomBruker(true, TEST_ENHET, null, "7", true);
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, "7", true);
-        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_1, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker = genererRandomBruker(TEST_ENHET, null, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_med_tilordnet_veileder = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, "7", true);
+        OppfolgingsBruker egen_ansatt_og_kode_7_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_1, "7", true).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
-        OppfolgingsBruker tilfeldig_fordelt_bruker = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, false);
-        OppfolgingsBruker tilfeldig_ufordelt_bruker = genererRandomBruker(true, TEST_ENHET, null, null, false);
-        OppfolgingsBruker tilfeldig_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(true, TEST_ENHET, TEST_VEILEDER_0, null, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
+        OppfolgingsBruker tilfeldig_fordelt_bruker = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, false);
+        OppfolgingsBruker tilfeldig_ufordelt_bruker = genererRandomBruker(TEST_ENHET, null, null, false);
+        OppfolgingsBruker tilfeldig_bruker_som_venter_pa_svar_fra_nav = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0, null, false).setVenterpasvarfranav(toIsoUTC(LocalDateTime.now()));
 
         List<OppfolgingsBruker> brukere = List.of(
                 kode_6_bruker,
@@ -1772,8 +1750,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")));
-        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2021-03-23")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2021-03-23")));
 
 
         filterValg = new Filtervalg()
@@ -1790,7 +1768,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2021-03-23")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2021-03-23")));
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
@@ -1807,8 +1785,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")));
-        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2021-03-23")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2021-03-23")));
 
 
         filterValg = new Filtervalg()
@@ -1826,7 +1804,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2022-02-22")));
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
@@ -1843,7 +1821,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2022-02-22")));
     }
 
     @Test
@@ -1928,8 +1906,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Aserbajdsjan")).findFirst().isPresent());
-        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Singapore")).findFirst().isPresent());
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getFoedeland().equals("Aserbajdsjan")));
+        assertTrue((response.getBrukere().stream().anyMatch(x -> x.getFoedeland().equals("Singapore"))));
 
 
         filterValg = new Filtervalg()
@@ -1946,7 +1924,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland().equals("Norge")).findFirst().isPresent());
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getFoedeland().equals("Norge")));
 
 
         filterValg = new Filtervalg()
@@ -1963,7 +1941,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().noneMatch(x -> x.getFoedeland() != null));
+        assertTrue(response.getBrukere().stream().noneMatch(x -> x.getFoedeland() != null));
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
@@ -1979,9 +1957,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(3);
-        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland() != null).anyMatch(x -> x.getFoedeland().equals("SGP")));
-        assertThat(response.getBrukere().stream().filter(x -> x.getFoedeland() != null).anyMatch(x -> x.getFoedeland().equals("AZE")));
-        assertThat(response.getBrukere().stream().anyMatch(x -> x.getFoedeland() == null));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getFoedeland() != null).anyMatch(x -> x.getFoedeland().equals("Singapore")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getFoedeland() != null).anyMatch(x -> x.getFoedeland().equals("Aserbajdsjan")));
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getFoedeland() == null));
     }
 
     @Test
@@ -2072,12 +2050,12 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(6);
-        assertThat(response.getBrukere().get(0).getFoedeland().equals("Aserbajdsjan"));
-        assertThat(response.getBrukere().get(2).getFoedeland().equals("Botswana"));
-        assertThat(response.getBrukere().get(2).getFoedeland().equals("Estland"));
-        assertThat(response.getBrukere().get(3).getFoedeland().equals("Norge"));
-        assertThat(response.getBrukere().get(4).getFoedeland().equals("Singapore"));
-        assertThat(response.getBrukere().get(5).getFoedeland() == null);
+        assertEquals("Aserbajdsjan", response.getBrukere().get(0).getFoedeland());
+        assertEquals("Botswana", response.getBrukere().get(1).getFoedeland());
+        assertEquals("Estland", response.getBrukere().get(2).getFoedeland());
+        assertEquals("Norge", response.getBrukere().get(3).getFoedeland());
+        assertEquals("Singapore", response.getBrukere().get(4).getFoedeland());
+        assertNull(response.getBrukere().get(5).getFoedeland());
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -2090,12 +2068,12 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(6);
-        assertThat(response.getBrukere().get(0).getFoedeland().equals("Singapore"));
-        assertThat(response.getBrukere().get(1).getFoedeland().equals("Norge"));
-        assertThat(response.getBrukere().get(2).getFoedeland().equals("Estland"));
-        assertThat(response.getBrukere().get(3).getFoedeland().equals("Botswana"));
-        assertThat(response.getBrukere().get(4).getFoedeland().equals("Aserbajdsjan"));
-        assertThat(response.getBrukere().get(5).getFoedeland() == null);
+        assertEquals("Singapore", response.getBrukere().get(0).getFoedeland());
+        assertEquals("Norge", response.getBrukere().get(1).getFoedeland());
+        assertEquals("Estland", response.getBrukere().get(2).getFoedeland());
+        assertEquals("Botswana", response.getBrukere().get(3).getFoedeland());
+        assertEquals("Aserbajdsjan", response.getBrukere().get(4).getFoedeland());
+        assertNull(response.getBrukere().get(5).getFoedeland());
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -2108,8 +2086,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(6);
-        assertThat(response.getBrukere().get(0).getHovedStatsborgerskap().getStatsborgerskap().equals("Estland"));
-        assertThat(response.getBrukere().get(1).getHovedStatsborgerskap().getStatsborgerskap().equals("Norge"));
+        assertEquals("Botswana", response.getBrukere().get(0).getHovedStatsborgerskap().getStatsborgerskap());
+        assertEquals("Estland", response.getBrukere().get(1).getHovedStatsborgerskap().getStatsborgerskap());
+        assertEquals("Norge", response.getBrukere().get(2).getHovedStatsborgerskap().getStatsborgerskap());
     }
 
     @Test
@@ -2183,7 +2162,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertThat(response.getBrukere().stream().allMatch(x -> x.getBostedKommune().equals("10")));
+        assertTrue(response.getBrukere().stream().allMatch(x -> x.getBostedKommune().equals("10")));
 
 
         filterValg = new Filtervalg()
@@ -2200,7 +2179,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().allMatch(x -> x.getBostedBydel().equals("1233")));
+        assertTrue(response.getBrukere().stream().allMatch(x -> x.getBostedBydel().equals("1233")));
 
 
         filterValg = new Filtervalg()
@@ -2218,7 +2197,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
         assertThat(response.getAntall()).isEqualTo(3);
         assertThat(response.getBrukere().stream().filter(x -> x.getBostedKommune().equalsIgnoreCase("10")).count()).isEqualTo(2);
-        assertThat(response.getBrukere().stream().anyMatch(x -> x.getBostedBydel().equalsIgnoreCase("1233")));
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getBostedBydel().equalsIgnoreCase("1233")));
     }
 
     @Test
@@ -2291,11 +2270,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(5);
-        assertThat(response.getBrukere().get(0).getBostedKommune().equals("10"));
-        assertThat(response.getBrukere().get(1).getBostedKommune().equals("10"));
-        assertThat(response.getBrukere().get(2).getBostedKommune().equals("12"));
-        assertThat(response.getBrukere().get(3).getBostedKommune().equals("12"));
-        assertThat(response.getBrukere().get(4).getBostedKommune() == null);
+        assertEquals("10", response.getBrukere().get(0).getBostedKommune());
+        assertEquals("10", response.getBrukere().get(1).getBostedKommune());
+        assertEquals("12", response.getBrukere().get(2).getBostedKommune());
+        assertEquals("12", response.getBrukere().get(3).getBostedKommune());
+        assertNull(response.getBrukere().get(4).getBostedKommune());
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -2308,11 +2287,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(5);
-        assertThat(response.getBrukere().get(0).getBostedBydel().equals("1010"));
-        assertThat(response.getBrukere().get(1).getBostedBydel().equals("1233"));
-        assertThat(response.getBrukere().get(2).getBostedBydel().equals("1233"));
-        assertThat(response.getBrukere().get(3).getBostedBydel() == null);
-        assertThat(response.getBrukere().get(4).getBostedBydel() == null);
+        assertEquals("1234", response.getBrukere().get(0).getBostedBydel());
+        assertEquals("1233", response.getBrukere().get(1).getBostedBydel());
+        assertEquals("1010", response.getBrukere().get(2).getBostedBydel());
+        assertNull(response.getBrukere().get(3).getBostedBydel());
+        assertNull(response.getBrukere().get(4).getBostedBydel());
 
     }
 
@@ -2607,7 +2586,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Hovedperiode", true, LocalDate.now().plusMonths(4), LocalDate.now().minusMonths(2)));
+                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Hovedperiode",
+                        true, LocalDate.now().plusMonths(4), LocalDate.now().minusMonths(2)));
 
         var bruker2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2616,7 +2596,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Forlengelse", false, LocalDate.now().plusMonths(3), LocalDate.now().plusMonths(7)));
+                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Forlengelse",
+                        false, LocalDate.now().plusMonths(3), LocalDate.now().plusMonths(7)));
 
         var bruker3 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2625,7 +2606,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Utvidelse", false, LocalDate.now().plusMonths(1), LocalDate.now().minusMonths(3)));
+                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Utvidelse",
+                        false, LocalDate.now().plusMonths(1), LocalDate.now().minusMonths(3)));
 
         var bruker4 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2634,7 +2616,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Periode før fødsel", true, LocalDate.now().plusMonths(7), LocalDate.now().minusMonths(1)));
+                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Periode før fødsel",
+                        true, LocalDate.now().plusMonths(7), LocalDate.now().minusMonths(1)));
 
         var bruker5 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2665,10 +2648,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(5);
-        assertThat(response.getBrukere().get(0).getFnr().equals(bruker3.getFnr()));
-        assertThat(response.getBrukere().get(1).getFnr().equals(bruker2.getFnr()));
-        assertThat(response.getBrukere().get(2).getFnr().equals(bruker1.getFnr()));
-        assertThat(response.getBrukere().get(3).getFnr().equals(bruker4.getFnr()));
+        assertEquals(response.getBrukere().get(0).getFnr(), bruker5.getFnr());
+        assertEquals(response.getBrukere().get(1).getFnr(), bruker3.getFnr());
+        assertEquals(response.getBrukere().get(2).getFnr(), bruker2.getFnr());
+        assertEquals(response.getBrukere().get(3).getFnr(), bruker1.getFnr());
+        assertEquals(response.getBrukere().get(4).getFnr(), bruker4.getFnr());
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -2681,10 +2665,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(5);
-        assertThat(response.getBrukere().get(0).getFnr().equals(bruker3.getFnr()));
-        assertThat(response.getBrukere().get(1).getFnr().equals(bruker1.getFnr()));
-        assertThat(response.getBrukere().get(2).getFnr().equals(bruker4.getFnr()));
-        assertThat(response.getBrukere().get(3).getFnr().equals(bruker2.getFnr()));
+        assertEquals(response.getBrukere().get(0).getFnr(), bruker5.getFnr());
+        assertEquals(response.getBrukere().get(1).getFnr(), bruker3.getFnr());
+        assertEquals(response.getBrukere().get(2).getFnr(), bruker1.getFnr());
+        assertEquals(response.getBrukere().get(3).getFnr(), bruker4.getFnr());
+        assertEquals(response.getBrukere().get(4).getFnr(), bruker2.getFnr());
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -2697,10 +2682,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(5);
-        assertThat(response.getBrukere().get(0).getFnr().equals(bruker1.getFnr()));
-        assertThat(response.getBrukere().get(1).getFnr().equals(bruker4.getFnr()));
-        assertThat(response.getBrukere().get(2).getFnr().equals(bruker2.getFnr()));
-        assertThat(response.getBrukere().get(3).getFnr().equals(bruker3.getFnr()));
+        assertTrue(response.getBrukere().get(0).getFnr().equals(bruker2.getFnr()) || response.getBrukere().get(0).getFnr().equals(bruker3.getFnr()));
+        assertTrue(response.getBrukere().get(1).getFnr().equals(bruker2.getFnr()) || response.getBrukere().get(1).getFnr().equals(bruker3.getFnr()));
+        assertTrue(response.getBrukere().get(2).getFnr().equals(bruker1.getFnr()) || response.getBrukere().get(2).getFnr().equals(bruker4.getFnr()));
+        assertTrue(response.getBrukere().get(3).getFnr().equals(bruker1.getFnr()) || response.getBrukere().get(3).getFnr().equals(bruker4.getFnr()));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -2713,10 +2698,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(5);
-        assertThat(response.getBrukere().get(0).getFnr().equals(bruker2.getFnr()));
-        assertThat(response.getBrukere().get(1).getFnr().equals(bruker1.getFnr()));
-        assertThat(response.getBrukere().get(2).getFnr().equals(bruker4.getFnr()));
-        assertThat(response.getBrukere().get(3).getFnr().equals(bruker3.getFnr()));
+        assertEquals(response.getBrukere().get(0).getFnr(), bruker2.getFnr());
+        assertEquals(response.getBrukere().get(1).getFnr(), bruker1.getFnr());
+        assertEquals(response.getBrukere().get(2).getFnr(), bruker4.getFnr());
+        assertEquals(response.getBrukere().get(3).getFnr(), bruker3.getFnr());
     }
 
     @Test
@@ -2775,7 +2760,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setBarn_under_18_aar(List.of(new BarnUnder18AarData(5, "19"), new BarnUnder18AarData(11, null)));
         ;
 
-        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5);
+        var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5, bruker6);
 
         skrivBrukereTilTestindeks(liste);
 
@@ -2796,8 +2781,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
 
-        assertThat(response.getAntall()).isEqualTo(2);
-        assertThat(response.getBrukere().stream().map(Bruker::getFnr).toList().containsAll(List.of(bruker1.getFnr(), bruker2.getFnr(), bruker3.getFnr())));
+        assertThat(response.getAntall()).isEqualTo(3);
+        assertTrue(response.getBrukere().stream().map(Bruker::getFnr).toList().containsAll(List.of(bruker1.getFnr(), bruker3.getFnr(), bruker6.getFnr())));
 
         response.getBrukere().forEach(bruker -> {
                     if (bruker.getFnr().equals(bruker1.getFnr())) {
@@ -3354,8 +3339,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
         doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
         doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode7().isDeny()).thenReturn(false);
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode7().isPermit()).thenReturn(true);
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode6();
+        doReturn(Decision.Permit.INSTANCE).when(poaoTilgangWrapper).harVeilederTilgangTilKode7();
+        //when(poaoTilgangWrapper.harVeilederTilgangTilKode7().isDeny()).thenReturn(false);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Decision.Permit.INSTANCE);
         //when(authService.harVeilederTilgangTilEgenAnsatt()).thenReturn(true);
 
         skrivBrukereTilTestindeks(liste);
@@ -3658,6 +3646,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var liste = List.of(bruker1B, bruker2barn6U, bruker2barnU, bruker4barn, bruker5barn, bruker6b, brukerTomListe, brukerIngenListe, brukerMedBarnMedKode19);
 
+
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
 
@@ -3770,9 +3759,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(3);
-        assertThat(response.getBrukere().get(0).getFnr().equals(bruker6.getFnr()));
-        assertThat(response.getBrukere().get(1).getFnr().equals(bruker2.getFnr()));
-        assertThat(response.getBrukere().get(2).getFnr().equals(bruker4.getFnr()));
+        assertThat(response.getBrukere().get(0).getFnr()).isEqualTo(bruker4.getFnr());
+        assertThat(response.getBrukere().get(1).getFnr()).isEqualTo(bruker6.getFnr());
+        assertThat(response.getBrukere().get(2).getFnr()).isEqualTo(bruker2.getFnr());
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
@@ -3789,9 +3778,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(3);
-        assertThat(response.getBrukere().get(0).getFnr().equals(bruker1.getFnr()));
-        assertThat(response.getBrukere().get(1).getFnr().equals(bruker5.getFnr()));
-        assertThat(response.getBrukere().get(2).getFnr().equals(bruker3.getFnr()));
+        assertEquals(response.getBrukere().get(0).getFnr(), bruker3.getFnr());
+        assertEquals(response.getBrukere().get(1).getFnr(), bruker1.getFnr());
+        assertEquals(response.getBrukere().get(2).getFnr(), bruker5.getFnr());
     }
 
     @Test
@@ -4073,7 +4062,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     private Long facetResultCountForVeileder(String testVeileder1, FacetResults portefoljestorrelser) {
-        return portefoljestorrelser.getFacetResults().stream().filter(it -> testVeileder1.equals(it.getValue())).map(Facet::getCount).collect(toList()).get(0);
+        return portefoljestorrelser.getFacetResults().stream().filter(it -> testVeileder1.equals(it.getValue())).map(Facet::getCount).toList().getFirst();
     }
 
     private void skrivBrukereTilTestindeks(List<OppfolgingsBruker> brukere) {
@@ -4117,7 +4106,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     private static OppfolgingsBruker genererRandomBruker(
-            boolean oppfolging,
             String enhet,
             String veilederId,
             String diskresjonskode,
@@ -4126,7 +4114,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().toString())
                 .setFnr(randomFnr().get())
-                .setOppfolging(oppfolging)
+                .setOppfolging(true)
                 .setEnhet_id(enhet);
 
         if (veilederId != null) {
