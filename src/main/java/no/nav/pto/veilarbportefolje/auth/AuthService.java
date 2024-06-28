@@ -112,17 +112,11 @@ public class AuthService {
 
     public boolean harVeilederTilgangTilKode6() {
         Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode6();
-        if(decision.isDeny()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
         return decision.isPermit();
     }
 
     public boolean harVeilederTilgangTilKode7() {
         Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode7();
-        if(decision.isDeny()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
         return decision.isPermit();
     }
 

@@ -137,7 +137,6 @@ public class SensurerBrukerTest {
     @Test
     public void skalSeKode19Barn() {
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
-        when(authService.harVeilederTilgangTilKode6()).thenReturn(true);
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn());
         sjekkAtBarnMedKode19ErIkkeFjernet(filtrerteBrukere);
     }
