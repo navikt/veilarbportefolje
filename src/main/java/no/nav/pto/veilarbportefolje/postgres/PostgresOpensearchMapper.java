@@ -4,11 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerData;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoeker;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profilering;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
@@ -126,7 +122,7 @@ public class PostgresOpensearchMapper {
         if (statsborgerskaps.isEmpty()) {
             return null;
         } else if (statsborgerskaps.size() == 1) {
-            return getHovedStatsborgetskapMedFulltLandNavn(statsborgerskaps.get(0));
+            return getHovedStatsborgetskapMedFulltLandNavn(statsborgerskaps.getFirst());
         } else {
             return getHovedStatsborgerskapFraList(statsborgerskaps);
         }
@@ -141,7 +137,7 @@ public class PostgresOpensearchMapper {
             return getHovedStatsborgetskapMedFulltLandNavn(norskStatsborgerskap.get());
         } else {
             statsborgerskaps.sort(Comparator.comparing(Statsborgerskap::getGyldigFra, Comparator.nullsLast(Comparator.naturalOrder())));
-            return getHovedStatsborgetskapMedFulltLandNavn(statsborgerskaps.get(0));
+            return getHovedStatsborgetskapMedFulltLandNavn(statsborgerskaps.getFirst());
         }
     }
 
@@ -189,7 +185,7 @@ public class PostgresOpensearchMapper {
                 OpplysningerOmArbeidssoeker opplysningerOmArbeidssoeker = data.getOpplysningerOmArbeidssoeker();
                 Profilering profilering = data.getProfilering();
 
-                if (opplysningerOmArbeidssoeker != null ) {
+                if (opplysningerOmArbeidssoeker != null) {
                     String utdanningBestatt = opplysningerOmArbeidssoeker.getUtdanningBestatt() != null ? opplysningerOmArbeidssoeker.getUtdanningBestatt().name() : null;
                     String utdanningGodkjent = opplysningerOmArbeidssoeker.getUtdanningGodkjent() != null ? opplysningerOmArbeidssoeker.getUtdanningGodkjent().name() : null;
                     bruker.setUtdanning(opplysningerOmArbeidssoeker.getUtdanning().name());

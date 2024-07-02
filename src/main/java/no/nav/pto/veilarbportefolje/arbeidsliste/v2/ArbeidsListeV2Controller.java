@@ -74,7 +74,6 @@ public class ArbeidsListeV2Controller {
     @PostMapping("/arbeidsliste")
     public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteV2Request body) {
         validerOppfolgingOgBruker(body.fnr().get());
-        validerErVeilederForBruker(body.fnr().get());
         Fnr gyldigFnr = Fnr.ofValidFnr(body.fnr().get());
         sjekkTilgangTilEnhet(gyldigFnr);
 
@@ -121,7 +120,6 @@ public class ArbeidsListeV2Controller {
         NavKontor enhet = brukerService.hentNavKontor(arbeidslisteForBrukerRequest.fnr()).orElse(null);
 
         validerOppfolgingOgBruker(arbeidslisteForBrukerRequest.fnr().get());
-        validerErVeilederForBruker(arbeidslisteForBrukerRequest.fnr().get());
         Fnr gyldigFnr = Fnr.ofValidFnr(arbeidslisteForBrukerRequest.fnr().get());
         sjekkTilgangTilEnhet(gyldigFnr);
 
@@ -172,13 +170,6 @@ public class ArbeidsListeV2Controller {
         authService.innloggetVeilederHarTilgangTilBruker(fnr);
         if (validateFnr.isInvalid()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    private void validerErVeilederForBruker(String fnr) {
-        Validation<String, Fnr> validateVeileder = arbeidslisteService.erVeilederForBruker(fnr);
-        if (validateVeileder.isInvalid()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
 }
