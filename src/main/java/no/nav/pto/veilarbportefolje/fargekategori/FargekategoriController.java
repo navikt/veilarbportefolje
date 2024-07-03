@@ -37,10 +37,10 @@ public class FargekategoriController {
     @PostMapping("/hent-fargekategori")
     public ResponseEntity<FargekategoriEntity> hentFargekategoriForBruker(@RequestBody HentFargekategoriRequest request) {
         validerRequest(request.fnr);
-        NavKontor navKontorForBruker = brukerServiceV2.hentNavKontor(request.fnr).orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker har ikke tilordnet enhet"));
 
         authService.innloggetVeilederHarTilgangTilOppfolging();
         authService.innloggetVeilederHarTilgangTilBruker(request.fnr.get());
+        NavKontor navKontorForBruker = brukerServiceV2.hentNavKontor(request.fnr).orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker har ikke tilordnet enhet"));
         authService.innloggetVeilederHarTilgangTilEnhet(navKontorForBruker.getValue());
 
         try {

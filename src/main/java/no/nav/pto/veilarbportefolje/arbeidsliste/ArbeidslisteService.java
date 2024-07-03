@@ -156,8 +156,7 @@ public class ArbeidslisteService {
                     Timestamp.from(now()),
                     enhetId.get()
             );
-            arbeidslisteRepositoryV2.updateArbeidslisteUtenFargekategori(arbeidslisteDTO)
-                    .onSuccess(opensearchIndexerV2::updateArbeidsliste);
+            arbeidslisteRepositoryV2.updateArbeidslisteUtenFargekategori(arbeidslisteDTO);
         }
     }
 
