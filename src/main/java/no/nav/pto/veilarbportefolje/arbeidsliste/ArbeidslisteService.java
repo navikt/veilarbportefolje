@@ -14,10 +14,7 @@ import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -33,8 +30,6 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 @RequiredArgsConstructor
 public class ArbeidslisteService {
-    private static final Logger log = LoggerFactory.getLogger(ArbeidslisteService.class);
-
     private final AktorClient aktorClient;
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
     private final BrukerServiceV2 brukerServiceV2;
@@ -153,7 +148,7 @@ public class ArbeidslisteService {
 
     public void oppdaterEnhetPaaArbeidsliste(Fnr fnr, EnhetId enhetId, VeilederId veilederId) {
         Try<Arbeidsliste> arbeidsliste = getArbeidsliste(fnr);
-        if (arbeidsliste.isSuccess()) {
+        if (arbeidsliste.isSuccess() && !arbeidsliste.isEmpty()) {
             ArbeidslisteDTO arbeidslisteDTO = ArbeidslisteDTO.of(
                     fnr,
                     AktorId.of(arbeidsliste.get().getAktoerid()),
