@@ -145,18 +145,16 @@ public class HuskelappController {
     }
 
     private void validerOppfolgingOgBrukerOgEnhet(String fnr) {
-        Optional<NavKontor> navKontor = brukerServiceV2.hentNavKontor(Fnr.of(fnr));
-        if (navKontor.isEmpty()) {
+        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+        if (validateFnr.isInvalid()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
         authService.innloggetVeilederHarTilgangTilOppfolging();
-        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
         authService.innloggetVeilederHarTilgangTilBruker(fnr);
-        authService.innloggetVeilederHarTilgangTilEnhet(navKontor.get().getValue());
-        if (validateFnr.isInvalid()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
+
+        NavKontor navKontor = brukerServiceV2.hentNavKontor(Fnr.of(fnr)).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST));
+        authService.innloggetVeilederHarTilgangTilEnhet(navKontor.getValue());
     }
 
     private HuskelappResponse mapToHuskelappResponse(Huskelapp huskelapp) {
