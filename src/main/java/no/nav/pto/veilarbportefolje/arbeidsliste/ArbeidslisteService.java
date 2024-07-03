@@ -148,7 +148,7 @@ public class ArbeidslisteService {
 
     public void oppdaterEnhetPaaArbeidsliste(Fnr fnr, EnhetId enhetId, VeilederId veilederId) {
         Try<Arbeidsliste> arbeidsliste = getArbeidsliste(fnr);
-        if (arbeidsliste.isSuccess() && !arbeidsliste.isEmpty()) {
+        if (arbeidsliste.isSuccess() && !arbeidsliste.isEmpty() && arbeidsliste.get() != null) {
             ArbeidslisteDTO arbeidslisteDTO = ArbeidslisteDTO.of(
                     fnr,
                     AktorId.of(arbeidsliste.get().getAktoerid()),
