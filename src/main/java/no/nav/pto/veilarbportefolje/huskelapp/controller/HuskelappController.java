@@ -6,14 +6,16 @@ import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.*;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.http.HttpStatus;
@@ -25,7 +27,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
+
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Controller
 @RequestMapping("/api/v1")
@@ -37,17 +40,16 @@ public class HuskelappController {
     private final HuskelappService huskelappService;
     private final AuthService authService;
     private final BrukerServiceV2 brukerServiceV2;
-    private final PdlIdentRepository pdlIdentRepository;
+    private final VeilarbVeilederClient veilarbVeilederClient;
 
     @PostMapping("/huskelapp")
     @Operation(summary = "Opprett huskelapp", description = "Opprett en huskelapp for en gitt bruker på en gitt enhet")
     public ResponseEntity<HuskelappOpprettResponse> opprettHuskelapp(@RequestBody HuskelappOpprettRequest huskelappOpprettRequest) {
-        validerOppfolgingOgBrukerOgEnhet(huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get());
+        validerOppfolgingOgBrukerOgEnhet(huskelappOpprettRequest.brukerFnr().get());
         try {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
-            boolean erVeilederForBruker = validerErVeilederForBruker(huskelappOpprettRequest.brukerFnr());
 
-            if (!erVeilederForBruker) {
+            if (!harBrukerenTildeltVeileder(huskelappOpprettRequest.brukerFnr())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
@@ -66,12 +68,19 @@ public class HuskelappController {
     @PutMapping("/huskelapp")
     @Operation(summary = "Oppdater huskelapp", description = "Oppdater en huskelapp med nye felter")
     public ResponseEntity redigerHuskelapp(@RequestBody HuskelappRedigerRequest huskelappRedigerRequest) {
-        validerOppfolgingOgBrukerOgEnhet(huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get());
+        validerOppfolgingOgBrukerOgEnhet(huskelappRedigerRequest.brukerFnr().get());
         try {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
 
-            if ((huskelappRedigerRequest.kommentar() == null || huskelappRedigerRequest.kommentar().isEmpty()) && huskelappRedigerRequest.frist() == null){
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Huskelapp mangler frist og kommentar");
+            if (!harBrukerenTildeltVeileder(huskelappRedigerRequest.brukerFnr())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            if (huskelappRedigerRequest.huskelappId() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Huskelapp kan ikke redigeres nå.");
+            }
+            if ((huskelappRedigerRequest.kommentar() == null || huskelappRedigerRequest.kommentar().isEmpty()) && huskelappRedigerRequest.frist() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Huskelapp mangler frist og kommentar.");
             }
 
             huskelappService.redigerHuskelapp(huskelappRedigerRequest, veilederId);
@@ -81,24 +90,10 @@ public class HuskelappController {
         }
     }
 
-
-    @PostMapping("/hent-huskelapp-for-veileder")
-    @Operation(summary = "Hent huskelapp for veileder", description = "Hent alle aktive huskelapper for en gitt veileder på en gitt enhet")
-    public ResponseEntity<List<HuskelappResponse>> hentHuskelapp(@RequestBody HuskelappForVeilederRequest huskelappForVeilederRequest) {
-        authService.innloggetVeilederHarTilgangTilEnhet(huskelappForVeilederRequest.enhetId().get());
-        try {
-            List<HuskelappResponse> huskelappList = huskelappService.hentHuskelapp(huskelappForVeilederRequest.veilederId(), huskelappForVeilederRequest.enhetId()).stream().map(this::mapToHuskelappResponse).collect(Collectors.toList());
-            return ResponseEntity.ok(huskelappList);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-    }
-
     @PostMapping("/hent-huskelapp-for-bruker")
     @Operation(summary = "Hent huskelapp for bruker", description = "Hent aktiv huskelapp for en gitt bruker")
     public ResponseEntity<HuskelappResponse> hentHuskelapp(@RequestBody HuskelappForBrukerRequest huskelappForBrukerRequest) {
-        validerOppfolgingOgBrukerOgEnhet(huskelappForBrukerRequest.fnr().get(), huskelappForBrukerRequest.enhetId().get());
+        validerOppfolgingOgBrukerOgEnhet(huskelappForBrukerRequest.fnr().get());
         try {
             Optional<Huskelapp> huskelapp = huskelappService.hentHuskelapp(huskelappForBrukerRequest.fnr());
             return huskelapp.map(value -> ResponseEntity.ok(mapToHuskelappResponse(value))).orElseGet(() -> ResponseEntity.ok(null));
@@ -116,42 +111,57 @@ public class HuskelappController {
             return ResponseEntity.status(HttpStatus.GONE).build();
         }
 
-        validerOppfolgingOgBrukerOgEnhet(huskelappOptional.get().brukerFnr().get(), huskelappOptional.get().enhetId().get());
-        boolean erVeilederForBruker = validerErVeilederForBruker(huskelappOptional.get().brukerFnr());
-
-        if (!erVeilederForBruker) {
+        if (!harBrukerenTildeltVeileder(huskelappOptional.get().brukerFnr())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+
+        validerOppfolgingOgBrukerOgEnhet(huskelappOptional.get().brukerFnr().get());
 
         huskelappService.settHuskelappIkkeAktiv(UUID.fromString(huskelappSlettRequest.huskelappId()), huskelappOptional.get().brukerFnr());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    private boolean validerErVeilederForBruker(Fnr fnr) {
-        VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
-
-        return ValideringsRegler
-                .validerFnr(fnr.get())
-                .map(this::hentAktorId)
-                .get()
-                .map(brukerServiceV2::hentVeilederForBruker)
-                .flatMap(id -> id.map(currentVeileder -> currentVeileder.equals(veilederId)))
-                .orElse(false);
-
+    public Boolean harBrukerenTildeltVeileder(Fnr fnr) {
+        Optional<AktorId> aktorId = brukerServiceV2.hentAktorId(fnr);
+        if (aktorId.isPresent()) {
+            Optional<VeilederId> veilederId = brukerServiceV2.hentVeilederForBruker(aktorId.get());
+            return veilederId.isPresent();
+        }
+        return false;
     }
 
-    private Optional<AktorId> hentAktorId(Fnr fnr) {
-        return Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr));
+    @PostMapping("/hent-er-bruker-ufordelt")
+    public ResponseEntity<Boolean> hentErBrukerUfordelt(@RequestBody HentErBrukerUfordelt request) {
+        Optional<NavKontor> navKontor = brukerServiceV2.hentNavKontor(request.fnr);
+        if (navKontor.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
+        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(navKontor.get().getValue()));
+        Optional<AktorId> aktorId = brukerServiceV2.hentAktorId(request.fnr);
+        if (aktorId.isEmpty()) {
+            secureLog.info("Kunne ikke mappe fnr til aktorId: {}", request.fnr);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        Optional<VeilederId> veilederId = brukerServiceV2.hentVeilederForBruker(aktorId.get());
+        boolean harVeilederPaaSammeEnhet = veilederId.isPresent() && veiledereMedTilgangTilEnhet.contains(veilederId.get().getValue());
+        return ResponseEntity.ok(!harVeilederPaaSammeEnhet);
     }
 
-    private void validerOppfolgingOgBrukerOgEnhet(String fnr, String enhetId) {
-        authService.innloggetVeilederHarTilgangTilOppfolging();
+    public record HentErBrukerUfordelt(Fnr fnr) {
+    }
+
+    private void validerOppfolgingOgBrukerOgEnhet(String fnr) {
         Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        authService.innloggetVeilederHarTilgangTilBruker(fnr);
-        authService.innloggetVeilederHarTilgangTilEnhet(enhetId);
         if (validateFnr.isInvalid()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
+
+        authService.innloggetVeilederHarTilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilBruker(fnr);
+
+        NavKontor navKontor = brukerServiceV2.hentNavKontor(Fnr.of(fnr)).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST));
+        authService.innloggetVeilederHarTilgangTilEnhet(navKontor.getValue());
     }
 
     private HuskelappResponse mapToHuskelappResponse(Huskelapp huskelapp) {

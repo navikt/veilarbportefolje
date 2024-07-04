@@ -34,4 +34,19 @@ public class ArbeidslisteDTO {
                         .setKategori(kategori)
                         .setFrist(frist);
     }
+
+    public static ArbeidslisteDTO of(
+            Fnr fnr,
+            AktorId aktorId,
+            VeilederId veilederId,
+            Timestamp endringstidspunkt,
+            String navKontorForArbeidsliste
+    ) {
+        return
+                new ArbeidslisteDTO(fnr)
+                        .setAktorId(aktorId)
+                        .setVeilederId(veilederId)
+                        .setEndringstidspunkt(endringstidspunkt)
+                        .setNavKontorForArbeidsliste(navKontorForArbeidsliste);
+    }
 }

@@ -12,7 +12,6 @@ import no.nav.pto.veilarbportefolje.huskelapp.domain.HuskelappStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -33,7 +32,7 @@ public class HuskelappRepository {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate dbReadOnly;
 
-    public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId) {
+    public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId, EnhetId enhetId) {
         UUID huskelappId = UUID.randomUUID();
         String sql = """
                 INSERT INTO HUSKELAPP (
@@ -50,14 +49,11 @@ public class HuskelappRepository {
                     ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        db.update(sql, huskelappId, huskelappOpprettRequest.brukerFnr().get(), huskelappOpprettRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappOpprettRequest.frist()), huskelappOpprettRequest.kommentar(), HuskelappStatus.AKTIV.name());
+        db.update(sql, huskelappId, huskelappOpprettRequest.brukerFnr().get(), enhetId.get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappOpprettRequest.frist()), huskelappOpprettRequest.kommentar(), HuskelappStatus.AKTIV.name());
         return huskelappId;
     }
 
-    @Transactional
-    public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
-        settSisteHuskelappRadIkkeAktiv(huskelappRedigerRequest.huskelappId());
-
+    public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId, EnhetId enhetId) {
         String sqlRedigerHuskelapp = """
                 INSERT INTO HUSKELAPP (
                     HUSKELAPP_ID,
@@ -73,26 +69,7 @@ public class HuskelappRepository {
                     ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """;
-        db.update(sqlRedigerHuskelapp, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), huskelappRedigerRequest.enhetId().get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappRedigerRequest.frist()), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
-    }
-
-    public List<Huskelapp> hentAktivHuskelapp(EnhetId enhetId, VeilederId veilederId) {
-        return dbReadOnly.queryForList("""
-                                SELECT hl.* FROM HUSKELAPP hl
-                                INNER JOIN aktive_identer ai on ai.fnr = hl.fnr
-                                INNER JOIN oppfolging_data o ON ai.aktorid = o.aktoerid
-                                INNER JOIN oppfolgingsbruker_arena_v2 ob on ai.fnr = ob.fodselsnr
-                                WHERE ob.nav_kontor = ?
-                                AND o.veilederid = ?
-                                AND hl.status = ?""",
-                        enhetId.get(),
-                        veilederId.getValue(),
-                        HuskelappStatus.AKTIV.name()
-                )
-                .stream()
-                .map(HuskelappRepository::huskelappMapper)
-                .toList();
-
+        db.update(sqlRedigerHuskelapp, huskelappRedigerRequest.huskelappId(), huskelappRedigerRequest.brukerFnr().get(), enhetId.get(), veilederId.getValue(), Timestamp.from(Instant.now()), toTimestamp(huskelappRedigerRequest.frist()), huskelappRedigerRequest.kommentar(), HuskelappStatus.AKTIV.name());
     }
 
     public Optional<Huskelapp> hentAktivHuskelapp(Fnr brukerFnr) {
@@ -110,10 +87,14 @@ public class HuskelappRepository {
         return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappMapper).toList();
     }
 
-
     public void slettAlleHuskelappRaderPaaBruker(Fnr fnr) {
         String sql = String.format("DELETE FROM %s WHERE %s=? ", TABLE_NAME, FNR);
         db.update(sql, fnr.get());
+    }
+
+    public void deaktivereAlleHuskelappRaderPaaBruker(Fnr fnr) {
+        String sql = String.format("UPDATE %s SET %s = ? WHERE %s = ? AND %s = ? ", TABLE_NAME, STATUS, FNR, STATUS);
+        db.update(sql, HuskelappStatus.IKKE_AKTIV.name(), fnr.get(), HuskelappStatus.AKTIV.name());
     }
 
     public void settSisteHuskelappRadIkkeAktiv(UUID huskelappId) {

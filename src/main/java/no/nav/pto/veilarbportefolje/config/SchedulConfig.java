@@ -66,10 +66,10 @@ public class SchedulConfig {
                 Tasks.recurring(indeksererYtelseEndringer, Schedules.daily(LocalTime.of(2, 1)))
                         .execute((instance, ctx) -> ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag()),
                 Tasks.recurring(indeksererAktivitetEndringer, Schedules.daily(LocalTime.of(2, 15)))
-                        .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(3, (executionComplete, executionOperations) -> {
-                            log.error("Hovedindeksering har feilet {} ganger. Forsøker igjen om 5 min",
+                        .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(5, (executionComplete, executionOperations) -> {
+                            log.error("Hovedindeksering har feilet {} ganger. Forsøker igjen om 10 min",
                                     executionComplete.getExecution().consecutiveFailures + 1);
-                            executionOperations.reschedule(executionComplete, Instant.now().plus(5, MINUTES));
+                            executionOperations.reschedule(executionComplete, Instant.now().plus(10, MINUTES));
                         }))
                         .execute((instance, ctx) -> hovedIndekserer.hovedIndeksering()),
                 Tasks.recurring(slettDataForBarnSomErOver18, Schedules.daily(LocalTime.of(1, 1)))

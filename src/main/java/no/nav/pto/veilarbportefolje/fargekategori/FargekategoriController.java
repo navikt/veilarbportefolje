@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
@@ -17,7 +18,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -37,18 +42,17 @@ public class FargekategoriController {
     public ResponseEntity<FargekategoriEntity> hentFargekategoriForBruker(@RequestBody HentFargekategoriRequest request) {
         validerRequest(request.fnr);
 
-        Optional<NavKontor> brukerEnhet = brukerServiceV2.hentNavKontor(request.fnr);
-        if (brukerEnhet.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker med oppgitt fnr er ikke under oppfølging");
-        }
-
         authService.innloggetVeilederHarTilgangTilOppfolging();
         authService.innloggetVeilederHarTilgangTilBruker(request.fnr.get());
-        authService.innloggetVeilederHarTilgangTilEnhet(brukerEnhet.get().toString());
+        NavKontor navKontorForBruker = brukerServiceV2.hentNavKontor(request.fnr).orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker har ikke tilordnet enhet"));
+        authService.innloggetVeilederHarTilgangTilEnhet(navKontorForBruker.getValue());
 
         try {
-            Optional<FargekategoriEntity> kanskjeFargekategori = fargekategoriService.hentFargekategoriForBruker(request);
+            //if (!harBrukerenTildeltVeileder(request.fnr)) {
+            //    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            //}
 
+            Optional<FargekategoriEntity> kanskjeFargekategori = fargekategoriService.hentFargekategoriForBruker(request);
             return kanskjeFargekategori.map(ResponseEntity::ok).orElse(ResponseEntity.ok(null));
         } catch (Exception e) {
             String melding = String.format("Klarte ikke å hente fargekategori for fnr %s", request.fnr.get());
@@ -58,42 +62,7 @@ public class FargekategoriController {
         }
     }
 
-    @Operation(summary = "Sett fargekategori", description = "Sett fargekategori for en gitt bruker.")
-    @PutMapping("/fargekategori")
-    public ResponseEntity<FargekategoriResponse> oppdaterFargekategoriForBruker(@RequestBody OppdaterFargekategoriRequest request) {
-        VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
-        validerRequest(request.fnr);
-
-        Optional<NavKontor> brukerEnhet = brukerServiceV2.hentNavKontor(request.fnr);
-
-        if (brukerEnhet.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker med oppgitt fnr er ikke under oppfølging");
-        }
-
-        authService.innloggetVeilederHarTilgangTilOppfolging();
-        authService.innloggetVeilederHarTilgangTilBruker(request.fnr.get());
-        authService.innloggetVeilederHarTilgangTilEnhet(brukerEnhet.get().toString());
-        Validation<String, Fnr> erVeilederForBrukerValidation = fargekategoriService.erVeilederForBruker(request.fnr.get());
-
-        if (erVeilederForBrukerValidation.isInvalid()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke tilordnet veileder");
-        }
-
-        try {
-            Optional<FargekategoriEntity> fargekategoriEntity = fargekategoriService.oppdaterFargekategoriForBruker(request, innloggetVeileder);
-
-            return fargekategoriEntity
-                    .map(fargekategori -> ResponseEntity.ok(new FargekategoriResponse(fargekategori.fnr(), fargekategori.fargekategoriVerdi())))
-                    .orElseGet(() ->  ResponseEntity.ok(new FargekategoriResponse(request.fnr(), FargekategoriVerdi.INGEN_KATEGORI)));
-        } catch (Exception e) {
-            String melding = String.format("Klarte ikke å opprette/oppdatere fargekategori med verdi %s for fnr %s", request.fargekategoriVerdi.name(), request.fnr.get());
-            secureLog.error(melding, e);
-
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Operation(summary = "Sett fargekategori for brukere", description = "Sett en fargekategori for flere brukere i samme operasjon.")
+    @Operation(summary = "Sett fargekategori for bruker(e)", description = "Sett en fargekategori for en eller flere brukere i samme operasjon.")
     @PutMapping("/fargekategorier")
     public ResponseEntity<BatchUpsertResponse> batchoppdaterFargekategoriForBruker(@RequestBody BatchoppdaterFargekategoriRequest request) {
         VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
@@ -106,14 +75,34 @@ public class FargekategoriController {
 
         BatchUpsertResponse responseEtterAutoriseringssjekk = sjekkVeilederautorisering(responseEtterValidering.data, request.fargekategoriVerdi);
         List<Fnr> feilFraValideringOgAutorisering = Stream.concat(responseEtterValidering.errors.stream(), responseEtterAutoriseringssjekk.errors.stream()).toList();
-        BatchUpsertResponse  resultatFraValideringOgAutorisering = new BatchUpsertResponse(responseEtterAutoriseringssjekk.data, feilFraValideringOgAutorisering, request.fargekategoriVerdi);
+        BatchUpsertResponse resultatFraValideringOgAutorisering = new BatchUpsertResponse(responseEtterAutoriseringssjekk.data, feilFraValideringOgAutorisering, request.fargekategoriVerdi);
 
-        if(responseEtterAutoriseringssjekk.data.isEmpty()) {
+        if (responseEtterAutoriseringssjekk.data.isEmpty()) {
             return ResponseEntity.status(403).body(resultatFraValideringOgAutorisering);
         }
 
+
+        responseEtterAutoriseringssjekk.data.forEach(fnr -> {
+            if (!harBrukerenTildeltVeileder(fnr)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker har ikke tildelt veileder");
+            }
+        });
+
+        Set<NavKontor> brukerEnheter = responseEtterAutoriseringssjekk.data.stream()
+                .map(brukerServiceV2::hentNavKontor)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+
+        if (brukerEnheter.size() != 1) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Kan ikke oppdatere fargekategori i flere enheter samtidig.");
+        }
+
+        EnhetId enhetId = EnhetId.of(brukerEnheter.iterator().next().getValue());
+        authService.innloggetVeilederHarTilgangTilEnhet(enhetId.get());
+
         try {
-            fargekategoriService.batchoppdaterFargekategoriForBruker(request.fargekategoriVerdi, responseEtterAutoriseringssjekk.data, innloggetVeileder);
+            fargekategoriService.batchoppdaterFargekategoriForBruker(request.fargekategoriVerdi, responseEtterAutoriseringssjekk.data, innloggetVeileder, enhetId);
 
             return ResponseEntity.ok(resultatFraValideringOgAutorisering);
 
@@ -150,27 +139,14 @@ public class FargekategoriController {
 
         fodselsnumre.forEach(fnr -> {
             try {
-                Optional<NavKontor> brukerEnhet = brukerServiceV2.hentNavKontor(fnr);
 
                 /* Vi sjekkar om bruker er under oppfølging i autorisering i staden for i validering
                  * for å unngå at feilmeldinga avslører om eit fnr er i systemet. (400 bad request vs 403 forbidden) */
-                boolean brukerErIkkeUnderOppfølging = brukerEnhet.isEmpty();
-                if (brukerErIkkeUnderOppfølging) {
-                    throw new ResponseStatusException(
-                            HttpStatus.NOT_FOUND,
-                            "Bruker med oppgitt fnr er ikke under oppfølging"
-                    );
-                }
-
-                authService.innloggetVeilederHarTilgangTilEnhet(brukerEnhet.get().getValue());
 
                 authService.innloggetVeilederHarTilgangTilBruker(fnr.get());
+                NavKontor navKontor = brukerServiceV2.hentNavKontor(fnr).orElseThrow(() -> new IllegalStateException("Brukeren har ikke tildelt enhet"));
 
-                boolean erIkkeVeilederForBruker = fargekategoriService.erVeilederForBruker(fnr.get()).isInvalid();
-                if (erIkkeVeilederForBruker) {
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke tilordnet veileder");
-                }
-
+                authService.innloggetVeilederHarTilgangTilEnhet(navKontor.getValue());
                 sjekkGikkOK.add(fnr);
             } catch (Exception e) {
                 sjekkFeilet.add(fnr);
@@ -178,6 +154,15 @@ public class FargekategoriController {
         });
 
         return new BatchUpsertResponse(sjekkGikkOK.stream().toList(), sjekkFeilet.stream().toList(), fargekategoriVerdi);
+    }
+
+    private Boolean harBrukerenTildeltVeileder(Fnr fnr) {
+        Optional<AktorId> aktorId = brukerServiceV2.hentAktorId(fnr);
+        if (aktorId.isPresent()) {
+            Optional<VeilederId> veilederId = brukerServiceV2.hentVeilederForBruker(aktorId.get());
+            return veilederId.isPresent();
+        }
+        return false;
     }
 
     private static void validerRequest(Fnr fnr) {
@@ -191,9 +176,6 @@ public class FargekategoriController {
     ) {
     }
 
-    public record FargekategoriResponse(Fnr fnr, FargekategoriVerdi fargekategoriVerdi) {
-    }
-
     public record OppdaterFargekategoriRequest(
             @JsonProperty(required = true) Fnr fnr,
             @JsonProperty(required = true) FargekategoriVerdi fargekategoriVerdi
@@ -201,11 +183,12 @@ public class FargekategoriController {
     }
 
     public record BatchoppdaterFargekategoriRequest(
-        @JsonProperty(required = true) List<Fnr> fnr,
-        @JsonProperty(required = true) FargekategoriVerdi fargekategoriVerdi
+            @JsonProperty(required = true) List<Fnr> fnr,
+            @JsonProperty(required = true) FargekategoriVerdi fargekategoriVerdi
     ) {
         @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        public BatchoppdaterFargekategoriRequest {}
+        public BatchoppdaterFargekategoriRequest {
+        }
     }
 
     public record BatchUpsertResponse(List<Fnr> data, List<Fnr> errors, FargekategoriVerdi fargekategoriVerdi) {

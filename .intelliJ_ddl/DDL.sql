@@ -417,7 +417,8 @@ CREATE TABLE public.fargekategori (
     fnr character varying(11) NOT NULL,
     verdi character varying(25),
     sist_endret timestamp without time zone NOT NULL,
-    sist_endret_av_veilederident character varying(7)
+    sist_endret_av_veilederident character varying(7),
+    enhet_id character varying(4)
 );
 
 
@@ -616,7 +617,7 @@ CREATE TABLE public.opplysninger_om_arbeidssoeker (
     opplysninger_om_arbeidssoeker_id uuid NOT NULL,
     periode_id uuid NOT NULL,
     sendt_inn_tidspunkt timestamp without time zone NOT NULL,
-    utdanning_nus_kode character(1),
+    utdanning_nus_kode character varying(3),
     utdanning_bestatt character varying(8),
     utdanning_godkjent character varying(8)
 );
@@ -683,6 +684,38 @@ CREATE SEQUENCE public.pdl_person_seq
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
+
+
+--
+-- Name: profilering; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.profilering (
+    id integer NOT NULL,
+    periode_id uuid NOT NULL,
+    profilering_resultat character varying(40) NOT NULL,
+    sendt_inn_tidspunkt timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: profilering_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.profilering_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: profilering_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.profilering_id_seq OWNED BY public.profilering.id;
 
 
 --
@@ -864,6 +897,13 @@ ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker ALTER COLUMN id SET DEFAUL
 --
 
 ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker_jobbsituasjon ALTER COLUMN id SET DEFAULT nextval('public.opplysninger_om_arbeidssoeker_jobbsituasjon_id_seq'::regclass);
+
+
+--
+-- Name: profilering id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.profilering ALTER COLUMN id SET DEFAULT nextval('public.profilering_id_seq'::regclass);
 
 
 --
@@ -1112,6 +1152,22 @@ ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker
 
 ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker
     ADD CONSTRAINT opplysninger_om_arbeidssoeker_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: profilering profilering_periode_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.profilering
+    ADD CONSTRAINT profilering_periode_id_key UNIQUE (periode_id);
+
+
+--
+-- Name: profilering profilering_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.profilering
+    ADD CONSTRAINT profilering_pkey PRIMARY KEY (id);
 
 
 --
@@ -1462,6 +1518,14 @@ ALTER TABLE ONLY public.bruker_statsborgerskap
 
 ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker_jobbsituasjon
     ADD CONSTRAINT opplysninger_om_arbeidssoeker_opplysninger_om_arbeidssoeke_fkey FOREIGN KEY (opplysninger_om_arbeidssoeker_id) REFERENCES public.opplysninger_om_arbeidssoeker(opplysninger_om_arbeidssoeker_id) ON DELETE CASCADE;
+
+
+--
+-- Name: profilering profilering_periode_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.profilering
+    ADD CONSTRAINT profilering_periode_id_fkey FOREIGN KEY (periode_id) REFERENCES public.siste_arbeidssoeker_periode(arbeidssoker_periode_id) ON DELETE CASCADE;
 
 
 --

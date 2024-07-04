@@ -8,11 +8,10 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringRepositoryV2
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profilering
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriode
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoeker
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerJobbsituasjon
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerJobbsituasjonEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity
 import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor
@@ -102,9 +101,8 @@ class TestDataClient(
             HuskelappOpprettRequest(
                 fnr,
                 LocalDate.now(),
-                "test",
-                EnhetId.of(navKontor.value)
-            ), veilederId
+                "test"
+            ), veilederId, EnhetId.of(navKontor.value)
         )
 
         lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, startDato, null)
@@ -195,17 +193,17 @@ class TestDataClient(
         fun getArbeidssoekerPeriodeFraDb(
             jdbcTemplate: JdbcTemplate,
             arbeidssoekerPeriodeId: UUID
-        ): ArbeidssoekerPeriode? {
+        ): ArbeidssoekerPeriodeEntity? {
             return try {
                 jdbcTemplate.queryForObject(
                     """SELECT * FROM ${PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} WHERE ${PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.ARBEIDSSOKER_PERIODE_ID} =?""",
                     { rs: ResultSet, _ ->
-                        ArbeidssoekerPeriode(
+                        ArbeidssoekerPeriodeEntity(
                             rs.getObject(
                                 PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.ARBEIDSSOKER_PERIODE_ID,
                                 UUID::class.java
                             ),
-                            Fnr.of(rs.getString(PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.FNR))
+                            rs.getString(PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.FNR)
                         )
                     },
                     arbeidssoekerPeriodeId
@@ -219,7 +217,7 @@ class TestDataClient(
         fun getOpplysningerOmArbeidssoekerFraDb(
             jdbcTemplate: JdbcTemplate,
             arbeidssoekerPeriode: UUID
-        ): OpplysningerOmArbeidssoeker? {
+        ): OpplysningerOmArbeidssoekerEntity? {
             return try {
                 jdbcTemplate.queryForObject(
                     """SELECT * FROM ${PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.TABLE_NAME} WHERE ${PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.PERIODE_ID} =?""",
@@ -229,14 +227,14 @@ class TestDataClient(
                                 PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.OPPLYSNINGER_OM_ARBEIDSSOEKER_ID,
                                 UUID::class.java
                             )
-                        OpplysningerOmArbeidssoeker(
+                        OpplysningerOmArbeidssoekerEntity(
                             opplysningerOmArbeidssoekerId,
                             rs.getObject(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.PERIODE_ID, UUID::class.java),
-                            DateUtils.toZonedDateTime(rs.getTimestamp(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.SENDT_INN_TIDSPUNKT)),
+                            rs.getTimestamp(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.SENDT_INN_TIDSPUNKT),
                             rs.getString(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_NUS_KODE),
                             rs.getString(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_BESTATT),
                             rs.getString(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_GODKJENT),
-                            OpplysningerOmArbeidssoekerJobbsituasjon(opplysningerOmArbeidssoekerId, emptyList())
+                            OpplysningerOmArbeidssoekerJobbsituasjonEntity(opplysningerOmArbeidssoekerId, emptyList())
                         )
                     },
                     arbeidssoekerPeriode
@@ -250,7 +248,7 @@ class TestDataClient(
         fun getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(
             jdbcTemplate: JdbcTemplate,
             opplysningerOmArbeidssoekerId: UUID
-        ): OpplysningerOmArbeidssoekerJobbsituasjon? {
+        ): OpplysningerOmArbeidssoekerJobbsituasjonEntity? {
             val jobbSituasjoner: List<String> = try {
                 jdbcTemplate.queryForList(
                     """SELECT * FROM ${PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.TABLE_NAME} WHERE ${PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.OPPLYSNINGER_OM_ARBEIDSSOEKER_ID} =?""",
@@ -265,23 +263,23 @@ class TestDataClient(
             return if (jobbSituasjoner.isEmpty())
                 null
             else
-                OpplysningerOmArbeidssoekerJobbsituasjon(
+                OpplysningerOmArbeidssoekerJobbsituasjonEntity(
                     opplysningerOmArbeidssoekerId,
-                    jobbSituasjoner
+                    jobbSituasjoner.map { (it) }
                 )
 
         }
 
         @JvmStatic
-        fun getProfileringFraDb(jdbcTemplate: JdbcTemplate, periodeId: UUID): Profilering? {
+        fun getProfileringFraDb(jdbcTemplate: JdbcTemplate, periodeId: UUID): ProfileringEntity? {
             return try {
                 jdbcTemplate.queryForObject(
                     """SELECT * FROM ${PostgresTable.PROFILERING.TABLE_NAME} WHERE ${PostgresTable.PROFILERING.PERIODE_ID} =?""",
                     { rs: ResultSet, _ ->
-                        Profilering(
+                        ProfileringEntity(
                             rs.getObject(PostgresTable.PROFILERING.PERIODE_ID, UUID::class.java),
-                            Profileringsresultat.valueOf(rs.getString(PostgresTable.PROFILERING.PROFILERING_RESULTAT)),
-                            DateUtils.toZonedDateTime(rs.getTimestamp(PostgresTable.PROFILERING.SENDT_INN_TIDSPUNKT))
+                            rs.getString(PostgresTable.PROFILERING.PROFILERING_RESULTAT),
+                            rs.getTimestamp(PostgresTable.PROFILERING.SENDT_INN_TIDSPUNKT)
                         )
                     },
                     periodeId

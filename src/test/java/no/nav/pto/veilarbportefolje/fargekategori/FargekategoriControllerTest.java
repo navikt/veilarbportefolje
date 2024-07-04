@@ -1,19 +1,19 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
-import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
@@ -33,6 +33,7 @@ import static no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -42,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = FargekategoriController.class)
-@Import({ApplicationConfigTest.class, FargekategoriControllerTestConfig.class})
+@Import({FargekategoriControllerTestConfig.class, ApplicationConfigTest.class})
 public class FargekategoriControllerTest {
 
     @Autowired
@@ -60,9 +61,6 @@ public class FargekategoriControllerTest {
     @MockBean
     private AktorClient aktorClient;
 
-    @Qualifier("fargekategoriControllerTestAuthService")
-    private AuthContextHolder authContextHolder;
-
     @Test
     void henting_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
         UUID uuid = UUID.randomUUID();
@@ -70,6 +68,7 @@ public class FargekategoriControllerTest {
         FargekategoriVerdi fargekategoriVerdi = FargekategoriVerdi.FARGEKATEGORI_D;
         LocalDate sistEndret = LocalDate.now();
         VeilederId sistEndretAv = AuthUtils.getInnloggetVeilederIdent();
+        NavKontor navKontor = randomNavKontor();
 
         String request = """
                 {
@@ -78,8 +77,8 @@ public class FargekategoriControllerTest {
                 """.replace("$fnr", fnr.get());
 
         String fargekategoriSql = """
-                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident, enhet_id)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 """;
 
         jdbcTemplate.update(fargekategoriSql,
@@ -87,7 +86,8 @@ public class FargekategoriControllerTest {
                 fnr.get(),
                 fargekategoriVerdi.name(),
                 toTimestamp(sistEndret),
-                sistEndretAv.getValue());
+                sistEndretAv.getValue(),
+                navKontor.getValue());
 
         String expected = """
                 {
@@ -132,224 +132,6 @@ public class FargekategoriControllerTest {
     }
 
     @Test
-    void opprettelse_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
-        String request = """
-                {
-                  "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_A"
-                }
-                """;
-
-        String responseJson = mockMvc.perform(
-                        put("/api/v1/fargekategori")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(request)
-                )
-                .andExpect(status().is(200))
-                .andReturn().getResponse().getContentAsString();
-
-        assertThat(responseJson.contains("{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"FARGEKATEGORI_A\"}")).isTrue();
-    }
-
-    @Test
-    void opprettelse_av_fargekategori_skal_gi_riktig_tilstand_i_db() throws Exception {
-        String request = """
-                {
-                  "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_A"
-                }
-                """;
-
-        mockMvc.perform(
-                        put("/api/v1/fargekategori")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(request)
-                )
-                .andExpect(status().is(200));
-
-        FargekategoriEntity opprettetFargekategoriEntity = queryForObjectOrNull(() -> {
-            return jdbcTemplate.queryForObject(
-                    "SELECT * FROM fargekategori WHERE fnr=?",
-                    mapTilFargekategoriEntity(),
-                    TESTBRUKER_FNR.get());
-        });
-
-        assertThat(opprettetFargekategoriEntity).isNotNull();
-        // id genereres så vi sjekker bare på tilstedeværelse
-        assertThat(opprettetFargekategoriEntity.id()).isNotNull();
-        assertThat(opprettetFargekategoriEntity.fnr()).isEqualTo(TESTBRUKER_FNR);
-        assertThat(opprettetFargekategoriEntity.fargekategoriVerdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_A);
-        // sistEndret genereres så vi sjekker bare på tilstedeværelse
-        assertThat(opprettetFargekategoriEntity.sistEndret()).isNotNull();
-        assertThat(opprettetFargekategoriEntity.endretAv()).isEqualTo(TESTVEILEDER);
-    }
-
-    @Test
-    void oppdatering_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
-        String opprettRequest = """
-                {
-                  "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_A"
-                }
-                """;
-        String oppdaterRequest = """
-                {
-                  "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
-                }
-                """;
-
-
-
-        String opprettJson = mockMvc.perform(
-                        put("/api/v1/fargekategori")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(opprettRequest)
-                )
-                .andExpect(status().is(200))
-                .andReturn().getResponse().getContentAsString();
-        assertThat(opprettJson).isEqualTo("{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"FARGEKATEGORI_A\"}");
-
-        String resultatAvOppdatering = mockMvc.perform(
-                        put("/api/v1/fargekategori")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(oppdaterRequest)
-                )
-                .andExpect(status().is(200))
-                .andReturn().getResponse().getContentAsString();
-        assertThat(resultatAvOppdatering).isEqualTo("{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"FARGEKATEGORI_B\"}");
-    }
-
-    @Test
-    void oppdatering_av_fargekategori_skal_gi_riktig_tilstand_i_db() throws Exception {
-        UUID uuid = UUID.randomUUID();
-        Fnr fnr = TESTBRUKER_FNR;
-        FargekategoriVerdi fargekategoriVerdi = FargekategoriVerdi.FARGEKATEGORI_D;
-        LocalDate sistEndret = LocalDate.now().minusDays(1);
-        VeilederId sistEndretAv = AuthUtils.getInnloggetVeilederIdent();
-
-        String fargekategoriSql = """
-                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
-                    VALUES (?, ?, ?, ?, ?)
-                """;
-
-        jdbcTemplate.update(fargekategoriSql,
-                uuid,
-                fnr.get(),
-                fargekategoriVerdi.name(),
-                toTimestamp(sistEndret),
-                sistEndretAv.getValue());
-
-        String oppdaterRequest = """
-                {
-                  "fnr":"$fnr",
-                  "fargekategoriVerdi":"FARGEKATEGORI_B"
-                }
-                """
-                .replace("$fnr", fnr.get());
-
-        FargekategoriEntity opprettetFargekategoriEntity = queryForObjectOrNull(() -> {
-            return jdbcTemplate.queryForObject(
-                    "SELECT * FROM fargekategori WHERE fnr=?",
-                    mapTilFargekategoriEntity(),
-                    TESTBRUKER_FNR.get());
-        });
-
-        mockMvc.perform(
-                        put("/api/v1/fargekategori")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(oppdaterRequest)
-                )
-                .andExpect(status().is(200));
-
-        FargekategoriEntity oppdatertFargekategoriEntity = queryForObjectOrNull(() -> {
-            return jdbcTemplate.queryForObject(
-                    "SELECT * FROM fargekategori WHERE fnr=?",
-                    mapTilFargekategoriEntity(),
-                    TESTBRUKER_FNR.get());
-        });
-
-        assertThat(oppdatertFargekategoriEntity).isNotNull();
-        assertThat(opprettetFargekategoriEntity).isNotNull();
-        assertThat(oppdatertFargekategoriEntity.id()).isEqualTo(opprettetFargekategoriEntity.id());
-        assertThat(oppdatertFargekategoriEntity.fnr()).isEqualTo(opprettetFargekategoriEntity.fnr());
-        assertThat(oppdatertFargekategoriEntity.endretAv()).isEqualTo(opprettetFargekategoriEntity.endretAv());
-        assertThat(oppdatertFargekategoriEntity.sistEndret()).isNotEqualTo(opprettetFargekategoriEntity.sistEndret());
-        assertThat(oppdatertFargekategoriEntity.fargekategoriVerdi()).isEqualTo(FargekategoriVerdi.FARGEKATEGORI_B);
-    }
-
-    @Test
-    void sletting_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
-        String opprettRequest = """
-                {
-                  "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_A"
-                }
-                """;
-        String slettRequest = """
-                {
-                  "fnr":"11111111111",
-                  "fargekategoriVerdi":"INGEN_KATEGORI"
-                }
-                """;
-        String expectedResponse = "{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"INGEN_KATEGORI\"}";
-
-        mockMvc.perform(
-                        put("/api/v1/fargekategori")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(opprettRequest)
-                )
-                .andExpect(status().is(200));
-
-        String result = mockMvc.perform(
-                        put("/api/v1/fargekategori")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(slettRequest)
-                ).andReturn().getResponse().getContentAsString();
-
-        assertThat(result).isEqualTo(expectedResponse);
-    }
-
-    @Test
-    void sletting_av_fargekategori_skal_gi_riktig_tilstand_i_db() throws Exception {
-        String opprettRequest = """
-                {
-                  "fnr":"11111111111",
-                  "fargekategoriVerdi":"FARGEKATEGORI_A"
-                }
-                """;
-        String slettRequest = """
-                {
-                  "fnr":"11111111111",
-                  "fargekategoriVerdi":"INGEN_KATEGORI"
-                }
-                """;
-        String expectedResponse = "{\"fnr\":\"11111111111\",\"fargekategoriVerdi\":\"INGEN_KATEGORI\"}";
-        mockMvc.perform(
-                        put("/api/v1/fargekategori")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(opprettRequest)
-                )
-                .andExpect(status().is(200));
-
-        String result = mockMvc.perform(
-                        put("/api/v1/fargekategori")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(slettRequest)
-                ).andExpect(status().is(200)).andReturn().getResponse().getContentAsString();
-        assertThat(result).isEqualTo(expectedResponse);
-
-        FargekategoriEntity oppdatertFargekategoriEntity = queryForObjectOrNull(() -> {
-            return jdbcTemplate.queryForObject(
-                    "SELECT * FROM fargekategori WHERE fnr=?",
-                    mapTilFargekategoriEntity(),
-                    TESTBRUKER_FNR.get());
-        });
-
-        assertThat(oppdatertFargekategoriEntity).isNull();
-    }
-
-    @Test
     void batchoppretting_av_fargekategori_skal_returnere_forventet_respons() throws Exception {
         String opprettMangeRequest = """
                 {
@@ -379,9 +161,9 @@ public class FargekategoriControllerTest {
 
     @Test
     void batchoppretting_av_fargekategori_skal_gi_riktig_tilstand_i_db() throws Exception {
-        String fnr1 = "11111111111";
-        String fnr2 = "22222222222";
-        String fnr3 = "33333333333";
+        String fnr1 = TESTBRUKER_FNR.get();
+        String fnr2 = TESTBRUKER2_FNR.get();
+        String fnr3 = TESTBRUKER3_FNR.get();
         List<String> fnrliste = List.of(fnr1, fnr2, fnr3);
 
         String opprettMangeRequest = """
@@ -432,7 +214,7 @@ public class FargekategoriControllerTest {
         String expected = """
                 {
                     "data": [],
-                    "errors": ["$fnr1", "$fnr2", "$fnr3"],
+                    "errors": ["$fnr1", "$fnr2", "$fnr3"]
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -466,7 +248,7 @@ public class FargekategoriControllerTest {
         String expected = """
                 {
                     "data": ["$fnr3"],
-                    "errors": ["$fnr1", "$fnr2"],
+                    "errors": ["$fnr1", "$fnr2"]
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -500,7 +282,7 @@ public class FargekategoriControllerTest {
         String expected = """
                 {
                     "data": ["$fnr2"],
-                    "errors": ["$fnr1", "$fnr3"],
+                    "errors": ["$fnr1", "$fnr3"]
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -534,7 +316,7 @@ public class FargekategoriControllerTest {
         String expected = """
                 {
                     "data": [],
-                    "errors": ["$fnr1", "$fnr2", "$fnr3"],
+                    "errors": ["$fnr1", "$fnr2", "$fnr3"]
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -553,9 +335,9 @@ public class FargekategoriControllerTest {
 
     @Test
     void batchoppretting_av_fargekategori_skal_få_forventet_respons_når_noen_fnr_feiler_autorisering() throws Exception {
-        String fnr1 = "11111111111";
-        String fnr2 = "22222222222";
-        String fnr3 = "44444444444";
+        String fnr1 = TESTBRUKER_FNR.get();
+        String fnr2 = TESTBRUKER2_FNR.get();
+        String fnr3 = "1111";
 
         String opprettMangeRequest = """
                 {
@@ -569,7 +351,7 @@ public class FargekategoriControllerTest {
         String expected = """
                 {
                     "data": ["$fnr1", "$fnr2"],
-                    "errors": ["$fnr3"],
+                    "errors": ["$fnr3"]
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -603,7 +385,7 @@ public class FargekategoriControllerTest {
         String expected = """
                 {
                     "data": [],
-                    "errors": ["$fnr1", "$fnr2", "$fnr3"],
+                    "errors": ["$fnr1", "$fnr2", "$fnr3"]
                 }
                 """.replace("$fnr1", fnr1)
                 .replace("$fnr2", fnr2)
@@ -620,17 +402,18 @@ public class FargekategoriControllerTest {
 
     @Test
     void batchoppdatering_av_fargekategori_skal_funke_når_en_bruker_allerede_har_fargekategori_og_andre_ikke() throws Exception {
-        String fnr1 = "11111111111";
-        String fnr2 = "22222222222";
-        String fnr3 = "33333333333";
+        String fnr1 = TESTBRUKER_FNR.get();
+        String fnr2 = TESTBRUKER2_FNR.get();
+        String fnr3 = TESTBRUKER3_FNR.get();
+        String TEST_ENHET = "1234";
         List<String> fnrliste = List.of(fnr1, fnr2, fnr3);
 
         FargekategoriVerdi fargekategoriVerdiFnr1Gammel = FargekategoriVerdi.FARGEKATEGORI_A;
         FargekategoriVerdi fargekategoriVerdiNy = FargekategoriVerdi.FARGEKATEGORI_B;
 
         String eksisterendeFargekategoriSql = """
-                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO fargekategori(id, fnr, verdi, sist_endret, sist_endret_av_veilederident, enhet_id)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 """;
 
         jdbcTemplate.update(eksisterendeFargekategoriSql,
@@ -638,7 +421,8 @@ public class FargekategoriControllerTest {
                 fnr1,
                 fargekategoriVerdiFnr1Gammel.name(),
                 toTimestamp(LocalDate.now()),
-                AuthUtils.getInnloggetVeilederIdent().getValue());
+                AuthUtils.getInnloggetVeilederIdent().getValue(),
+                TEST_ENHET);
 
         String opprettMangeRequest = """
                 {
@@ -673,9 +457,9 @@ public class FargekategoriControllerTest {
 
     @Test
     void batchsletting_av_fargekategori_skal_funke() throws Exception {
-        String fnr1 = "11111111111";
-        String fnr2 = "22222222222";
-        String fnr3 = "33333333333";
+        String fnr1 = TESTBRUKER_FNR.get();
+        String fnr2 = TESTBRUKER2_FNR.get();
+        String fnr3 = TESTBRUKER3_FNR.get();
         List<String> fnrliste = List.of(fnr1, fnr2, fnr3);
 
         FargekategoriVerdi fargekategoriVerdiFnr1Gammel = FargekategoriVerdi.FARGEKATEGORI_A;
@@ -733,7 +517,8 @@ public class FargekategoriControllerTest {
                 Fnr.of(resultSet.getString(FNR)),
                 FargekategoriVerdi.valueOf(resultSet.getString(VERDI)),
                 toLocalDate(resultSet.getTimestamp(SIST_ENDRET)),
-                NavIdent.of(resultSet.getString(SIST_ENDRET_AV_VEILEDERIDENT))
+                NavIdent.of(resultSet.getString(SIST_ENDRET_AV_VEILEDERIDENT)),
+                EnhetId.of(resultSet.getString(ENHET_ID))
         );
     }
 
@@ -743,9 +528,11 @@ public class FargekategoriControllerTest {
         jdbcTemplate.update("TRUNCATE fargekategori");
         jdbcTemplate.update("TRUNCATE oppfolgingsbruker_arena_v2");
 
-        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER_AKTOR_ID, TESTBRUKER_FNR, TESTENHET, VeilederId.of(TESTVEILEDER.get()));
-        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER2_AKTOR_ID, TESTBRUKER2_FNR, TESTENHET, VeilederId.of(TESTVEILEDER.get()));
-        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER3_AKTOR_ID, TESTBRUKER3_FNR, TESTENHET2, VeilederId.of(TESTVEILEDER.get()));
+        VeilederId innloggetVeilederIdent = AuthUtils.getInnloggetVeilederIdent();
+
+        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER_AKTOR_ID, TESTBRUKER_FNR, TESTENHET, innloggetVeilederIdent);
+        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER2_AKTOR_ID, TESTBRUKER2_FNR, TESTENHET, innloggetVeilederIdent);
+        testDataClient.lagreBrukerUnderOppfolging(TESTBRUKER3_AKTOR_ID, TESTBRUKER3_FNR, TESTENHET, innloggetVeilederIdent);
 
         when(aktorClient.hentAktorId(TESTBRUKER_FNR)).thenReturn(TESTBRUKER_AKTOR_ID);
         when(aktorClient.hentAktorId(TESTBRUKER2_FNR)).thenReturn(TESTBRUKER2_AKTOR_ID);

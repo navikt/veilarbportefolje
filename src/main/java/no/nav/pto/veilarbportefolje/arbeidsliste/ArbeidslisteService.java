@@ -15,24 +15,21 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
+import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
 @RequiredArgsConstructor
 public class ArbeidslisteService {
-    private static final Logger log = LoggerFactory.getLogger(ArbeidslisteService.class);
-
     private final AktorClient aktorClient;
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
     private final BrukerServiceV2 brukerServiceV2;
@@ -63,7 +60,7 @@ public class ArbeidslisteService {
         return arbeidslisteRepositoryV2.insertArbeidsliste(dto)
                 .onSuccess((result) -> {
                     opensearchIndexerV2.updateArbeidsliste(result);
-                    opensearchIndexerV2.updateFargekategori(result.getAktorId(), ArbeidslisteMapper.mapTilFargekategoriVerdi(result.kategori));
+                    opensearchIndexerV2.updateFargekategori(result.getAktorId(), ArbeidslisteMapper.mapTilFargekategoriVerdi(result.kategori), navKontorForBruker.toString());
                 });
     }
 
@@ -77,7 +74,7 @@ public class ArbeidslisteService {
         return arbeidslisteRepositoryV2.updateArbeidsliste(data)
                 .onSuccess((result) -> {
                     opensearchIndexerV2.updateArbeidsliste(result);
-                    opensearchIndexerV2.updateFargekategori(result.getAktorId(), ArbeidslisteMapper.mapTilFargekategoriVerdi(result.kategori));
+                    opensearchIndexerV2.updateFargekategori(result.getAktorId(), ArbeidslisteMapper.mapTilFargekategoriVerdi(result.kategori), data.getNavKontorForArbeidsliste());
                 });
     }
 
@@ -88,7 +85,7 @@ public class ArbeidslisteService {
             throw new SlettArbeidslisteException(String.format("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: %s", fnr.get()));
         }
 
-        if(slettFargekategori) {
+        if (slettFargekategori) {
             slettArbeidsliste(aktoerId.get(), Optional.of(fnr));
         } else {
             slettArbeidslisteUtenFargekategori(aktoerId.get());
@@ -120,17 +117,6 @@ public class ArbeidslisteService {
         return Try.of(() -> aktorClient.hentAktorId(fnr));
     }
 
-    public Validation<String, List<Fnr>> erVeilederForBrukere(List<Fnr> fnrs) {
-        List<Fnr> validerteFnrs = new ArrayList<>(fnrs.size());
-        fnrs.forEach(fnr -> {
-            if (erVeilederForBruker(fnr.toString()).isValid()) {
-                validerteFnrs.add(fnr);
-            }
-        });
-
-        return validerteFnrs.size() == fnrs.size() ? valid(validerteFnrs) : invalid(format("Veileder har ikke tilgang til alle brukerene i listen: %s", fnrs));
-    }
-
     public Validation<String, Fnr> erVeilederForBruker(String fnr) {
         VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
 
@@ -158,6 +144,20 @@ public class ArbeidslisteService {
                 .hentVeilederForBruker(aktoerId)
                 .map(currentVeileder -> currentVeileder.equals(veilederId))
                 .orElse(false);
+    }
+
+    public void oppdaterEnhetPaaArbeidsliste(Fnr fnr, EnhetId enhetId, VeilederId veilederId) {
+        Try<Arbeidsliste> arbeidsliste = getArbeidsliste(fnr);
+        if (arbeidsliste.isSuccess() && !arbeidsliste.isEmpty() && arbeidsliste.get() != null) {
+            ArbeidslisteDTO arbeidslisteDTO = ArbeidslisteDTO.of(
+                    fnr,
+                    AktorId.of(arbeidsliste.get().getAktoerid()),
+                    veilederId,
+                    Timestamp.from(now()),
+                    enhetId.get()
+            );
+            arbeidslisteRepositoryV2.updateArbeidslisteUtenFargekategori(arbeidslisteDTO);
+        }
     }
 
     public boolean brukerHarByttetNavKontor(AktorId aktoerId) {

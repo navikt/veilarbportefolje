@@ -3,8 +3,6 @@ package no.nav.pto.veilarbportefolje.arbeidsliste.v2;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.vavr.control.Validation;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.QueryParam;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.*;
@@ -81,7 +79,6 @@ public class ArbeidsListeV2Controller {
     @PostMapping("/arbeidsliste")
     public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteV2Request body) {
         validerOppfolgingOgBruker(body.fnr().get());
-        validerErVeilederForBruker(body.fnr().get());
         Fnr gyldigFnr = Fnr.ofValidFnr(body.fnr().get());
         sjekkTilgangTilEnhet(gyldigFnr);
 
@@ -127,8 +124,9 @@ public class ArbeidsListeV2Controller {
             @RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest,
             @RequestParam(value = "slettFargekategori", required = false, defaultValue = "true") Boolean slettFargekategori
     ) {
+        NavKontor enhet = brukerService.hentNavKontor(arbeidslisteForBrukerRequest.fnr()).orElse(null);
+
         validerOppfolgingOgBruker(arbeidslisteForBrukerRequest.fnr().get());
-        validerErVeilederForBruker(arbeidslisteForBrukerRequest.fnr().get());
         Fnr gyldigFnr = Fnr.ofValidFnr(arbeidslisteForBrukerRequest.fnr().get());
         sjekkTilgangTilEnhet(gyldigFnr);
 
@@ -136,9 +134,7 @@ public class ArbeidsListeV2Controller {
             arbeidslisteService.slettArbeidsliste(gyldigFnr, slettFargekategori);
         } catch (SlettArbeidslisteException e) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
-            NavKontor enhet = brukerService.hentNavKontor(gyldigFnr).orElse(null);
             secureLog.warn("Kunne ikke slette arbeidsliste for fnr: {}, av veileder: {}, på enhet: {}", gyldigFnr.get(), veilederId.toString(), enhet);
-
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke slette. Fant ikke arbeidsliste for bruker");
         }
 
@@ -181,13 +177,6 @@ public class ArbeidsListeV2Controller {
         authService.innloggetVeilederHarTilgangTilBruker(fnr);
         if (validateFnr.isInvalid()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    private void validerErVeilederForBruker(String fnr) {
-        Validation<String, Fnr> validateVeileder = arbeidslisteService.erVeilederForBruker(fnr);
-        if (validateVeileder.isInvalid()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
 }

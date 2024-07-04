@@ -1,26 +1,20 @@
 package no.nav.pto.veilarbportefolje.fargekategori;
 
-import io.vavr.control.Try;
-import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController.OppdaterFargekategoriRequest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-import static io.vavr.control.Validation.invalid;
-import static io.vavr.control.Validation.valid;
-import static java.lang.String.format;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
@@ -30,39 +24,22 @@ public class FargekategoriService {
     private final FargekategoriRepository fargekategoriRepository;
     private final PdlIdentRepository pdlIdentRepository;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final AktorClient aktorClient;
     private final BrukerServiceV2 brukerServiceV2;
 
     public Optional<FargekategoriEntity> hentFargekategoriForBruker(FargekategoriController.HentFargekategoriRequest request) {
         return fargekategoriRepository.hentFargekategoriForBruker(request.fnr());
     }
 
-    public Optional<FargekategoriEntity> oppdaterFargekategoriForBruker(OppdaterFargekategoriRequest request, VeilederId sistEndretAv) {
-        if (request.fargekategoriVerdi() == FargekategoriVerdi.INGEN_KATEGORI) {
-            fargekategoriRepository.deleteFargekategori(request.fnr());
-
-            slettIOpensearch(request.fnr());
-
-            return Optional.empty();
-        } else {
-            FargekategoriEntity oppdatertKategori = fargekategoriRepository.upsertFargekateori(request, sistEndretAv);
-
-            oppdaterIOpensearch(request.fnr(), request.fargekategoriVerdi());
-
-            return Optional.of(oppdatertKategori);
-        }
-    }
-
-    public void batchoppdaterFargekategoriForBruker(FargekategoriVerdi fargekategoriVerdi, List<Fnr> fnr, VeilederId innloggetVeileder) {
+    public void batchoppdaterFargekategoriForBruker(FargekategoriVerdi fargekategoriVerdi, List<Fnr> fnr, VeilederId innloggetVeileder, EnhetId enhetId) {
         if (fargekategoriVerdi == FargekategoriVerdi.INGEN_KATEGORI) {
             fargekategoriRepository.batchdeleteFargekategori(fnr);
 
             fnr.forEach(this::slettIOpensearch);
 
         } else {
-            fargekategoriRepository.batchupsertFargekategori(fargekategoriVerdi, fnr, innloggetVeileder);
+            fargekategoriRepository.batchupsertFargekategori(fargekategoriVerdi, fnr, innloggetVeileder, enhetId);
 
-            fnr.forEach(f -> oppdaterIOpensearch(f, fargekategoriVerdi));
+            fnr.forEach(f -> oppdaterIOpensearch(f, fargekategoriVerdi.name(), enhetId.get()));
         }
     }
 
@@ -71,9 +48,9 @@ public class FargekategoriService {
         opensearchIndexerV2.slettFargekategori(aktorId);
     }
 
-    private void oppdaterIOpensearch(Fnr fnr, FargekategoriVerdi fargekategoriVerdi) {
+    private void oppdaterIOpensearch(Fnr fnr, String fargekategori, String enhetId) {
         AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr)).orElseThrow(RuntimeException::new);
-        opensearchIndexerV2.updateFargekategori(aktorId, fargekategoriVerdi.name());
+        opensearchIndexerV2.updateFargekategori(aktorId, fargekategori, enhetId);
     }
 
     public void slettFargekategoriPaaBruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
@@ -91,36 +68,46 @@ public class FargekategoriService {
         }
     }
 
-    public Validation<String, Fnr> erVeilederForBruker(String fnr) {
-        VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
-
-        boolean erVeilederForBruker =
-                ValideringsRegler
-                        .validerFnr(fnr)
-                        .map(validFnr -> erVeilederForBruker(validFnr, veilederId))
-                        .getOrElse(false);
-
-        if (erVeilederForBruker) {
-            return valid(Fnr.ofValidFnr(fnr));
+    public void oppdaterEnhetPaaFargekategori(Fnr fnr, EnhetId enhetId, VeilederId veilederId) {
+        try {
+            Optional<FargekategoriEntity> fargekategoriForBruker = fargekategoriRepository.hentFargekategoriForBruker(fnr);
+            fargekategoriForBruker.ifPresent(fargekategoriEntity -> {
+                OppdaterFargekategoriRequest fargekategoriMedNyEnhet = new OppdaterFargekategoriRequest(fnr, fargekategoriForBruker.get().fargekategoriVerdi());
+                fargekategoriRepository.upsertFargekateori(fargekategoriMedNyEnhet, veilederId, enhetId);
+                oppdaterIOpensearch(fargekategoriMedNyEnhet.fnr(), fargekategoriMedNyEnhet.fargekategoriVerdi().name(), enhetId.get());
+            });
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke oppdatere enhet på fargekategori for bruker: " + fnr, e);
+            throw new RuntimeException("Kunne ikke oppdatere enhet på fargekategori");
         }
-        return invalid(format("Veileder %s er ikke veileder for bruker med fnr %s", veilederId, fnr));
     }
 
+    public boolean brukerHarFargekategoriPaForrigeNavkontor(AktorId aktoerId, Optional<Fnr> maybeFnr) {
+        if (maybeFnr.isEmpty()) {
+            return false;
+        }
 
-    public Boolean erVeilederForBruker(Fnr fnr, VeilederId veilederId) {
-        return hentAktorId(fnr)
-                .map(aktoerId -> erVeilederForBruker(aktoerId, veilederId))
-                .getOrElse(false);
-    }
+        Optional<String> navkontorPaFargekategori = fargekategoriRepository.hentNavkontorPaFargekategori(maybeFnr.get());
 
-    public Boolean erVeilederForBruker(AktorId aktoerId, VeilederId veilederId) {
-        return brukerServiceV2
-                .hentVeilederForBruker(aktoerId)
-                .map(currentVeileder -> currentVeileder.equals(veilederId))
-                .orElse(false);
-    }
+        if (navkontorPaFargekategori.isEmpty()) {
+            secureLog.info("Bruker {} har ikke NAV-kontor på fargekategori", aktoerId.toString());
+            return false;
+        }
 
-    private Try<AktorId> hentAktorId(Fnr fnr) {
-        return Try.of(() -> aktorClient.hentAktorId(fnr));
+        final Optional<String> navKontorForBruker = brukerServiceV2.hentNavKontor(aktoerId).map(NavKontor::getValue);
+        if (navKontorForBruker.isEmpty()) {
+            secureLog.error("Kunne ikke hente NAV-kontor for bruker {}", aktoerId.toString());
+            return false;
+        }
+
+        boolean navkontorForBrukerUlikNavkontorPaFargekategori = !navKontorForBruker.orElseThrow().equals(navkontorPaFargekategori.orElseThrow());
+
+        if (navkontorForBrukerUlikNavkontorPaFargekategori) {
+            secureLog.info("Bruker {} er på kontor {} mens fargekategori er lagret på et annet kontor {}", aktoerId.toString(), navKontorForBruker.get(), navkontorPaFargekategori.get());
+        } else {
+            secureLog.info("Bruker {} er på kontor {} og fargekategori er lagret på samme kontor {}", aktoerId.toString(), navKontorForBruker.get(), navkontorPaFargekategori.get());
+        }
+
+        return navkontorForBrukerUlikNavkontorPaFargekategori;
     }
 }
