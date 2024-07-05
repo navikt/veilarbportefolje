@@ -50,11 +50,8 @@ public class EnhetController {
             .maximumSize(1000)
             .build();
 
-    @Operation(
-            summary = "Hent portefølje for enhet",
-            description = "Henter en liste med brukere under arbeidsrettet oppfølging knyttet til enheten."
-    )
     @PostMapping("/{enhet}/portefolje")
+    @Operation(summary = "Hent portefølje for enhet", description = "Henter en liste med brukere under oppfølging knyttet til enheten.")
     public Portefolje hentPortefoljeForEnhet(
             @PathVariable("enhet") String enhet,
             @RequestParam(value = "fra", required = false) Integer fra,
@@ -78,11 +75,8 @@ public class EnhetController {
                 Optional.ofNullable(fra).orElse(0));
     }
 
-    @Operation(
-            summary = "Hent porteføljestørrelser for enhet",
-            description = "Henter antall brukere i porteføljen for en gitt enhet."
-    )
     @GetMapping("/{enhet}/portefoljestorrelser")
+    @Operation(summary = "Hent porteføljestørrelser for enhet", description = "Henter antall brukere i porteføljen til hver veileder på en gitt enhet.")
     public FacetResults hentPortefoljestorrelser(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
@@ -90,11 +84,8 @@ public class EnhetController {
         return opensearchService.hentPortefoljestorrelser(enhet);
     }
 
-    @Operation(
-            summary = "Hent statustall for enhet portefølje",
-            description = "Henter statustall på enhetsnivå (statistikk for alle brukere under arbeidsrettet oppfølging tilknyttet enheten), delt opp i brukere som veileder som utfører forespørselen har innsynsrett på og brukere som veileder ikke har innsynsrett på."
-    )
     @GetMapping("/{enhet}/portefolje/statustall")
+    @Operation(summary = "Hent statustall for enhetsportefølje", description = "Henter statustall på enhetsnivå (statistikk for alle brukere under oppfølging tilknyttet enheten), delt opp i brukere som veileder som utfører forespørselen har tilgang til og brukere som veileder ikke har tilgang til å se detaljer om.")
     public EnhetPortefoljeStatustallRespons hentEnhetPortefoljeStatustall(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
@@ -105,11 +96,8 @@ public class EnhetController {
         );
     }
 
-    @Operation(
-            summary = "Hent tiltak for enhet",
-            description = "Henter alle tiltakstyper for enheten hvor minst en bruker er tilknyttet tiltaket."
-    )
     @GetMapping("/{enhet}/tiltak")
+    @Operation(summary = "Hent tiltak for enhet", description = "Henter alle tiltakstyper for enheten hvor minst én bruker er tilknyttet tiltaket.")
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
@@ -117,11 +105,8 @@ public class EnhetController {
         return tiltakService.hentEnhettiltak(EnhetId.of(enhet));
     }
 
-    @Operation(
-            summary = "Hent fødeland for enhet",
-            description = "Henter en liste av fødeland for brukere på enheten. Listen inneholder kun land som er registrert på brukere på enheten."
-    )
     @GetMapping("/{enhet}/foedeland")
+    @Operation(summary = "Hent fødeland for enhet", description = "Henter en liste av fødeland for brukere på enheten. Listen inneholder kun land som er registrert på brukere på enheten.")
     public List<Foedeland> hentFoedeland(
             @PathVariable("enhet")
             String enhet) {
@@ -132,11 +117,8 @@ public class EnhetController {
                 () -> personOpprinnelseService.hentFoedeland(enhet));
     }
 
-    @Operation(
-            summary = "Hent språk med tolkebehov for enhet",
-            description = "Henter en liste av språk for enheten hvor det er tolkebehov. Listen inneholder kun språk som er registrert på brukere på enheten."
-    )
     @GetMapping("/{enhet}/tolkSpraak")
+    @Operation(summary = "Hent språk med tolkebehov for enhet", description = "Henter en liste av språk for enheten hvor det er tolkebehov. Listen inneholder kun språk som er registrert på brukere på enheten.")
     public List<TolkSpraak> hentTolkSpraak(
             @PathVariable("enhet")
             String enhet) {
@@ -148,11 +130,8 @@ public class EnhetController {
     }
 
 
-    @Operation(
-            summary = "Hent geografisk bosted for enhet",
-            description = "Henter en liste av geografiske bosteder (kommuner og bydeler) for enheten. Listen inneholder kun geografiske bosteder som er registrert på brukere på enheten."
-    )
     @GetMapping("/{enhet}/geografiskbosted")
+    @Operation(summary = "Hent geografiske bosteder for enhet", description = "Henter en liste av geografiske bosteder (kommuner og bydeler) for enheten. Listen inneholder kun geografiske bosteder som er registrert på brukere på enheten.")
     public List<GeografiskBosted> hentGeografiskBosted(
             @PathVariable("enhet")
             String enhet) {

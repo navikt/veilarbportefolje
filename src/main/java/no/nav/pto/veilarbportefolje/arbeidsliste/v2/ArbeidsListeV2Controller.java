@@ -51,8 +51,8 @@ public class ArbeidsListeV2Controller {
         this.fargekategoriService = fargekategoriService;
     }
 
-    @Operation(summary = "Hent arbeidsliste for bruker", description = "Hent arbeidsliste for en gitt bruker.")
     @PostMapping("/hent-arbeidsliste")
+    @Operation(summary = "Hent arbeidsliste for bruker", description = "Henter arbeidsliste for en gitt bruker.")
     public Arbeidsliste getArbeidsListe(@RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest) {
         validerOppfolgingOgBruker(arbeidslisteForBrukerRequest.fnr().get());
 
@@ -75,8 +75,8 @@ public class ArbeidsListeV2Controller {
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
     }
 
-    @Operation(summary = "Opprett arbeidsliste for bruker", description = "Opprett en ny arbeidsliste for en gitt bruker.")
     @PostMapping("/arbeidsliste")
+    @Operation(summary = "Opprett arbeidsliste for bruker", description = "Oppretter en ny arbeidsliste for en gitt bruker.")
     public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteV2Request body) {
         validerOppfolgingOgBruker(body.fnr().get());
         Fnr gyldigFnr = Fnr.ofValidFnr(body.fnr().get());
@@ -91,8 +91,8 @@ public class ArbeidsListeV2Controller {
                 .setIsOppfolgendeVeileder(true);
     }
 
-    @Operation(summary = "Oppdater arbeidsliste", description = "Oppdater en arbeidsliste med nye felter for en gitt bruker.")
     @PutMapping("/arbeidsliste")
+    @Operation(summary = "Oppdater arbeidsliste", description = "Oppdaterer en arbeidsliste med nye felter for en gitt bruker.")
     public Arbeidsliste oppdaterArbeidsListe(@RequestBody ArbeidslisteV2Request body) {
         validerOppfolgingOgBruker(body.fnr().get());
         Fnr fnr = Fnr.ofValidFnr(body.fnr().get());
@@ -118,8 +118,8 @@ public class ArbeidsListeV2Controller {
                         AuthUtils.getInnloggetVeilederIdent()));
     }
 
-    @Operation(summary = "Slett arbeidsliste", description = "Slett en arbeidsliste for en gitt bruker.")
     @DeleteMapping("/arbeidsliste")
+    @Operation(summary = "Slett arbeidsliste", description = "Sletter en arbeidsliste for en gitt bruker.")
     public Arbeidsliste deleteArbeidsliste(
             @RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest,
             @RequestParam(value = "slettFargekategori", required = false, defaultValue = "true") Boolean slettFargekategori

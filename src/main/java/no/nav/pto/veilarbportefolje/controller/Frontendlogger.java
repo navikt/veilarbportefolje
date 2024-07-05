@@ -26,8 +26,8 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class Frontendlogger {
     private final MetricsClient metricsClient;
 
-    @Operation(summary = "Skriv event til influx", description = "Registrer en frontend-hendelse og send til InfluxDB.")
     @PostMapping("/event")
+    @Operation(summary = "Skriv event til Influx", description = "Registrerer en frontend-hendelse og sender til InfluxDB.")
     public void skrivEventTilInflux(@RequestBody FrontendEvent event) {
         Event toInflux = new Event(event.name + ".event");
         if (event.getTags() != null) {

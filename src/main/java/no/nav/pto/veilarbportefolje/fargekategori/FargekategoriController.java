@@ -37,8 +37,8 @@ public class FargekategoriController {
     private final AuthService authService;
     private final BrukerServiceV2 brukerServiceV2;
 
-    @Operation(summary = "Hent fargekategori for bruker", description = "Hent fargekategorien en gitt bruker er merket med.")
     @PostMapping("/hent-fargekategori")
+    @Operation(summary = "Hent fargekategori for bruker", description = "Henter fargekategorien en gitt bruker er merket med.")
     public ResponseEntity<FargekategoriEntity> hentFargekategoriForBruker(@RequestBody HentFargekategoriRequest request) {
         validerRequest(request.fnr);
 
@@ -62,8 +62,8 @@ public class FargekategoriController {
         }
     }
 
-    @Operation(summary = "Sett fargekategori for bruker(e)", description = "Sett en fargekategori for en eller flere brukere i samme operasjon.")
     @PutMapping("/fargekategorier")
+    @Operation(summary = "Sett fargekategori for bruker(e)", description = "Setter en fargekategori for en eller flere brukere i samme operasjon.")
     public ResponseEntity<BatchUpsertResponse> batchoppdaterFargekategoriForBruker(@RequestBody BatchoppdaterFargekategoriRequest request) {
         VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
         authService.innloggetVeilederHarTilgangTilOppfolging();

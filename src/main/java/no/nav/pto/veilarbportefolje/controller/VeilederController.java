@@ -31,11 +31,8 @@ public class VeilederController {
     private final ArbeidslisteService arbeidslisteService;
     private final AktivitetService aktivitetService;
 
-    @Operation(
-            summary = "Hent portefølje for veileder",
-            description = "Henter en liste med brukere under arbeidsrettet oppfølging som er tilordnet veilederen."
-    )
     @PostMapping("/{veilederident}/portefolje")
+    @Operation(summary = "Hent portefølje for veileder", description = "Henter en liste med brukere under oppfølging som er tilordnet veilederen.")
     public Portefolje hentPortefoljeForVeileder(
             @PathVariable("veilederident") String veilederIdent,
             @RequestParam("enhet") String enhet,
@@ -61,11 +58,8 @@ public class VeilederController {
                 Optional.ofNullable(fra).orElse(0));
     }
 
-    @Operation(
-            summary = "Hent status tall for veilederportefølje",
-            description = "Henter statustall på veileder (statistikk for alle brukere under arbeidsrettet oppfølging tilordnet veilederen)."
-    )
     @GetMapping("/{veilederident}/portefolje/statustall")
+    @Operation(summary = "Hent statustall for veilederportefølje", description = "Henter statustall på veileder (statistikk for alle brukere under oppfølging tilordnet veilederen).")
     public VeilederPortefoljeStatustallRespons hentVeilederportefoljeStatustall(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
@@ -76,11 +70,8 @@ public class VeilederController {
         );
     }
 
-    @Operation(
-            summary = "Hent arbeidsliste for veileder",
-            description = "Henter en liste av arbeidslister for en gitt veileder på en gitt enhet."
-    )
     @GetMapping("/{veilederident}/hentArbeidslisteForVeileder")
+    @Operation(summary = "Hent arbeidslister for veileder", description = "Henter en liste av arbeidslister for en gitt veileder på en gitt enhet.")
     public List<Arbeidsliste> hentArbeidslisteForVeileder(@PathVariable("veilederident") VeilederId veilederIdent, @RequestParam("enhet") EnhetId enhet) {
         ValideringsRegler.sjekkEnhet(enhet.get());
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
@@ -89,11 +80,8 @@ public class VeilederController {
         return arbeidslisteService.getArbeidslisteForVeilederPaEnhet(enhet, veilederIdent);
     }
 
-    @Operation(
-            summary = "Hent møteplan for veileder",
-            description = "Henter en liste av møteplaner for en gitt veileder på en gitt enhet."
-    )
     @GetMapping("{veilederident}/moteplan")
+    @Operation(summary = "Hent møteplan for veileder", description = "Henter en liste av fremtidige møter for en gitt veileder på en gitt enhet.")
     public List<Moteplan> hentMoteplanForVeileder(@PathVariable("veilederident") VeilederId veilederIdent, @RequestParam("enhet") EnhetId enhet) {
         ValideringsRegler.sjekkEnhet(enhet.get());
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);

@@ -43,7 +43,7 @@ public class HuskelappController {
     private final VeilarbVeilederClient veilarbVeilederClient;
 
     @PostMapping("/huskelapp")
-    @Operation(summary = "Opprett huskelapp", description = "Opprett en huskelapp for en gitt bruker på en gitt enhet")
+    @Operation(summary = "Opprett huskelapp", description = "Oppretter en huskelapp for en gitt bruker på en gitt enhet.")
     public ResponseEntity<HuskelappOpprettResponse> opprettHuskelapp(@RequestBody HuskelappOpprettRequest huskelappOpprettRequest) {
         validerOppfolgingOgBrukerOgEnhet(huskelappOpprettRequest.brukerFnr().get());
         try {
@@ -66,7 +66,7 @@ public class HuskelappController {
     }
 
     @PutMapping("/huskelapp")
-    @Operation(summary = "Oppdater huskelapp", description = "Oppdater en huskelapp med nye felter")
+    @Operation(summary = "Oppdater huskelapp", description = "Oppdaterer huskelappen for en gitt bruker med nye felter.")
     public ResponseEntity redigerHuskelapp(@RequestBody HuskelappRedigerRequest huskelappRedigerRequest) {
         validerOppfolgingOgBrukerOgEnhet(huskelappRedigerRequest.brukerFnr().get());
         try {
@@ -91,7 +91,7 @@ public class HuskelappController {
     }
 
     @PostMapping("/hent-huskelapp-for-bruker")
-    @Operation(summary = "Hent huskelapp for bruker", description = "Hent aktiv huskelapp for en gitt bruker")
+    @Operation(summary = "Hent huskelapp for bruker", description = "Henter aktiv huskelapp for en gitt bruker.")
     public ResponseEntity<HuskelappResponse> hentHuskelapp(@RequestBody HuskelappForBrukerRequest huskelappForBrukerRequest) {
         validerOppfolgingOgBrukerOgEnhet(huskelappForBrukerRequest.fnr().get());
         try {
@@ -103,7 +103,7 @@ public class HuskelappController {
     }
 
     @DeleteMapping("/huskelapp")
-    @Operation(summary = "Slett huskelapp", description = "Slett en huskelapp")
+    @Operation(summary = "Slett huskelapp", description = "Setter huskelapp som inaktiv i databasen og sletter den fra søkemotoren (OpenSearch).")
     public ResponseEntity<String> slettHuskelapp(@RequestBody HuskelappSlettRequest huskelappSlettRequest) {
         Optional<Huskelapp> huskelappOptional = huskelappService.hentHuskelapp(UUID.fromString(huskelappSlettRequest.huskelappId()));
 
@@ -131,6 +131,7 @@ public class HuskelappController {
     }
 
     @PostMapping("/hent-er-bruker-ufordelt")
+    @Operation(summary = "Hent om bruker er ufordelt", description = "Sjekker om bruker er ufordelt og returnerer true hvis bruker er ufordelt.")
     public ResponseEntity<Boolean> hentErBrukerUfordelt(@RequestBody HentErBrukerUfordelt request) {
         Optional<NavKontor> navKontor = brukerServiceV2.hentNavKontor(request.fnr);
         if (navKontor.isEmpty()) {

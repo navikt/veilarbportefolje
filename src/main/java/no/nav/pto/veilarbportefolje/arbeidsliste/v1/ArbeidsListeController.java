@@ -56,8 +56,8 @@ public class ArbeidsListeController {
     }
 
 
-    @Operation(summary = "Opprett arbeidslister", description = "Opprett arbeidslister for et sett med brukere.")
     @PostMapping
+    @Operation(summary = "Opprett arbeidslister", description = "Oppretter arbeidslister for et sett med brukere.")
     public ResponseEntity opprettArbeidsListe(@RequestBody List<ArbeidslisteRequest> arbeidsliste) {
         authService.innloggetVeilederHarTilgangTilOppfolging();
         List<String> tilgangErrors = getTilgangErrors(arbeidsliste);
@@ -79,8 +79,9 @@ public class ArbeidsListeController {
         return response.data.isEmpty() ? response.badRequest() : response.created();
     }
 
-    @Operation(summary = "Hent arbeidsliste", description = "Hent arbeidsliste for en gitt bruker.")
     @GetMapping("{fnr}")
+    @Deprecated(forRemoval = true)
+    @Operation(summary = "Hent arbeidsliste", description = "Henter arbeidsliste for en gitt bruker.")
     public Arbeidsliste getArbeidsListe(@PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
 
@@ -102,8 +103,9 @@ public class ArbeidsListeController {
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
     }
 
-    @Operation(summary = "Opprett arbeidsliste", description = "Opprett en arbeidsliste for en gitt bruker.")
     @PostMapping("{fnr}")
+    @Deprecated(forRemoval = true)
+    @Operation(summary = "Opprett arbeidsliste", description = "Oppretter en arbeidsliste for en gitt bruker.")
     public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
@@ -117,8 +119,9 @@ public class ArbeidsListeController {
                 .setIsOppfolgendeVeileder(true);
     }
 
-    @Operation(summary = "Oppdater arbeidsliste", description = "Oppdater en arbeidsliste med nye felter for en gitt bruker.")
     @PutMapping("{fnr}")
+    @Deprecated(forRemoval = true)
+    @Operation(summary = "Oppdater arbeidsliste", description = "Oppdaterer en arbeidsliste med nye felter for en gitt bruker.")
     public Arbeidsliste oppdaterArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
         Fnr fnr = Fnr.ofValidFnr(fnrString);
@@ -144,8 +147,9 @@ public class ArbeidsListeController {
                         AuthUtils.getInnloggetVeilederIdent()));
     }
 
-    @Operation(summary = "Slett arbeidsliste", description = "Slett en arbeidsliste for en gitt bruker.")
     @DeleteMapping("{fnr}")
+    @Deprecated(forRemoval = true)
+    @Operation(summary = "Slett arbeidsliste", description = "Sletter en arbeidsliste for en gitt bruker.")
     public Arbeidsliste deleteArbeidsliste(@PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
@@ -163,8 +167,8 @@ public class ArbeidsListeController {
         return emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true);
     }
 
-    @Operation(summary = "Slett arbeidslister", description = "Slett arbeidslister for et sett med brukere.")
     @PostMapping("/delete")
+    @Operation(summary = "Slett arbeidslister", description = "Sletter arbeidslister for et sett med brukere.")
     public RestResponse<String> deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
         authService.innloggetVeilederHarTilgangTilOppfolging();
 

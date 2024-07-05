@@ -20,22 +20,22 @@ import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/internal")
-@Tag(name = "Internal", description = "Intern funksjonalitet. Benyttes hovedsaklig av kjøretidsplattformen.")
+@Tag(name = "Internal", description = "Intern funksjonalitet. Benyttes hovedsakelig av kjøretidsplattformen.")
 public class InternalController {
     private final SelfTestChecks selfTestChecks;
 
-    @Operation(summary = "Applikasjon klar for trafikk", description = "Sjekk om applikasjonen er klar til å motta trafikk.")
     @GetMapping("/isReady")
+    @Operation(summary = "Applikasjon klar for trafikk", description = "Sjekker om applikasjonen er klar til å motta trafikk.")
     public void isReady() {
     }
 
-    @Operation(summary = "Applikasjon kjører", description = "Sjekk om applikasjonen kjører.")
     @GetMapping("/isAlive")
+    @Operation(summary = "Applikasjon kjører", description = "Sjekker om applikasjonen kjører.")
     public void isAlive() {
     }
 
-    @Operation(summary = "Sjekk applikasjonens helsesjekker", description = "Utfør helsesjekk for tjenester applikasjonen er avhengig av og generer rapport.")
     @GetMapping("/selftest")
+    @Operation(summary = "Sjekk applikasjonens helsesjekker", description = "Utfører helsesjekk for tjenester som applikasjonen er avhengig av og generer rapport.")
     public ResponseEntity selftest() {
         List<SelftTestCheckResult> results = checkAllParallel(selfTestChecks.getSelfTestChecks());
         String html = SelftestHtmlGenerator.generate(results);
