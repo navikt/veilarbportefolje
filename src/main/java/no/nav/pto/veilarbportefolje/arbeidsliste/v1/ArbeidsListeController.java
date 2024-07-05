@@ -79,6 +79,9 @@ public class ArbeidsListeController {
         return response.data.isEmpty() ? response.badRequest() : response.created();
     }
 
+    /**
+     * @deprecated Skal fjernes høsten 2024 når arbeidslistene slettes.
+     */
     @GetMapping("{fnr}")
     @Deprecated(forRemoval = true)
     @Operation(summary = "Hent arbeidsliste", description = "Henter arbeidsliste for en gitt bruker.")
@@ -103,6 +106,9 @@ public class ArbeidsListeController {
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
     }
 
+    /**
+     * @deprecated Skal fjernes høsten 2024 når arbeidslistene slettes.
+     */
     @PostMapping("{fnr}")
     @Deprecated(forRemoval = true)
     @Operation(summary = "Opprett arbeidsliste", description = "Oppretter en arbeidsliste for en gitt bruker.")
@@ -119,6 +125,9 @@ public class ArbeidsListeController {
                 .setIsOppfolgendeVeileder(true);
     }
 
+    /**
+     * @deprecated Skal fjernes høsten 2024 når arbeidslistene slettes.
+     */
     @PutMapping("{fnr}")
     @Deprecated(forRemoval = true)
     @Operation(summary = "Oppdater arbeidsliste", description = "Oppdaterer en arbeidsliste med nye felter for en gitt bruker.")
@@ -147,6 +156,9 @@ public class ArbeidsListeController {
                         AuthUtils.getInnloggetVeilederIdent()));
     }
 
+    /**
+     * @deprecated Skal fjernes høsten 2024 når arbeidslistene slettes.
+     */
     @DeleteMapping("{fnr}")
     @Deprecated(forRemoval = true)
     @Operation(summary = "Slett arbeidsliste", description = "Sletter en arbeidsliste for en gitt bruker.")
