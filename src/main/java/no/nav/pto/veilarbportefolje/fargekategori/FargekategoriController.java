@@ -2,6 +2,8 @@ package no.nav.pto.veilarbportefolje.fargekategori;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
@@ -28,6 +30,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
+@Tag(name = "Fargekategori", description = "Fargekategori-funksjonalitet")
 public class FargekategoriController {
 
     private final FargekategoriService fargekategoriService;
@@ -35,6 +38,7 @@ public class FargekategoriController {
     private final BrukerServiceV2 brukerServiceV2;
 
     @PostMapping("/hent-fargekategori")
+    @Operation(summary = "Hent fargekategori for bruker", description = "Henter fargekategorien en gitt bruker er merket med.")
     public ResponseEntity<FargekategoriEntity> hentFargekategoriForBruker(@RequestBody HentFargekategoriRequest request) {
         validerRequest(request.fnr);
 
@@ -59,6 +63,7 @@ public class FargekategoriController {
     }
 
     @PutMapping("/fargekategorier")
+    @Operation(summary = "Sett fargekategori for bruker(e)", description = "Setter en fargekategori for en eller flere brukere i samme operasjon.")
     public ResponseEntity<BatchUpsertResponse> batchoppdaterFargekategoriForBruker(@RequestBody BatchoppdaterFargekategoriRequest request) {
         VeilederId innloggetVeileder = AuthUtils.getInnloggetVeilederIdent();
         authService.innloggetVeilederHarTilgangTilOppfolging();

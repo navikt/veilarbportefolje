@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste.v2;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
@@ -29,6 +31,7 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 @Slf4j
 @RestController
 @RequestMapping("/api/v2")
+@Tag(name = "Arbeidsliste", description = "Arbeidsliste-funksjonalitet")
 public class ArbeidsListeV2Controller {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerServiceV2 brukerService;
@@ -49,6 +52,7 @@ public class ArbeidsListeV2Controller {
     }
 
     @PostMapping("/hent-arbeidsliste")
+    @Operation(summary = "Hent arbeidsliste for bruker", description = "Henter arbeidsliste for en gitt bruker.")
     public Arbeidsliste getArbeidsListe(@RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest) {
         validerOppfolgingOgBruker(arbeidslisteForBrukerRequest.fnr().get());
 
@@ -72,6 +76,7 @@ public class ArbeidsListeV2Controller {
     }
 
     @PostMapping("/arbeidsliste")
+    @Operation(summary = "Opprett arbeidsliste for bruker", description = "Oppretter en ny arbeidsliste for en gitt bruker.")
     public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteV2Request body) {
         validerOppfolgingOgBruker(body.fnr().get());
         Fnr gyldigFnr = Fnr.ofValidFnr(body.fnr().get());
@@ -87,6 +92,7 @@ public class ArbeidsListeV2Controller {
     }
 
     @PutMapping("/arbeidsliste")
+    @Operation(summary = "Oppdater arbeidsliste", description = "Oppdaterer en arbeidsliste med nye felter for en gitt bruker.")
     public Arbeidsliste oppdaterArbeidsListe(@RequestBody ArbeidslisteV2Request body) {
         validerOppfolgingOgBruker(body.fnr().get());
         Fnr fnr = Fnr.ofValidFnr(body.fnr().get());
@@ -113,6 +119,7 @@ public class ArbeidsListeV2Controller {
     }
 
     @DeleteMapping("/arbeidsliste")
+    @Operation(summary = "Slett arbeidsliste", description = "Sletter en arbeidsliste for en gitt bruker.")
     public Arbeidsliste deleteArbeidsliste(
             @RequestBody ArbeidslisteForBrukerRequest arbeidslisteForBrukerRequest,
             @RequestParam(value = "slettFargekategori", required = false, defaultValue = "true") Boolean slettFargekategori
