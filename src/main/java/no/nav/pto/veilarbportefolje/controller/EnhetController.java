@@ -2,6 +2,8 @@ package no.nav.pto.veilarbportefolje.controller;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
@@ -25,6 +27,7 @@ import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterT
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/enhet")
+@Tag(name = "Enhet", description = "Portefølje-funksjonalitet på enhetsnivå.")
 public class EnhetController {
     private final OpensearchService opensearchService;
     private final AuthService authService;
@@ -48,6 +51,7 @@ public class EnhetController {
             .build();
 
     @PostMapping("/{enhet}/portefolje")
+    @Operation(summary = "Hent portefølje for enhet", description = "Henter en liste med brukere under oppfølging knyttet til enheten.")
     public Portefolje hentPortefoljeForEnhet(
             @PathVariable("enhet") String enhet,
             @RequestParam(value = "fra", required = false) Integer fra,
@@ -72,6 +76,7 @@ public class EnhetController {
     }
 
     @GetMapping("/{enhet}/portefoljestorrelser")
+    @Operation(summary = "Hent porteføljestørrelser for enhet", description = "Henter antall brukere i porteføljen til hver veileder på en gitt enhet.")
     public FacetResults hentPortefoljestorrelser(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
@@ -80,6 +85,7 @@ public class EnhetController {
     }
 
     @GetMapping("/{enhet}/portefolje/statustall")
+    @Operation(summary = "Hent statustall for enhetsportefølje", description = "Henter statustall på enhetsnivå (statistikk for alle brukere under oppfølging tilknyttet enheten), delt opp i brukere som veileder som utfører forespørselen har tilgang til og brukere som veileder ikke har tilgang til å se detaljer om.")
     public EnhetPortefoljeStatustallRespons hentEnhetPortefoljeStatustall(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
@@ -91,6 +97,7 @@ public class EnhetController {
     }
 
     @GetMapping("/{enhet}/tiltak")
+    @Operation(summary = "Hent tiltak for enhet", description = "Henter alle tiltakstyper for enheten hvor minst én bruker er tilknyttet tiltaket.")
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
@@ -99,6 +106,7 @@ public class EnhetController {
     }
 
     @GetMapping("/{enhet}/foedeland")
+    @Operation(summary = "Hent fødeland for enhet", description = "Henter en liste av fødeland for brukere på enheten. Listen inneholder kun land som er registrert på brukere på enheten.")
     public List<Foedeland> hentFoedeland(
             @PathVariable("enhet")
             String enhet) {
@@ -110,6 +118,7 @@ public class EnhetController {
     }
 
     @GetMapping("/{enhet}/tolkSpraak")
+    @Operation(summary = "Hent språk med tolkebehov for enhet", description = "Henter en liste av språk for enheten hvor det er tolkebehov. Listen inneholder kun språk som er registrert på brukere på enheten.")
     public List<TolkSpraak> hentTolkSpraak(
             @PathVariable("enhet")
             String enhet) {
@@ -122,6 +131,7 @@ public class EnhetController {
 
 
     @GetMapping("/{enhet}/geografiskbosted")
+    @Operation(summary = "Hent geografiske bosteder for enhet", description = "Henter en liste av geografiske bosteder (kommuner og bydeler) for enheten. Listen inneholder kun geografiske bosteder som er registrert på brukere på enheten.")
     public List<GeografiskBosted> hentGeografiskBosted(
             @PathVariable("enhet")
             String enhet) {
