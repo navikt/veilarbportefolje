@@ -38,8 +38,7 @@ public class FargekategoriRepository {
         ));
     }
 
-    @Transactional
-    public FargekategoriEntity upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv, EnhetId enhetId) {
+    public void upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv, EnhetId enhetId) {
         Timestamp sistEndret = toTimestamp(ZonedDateTime.now());
 
         String upsertSql = """
@@ -56,12 +55,6 @@ public class FargekategoriRepository {
                 sistEndret,
                 sistEndretAv.getValue(),
                 enhetId.get());
-
-        return jdbcTemplate.queryForObject(
-                "SELECT * FROM fargekategori WHERE fnr=?",
-                (resultSet, rowNum) -> FargekategoriMapper.fargekategoriMapper(resultSet),
-                request.fnr().get()
-        );
     }
 
     public void deleteFargekategori(Fnr fnr) {

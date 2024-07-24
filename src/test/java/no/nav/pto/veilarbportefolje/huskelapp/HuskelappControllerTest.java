@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.huskelapp;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import no.nav.common.abac.VeilarbPep;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -74,8 +72,10 @@ public class HuskelappControllerTest {
 
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
+        when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
+        when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of(enhetId.get())));
 
-        HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, huskelappfrist, "Test", enhetId);
+        HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, huskelappfrist, "Test");
         String opprettetHuskelappId = mockMvc
                 .perform(
                         post("/api/v1/huskelapp")
@@ -117,13 +117,15 @@ public class HuskelappControllerTest {
         EnhetId enhetId = EnhetId.of("1234");
         AktorId aktorId = AktorId.of("1223234234234");
         VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
-        HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, LocalDate.now(), "Test", enhetId);
+        HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, LocalDate.now(), "Test");
         testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, NavKontor.of(enhetId.get()), veilederId);
 
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(Decision.Permit.INSTANCE);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
+        when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
+        when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of(enhetId.get())));
 
         List<PDLIdent> identer = List.of(
                 new PDLIdent(aktorId.get(), false, AKTORID),
@@ -156,7 +158,7 @@ public class HuskelappControllerTest {
         assertThat(hentetHuskelappBody.kommentar()).isEqualTo(opprettRequest.kommentar());
         assertThat(hentetHuskelappBody.endretAv()).isEqualTo(veilederId.getValue());
 
-        HuskelappRedigerRequest redigereRequest = new HuskelappRedigerRequest(UUID.fromString(huskelappIdBody.huskelappId()), fnr, null, "Test at det blir en ny kommentar", enhetId);
+        HuskelappRedigerRequest redigereRequest = new HuskelappRedigerRequest(UUID.fromString(huskelappIdBody.huskelappId()), fnr, null, "Test at det blir en ny kommentar");
         mockMvc
                 .perform(
                         put("/api/v1/huskelapp")
@@ -186,89 +188,18 @@ public class HuskelappControllerTest {
     }
 
     @Test
-    void test_hent_huskelapp_for_veileder() throws Exception {
-        Fnr fnr = Fnr.of("76543218457");
-        EnhetId enhetId = EnhetId.of("1234");
-        AktorId aktorId = AktorId.of("1223234234234");
-        VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
-        HuskelappOpprettRequest opprettRequest1 = new HuskelappOpprettRequest(fnr, LocalDate.now(), "Test", enhetId);
-        HuskelappOpprettRequest opprettRequest2 = new HuskelappOpprettRequest(fnr, null, "Huskelapps", enhetId);
-        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, NavKontor.of(enhetId.get()), veilederId);
-
-        when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-        when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
-
-        List<PDLIdent> identer = List.of(
-                new PDLIdent(aktorId.get(), false, AKTORID),
-                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
-        );
-        pdlIdentRepository.upsertIdenter(identer);
-
-        String opprettetHuskelappId1Body = mockMvc
-                .perform(
-                        post("/api/v1/huskelapp")
-                                .contentType(APPLICATION_JSON)
-                                .content(toJson(opprettRequest1))
-                                .header("test_ident", "Z12345")
-                                .header("test_ident_type", "INTERN")
-                )
-                .andExpect(status().is(201))
-                .andReturn().getResponse().getContentAsString();
-        HuskelappOpprettResponse huskelappId1Body = fromJson(opprettetHuskelappId1Body, HuskelappOpprettResponse.class);
-
-
-        String opprettetHuskelappId2Body = mockMvc
-                .perform(
-                        post("/api/v1/huskelapp")
-                                .contentType(APPLICATION_JSON)
-                                .content(toJson(opprettRequest2))
-                                .header("test_ident", "Z12345")
-                                .header("test_ident_type", "INTERN")
-                )
-                .andExpect(status().is(201))
-                .andReturn().getResponse().getContentAsString();
-
-        HuskelappOpprettResponse huskelappId2Body = fromJson(opprettetHuskelappId2Body, HuskelappOpprettResponse.class);
-
-        HuskelappForVeilederRequest hentForVeilederRequest = new HuskelappForVeilederRequest(enhetId, veilederId);
-
-        String result = mockMvc
-                .perform(
-                        post("/api/v1/hent-huskelapp-for-veileder")
-                                .contentType(APPLICATION_JSON)
-                                .content(toJson(hentForVeilederRequest))
-                                .header("test_ident", "Z12345")
-                                .header("test_ident_type", "INTERN")
-                )
-                .andExpect(status().is(200))
-                .andReturn().getResponse().getContentAsString();
-
-        List<HuskelappResponse> hentetHuskelappEtterRedigeringBody = fromJson(result, new TypeReference<>() {
-        });
-        assertThat(hentetHuskelappEtterRedigeringBody.size()).isEqualTo(1);
-        
-        assertThat(hentetHuskelappEtterRedigeringBody.stream().anyMatch(var -> var.equals(new HuskelappResponse(
-                huskelappId2Body.huskelappId(),
-                opprettRequest2.brukerFnr(),
-                opprettRequest2.enhetId(),
-                opprettRequest2.frist(),
-                opprettRequest2.kommentar(),
-                LocalDate.now(),
-                veilederId.getValue()
-        )))).isTrue();
-    }
-
-    @Test
     void test_opprett_huskelapp_uten_kommentar_og_frist() throws Exception {
         Fnr fnr = Fnr.of("76543218457");
         EnhetId enhetId = EnhetId.of("1234");
         AktorId aktorId = AktorId.of("1223234234234");
         VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
-        HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, null, null, enhetId);
+        HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, null, null);
         testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, NavKontor.of(enhetId.get()), veilederId);
 
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
+        when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
+        when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of(enhetId.get())));
 
         List<PDLIdent> identer = List.of(
                 new PDLIdent(aktorId.get(), false, AKTORID),
@@ -294,12 +225,14 @@ public class HuskelappControllerTest {
         Fnr fnr = Fnr.of("34567823456");
         EnhetId enhetId = EnhetId.of("1234");
         AktorId aktorId = AktorId.of("1223234234234");
-        HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, LocalDate.now(), "Test", enhetId);
+        HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, LocalDate.now(), "Test");
 
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(Decision.Permit.INSTANCE);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(AuthUtils.getInnloggetVeilederIdent()));
+        when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
+        when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of(enhetId.get())));
 
         List<PDLIdent> identer = List.of(
                 new PDLIdent(aktorId.get(), false, AKTORID),

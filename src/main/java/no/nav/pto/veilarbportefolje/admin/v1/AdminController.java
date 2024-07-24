@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.admin.v1;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -33,6 +35,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@Tag(name = "Admin", description = "Admin-funksjonalitet som ikke er tilgjengelig for vanlige brukere. Funksjonaliteten er kun tilgjengelig for medlemmer av applikasjonens forvaltningsteam.")
 public class AdminController {
     private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
             "prod-fss" : "dev-fss", "pto", "pto-admin").toString();
@@ -48,6 +51,7 @@ public class AdminController {
     private final PdlService pdlService;
 
     @DeleteMapping("/oppfolgingsbruker")
+    @Operation(summary = "Fjern bruker", description = "Sletter en bruker og fjerner tilhørende informasjon om brukeren. Brukeren vil ikke lenger eksistere i porteføljene.")
     public String slettOppfolgingsbruker(@RequestBody String aktoerId) {
         sjekkTilgangTilAdmin();
         oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(aktoerId));
@@ -55,6 +59,7 @@ public class AdminController {
     }
 
     @PostMapping("/lastInnOppfolging")
+    @Operation(summary = "Oppdater data for alle brukere", description = "Går gjennom alle brukere i løsningen og oppdaterer oppfølgingsdata om brukere under oppfølging. Brukere som eventuelt ikke er under oppfølging slettes.")
     public String lastInnOppfolgingsData() {
         sjekkTilgangTilAdmin();
         oppfolgingService.lastInnDataPaNytt();
@@ -62,6 +67,7 @@ public class AdminController {
     }
 
     @PostMapping("/lastInnOppfolgingForBruker")
+    @Operation(summary = "Oppdater data for bruker", description = "Oppdaterer oppfølgingsdata for en gitt bruker. Dersom brukeren eventuelt ikke er under oppfølging slettes den.")
     public String lastInnOppfolgingsDataForBruker(@RequestBody String fnr) {
         sjekkTilgangTilAdmin();
         String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
@@ -87,6 +93,7 @@ public class AdminController {
     }
 
     @PostMapping("/indeks/AlleBrukere")
+    @Operation(summary = "Indekser alle brukere", description = "Går gjennom alle brukere i løsningen og oppdaterer data om disse i søkemotoren (OpenSearch).")
     public String indekserAlleBrukere() {
         sjekkTilgangTilAdmin();
         return JobRunner.runAsync("Admin_hovedindeksering", () -> {
@@ -97,6 +104,7 @@ public class AdminController {
     }
 
     @PostMapping("/indeks/AlleBrukereNyIndex")
+    @Operation(summary = "Indekser alle brukere på ny index", description = "Går gjennom alle brukere i løsningen og oppdaterer data om disse i søkemotoren (OpenSearch) på en ny indeks.")
     public String indekserAlleBrukereNyIndex() {
         sjekkTilgangTilAdmin();
         return JobRunner.runAsync("Admin_hovedindeksering_ny_index", () -> {
@@ -107,6 +115,7 @@ public class AdminController {
     }
 
     @PutMapping("/ytelser/allUsers")
+    @Operation(summary = "Oppdater ytelser for alle brukere", description = "Går gjennom alle brukere i løsningen og oppdaterer data om ytelser for disse.")
     public String syncYtelserForAlle() {
         sjekkTilgangTilAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
@@ -115,6 +124,7 @@ public class AdminController {
     }
 
     @PutMapping("/ytelser/idag")
+    @Operation(summary = "Oppdater ytelser for alle brukere som har ytelser som starter i dag", description = "Går gjennom alle brukere i løsningen og oppdaterer data om ytelser for disse som starter i dag.")
     public String syncYtelserForIDag() {
         sjekkTilgangTilAdmin();
         ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag();
@@ -122,6 +132,7 @@ public class AdminController {
     }
 
     @PostMapping("/opensearch/createIndex")
+    @Operation(summary = "Opprett ny indeks", description = "Oppretter en ny indeks i søkemotoren (OpenSearch).")
     public String createIndex() {
         sjekkTilgangTilAdmin();
         String indexName = opensearchAdminService.opprettNyIndeks();
@@ -130,12 +141,14 @@ public class AdminController {
     }
 
     @GetMapping("/opensearch/getAliases")
+    @Operation(summary = "Hent alle aliaser", description = "Henter alle aliaser som eksisterer i søkemotoren (OpenSearch).")
     public String getAliases() {
         sjekkTilgangTilAdmin();
         return opensearchAdminService.hentAliaser();
     }
 
     @PostMapping("/opensearch/deleteIndex")
+    @Operation(summary = "Slett indeks", description = "Sletter en indeks i søkemotoren (OpenSearch).")
     public boolean deleteIndex(@RequestParam String indexName) {
         sjekkTilgangTilAdmin();
         log.info("Sletter index: {}", indexName);
@@ -143,6 +156,7 @@ public class AdminController {
     }
 
     @PostMapping("/opensearch/assignAliasToIndex")
+    @Operation(summary = "Tildel alias til indeks", description = "Tildeler et alias til en indeks i søkemotoren (OpenSearch).")
     public String assignAliasToIndex(@RequestParam String indexName) {
         sjekkTilgangTilAdmin();
         opensearchAdminService.opprettAliasForIndeks(indexName);
@@ -150,6 +164,7 @@ public class AdminController {
     }
 
     @PostMapping("/opensearch/getSettings")
+    @Operation(summary = "Hent innstillinger for indeks", description = "Henter innstillinger for en indeks i søkemotoren (OpenSearch).")
     public String getSettings(@RequestParam String indexName) {
         sjekkTilgangTilAdmin();
         validerIndexName(indexName);
@@ -157,18 +172,21 @@ public class AdminController {
     }
 
     @PostMapping("/opensearch/fixReadOnlyMode")
+    @Operation(summary = "Fjern read only mode", description = "Fjerner read only mode på en indeks i søkemotoren (OpenSearch).")
     public String fixReadOnlyMode() {
         sjekkTilgangTilAdmin();
         return opensearchAdminService.updateFromReadOnlyMode();
     }
 
     @PostMapping("/opensearch/forceShardAssignment")
+    @Operation(summary = "Tving shard assignment", description = "Tvinger shard assignment på en indeks i søkemotoren (OpenSearch).")
     public String forceShardAssignment() {
         sjekkTilgangTilAdmin();
         return opensearchAdminService.forceShardAssignment();
     }
 
     @PostMapping("/pdl/lastInnDataFraPdl")
+    @Operation(summary = "Last inn PDL-data", description = "Henter og lagrer data fra PDL (identer, personalia og foreldreansvar) for alle brukere i løsningen.")
     public String lastInnPDLBrukerData() {
         sjekkTilgangTilAdmin();
         AtomicInteger antall = new AtomicInteger(0);
@@ -203,6 +221,7 @@ public class AdminController {
 
 
     @PostMapping("/test/postgresIndeksering")
+    @Operation(summary = "Test indeksering av brukere", description = "Går gjennom alle brukere i løsningen og gjør en dry-run av mapping til datamodell som benyttes av søkemotoren (OpenSearch).")
     public void testHentUnderOppfolging() {
         sjekkTilgangTilAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
