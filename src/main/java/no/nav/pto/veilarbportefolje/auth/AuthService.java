@@ -62,7 +62,6 @@ public class AuthService {
     }
 
     public boolean harVeilederTilgangTilEnhet(String veilederId, String enhet) {
-        //Først catcher veiledertilgang til enheten så returnerer responsen, da unngår vi veiledertilgang sjekk hver gang når det skjer endring
         return tryCacheFirst(
                 harVeilederTilgangTilEnhetCache,
                 new VeilederPaEnhet(veilederId, enhet),
