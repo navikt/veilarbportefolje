@@ -32,7 +32,6 @@ object TestDataUtils {
         return Fnr.ofValidFnr("010101" + randomDigits(5))
     }
 
-
     @JvmStatic
     fun randomAktorId(): AktorId {
         return AktorId.of(randomDigits(13))
