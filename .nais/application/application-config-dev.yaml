@@ -3,9 +3,9 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: veilarbportefolje
-  namespace: pto
+  namespace: obo
   labels:
-    team: pto
+    team: obo
 spec:
   image: {{image}}
   replicas:
