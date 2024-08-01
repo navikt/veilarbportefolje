@@ -21,15 +21,7 @@ spec:
     enabled: true
   kafka:
     pool: nav-dev
-  vault:
-    enabled: true
-    paths:
-      - kvPath: /serviceuser/data/dev/srvveilarbportefolje
-        mountPath: /var/run/secrets/nais.io/service_user
-      - kvPath: /kv/preprod/fss/veilarbportefolje/q1
-        mountPath: /var/run/secrets/nais.io/vault
   envFrom:
-    - configmap: pto-config
     - secret: veilarbportefolje-unleash-api-token
   liveness:
     path: veilarbportefolje/internal/isAlive
