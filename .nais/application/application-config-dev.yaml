@@ -14,8 +14,7 @@ spec:
     cpuThresholdPercentage: 50
   port: 8080
   ingresses:
-    - https://veilarbportefolje.dev.intern.nav.no
-    - https://veilarbportefolje.dev-fss-pub.nais.io
+    - https://veilarbportefolje.intern.dev.nav.no
   webproxy: true
   leaderElection: true
   secureLogs:
