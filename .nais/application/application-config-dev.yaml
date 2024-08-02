@@ -42,6 +42,7 @@ spec:
       - type: POSTGRES_15
         databases:
           - name: veilarbportefolje
+            envVarPrefix: DB
   azure:
     application:
       allowAllUsers: true
