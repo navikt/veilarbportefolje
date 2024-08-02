@@ -3,13 +3,15 @@ package no.nav.pto.veilarbportefolje.util;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
+
 import javax.sql.DataSource;
 
 @Slf4j
 public class DbUtils {
 
     public static DataSource createDataSource(String dbUrl) {
-        HikariConfig config = createDataSourceConfig(dbUrl, 2);
+        log.info("JDBC_URL: " + dbUrl);
+        HikariConfig config = createDataSourceConfig(dbUrl, 10);
         return new HikariDataSource(config);
     }
 
