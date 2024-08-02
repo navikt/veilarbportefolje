@@ -37,6 +37,11 @@ spec:
   openSearch:
     access: admin
     instance: veilarbportefolje
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_16
+        databases:
+          - name: veilarbportefolje
   azure:
     application:
       allowAllUsers: true
