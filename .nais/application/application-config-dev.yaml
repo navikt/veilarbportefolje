@@ -39,7 +39,7 @@ spec:
     instance: veilarbportefolje
   gcp:
     sqlInstances:
-      - type: POSTGRES_16
+      - type: POSTGRES_15
         databases:
           - name: veilarbportefolje
   azure:
