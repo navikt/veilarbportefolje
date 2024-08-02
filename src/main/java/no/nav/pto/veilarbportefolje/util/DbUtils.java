@@ -10,13 +10,8 @@ import javax.sql.DataSource;
 public class DbUtils {
 
     public static DataSource createDataSource(String dbUrl) {
-        try {
-            HikariConfig config = createDataSourceConfig(dbUrl, 7);
-            return new HikariDataSource(config);
-        } catch (Exception e) {
-            log.error("Datasource error: " + e, e);
-            return null;
-        }
+        HikariConfig config = createDataSourceConfig(dbUrl, 2);
+        return new HikariDataSource(config);
     }
 
     public static HikariConfig createDataSourceConfig(String dbUrl, int maximumPoolSize) {
