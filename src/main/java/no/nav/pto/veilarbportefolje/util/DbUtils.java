@@ -10,7 +10,6 @@ import javax.sql.DataSource;
 public class DbUtils {
 
     public static DataSource createDataSource(String dbUrl) {
-        log.info("JDBC_URL: " + dbUrl);
         HikariConfig config = createDataSourceConfig(dbUrl, 10);
         return new HikariDataSource(config);
     }
