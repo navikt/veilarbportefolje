@@ -19,7 +19,7 @@ public class HelsesjekkConfig {
 
     @Bean
     public SelfTestChecks selfTestChecks(AktorClient aktorClient,
-                                          JdbcTemplate jdbcTemplate,
+                                         JdbcTemplate jdbcTemplate,
                                          OpensearchHealthCheck opensearchHealthCheck) {
         List<SelfTestCheck> asyncSelftester = List.of(
                 new SelfTestCheck(String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, opensearchHealthCheck),
