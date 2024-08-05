@@ -1,8 +1,5 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.common.abac.Pep;
-import no.nav.common.abac.VeilarbPepFactory;
-import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
@@ -13,7 +10,6 @@ import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
-import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
@@ -23,12 +19,8 @@ import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import java.net.http.HttpClient;
 import java.util.function.Supplier;
-
-import static no.nav.common.utils.NaisUtils.getCredentials;
-
 
 @Configuration
 public class ClientConfig {
@@ -61,17 +53,6 @@ public class ClientConfig {
                 authService,
                 () -> tokenClient.createMachineToMachineToken(environmentProperties.getVeilarbvedtaksstotteScope()),
                 environmentProperties
-        );
-    }
-
-    @Bean
-    public Pep veilarbPep(EnvironmentProperties properties) {
-        Credentials serviceUserCredentials = getCredentials("service_user");
-        return VeilarbPepFactory.get(
-                properties.getAbacVeilarbUrl(),
-                serviceUserCredentials.username,
-                serviceUserCredentials.password,
-                new SpringAuditRequestInfoSupplier()
         );
     }
 
