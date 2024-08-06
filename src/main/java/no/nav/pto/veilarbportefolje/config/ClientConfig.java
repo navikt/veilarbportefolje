@@ -19,10 +19,8 @@ import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import java.net.http.HttpClient;
 import java.util.function.Supplier;
-
 
 @Configuration
 public class ClientConfig {

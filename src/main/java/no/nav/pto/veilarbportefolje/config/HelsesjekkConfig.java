@@ -9,9 +9,7 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchHealthCheck;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-
 import java.util.List;
-
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchHealthCheck.FORVENTET_MINIMUM_ANTALL_DOKUMENTER;
 
 @Configuration
@@ -19,7 +17,7 @@ public class HelsesjekkConfig {
 
     @Bean
     public SelfTestChecks selfTestChecks(AktorClient aktorClient,
-                                         JdbcTemplate jdbcTemplate,
+                                          JdbcTemplate jdbcTemplate,
                                          OpensearchHealthCheck opensearchHealthCheck) {
         List<SelfTestCheck> asyncSelftester = List.of(
                 new SelfTestCheck(String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, opensearchHealthCheck),

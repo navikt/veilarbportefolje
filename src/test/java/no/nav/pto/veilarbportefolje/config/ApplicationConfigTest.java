@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import io.getunleash.DefaultUnleash;
-import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
@@ -10,7 +9,6 @@ import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
-import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
@@ -332,23 +330,6 @@ public class ApplicationConfigTest {
     @Bean
     public AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient() {
         return mock(AzureAdMachineToMachineTokenClient.class);
-    }
-
-    @Bean
-    public Pep pep() {
-        Pep pep = mock(Pep.class);
-        when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(false);
-        when(pep.harTilgangTilEnhet(any(), any())).thenReturn(false);
-        when(pep.harTilgangTilEnhetMedSperre(anyString(), any())).thenReturn(false);
-        when(pep.harTilgangTilEnhetMedSperre(any(NavIdent.class), any())).thenReturn(false);
-        when(pep.harVeilederTilgangTilPerson(any(), any(), any())).thenReturn(false);
-        when(pep.harTilgangTilPerson(any(), any(), any())).thenReturn(false);
-        when(pep.harTilgangTilOppfolging(any())).thenReturn(false);
-        when(pep.harVeilederTilgangTilModia(any())).thenReturn(false);
-        when(pep.harVeilederTilgangTilKode6(any())).thenReturn(false);
-        when(pep.harVeilederTilgangTilKode7(any())).thenReturn(false);
-        when(pep.harVeilederTilgangTilEgenAnsatt(any())).thenReturn(false);
-        return mock(Pep.class);
     }
 
     @Bean
