@@ -44,11 +44,10 @@ public class AktiviteterRepositoryV2 {
         if (aktivitet.isHistorisk()) {
             deleteById(aktivitet.getAktivitetId());
             return true;
-        } else if (erNyVersjonAvAktivitet(aktivitet)) {
+        } else {
             upsertAktivitet(aktivitet);
             return true;
         }
-        return false;
     }
 
     public void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
