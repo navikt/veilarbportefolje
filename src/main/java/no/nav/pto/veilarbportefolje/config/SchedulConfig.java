@@ -79,6 +79,7 @@ public class SchedulConfig {
 
     @PostConstruct
     public void start() {
+        log.info("STARTING SCHEDULER..");
         scheduler.start();
     }
 }
