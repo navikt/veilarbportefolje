@@ -436,6 +436,20 @@ CREATE TABLE public.fargekategori_kopi_2024_01_16 (
 
 
 --
+-- Name: fargekategori_kopi_2024_06_13; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.fargekategori_kopi_2024_06_13 (
+    id uuid,
+    fnr character varying(11),
+    verdi character varying(25),
+    sist_endret timestamp without time zone,
+    sist_endret_av_veilederident character varying(7),
+    enhet_id character varying(4)
+);
+
+
+--
 -- Name: flyway_schema_history; Type: TABLE; Schema: public; Owner: -
 --
 

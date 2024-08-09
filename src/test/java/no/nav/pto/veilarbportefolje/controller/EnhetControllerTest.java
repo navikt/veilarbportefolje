@@ -2,16 +2,12 @@ package no.nav.pto.veilarbportefolje.controller;
 
 import io.getunleash.DefaultUnleash;
 import lombok.SneakyThrows;
-import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
-import no.nav.common.types.identer.EnhetId;
-import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
@@ -37,7 +33,6 @@ public class EnhetControllerTest {
 
     private OpensearchService opensearchService;
     private EnhetController enhetController;
-    private Pep pep;
     private PoaoTilgangWrapper poaoTilgangWrapper;
     private AuthContextHolder authContextHolder;
 
@@ -46,7 +41,6 @@ public class EnhetControllerTest {
     @Before
     public void initController() {
         opensearchService = mock(OpensearchService.class);
-        pep = mock(Pep.class);
         poaoTilgangWrapper = mock(PoaoTilgangWrapper.class);
         authContextHolder = AuthContextHolderThreadLocal.instance();
         defaultUnleash = mock(DefaultUnleash.class);
@@ -54,9 +48,7 @@ public class EnhetControllerTest {
         AuthService authService = new AuthService(
                 mock(AzureAdOnBehalfOfTokenClient.class),
                 mock(AzureAdMachineToMachineTokenClient.class),
-                poaoTilgangWrapper,
-                pep,
-                mock(MetricsClient.class)
+                poaoTilgangWrapper
         );
         enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(PersonOpprinnelseService.class), mock(BostedService.class));
     }
@@ -65,7 +57,7 @@ public class EnhetControllerTest {
     @SneakyThrows
     public void skal_hent_portefolje_fra_indeks_dersom_tilgang() {
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
-        when(pep.harVeilederTilgangTilEnhet(any(NavIdent.class), any(EnhetId.class))).thenReturn(true);
+        when(poaoTilgangWrapper.harVeilederTilgangTilEnhet(any())).thenReturn(Decision.Permit.INSTANCE);
         when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
 
         authContextHolder.withContext(
@@ -77,7 +69,7 @@ public class EnhetControllerTest {
 
     @Test
     public void skal_hente_hele_portefolje_fra_indeks_dersom_man_mangle_antall() {
-        when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
+        when(poaoTilgangWrapper.harVeilederTilgangTilEnhet(any())).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
         when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
 
@@ -90,7 +82,7 @@ public class EnhetControllerTest {
 
     @Test
     public void skal_hente_hele_portefolje_fra_indeks_dersom_man_mangle_fra() {
-        when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
+        when(poaoTilgangWrapper.harVeilederTilgangTilEnhet(any())).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
         when(opensearchService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
         authContextHolder

@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
-import no.nav.common.abac.VeilarbPep;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.client.Decision;
@@ -49,9 +48,6 @@ public class ArbeidslisteV2ControllerTest {
     private PoaoTilgangWrapper poaoTilgangWrapper;
 
     @MockBean
-    private VeilarbPep veilarbPep;
-
-    @MockBean
     private BrukerServiceV2 brukerService;
 
     @MockBean
@@ -77,8 +73,6 @@ public class ArbeidslisteV2ControllerTest {
 
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(Decision.Permit.INSTANCE);
-        when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-        when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentNavKontor(fnr)).thenReturn(Optional.of(NavKontor.of("1234")));
         when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
