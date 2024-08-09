@@ -1,10 +1,10 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -14,7 +14,6 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import jakarta.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 import static no.nav.pto.veilarbportefolje.util.DbUtils.createDataSource;
@@ -32,11 +31,6 @@ public class DbConfigPostgres {
         return createDataSource(environmentProperties.getDbUrl());
     }
 
-    @Bean("PostgresReadOnly")
-    public DataSource dataSourceRead() {
-        return createDataSource(environmentProperties.getDbUrl());
-    }
-
     @Bean
     @Primary
     public JdbcTemplate db(DataSource dataSource) {
@@ -44,12 +38,12 @@ public class DbConfigPostgres {
     }
 
     @Bean(name = "PostgresJdbcReadOnly")
-    public JdbcTemplate dbRead(@Qualifier("PostgresReadOnly") DataSource dataSource) {
+    public JdbcTemplate dbRead(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
     @Bean(name = "PostgresNamedJdbcReadOnly")
-    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(@Qualifier("PostgresReadOnly") DataSource dataSource) {
+    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
     }
 
