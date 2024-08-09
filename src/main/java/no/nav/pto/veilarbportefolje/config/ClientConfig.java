@@ -26,6 +26,7 @@ import java.util.function.Supplier;
 public class ClientConfig {
 
     static final String APPLICATION_NAME = "veilarbportefolje";
+
     @Bean
     public PoaoTilgangWrapper poaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
         return new PoaoTilgangWrapper(authContextHolder, tokenClient, environmentProperties);

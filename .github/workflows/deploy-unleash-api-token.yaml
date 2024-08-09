@@ -5,6 +5,7 @@ on:
     branches:
       - dev
       - master
+      - bytte-namespace-pto-obo
     paths:
       - '.github/workflows/deploy-unleash-api-token.yaml'
       - '.nais/application/unleash-apitoken-dev.yaml'
@@ -23,7 +24,7 @@ jobs:
       - name: Deploy unleash-apitoken
         uses: nais/deploy/actions/deploy@v2
         env:
-          CLUSTER: dev-fss
+          CLUSTER: dev-gcp
           RESOURCE: .nais/application/unleash-apitoken-dev.yaml
           PRINT_PAYLOAD: true
 

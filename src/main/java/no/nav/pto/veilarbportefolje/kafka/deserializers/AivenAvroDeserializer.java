@@ -8,7 +8,7 @@ import org.apache.kafka.common.serialization.Deserializer;
 import java.util.Map;
 
 public class AivenAvroDeserializer<T> {
-    private static final String KAFKA_SCHEMAS_URL = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMAS_URL");
+    private static final String KAFKA_SCHEMAS_URL = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMA_REGISTRY");
 
     public Deserializer<T> getDeserializer() {
         Deserializer<T> avroDeserializer = Deserializers.aivenAvroDeserializer();

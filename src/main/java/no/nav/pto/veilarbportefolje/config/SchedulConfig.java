@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalTime;
@@ -43,7 +44,7 @@ public class SchedulConfig {
     public SchedulConfig(DataSource dataSource,
                          HovedIndekserer hovedIndekserer,
                          AktivitetService aktivitetService,
-                         YtelsesService ytelsesService, BarnUnder18AarService barnUnder18AarService) {
+                         YtelsesService ytelsesService, BarnUnder18AarService barnUnder18AarService) throws SQLException {
         this.hovedIndekserer = hovedIndekserer;
         this.aktivitetService = aktivitetService;
         this.ytelsesService = ytelsesService;

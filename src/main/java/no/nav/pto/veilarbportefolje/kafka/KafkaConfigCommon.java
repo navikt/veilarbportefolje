@@ -501,9 +501,9 @@ public class KafkaConfigCommon {
 
     @PostConstruct
     public void start() {
-        consumerRecordProcessor.start();
-        consumerClientAiven.forEach(KafkaConsumerClient::start);
-        consumerClientAivenSiste14a.start();
+        //consumerRecordProcessor.start();
+        //consumerClientAiven.forEach(KafkaConsumerClient::start);
+        //consumerClientAivenSiste14a.start();
     }
 
 

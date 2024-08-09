@@ -3,9 +3,9 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: veilarbportefolje
-  namespace: pto
+  namespace: obo
   labels:
-    team: pto
+    team: obo
 spec:
   image: {{image}}
   replicas:
@@ -14,23 +14,14 @@ spec:
     cpuThresholdPercentage: 50
   port: 8080
   ingresses:
-    - https://veilarbportefolje.dev.intern.nav.no
-    - https://veilarbportefolje.dev-fss-pub.nais.io
+    - https://veilarbportefolje.intern.dev.nav.no
   webproxy: true
   leaderElection: true
   secureLogs:
     enabled: true
   kafka:
     pool: nav-dev
-  vault:
-    enabled: true
-    paths:
-      - kvPath: /serviceuser/data/dev/srvveilarbportefolje
-        mountPath: /var/run/secrets/nais.io/service_user
-      - kvPath: /kv/preprod/fss/veilarbportefolje/q1
-        mountPath: /var/run/secrets/nais.io/vault
   envFrom:
-    - configmap: pto-config
     - secret: veilarbportefolje-unleash-api-token
   liveness:
     path: veilarbportefolje/internal/isAlive
@@ -46,6 +37,12 @@ spec:
   openSearch:
     access: admin
     instance: veilarbportefolje
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_15
+        databases:
+          - name: veilarbportefolje
+            envVarPrefix: DB
   azure:
     application:
       allowAllUsers: true
