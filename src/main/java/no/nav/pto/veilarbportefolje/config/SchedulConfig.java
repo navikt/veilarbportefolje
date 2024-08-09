@@ -50,8 +50,6 @@ public class SchedulConfig {
         this.ytelsesService = ytelsesService;
         this.barnUnder18AarService = barnUnder18AarService;
 
-        log.info("DB source: " + dataSource.getConnection().getMetaData().getURL());
-
         List<RecurringTask<?>> jobber = nattligeJobber();
         scheduler = Scheduler
                 .create(dataSource)
@@ -82,7 +80,6 @@ public class SchedulConfig {
 
     @PostConstruct
     public void start() {
-        log.info("STARTING SCHEDULER..");
         scheduler.start();
     }
 }

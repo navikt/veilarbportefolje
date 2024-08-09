@@ -11,7 +11,7 @@ public class DbUtils {
 
     public static DataSource createDataSource(String dbUrl) {
         try {
-            HikariConfig config = createDataSourceConfig(dbUrl, 10);
+            HikariConfig config = createDataSourceConfig(dbUrl, 7);
             return new HikariDataSource(config);
         } catch (Exception e) {
             log.error("Datasource error: " + e, e);
