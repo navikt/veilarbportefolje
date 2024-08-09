@@ -26,6 +26,7 @@ public class DbConfigPostgres {
     private final EnvironmentProperties environmentProperties;
 
     @Bean
+    @Primary
     public DataSource dataSource() {
         return createDataSource(environmentProperties.getDbUrl());
     }
