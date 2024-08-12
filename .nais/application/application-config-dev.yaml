@@ -67,6 +67,21 @@ spec:
           namespace: aura
           cluster: dev-gcp
     outbound:
+      rules:
+        - application: kodeverk-api
+          namespace: team-rocket
+        - application: pdl-api
+          namespace: pdl
+          cluster: dev-fss
+        - application: veilarbvedtaksstotte
+          namespace: pto
+          cluster: dev-fss
+        - application: veilarbarena
+          namespace: pto
+          cluster: dev-fss
+        - application: veilarbveileder
+          namespace: pto
+          cluster: dev-fss
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
   resources:
