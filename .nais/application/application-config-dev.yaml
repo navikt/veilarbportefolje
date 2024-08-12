@@ -82,6 +82,8 @@ spec:
         - application: veilarbveileder
           namespace: pto
           cluster: dev-fss
+        - application: poao-tilgang
+          namespace: poao
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
