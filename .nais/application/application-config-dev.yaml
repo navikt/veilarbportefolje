@@ -84,6 +84,11 @@ spec:
           cluster: dev-fss
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
+        - host: pdl-api.dev-fss-pub.nais.io
+        - host: veilarboppfolging.dev-fss-pub.nais.io
+        - host: veilarbvedtaksstotte.dev-fss-pub.nais.io
+        - host: veilarbveileder.dev-fss-pub.nais.io
+        - host: veilarbarena.dev-fss-pub.nais.io
   resources:
     limits:
       cpu: "4"
@@ -95,34 +100,34 @@ spec:
     - name: JAVA_OPTS
       value: "-Xms4098m -Xmx8096m --illegal-access=permit --add-opens=java.base/java.lang=ALL-UNNAMED"
     - name: VEILARBOPPFOLGING_URL
-      value: "http://veilarboppfolging.pto.svc.nais.local/veilarboppfolging"
+      value: "https://veilarboppfolging.dev-fss-pub.nais.io/veilarboppfolging"
     - name: VEILARBOPPFOLGING_TOKEN_SCOPE
       value: "api://dev-fss.pto.veilarboppfolging/.default"
     - name: VEILARBVEDTAKSSTOTTE_URL
-      value: "http://veilarbvedtaksstotte.pto.svc.nais.local/veilarbvedtaksstotte"
+      value: "https://veilarbvedtaksstotte.dev-fss-pub.nais.io/veilarbvedtaksstotte"
     - name: VEILARBVEDTAKSSTOTTE_TOKEN_SCOPE
       value: "api://dev-fss.pto.veilarbvedtaksstotte/.default"
     - name: VEILARBVEILEDER_URL
-      value: "http://veilarbveileder.pto.svc.nais.local/veilarbveileder"
+      value: "https://veilarbveileder.dev-fss-pub.nais.io/veilarbveileder"
     - name: VEILARBVEILEDER_TOKEN_SCOPE
       value: "api://dev-fss.pto.veilarbveileder/.default"
     - name: VEILARBARENA_URL
-      value: "http://veilarbarena.pto.svc.nais.local/veilarbarena"
+      value: "https://veilarbarena.dev-fss-pub.nais.io/veilarbarena"
     - name: VEILARBARENA_TOKEN_SCOPE
       value: "api://dev-fss.pto.veilarbarena/.default"
     - name: PDL_URL
-      value: "http://pdl-api.pdl.svc.nais.local"
+      value: "https://pdl-api.dev-fss-pub.nais.io"
     - name: PDL_TOKEN_SCOPE
       value: "api://dev-fss.pdl.pdl-api/.default"
     - name: POAO_TILGANG_URL
-      value: "http://poao-tilgang.poao.svc.nais.local"
+      value: "http://poao-tilgang.poao"
     - name: POAO_TILGANG_TOKEN_SCOPE
-      value: "api://dev-fss.poao.poao-tilgang/.default"
+      value: "api://dev-gcp.poao.poao-tilgang/.default"
     - name: KODEVERK_URL
       value: "http://kodeverk-api.team-rocket"
     - name: KODEVERK_SCOPE
       value: "api://dev-gcp.team-rocket.kodeverk-api/.default"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_URL
-      value: "https://oppslag-arbeidssoekerregisteret.intern.dev.nav.no"
+      value: "http://paw-arbeidssoekerregisteret-api-oppslag.paw"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_SCOPE
       value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
