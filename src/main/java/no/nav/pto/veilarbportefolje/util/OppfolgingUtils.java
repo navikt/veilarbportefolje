@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import no.nav.arbeid.soker.profilering.ProfilertTil;
+import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil;
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
 
 import java.util.List;

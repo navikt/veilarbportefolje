@@ -111,6 +111,22 @@ CREATE TABLE public.arbeidsliste_kopi_2024_01_16 (
 
 
 --
+-- Name: arbeidsliste_kopi_2024_06_13; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.arbeidsliste_kopi_2024_06_13 (
+    aktoerid character varying(20),
+    sist_endret_av_veilederident character varying(20),
+    kommentar character varying(1000),
+    frist timestamp without time zone,
+    endringstidspunkt timestamp without time zone,
+    overskrift character varying(500),
+    kategori character varying(10),
+    nav_kontor_for_arbeidsliste character varying(24)
+);
+
+
+--
 -- Name: bruker_cv; Type: TABLE; Schema: public; Owner: -
 --
 
