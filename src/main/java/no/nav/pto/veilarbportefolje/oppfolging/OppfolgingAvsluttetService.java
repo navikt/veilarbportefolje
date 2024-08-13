@@ -5,8 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.ArbeidssokerRegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
@@ -33,8 +32,6 @@ public class OppfolgingAvsluttetService {
     private final ArbeidslisteService arbeidslisteService;
     private final HuskelappService huskelappService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-    private final ArbeidssokerRegistreringService arbeidssokerRegistreringService;
-    private final EndringIArbeidssokerRegistreringService endringIArbeidssokerRegistreringService;
     private final CVRepositoryV2 cvRepositoryV2;
     private final PdlService pdlService;
     private final OpensearchIndexerV2 opensearchIndexerV2;
@@ -45,13 +42,15 @@ public class OppfolgingAvsluttetService {
     private final FargekategoriService fargekategoriService;
     private final OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2;
     private final ArbeidssoekerService arbeidssoekerService;
+    private final ArbeidssokerRegistreringRepositoryV2 arbeidssokerRegistreringRepositoryV2;
 
     public void avsluttOppfolging(AktorId aktoerId) {
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));
 
         oppfolgingRepositoryV2.slettOppfolgingData(aktoerId);
-        arbeidssokerRegistreringService.slettRegistering(aktoerId);
-        endringIArbeidssokerRegistreringService.slettEndringIRegistering(aktoerId);
+        arbeidssokerRegistreringRepositoryV2.slettBrukerRegistrering(aktoerId);
+        arbeidssokerRegistreringRepositoryV2.slettBrukerProfilering(aktoerId);
+        arbeidssokerRegistreringRepositoryV2.slettEndringIRegistrering(aktoerId);
         arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr);
         huskelappService.sletteAlleHuskelapperPaaBruker(aktoerId, maybeFnr);
         sisteEndringService.slettSisteEndringer(aktoerId);

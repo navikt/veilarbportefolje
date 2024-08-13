@@ -3,9 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
-import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity;
@@ -47,31 +45,6 @@ public class OpensearchIndexerV2 {
     private final IndexName indexName;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final RestHighLevelClient restHighLevelClient;
-
-    @SneakyThrows
-    public void updateRegistering(AktorId aktoerId, ArbeidssokerRegistrertEvent arbeidssokerRegistrertEvent) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .field("brukers_situasjoner", List.of(arbeidssokerRegistrertEvent.getBrukersSituasjon()))
-                .field("utdanning", arbeidssokerRegistrertEvent.getUtdanning())
-                .field("utdanning_bestatt", arbeidssokerRegistrertEvent.getUtdanningBestatt())
-                .field("utdanning_godkjent", arbeidssokerRegistrertEvent.getUtdanningGodkjent())
-                .field("brukers_situasjon_sist_endret", toLocalDateOrNull(arbeidssokerRegistrertEvent.getRegistreringOpprettet()))
-                .endObject();
-
-        update(aktoerId, content, "Oppdater registrering");
-    }
-
-    @SneakyThrows
-    public void updateEndringerIRegistering(AktorId aktoerId, ArbeidssokerBesvarelseEvent endringIRegistreringsdataEvent) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .field("brukers_situasjoner", List.of(endringIRegistreringsdataEvent.getBesvarelse().getDinSituasjon().getVerdi()))
-                .field("brukers_situasjon_sist_endret", endringIRegistreringsdataEvent.getBesvarelse().getDinSituasjon().getEndretTidspunkt())
-                .endObject();
-
-        update(aktoerId, content, "Oppdater endring i registrering");
-    }
 
     @SneakyThrows
     public void updateOpplysningerOmArbeidssoeker(AktorId aktoerId, OpplysningerOmArbeidssoekerEntity opplysningerOmArbeidssoeker) {
