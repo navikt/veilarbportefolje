@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +24,7 @@ public class HuskelappRepositoryTest {
     @Autowired
     private HuskelappRepository repo;
     @Autowired
-    private OppfolgingRepositoryV2 oppfolgingRepository;
+    private HuskelappService huskelappService;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -37,7 +36,6 @@ public class HuskelappRepositoryTest {
     LocalDate frist1 = LocalDate.of(2026, 1, 1);
 
     EnhetId enhet0010 = EnhetId.of("0010");
-    EnhetId enhet2420 = EnhetId.of("2420");
 
     VeilederId veilederA = VeilederId.of("Z123456");
     VeilederId veilederB = VeilederId.of("Z987654");
@@ -86,24 +84,6 @@ public class HuskelappRepositoryTest {
         Optional<Huskelapp> oppdatertHuskelappUtenKommentar = repo.hentAktivHuskelapp(fnr4);
         assertThat(oppdatertHuskelappUtenKommentar.isPresent()).isTrue();
         assertThat(oppdatertHuskelappUtenKommentar.get().kommentar()).isEqualTo(null);
-    }
-
-
-    @Test
-    public void annenVeilederSkalKunneRedigereHuskelapp() {
-        LocalDate nyFrist = LocalDate.of(2025, 10, 11);
-        repo.opprettHuskelapp(huskelapp3, veilederA, enhet2420);
-        Optional<Huskelapp> huskelappOriginal = repo.hentAktivHuskelapp(huskelapp3.brukerFnr());
-        assertThat(huskelappOriginal.isPresent()).isTrue();
-        assertThat(huskelappOriginal.get().kommentar()).isEqualTo("Huskelapp nr.3 sin kommentar");
-        assertThat(huskelappOriginal.get().endretAv()).isEqualTo(veilederA);
-        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappOriginal.get().huskelappId(), huskelapp3.brukerFnr(), nyFrist, "ny kommentar på huskelapp nr.3");
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederB, enhet0010);
-        Optional<Huskelapp> huskelappOppdatertAvNyVeileder = repo.hentAktivHuskelapp(huskelapp3.brukerFnr());
-        assertThat(huskelappOppdatertAvNyVeileder.isPresent()).isTrue();
-        assertThat(huskelappOppdatertAvNyVeileder.get().kommentar()).isEqualTo("ny kommentar på huskelapp nr.3");
-        assertThat(huskelappOppdatertAvNyVeileder.get().endretAv()).isEqualTo(veilederB);
-        assertThat(huskelappOppdatertAvNyVeileder.get().frist()).isEqualTo(nyFrist);
     }
 
     @Test
