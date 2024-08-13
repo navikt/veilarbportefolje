@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
-import no.nav.common.abac.VeilarbPep;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
@@ -84,8 +83,6 @@ class ArbeidslisteIntegrationTest {
     private AuthService authService;
     @MockBean
     private PoaoTilgangWrapper poaoTilgangWrapper;
-    @MockBean
-    private VeilarbPep veilarbPep;
     @MockBean
     private BrukerServiceV2 brukerService;
     @MockBean
@@ -707,8 +704,6 @@ class ArbeidslisteIntegrationTest {
 
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(Decision.Permit.INSTANCE);
-        when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-        when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         Mockito.doNothing().when(authService).innloggetVeilederHarTilgangTilOppfolging();
         when(brukerService.hentVeilederForBruker(AktorId.of(TEST_AKTORID))).thenReturn(Optional.of(VeilederId.of(

@@ -6,15 +6,10 @@ import io.vavr.Tuple;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.abac.Pep;
-import no.nav.common.abac.domain.request.ActionId;
-import no.nav.common.metrics.Event;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -30,7 +25,6 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetBrukerToken;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetVeilederIdent;
-import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Service
 @Slf4j
@@ -38,23 +32,17 @@ public class AuthService {
     private final AzureAdOnBehalfOfTokenClient aadOboTokenClient;
     private final AzureAdMachineToMachineTokenClient aadM2MTokenClient;
     private final PoaoTilgangWrapper poaoTilgangWrapper;
-    private final Pep veilarbPep;
     private final Cache<VeilederPaEnhet, Boolean> harVeilederTilgangTilEnhetCache;
-    private final MetricsClient metricsClient;
 
     @Autowired
     public AuthService(
             AzureAdOnBehalfOfTokenClient aadOboTokenClient,
             AzureAdMachineToMachineTokenClient aadM2MTokenClient,
-            PoaoTilgangWrapper poaoTilgangWrapper,
-            Pep veilarbPep,
-            MetricsClient metricsClient
+            PoaoTilgangWrapper poaoTilgangWrapper
     ) {
         this.aadOboTokenClient = aadOboTokenClient;
         this.aadM2MTokenClient = aadM2MTokenClient;
         this.poaoTilgangWrapper = poaoTilgangWrapper;
-        this.veilarbPep = veilarbPep;
-        this.metricsClient = metricsClient;
         this.harVeilederTilgangTilEnhetCache = Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(6000)
@@ -74,30 +62,31 @@ public class AuthService {
     }
 
     public boolean harVeilederTilgangTilEnhet(String veilederId, String enhet) {
-        Boolean abacResponse = tryCacheFirst(harVeilederTilgangTilEnhetCache, new VeilederPaEnhet(veilederId, enhet),
-                () -> veilarbPep.harVeilederTilgangTilEnhet(NavIdent.of(veilederId), EnhetId.of(enhet)));
-        poaoTilgangWrapper.harVeilederTilgangTilEnhet(EnhetId.of(enhet));
-        return abacResponse;
+        return tryCacheFirst(
+                harVeilederTilgangTilEnhetCache,
+                new VeilederPaEnhet(veilederId, enhet),
+                poaoTilgangWrapper.harVeilederTilgangTilEnhet(EnhetId.of(enhet))::isPermit
+        );
     }
 
     public void innloggetVeilederHarTilgangTilBruker(String fnr) {
-        boolean abacResponse = veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, Fnr.of(fnr));
-        poaoTilgangWrapper.harTilgangTilPerson(Fnr.of(fnr));
-        AuthUtils.test("tilgangTilBruker", fnr, abacResponse);
+        boolean response = poaoTilgangWrapper.harTilgangTilPerson(Fnr.of(fnr)).isPermit();
+        AuthUtils.test("tilgangTilBruker", fnr, response);
     }
 
     public List<Bruker> sensurerBrukere(List<Bruker> brukere) {
-        String veilederIdent = getInnloggetVeilederIdent().toString();
         return brukere.stream()
-                .map(bruker -> fjernKonfidensiellInfoDersomIkkeTilgang(bruker, veilederIdent))
+                .map(this::fjernKonfidensiellInfoDersomIkkeTilgang)
                 .collect(toList());
     }
 
-    public Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String veilederIdent) {
+    public Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker) {
         if (bruker.getBarnUnder18AarData() != null) {
-            bruker.setBarnUnder18AarData(bruker.getBarnUnder18AarData().stream().filter(barnUnder18AarData ->
-                    harVeilederTilgangTilBarn(barnUnder18AarData, veilederIdent)
-            ).toList());
+            bruker.setBarnUnder18AarData(
+                    bruker.getBarnUnder18AarData().stream().filter(
+                            this::harVeilederTilgangTilBarn
+                    ).toList()
+            );
         }
 
         if (!bruker.erKonfidensiell()) {
@@ -106,62 +95,36 @@ public class AuthService {
 
         String diskresjonskode = bruker.getDiskresjonskode();
 
-        if (Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode6(NavIdent.of(veilederIdent))) {
+        if (Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode6()) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
-        if (Adressebeskyttelse.FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode7(NavIdent.of(veilederIdent))) {
+        if (Adressebeskyttelse.FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode7()) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
-        if (bruker.isEgenAnsatt() && !harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederIdent))) {
+        if (bruker.isEgenAnsatt() && !harVeilederTilgangTilEgenAnsatt()) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
         return bruker;
     }
 
-    public boolean harVeilederTilgangTilKode6(NavIdent veilederIdent) {
-        boolean abacResponse = veilarbPep.harVeilederTilgangTilKode6(veilederIdent);
-        Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode6();
-        if (decision.isPermit() != abacResponse) {
-            metricsClient.report(new Event("poao-tilgang-diff").addTagToReport("method", "harVeilederTilgangTilKode6"));
-            secureLog.warn("Fortrolig diff between abac and poao-tilgang for veileder. Poao-tilgang decision is: " + decision.isPermit());
-        }
-        return abacResponse;
-    }
-
     public boolean harVeilederTilgangTilKode6() {
-        String veilederIdent = getInnloggetVeilederIdent().toString();
-        return harVeilederTilgangTilKode6(NavIdent.of(veilederIdent));
-    }
-
-    public boolean harVeilederTilgangTilKode7(NavIdent veilederIdent) {
-        boolean abacResponse = veilarbPep.harVeilederTilgangTilKode7(veilederIdent);
-        Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode7();
-        if (decision.isPermit() != abacResponse) {
-            metricsClient.report(new Event("poao-tilgang-diff").addTagToReport("method", "harVeilederTilgangTilKode7"));
-            secureLog.warn("Streng diff between abac and poao-tilgang for veileder. Poao-tilgang decision is: " + decision.isPermit());
-        }
-        return abacResponse;
+        Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode6();
+        return decision.isPermit();
     }
 
     public boolean harVeilederTilgangTilKode7() {
-        String veilederIdent = getInnloggetVeilederIdent().toString();
-        return harVeilederTilgangTilKode7(NavIdent.of(veilederIdent));
+        Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode7();
+        return decision.isPermit();
     }
 
-    public boolean harVeilederTilgangTilEgenAnsatt(NavIdent veilederIdent) {
-        boolean abacResponse = veilarbPep.harVeilederTilgangTilEgenAnsatt(veilederIdent);
-        Decision decision = poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt();
-        if (decision.isPermit() != abacResponse) {
-            secureLog.warn("Diff between abac and poao-tilgang for veileder: " + veilederIdent + ". Poao-tilgang decision is: " + decision.isPermit());
-        }
-        return abacResponse;
+    public boolean harVeilederTilgangTilEgenAnsatt() {
+        return poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt().isPermit();
     }
 
     public BrukerinnsynTilganger hentVeilederBrukerInnsynTilganger() {
-        String veilederId = getInnloggetVeilederIdent().toString();
-        boolean tilgangTilAdressebeskyttelseStrengtFortrolig = harVeilederTilgangTilKode6(NavIdent.of(veilederId));
-        boolean tilgangTilAdressebeskyttelseFortrolig = harVeilederTilgangTilKode7(NavIdent.of(veilederId));
-        boolean tilgangEgenAnsatt = harVeilederTilgangTilEgenAnsatt(NavIdent.of(veilederId));
+        boolean tilgangTilAdressebeskyttelseStrengtFortrolig = harVeilederTilgangTilKode6();
+        boolean tilgangTilAdressebeskyttelseFortrolig = harVeilederTilgangTilKode7();
+        boolean tilgangEgenAnsatt = harVeilederTilgangTilEgenAnsatt();
 
         return new BrukerinnsynTilganger(tilgangTilAdressebeskyttelseStrengtFortrolig, tilgangTilAdressebeskyttelseFortrolig, tilgangEgenAnsatt);
     }
@@ -174,13 +137,13 @@ public class AuthService {
         return aadM2MTokenClient.createMachineToMachineToken(tokenScope);
     }
 
-    public boolean harVeilederTilgangTilBarn(BarnUnder18AarData barn, String veilederIdent) {
+    public boolean harVeilederTilgangTilBarn(BarnUnder18AarData barn) {
         if (barn.getDiskresjonskode() != null && (barn.getDiskresjonskode().equals(Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode)
                 || barn.getDiskresjonskode().equals(Adressebeskyttelse.STRENGT_FORTROLIG_UTLAND.diskresjonskode))) {
-            return harVeilederTilgangTilKode6(NavIdent.of(veilederIdent));
+            return harVeilederTilgangTilKode6();
         }
         if (barn.getDiskresjonskode() != null && barn.getDiskresjonskode().equals(Adressebeskyttelse.FORTROLIG.diskresjonskode)) {
-            return harVeilederTilgangTilKode7(NavIdent.of(veilederIdent));
+            return harVeilederTilgangTilKode7();
         }
         return true;
     }

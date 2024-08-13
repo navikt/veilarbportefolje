@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.huskelapp;
 
-import no.nav.common.abac.VeilarbPep;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -57,9 +56,6 @@ public class HuskelappControllerTest {
     private PoaoTilgangWrapper poaoTilgangWrapper;
 
     @MockBean
-    private VeilarbPep veilarbPep;
-
-    @MockBean
     private BrukerServiceV2 brukerService;
 
     @Autowired
@@ -74,7 +70,6 @@ public class HuskelappControllerTest {
         LocalDate huskelappfrist = LocalDate.now();
         testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, NavKontor.of(enhetId.get()), veilederId);
 
-        when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
         when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
@@ -127,8 +122,6 @@ public class HuskelappControllerTest {
 
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(Decision.Permit.INSTANCE);
-        when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-        when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
         when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
@@ -203,7 +196,6 @@ public class HuskelappControllerTest {
         HuskelappOpprettRequest opprettRequest = new HuskelappOpprettRequest(fnr, null, null);
         testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, NavKontor.of(enhetId.get()), veilederId);
 
-        when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(veilederId));
         when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
@@ -237,8 +229,6 @@ public class HuskelappControllerTest {
 
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(Decision.Permit.INSTANCE);
-        when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-        when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(brukerService.hentVeilederForBruker(aktorId)).thenReturn(Optional.of(AuthUtils.getInnloggetVeilederIdent()));
         when(brukerService.hentAktorId(fnr)).thenReturn(Optional.of(aktorId));
