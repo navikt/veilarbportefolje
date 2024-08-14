@@ -6,8 +6,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.arbeid.cv.avro.Melding;
-import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
-import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
@@ -19,12 +17,8 @@ import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering;
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker;
-import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.profilering.ArbeidssokerProfileringService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerProfileringKafkaMeldingService;
@@ -104,12 +98,6 @@ public class KafkaConfigCommon {
         OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
 
         // Arbeidssøkerregisteret
-        AIVEN_REGISTRERING_TOPIC("paw.arbeidssoker-registrert-v1"),
-
-        AIVEN_PROFILERING_TOPIC("paw.arbeidssoker-profilert-v1"),
-
-        ENRING_I_REGISTRERINGSDATA_TOPIC("paw.arbeidssoker-besvarelse-v2"),
-
         ARBEIDSSOKERPERIODER_TOPIC("paw.arbeidssokerperioder-v1"),
 
         OPPLYSNINGER_OM_ARBEIDSSOEKER_TOPIC("paw.opplysninger-om-arbeidssoeker-v1"),
@@ -149,9 +137,7 @@ public class KafkaConfigCommon {
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
-                             SistLestService sistLestService, ArbeidssokerRegistreringService arbeidssokerRegistreringService,
-                             EndringIArbeidssokerRegistreringService endringIArbeidssokerRegistreringService,
-                             ArbeidssokerProfileringService arbeidssokerProfileringService, AktivitetService aktivitetService,
+                             SistLestService sistLestService, AktivitetService aktivitetService,
                              Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
                              DialogService dialogService, ManuellStatusService manuellStatusService,
                              NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
@@ -206,36 +192,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(TiltakDTO.class),
                                         tiltakService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerRegistrertEvent>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.AIVEN_REGISTRERING_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        new AivenAvroDeserializer<ArbeidssokerRegistrertEvent>().getDeserializer(),
-                                        arbeidssokerRegistreringService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerBesvarelseEvent>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.ENRING_I_REGISTRERINGSDATA_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        new AivenAvroDeserializer<ArbeidssokerBesvarelseEvent>().getDeserializer(),
-                                        endringIArbeidssokerRegistreringService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, ArbeidssokerProfilertEvent>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.AIVEN_PROFILERING_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        new AivenAvroDeserializer<ArbeidssokerProfilertEvent>().getDeserializer(),
-                                        arbeidssokerProfileringService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, Periode>()
                                 .withLogging()

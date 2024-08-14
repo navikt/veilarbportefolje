@@ -15,10 +15,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringRepositoryV2;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringRepository;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.endring.EndringIArbeidssokerRegistreringService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.ArbeidssokerRegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
@@ -113,7 +110,6 @@ import static org.mockito.Mockito.when;
         ArbeidslisteService.class,
         BrukerServiceV2.class,
         BrukerRepositoryV2.class,
-        ArbeidssokerRegistreringService.class,
         AktivitetService.class,
         OppfolgingAvsluttetService.class,
         OpensearchService.class,
@@ -166,8 +162,6 @@ import static org.mockito.Mockito.when;
         BarnUnder18AarRepository.class,
         BarnUnder18AarService.class,
         AuthService.class,
-        EndringIArbeidssokerRegistreringService.class,
-        EndringIArbeidssokerRegistreringRepository.class,
         HuskelappService.class,
         HuskelappRepository.class,
         FargekategoriService.class,
@@ -194,9 +188,9 @@ public class ApplicationConfigTest {
     @Bean
     public TestDataClient dbTestClient(JdbcTemplate jdbcTemplatePostgres,
                                        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2,
-                                       ArbeidssokerRegistreringRepositoryV2 arbeidssokerRegistreringRepositoryV2, OpensearchTestClient opensearchTestClient,
+                                       OpensearchTestClient opensearchTestClient,
                                        OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository) {
-        return new TestDataClient(jdbcTemplatePostgres, arbeidssokerRegistreringRepositoryV2, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlIdentRepository, pdlPersonRepository, huskelappRepository);
+        return new TestDataClient(jdbcTemplatePostgres, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlIdentRepository, pdlPersonRepository, huskelappRepository);
     }
 
     @Bean
