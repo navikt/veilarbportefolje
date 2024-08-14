@@ -15,4 +15,5 @@ public enum Brukerstatus {
     ER_SYKMELDT_MED_ARBEIDSGIVER,
     MOTER_IDAG,
     UNDER_VURDERING,
+    MINE_HUSKELAPPER
 }

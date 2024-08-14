@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
+import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -53,8 +54,17 @@ public class OppfolgingsbrukerRepositoryV3 {
         return upsert(oppfolgingsbruker);
     }
 
-    private record OppfolgingsbrukerEntityMedOppslagFnr(Fnr oppslagFnr,
-                                                        OppfolgingsbrukerEntity oppfolgingsbrukerEntity) {
+    public int slettOppfolgingsbruker(Fnr fnr) {
+        return db.update(
+                String.format("DELETE FROM %s WHERE fodselsnr = ?", PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.TABLE_NAME),
+                fnr.get()
+        );
+    }
+
+    private record OppfolgingsbrukerEntityMedOppslagFnr(
+            Fnr oppslagFnr,
+            OppfolgingsbrukerEntity oppfolgingsbrukerEntity
+    ) {
     }
 
     public Map<Fnr, OppfolgingsbrukerEntity> hentOppfolgingsBrukere(Set<Fnr> fnrs) {
@@ -125,7 +135,7 @@ public class OppfolgingsbrukerRepositoryV3 {
                         excluded.endret_dato)
                         """,
                 oppfolgingsbruker.fodselsnr(), oppfolgingsbruker.formidlingsgruppekode(), toTimestamp(oppfolgingsbruker.iserv_fra_dato()),
-                 oppfolgingsbruker.nav_kontor(),
+                oppfolgingsbruker.nav_kontor(),
                 oppfolgingsbruker.kvalifiseringsgruppekode(), oppfolgingsbruker.rettighetsgruppekode(),
                 oppfolgingsbruker.hovedmaalkode(),
                 toTimestamp(oppfolgingsbruker.endret_dato())

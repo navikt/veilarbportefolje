@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -12,11 +11,11 @@ import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettReq
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,45 +25,44 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 public class HuskelappService {
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final AktorClient aktorClient;
     private final BrukerServiceV2 brukerServiceV2;
     private final HuskelappRepository huskelappRepository;
-    private final PdlIdentRepository pdlIdentRepository;
 
 
+    @Transactional
     public UUID opprettHuskelapp(HuskelappOpprettRequest huskelappOpprettRequest, VeilederId veilederId) {
         try {
-            UUID huskelappId = huskelappRepository.opprettHuskelapp(huskelappOpprettRequest, veilederId);
+            Optional<NavKontor> navKontorOptional = brukerServiceV2.hentNavKontor(huskelappOpprettRequest.brukerFnr());
+            NavKontor navKontor = navKontorOptional.orElseThrow(RuntimeException::new);
+
+            huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(huskelappOpprettRequest.brukerFnr());
+            UUID huskelappId = huskelappRepository.opprettHuskelapp(huskelappOpprettRequest, veilederId, EnhetId.of(navKontor.getValue()));
 
             AktorId aktorId = hentAktorId(huskelappOpprettRequest.brukerFnr()).orElseThrow(RuntimeException::new);
-            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappOpprettRequest.frist(), huskelappOpprettRequest.kommentar()));
+            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappOpprettRequest.frist(), huskelappOpprettRequest.kommentar(), LocalDate.now(), veilederId.getValue(), huskelappId.toString(), navKontor.getValue()));
 
             return huskelappId;
         } catch (Exception e) {
-            secureLog.error("Kunne ikke opprette huskelapp for fnr: " + huskelappOpprettRequest.brukerFnr());
-            throw new RuntimeException("Kunne ikke opprette huskelapp", e);
+            secureLog.error("Kunne ikke opprette huskelapp for fnr: " + huskelappOpprettRequest.brukerFnr(), e);
+            throw new RuntimeException("Kunne ikke opprette huskelapp");
         }
     }
 
+    @Transactional
     public void redigerHuskelapp(HuskelappRedigerRequest huskelappRedigerRequest, VeilederId veilederId) {
         try {
-            huskelappRepository.redigerHuskelapp(huskelappRedigerRequest, veilederId);
+            Optional<NavKontor> navKontorOptional = brukerServiceV2.hentNavKontor(huskelappRedigerRequest.brukerFnr());
+            NavKontor navKontor = navKontorOptional.orElseThrow(RuntimeException::new);
+
+            huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(huskelappRedigerRequest.brukerFnr());
+            huskelappRepository.redigerHuskelapp(huskelappRedigerRequest, veilederId, EnhetId.of(navKontor.getValue()));
 
             AktorId aktorId = hentAktorId(huskelappRedigerRequest.brukerFnr()).orElseThrow(RuntimeException::new);
-            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar()));
+            opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappRedigerRequest.frist(), huskelappRedigerRequest.kommentar(), LocalDate.now(), veilederId.getValue(), huskelappRedigerRequest.huskelappId().toString(), navKontor.getValue()));
 
         } catch (Exception e) {
-            secureLog.error("Kunne ikke redigere huskelapp for fnr: " + huskelappRedigerRequest.brukerFnr() + " HuskelappId: " + huskelappRedigerRequest.huskelappId().toString());
-            throw new RuntimeException("Kunne ikke redigere huskelapp", e);
-        }
-    }
-
-    public List<Huskelapp> hentHuskelapp(VeilederId veilederId, EnhetId enhetId) {
-        try {
-            return huskelappRepository.hentAktivHuskelapp(enhetId, veilederId);
-        } catch (Exception e) {
-            secureLog.error("Kunne ikke hente huskelapper for enhet: " + enhetId + ", og veileder: " + veilederId);
-            throw new RuntimeException("Kunne ikke hente huskelapper", e);
+            secureLog.error("Kunne ikke redigere huskelapp for fnr: " + huskelappRedigerRequest.brukerFnr() + " HuskelappId: " + huskelappRedigerRequest.huskelappId().toString(), e);
+            throw new RuntimeException("Kunne ikke redigere huskelapp");
         }
     }
 
@@ -72,7 +70,7 @@ public class HuskelappService {
         try {
             return huskelappRepository.hentAktivHuskelapp(huskelappId);
         } catch (Exception e) {
-            secureLog.error("Kunne ikke hente huskelapp for id: " + huskelappId + "Stacktrace: " + e.getCause());
+            secureLog.error("Kunne ikke hente huskelapp for id: " + huskelappId + "Stacktrace: " + e.getCause(), e);
             throw new RuntimeException("Kunne ikke hente huskelapp");
         }
     }
@@ -81,8 +79,8 @@ public class HuskelappService {
         try {
             return huskelappRepository.hentAktivHuskelapp(brukerFnr);
         } catch (Exception e) {
-            secureLog.error("Kunne ikke hente huskelapp for bruker: " + brukerFnr);
-            throw new RuntimeException("Kunne ikke hente huskelapp", e);
+            secureLog.error("Kunne ikke hente huskelapp for bruker: " + brukerFnr, e);
+            throw new RuntimeException("Kunne ikke hente huskelapp");
         }
     }
 
@@ -93,12 +91,12 @@ public class HuskelappService {
             AktorId aktorId = hentAktorId(brukerFnr).orElseThrow(RuntimeException::new);
             opensearchIndexerV2.slettHuskelapp(aktorId);
         } catch (Exception e) {
-            secureLog.error("Kunne ikke sette huskelapp til inaktiv for bruker: " + brukerFnr);
-            throw new RuntimeException("Kunne ikke inaktivere huskelapp", e);
+            secureLog.error("Kunne ikke sette huskelapp til inaktiv for bruker: " + brukerFnr, e);
+            throw new RuntimeException("Kunne ikke inaktivere huskelapp");
         }
     }
 
-    public void slettAlleHuskelapperPaaBruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
+    public void sletteAlleHuskelapperPaaBruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
         try {
             secureLog.info("Sletter alle huskelapper paa bruker med aktoerid: " + aktorId);
             if (maybeFnr.isPresent()) {
@@ -113,10 +111,46 @@ public class HuskelappService {
         }
     }
 
-    public boolean brukerHarHuskelappPaForrigeNavkontor(AktorId aktoerId) {
+    public void deaktivereAlleHuskelapperPaaBruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
+        try {
+            secureLog.info("Deaktiverer alle huskelapper paa bruker med aktoerid: " + aktorId);
+            if (maybeFnr.isPresent()) {
+                huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(maybeFnr.get());
+                opensearchIndexerV2.slettHuskelapp(aktorId);
+            } else {
+                secureLog.warn("Kunne ikke deaktivere huskelapper for bruker med AktørID {}. Årsak fødselsnummer-parameter var tom.", aktorId.get());
+            }
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke deaktivere huskelapper for aktoerId: " + aktorId.toString());
+            throw new RuntimeException("Kunne ikke deaktivere huskelapper", e);
+        }
+    }
 
-        Fnr fnrBruker = aktorClient.hentFnr(aktoerId);
-        Optional<String> navKontorPaHuskelapp = huskelappRepository.hentNavkontorPaHuskelapp(fnrBruker);
+    @Transactional
+    public void oppdaterEnhetPaaHuskelapp(Fnr fnr, EnhetId nyEnhetId, VeilederId veilederId) {
+        try {
+            Optional<Huskelapp> huskelappForBruker = huskelappRepository.hentAktivHuskelapp(fnr);
+            huskelappForBruker.ifPresent(huskelapp -> {
+                HuskelappRedigerRequest huskelappRequest = new HuskelappRedigerRequest(huskelapp.huskelappId(), fnr, huskelapp.frist(), huskelapp.kommentar());
+
+                huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(fnr);
+                huskelappRepository.redigerHuskelapp(huskelappRequest, veilederId, nyEnhetId);
+
+                AktorId aktorId = hentAktorId(huskelappRequest.brukerFnr()).orElseThrow(RuntimeException::new);
+                opensearchIndexerV2.updateHuskelapp(aktorId, new HuskelappForBruker(huskelappRequest.frist(), huskelappRequest.kommentar(), LocalDate.now(), veilederId.getValue(), huskelappRequest.huskelappId().toString(), nyEnhetId.get()));
+            });
+        } catch (Exception e) {
+            secureLog.error("Kunne ikke oppdatere enhet på huskelapp for fnr: " + fnr, e);
+            throw new RuntimeException("Kunne ikke oppdatere enhet på huskelapp");
+        }
+    }
+
+    public boolean brukerHarHuskelappPaForrigeNavkontor(AktorId aktoerId, Optional<Fnr> maybeFnr) {
+        if (maybeFnr.isEmpty()) {
+            return false;
+        }
+
+        Optional<String> navKontorPaHuskelapp = huskelappRepository.hentNavkontorPaHuskelapp(maybeFnr.get());
 
         if (navKontorPaHuskelapp.isEmpty()) {
             secureLog.info("Bruker {} har ikke NAV-kontor på huskelapp", aktoerId.toString());
@@ -141,10 +175,7 @@ public class HuskelappService {
     }
 
     private Optional<AktorId> hentAktorId(Fnr fnr) {
-        return Optional.ofNullable(pdlIdentRepository.hentAktorId(fnr));
+        return brukerServiceV2.hentAktorId(fnr);
     }
 
-    private Optional<Fnr> hentFnr(AktorId aktorId) {
-        return Optional.ofNullable(pdlIdentRepository.hentFnr(aktorId));
-    }
 }

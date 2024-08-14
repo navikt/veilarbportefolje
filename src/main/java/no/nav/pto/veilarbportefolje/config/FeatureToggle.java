@@ -13,11 +13,11 @@ public class FeatureToggle {
     public static final String KAFKA_AIVEN_CONSUMERS_STOP = "veilarbportefolje.kafka_aiven_consumers_stop";
     public static final String KAFKA_SISTE_14A_STOP = "veilarbportefolje.kafka_siste_14a_stop";
     public static final String OPPFOLGINGS_BRUKER = "veilarbportefolje.oppfolgingsbruker_pa_postgres";
-    public static final String POAO_TILGANG_ENABLED = "veilarbportefolje.poao-tilgang-enabled";
-
     public static final String BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER = "veilarbportefolje.bruk_filter_for_brukerinnsyn_tilganger";
 
     public static final String STOPP_OPENSEARCH_INDEKSERING = "veilarbportefolje.stopp_opensearch_indeksering";
+    public static final String BRUK_NYTT_ARBEIDSSOEKERREGISTER = "veilarbportefolje.bruk_nytt_arbeidssoekerregister";
+    public static final String BRUK_NYTT_ARBEIDSSOEKERREGISTER_KAFKA = "veilarbportefolje.bruk_nytt_arbeidssoekerregister_kafka";
 
     public static boolean brukAvAliasIndeksering(DefaultUnleash defaultUnleash) {
         return defaultUnleash.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
@@ -27,15 +27,18 @@ public class FeatureToggle {
         return defaultUnleash.isEnabled(FeatureToggle.OPPFOLGINGS_BRUKER);
     }
 
-    public static boolean brukPoaoTilgang(DefaultUnleash defaultUnleash) {
-        return defaultUnleash.isEnabled(FeatureToggle.POAO_TILGANG_ENABLED);
-    }
-
     public static boolean brukFilterForBrukerinnsynTilganger(DefaultUnleash defaultUnleash) {
         return defaultUnleash.isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
     }
 
     public static boolean stoppOpensearchIndeksering(DefaultUnleash defaultUnleash) {
         return defaultUnleash.isEnabled(FeatureToggle.STOPP_OPENSEARCH_INDEKSERING);
+    }
+
+    public static boolean brukNyttArbeidssoekerregister(DefaultUnleash defaultUnleash) {
+        return defaultUnleash.isEnabled(FeatureToggle.BRUK_NYTT_ARBEIDSSOEKERREGISTER);
+    }
+    public static boolean brukNyttArbeidssoekerregisterKafka(DefaultUnleash defaultUnleash) {
+        return defaultUnleash.isEnabled(FeatureToggle.BRUK_NYTT_ARBEIDSSOEKERREGISTER_KAFKA);
     }
 }

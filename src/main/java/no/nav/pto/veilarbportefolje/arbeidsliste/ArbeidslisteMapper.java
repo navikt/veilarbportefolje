@@ -22,6 +22,8 @@ public class ArbeidslisteMapper {
             case "FARGEKATEGORI_B" -> Arbeidsliste.Kategori.GRONN;
             case "FARGEKATEGORI_C" -> Arbeidsliste.Kategori.GUL;
             case "FARGEKATEGORI_D" -> Arbeidsliste.Kategori.LILLA;
+            case "FARGEKATEGORI_E" -> Arbeidsliste.Kategori.LYSEBLA;
+            case "FARGEKATEGORI_F" -> Arbeidsliste.Kategori.ORANSJE;
             default -> throw new RuntimeException("Ukjent kategori: " + kategoriFraFargekategoriTabell);
         };
     }
@@ -32,6 +34,8 @@ public class ArbeidslisteMapper {
             case "GRONN" -> Arbeidsliste.Kategori.GRONN;
             case "GUL" -> Arbeidsliste.Kategori.GUL;
             case "LILLA" -> Arbeidsliste.Kategori.LILLA;
+            case "LYSEBLA" -> Arbeidsliste.Kategori.LYSEBLA;
+            case "ORANSJE" -> Arbeidsliste.Kategori.ORANSJE;
             default -> throw new RuntimeException("Ukjent kategori: " + kategoriFraArbeidslisteTabell);
         };
     }
@@ -41,10 +45,12 @@ public class ArbeidslisteMapper {
             return null;
         }
         return switch (kategori) {
-            case BLA -> FargekategoriVerdi.BLA.verdi;
-            case GRONN -> FargekategoriVerdi.GRONN.verdi;
-            case GUL -> FargekategoriVerdi.GUL.verdi;
-            case LILLA -> FargekategoriVerdi.LILLA.verdi;
+            case BLA -> FargekategoriVerdi.FARGEKATEGORI_A.name();
+            case GRONN -> FargekategoriVerdi.FARGEKATEGORI_B.name();
+            case GUL -> FargekategoriVerdi.FARGEKATEGORI_C.name();
+            case LILLA -> FargekategoriVerdi.FARGEKATEGORI_D.name();
+            case LYSEBLA -> FargekategoriVerdi.FARGEKATEGORI_E.name();
+            case ORANSJE -> FargekategoriVerdi.FARGEKATEGORI_F.name();
         };
     }
 

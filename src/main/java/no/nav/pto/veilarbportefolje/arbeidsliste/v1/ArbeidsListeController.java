@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste.v1;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -35,6 +37,7 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 @Slf4j
 @RestController
 @RequestMapping("/api/arbeidsliste")
+@Tag(name = "Arbeidsliste", description = "Arbeidsliste-funksjonalitet")
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerServiceV2 brukerService;
@@ -54,10 +57,11 @@ public class ArbeidsListeController {
 
 
     @PostMapping
+    @Operation(summary = "Opprett arbeidslister", description = "Oppretter arbeidslister for et sett med brukere.")
     public ResponseEntity opprettArbeidsListe(@RequestBody List<ArbeidslisteRequest> arbeidsliste) {
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
         List<String> tilgangErrors = getTilgangErrors(arbeidsliste);
-        if (tilgangErrors.size() > 0) {
+        if (!tilgangErrors.isEmpty()) {
             return RestResponse.of(tilgangErrors).forbidden();
         }
 
@@ -75,7 +79,12 @@ public class ArbeidsListeController {
         return response.data.isEmpty() ? response.badRequest() : response.created();
     }
 
+    /**
+     * @deprecated Skal fjernes høsten 2024 når arbeidslistene slettes.
+     */
     @GetMapping("{fnr}")
+    @Deprecated(forRemoval = true)
+    @Operation(summary = "Hent arbeidsliste", description = "Henter arbeidsliste for en gitt bruker.")
     public Arbeidsliste getArbeidsListe(@PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
 
@@ -97,10 +106,14 @@ public class ArbeidsListeController {
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
     }
 
+    /**
+     * @deprecated Skal fjernes høsten 2024 når arbeidslistene slettes.
+     */
     @PostMapping("{fnr}")
+    @Deprecated(forRemoval = true)
+    @Operation(summary = "Opprett arbeidsliste", description = "Oppretter en arbeidsliste for en gitt bruker.")
     public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
-        validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
         arbeidslisteService.createArbeidsliste(data(body, Fnr.ofValidFnr(fnr)))
@@ -112,7 +125,12 @@ public class ArbeidsListeController {
                 .setIsOppfolgendeVeileder(true);
     }
 
+    /**
+     * @deprecated Skal fjernes høsten 2024 når arbeidslistene slettes.
+     */
     @PutMapping("{fnr}")
+    @Deprecated(forRemoval = true)
+    @Operation(summary = "Oppdater arbeidsliste", description = "Oppdaterer en arbeidsliste med nye felter for en gitt bruker.")
     public Arbeidsliste oppdaterArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
         Fnr fnr = Fnr.ofValidFnr(fnrString);
@@ -138,14 +156,18 @@ public class ArbeidsListeController {
                         AuthUtils.getInnloggetVeilederIdent()));
     }
 
+    /**
+     * @deprecated Skal fjernes høsten 2024 når arbeidslistene slettes.
+     */
     @DeleteMapping("{fnr}")
+    @Deprecated(forRemoval = true)
+    @Operation(summary = "Slett arbeidsliste", description = "Sletter en arbeidsliste for en gitt bruker.")
     public Arbeidsliste deleteArbeidsliste(@PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
-        validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
         try {
-            arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr));
+            arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr), true);
         } catch (SlettArbeidslisteException e) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(Fnr.ofValidFnr(fnr)).orElse(null);
@@ -158,8 +180,9 @@ public class ArbeidsListeController {
     }
 
     @PostMapping("/delete")
+    @Operation(summary = "Slett arbeidslister", description = "Sletter arbeidslister for et sett med brukere.")
     public RestResponse<String> deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
 
         java.util.List<String> feiledeFnrs = new ArrayList<>();
         java.util.List<String> okFnrs = new ArrayList<>();
@@ -170,8 +193,7 @@ public class ArbeidsListeController {
                 .collect(Collectors.toList());
 
         Validation<List<Fnr>, List<Fnr>> validerteFnrs = ValideringsRegler.validerFnrs(fnrs);
-        Validation<String, List<Fnr>> veilederForBrukere = arbeidslisteService.erVeilederForBrukere(fnrs);
-        if (validerteFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
+        if (validerteFnrs.isInvalid()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, format("%s inneholder ett eller flere ugyldige fødselsnummer", validerteFnrs.getError()));
         }
 
@@ -180,7 +202,7 @@ public class ArbeidsListeController {
                     .orElse(new AktorId("uten aktør-ID"));
 
             try {
-                arbeidslisteService.slettArbeidsliste(fnr);
+                arbeidslisteService.slettArbeidsliste(fnr, true);
                 okFnrs.add(fnr.get());
                 secureLog.info("Arbeidsliste for aktoerid {} slettet", aktoerId.get());
             } catch (SlettArbeidslisteException e) {
@@ -197,7 +219,7 @@ public class ArbeidsListeController {
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
         NavKontor enhet = brukerService.hentNavKontor(fnr).orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke hente enhet for denne brukeren"));
-        authService.tilgangTilEnhet(enhet.getValue());
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet.getValue());
     }
 
     private ArbeidslisteDTO data(ArbeidslisteRequest body, Fnr fnr) {
@@ -239,18 +261,11 @@ public class ArbeidsListeController {
     }
 
     private void validerOppfolgingOgBruker(String fnr) {
-        authService.tilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilOppfolging();
         Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        authService.tilgangTilBruker(fnr);
+        authService.innloggetVeilederHarTilgangTilBruker(fnr);
         if (validateFnr.isInvalid()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    private void validerErVeilederForBruker(String fnr) {
-        Validation<String, Fnr> validateVeileder = arbeidslisteService.erVeilederForBruker(fnr);
-        if (validateVeileder.isInvalid()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
 }

@@ -113,6 +113,22 @@ public class ArbeidslisteRepositoryV2 {
         ).onFailure(e -> secureLog.warn("Kunne ikke oppdatere arbeidsliste i db", e));
     }
 
+    public Try<ArbeidslisteDTO> updateArbeidslisteUtenFargekategori(ArbeidslisteDTO data) {
+        final String updateSql = String.format(
+                "UPDATE %s SET %s = ?, %s = ?, %s = ? WHERE %s = ?",
+                TABLE_NAME, SIST_ENDRET_AV_VEILEDERIDENT, ENDRINGSTIDSPUNKT, NAV_KONTOR_FOR_ARBEIDSLISTE, AKTOERID
+        );
+
+        return Try.of(
+                () -> {
+                    int arbeidslisteRows = db.update(updateSql, data.getVeilederId().getValue(), data.getEndringstidspunkt(), data.getNavKontorForArbeidsliste(), data.getAktorId().get());
+
+                    secureLog.info("Oppdaterte arbeidsliste pa bruker {}, rader: {}", data.getAktorId().get(), arbeidslisteRows);
+                    return data;
+                }
+        ).onFailure(e -> secureLog.warn("Kunne ikke oppdatere arbeidsliste i db", e));
+    }
+
     @Transactional
     public int slettArbeidsliste(AktorId aktoerId, Optional<Fnr> maybeFnr) {
         if (aktoerId == null) {
@@ -142,6 +158,28 @@ public class ArbeidslisteRepositoryV2 {
         }
 
         return (oppdaterteRaderArbeidsliste + oppdaterteRaderFargekategori);
+    }
+
+    @Transactional
+    public int slettArbeidslisteUtenFargekategori(AktorId aktoerId) {
+        if (aktoerId == null) {
+            return 0;
+        }
+        secureLog.info("Sletter arbeidsliste pa bruker: {}", aktoerId);
+
+        int oppdaterteRaderArbeidsliste = db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
+
+        if (oppdaterteRaderArbeidsliste > 1) {
+            secureLog.error(String.format(
+                    "Fant flere rader i ARBEIDSLISTE-tabell. AktørID: %s - antall rader i ARBEIDSLISTE: %s.",
+                    aktoerId.get(),
+                    oppdaterteRaderArbeidsliste
+            ));
+
+            throw new SlettArbeidslisteException("Fant flere rader i ARBEIDSLISTE-tabell for bruker.");
+        }
+
+        return oppdaterteRaderArbeidsliste;
     }
 
     private void upsert(String aktoerId, ArbeidslisteDTO dto) {

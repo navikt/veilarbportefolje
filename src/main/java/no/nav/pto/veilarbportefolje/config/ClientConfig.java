@@ -1,8 +1,5 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.common.abac.Pep;
-import no.nav.common.abac.VeilarbPepFactory;
-import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
@@ -11,24 +8,24 @@ import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
-import no.nav.common.utils.Credentials;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import java.net.http.HttpClient;
-
-import static no.nav.common.utils.NaisUtils.getCredentials;
-
+import java.util.function.Supplier;
 
 @Configuration
 public class ClientConfig {
 
+    static final String APPLICATION_NAME = "veilarbportefolje";
     @Bean
     public PoaoTilgangWrapper poaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
         return new PoaoTilgangWrapper(authContextHolder, tokenClient, environmentProperties);
@@ -60,17 +57,6 @@ public class ClientConfig {
     }
 
     @Bean
-    public Pep veilarbPep(EnvironmentProperties properties) {
-        Credentials serviceUserCredentials = getCredentials("service_user");
-        return VeilarbPepFactory.get(
-                properties.getAbacVeilarbUrl(),
-                serviceUserCredentials.username,
-                serviceUserCredentials.password,
-                new SpringAuditRequestInfoSupplier()
-        );
-    }
-
-    @Bean
     public HttpClient httpClient() {
         return HttpClient.newBuilder().build();
     }
@@ -91,4 +77,33 @@ public class ClientConfig {
         );
     }
 
+    @Bean
+    public VeilarbarenaClient veilarbarenaMachineToMachineClient(
+            AuthService authService,
+            EnvironmentProperties environmentProperties
+    ) {
+        Supplier<String> tokenSupplier = () -> authService.getM2MToken(environmentProperties.getVeilarbarenaScope());
+
+        return new VeilarbarenaClient(
+                environmentProperties.getVeilarbarenaUrl(),
+                tokenSupplier,
+                RestClient.baseClient(),
+                APPLICATION_NAME
+        );
+    }
+
+    @Bean
+    public OppslagArbeidssoekerregisteretClient oppslagArbeidssoekerregisteretClient(
+            AuthService authService,
+            EnvironmentProperties environmentProperties
+    ) {
+        Supplier<String> tokenSupplier = () -> authService.getM2MToken(environmentProperties.getOppslagArbeidssoekerregisteretScope());
+
+        return new OppslagArbeidssoekerregisteretClient(
+                environmentProperties.getOppslagArbeidssoekerregisteretUrl(),
+                tokenSupplier,
+                RestClient.baseClient(),
+                APPLICATION_NAME
+        );
+    }
 }

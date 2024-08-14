@@ -25,6 +25,14 @@ public class Statustall {
     private long minArbeidslisteLilla;
     private long minArbeidslisteGronn;
     private long minArbeidslisteGul;
+    private long mineHuskelapper;
+    private long fargekategoriA;
+    private long fargekategoriB;
+    private long fargekategoriC;
+    private long fargekategoriD;
+    private long fargekategoriE;
+    private long fargekategoriF;
+    private long fargekategoriIngenKategori;
 
     public Statustall() {
         this.totalt = 0;
@@ -45,6 +53,14 @@ public class Statustall {
         this.minArbeidslisteGronn = 0;
         this.minArbeidslisteGul = 0;
         this.underVurdering = 0;
+        this.mineHuskelapper = 0;
+        this.fargekategoriA = 0;
+        this.fargekategoriB = 0;
+        this.fargekategoriC = 0;
+        this.fargekategoriD = 0;
+        this.fargekategoriE = 0;
+        this.fargekategoriF = 0;
+        this.fargekategoriIngenKategori = 0;
     }
 
     public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
@@ -66,5 +82,13 @@ public class Statustall {
         this.minArbeidslisteGronn = buckets.getMinArbeidslisteGronn().getDoc_count();
         this.minArbeidslisteGul = buckets.getMinArbeidslisteGul().getDoc_count();
         this.underVurdering = vedtakstottePilotErPa ? buckets.getUnderVurdering().getDoc_count() : 0;
+        this.mineHuskelapper = buckets.getMineHuskelapper().getDoc_count();
+        this.fargekategoriA = buckets.getFargekategoriA().getDoc_count();
+        this.fargekategoriB = buckets.getFargekategoriB().getDoc_count();
+        this.fargekategoriC = buckets.getFargekategoriC().getDoc_count();
+        this.fargekategoriD = buckets.getFargekategoriD().getDoc_count();
+        this.fargekategoriE = buckets.getFargekategoriE().getDoc_count();
+        this.fargekategoriF = buckets.getFargekategoriF().getDoc_count();
+        this.fargekategoriIngenKategori = buckets.getFargekategoriIngenKategori().getDoc_count();
     }
 }

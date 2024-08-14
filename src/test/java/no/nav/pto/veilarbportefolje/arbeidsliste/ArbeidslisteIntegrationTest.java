@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
-import no.nav.common.abac.VeilarbPep;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
@@ -85,8 +84,6 @@ class ArbeidslisteIntegrationTest {
     @MockBean
     private PoaoTilgangWrapper poaoTilgangWrapper;
     @MockBean
-    private VeilarbPep veilarbPep;
-    @MockBean
     private BrukerServiceV2 brukerService;
     @MockBean
     private AktorClient aktorClient;
@@ -111,7 +108,7 @@ class ArbeidslisteIntegrationTest {
         db.update("""
                 INSERT INTO fargekategori (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
                 VALUES(?,?,?,?,?)
-                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.GUL.verdi, Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
+                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.FARGEKATEGORI_C.name(), Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.post("/api/v2/hent-arbeidsliste")
@@ -266,7 +263,7 @@ class ArbeidslisteIntegrationTest {
         db.update("""
                 INSERT INTO fargekategori (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
                 VALUES(?,?,?,?,?)
-                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.GUL.verdi, Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
+                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.FARGEKATEGORI_C.name(), Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.post(String.format("/api/arbeidsliste/%s", TEST_FNR))
@@ -309,7 +306,7 @@ class ArbeidslisteIntegrationTest {
         db.update("""
                 INSERT INTO fargekategori (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
                 VALUES(?,?,?,?,?)
-                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.GUL.verdi, Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
+                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.FARGEKATEGORI_C.name(), Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.post("/api/v2/arbeidsliste")
@@ -419,7 +416,7 @@ class ArbeidslisteIntegrationTest {
     void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v1()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
-                null,
+                "",
                 null,
                 null,
                 null
@@ -427,7 +424,7 @@ class ArbeidslisteIntegrationTest {
         db.update("""
                 INSERT INTO fargekategori (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
                 VALUES(?,?,?,?,?)
-                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.LILLA.verdi, Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
+                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.FARGEKATEGORI_D.name(), Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/api/arbeidsliste/%s", TEST_FNR)))
@@ -445,7 +442,7 @@ class ArbeidslisteIntegrationTest {
     void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v2()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
-                null,
+                "",
                 null,
                 null,
                 null
@@ -453,7 +450,7 @@ class ArbeidslisteIntegrationTest {
         db.update("""
                 INSERT INTO fargekategori (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
                 VALUES(?,?,?,?,?)
-                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.LILLA.verdi, Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
+                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.FARGEKATEGORI_D.name(), Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.delete("/api/v2/arbeidsliste")
@@ -535,7 +532,7 @@ class ArbeidslisteIntegrationTest {
     void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v1()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
-                null,
+                "",
                 null,
                 null,
                 null
@@ -543,7 +540,7 @@ class ArbeidslisteIntegrationTest {
         db.update("""
                 INSERT INTO fargekategori (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
                 VALUES(?,?,?,?,?)
-                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.LILLA.verdi, Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
+                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.FARGEKATEGORI_D.name(), Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.put(String.format("/api/arbeidsliste/%s", TEST_FNR))
@@ -567,7 +564,7 @@ class ArbeidslisteIntegrationTest {
     void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v2()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
-                null,
+                "",
                 null,
                 null,
                 null
@@ -575,7 +572,7 @@ class ArbeidslisteIntegrationTest {
         db.update("""
                 INSERT INTO fargekategori (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
                 VALUES(?,?,?,?,?)
-                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.LILLA.verdi, Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
+                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.FARGEKATEGORI_D.name(), Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.put("/api/v2/arbeidsliste")
@@ -667,7 +664,7 @@ class ArbeidslisteIntegrationTest {
         db.update("""
                 INSERT INTO fargekategori (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
                 VALUES(?,?,?,?,?)
-                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.LILLA.verdi, Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
+                """, UUID.randomUUID(), TEST_FNR, FargekategoriVerdi.FARGEKATEGORI_D.name(), Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR_2),
                 "Overskriften",
@@ -678,7 +675,7 @@ class ArbeidslisteIntegrationTest {
         db.update("""
                 INSERT INTO fargekategori (ID, FNR, VERDI, SIST_ENDRET, SIST_ENDRET_AV_VEILEDERIDENT)
                 VALUES(?,?,?,?,?)
-                """, UUID.randomUUID(), TEST_FNR_2, FargekategoriVerdi.LILLA.verdi, Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
+                """, UUID.randomUUID(), TEST_FNR_2, FargekategoriVerdi.FARGEKATEGORI_D.name(), Timestamp.valueOf(LocalDateTime.now()), TEST_VEILEDERIDENT);
 
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.get(String.format("/api/veileder/%s/hentArbeidslisteForVeileder", TEST_VEILEDERIDENT)).queryParam("enhet", TEST_ENHETSID))
@@ -707,10 +704,8 @@ class ArbeidslisteIntegrationTest {
 
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harTilgangTilPerson(any())).thenReturn(Decision.Permit.INSTANCE);
-        when(veilarbPep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-        when(veilarbPep.harTilgangTilPerson(any(), any(), any())).thenReturn(true);
         when(authService.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
-        Mockito.doNothing().when(authService).tilgangTilOppfolging();
+        Mockito.doNothing().when(authService).innloggetVeilederHarTilgangTilOppfolging();
         when(brukerService.hentVeilederForBruker(AktorId.of(TEST_AKTORID))).thenReturn(Optional.of(VeilederId.of(
                 TEST_VEILEDERIDENT)));
         when(brukerService.hentVeilederForBruker(AktorId.of(TEST_AKTORID_2))).thenReturn(Optional.of(VeilederId.of(

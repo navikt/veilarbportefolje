@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
@@ -20,10 +22,12 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/logger")
+@Tag(name = "Frontendlogger", description = "Frontendlogger-funksjonalitet")
 public class Frontendlogger {
     private final MetricsClient metricsClient;
 
     @PostMapping("/event")
+    @Operation(summary = "Skriv event til Influx", description = "Registrerer en frontend-hendelse og sender til InfluxDB.")
     public void skrivEventTilInflux(@RequestBody FrontendEvent event) {
         Event toInflux = new Event(event.name + ".event");
         if (event.getTags() != null) {

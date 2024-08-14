@@ -37,6 +37,7 @@ public class BrukerRepositoryV2Test {
     private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
     private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
+
     @BeforeEach
     public void setUp() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
@@ -68,11 +69,11 @@ public class BrukerRepositoryV2Test {
 
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_1.get(), null, null,
-                         "0000", null, null,
+                        "0000", null, null,
                         null, ZonedDateTime.now().minusDays(1)));
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_2.get(), null, null,
-                         "0000", null, null,
+                        "0000", null, null,
                         null, ZonedDateTime.now()));
         List<OppfolgingsBruker> oppfolgingsBrukers_pre_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
 

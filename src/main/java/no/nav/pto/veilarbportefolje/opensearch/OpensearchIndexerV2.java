@@ -3,13 +3,12 @@ package no.nav.pto.veilarbportefolje.opensearch;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.types.identer.AktorId;
-import no.nav.paw.besvarelse.ArbeidssokerBesvarelseEvent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
-import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
@@ -23,8 +22,8 @@ import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.core.rest.RestStatus;
 import org.opensearch.core.xcontent.XContentBuilder;
-import org.opensearch.rest.RestStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -33,6 +32,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerMapperKt.mapTilUtdanning;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
@@ -47,28 +47,27 @@ public class OpensearchIndexerV2 {
     private final RestHighLevelClient restHighLevelClient;
 
     @SneakyThrows
-    public void updateRegistering(AktorId aktoerId, ArbeidssokerRegistrertEvent arbeidssokerRegistrertEvent) {
+    public void updateOpplysningerOmArbeidssoeker(AktorId aktoerId, OpplysningerOmArbeidssoekerEntity opplysningerOmArbeidssoeker) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("brukers_situasjon", arbeidssokerRegistrertEvent.getBrukersSituasjon())
-                .field("utdanning", arbeidssokerRegistrertEvent.getUtdanning())
-                .field("utdanning_bestatt", arbeidssokerRegistrertEvent.getUtdanningBestatt())
-                .field("utdanning_godkjent", arbeidssokerRegistrertEvent.getUtdanningGodkjent())
-                .field("brukers_situasjon_sist_endret", toLocalDateOrNull(arbeidssokerRegistrertEvent.getRegistreringOpprettet()))
+                .field("brukers_situasjoner", opplysningerOmArbeidssoeker.getOpplysningerOmJobbsituasjon().getJobbsituasjon())
+                .field("utdanning", mapTilUtdanning(opplysningerOmArbeidssoeker.getUtdanningNusKode()))
+                .field("utdanning_bestatt", opplysningerOmArbeidssoeker.getUtdanningBestatt())
+                .field("utdanning_godkjent", opplysningerOmArbeidssoeker.getUtdanningGodkjent())
+                .field("utdanning_og_situasjon_sist_endret", toLocalDate(opplysningerOmArbeidssoeker.getSendtInnTidspunkt()))
                 .endObject();
 
-        update(aktoerId, content, "Oppdater registrering");
+        update(aktoerId, content, "Oppdater opplysninger om arbeidssøker");
     }
 
     @SneakyThrows
-    public void updateEndringerIRegistering(AktorId aktoerId, ArbeidssokerBesvarelseEvent endringIRegistreringsdataEvent) {
+    public void updateProfilering(AktorId aktoerId, ProfileringEntity profileringEntity) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("brukers_situasjon", endringIRegistreringsdataEvent.getBesvarelse().getDinSituasjon().getVerdi())
-                .field("brukers_situasjon_sist_endret", endringIRegistreringsdataEvent.getBesvarelse().getDinSituasjon().getEndretTidspunkt())
+                .field("profilering_resultat", profileringEntity.getProfileringsresultat())
                 .endObject();
 
-        update(aktoerId, content, "Oppdater endring i registrering");
+        update(aktoerId, content, "Oppdater profileringsresultat");
     }
 
     @SneakyThrows
@@ -100,6 +99,10 @@ public class OpensearchIndexerV2 {
                 .startObject("huskelapp")
                 .field("frist", huskelapp.frist())
                 .field("kommentar", huskelapp.kommentar())
+                .field("endretAv", huskelapp.endretAv())
+                .field("endretDato", huskelapp.endretDato())
+                .field("huskelappId", huskelapp.huskelappId())
+                .field("enhetId", huskelapp.enhetId())
                 .endObject()
                 .endObject();
 
@@ -115,6 +118,29 @@ public class OpensearchIndexerV2 {
                 .endObject();
 
         update(aktoerId, content, "Sletter huskelapp");
+    }
+
+    @SneakyThrows
+    public void updateFargekategori(AktorId aktoerId, String fargekategori, String enhetId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("fargekategori", fargekategori)
+                .field("fargekategori_enhetId", enhetId)
+                .endObject();
+
+        update(aktoerId, content, "Oppretter/redigerer fargekategori");
+    }
+
+
+    @SneakyThrows
+    public void slettFargekategori(AktorId aktoerId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .nullField("fargekategori")
+                .nullField("fargekategori_enhetId")
+                .endObject();
+
+        update(aktoerId, content, "Sletter fargekategori");
     }
 
     @SneakyThrows

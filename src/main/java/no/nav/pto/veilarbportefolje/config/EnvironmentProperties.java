@@ -13,20 +13,24 @@ public class EnvironmentProperties {
     private String dbUrl;
     private String unleashUrl;
     private String unleashApiToken;
-    private String abacVeilarbUrl;
     private String opensearchUri;
     private String opensearchUsername;
     private String opensearchPassword;
     private String kodeverkUrl;
+    private String kodeverkScope;
     private String veilarboppfolgingUrl;
     private String veilarboppfolgingScope;
     private String veilarbvedtaksstotteUrl;
     private String veilarbvedtaksstotteScope;
     private String veilarbveilederUrl;
     private String veilarbveilederScope;
+    private String veilarbarenaUrl;
+    private String veilarbarenaScope;
     private String pdlUrl;
     private String pdlScope;
     private String poaoTilgangUrl;
     private String poaoTilgangScope;
+    private String oppslagArbeidssoekerregisteretScope;
+    private String oppslagArbeidssoekerregisteretUrl;
 }
 

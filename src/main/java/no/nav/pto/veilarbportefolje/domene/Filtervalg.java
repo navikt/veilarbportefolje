@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
@@ -34,7 +35,7 @@ public class Filtervalg {
     public List<String> tiltakstyper = new ArrayList<>();
     public List<ManuellBrukerStatus> manuellBrukerStatus = new ArrayList<>();
     public String navnEllerFnrQuery;
-    public List<DinSituasjonSvar> registreringstype = new ArrayList<>();
+    public List<JobbSituasjonBeskrivelse> registreringstype = new ArrayList<>();
     public List<UtdanningSvar> utdanning = new ArrayList<>();
     public List<UtdanningBestattSvar> utdanningBestatt = new ArrayList<>();
     public List<UtdanningGodkjentSvar> utdanningGodkjent = new ArrayList<>();
@@ -54,7 +55,7 @@ public class Filtervalg {
     public List<String> geografiskBosted;
     public List<Avvik14aVedtak> avvik14aVedtak;
     public List<EnsligeForsorgere> ensligeForsorgere;
-    public Boolean harHuskelapp;
+    public List<String> fargekategorier = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
@@ -90,7 +91,7 @@ public class Filtervalg {
                 harBostedFilter() ||
                 harAvvik14aVedtakFilter() ||
                 harEnsligeForsorgereFilter() ||
-                harHuskelapp != null;
+                harFargeKategoriFilter();
     }
 
     public boolean harEnsligeForsorgereFilter() {
@@ -159,6 +160,10 @@ public class Filtervalg {
 
     public boolean harLandgruppeFilter() {
         return landgruppe != null && !landgruppe.isEmpty();
+    }
+
+    public boolean harFargeKategoriFilter() {
+        return fargekategorier != null && !fargekategorier.isEmpty();
     }
 
     public boolean harStillingFraNavFilter() {

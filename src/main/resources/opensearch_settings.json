@@ -241,6 +241,9 @@
       "sikkerhetstiltak_gyldig_til": {
         "type": "keyword"
       },
+      "fargekategori": {
+        "type": "keyword"
+      },
       "huskelapp": {
         "properties": {
           "kommentar": {
@@ -248,6 +251,12 @@
           },
           "frist": {
             "type": "date"
+          },
+          "endretDato": {
+            "type": "date"
+          },
+          "endretAv": {
+            "type": "keyword"
           }
         }
       }

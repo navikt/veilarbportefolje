@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.common.abac.Pep;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
@@ -20,14 +19,12 @@ public class HelsesjekkConfig {
 
     @Bean
     public SelfTestChecks selfTestChecks(AktorClient aktorClient,
-                                         Pep veilarbPep,
                                           JdbcTemplate jdbcTemplate,
                                          OpensearchHealthCheck opensearchHealthCheck) {
         List<SelfTestCheck> asyncSelftester = List.of(
                 new SelfTestCheck(String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, opensearchHealthCheck),
                 new SelfTestCheck("Database for portefolje", true, () -> dbPinger(jdbcTemplate)),
-                new SelfTestCheck("Aktorregister", true, aktorClient),
-                new SelfTestCheck("ABAC", true, veilarbPep.getAbacClient())
+                new SelfTestCheck("Aktorregister", true, aktorClient)
         );
         return new SelfTestChecks(asyncSelftester);
     }

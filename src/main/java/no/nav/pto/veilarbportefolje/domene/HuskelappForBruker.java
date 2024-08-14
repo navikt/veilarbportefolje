@@ -6,7 +6,11 @@ import java.time.LocalDate;
 
 public record HuskelappForBruker(
     LocalDate frist,
-    String kommentar
+    String kommentar,
+    LocalDate endretDato,
+    String endretAv,
+    String huskelappId,
+    String enhetId
 ) {
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public HuskelappForBruker {

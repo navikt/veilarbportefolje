@@ -1,6 +1,8 @@
 ![](https://github.com/navikt/veilarbportefolje/workflows/Build,%20push%20and%20deploy/badge.svg)
 
-# Beskrivelse
+# veilarbportefolje
+
+## Beskrivelse
 
 Tjeneste som aggregerer data fra andre baksystemer og håndterer oppdatering av søkeindeks brukt i modia oversikten.
 
@@ -15,6 +17,10 @@ Følgende data aggregeres:
 * Aktiviteter fra `veilarbaktivitet` (aktivitetsplan) via Kafka
 * Informasjon om delt cv fra arbeidsplassen via Kafka
 * Informasjon om endring av mål fra `veilarboppfolging` via Kafka
+
+### Swagger-dokumentasjon
+
+Endepunktene er dokumentert vha. Swagger/OpenAPI. Dokumentasjonen er tilgjengelig på egen sti, som i skrivende stund (08.05.24) er `https://veilarbportefoljeflate.intern.dev.nav.no/veilarbportefolje/internal/swagger-ui/index.html`.
 
 ## Hvordan bygge
 
@@ -73,3 +79,7 @@ Plugin kan lastes ned her: https://plugins.jetbrains.com/plugin/6317-lombok
 Opprett en issue i GitHub for eventuelle spørsmål.
 
 Er du ansatt i NAV kan du stille spørsmål på Slack i kanalen #produktområdet_arbeidsoppfølging.
+
+## Kode generert av GitHub Copilot
+
+Dette repoet bruker GitHub Copilot til å generere kode.

@@ -2,12 +2,13 @@ package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
+import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
@@ -32,6 +33,7 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerMapperKt.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
@@ -263,6 +265,21 @@ public class OpensearchQueryBuilder {
             );
             queryBuilder.must(subQuery);
         }
+        if (filtervalg.harFargeKategoriFilter()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            BoolQueryBuilder subQueryUnkjent = boolQuery();
+            filtervalg.getFargekategorier().forEach(
+                    fargeKategori -> {
+                        if (FargekategoriVerdi.INGEN_KATEGORI.name().equals(fargeKategori)) {
+                            subQueryUnkjent.mustNot(existsQuery("fargekategori"));
+                            subQuery.should(subQueryUnkjent);
+                        } else {
+                            subQuery.should(matchQuery("fargekategori", fargeKategori));
+                        }
+                    }
+            );
+            queryBuilder.must(subQuery);
+        }
         if (filtervalg.harTalespraaktolkFilter() || filtervalg.harTegnspraakFilter()) {
             BoolQueryBuilder tolkBehovSubquery = boolQuery();
             BoolQueryBuilder tolkBehovTale = boolQuery();
@@ -330,17 +347,15 @@ public class OpensearchQueryBuilder {
             queryBuilder.must(existsQuery("enslige_forsorgere_overgangsstonad"));
         }
 
-        if (filtervalg.harHuskelapp != null && filtervalg.harHuskelapp) {
-            queryBuilder.must(existsQuery("huskelapp"));
-        }
-
         if (filtervalg.harDinSituasjonSvar()) {
             BoolQueryBuilder brukerensSituasjonSubQuery = boolQuery();
-            filtervalg.registreringstype.forEach(dinSituasjonSvar -> {
-                if (dinSituasjonSvar == DinSituasjonSvar.INGEN_DATA) {
-                    brukerensSituasjonSubQuery.should(boolQuery().mustNot(existsQuery("brukers_situasjon")));
+            filtervalg.registreringstype.forEach(jobbSituasjonBeskrivelse -> {
+                if (jobbSituasjonBeskrivelse == JobbSituasjonBeskrivelse.INGEN_DATA) {
+                    brukerensSituasjonSubQuery.should(boolQuery().mustNot(existsQuery("brukers_situasjoner")));
                 } else {
-                    brukerensSituasjonSubQuery.should(matchQuery("brukers_situasjon", dinSituasjonSvar));
+                    inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering(jobbSituasjonBeskrivelse).forEach(sokerOrd ->
+                            brukerensSituasjonSubQuery.should(matchQuery("brukers_situasjoner", sokerOrd))
+                    );
                 }
 
             });
@@ -453,9 +468,12 @@ public class OpensearchQueryBuilder {
             case "barn_under_18_aar" ->
                     sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger, filtervalg);
             case "brukersSituasjonSistEndret" -> searchSourceBuilder.sort("brukers_situasjon_sist_endret", order);
+            case "utdanningOgSituasjonSistEndret" ->
+                    searchSourceBuilder.sort("utdanning_og_situasjon_sist_endret", order);
             case "huskelapp_frist" -> sorterHuskelappFrist(searchSourceBuilder, order);
-            case "huskelapp" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
+            case "huskelapp" -> sorterHuskelappEksistere(searchSourceBuilder, order);
             case "huskelapp_kommentar" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
+            case "fargekategori" -> searchSourceBuilder.sort("fargekategori", order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
@@ -594,15 +612,14 @@ public class OpensearchQueryBuilder {
     }
 
     private static void sorterHuskelappFrist(SearchSourceBuilder builder, SortOrder order) {
-        String missingValuesReturn = order == SortOrder.ASC ? "2.55230829E14" : "-1";
         String expresion = """
                 if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
                     return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
                 }
                 else {
-                  return %s;
+                    return -1;
                 }
-                """.formatted(missingValuesReturn);
+                """;
         Script script = new Script(expresion);
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
@@ -611,11 +628,21 @@ public class OpensearchQueryBuilder {
 
     private static void sorterHuskelappEksistere(SearchSourceBuilder builder, SortOrder order) {
         String expresion = """
-                if (doc.containsKey('huskelapp') && !doc['huskelapp'].empty) {
-                    return 1;
+                // Når man sorterer huskelapp-kolonnen (ikon-knappen), skal de som har frist sorteres først, med nærmeste utløpsdato øverst
+                if (!doc['huskelapp.frist'].empty) {
+                    // Trekker fra (fra DateUtils.java) FAR_IN_THE_FUTURE_DATE = "3017-10-07T00:00:00Z" i millis
+                    return doc['huskelapp.frist'].value.toInstant().toEpochMilli() - 33064243200000.0;
+                }
+                else if (!doc['huskelapp.kommentar'].empty) {
+                    return 0;
+                }
+                else if (doc['arbeidsliste_aktiv'].value == true) {
+                    // Hvis en arbeidsliste ikke har frist setter indekseringen den til FAR_IN_THE_FUTURE_DATE
+                    return doc['arbeidsliste_frist'].value.toInstant().toEpochMilli();
                 }
                 else {
-                  return 0;
+                    // Returnerer 3017.10.07 + 1 i millis
+                    return 33064243200001.0;
                 }
                 """;
         Script script = new Script(expresion);
@@ -623,21 +650,6 @@ public class OpensearchQueryBuilder {
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
     }
-
-    private static void sorterHuskelappKommentar(SearchSourceBuilder builder, SortOrder order) {
-        String expresion = """
-                if (doc.containsKey('huskelapp.kommentar') && !doc['huskelapp.kommentar'].empty) {
-                    return doc['huskelapp.kommentar'];
-                }else{
-                    return '';
-                }
-                """;
-        Script script = new Script(expresion);
-        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, STRING);
-        scriptBuilder.order(order);
-        builder.sort(scriptBuilder);
-    }
-
 
     static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet, boolean erVedtakstottePilotPa) {
         QueryBuilder queryBuilder;
@@ -671,6 +683,9 @@ public class OpensearchQueryBuilder {
                 break;
             case MIN_ARBEIDSLISTE:
                 queryBuilder = matchQuery("arbeidsliste_aktiv", true);
+                break;
+            case MINE_HUSKELAPPER:
+                queryBuilder = existsQuery("huskelapp");
                 break;
             case NYE_BRUKERE_FOR_VEILEDER:
                 queryBuilder = matchQuery("ny_for_veileder", true);
@@ -824,7 +839,15 @@ public class OpensearchQueryBuilder {
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteBla", "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name())
+                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriA", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_A.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriB", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_B.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriC", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_C.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriD", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_D.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriE", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_E.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriF", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_F.name()),
+                mustNotExistFilter(filtrereVeilederOgEnhet, "fargekategoriIngenKategori", "fargekategori"),
+                mustExistFilter(filtrereVeilederOgEnhet, "mineHuskelapper", "huskelapp")
         };
 
         return new SearchSourceBuilder()
@@ -1078,6 +1101,15 @@ public class OpensearchQueryBuilder {
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
                         .must(existsQuery(value))
+        );
+    }
+
+    private static FiltersAggregator.KeyedFilter mustNotExistFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String value) {
+        return new FiltersAggregator.KeyedFilter(
+                key,
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .mustNot(existsQuery(value))
         );
     }
 

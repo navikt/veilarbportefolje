@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.EnhetId;
@@ -22,6 +24,7 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/veileder")
+@Tag(name = "Veileder", description = "Portefølje-funksjonalitet på veiledernivå.")
 public class VeilederController {
     private final OpensearchService opensearchService;
     private final AuthService authService;
@@ -29,6 +32,7 @@ public class VeilederController {
     private final AktivitetService aktivitetService;
 
     @PostMapping("/{veilederident}/portefolje")
+    @Operation(summary = "Hent portefølje for veileder", description = "Henter en liste med brukere under oppfølging som er tilordnet veilederen.")
     public Portefolje hentPortefoljeForVeileder(
             @PathVariable("veilederident") String veilederIdent,
             @RequestParam("enhet") String enhet,
@@ -42,8 +46,8 @@ public class VeilederController {
         ValideringsRegler.sjekkEnhet(enhet);
         ValideringsRegler.sjekkSortering(sortDirection, sortField);
         ValideringsRegler.sjekkFiltervalg(filtervalg);
-        authService.tilgangTilOppfolging();
-        authService.tilgangTilEnhet(enhet);
+        authService.innloggetVeilederHarTilgangTilOppfolging();
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
@@ -55,10 +59,11 @@ public class VeilederController {
     }
 
     @GetMapping("/{veilederident}/portefolje/statustall")
+    @Operation(summary = "Hent statustall for veilederportefølje", description = "Henter statustall på veileder (statistikk for alle brukere under oppfølging tilordnet veilederen).")
     public VeilederPortefoljeStatustallRespons hentVeilederportefoljeStatustall(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
-        authService.tilgangTilEnhet(enhet);
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         return new VeilederPortefoljeStatustallRespons(
                 opensearchService.hentStatustallForVeilederPortefolje(veilederIdent, enhet)
@@ -66,20 +71,22 @@ public class VeilederController {
     }
 
     @GetMapping("/{veilederident}/hentArbeidslisteForVeileder")
+    @Operation(summary = "Hent arbeidslister for veileder", description = "Henter en liste av arbeidslister for en gitt veileder på en gitt enhet.")
     public List<Arbeidsliste> hentArbeidslisteForVeileder(@PathVariable("veilederident") VeilederId veilederIdent, @RequestParam("enhet") EnhetId enhet) {
         ValideringsRegler.sjekkEnhet(enhet.get());
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
-        authService.tilgangTilEnhet(enhet.get());
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet.get());
 
         return arbeidslisteService.getArbeidslisteForVeilederPaEnhet(enhet, veilederIdent);
     }
 
     @GetMapping("{veilederident}/moteplan")
+    @Operation(summary = "Hent møteplan for veileder", description = "Henter en liste av fremtidige møter for en gitt veileder på en gitt enhet.")
     public List<Moteplan> hentMoteplanForVeileder(@PathVariable("veilederident") VeilederId veilederIdent, @RequestParam("enhet") EnhetId enhet) {
         ValideringsRegler.sjekkEnhet(enhet.get());
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
 
-        authService.tilgangTilEnhet(enhet.get());
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet.get());
         BrukerinnsynTilganger tilgangTilSkjermeteBrukere = authService.hentVeilederBrukerInnsynTilganger();
 
         return aktivitetService.hentMoteplan(veilederIdent, enhet, tilgangTilSkjermeteBrukere);

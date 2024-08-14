@@ -79,6 +79,54 @@ CREATE TABLE public.arbeidsliste (
 
 
 --
+-- Name: arbeidsliste_kopi_2023_12_19; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.arbeidsliste_kopi_2023_12_19 (
+    aktoerid character varying(20),
+    sist_endret_av_veilederident character varying(20),
+    kommentar character varying(1000),
+    frist timestamp without time zone,
+    endringstidspunkt timestamp without time zone,
+    overskrift character varying(500),
+    kategori character varying(10),
+    nav_kontor_for_arbeidsliste character varying(24)
+);
+
+
+--
+-- Name: arbeidsliste_kopi_2024_01_16; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.arbeidsliste_kopi_2024_01_16 (
+    aktoerid character varying(20),
+    sist_endret_av_veilederident character varying(20),
+    kommentar character varying(1000),
+    frist timestamp without time zone,
+    endringstidspunkt timestamp without time zone,
+    overskrift character varying(500),
+    kategori character varying(10),
+    nav_kontor_for_arbeidsliste character varying(24)
+);
+
+
+--
+-- Name: arbeidsliste_kopi_2024_06_13; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.arbeidsliste_kopi_2024_06_13 (
+    aktoerid character varying(20),
+    sist_endret_av_veilederident character varying(20),
+    kommentar character varying(1000),
+    frist timestamp without time zone,
+    endringstidspunkt timestamp without time zone,
+    overskrift character varying(500),
+    kategori character varying(10),
+    nav_kontor_for_arbeidsliste character varying(24)
+);
+
+
+--
 -- Name: bruker_cv; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -385,7 +433,35 @@ CREATE TABLE public.fargekategori (
     fnr character varying(11) NOT NULL,
     verdi character varying(25),
     sist_endret timestamp without time zone NOT NULL,
+    sist_endret_av_veilederident character varying(7),
+    enhet_id character varying(4)
+);
+
+
+--
+-- Name: fargekategori_kopi_2024_01_16; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.fargekategori_kopi_2024_01_16 (
+    id uuid,
+    fnr character varying(11),
+    verdi character varying(25),
+    sist_endret timestamp without time zone,
     sist_endret_av_veilederident character varying(7)
+);
+
+
+--
+-- Name: fargekategori_kopi_2024_06_13; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.fargekategori_kopi_2024_06_13 (
+    id uuid,
+    fnr character varying(11),
+    verdi character varying(25),
+    sist_endret timestamp without time zone,
+    sist_endret_av_veilederident character varying(7),
+    enhet_id character varying(4)
 );
 
 
@@ -563,6 +639,72 @@ CREATE TABLE public.oppfolgingsbruker_arena_v2 (
 
 
 --
+-- Name: opplysninger_om_arbeidssoeker; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.opplysninger_om_arbeidssoeker (
+    id integer NOT NULL,
+    opplysninger_om_arbeidssoeker_id uuid NOT NULL,
+    periode_id uuid NOT NULL,
+    sendt_inn_tidspunkt timestamp without time zone NOT NULL,
+    utdanning_nus_kode character varying(3),
+    utdanning_bestatt character varying(8),
+    utdanning_godkjent character varying(8)
+);
+
+
+--
+-- Name: opplysninger_om_arbeidssoeker_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.opplysninger_om_arbeidssoeker_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: opplysninger_om_arbeidssoeker_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.opplysninger_om_arbeidssoeker_id_seq OWNED BY public.opplysninger_om_arbeidssoeker.id;
+
+
+--
+-- Name: opplysninger_om_arbeidssoeker_jobbsituasjon; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.opplysninger_om_arbeidssoeker_jobbsituasjon (
+    id integer NOT NULL,
+    opplysninger_om_arbeidssoeker_id uuid NOT NULL,
+    jobbsituasjon character varying(255) NOT NULL
+);
+
+
+--
+-- Name: opplysninger_om_arbeidssoeker_jobbsituasjon_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.opplysninger_om_arbeidssoeker_jobbsituasjon_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: opplysninger_om_arbeidssoeker_jobbsituasjon_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.opplysninger_om_arbeidssoeker_jobbsituasjon_id_seq OWNED BY public.opplysninger_om_arbeidssoeker_jobbsituasjon.id;
+
+
+--
 -- Name: pdl_person_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -572,6 +714,38 @@ CREATE SEQUENCE public.pdl_person_seq
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
+
+
+--
+-- Name: profilering; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.profilering (
+    id integer NOT NULL,
+    periode_id uuid NOT NULL,
+    profilering_resultat character varying(40) NOT NULL,
+    sendt_inn_tidspunkt timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: profilering_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.profilering_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: profilering_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.profilering_id_seq OWNED BY public.profilering.id;
 
 
 --
@@ -615,6 +789,16 @@ CREATE TABLE public.siste_14a_vedtak (
     innsatsgruppe character varying(40) NOT NULL,
     fattet_dato timestamp with time zone NOT NULL,
     fra_arena boolean NOT NULL
+);
+
+
+--
+-- Name: siste_arbeidssoeker_periode; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.siste_arbeidssoeker_periode (
+    arbeidssoker_periode_id uuid,
+    fnr character varying(11) NOT NULL
 );
 
 
@@ -729,6 +913,27 @@ ALTER TABLE ONLY public.enslige_forsorgere_vedtaksresultat_type ALTER COLUMN id 
 --
 
 ALTER TABLE ONLY public.huskelapp ALTER COLUMN endrings_id SET DEFAULT nextval('public.huskelapp_endrings_id_seq'::regclass);
+
+
+--
+-- Name: opplysninger_om_arbeidssoeker id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker ALTER COLUMN id SET DEFAULT nextval('public.opplysninger_om_arbeidssoeker_id_seq'::regclass);
+
+
+--
+-- Name: opplysninger_om_arbeidssoeker_jobbsituasjon id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker_jobbsituasjon ALTER COLUMN id SET DEFAULT nextval('public.opplysninger_om_arbeidssoeker_jobbsituasjon_id_seq'::regclass);
+
+
+--
+-- Name: profilering id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.profilering ALTER COLUMN id SET DEFAULT nextval('public.profilering_id_seq'::regclass);
 
 
 --
@@ -956,6 +1161,46 @@ ALTER TABLE ONLY public.oppfolgingsbruker_arena_v2
 
 
 --
+-- Name: opplysninger_om_arbeidssoeker_jobbsituasjon opplysninger_om_arbeidssoeker_jobbsituasjon_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker_jobbsituasjon
+    ADD CONSTRAINT opplysninger_om_arbeidssoeker_jobbsituasjon_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: opplysninger_om_arbeidssoeker opplysninger_om_arbeidssoeker_opplysninger_om_arbeidssoeker_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker
+    ADD CONSTRAINT opplysninger_om_arbeidssoeker_opplysninger_om_arbeidssoeker_key UNIQUE (opplysninger_om_arbeidssoeker_id);
+
+
+--
+-- Name: opplysninger_om_arbeidssoeker opplysninger_om_arbeidssoeker_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker
+    ADD CONSTRAINT opplysninger_om_arbeidssoeker_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: profilering profilering_periode_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.profilering
+    ADD CONSTRAINT profilering_periode_id_key UNIQUE (periode_id);
+
+
+--
+-- Name: profilering profilering_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.profilering
+    ADD CONSTRAINT profilering_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: scheduled_tasks scheduled_tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -977,6 +1222,22 @@ ALTER TABLE ONLY public.shedlock
 
 ALTER TABLE ONLY public.siste_14a_vedtak
     ADD CONSTRAINT siste_14a_vedtak_pkey PRIMARY KEY (bruker_id);
+
+
+--
+-- Name: siste_arbeidssoeker_periode siste_arbeidssoeker_periode_arbeidssoker_periode_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.siste_arbeidssoeker_periode
+    ADD CONSTRAINT siste_arbeidssoeker_periode_arbeidssoker_periode_id_key UNIQUE (arbeidssoker_periode_id);
+
+
+--
+-- Name: siste_arbeidssoeker_periode siste_arbeidssoeker_periode_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.siste_arbeidssoeker_periode
+    ADD CONSTRAINT siste_arbeidssoeker_periode_pkey PRIMARY KEY (fnr);
 
 
 --
@@ -1076,6 +1337,13 @@ CREATE INDEX flyway_schema_history_s_idx ON public.flyway_schema_history USING b
 
 
 --
+-- Name: huskelapp_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX huskelapp_status ON public.huskelapp USING btree (status);
+
+
+--
 -- Name: huskelappenhetid; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1094,6 +1362,20 @@ CREATE INDEX huskelappfnr ON public.huskelapp USING btree (fnr);
 --
 
 CREATE INDEX huskelappid ON public.huskelapp USING btree (huskelapp_id);
+
+
+--
+-- Name: idx_bruker_identer_gruppe; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_bruker_identer_gruppe ON public.bruker_identer USING btree (gruppe);
+
+
+--
+-- Name: idx_bruker_identer_historisk; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_bruker_identer_historisk ON public.bruker_identer USING btree (historisk);
 
 
 --
@@ -1229,6 +1511,14 @@ ALTER TABLE ONLY public.enslige_forsorgere
 
 
 --
+-- Name: opplysninger_om_arbeidssoeker fk_arbeidssoeker_periode_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker
+    ADD CONSTRAINT fk_arbeidssoeker_periode_id FOREIGN KEY (periode_id) REFERENCES public.siste_arbeidssoeker_periode(arbeidssoker_periode_id) ON DELETE CASCADE;
+
+
+--
 -- Name: foreldreansvar fk_barn_ident; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1250,6 +1540,22 @@ ALTER TABLE ONLY public.foreldreansvar
 
 ALTER TABLE ONLY public.bruker_statsborgerskap
     ADD CONSTRAINT fk_freg_ident FOREIGN KEY (freg_ident) REFERENCES public.bruker_data(freg_ident) ON DELETE CASCADE;
+
+
+--
+-- Name: opplysninger_om_arbeidssoeker_jobbsituasjon opplysninger_om_arbeidssoeker_opplysninger_om_arbeidssoeke_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opplysninger_om_arbeidssoeker_jobbsituasjon
+    ADD CONSTRAINT opplysninger_om_arbeidssoeker_opplysninger_om_arbeidssoeke_fkey FOREIGN KEY (opplysninger_om_arbeidssoeker_id) REFERENCES public.opplysninger_om_arbeidssoeker(opplysninger_om_arbeidssoeker_id) ON DELETE CASCADE;
+
+
+--
+-- Name: profilering profilering_periode_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.profilering
+    ADD CONSTRAINT profilering_periode_id_fkey FOREIGN KEY (periode_id) REFERENCES public.siste_arbeidssoeker_periode(arbeidssoker_periode_id) ON DELETE CASCADE;
 
 
 --

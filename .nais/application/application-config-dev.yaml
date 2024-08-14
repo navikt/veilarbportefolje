@@ -7,7 +7,7 @@ metadata:
   labels:
     team: pto
 spec:
-  image: ghcr.io/navikt/veilarbportefolje/veilarbportefolje:{{version}}
+  image: {{image}}
   replicas:
     min: 2
     max: 3
@@ -17,6 +17,7 @@ spec:
     - https://veilarbportefolje.dev.intern.nav.no
     - https://veilarbportefolje.dev-fss-pub.nais.io
   webproxy: true
+  leaderElection: true
   secureLogs:
     enabled: true
   kafka:
@@ -65,6 +66,9 @@ spec:
         - application: pto-admin
           namespace: pto
           cluster: dev-fss
+        - application: azure-token-generator
+          namespace: aura
+          cluster: dev-gcp
     outbound:
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
@@ -90,6 +94,10 @@ spec:
       value: "http://veilarbveileder.pto.svc.nais.local/veilarbveileder"
     - name: VEILARBVEILEDER_TOKEN_SCOPE
       value: "api://dev-fss.pto.veilarbveileder/.default"
+    - name: VEILARBARENA_URL
+      value: "http://veilarbarena.pto.svc.nais.local/veilarbarena"
+    - name: VEILARBARENA_TOKEN_SCOPE
+      value: "api://dev-fss.pto.veilarbarena/.default"
     - name: PDL_URL
       value: "http://pdl-api.pdl.svc.nais.local"
     - name: PDL_TOKEN_SCOPE
@@ -99,4 +107,10 @@ spec:
     - name: POAO_TILGANG_TOKEN_SCOPE
       value: "api://dev-fss.poao.poao-tilgang/.default"
     - name: KODEVERK_URL
-      value: "http://kodeverk.default.svc.nais.local"
+      value: "https://kodeverk-api.nav.no"
+    - name: KODEVERK_SCOPE
+      value: "api://dev-gcp.team-rocket.kodeverk-api/.default"
+    - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_URL
+      value: "https://oppslag-arbeidssoekerregisteret.intern.dev.nav.no"
+    - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_SCOPE
+      value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"

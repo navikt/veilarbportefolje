@@ -12,6 +12,8 @@ on:
 jobs:
   deploy-alerts:
     name: Deploy alerts to prod-fss
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,6 +22,5 @@ jobs:
       - name: Deploy to prod-fss
         uses: nais/deploy/actions/deploy@v2
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_OBO }}
           CLUSTER: prod-fss
           RESOURCE: .nais/alerts/alerts-config-prod.yaml

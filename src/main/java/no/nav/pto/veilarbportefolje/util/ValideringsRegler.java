@@ -72,9 +72,11 @@ public class ValideringsRegler {
             "enslige_forsorgere_om_barnet",
             "barn_under_18_aar",
             "brukersSituasjonSistEndret",
-            "huskelapp",
             "huskelapp_frist",
-            "huskelapp_kommentar"
+            "huskelapp_kommentar",
+            "huskelapp",
+            "fargekategori",
+            "utdanningOgSituasjonSistEndret"
     );
 
     public static void sjekkEnhet(String enhet) {

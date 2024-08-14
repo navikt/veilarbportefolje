@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
-import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
@@ -107,8 +106,11 @@ public class Bruker {
     EnsligeForsorgereOvergangsstonad ensligeForsorgereOvergangsstonad;
 
     LocalDate brukersSituasjonSistEndret;
+    LocalDate utdanningOgSituasjonSistEndret;
 
     HuskelappForBruker huskelapp;
+    String fargekategori;
+    String fargekategoriEnhetId;
 
 
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
@@ -203,7 +205,11 @@ public class Bruker {
                 .setBarnUnder18AarData(bruker.getBarn_under_18_aar())
                 .setEnsligeForsorgereOvergangsstonad(bruker.getEnslige_forsorgere_overgangsstonad())
                 .setBrukersSituasjonSistEndret(bruker.getBrukers_situasjon_sist_endret())
-                .setHuskelapp(bruker.getHuskelapp());
+                .setUtdanningOgSituasjonSistEndret(bruker.getUtdanning_og_situasjon_sist_endret())
+                .setHuskelapp(bruker.getHuskelapp())
+                .setFargekategori(bruker.getFargekategori())
+                .setFargekategoriEnhetId(bruker.getFargekategori_enhetId());
+
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {
