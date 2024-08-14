@@ -1,13 +1,11 @@
 package no.nav.pto.veilarbportefolje.util
 
-import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.registrering.ArbeidssokerRegistreringRepositoryV2
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerJobbsituasjonEntity
@@ -39,7 +37,6 @@ import java.util.*
 
 class TestDataClient(
     private val jdbcTemplatePostgres: JdbcTemplate,
-    private val arbeidssokerRegistreringRepositoryV2: ArbeidssokerRegistreringRepositoryV2,
     private val oppfolgingsbrukerRepository: OppfolgingsbrukerRepositoryV3,
     private val arbeidslisteRepositoryV2: ArbeidslisteRepositoryV2,
     private val opensearchTestClient: OpensearchTestClient,
@@ -48,6 +45,13 @@ class TestDataClient(
     private val pdlPersonRepository: PdlPersonRepository,
     private val huskelappRepository: HuskelappRepository
 ) {
+    fun upsertBrukerregistreringV1(aktorId: AktorId) {
+        jdbcTemplatePostgres.update("""
+                        INSERT INTO BRUKER_REGISTRERING (AKTOERID) VALUES (?)
+                        ON CONFLICT (AKTOERID) DO NOTHING
+        """.trimIndent(), aktorId.get())
+    }
+
     fun endreNavKontorForBruker(aktoerId: AktorId, navKontor: NavKontor) {
         jdbcTemplatePostgres.update(
             """
@@ -175,9 +179,7 @@ class TestDataClient(
         )
         oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato)
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId)
-        arbeidssokerRegistreringRepositoryV2.upsertBrukerRegistrering(
-            ArbeidssokerRegistrertEvent(aktoerId.get(), null, null, null, null, null)
-        )
+        upsertBrukerregistreringV1(aktoerId)
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
             OppfolgingsbrukerEntity(
                 fnr.get(), null, null,
