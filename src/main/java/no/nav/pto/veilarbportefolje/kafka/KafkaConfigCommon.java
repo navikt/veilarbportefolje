@@ -51,7 +51,7 @@ import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
-import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.Tiltakshendelse;
+import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusendringService;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
@@ -413,14 +413,14 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(VedtakOvergangsstønadArbeidsoppfølging.class),
                                         ensligeForsorgereService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, Tiltakshendelse>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, KafkaTiltakshendelse>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.TILTAKSHENDELSE.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(Tiltakshendelse.class),
+                                        Deserializers.jsonDeserializer(KafkaTiltakshendelse.class),
                                         tiltakshendelseService::behandleKafkaRecord
                                 )
                 );

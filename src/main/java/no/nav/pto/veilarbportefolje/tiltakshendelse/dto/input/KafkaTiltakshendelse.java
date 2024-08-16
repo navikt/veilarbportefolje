@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record Tiltakshendelse (
+public record KafkaTiltakshendelse(
         UUID id,
         Boolean aktiv,
         LocalDateTime opprettet,
@@ -19,7 +19,7 @@ public record Tiltakshendelse (
         Avsender avsender
 ) {
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-    public Tiltakshendelse {
+    public KafkaTiltakshendelse {
     }
 
 }
