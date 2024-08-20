@@ -1,72 +1,94 @@
-package no.nav.pto.veilarbportefolje.tiltakshendelse;
+package no.nav.pto.veilarbportefolje.tiltakshendelse
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
-import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype;
-import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.database.PostgresTable.TILTAKSHENDELSE
+import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse
+import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype
+import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse
+import no.nav.pto.veilarbportefolje.util.DateUtils
+import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
+import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
+import java.sql.Timestamp
+import java.util.*
 
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.TILTAKSHENDELSE.*;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
-
-@Slf4j
 @Repository
-@RequiredArgsConstructor
-public class TiltakshendelseRepository {
-    private final JdbcTemplate db;
-
-    private static Tiltakshendelse tiltakshendelseMapper (Map<String, Object> rs) {
-        return new Tiltakshendelse(
-                (UUID) rs.get(ID),
-                toLocalDateTimeOrNull((Timestamp) rs.get(OPPRETTET)),
-                (String) rs.get(TEKST),
-                (String) rs.get(LENKE),
-                Tiltakstype.valueOf((String) rs.get(TILTAKSTYPE)),
-                Fnr.of((String) rs.get(FNR))
-        );
-    }
-
+class TiltakshendelseRepository(private val db: JdbcTemplate) {
     @Transactional
-    public boolean tryLagreTiltakshendelseData(KafkaTiltakshendelse tiltakshendelseData) {
-        return upsertTiltakshendelse(tiltakshendelseData);
+    fun tryLagreTiltakshendelseData(tiltakshendelseData: KafkaTiltakshendelse): Boolean {
+        return upsertTiltakshendelse(tiltakshendelseData)
     }
 
-    public boolean upsertTiltakshendelse(KafkaTiltakshendelse tiltakshendelse) {
+    fun upsertTiltakshendelse(tiltakshendelse: KafkaTiltakshendelse): Boolean {
         try {
-            db.update("""
+            db.update(
+                """
                     INSERT INTO tiltakshendelse
-                       (id, fnr, opprettet, tekst, lenke, tiltakstype_kode, avsender, sist_endret)          
-                                      VALUES (?, ?, ?, ?, ?, ?, ?, now())
+                       (${TILTAKSHENDELSE.ID}, 
+                        ${TILTAKSHENDELSE.FNR}, 
+                        ${TILTAKSHENDELSE.OPPRETTET}, 
+                        ${TILTAKSHENDELSE.TEKST}, 
+                        ${TILTAKSHENDELSE.LENKE}, 
+                        ${TILTAKSHENDELSE.TILTAKSTYPE}, 
+                        ${TILTAKSHENDELSE.AVSENDER}, 
+                        ${TILTAKSHENDELSE.SIST_ENDRET}
+                        )          
+                    VALUES (?, ?, ?, ?, ?, ?, ?, now())
                     ON CONFLICT (id)
-                    DO UPDATE SET (fnr, opprettet, tekst, lenke, tiltakstype_kode, avsender, sist_endret) = 
-                       (excluded.fnr, excluded.opprettet, excluded.tekst, excluded.lenke, excluded.tiltakstype_kode, excluded.avsender, excluded.sist_endret)
-                      """,
-                    tiltakshendelse.id(), tiltakshendelse.fnr().toString(), tiltakshendelse.opprettet(), tiltakshendelse.tekst(), tiltakshendelse.lenke(), tiltakshendelse.tiltakstype().name(), tiltakshendelse.avsender().name()
-            );
-            return true;
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return false;
+                    DO UPDATE SET (
+                        ${TILTAKSHENDELSE.FNR}, 
+                        ${TILTAKSHENDELSE.OPPRETTET}, 
+                        ${TILTAKSHENDELSE.TEKST}, 
+                        ${TILTAKSHENDELSE.LENKE}, 
+                        ${TILTAKSHENDELSE.TILTAKSTYPE}, 
+                        ${TILTAKSHENDELSE.AVSENDER}, 
+                        ${TILTAKSHENDELSE.SIST_ENDRET}
+                    ) = (excluded.${TILTAKSHENDELSE.FNR},
+                        excluded.${TILTAKSHENDELSE.OPPRETTET},
+                        excluded.${TILTAKSHENDELSE.TEKST},
+                        excluded.${TILTAKSHENDELSE.LENKE},
+                        excluded.${TILTAKSHENDELSE.TILTAKSTYPE},
+                        excluded.${TILTAKSHENDELSE.AVSENDER}, 
+                        excluded.${TILTAKSHENDELSE.SIST_ENDRET}
+                    )""".trimIndent(),
+                tiltakshendelse.id,
+                tiltakshendelse.fnr.toString(),
+                tiltakshendelse.opprettet,
+                tiltakshendelse.tekst,
+                tiltakshendelse.lenke,
+                tiltakshendelse.tiltakstype.name,
+                tiltakshendelse.avsender.name
+            )
+            return true
+        } catch (e: Exception) {
+            secureLog.error(e.message, e)
+            return false
         }
     }
 
-    public List<Tiltakshendelse> hentAlleTiltakshendelser()  {
-        String sql = "SELECT * FROM tiltakshendelse";
+    fun hentAlleTiltakshendelser(): List<Tiltakshendelse> {
+        val sql = "SELECT * FROM tiltakshendelse"
 
         try {
-            return db.queryForList(sql).stream().map(TiltakshendelseRepository::tiltakshendelseMapper).toList();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            return db!!.queryForList(sql).stream().map { rs: Map<String, Any> -> tiltakshendelseMapper(rs) }
+                .toList()
+        } catch (e: Exception) {
+            secureLog.error(e.message, e)
+            throw RuntimeException(e)
+        }
+    }
+
+    companion object {
+        private fun tiltakshendelseMapper(rs: Map<String, Any>): Tiltakshendelse {
+            return Tiltakshendelse(
+                rs[TILTAKSHENDELSE.ID] as UUID?,
+                DateUtils.toLocalDateTimeOrNull(rs[TILTAKSHENDELSE.OPPRETTET] as Timestamp?),
+                rs[TILTAKSHENDELSE.TEKST] as String?,
+                rs[TILTAKSHENDELSE.LENKE] as String?,
+                Tiltakstype.valueOf((rs[TILTAKSHENDELSE.TILTAKSTYPE] as String?)!!),
+                Fnr.of(rs[TILTAKSHENDELSE.FNR] as String?)
+            )
         }
     }
 }
