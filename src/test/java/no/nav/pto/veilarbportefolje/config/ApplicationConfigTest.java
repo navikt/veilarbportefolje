@@ -67,6 +67,8 @@ import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
+import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
+import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
@@ -170,7 +172,9 @@ import static org.mockito.Mockito.when;
         OpplysningerOmArbeidssoekerRepository.class,
         SisteArbeidssoekerPeriodeRepository.class,
         ProfileringRepository.class,
-        ArbeidssoekerDataRepository.class
+        ArbeidssoekerDataRepository.class,
+        TiltakshendelseRepository.class,
+        TiltakshendelseService.class
 })
 public class ApplicationConfigTest {
 
