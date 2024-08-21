@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
+import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import org.opensearch.OpenSearchException;
@@ -392,4 +393,8 @@ public class OpensearchIndexerV2 {
     }
 
 
+    public void updateTiltakshendelse(AktorId aktorId, Tiltakshendelse tiltakshendelse) {
+        // TODO do stuff
+
+    }
 }
