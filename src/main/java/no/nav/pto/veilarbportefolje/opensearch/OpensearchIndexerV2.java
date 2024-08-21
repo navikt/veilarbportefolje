@@ -349,6 +349,22 @@ public class OpensearchIndexerV2 {
         }
     }
 
+    @SneakyThrows
+    public void updateTiltakshendelse(AktorId aktorId, Tiltakshendelse tiltakshendelse) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .startObject("tiltakshendelse")
+                .field("id", tiltakshendelse.id().toString())
+                .field("lenke", tiltakshendelse.lenke())
+                .field("opprettet", tiltakshendelse.opprettet())
+                .field("tekst", tiltakshendelse.tekst())
+                .field("tiltakstype", tiltakshendelse.tiltakstype())
+                .endObject()
+                .endObject();
+
+        update(aktorId, content, format("Oppdatert tiltakshendelse med id: %s", tiltakshendelse.id()));
+    }
+
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
         if (!oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId)) {
             secureLog.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging, heller ikke for historiske identer: {}, med info {}", aktoerId, logInfo);
@@ -392,9 +408,4 @@ public class OpensearchIndexerV2 {
         }
     }
 
-
-    public void updateTiltakshendelse(AktorId aktorId, Tiltakshendelse tiltakshendelse) {
-        // TODO do stuff
-
-    }
 }
