@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
+import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import org.opensearch.OpenSearchException;
@@ -348,6 +349,22 @@ public class OpensearchIndexerV2 {
         }
     }
 
+    @SneakyThrows
+    public void updateTiltakshendelse(AktorId aktorId, Tiltakshendelse tiltakshendelse) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .startObject("tiltakshendelse")
+                .field("id", tiltakshendelse.id().toString())
+                .field("lenke", tiltakshendelse.lenke())
+                .field("opprettet", tiltakshendelse.opprettet())
+                .field("tekst", tiltakshendelse.tekst())
+                .field("tiltakstype", tiltakshendelse.tiltakstype())
+                .endObject()
+                .endObject();
+
+        update(aktorId, content, format("Oppdatert tiltakshendelse med id: %s", tiltakshendelse.id()));
+    }
+
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
         if (!oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId)) {
             secureLog.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging, heller ikke for historiske identer: {}, med info {}", aktoerId, logInfo);
@@ -390,6 +407,5 @@ public class OpensearchIndexerV2 {
             }
         }
     }
-
 
 }

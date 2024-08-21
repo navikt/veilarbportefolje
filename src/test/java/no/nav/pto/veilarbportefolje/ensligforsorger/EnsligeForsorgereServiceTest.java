@@ -30,7 +30,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
-import static no.nav.pto.veilarbportefolje.domene.EnsligeForsorgere.OVERGANGSSTØNAD;
+import static no.nav.pto.veilarbportefolje.domene.EnsligeForsorgere.OVERGANGSSTONAD;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
@@ -69,7 +69,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         setInitialState();
 
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.setEnsligeForsorgere(List.of(OVERGANGSSTØNAD));
+        filtervalg.setEnsligeForsorgere(List.of(OVERGANGSSTONAD));
         filtervalg.setFerdigfilterListe(List.of());
 
         verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
@@ -109,7 +109,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         );
 
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.setEnsligeForsorgere(List.of(OVERGANGSSTØNAD));
+        filtervalg.setEnsligeForsorgere(List.of(OVERGANGSSTONAD));
         filtervalg.setFerdigfilterListe(List.of());
 
         verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
@@ -171,7 +171,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setEnsligeForsorgere(List.of(OVERGANGSSTØNAD));
+                .setEnsligeForsorgere(List.of(OVERGANGSSTONAD));
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 navKontor.toString(),
