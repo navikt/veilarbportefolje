@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Avsender;
+import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype;
 
 import java.time.LocalDateTime;
@@ -22,4 +23,7 @@ public record KafkaTiltakshendelse(
     public KafkaTiltakshendelse {
     }
 
+    public static Tiltakshendelse mapTilTiltakshendelse(KafkaTiltakshendelse hendelse) {
+        return new Tiltakshendelse(hendelse.id, hendelse.opprettet, hendelse.tekst, hendelse.lenke, hendelse.tiltakstype, hendelse.fnr);
+    }
 }
