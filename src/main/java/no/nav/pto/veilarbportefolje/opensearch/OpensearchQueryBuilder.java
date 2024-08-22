@@ -703,6 +703,9 @@ public class OpensearchQueryBuilder {
                     throw new IllegalStateException();
                 }
                 break;
+            case TILTAKSHENDELSER:
+                queryBuilder = existsQuery("tiltakshendelse");
+                break;
             default:
                 throw new IllegalStateException();
 

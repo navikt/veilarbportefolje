@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
+import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -129,4 +130,5 @@ public class OppfolgingsBruker {
     HuskelappForBruker huskelapp;
     String fargekategori;
     String fargekategori_enhetId;
+    Tiltakshendelse tiltakshendelse;
 }
