@@ -27,7 +27,7 @@ public class TiltakshendelseService extends KafkaCommonConsumerService<KafkaTilt
 
         if (bleLagret) {
             Tiltakshendelse eldsteTiltakshendelse = repository.hentEldsteTiltakshendelse(tiltakshendelseData.fnr());
-            Boolean nyHendelseErEldstIDatabasen = eldsteTiltakshendelse.id().equals(tiltakshendelseData.id());
+            boolean nyHendelseErEldstIDatabasen = eldsteTiltakshendelse.id().equals(tiltakshendelseData.id());
 
             if (nyHendelseErEldstIDatabasen) {
                 opensearchIndexerV2.updateTiltakshendelse(aktorId, KafkaTiltakshendelse.mapTilTiltakshendelse(tiltakshendelseData));
