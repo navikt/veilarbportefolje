@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable.TILTAKSHENDELSE
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
@@ -92,7 +93,9 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
 
         try {
             return db.queryForObject(sql, TiltakshendelseMapper::tiltakshendelseMapper, fnr.toString())
-        } catch (e: Exception) {
+        } catch (e: EmptyResultDataAccessException) {
+            return null
+        } catch (e: Error) {
             secureLog.error(e.message, e)
             throw RuntimeException(e)
         }

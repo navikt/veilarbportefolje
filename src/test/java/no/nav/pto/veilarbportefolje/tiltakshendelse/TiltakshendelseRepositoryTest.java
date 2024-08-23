@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
@@ -113,6 +114,13 @@ class TiltakshendelseRepositoryTest {
         assertTrue(repository.tryLagreTiltakshendelseData(tiltakshendelse3));
 
         Tiltakshendelse eldsteTiltakshendelse = repository.hentEldsteTiltakshendelse(fnr);
-        assert(eldsteTiltakshendelse.id().equals(id3));
+        assert (eldsteTiltakshendelse.id().equals(id3));
+    }
+
+    @Test
+    public void kanBeOmEldsteHendelseForBrukerUtenHendelse() {
+        Fnr fnr = Fnr.of("11223312345");
+
+        assertDoesNotThrow(() ->repository.hentEldsteTiltakshendelse(fnr));
     }
 }
