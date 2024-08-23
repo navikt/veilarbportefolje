@@ -25,6 +25,9 @@ public class TiltakshendelseService extends KafkaCommonConsumerService<KafkaTilt
         boolean bleLagret = tiltakshendelseRepository.tryLagreTiltakshendelseData(tiltakshendelseData);
 
         if (bleLagret) {
+            /* TODO Sjekk om den har eldre opprettingsdato enn dei vi har lagra allereie før oppdatering ("getEldsteTiltakshendelse")
+             * Slik at vi alltid har den eldste i opensearch
+             */
             opensearchIndexerV2.updateTiltakshendelse(aktorId, KafkaTiltakshendelse.mapTilTiltakshendelse(tiltakshendelseData));
         }
     }
