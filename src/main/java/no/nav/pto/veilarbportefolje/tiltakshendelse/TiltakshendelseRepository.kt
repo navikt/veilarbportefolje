@@ -3,15 +3,11 @@ package no.nav.pto.veilarbportefolje.tiltakshendelse
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.database.PostgresTable.TILTAKSHENDELSE
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse
-import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse
-import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
-import java.sql.Timestamp
-import java.util.*
 
 @Repository
 class TiltakshendelseRepository(private val db: JdbcTemplate) {
@@ -71,7 +67,7 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
         val sql = "SELECT * FROM tiltakshendelse"
 
         try {
-            return db!!.queryForList(sql).stream().map { rs: Map<String, Any> -> tiltakshendelseMapper(rs) }
+            return db.queryForList(sql).stream().map { rs: Map<String, Any> -> TiltakshendelseMapper.tiltakshendelseMapper(rs) }
                 .toList()
         } catch (e: Exception) {
             secureLog.error(e.message, e)
@@ -79,20 +75,26 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
         }
     }
 
-    fun hentEldsteTiltakshendelse(fnr: Fnr): Tiltakshendelse {
-        throw NotImplementedError()
-    }
+    /**
+     * "Eldste tiltakshendelse" er den hendelsen med eldst opprettet-dato,
+     * ikkje nødvendigvis den fyrste som vart lagra i databasen.
+     * */
+    fun hentEldsteTiltakshendelse(fnr: Fnr): Tiltakshendelse? {
+        val sql = """
+            SELECT id, fnr, opprettet, tekst, lenke, tiltakstype_kode, avsender, sist_endret
+              FROM tiltakshendelse as t
+            INNER JOIN
+              (SELECT MIN(opprettet) as eldsteOpprettet
+                  FROM tiltakshendelse
+                  WHERE fnr = ?
+              ) x ON x.eldsteOpprettet = t.opprettet
+        """.trimIndent()
 
-    companion object {
-        private fun tiltakshendelseMapper(rs: Map<String, Any>): Tiltakshendelse {
-            return Tiltakshendelse(
-                rs[TILTAKSHENDELSE.ID] as UUID?,
-                DateUtils.toLocalDateTimeOrNull(rs[TILTAKSHENDELSE.OPPRETTET] as Timestamp?),
-                rs[TILTAKSHENDELSE.TEKST] as String?,
-                rs[TILTAKSHENDELSE.LENKE] as String?,
-                Tiltakstype.valueOf((rs[TILTAKSHENDELSE.TILTAKSTYPE] as String?)!!),
-                Fnr.of(rs[TILTAKSHENDELSE.FNR] as String?)
-            )
+        try {
+            return db.queryForObject(sql, TiltakshendelseMapper::tiltakshendelseMapper, fnr.toString())
+        } catch (e: Exception) {
+            secureLog.error(e.message, e)
+            throw RuntimeException(e)
         }
     }
 }
