@@ -79,6 +79,10 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
         }
     }
 
+    fun hentEldsteTiltakshendelse(fnr: Fnr): Tiltakshendelse {
+        throw NotImplementedError()
+    }
+
     companion object {
         private fun tiltakshendelseMapper(rs: Map<String, Any>): Tiltakshendelse {
             return Tiltakshendelse(
