@@ -83,12 +83,9 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
     fun hentEldsteTiltakshendelse(fnr: Fnr): Tiltakshendelse? {
         val sql = """
             SELECT id, fnr, opprettet, tekst, lenke, tiltakstype_kode, avsender, sist_endret
-              FROM tiltakshendelse as t
-            INNER JOIN
-              (SELECT MIN(opprettet) as eldsteOpprettet
-                  FROM tiltakshendelse
-                  WHERE fnr = ?
-              ) x ON x.eldsteOpprettet = t.opprettet
+              FROM tiltakshendelse
+              WHERE fnr = ? 
+            ORDER BY opprettet LIMIT 1
         """.trimIndent()
 
         try {

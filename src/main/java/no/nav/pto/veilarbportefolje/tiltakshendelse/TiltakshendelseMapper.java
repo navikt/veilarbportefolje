@@ -14,7 +14,7 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.TILTAKSHENDELS
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
 
 public class TiltakshendelseMapper {
-    private TiltakshendelseMapper() { /* no-op */}
+    private TiltakshendelseMapper() { /* Unngår at vi har ein public constructor på klassen */}
 
     public static Tiltakshendelse tiltakshendelseMapper(Map<String, Object> rs) {
         return new Tiltakshendelse(
