@@ -20,6 +20,8 @@ import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
+import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
+import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -43,6 +45,7 @@ public class PostgresOpensearchMapper {
     private final BarnUnder18AarService barnUnder18AarService;
     private final EnsligeForsorgereService ensligeForsorgereService;
     private final ArbeidssoekerService arbeidssoekerService;
+    private final TiltakshendelseRepository tiltakshendelseRepository;
 
     public void flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -169,6 +172,13 @@ public class PostgresOpensearchMapper {
             if (fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(Fnr.of(bruker.getFnr()))) {
                 bruker.setEnslige_forsorgere_overgangsstonad(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.get(Fnr.of(bruker.getFnr())).toEnsligeForsorgereOpensearchDto());
             }
+        });
+    }
+
+    public void flettInnTiltakshendelser(List<OppfolgingsBruker> brukere) {
+        brukere.forEach(bruker -> {
+            Tiltakshendelse eldsteTiltakshendelsePaBruker = tiltakshendelseRepository.hentEldsteTiltakshendelse(Fnr.of(bruker.getFnr()));
+            bruker.setTiltakshendelse(eldsteTiltakshendelsePaBruker);
         });
     }
 
