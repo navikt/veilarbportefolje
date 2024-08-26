@@ -17,7 +17,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -88,5 +89,38 @@ class TiltakshendelseRepositoryTest {
 
         List<Tiltakshendelse> tiltakshendelser = repository.hentAlleTiltakshendelser();
         assert (tiltakshendelser.size() == 2);
+    }
+
+    @Test
+    public void kanHenteTiltakshendelseMedEldsteOpprettetdato() {
+        Fnr fnr = Fnr.of("11223312345");
+
+        UUID id1 = UUID.randomUUID();
+        LocalDateTime opprettet1 = LocalDateTime.of(2024, 6, 1, 12, 0);
+
+        UUID id2 = UUID.randomUUID();
+        LocalDateTime opprettet2 = LocalDateTime.of(2022, 6, 1, 12, 0);
+
+        UUID id3 = UUID.randomUUID();
+        LocalDateTime opprettet3 = LocalDateTime.of(2020, 6, 1, 12, 0);
+
+        KafkaTiltakshendelse tiltakshendelse1 = new KafkaTiltakshendelse(id1, true, opprettet1, "Forslag: endre varighet", "http.cat/204", Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse tiltakshendelse2 = new KafkaTiltakshendelse(id2, true, opprettet2, "Forslag: endre varighet", "http.cat/204", Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse tiltakshendelse3 = new KafkaTiltakshendelse(id3, true, opprettet3, "Forslag: endre varighet", "http.cat/204", Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+
+        // Lagrar hendelsane i motsett rekkefølgje av oppretta-tidspunktet
+        assertTrue(repository.tryLagreTiltakshendelseData(tiltakshendelse1));
+        assertTrue(repository.tryLagreTiltakshendelseData(tiltakshendelse2));
+        assertTrue(repository.tryLagreTiltakshendelseData(tiltakshendelse3));
+
+        Tiltakshendelse eldsteTiltakshendelse = repository.hentEldsteTiltakshendelse(fnr);
+        assert (eldsteTiltakshendelse.id().equals(id3));
+    }
+
+    @Test
+    public void kanBeOmEldsteHendelseForBrukerUtenHendelse() {
+        Fnr fnr = Fnr.of("11223312345");
+
+        assertDoesNotThrow(() ->repository.hentEldsteTiltakshendelse(fnr));
     }
 }
