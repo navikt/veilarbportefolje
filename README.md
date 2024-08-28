@@ -20,7 +20,8 @@ Følgende data aggregeres:
 
 ### Swagger-dokumentasjon
 
-Endepunktene er dokumentert vha. Swagger/OpenAPI. Dokumentasjonen er tilgjengelig på egen sti, som i skrivende stund (08.05.24) er `https://veilarbportefoljeflate.intern.dev.nav.no/veilarbportefolje/internal/swagger-ui/index.html`.
+Endepunktene er dokumentert vha. Swagger/OpenAPI. Dokumentasjonen er tilgjengelig på egen sti, som i skrivende stund (
+08.05.24) er `https://veilarbportefoljeflate.intern.dev.nav.no/veilarbportefolje/internal/swagger-ui/index.html`.
 
 ## Hvordan bygge
 
@@ -36,35 +37,41 @@ Mere info om:
 https://aiven.io/opensearch
 
 Settings for index er definert i filen:
+
 ```
 src/main/resources/opensearch_settings.json
 ```
 
 ### Fremgangsmåte ved endringer i OpenSearch settings
+
 Når det gjøres endringer i `src/main/resources/opensearch_settings.json`, så er oppsettet slik at det må lages en ny
 indeks. Dvs. man oppdaterer ikke den eksisterende indeksen. Den nye indeksen må populeres med data før den kan erstatte
 den gamle.
 
 #### Fremgangsmåte
+
 1. Gjør endringer i `src/main/resources/opensearch_settings.json`, commit, push og deploy
 2. Gå til pto-admin i riktig miljø (dev/prod) og velg "Veilarbportefolje" i dropdown
 3. Utfør en "Hovedindeksering". Bruk referansen i response til å følge med i loggene. Denne jobben gjør oppdatering av
-alle brukere i eksisterende indeks. Formålet er å se hvor lang tid det tar å indeksere alle brukerne.
+   alle brukere i eksisterende indeks. Formålet er å se hvor lang tid det tar å indeksere alle brukerne.
 4. Når man oppretter ny indeks (neste steg), så vil ikke endringer som kommer underveis
-oppdatere den gamle indeksen som fortsatt er i bruk. Endringene vil først bli synlige i Oversikten når den nye indeksen
-er ferdig indeksert, og den gamle indeksen er slettet. Se derfor hvor lang tid indekseringen i steg 3 tok, og vurder
-tidspunktet på dagen neste steg bør gjøres. Normalt sett tar indekseringen 10-15min. Dersom det tar mye lenger tid
-bør det undersøkes om nye endringer har ført til dette, f.eks. manglende databaseindeks.
+   oppdatere den gamle indeksen som fortsatt er i bruk. Endringene vil først bli synlige i Oversikten når den nye
+   indeksen
+   er ferdig indeksert, og den gamle indeksen er slettet. Se derfor hvor lang tid indekseringen i steg 3 tok, og vurder
+   tidspunktet på dagen neste steg bør gjøres. Normalt sett tar indekseringen 10-15min. Dersom det tar mye lenger tid
+   bør det undersøkes om nye endringer har ført til dette, f.eks. manglende databaseindeks.
 5. Utfør "Hovedindeksering: Nytt alias", som oppretter ny indeks og indekserer alle brukere på den. Samtidig blir
-gjeldende indeks satt til read-only. Når indeksering er ferdig tas den nye indeksen i bruk og den gamle slettes.
-Bruk referansen i response til å følge med i loggene. Dersom jobben feiler, så skal den nye indeksen bli slettet, og
-den gamle brukes videre (read-only modus fjernes). Skulle jobben feile, så bør man kjøre en vanlig hovedindeksering
-igjen (steg 3), siden endringer som kom inn mens jobben kjørte, før den feilet, kun blir skrivet til den nye indeksen.
+   gjeldende indeks satt til read-only. Når indeksering er ferdig tas den nye indeksen i bruk og den gamle slettes.
+   Bruk referansen i response til å følge med i loggene. Dersom jobben feiler, så skal den nye indeksen bli slettet, og
+   den gamle brukes videre (read-only modus fjernes). Skulle jobben feile, så bør man kjøre en vanlig hovedindeksering
+   igjen (steg 3), siden endringer som kom inn mens jobben kjørte, før den feilet, kun blir skrivet til den nye
+   indeksen.
 
 ## PostgreSQL
 
 Innloggingsinformasjon til databasen:
 https://vault.adeo.no/
+
 * Dev: `vault read postgresql/preprod-fss/creds/veilarbportefolje-dev-admin`
 * Prod: `vault read postgresql/prod-fss/creds/veilarbportefolje-prod-readonly`
 
@@ -83,3 +90,4 @@ Er du ansatt i NAV kan du stille spørsmål på Slack i kanalen #produktområdet
 ## Kode generert av GitHub Copilot
 
 Dette repoet bruker GitHub Copilot til å generere kode.
+
