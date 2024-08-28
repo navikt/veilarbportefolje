@@ -85,7 +85,7 @@ jobs:
       - name: Deploy application
         uses: nais/deploy/actions/deploy@v2
         env:
-          CLUSTER: prod-fss
+          CLUSTER: prod-gcp
           RESOURCE: .nais/application/gcp/application-config-prod.yaml
           VAR: image=${{ needs.build-and-push.outputs.image }}
 
