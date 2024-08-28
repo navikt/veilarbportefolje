@@ -1,4 +1,4 @@
-name: Build, push and deploy
+name: Build, push and deploy GCP
 on: push
 env:
   IMAGE_TAG: ${{ github.sha }}
