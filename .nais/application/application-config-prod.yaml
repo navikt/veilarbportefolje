@@ -3,9 +3,9 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: veilarbportefolje
-  namespace: obo
+  namespace: pto
   labels:
-    team: obo
+    team: pto
 spec:
   image: {{image}}
   replicas:
@@ -15,13 +15,24 @@ spec:
   port: 8080
   ingresses:
     - https://veilarbportefolje.intern.nav.no
+    - https://veilarbportefolje.prod-fss-pub.nais.io
+    - https://veilarbportefolje.nais.adeo.no
+    - https://app.adeo.no/veilarbportefolje
   webproxy: true
   leaderElection: true
   secureLogs:
     enabled: true
   kafka:
     pool: nav-prod
+  vault:
+    enabled: true
+    paths:
+      - kvPath: /serviceuser/data/prod/srvveilarbportefolje
+        mountPath: /var/run/secrets/nais.io/service_user
+      - kvPath: /kv/prod/fss/veilarbportefolje/default
+        mountPath: /var/run/secrets/nais.io/vault
   envFrom:
+    - configmap: pto-config
     - secret: veilarbportefolje-unleash-api-token
   liveness:
     path: veilarbportefolje/internal/isAlive
@@ -37,13 +48,6 @@ spec:
   openSearch:
     access: admin
     instance: veilarbportefolje
-  gcp:
-    sqlInstances:
-      - type: POSTGRES_15
-        tier: db-custom-1-4096
-        databases:
-          - name: veilarbportefolje
-            envVarPrefix: DB
   azure:
     application:
       allowAllUsers: true
@@ -57,36 +61,16 @@ spec:
       rules:
         - application: veilarbportefoljeflatefs
           namespace: obo
+          cluster: prod-gcp
         - application: veilarbpersonflate
           namespace: poao
+          cluster: prod-gcp
         - application: pto-admin
           namespace: pto
           cluster: prod-fss
     outbound:
-      rules:
-        - application: kodeverk-api
-          namespace: team-rocket
-        - application: pdl-api
-          namespace: pdl
-          cluster: dev-fss
-        - application: veilarbvedtaksstotte
-          namespace: pto
-          cluster: dev-fss
-        - application: veilarbarena
-          namespace: pto
-          cluster: dev-fss
-        - application: veilarbveileder
-          namespace: pto
-          cluster: dev-fss
-        - application: poao-tilgang
-          namespace: poao
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
-        - host: pdl-api.dev-fss-pub.nais.io
-        - host: veilarboppfolging.dev-fss-pub.nais.io
-        - host: veilarbvedtaksstotte.dev-fss-pub.nais.io
-        - host: veilarbveileder.dev-fss-pub.nais.io
-        - host: veilarbarena.dev-fss-pub.nais.io
   resources:
     limits:
       cpu: "4"
@@ -98,34 +82,34 @@ spec:
     - name: JAVA_OPTS
       value: "-Xms4096m -Xmx10144m --illegal-access=permit --add-opens=java.base/java.lang=ALL-UNNAMED"
     - name: VEILARBOPPFOLGING_URL
-      value: "https://veilarboppfolging.prod-fss-pub.nais.io/veilarboppfolging"
+      value: "http://veilarboppfolging.pto.svc.nais.local/veilarboppfolging"
     - name: VEILARBOPPFOLGING_TOKEN_SCOPE
       value: "api://prod-fss.pto.veilarboppfolging/.default"
     - name: VEILARBVEDTAKSSTOTTE_URL
-      value: "https://veilarbvedtaksstotte.prod-fss-pub.nais.io/veilarbvedtaksstotte"
+      value: "http://veilarbvedtaksstotte.pto.svc.nais.local/veilarbvedtaksstotte"
     - name: VEILARBVEDTAKSSTOTTE_TOKEN_SCOPE
       value: "api://prod-fss.pto.veilarbvedtaksstotte/.default"
     - name: VEILARBVEILEDER_URL
-      value: "https://veilarbveileder.prod-fss-pub.nais.io/veilarbveileder"
+      value: "http://veilarbveileder.pto.svc.nais.local/veilarbveileder"
     - name: VEILARBVEILEDER_TOKEN_SCOPE
       value: "api://prod-fss.pto.veilarbveileder/.default"
     - name: VEILARBARENA_URL
-      value: "https://veilarbarena.prod-fss-pub.nais.io/veilarbarena"
+      value: "http://veilarbarena.pto.svc.nais.local/veilarbarena"
     - name: VEILARBARENA_TOKEN_SCOPE
       value: "api://prod-fss.pto.veilarbarena/.default"
     - name: PDL_URL
-      value: "https://pdl-api.prod-fss-pub.nais.io"
+      value: "http://pdl-api.pdl.svc.nais.local"
     - name: PDL_TOKEN_SCOPE
       value: "api://prod-fss.pdl.pdl-api/.default"
     - name: POAO_TILGANG_URL
-      value: "http://poao-tilgang.poao"
+      value: "http://poao-tilgang.poao.svc.nais.local"
     - name: POAO_TILGANG_TOKEN_SCOPE
       value: "api://prod-fss.poao.poao-tilgang/.default"
     - name: KODEVERK_URL
-      value: "https://kodeverk-api.intern.nav.no"
+      value: "https://kodeverk-api.nav.no"
     - name: KODEVERK_SCOPE
       value: "api://prod-gcp.team-rocket.kodeverk-api/.default"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_URL
-      value: "http://paw-arbeidssoekerregisteret-api-oppslag.paw"
+      value: "https://oppslag-arbeidssoekerregisteret.intern.nav.no"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_SCOPE
       value: "api://prod-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
