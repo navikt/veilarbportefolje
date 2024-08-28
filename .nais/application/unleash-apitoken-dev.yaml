@@ -3,7 +3,6 @@ kind: ApiToken
 metadata:
   name: veilarbportefolje
   namespace: obo
-  cluster: dev-gcp
   labels:
     team: obo
 spec:

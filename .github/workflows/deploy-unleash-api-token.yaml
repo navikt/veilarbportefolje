@@ -39,7 +39,7 @@ jobs:
         uses: nais/deploy/actions/deploy@v2
         if: github.ref == 'refs/heads/master'
         env:
-          CLUSTER: prod-fss
+          CLUSTER: prod-gcp
           RESOURCE: .nais/application/unleash-apitoken-prod.yaml
           PRINT_PAYLOAD: true
 

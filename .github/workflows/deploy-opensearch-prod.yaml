@@ -1,4 +1,4 @@
-name: Deploy opensearch til Dev
+name: Deploy opensearch til Prod
 on:
   workflow_dispatch:
 
@@ -13,5 +13,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: nais/deploy/actions/deploy@v2
         env:
-          CLUSTER: dev-gcp
-          RESOURCE: ".nais/application/opensearch-dev.yaml"
+          CLUSTER: prod-gcp
+          RESOURCE: ".nais/application/opensearch-prod.yaml"

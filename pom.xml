@@ -186,12 +186,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <dependency>
-            <groupId>com.github.navikt</groupId>
-            <artifactId>veilarbregistrering-skjema</artifactId>
-            <version>${veilarbregistrering.skjema.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.github.navikt</groupId>
             <artifactId>pto-schema</artifactId>
@@ -348,7 +342,7 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.13.2</version>
+            <version>1.13.3</version>
         </dependency>
 
         <!-- Swagger -->
