@@ -14,4 +14,4 @@ jobs:
       - uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: prod-gcp
-          RESOURCE: ".nais/application/opensearch-prod.yaml"
+          RESOURCE: ".nais/application/gcp/opensearch-prod.yaml"
