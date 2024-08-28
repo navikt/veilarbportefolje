@@ -48,6 +48,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.generateJWT;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -120,7 +122,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_for_bruker_som_ikke_har_arbeidsliste_v1() {
+    void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_for_bruker_som_ikke_har_arbeidsliste_v1()  {
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.post(String.format("/api/arbeidsliste/%s", TEST_FNR))
                             .contentType(MediaType.APPLICATION_JSON)
@@ -143,7 +145,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_for_bruker_som_ikke_har_arbeidsliste_v2() {
+    void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_for_bruker_som_ikke_har_arbeidsliste_v2()  {
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
             mockMvc.perform(MockMvcRequestBuilders.post("/api/v2/arbeidsliste")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -165,7 +167,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_for_bruker_som_har_arbeidsliste_v1() {
+    void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_for_bruker_som_har_arbeidsliste_v1()  {
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity1 = OppfolgingsbrukerEntity.builder()
                 .fodselsnr(TEST_FNR)
                 .nav_kontor(TEST_ENHETSID)
@@ -204,7 +206,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_for_bruker_som_har_arbeidsliste_v2() {
+    void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_for_bruker_som_har_arbeidsliste_v2()  {
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity1 = OppfolgingsbrukerEntity.builder()
                 .fodselsnr(TEST_FNR)
                 .nav_kontor(TEST_ENHETSID)
@@ -242,7 +244,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_for_bruker_som_har_arbeidsliste_og_fargekategori_v1() {
+    void opprett_arbeidsliste_skal_lagre_arbeisliste_som_forventet_for_bruker_som_har_arbeidsliste_og_fargekategori_v1()  {
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity1 = OppfolgingsbrukerEntity.builder()
                 .fodselsnr(TEST_FNR)
                 .nav_kontor(TEST_ENHETSID)
@@ -327,7 +329,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void slett_arbeidsliste_skal_returnere_ok_nar_bruker_ikke_har_arbeidsliste_v1() {
+    void slett_arbeidsliste_skal_returnere_ok_nar_bruker_ikke_har_arbeidsliste_v1()  {
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
 
             mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/api/arbeidsliste/%s", TEST_FNR))).andExpect(
@@ -342,12 +344,12 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void slett_arbeidsliste_skal_returnere_ok_nar_bruker_ikke_har_arbeidsliste_v2() {
+    void slett_arbeidsliste_skal_returnere_ok_nar_bruker_ikke_har_arbeidsliste_v2()  {
         authContextHolder.withContext(new AuthContext(UserRole.INTERN, generateJWT(TEST_VEILEDERIDENT)), () -> {
 
             mockMvc.perform(MockMvcRequestBuilders.delete("/api/v2/arbeidsliste")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(JsonUtils.toJson(new ArbeidslisteForBrukerRequest(Fnr.of(TEST_FNR))))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(JsonUtils.toJson(new ArbeidslisteForBrukerRequest(Fnr.of(TEST_FNR))))
             ).andExpect(
                     MockMvcResultMatchers.status().isOk()
             );
@@ -362,7 +364,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_v1() {
+    void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_v1()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 null,
@@ -384,7 +386,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_v2() {
+    void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_v2()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 null,
@@ -411,7 +413,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v1() {
+    void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v1()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "",
@@ -437,7 +439,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v2() {
+    void slett_arbeidsliste_skal_fjerne_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v2()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "",
@@ -468,7 +470,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_v1() {
+    void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_v1()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 null,
@@ -496,7 +498,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_v2() {
+    void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_v2()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 null,
@@ -527,7 +529,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v1() {
+    void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v1()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "",
@@ -559,7 +561,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v2() {
+    void oppdater_arbeidsliste_skal_oppdatere_arbeidsliste_som_forventet_nar_bruker_har_arbeidsliste_og_fargekategori_v2()  {
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "",
@@ -594,7 +596,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void hent_arbeidsliste_for_veileder_skal_returnere_arbeidslister_som_forventet_nar_brukere_har_arbeidsliste_v1() {
+    void hent_arbeidsliste_for_veileder_skal_returnere_arbeidslister_som_forventet_nar_brukere_har_arbeidsliste_v1()  {
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity1 = OppfolgingsbrukerEntity.builder()
                 .fodselsnr(TEST_FNR)
                 .nav_kontor(TEST_ENHETSID)
@@ -635,7 +637,7 @@ class ArbeidslisteIntegrationTest {
     }
 
     @Test
-    void hent_arbeidsliste_for_veileder_skal_returnere_arbeidslister_som_forventet_nar_brukere_har_arbeidsliste_og_fargekategori_v1() {
+    void hent_arbeidsliste_for_veileder_skal_returnere_arbeidslister_som_forventet_nar_brukere_har_arbeidsliste_og_fargekategori_v1()  {
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity1 = OppfolgingsbrukerEntity.builder()
                 .fodselsnr(TEST_FNR)
                 .nav_kontor(TEST_ENHETSID)

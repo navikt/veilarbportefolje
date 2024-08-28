@@ -101,7 +101,7 @@ public class SensurerBrukerTest {
 
     @Test
     public void skalIkkeSeKode6Barn() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("",""));
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6Barn());
         sjekkAtBarnMedKode6ErFjernet(filtrerteBrukere);
     }
