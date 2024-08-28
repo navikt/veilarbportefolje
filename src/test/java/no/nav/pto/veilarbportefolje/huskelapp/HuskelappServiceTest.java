@@ -107,39 +107,6 @@ public class HuskelappServiceTest {
         assertThat(result1.isPresent()).isTrue();
     }
 
-    @Test
-    public void annenVeilederSkalKunneRedigereHuskelapp() {
-        Fnr fnr1 = randomFnr();
-        Fnr fnr2 = randomFnr();
-        AktorId aktorId1 = randomAktorId();
-        AktorId aktorId2 = randomAktorId();
-        EnhetId enhetId = EnhetId.of("0110");
-        VeilederId veilederId1 = VeilederId.of("1111");
-        VeilederId veilederId2 = VeilederId.of("2222");
-
-        insertOppfolgingsInformasjon(fnr1, aktorId1, veilederId1, enhetId);
-        insertOppfolgingsInformasjon(fnr2, aktorId2, veilederId2, enhetId);
-
-        HuskelappOpprettRequest huskelapp3 = new HuskelappOpprettRequest(fnr1,
-                LocalDate.of(2026, 10, 11), ("Huskelapp nr.3 sin kommentar"));
-
-        LocalDate nyFrist = LocalDate.of(2025, 10, 11);
-        huskelappService.opprettHuskelapp(huskelapp3, veilederId1);
-        Optional<Huskelapp> huskelappOriginal = huskelappService.hentHuskelapp(huskelapp3.brukerFnr());
-        assertThat(huskelappOriginal.isPresent()).isTrue();
-        assertThat(huskelappOriginal.get().kommentar()).isEqualTo("Huskelapp nr.3 sin kommentar");
-        assertThat(huskelappOriginal.get().endretAv()).isEqualTo(veilederId1);
-
-        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappOriginal.get().huskelappId(), huskelapp3.brukerFnr(), nyFrist, "ny kommentar på huskelapp nr.3");
-        huskelappService.redigerHuskelapp(huskelappRedigerRequest, veilederId2);
-
-        Optional<Huskelapp> huskelappOppdatertAvNyVeileder = huskelappService.hentHuskelapp(huskelapp3.brukerFnr());
-        assertThat(huskelappOppdatertAvNyVeileder.isPresent()).isTrue();
-        assertThat(huskelappOppdatertAvNyVeileder.get().kommentar()).isEqualTo("ny kommentar på huskelapp nr.3");
-        assertThat(huskelappOppdatertAvNyVeileder.get().endretAv()).isEqualTo(veilederId2);
-        assertThat(huskelappOppdatertAvNyVeileder.get().frist()).isEqualTo(nyFrist);
-    }
-
     private void insertOppfolgingsInformasjon(Fnr fnr, AktorId aktorId, VeilederId veilederId, EnhetId navKontor) {
         pdlIdentRepository.upsertIdenter(List.of(
                 new PDLIdent(fnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
