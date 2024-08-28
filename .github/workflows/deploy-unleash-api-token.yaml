@@ -8,8 +8,8 @@ on:
       - flytte-til-gcp
     paths:
       - '.github/workflows/deploy-unleash-api-token.yaml'
-      - '.nais/application/unleash-apitoken-dev.yaml'
-      - '.nais/application/unleash-apitoken-prod.yaml'
+      - '.nais/application/gcp/unleash-apitoken-dev.yaml'
+      - '.nais/application/gcp/unleash-apitoken-prod.yaml'
 
 permissions:
   id-token: write
@@ -25,21 +25,21 @@ jobs:
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
-          RESOURCE: .nais/application/unleash-apitoken-dev.yaml
+          RESOURCE: .nais/application/gcp/unleash-apitoken-dev.yaml
           PRINT_PAYLOAD: true
 
   deploy-prod:
     name: Deploy unleash-apitoken to prod
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/flytte-til-gcp'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Deploy unleash-apitoken
         uses: nais/deploy/actions/deploy@v2
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/flytte-til-gcp'
         env:
           CLUSTER: prod-gcp
-          RESOURCE: .nais/application/unleash-apitoken-prod.yaml
+          RESOURCE: .nais/application/gcp/unleash-apitoken-prod.yaml
           PRINT_PAYLOAD: true
 
