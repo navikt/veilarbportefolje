@@ -10,8 +10,14 @@ import javax.sql.DataSource;
 public class DbUtils {
 
     public static DataSource createDataSource(String dbUrl) {
-        HikariConfig config = createDataSourceConfig(dbUrl, 10);
-        return new HikariDataSource(config);
+        try {
+            log.info("db url" + dbUrl);
+            HikariConfig config = createDataSourceConfig(dbUrl, 10);
+            return new HikariDataSource(config);
+        } catch (Exception e) {
+            log.info("Can't connect to db, error: " + e, e);
+            return null;
+        }
     }
 
     public static HikariConfig createDataSourceConfig(String dbUrl, int maximumPoolSize) {
