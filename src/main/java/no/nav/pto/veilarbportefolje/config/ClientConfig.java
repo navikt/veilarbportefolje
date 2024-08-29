@@ -6,8 +6,6 @@ import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
 import no.nav.common.client.aktoroppslag.PdlAktorOppslagClient;
 import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.pdl.PdlClientImpl;
-import no.nav.common.metrics.InfluxClient;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
@@ -19,6 +17,7 @@ import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import java.net.http.HttpClient;
 import java.util.function.Supplier;
 
@@ -26,14 +25,10 @@ import java.util.function.Supplier;
 public class ClientConfig {
 
     static final String APPLICATION_NAME = "veilarbportefolje";
+
     @Bean
     public PoaoTilgangWrapper poaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
         return new PoaoTilgangWrapper(authContextHolder, tokenClient, environmentProperties);
-    }
-
-    @Bean
-    public MetricsClient metricsClient() {
-        return new InfluxClient();
     }
 
     @Bean
