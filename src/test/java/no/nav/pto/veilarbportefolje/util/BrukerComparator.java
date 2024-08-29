@@ -1,4 +1,6 @@
-package no.nav.pto.veilarbportefolje.domene;
+package no.nav.pto.veilarbportefolje.util;
+
+import no.nav.pto.veilarbportefolje.domene.Bruker;
 
 import java.util.Comparator;
 
