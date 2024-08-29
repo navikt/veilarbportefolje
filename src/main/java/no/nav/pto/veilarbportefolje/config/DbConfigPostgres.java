@@ -66,6 +66,7 @@ public class DbConfigPostgres {
                 .load()
                 .migrate();
 
+        assert dataSource != null;
         dataSource.getConnection().close();
     }
 }
