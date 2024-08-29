@@ -22,6 +22,7 @@ public class DbUtils {
 
     public static HikariConfig createDataSourceConfig(String dbUrl, int maximumPoolSize) {
         HikariConfig config = new HikariConfig();
+        config.setDataSourceClassName("org.postgresql.ds.PGSimpleDataSource");
         config.setJdbcUrl(dbUrl);
         config.setMaximumPoolSize(maximumPoolSize);
         config.setConnectionTimeout(600000); // 10min
