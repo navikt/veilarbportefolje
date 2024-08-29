@@ -25,6 +25,7 @@ import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -176,9 +177,22 @@ public class PostgresOpensearchMapper {
     }
 
     public void flettInnTiltakshendelser(List<OppfolgingsBruker> brukere) {
+        AtomicInteger brukereUtenTiltakshendelse = new AtomicInteger();
+        AtomicInteger brukereMedTiltakshendelse = new AtomicInteger();
+
         brukere.forEach(bruker -> {
-            Tiltakshendelse eldsteTiltakshendelsePaBruker = tiltakshendelseRepository.hentEldsteTiltakshendelse(Fnr.of(bruker.getFnr()));
-            bruker.setTiltakshendelse(eldsteTiltakshendelsePaBruker);
+            try {
+                Tiltakshendelse eldsteTiltakshendelsePaBruker = tiltakshendelseRepository.hentEldsteTiltakshendelse(Fnr.of(bruker.getFnr()));
+                if (eldsteTiltakshendelsePaBruker == null) {
+                    brukereUtenTiltakshendelse.getAndIncrement();
+                } else {
+                    brukereMedTiltakshendelse.getAndIncrement();
+                }
+                bruker.setTiltakshendelse(eldsteTiltakshendelsePaBruker);
+                log.debug("Indeksering – Brukere med tiltakshendelse: " + brukereMedTiltakshendelse + ", brukere med tiltakshendelse: " + brukereUtenTiltakshendelse);
+            } catch (Error e) {
+                log.error("Indeksering – Feil utløst ved henting av eldste tiltakshendelse på bruker.");
+            }
         });
     }
 
