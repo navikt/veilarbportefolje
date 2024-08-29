@@ -55,18 +55,19 @@ public class DbConfigPostgres {
     @PostConstruct
     @SneakyThrows
     public void migrateDb() {
-        log.info("Starting database migration...");
         DataSource dataSource = createDataSource(environmentProperties.getDbUrl());
 
-        Flyway.configure()
-                .validateMigrationNaming(true)
-                .dataSource(dataSource)
-                .locations("db/postgres")
-                .baselineOnMigrate(true)
-                .load()
-                .migrate();
+        if (dataSource != null) {
+            log.info("Starting database migration...");
+            Flyway.configure()
+                    .validateMigrationNaming(true)
+                    .dataSource(dataSource)
+                    .locations("db/postgres")
+                    .baselineOnMigrate(true)
+                    .load()
+                    .migrate();
 
-        assert dataSource != null;
-        dataSource.getConnection().close();
+            dataSource.getConnection().close();
+        }
     }
 }
