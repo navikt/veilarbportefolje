@@ -124,8 +124,8 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                             null);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(1);
-                    assertThat(responseBrukere.getBrukere().get(0).getNesteCvKanDelesStatus()).isEqualTo("JA");
-                    assertThat(responseBrukere.getBrukere().get(0).getNesteSvarfristCvStillingFraNav()).isEqualTo(LocalDate.parse("2044-02-03"));
+                    assertThat(responseBrukere.getBrukere().getFirst().getNesteCvKanDelesStatus()).isEqualTo("JA");
+                    assertThat(responseBrukere.getBrukere().getFirst().getNesteSvarfristCvStillingFraNav()).isEqualTo(LocalDate.parse("2044-02-03"));
                 }
         );
     }

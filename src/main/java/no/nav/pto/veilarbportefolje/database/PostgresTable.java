@@ -389,4 +389,17 @@ public class PostgresTable {
         public static final String GYLDIG_FRA = "GYLDIG_FRA";
         public static final String GYLDIG_TIL = "GYLDIG_TIL";
     }
+
+    public static final class TILTAKSHENDELSE {
+        private TILTAKSHENDELSE() { /* no-op*/ }
+
+        public static final String ID = "ID";
+        public static final String FNR = "FNR";
+        public static final String OPPRETTET = "OPPRETTET";
+        public static final String TEKST = "TEKST";
+        public static final String LENKE = "LENKE";
+        public static final String TILTAKSTYPE = "TILTAKSTYPE_KODE";
+        public static final String AVSENDER = "AVSENDER";
+        public static final String SIST_ENDRET = "SIST_ENDRET";
+    }
 }

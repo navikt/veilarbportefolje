@@ -8,13 +8,18 @@ query($ident: ID!) {
         ...metadataDetails
       }
     }
-    foedsel {
+    foedselsdato {
       foedselsdato
-      foedeland
       metadata {
         ...metadataDetails
       }
     }
+    foedested {
+          foedeland
+          metadata {
+            ...metadataDetails
+          }
+        }
     kjoenn {
       kjoenn
       metadata {

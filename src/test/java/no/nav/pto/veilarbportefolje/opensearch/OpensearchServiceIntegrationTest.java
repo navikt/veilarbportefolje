@@ -22,6 +22,9 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
+import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
+import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype;
+import no.nav.pto.veilarbportefolje.util.BrukerComparator;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -3218,6 +3221,74 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getBrukere().get(0).getFnr()).isEqualTo(bruker2.getFnr());
         assertThat(response.getBrukere().get(1).getFnr()).isEqualTo(bruker3.getFnr());
         assertThat(response.getBrukere().get(2).getFnr()).isEqualTo(bruker4.getFnr());
+    }
+
+    @Test
+    public void test_filtrering_tiltakshendelser() {
+        OppfolgingsBruker bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakshendelse(null);
+
+        Fnr bruker2Fnr = Fnr.of("02020222222");
+        UUID bruker2UUID = UUID.randomUUID();
+        LocalDateTime bruker2Opprettet = LocalDateTime.now();
+        String bruker2Tekst = "Forslag: Endre alt";
+        String bruker2Lenke = "http.cat/200";
+        Tiltakstype bruker2Tiltakstype = Tiltakstype.ARBFORB;
+
+        OppfolgingsBruker bruker2 = new OppfolgingsBruker()
+                .setFnr(bruker2Fnr.toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakshendelse(new Tiltakshendelse(bruker2UUID, bruker2Opprettet, bruker2Tekst, bruker2Lenke, bruker2Tiltakstype, bruker2Fnr));
+
+        Fnr bruker3Fnr = Fnr.of("03030333333");
+        UUID bruker3UUID = UUID.randomUUID();
+        LocalDateTime bruker3Opprettet = LocalDateTime.now();
+        String bruker3Tekst = "Forslag: Endre alt";
+        String bruker3Lenke = "http.cat/200";
+        Tiltakstype bruker3Tiltakstype = Tiltakstype.ARBFORB;
+
+        OppfolgingsBruker bruker3 = new OppfolgingsBruker()
+                .setFnr(bruker3Fnr.toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakshendelse(new Tiltakshendelse(bruker3UUID, bruker3Opprettet, bruker3Tekst, bruker3Lenke, bruker3Tiltakstype, bruker3Fnr));
+
+        List<OppfolgingsBruker> brukere = List.of(bruker1, bruker2, bruker3);
+
+        skrivBrukereTilTestindeks(brukere);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
+
+
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of(TILTAKSHENDELSER));
+
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+        List<Bruker> sorterteBrukere = response.getBrukere().stream().sorted(new BrukerComparator()).toList();
+
+        assertThat(response.getAntall()).isEqualTo(2);
+        assertThat(sorterteBrukere.get(0).getFnr()).isEqualTo(bruker2Fnr.toString());
+        assertThat(sorterteBrukere.get(1).getFnr()).isEqualTo(bruker3Fnr.toString());
     }
 
     @Test
