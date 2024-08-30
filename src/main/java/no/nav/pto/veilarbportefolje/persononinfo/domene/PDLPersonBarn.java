@@ -55,14 +55,14 @@ public class PDLPersonBarn {
                 .noneMatch(d -> d.getDoedsdato() != null);
     }
 
-    private static LocalDate hentFodselsdato(List<PdlBarnResponse.PdlBarnResponseData.Foedseldato> foedsel) {
+    private static LocalDate hentFodselsdato(List<PdlBarnResponse.PdlBarnResponseData.Foedselsdato> foedsel) {
         if (foedsel == null) {
             return null;
         }
         return foedsel.stream()
                 .filter(foedsel1 -> !foedsel1.getMetadata().isHistorisk())
                 .findFirst()
-                .map(PdlBarnResponse.PdlBarnResponseData.Foedseldato::getFoedselsdato)
+                .map(PdlBarnResponse.PdlBarnResponseData.Foedselsdato::getFoedselsdato)
                 .map(LocalDate::parse)
                 .orElse(null);
     }

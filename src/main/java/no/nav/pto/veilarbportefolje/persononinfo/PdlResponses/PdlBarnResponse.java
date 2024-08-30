@@ -19,14 +19,14 @@ public class PdlBarnResponse extends GraphqlResponse<PdlBarnResponse.PdlBarnResp
         @Accessors(chain = true)
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class HentPersonResponsData {
-            private List<Foedseldato> foedselsdato;
+            private List<Foedselsdato> foedselsdato;
             private List<Doedsfall> doedsfall;
             private List<AdressebeskyttelseDto> adressebeskyttelse;
         }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Foedseldato {
+        public static class Foedselsdato {
             private String foedselsdato;
             private Metadata metadata;
         }
