@@ -9,7 +9,10 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlBarnResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @Slf4j
@@ -22,7 +25,7 @@ public class PDLPersonBarn {
 
     public static PDLPersonBarn genererFraApiRespons(PdlBarnResponse.PdlBarnResponseData.HentPersonResponsData response) {
         PDLPersonBarn barn = new PDLPersonBarn();
-        barn.setFodselsdato(hentFodselsdato(response.getFoedsel()));
+        barn.setFodselsdato(hentFodselsdato(response.getFoedselsdato()));
         barn.setErIlive(hentErILive(response.getDoedsfall()));
         barn.setDiskresjonskode(hentDiskresjonkode(response.getAdressebeskyttelse()));
         return barn;
@@ -31,11 +34,11 @@ public class PDLPersonBarn {
     public static Map<Fnr, PDLPersonBarn> genererFraApiRespons(PDLPersonBarnBolk.PdlBarnResponseData responseDataBolk) {
         Map<Fnr, PDLPersonBarn> barn = new HashMap<>();
 
-        if (responseDataBolk == null || responseDataBolk.getHentPersonBolk() == null || responseDataBolk.getHentPersonBolk().isEmpty()){
+        if (responseDataBolk == null || responseDataBolk.getHentPersonBolk() == null || responseDataBolk.getHentPersonBolk().isEmpty()) {
             return Collections.emptyMap();
         }
         responseDataBolk.getHentPersonBolk().forEach(barnDataBolk -> {
-            if (barnDataBolk.getCode().equals("ok")){
+            if (barnDataBolk.getCode().equals("ok")) {
                 barn.put(Fnr.of(barnDataBolk.getIdent()), genererFraApiRespons(barnDataBolk.getPerson()));
             }
         });
@@ -52,14 +55,14 @@ public class PDLPersonBarn {
                 .noneMatch(d -> d.getDoedsdato() != null);
     }
 
-    private static LocalDate hentFodselsdato(List<PdlBarnResponse.PdlBarnResponseData.Foedsel> foedsel) {
+    private static LocalDate hentFodselsdato(List<PdlBarnResponse.PdlBarnResponseData.Foedseldato> foedsel) {
         if (foedsel == null) {
             return null;
         }
         return foedsel.stream()
                 .filter(foedsel1 -> !foedsel1.getMetadata().isHistorisk())
                 .findFirst()
-                .map(PdlBarnResponse.PdlBarnResponseData.Foedsel::getFoedselsdato)
+                .map(PdlBarnResponse.PdlBarnResponseData.Foedseldato::getFoedselsdato)
                 .map(LocalDate::parse)
                 .orElse(null);
     }

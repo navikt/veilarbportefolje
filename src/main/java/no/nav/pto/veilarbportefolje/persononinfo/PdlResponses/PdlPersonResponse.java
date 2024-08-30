@@ -21,7 +21,8 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
         public static class HentPersonResponsData {
             private List<Folkeregisteridentifikator> folkeregisteridentifikator;
             private List<Navn> navn;
-            private List<Foedsel> foedsel;
+            private List<Foedseldato> foedselsdato;
+            private List<Foedested> foedested;
             private List<Kjoenn> kjoenn;
             private List<Doedsfall> doedsfall;
             private List<Statsborgerskap> statsborgerskap;
@@ -41,8 +42,14 @@ public class PdlPersonResponse extends GraphqlResponse<PdlPersonResponse.PdlPers
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Foedsel {
+        public static class Foedseldato {
             private String foedselsdato;
+            private Metadata metadata;
+        }
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Foedested {
             private String foedeland;
             private Metadata metadata;
         }
