@@ -343,7 +343,7 @@ public class OpensearchQueryBuilder {
             queryBuilder.must(avvik14aVedtakSubQuery);
         }
 
-        if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.getEnsligeForsorgere().contains(EnsligeForsorgere.OVERGANGSSTØNAD)) {
+        if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.getEnsligeForsorgere().contains(EnsligeForsorgere.OVERGANGSSTONAD)) {
             queryBuilder.must(existsQuery("enslige_forsorgere_overgangsstonad"));
         }
 
@@ -702,6 +702,9 @@ public class OpensearchQueryBuilder {
                 } else {
                     throw new IllegalStateException();
                 }
+                break;
+            case TILTAKSHENDELSER:
+                queryBuilder = existsQuery("tiltakshendelse");
                 break;
             default:
                 throw new IllegalStateException();

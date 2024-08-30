@@ -17,9 +17,22 @@
           }
         }
       ],
-      "foedsel": [
+      "foedselsdato": [
         {
           "foedselsdato": "1991-12-30",
+          "metadata": {
+            "master": "FREG",
+            "historisk": false,
+            "endringer": [
+              {
+                "registrert": "2022-06-02T15:24:52"
+              }
+            ]
+          }
+        }
+      ],
+      "foedested": [
+        {
           "foedeland": "UKR",
           "metadata": {
             "master": "FREG",
@@ -323,7 +336,6 @@
             "historisk": false
           }
         }
-
       ]
     }
   }

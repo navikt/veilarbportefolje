@@ -2,7 +2,7 @@ query($identer: [ID!]!) {
     hentPersonBolk(identer: $identer) {
         ident,
         person {
-            foedsel {
+            foedselsdato {
                 foedselsdato,
                 metadata {
                     ...metadataDetails

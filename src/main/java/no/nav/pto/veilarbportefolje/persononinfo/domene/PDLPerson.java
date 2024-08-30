@@ -51,8 +51,8 @@ public class PDLPerson {
                 .setMellomnavn(navn.getMellomnavn())
                 .setKjonn(kontrollerResponseOgHentKjonn(response.getKjoenn()))
                 .setErDoed(erDoed(response.getDoedsfall()))
-                .setFoedsel(kontrollerOgHentFodsel(response.getFoedsel()))
-                .setFoedeland(hentFoedselLand(response.getFoedsel()))
+                .setFoedsel(kontrollerOgHentFodsel(response.getFoedselsdato()))
+                .setFoedeland(hentFoedselLand(response.getFoedested()))
                 .setStatsborgerskap(hentStatsborgerskap(response.getStatsborgerskap()))
                 .setBydelsnummer(hentBydel(response.getBostedsadresse()))
                 .setKommunenummer(hentBostedKommune(response.getBostedsadresse()))
@@ -82,13 +82,13 @@ public class PDLPerson {
         return !response.isEmpty();
     }
 
-    private static LocalDate kontrollerOgHentFodsel(List<PdlPersonResponse.PdlPersonResponseData.Foedsel> response) {
+    private static LocalDate kontrollerOgHentFodsel(List<PdlPersonResponse.PdlPersonResponseData.Foedseldato> response) {
         var fodselsListe = response.stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
         if (fodselsListe.size() > 1) {
             throw new PdlPersonValideringException("Støtte for flere registrerte fødseler er ikke implentert");
         }
         return fodselsListe.stream().findFirst()
-                .map(PdlPersonResponse.PdlPersonResponseData.Foedsel::getFoedselsdato)
+                .map(PdlPersonResponse.PdlPersonResponseData.Foedseldato::getFoedselsdato)
                 .map(LocalDate::parse)
                 .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen registrert fødsel er ikke implentert"));
     }
@@ -111,13 +111,16 @@ public class PDLPerson {
         throw new PdlPersonValideringException("Fant kjønn som ikke er støttet");
     }
 
-    private static String hentFoedselLand(List<PdlPersonResponse.PdlPersonResponseData.Foedsel> response) {
+    private static String hentFoedselLand(List<PdlPersonResponse.PdlPersonResponseData.Foedested> response) {
+        if (response == null || response.isEmpty()) {
+            return null;
+        }
         var fodselsListe = response.stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
         if (fodselsListe.size() > 1) {
             throw new PdlPersonValideringException("Støtte for flere registrerte foedselLand er ikke implentert");
         }
         return fodselsListe.stream().findFirst()
-                .map(PdlPersonResponse.PdlPersonResponseData.Foedsel::getFoedeland)
+                .map(PdlPersonResponse.PdlPersonResponseData.Foedested::getFoedeland)
                 .orElse("");
     }
 
@@ -238,12 +241,12 @@ public class PDLPerson {
     }
 
     private static List<Fnr> hentForeldreansvar(List<PdlPersonResponse.PdlPersonResponseData.Foreldreansvar> foreldreansvar) {
-        if (foreldreansvar == null){
+        if (foreldreansvar == null) {
             return Collections.emptyList();
         }
         var foreldreansvarAktivt = foreldreansvar.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
 
-        if (foreldreansvarAktivt.isEmpty()){
+        if (foreldreansvarAktivt.isEmpty()) {
             return Collections.emptyList();
         }
 
@@ -255,12 +258,12 @@ public class PDLPerson {
     }
 
     private static List<String> hentForeldreansvarMaster(List<PdlPersonResponse.PdlPersonResponseData.Foreldreansvar> foreldreansvar) {
-        if (foreldreansvar == null){
+        if (foreldreansvar == null) {
             return Collections.emptyList();
         }
         var foreldreansvarAktivt = foreldreansvar.stream().filter(fb -> !fb.getMetadata().isHistorisk()).toList();
 
-        if (foreldreansvarAktivt.isEmpty()){
+        if (foreldreansvarAktivt.isEmpty()) {
             return Collections.emptyList();
         }
 

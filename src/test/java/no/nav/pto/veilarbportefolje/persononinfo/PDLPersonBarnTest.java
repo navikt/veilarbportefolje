@@ -68,12 +68,12 @@ public class PDLPersonBarnTest {
                 new PdlIdentRepository(db),
                 pdlPersonRepository,
                 barnUnder18AarService,
-                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"))
+                new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN", "B555"))
         );
     }
 
     @AfterEach
-    public void stopServer(){
+    public void stopServer() {
         server.stop();
     }
 
@@ -86,8 +86,8 @@ public class PDLPersonBarnTest {
         String fodselsdato = mapper.readValue(pdlPersonBarnResponsFraFil, PdlBarnResponse.class)
                 .getData()
                 .getHentPerson()
-                .getFoedsel()
-                .get(0)
+                .getFoedselsdato()
+                .getFirst()
                 .getFoedselsdato();
 
         LocalDate fDato = LocalDate.parse(fodselsdato);

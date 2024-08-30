@@ -4,7 +4,7 @@
       {
         "ident": "18501550031",
         "person": {
-          "foedsel": [
+          "foedselsdato": [
             {
               "foedselsdato": "2014-07-07",
               "metadata": {
@@ -31,7 +31,7 @@
       {
         "ident": "09421880325",
         "person": {
-          "foedsel": [
+          "foedselsdato": [
             {
               "foedselsdato": "2020-04-01",
               "metadata": {
@@ -58,7 +58,7 @@
       {
         "ident": "02481081249",
         "person": {
-          "foedsel": [
+          "foedselsdato": [
             {
               "foedselsdato": "2012-03-02",
               "metadata": {
