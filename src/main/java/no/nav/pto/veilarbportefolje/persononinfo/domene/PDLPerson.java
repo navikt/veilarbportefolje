@@ -112,6 +112,9 @@ public class PDLPerson {
     }
 
     private static String hentFoedselLand(List<PdlPersonResponse.PdlPersonResponseData.Foedested> response) {
+        if (response == null || response.isEmpty()) {
+            return null;
+        }
         var fodselsListe = response.stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
         if (fodselsListe.size() > 1) {
             throw new PdlPersonValideringException("Støtte for flere registrerte foedselLand er ikke implentert");
