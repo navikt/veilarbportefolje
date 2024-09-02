@@ -126,6 +126,6 @@ spec:
     - name: KODEVERK_SCOPE
       value: "api://prod-gcp.team-rocket.kodeverk-api/.default"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_URL
-      value: "http://paw-arbeidssoekerregisteret-api-oppslag.paw"
+      value: "https://oppslag-arbeidssoekerregisteret.intern.nav.no"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_SCOPE
       value: "api://prod-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
