@@ -80,6 +80,8 @@ spec:
           cluster: prod-fss
         - application: poao-tilgang
           namespace: poao
+        - application: paw-arbeidssoekerregisteret-api-oppslag
+          namespace: paw
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
@@ -126,6 +128,6 @@ spec:
     - name: KODEVERK_SCOPE
       value: "api://prod-gcp.team-rocket.kodeverk-api/.default"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_URL
-      value: "https://oppslag-arbeidssoekerregisteret.intern.nav.no"
+      value: "http://paw-arbeidssoekerregisteret-api-oppslag.paw"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_SCOPE
       value: "api://prod-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
