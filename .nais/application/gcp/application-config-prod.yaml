@@ -122,7 +122,7 @@ spec:
     - name: POAO_TILGANG_TOKEN_SCOPE
       value: "api://prod-fss.poao.poao-tilgang/.default"
     - name: KODEVERK_URL
-      value: "https://kodeverk-api.intern.nav.no"
+      value: "https://kodeverk-api.nav.no"
     - name: KODEVERK_SCOPE
       value: "api://prod-gcp.team-rocket.kodeverk-api/.default"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_URL
