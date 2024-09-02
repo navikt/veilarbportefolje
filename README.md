@@ -74,6 +74,12 @@ https://vault.adeo.no/
 
 * Dev: `vault read postgresql/preprod-fss/creds/veilarbportefolje-dev-admin`
 * Prod: `vault read postgresql/prod-fss/creds/veilarbportefolje-prod-readonly`
+*
+
+## PostgreSQL GCP
+
+Innloggingsinformasjon til databasen:
+....
 
 ## Plugin til IntelliJ
 
