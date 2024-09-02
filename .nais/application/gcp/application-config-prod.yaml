@@ -120,7 +120,7 @@ spec:
     - name: POAO_TILGANG_URL
       value: "http://poao-tilgang.poao"
     - name: POAO_TILGANG_TOKEN_SCOPE
-      value: "api://prod-fss.poao.poao-tilgang/.default"
+      value: "api://prod-gcp.poao.poao-tilgang/.default"
     - name: KODEVERK_URL
       value: "https://kodeverk-api.intern.nav.no"
     - name: KODEVERK_SCOPE
