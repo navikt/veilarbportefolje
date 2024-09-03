@@ -14,7 +14,7 @@ spec:
     cpuThresholdPercentage: 50
   port: 8080
   ingresses:
-    - https://veilarbportefolje-gcp.intern.nav.no
+    - https://veilarbportefolje.intern.nav.no
   webproxy: true
   leaderElection: true
   secureLogs:
