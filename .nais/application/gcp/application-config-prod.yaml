@@ -40,7 +40,7 @@ spec:
   gcp:
     sqlInstances:
       - type: POSTGRES_15
-        tier: db-custom-1-4096
+        tier: db-custom-2-8192
         databases:
           - name: veilarbportefolje
             envVarPrefix: DB
