@@ -32,7 +32,7 @@ jobs:
   build-and-push:
     name: Build and push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master'
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
     steps:
