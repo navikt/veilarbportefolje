@@ -38,12 +38,13 @@ public class BrukerMappingAlarm implements MeterBinder {
                 .register(meterRegistry);
     }
 
-    @Scheduled(cron = "* */10 * * * ?")
+    @Scheduled(cron = "* */30 * * * ?")
     public void oppdaterMetrikk() {
         antallBrukereSomIkkeHarIdentIPDL.set(antallBrukereSomIkkeHarIdentIPDL());
         antallAktiveBrukereSomIkkeHarBrukerDataFraPDL.set(antallAktiveBrukereSomIkkeHarBrukerDataFraPDL());
         antallBrukereSomIkkeLiggerIDatabaseLenkenFraArena.set(antallBrukereSomIkkeLiggerIDatabaseLenkenFraArena());
     }
+
     private int antallBrukereSomIkkeHarIdentIPDL() {
         String sql = """
                 select count(*) from oppfolging_data od
