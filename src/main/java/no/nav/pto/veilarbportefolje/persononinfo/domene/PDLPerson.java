@@ -116,9 +116,7 @@ public class PDLPerson {
             return null;
         }
         var fodselsListe = response.stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
-        if (fodselsListe.size() > 1) {
-            throw new PdlPersonValideringException("Støtte for flere registrerte foedselLand er ikke implentert");
-        }
+
         return fodselsListe.stream().findFirst()
                 .map(PdlPersonResponse.PdlPersonResponseData.Foedested::getFoedeland)
                 .orElse("");

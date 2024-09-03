@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import no.nav.common.job.leader_election.LeaderElectionClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,6 +21,7 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObject
 public class BrukerMappingAlarm implements MeterBinder {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate db;
+    private final LeaderElectionClient leaderElectionClient;
 
     private final AtomicInteger antallBrukereSomIkkeHarIdentIPDL = new AtomicInteger(0);
     private final AtomicInteger antallAktiveBrukereSomIkkeHarBrukerDataFraPDL = new AtomicInteger(0);
@@ -38,12 +40,15 @@ public class BrukerMappingAlarm implements MeterBinder {
                 .register(meterRegistry);
     }
 
-    @Scheduled(cron = "* */10 * * * ?")
+    @Scheduled(cron = "0 */10 * * * ?")
     public void oppdaterMetrikk() {
-        antallBrukereSomIkkeHarIdentIPDL.set(antallBrukereSomIkkeHarIdentIPDL());
-        antallAktiveBrukereSomIkkeHarBrukerDataFraPDL.set(antallAktiveBrukereSomIkkeHarBrukerDataFraPDL());
-        antallBrukereSomIkkeLiggerIDatabaseLenkenFraArena.set(antallBrukereSomIkkeLiggerIDatabaseLenkenFraArena());
+        if (leaderElectionClient.isLeader()) {
+            antallBrukereSomIkkeHarIdentIPDL.set(antallBrukereSomIkkeHarIdentIPDL());
+            antallAktiveBrukereSomIkkeHarBrukerDataFraPDL.set(antallAktiveBrukereSomIkkeHarBrukerDataFraPDL());
+            antallBrukereSomIkkeLiggerIDatabaseLenkenFraArena.set(antallBrukereSomIkkeLiggerIDatabaseLenkenFraArena());
+        }
     }
+
     private int antallBrukereSomIkkeHarIdentIPDL() {
         String sql = """
                 select count(*) from oppfolging_data od

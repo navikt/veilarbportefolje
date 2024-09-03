@@ -1,0 +1,1 @@
+CREATE INDEX IDX_brukertiltakv2_status on brukertiltak_v2 (status);

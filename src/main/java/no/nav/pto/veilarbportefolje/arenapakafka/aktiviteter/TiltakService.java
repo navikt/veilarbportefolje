@@ -37,7 +37,7 @@ public class TiltakService {
     private final OpensearchIndexer opensearchIndexer;
 
     private final Cache<EnhetId, EnhetTiltak> enhetTiltakCachePostgres = Caffeine.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .expireAfterWrite(30, TimeUnit.MINUTES)
             .maximumSize(1000)
             .build();
 

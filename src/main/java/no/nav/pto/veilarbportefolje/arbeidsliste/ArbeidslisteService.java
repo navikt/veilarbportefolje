@@ -3,8 +3,6 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
-import no.nav.common.metrics.Event;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -34,7 +32,6 @@ public class ArbeidslisteService {
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
     private final BrukerServiceV2 brukerServiceV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final MetricsClient metricsClient;
 
     public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
         return arbeidslisteRepositoryV2.retrieveArbeidsliste(fnr);
@@ -45,8 +42,6 @@ public class ArbeidslisteService {
     }
 
     public Try<ArbeidslisteDTO> createArbeidsliste(ArbeidslisteDTO dto) {
-
-        metricsClient.report((new Event("arbeidsliste.opprettet")));
 
         Try<AktorId> aktoerId = hentAktorId(dto.getFnr());
         if (aktoerId.isFailure()) {
