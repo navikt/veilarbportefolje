@@ -5,7 +5,6 @@ on:
     branches:
       - dev
       - master
-      - flytte-til-gcp
     paths:
       - '.github/workflows/deploy-unleash-api-token.yaml'
       - '.nais/application/gcp/unleash-apitoken-dev.yaml'
