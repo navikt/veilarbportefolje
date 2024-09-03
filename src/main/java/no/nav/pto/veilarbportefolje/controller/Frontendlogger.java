@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.metrics.Event;
-import no.nav.common.metrics.MetricsClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,21 +14,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-import static no.nav.common.utils.EnvironmentUtils.isProduction;
-import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/logger")
 @Tag(name = "Frontendlogger", description = "Frontendlogger-funksjonalitet")
 public class Frontendlogger {
-    private final MetricsClient metricsClient;
 
     @PostMapping("/event")
     @Operation(summary = "Skriv event til Influx", description = "Registrerer en frontend-hendelse og sender til InfluxDB.")
     public void skrivEventTilInflux(@RequestBody FrontendEvent event) {
-        Event toInflux = new Event(event.name + ".event");
+        /*Event toInflux = new Event(event.name + ".event");
         if (event.getTags() != null) {
             event.getTags().forEach(toInflux::addTagToReport);
         }
@@ -41,7 +36,7 @@ public class Frontendlogger {
         if (!isProduction().orElse(false)) {
             secureLog.info("Skriver event til influx: " + eventToString(event.name, toInflux));
         }
-        metricsClient.report(toInflux);
+        metricsClient.report(toInflux);*/
     }
 
     @Data

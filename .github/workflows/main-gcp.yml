@@ -11,7 +11,7 @@ jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/flytte-til-gcp'
+    if: github.ref != 'refs/heads/master'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
   build-and-push:
     name: Build and push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/flytte-til-gcp'
+    if: github.ref == 'refs/heads/dev'
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
     steps:
@@ -59,7 +59,7 @@ jobs:
 
   deploy-dev:
     name: Deploy application to dev gcp
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/flytte-til-gcp'
+    if: github.ref == 'refs/heads/dev'
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
@@ -75,7 +75,7 @@ jobs:
 
   deploy-prod:
     name: Deploy application to prod gcp
-    if: github.ref == 'refs/heads/flytte-til-gcp'
+    if: github.ref == 'refs/heads/master'
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
