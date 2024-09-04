@@ -8,16 +8,15 @@ import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Transactional
 
 @Repository
 class TiltakshendelseRepository(private val db: JdbcTemplate) {
-    @Transactional
-    fun tryLagreTiltakshendelseData(tiltakshendelseData: KafkaTiltakshendelse): Boolean {
-        return upsertTiltakshendelse(tiltakshendelseData)
+
+    fun tryLagreTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelseData: KafkaTiltakshendelse): Boolean {
+        return upsertTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelseData)
     }
 
-    fun upsertTiltakshendelse(tiltakshendelse: KafkaTiltakshendelse): Boolean {
+    fun upsertTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelse: KafkaTiltakshendelse): Boolean {
         try {
             db.update(
                 """
@@ -57,10 +56,10 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
                 tiltakshendelse.tiltakstype.name,
                 tiltakshendelse.avsender.name
             )
-            return true
+            return hentEldsteTiltakshendelse(tiltakshendelse.fnr)?.id?.equals(tiltakshendelse.id) ?: false
         } catch (e: Exception) {
             secureLog.error(e.message, e)
-            return false
+            throw RuntimeException(e)
         }
     }
 
@@ -88,10 +87,10 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
             ORDER BY opprettet LIMIT 1
         """.trimIndent()
 
-        try {
-            return db.queryForObject(sql, TiltakshendelseMapper::tiltakshendelseMapper, fnr.toString())
+        return try {
+            db.queryForObject(sql, TiltakshendelseMapper::tiltakshendelseMapper, fnr.toString())
         } catch (e: EmptyResultDataAccessException) {
-            return null
+            null
         } catch (e: Error) {
             secureLog.error(e.message, e)
             throw RuntimeException(e)

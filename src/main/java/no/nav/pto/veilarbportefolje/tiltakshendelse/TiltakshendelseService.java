@@ -6,7 +6,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
 import org.springframework.stereotype.Service;
 
@@ -23,15 +22,10 @@ public class TiltakshendelseService extends KafkaCommonConsumerService<KafkaTilt
 
         AktorId aktorId = brukerServiceV2.hentAktorId(tiltakshendelseData.fnr())
                 .orElseThrow(() -> new RuntimeException("Kunne ikke hente aktørid for fnr"));
-        boolean bleLagret = repository.tryLagreTiltakshendelseData(tiltakshendelseData);
+        boolean erEldsteTiltakshendelse = repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelseData);
 
-        if (bleLagret) {
-            Tiltakshendelse eldsteTiltakshendelse = repository.hentEldsteTiltakshendelse(tiltakshendelseData.fnr());
-            boolean nyHendelseErEldstIDatabasen = eldsteTiltakshendelse.id().equals(tiltakshendelseData.id());
-
-            if (nyHendelseErEldstIDatabasen) {
-                opensearchIndexerV2.updateTiltakshendelse(aktorId, KafkaTiltakshendelse.mapTilTiltakshendelse(tiltakshendelseData));
-            }
+        if (erEldsteTiltakshendelse) {
+            opensearchIndexerV2.updateTiltakshendelse(aktorId, KafkaTiltakshendelse.mapTilTiltakshendelse(tiltakshendelseData));
         }
     }
 }
