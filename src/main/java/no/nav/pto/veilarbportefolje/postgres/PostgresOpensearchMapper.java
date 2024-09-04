@@ -183,17 +183,19 @@ public class PostgresOpensearchMapper {
         brukere.forEach(bruker -> {
             try {
                 Tiltakshendelse eldsteTiltakshendelsePaBruker = tiltakshendelseRepository.hentEldsteTiltakshendelse(Fnr.of(bruker.getFnr()));
+
                 if (eldsteTiltakshendelsePaBruker == null) {
                     brukereUtenTiltakshendelse.getAndIncrement();
                 } else {
                     brukereMedTiltakshendelse.getAndIncrement();
                 }
+
                 bruker.setTiltakshendelse(eldsteTiltakshendelsePaBruker);
-                log.debug("Indeksering – Brukere med tiltakshendelse: " + brukereMedTiltakshendelse + ", brukere med tiltakshendelse: " + brukereUtenTiltakshendelse);
             } catch (Error e) {
                 log.error("Indeksering – Feil utløst ved henting av eldste tiltakshendelse på bruker.");
             }
         });
+        log.debug("Indeksering – Brukere med tiltakshendelse: " + brukereMedTiltakshendelse + ", brukere med tiltakshendelse: " + brukereUtenTiltakshendelse);
     }
 
     public void flettInnOpplysningerOmArbeidssoekerData(List<OppfolgingsBruker> brukere) {
