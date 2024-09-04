@@ -17,8 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -45,7 +44,7 @@ class TiltakshendelseRepositoryTest {
         KafkaTiltakshendelse kafkaData = new KafkaTiltakshendelse(id, true, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
         Tiltakshendelse expected = new Tiltakshendelse(id, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr);
 
-        assertTrue(repository.tryLagreTiltakshendelseData(kafkaData));
+        assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(kafkaData));
 
         List<Tiltakshendelse> tiltakshendelser = repository.hentAlleTiltakshendelser();
         assert (tiltakshendelser.size() == 1);
@@ -64,8 +63,8 @@ class TiltakshendelseRepositoryTest {
         KafkaTiltakshendelse oppdatertKafkaData = new KafkaTiltakshendelse(id, true, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
         Tiltakshendelse expected = new Tiltakshendelse(id, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr);
 
-        assertTrue(repository.tryLagreTiltakshendelseData(gammelKafkaData));
-        assertTrue(repository.tryLagreTiltakshendelseData(oppdatertKafkaData));
+        assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(gammelKafkaData));
+        assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(oppdatertKafkaData));
 
         List<Tiltakshendelse> tiltakshendelser = repository.hentAlleTiltakshendelser();
         assert (tiltakshendelser.size() == 1);
@@ -84,8 +83,8 @@ class TiltakshendelseRepositoryTest {
         KafkaTiltakshendelse hendelsePaEnPerson = new KafkaTiltakshendelse(id, true, opprettet, tekst, tekst, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
         KafkaTiltakshendelse nyHendelsePaSammePerson = new KafkaTiltakshendelse(idNyMelding, true, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
 
-        assertTrue(repository.tryLagreTiltakshendelseData(hendelsePaEnPerson));
-        assertTrue(repository.tryLagreTiltakshendelseData(nyHendelsePaSammePerson));
+        assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(hendelsePaEnPerson));
+        assertFalse(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(nyHendelsePaSammePerson));
 
         List<Tiltakshendelse> tiltakshendelser = repository.hentAlleTiltakshendelser();
         assert (tiltakshendelser.size() == 2);
@@ -109,9 +108,9 @@ class TiltakshendelseRepositoryTest {
         KafkaTiltakshendelse tiltakshendelse3 = new KafkaTiltakshendelse(id3, true, opprettet3, "Forslag: endre varighet", "http.cat/204", Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
 
         // Lagrar hendelsane i motsett rekkefølgje av oppretta-tidspunktet
-        assertTrue(repository.tryLagreTiltakshendelseData(tiltakshendelse1));
-        assertTrue(repository.tryLagreTiltakshendelseData(tiltakshendelse2));
-        assertTrue(repository.tryLagreTiltakshendelseData(tiltakshendelse3));
+        assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelse1));
+        assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelse2));
+        assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelse3));
 
         Tiltakshendelse eldsteTiltakshendelse = repository.hentEldsteTiltakshendelse(fnr);
         assert (eldsteTiltakshendelse.id().equals(id3));
