@@ -74,9 +74,6 @@ spec:
         - application: pdl-api
           namespace: pdl
           cluster: dev-fss
-        - application: veilarbvedtaksstotte
-          namespace: pto
-          cluster: dev-fss
         - application: veilarbarena
           namespace: pto
           cluster: dev-fss
