@@ -57,9 +57,11 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
                 tiltakshendelse.avsender.name
             )
             return hentEldsteTiltakshendelse(tiltakshendelse.fnr)?.id?.equals(tiltakshendelse.id) ?: false
+        } catch (e: KunneIkkeHenteEldsteTiltakhendelseException) {
+            throw e
         } catch (e: Exception) {
             secureLog.error(e.message, e)
-            throw RuntimeException(e)
+            throw RuntimeException("Kunne ikke lagre tiltakshendelse for hendelsesid: " + tiltakshendelse.id)
         }
     }
 
@@ -67,11 +69,12 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
         val sql = "SELECT * FROM tiltakshendelse"
 
         try {
-            return db.queryForList(sql).stream().map { rs: Map<String, Any> -> TiltakshendelseMapper.tiltakshendelseMapper(rs) }
+            return db.queryForList(sql).stream()
+                .map { rs: Map<String, Any> -> TiltakshendelseMapper.tiltakshendelseMapper(rs) }
                 .toList()
         } catch (e: Exception) {
             secureLog.error(e.message, e)
-            throw RuntimeException(e)
+            throw RuntimeException("Kunne ikke hente alle tiltakshendelser.")
         }
     }
 
@@ -93,7 +96,9 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
             null
         } catch (e: Error) {
             secureLog.error(e.message, e)
-            throw RuntimeException(e)
+            throw KunneIkkeHenteEldsteTiltakhendelseException("Kunne ikke hente eldste tiltakshendelse for bruker.")
         }
     }
 }
+
+class KunneIkkeHenteEldsteTiltakhendelseException(message: String) : RuntimeException(message)
