@@ -74,9 +74,6 @@ spec:
         - application: pdl-api
           namespace: pdl
           cluster: dev-fss
-        - application: veilarbvedtaksstotte
-          namespace: pto
-          cluster: dev-fss
         - application: veilarbarena
           namespace: pto
           cluster: dev-fss
@@ -85,6 +82,8 @@ spec:
           cluster: dev-fss
         - application: poao-tilgang
           namespace: poao
+        - application: paw-arbeidssoekerregisteret-api-oppslag
+          namespace: paw
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
@@ -127,7 +126,7 @@ spec:
     - name: POAO_TILGANG_TOKEN_SCOPE
       value: "api://dev-gcp.poao.poao-tilgang/.default"
     - name: KODEVERK_URL
-      value: "https://kodeverk-api.intern.dev.nav.no"
+      value: "http://kodeverk-api.team-rocket"
     - name: KODEVERK_SCOPE
       value: "api://dev-gcp.team-rocket.kodeverk-api/.default"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_URL
