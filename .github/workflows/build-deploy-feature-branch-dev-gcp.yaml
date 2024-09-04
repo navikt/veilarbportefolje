@@ -1,4 +1,4 @@
-name: Deploy til Dev GCP
+name: Deploy til Dev
 on:
   workflow_dispatch:
 env:
