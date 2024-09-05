@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -195,7 +196,7 @@ public class PostgresOpensearchMapper {
                 log.error("Indeksering – Feil utløst ved henting av eldste tiltakshendelse på bruker.");
             }
         });
-        log.debug("Indeksering – Brukere med tiltakshendelse: " + brukereMedTiltakshendelse + ", brukere med tiltakshendelse: " + brukereUtenTiltakshendelse);
+        log.info("Indeksering – Brukere med tiltakshendelse: {}, brukere uten tiltakshendelse: {}", brukereMedTiltakshendelse, brukereUtenTiltakshendelse);
     }
 
     public void flettInnOpplysningerOmArbeidssoekerData(List<OppfolgingsBruker> brukere) {
