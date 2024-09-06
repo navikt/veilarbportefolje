@@ -189,7 +189,7 @@
         <dependency>
             <groupId>com.github.navikt</groupId>
             <artifactId>pto-schema</artifactId>
-            <version>1.2022.09.28_12.06-c4c0f289872c</version>
+            <version>1.2023.10.20_06.13-e6b4845c2a39</version>
         </dependency>
 
         <!-- Funksjonell programmering-->
