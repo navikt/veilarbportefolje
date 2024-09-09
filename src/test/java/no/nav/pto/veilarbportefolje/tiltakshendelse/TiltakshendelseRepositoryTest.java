@@ -28,13 +28,13 @@ class TiltakshendelseRepositoryTest {
     private JdbcTemplate jdbcTemplate;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         jdbcTemplate.execute("TRUNCATE TABLE tiltakshendelse");
     }
 
 
     @Test
-    public void kanLagreTiltakshendelse() {
+    void kanLagreTiltakshendelse() {
         UUID id = UUID.randomUUID();
         LocalDateTime opprettet = LocalDateTime.now();
         String tekst = "Forslag: endre varighet";
@@ -52,7 +52,7 @@ class TiltakshendelseRepositoryTest {
     }
 
     @Test
-    public void kanOppdatereTiltakshendelse() {
+    void kanOppdatereTiltakshendelse() {
         UUID id = UUID.randomUUID();
         LocalDateTime opprettet = LocalDateTime.now();
         String tekst = "Forslag: endre varighet";
@@ -60,7 +60,7 @@ class TiltakshendelseRepositoryTest {
         Fnr fnr = Fnr.of("11223312345");
 
         KafkaTiltakshendelse gammelKafkaData = new KafkaTiltakshendelse(id, true, opprettet, "Gamal tekst her", "Gamal lenke her", Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
-        KafkaTiltakshendelse oppdatertKafkaData = new KafkaTiltakshendelse(id, true, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse oppdatertKafkaData = new KafkaTiltakshendelse(id, true, opprettet.plusDays(1), tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
         Tiltakshendelse expected = new Tiltakshendelse(id, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr);
 
         assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(gammelKafkaData));
@@ -72,22 +72,68 @@ class TiltakshendelseRepositoryTest {
     }
 
     @Test
-    public void kanLagreFlereTiltakshendelserPaSammePerson() {
+    void kanLagreFlereTiltakshendelserPaSammePerson() {
         UUID id = UUID.randomUUID();
         UUID idNyMelding = UUID.randomUUID();
         LocalDateTime opprettet = LocalDateTime.now();
+        LocalDateTime opprettetNyMelding = LocalDateTime.now().plusDays(1);
         String tekst = "Forslag: endre varighet";
         String lenke = "http.cat/200";
         Fnr fnr = Fnr.of("11223312345");
 
         KafkaTiltakshendelse hendelsePaEnPerson = new KafkaTiltakshendelse(id, true, opprettet, tekst, tekst, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
-        KafkaTiltakshendelse nyHendelsePaSammePerson = new KafkaTiltakshendelse(idNyMelding, true, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse nyHendelsePaSammePerson = new KafkaTiltakshendelse(idNyMelding, true, opprettetNyMelding, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
 
         assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(hendelsePaEnPerson));
         assertFalse(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(nyHendelsePaSammePerson));
 
         List<Tiltakshendelse> tiltakshendelser = repository.hentAlleTiltakshendelser();
         assert (tiltakshendelser.size() == 2);
+    }
+
+    @Test
+    void kanSletteTiltakshendelse() {
+        UUID id = UUID.randomUUID();
+        LocalDateTime opprettet = LocalDateTime.now();
+        String tekst = "Forslag: endre varighet";
+        String lenke = "http.cat/200";
+        Fnr fnr = Fnr.of("11223312345");
+
+        KafkaTiltakshendelse hendelsePaEnPerson = new KafkaTiltakshendelse(id, true, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+
+        assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(hendelsePaEnPerson));
+
+        List<Tiltakshendelse> tiltakshendelser = repository.hentAlleTiltakshendelser();
+        assert (tiltakshendelser.size() == 1);
+
+        assertNull(repository.slettTiltakshendelseOgHentEldste(id, fnr));
+
+        List<Tiltakshendelse> tiltakshendelserEtterInaktivMelding = repository.hentAlleTiltakshendelser();
+        assert (tiltakshendelserEtterInaktivMelding.isEmpty());
+    }
+
+    @Test
+    void kanSletteTiltakshendelseReturnereNesteEldste() {
+        UUID id = UUID.randomUUID();
+        UUID idNyMelding = UUID.randomUUID();
+        LocalDateTime opprettet = LocalDateTime.now();
+        LocalDateTime opprettetNyMelding = LocalDateTime.now().plusDays(1);
+        String tekst = "Forslag: endre varighet";
+        String lenke = "http.cat/200";
+        Fnr fnr = Fnr.of("11223312345");
+
+        KafkaTiltakshendelse hendelsePaEnPerson = new KafkaTiltakshendelse(id, true, opprettet, tekst, tekst, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse nyHendelsePaSammePerson = new KafkaTiltakshendelse(idNyMelding, true, opprettetNyMelding, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+
+        assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(hendelsePaEnPerson));
+        assertFalse(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(nyHendelsePaSammePerson));
+
+        List<Tiltakshendelse> tiltakshendelser = repository.hentAlleTiltakshendelser();
+        assert (tiltakshendelser.size() == 2);
+
+        Tiltakshendelse eldsteTiltakshendelse = repository.slettTiltakshendelseOgHentEldste(id, fnr);
+        assert (eldsteTiltakshendelse != null);
+        assertEquals(eldsteTiltakshendelse.id(), idNyMelding);
     }
 
     @Test
