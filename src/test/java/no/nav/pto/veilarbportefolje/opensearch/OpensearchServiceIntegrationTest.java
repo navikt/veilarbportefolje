@@ -3224,7 +3224,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void test_filtrering_tiltakshendelser() {
+    public void test_filtrering_og_statustall_tiltakshendelser() {
         OppfolgingsBruker bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
@@ -3285,7 +3285,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         List<Bruker> sorterteBrukere = response.getBrukere().stream().sorted(new BrukerComparator()).toList();
-//Sjekk statustall
 
         assertThat(response.getAntall()).isEqualTo(2);
         assertThat(sorterteBrukere.get(0).getFnr()).isEqualTo(bruker2Fnr.toString());
