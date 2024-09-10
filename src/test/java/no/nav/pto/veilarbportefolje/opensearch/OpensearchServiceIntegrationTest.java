@@ -432,7 +432,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     public void skal_hente_riktig_antall_ufordelte_brukere() {
 
         List<OppfolgingsBruker> brukere = List.of(
-
                 new OppfolgingsBruker()
                         .setAktoer_id(randomAktorId().toString())
                         .setFnr(randomFnr().get())
@@ -613,6 +612,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(statustall.getFargekategoriE()).isEqualTo(0);
         assertThat(statustall.getFargekategoriF()).isEqualTo(0);
         assertThat(statustall.getFargekategoriIngenKategori()).isEqualTo(1);
+        assertThat(statustall.getTiltakshendelser()).isEqualTo(0);
     }
 
     @Test
@@ -3285,10 +3285,14 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         List<Bruker> sorterteBrukere = response.getBrukere().stream().sorted(new BrukerComparator()).toList();
+//Sjekk statustall
 
         assertThat(response.getAntall()).isEqualTo(2);
         assertThat(sorterteBrukere.get(0).getFnr()).isEqualTo(bruker2Fnr.toString());
         assertThat(sorterteBrukere.get(1).getFnr()).isEqualTo(bruker3Fnr.toString());
+
+        var statustall = opensearchService.hentStatustallForVeilederPortefolje(TEST_VEILEDER_0, TEST_ENHET);
+        assertThat(statustall.getTiltakshendelser()).isEqualTo(2);
     }
 
     @Test
