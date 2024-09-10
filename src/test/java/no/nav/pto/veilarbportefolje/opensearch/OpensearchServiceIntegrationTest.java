@@ -432,7 +432,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     public void skal_hente_riktig_antall_ufordelte_brukere() {
 
         List<OppfolgingsBruker> brukere = List.of(
-
                 new OppfolgingsBruker()
                         .setAktoer_id(randomAktorId().toString())
                         .setFnr(randomFnr().get())
@@ -596,7 +595,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var statustall = opensearchService.hentStatustallForVeilederPortefolje(TEST_VEILEDER_0, TEST_ENHET);
-        assertThat(statustall.getErSykmeldtMedArbeidsgiver()).isEqualTo(0);
+        assertThat(statustall.getErSykmeldtMedArbeidsgiver()).isZero();
         assertThat(statustall.getIavtaltAktivitet()).isEqualTo(1);
         assertThat(statustall.getIkkeIavtaltAktivitet()).isEqualTo(2);
         assertThat(statustall.getInaktiveBrukere()).isEqualTo(1);
@@ -608,11 +607,12 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(statustall.getMineHuskelapper()).isEqualTo(1);
         assertThat(statustall.getFargekategoriA()).isEqualTo(1);
         assertThat(statustall.getFargekategoriB()).isEqualTo(1);
-        assertThat(statustall.getFargekategoriC()).isEqualTo(0);
-        assertThat(statustall.getFargekategoriD()).isEqualTo(0);
-        assertThat(statustall.getFargekategoriE()).isEqualTo(0);
-        assertThat(statustall.getFargekategoriF()).isEqualTo(0);
+        assertThat(statustall.getFargekategoriC()).isZero();
+        assertThat(statustall.getFargekategoriD()).isZero();
+        assertThat(statustall.getFargekategoriE()).isZero();
+        assertThat(statustall.getFargekategoriF()).isZero();
         assertThat(statustall.getFargekategoriIngenKategori()).isEqualTo(1);
+        assertThat(statustall.getTiltakshendelser()).isZero();
     }
 
     @Test
@@ -797,7 +797,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(responsMedBrukerinnsyn.getTotalt()).isEqualTo(15);
-        assertThat(responsUtenBrukerinnsyn.getTotalt()).isEqualTo(0);
+        assertThat(responsUtenBrukerinnsyn.getTotalt()).isZero();
         assertThat(responsMedBrukerinnsyn.getVenterPaSvarFraNAV()).isEqualTo(5);
         assertThat(responsMedBrukerinnsyn.getUfordelteBrukere()).isEqualTo(5);
     }
@@ -951,7 +951,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var statustallForBrukereSomVeilederIkkeHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ);
 
         assertThat(statustallForBrukereSomVeilederHarInnsynsrettPå.getUfordelteBrukere()).isEqualTo(1);
-        assertThat(statustallForBrukereSomVeilederIkkeHarInnsynsrettPå.getUfordelteBrukere()).isEqualTo(0);
+        assertThat(statustallForBrukereSomVeilederIkkeHarInnsynsrettPå.getUfordelteBrukere()).isZero();
     }
 
     @Test
@@ -2795,7 +2795,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                     } else if (bruker.getFnr().equals(bruker3.getFnr())) {
                         assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(2);
                     } else if (bruker.getFnr().equals(bruker4.getFnr())) {
-                        assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(0);
+                        assertThat(bruker.getBarnUnder18AarData().size()).isZero();
                     } else if (bruker.getFnr().equals(bruker5.getFnr())) {
                         assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(1);
                     }
@@ -3224,7 +3224,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void test_filtrering_tiltakshendelser() {
+    public void test_filtrering_og_statustall_tiltakshendelser() {
         OppfolgingsBruker bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
@@ -3289,6 +3289,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getAntall()).isEqualTo(2);
         assertThat(sorterteBrukere.get(0).getFnr()).isEqualTo(bruker2Fnr.toString());
         assertThat(sorterteBrukere.get(1).getFnr()).isEqualTo(bruker3Fnr.toString());
+
+        var statustall = opensearchService.hentStatustallForVeilederPortefolje(TEST_VEILEDER_0, TEST_ENHET);
+        assertThat(statustall.getTiltakshendelser()).isEqualTo(2);
     }
 
     @Test
