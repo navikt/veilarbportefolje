@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
+import java.util.UUID
 
 @Repository
 class TiltakshendelseRepository(private val db: JdbcTemplate) {
@@ -62,6 +63,19 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
         } catch (e: Exception) {
             secureLog.error(e.message, e)
             throw RuntimeException("Kunne ikke lagre tiltakshendelse for hendelsesid: " + tiltakshendelse.id)
+        }
+    }
+
+    fun slettTiltakshendelseOgHentEldste(tiltakshendelseId: UUID, fnr: Fnr): Tiltakshendelse? {
+        val sql = "DELETE FROM tiltakshendelse WHERE id = ?"
+        try {
+            db.update(sql, tiltakshendelseId)
+            return hentEldsteTiltakshendelse(fnr)
+        } catch (e: KunneIkkeHenteEldsteTiltakhendelseException) {
+            throw e
+        } catch (e: Exception) {
+            secureLog.error(e.message, e)
+            throw RuntimeException("Kunne ikke slette tiltakshendelse med id: $tiltakshendelseId")
         }
     }
 
