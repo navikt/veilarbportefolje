@@ -850,7 +850,8 @@ public class OpensearchQueryBuilder {
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriE", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_E.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriF", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_F.name()),
                 mustNotExistFilter(filtrereVeilederOgEnhet, "fargekategoriIngenKategori", "fargekategori"),
-                mustExistFilter(filtrereVeilederOgEnhet, "mineHuskelapper", "huskelapp")
+                mustExistFilter(filtrereVeilederOgEnhet, "mineHuskelapper", "huskelapp"),
+                mustExistFilter(filtrereVeilederOgEnhet, "tiltakshendelser", "tiltakshendelse")
         };
 
         return new SearchSourceBuilder()
