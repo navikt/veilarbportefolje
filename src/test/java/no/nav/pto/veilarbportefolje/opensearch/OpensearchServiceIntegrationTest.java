@@ -3295,6 +3295,78 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
+    public void test_sortering_tiltakshendelser() {
+        Fnr bruker1Fnr = Fnr.of("01010111111");
+        UUID bruker1UUID = UUID.randomUUID();
+        LocalDateTime bruker1Opprettet = LocalDateTime.of(2024, 06, 01, 0, 0);
+        String tekst = "Forslag: Endre alt";
+        String lenke = "http.cat/200";
+        Tiltakstype tiltakstype = Tiltakstype.ARBFORB;
+
+        OppfolgingsBruker bruker1 = new OppfolgingsBruker()
+                .setFnr(bruker1Fnr.toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakshendelse(new Tiltakshendelse(bruker1UUID, bruker1Opprettet, tekst, lenke, tiltakstype, bruker1Fnr));
+
+        Fnr bruker2Fnr = Fnr.of("02020222222");
+        UUID bruker2UUID = UUID.randomUUID();
+        LocalDateTime bruker2Opprettet = LocalDateTime.of(2023, 06, 01, 0, 0);
+
+
+        OppfolgingsBruker bruker2 = new OppfolgingsBruker()
+                .setFnr(bruker2Fnr.toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakshendelse(new Tiltakshendelse(bruker2UUID, bruker2Opprettet, tekst, lenke, tiltakstype, bruker2Fnr));
+
+        Fnr bruker3Fnr = Fnr.of("03030333333");
+        UUID bruker3UUID = UUID.randomUUID();
+        LocalDateTime bruker3Opprettet = LocalDateTime.of(2022, 06, 01, 0, 0);
+
+        OppfolgingsBruker bruker3 = new OppfolgingsBruker()
+                .setFnr(bruker3Fnr.toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakshendelse(new Tiltakshendelse(bruker3UUID, bruker3Opprettet, tekst, lenke, tiltakstype, bruker3Fnr));
+
+        List<OppfolgingsBruker> brukere = List.of(bruker1, bruker2, bruker3);
+
+        skrivBrukereTilTestindeks(brukere);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
+
+
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of(TILTAKSHENDELSER));
+
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "tiltakshendelse_dato_opprettet",
+                filterValg,
+                null,
+                null
+        );
+        List<Bruker> sorterteBrukere = response.getBrukere();
+
+        assertThat(response.getAntall()).isEqualTo(3);
+        assertThat(sorterteBrukere.get(0).getFnr()).isEqualTo(bruker3Fnr.toString());
+        assertThat(sorterteBrukere.get(1).getFnr()).isEqualTo(bruker2Fnr.toString());
+        assertThat(sorterteBrukere.get(2).getFnr()).isEqualTo(bruker1Fnr.toString());
+    }
+
+    @Test
     public void test_sorting_barn_under_18_veileder_tilgang_6_7() {
 
         var bruker1B = new OppfolgingsBruker()

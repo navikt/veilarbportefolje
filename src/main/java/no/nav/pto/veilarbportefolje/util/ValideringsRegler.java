@@ -76,7 +76,8 @@ public class ValideringsRegler {
             "huskelapp_kommentar",
             "huskelapp",
             "fargekategori",
-            "utdanningOgSituasjonSistEndret"
+            "utdanningOgSituasjonSistEndret",
+            "tiltakshendelse_dato_opprettet"
     );
 
     public static void sjekkEnhet(String enhet) {

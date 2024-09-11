@@ -474,6 +474,7 @@ public class OpensearchQueryBuilder {
             case "huskelapp" -> sorterHuskelappEksistere(searchSourceBuilder, order);
             case "huskelapp_kommentar" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
             case "fargekategori" -> searchSourceBuilder.sort("fargekategori", order);
+            case "tiltakshendelse_dato_opprettet" -> searchSourceBuilder.sort("tiltakshendelse.opprettet", order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
