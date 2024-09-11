@@ -84,11 +84,12 @@ spec:
           namespace: poao
         - application: paw-arbeidssoekerregisteret-api-oppslag
           namespace: paw
+        - application: veilarbvedtaksstotte
+          namespace: obo
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
         - host: veilarboppfolging.dev-fss-pub.nais.io
-        - host: veilarbvedtaksstotte.dev-fss-pub.nais.io
         - host: veilarbveileder.dev-fss-pub.nais.io
         - host: veilarbarena.dev-fss-pub.nais.io
   resources:
@@ -106,9 +107,9 @@ spec:
     - name: VEILARBOPPFOLGING_TOKEN_SCOPE
       value: "api://dev-fss.pto.veilarboppfolging/.default"
     - name: VEILARBVEDTAKSSTOTTE_URL
-      value: "https://veilarbvedtaksstotte.dev-fss-pub.nais.io/veilarbvedtaksstotte"
+      value: "http://veilarbvedtaksstotte.obo/veilarbvedtaksstotte"
     - name: VEILARBVEDTAKSSTOTTE_TOKEN_SCOPE
-      value: "api://dev-fss.pto.veilarbvedtaksstotte/.default"
+      value: "api://dev-gcp.obo.veilarbvedtaksstotte/.default"
     - name: VEILARBVEILEDER_URL
       value: "https://veilarbveileder.dev-fss-pub.nais.io/veilarbveileder"
     - name: VEILARBVEILEDER_TOKEN_SCOPE
