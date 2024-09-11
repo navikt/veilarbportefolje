@@ -3349,21 +3349,38 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of(TILTAKSHENDELSER));
 
-        BrukereMedAntall response = opensearchService.hentBrukere(
+        BrukereMedAntall responseDefaultSortering = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+        List<Bruker> brukereDefaultRekkefolge = responseDefaultSortering.getBrukere();
+
+        assertThat(responseDefaultSortering.getAntall()).isEqualTo(3);
+        assertThat(brukereDefaultRekkefolge.get(0).getFnr()).isEqualTo(bruker3Fnr.toString());
+        assertThat(brukereDefaultRekkefolge.get(1).getFnr()).isEqualTo(bruker2Fnr.toString());
+        assertThat(brukereDefaultRekkefolge.get(2).getFnr()).isEqualTo(bruker1Fnr.toString());
+
+
+        BrukereMedAntall responseEksplisittSortering = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "descending",
                 "tiltakshendelse_dato_opprettet",
                 filterValg,
                 null,
                 null
         );
-        List<Bruker> sorterteBrukere = response.getBrukere();
+        List<Bruker> brukereEksplisittSortert = responseEksplisittSortering.getBrukere();
 
-        assertThat(response.getAntall()).isEqualTo(3);
-        assertThat(sorterteBrukere.get(0).getFnr()).isEqualTo(bruker3Fnr.toString());
-        assertThat(sorterteBrukere.get(1).getFnr()).isEqualTo(bruker2Fnr.toString());
-        assertThat(sorterteBrukere.get(2).getFnr()).isEqualTo(bruker1Fnr.toString());
+        assertThat(responseEksplisittSortering.getAntall()).isEqualTo(3);
+        assertThat(brukereEksplisittSortert.get(0).getFnr()).isEqualTo(bruker1Fnr.toString());
+        assertThat(brukereEksplisittSortert.get(1).getFnr()).isEqualTo(bruker2Fnr.toString());
+        assertThat(brukereEksplisittSortert.get(2).getFnr()).isEqualTo(bruker3Fnr.toString());
     }
 
     @Test
