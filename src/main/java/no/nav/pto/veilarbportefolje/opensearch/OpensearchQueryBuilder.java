@@ -434,7 +434,7 @@ public class OpensearchQueryBuilder {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, order);
             return searchSourceBuilder;
         }
-        if ("ikke_satt".equals(sortField) ) {
+        if ("ikke_satt".equals(sortField)) {
             searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
             return searchSourceBuilder;
         }
@@ -480,6 +480,7 @@ public class OpensearchQueryBuilder {
             case "huskelapp_kommentar" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
             case "fargekategori" -> searchSourceBuilder.sort("fargekategori", order);
             case "tiltakshendelse_dato_opprettet" -> sorterTiltakshendelseOpprettetDato(searchSourceBuilder, order);
+            case "tiltakshendelse_tekst" -> searchSourceBuilder.sort("tiltakshendelse.tekst", order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
