@@ -430,7 +430,8 @@ public class OpensearchQueryBuilder {
             sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg, BrukerinnsynTilganger brukerinnsynTilganger) {
         SortOrder order = "ascending".equals(sortOrder) ? SortOrder.ASC : SortOrder.DESC;
 
-        if ("ikke_satt".equals(sortField) && filtervalg.ferdigfilterListe.contains(TILTAKSHENDELSER)) {
+        /* Null-sjekken er fordi testane kan ha ferdigfilterliste = null */
+        if ("ikke_satt".equals(sortField) && filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(TILTAKSHENDELSER)) {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, order);
             return searchSourceBuilder;
         }
