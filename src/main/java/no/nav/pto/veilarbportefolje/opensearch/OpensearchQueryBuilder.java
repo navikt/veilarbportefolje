@@ -432,7 +432,7 @@ public class OpensearchQueryBuilder {
 
         /* Null-sjekken er fordi testane kan ha ferdigfilterliste = null */
         if ("ikke_satt".equals(sortField) && filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(TILTAKSHENDELSER)) {
-            sorterTiltakshendelseOpprettetDato(searchSourceBuilder, order);
+            sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC);
             return searchSourceBuilder;
         }
         if ("ikke_satt".equals(sortField)) {
