@@ -36,6 +36,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerMapperKt.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
+import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.TILTAKSHENDELSER;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.opensearch.index.query.QueryBuilders.*;
@@ -429,6 +430,11 @@ public class OpensearchQueryBuilder {
             sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg, BrukerinnsynTilganger brukerinnsynTilganger) {
         SortOrder order = "ascending".equals(sortOrder) ? SortOrder.ASC : SortOrder.DESC;
 
+        /* Null-sjekken er fordi testane kan ha ferdigfilterliste = null */
+        if ("ikke_satt".equals(sortField) && filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(TILTAKSHENDELSER)) {
+            sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC);
+            return searchSourceBuilder;
+        }
         if ("ikke_satt".equals(sortField)) {
             searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
             return searchSourceBuilder;
@@ -474,6 +480,8 @@ public class OpensearchQueryBuilder {
             case "huskelapp" -> sorterHuskelappEksistere(searchSourceBuilder, order);
             case "huskelapp_kommentar" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
             case "fargekategori" -> searchSourceBuilder.sort("fargekategori", order);
+            case "tiltakshendelse_dato_opprettet" -> sorterTiltakshendelseOpprettetDato(searchSourceBuilder, order);
+            case "tiltakshendelse_tekst" -> searchSourceBuilder.sort("tiltakshendelse.tekst", order);
             default -> defaultSort(sortField, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
@@ -511,6 +519,10 @@ public class OpensearchQueryBuilder {
 
     static void sorterStatsborgerskapGyldigFra(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
         searchSourceBuilder.sort("hovedStatsborgerskap.gyldigFra", order);
+    }
+
+    static void sorterTiltakshendelseOpprettetDato(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        searchSourceBuilder.sort("tiltakshendelse.opprettet", order);
     }
 
     static void sorterTolkeSpraak(Filtervalg filtervalg, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
@@ -850,7 +862,8 @@ public class OpensearchQueryBuilder {
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriE", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_E.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriF", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_F.name()),
                 mustNotExistFilter(filtrereVeilederOgEnhet, "fargekategoriIngenKategori", "fargekategori"),
-                mustExistFilter(filtrereVeilederOgEnhet, "mineHuskelapper", "huskelapp")
+                mustExistFilter(filtrereVeilederOgEnhet, "mineHuskelapper", "huskelapp"),
+                mustExistFilter(filtrereVeilederOgEnhet, "tiltakshendelser", "tiltakshendelse")
         };
 
         return new SearchSourceBuilder()

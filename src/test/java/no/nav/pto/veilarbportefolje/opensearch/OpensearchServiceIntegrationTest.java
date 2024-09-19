@@ -432,7 +432,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     public void skal_hente_riktig_antall_ufordelte_brukere() {
 
         List<OppfolgingsBruker> brukere = List.of(
-
                 new OppfolgingsBruker()
                         .setAktoer_id(randomAktorId().toString())
                         .setFnr(randomFnr().get())
@@ -596,7 +595,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var statustall = opensearchService.hentStatustallForVeilederPortefolje(TEST_VEILEDER_0, TEST_ENHET);
-        assertThat(statustall.getErSykmeldtMedArbeidsgiver()).isEqualTo(0);
+        assertThat(statustall.getErSykmeldtMedArbeidsgiver()).isZero();
         assertThat(statustall.getIavtaltAktivitet()).isEqualTo(1);
         assertThat(statustall.getIkkeIavtaltAktivitet()).isEqualTo(2);
         assertThat(statustall.getInaktiveBrukere()).isEqualTo(1);
@@ -608,11 +607,12 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(statustall.getMineHuskelapper()).isEqualTo(1);
         assertThat(statustall.getFargekategoriA()).isEqualTo(1);
         assertThat(statustall.getFargekategoriB()).isEqualTo(1);
-        assertThat(statustall.getFargekategoriC()).isEqualTo(0);
-        assertThat(statustall.getFargekategoriD()).isEqualTo(0);
-        assertThat(statustall.getFargekategoriE()).isEqualTo(0);
-        assertThat(statustall.getFargekategoriF()).isEqualTo(0);
+        assertThat(statustall.getFargekategoriC()).isZero();
+        assertThat(statustall.getFargekategoriD()).isZero();
+        assertThat(statustall.getFargekategoriE()).isZero();
+        assertThat(statustall.getFargekategoriF()).isZero();
         assertThat(statustall.getFargekategoriIngenKategori()).isEqualTo(1);
+        assertThat(statustall.getTiltakshendelser()).isZero();
     }
 
     @Test
@@ -797,7 +797,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(responsMedBrukerinnsyn.getTotalt()).isEqualTo(15);
-        assertThat(responsUtenBrukerinnsyn.getTotalt()).isEqualTo(0);
+        assertThat(responsUtenBrukerinnsyn.getTotalt()).isZero();
         assertThat(responsMedBrukerinnsyn.getVenterPaSvarFraNAV()).isEqualTo(5);
         assertThat(responsMedBrukerinnsyn.getUfordelteBrukere()).isEqualTo(5);
     }
@@ -951,7 +951,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var statustallForBrukereSomVeilederIkkeHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ);
 
         assertThat(statustallForBrukereSomVeilederHarInnsynsrettPå.getUfordelteBrukere()).isEqualTo(1);
-        assertThat(statustallForBrukereSomVeilederIkkeHarInnsynsrettPå.getUfordelteBrukere()).isEqualTo(0);
+        assertThat(statustallForBrukereSomVeilederIkkeHarInnsynsrettPå.getUfordelteBrukere()).isZero();
     }
 
     @Test
@@ -2795,7 +2795,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                     } else if (bruker.getFnr().equals(bruker3.getFnr())) {
                         assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(2);
                     } else if (bruker.getFnr().equals(bruker4.getFnr())) {
-                        assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(0);
+                        assertThat(bruker.getBarnUnder18AarData().size()).isZero();
                     } else if (bruker.getFnr().equals(bruker5.getFnr())) {
                         assertThat(bruker.getBarnUnder18AarData().size()).isEqualTo(1);
                     }
@@ -3224,7 +3224,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void test_filtrering_tiltakshendelser() {
+    public void test_filtrering_og_statustall_tiltakshendelser() {
         OppfolgingsBruker bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
@@ -3232,6 +3232,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setTiltakshendelse(null);
+
 
         Fnr bruker2Fnr = Fnr.of("02020222222");
         UUID bruker2UUID = UUID.randomUUID();
@@ -3249,6 +3250,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setTiltakshendelse(new Tiltakshendelse(bruker2UUID, bruker2Opprettet, bruker2Tekst, bruker2Lenke, bruker2Tiltakstype, bruker2Fnr));
 
+
         Fnr bruker3Fnr = Fnr.of("03030333333");
         UUID bruker3UUID = UUID.randomUUID();
         LocalDateTime bruker3Opprettet = LocalDateTime.now();
@@ -3265,12 +3267,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setTiltakshendelse(new Tiltakshendelse(bruker3UUID, bruker3Opprettet, bruker3Tekst, bruker3Lenke, bruker3Tiltakstype, bruker3Fnr));
 
+
         List<OppfolgingsBruker> brukere = List.of(bruker1, bruker2, bruker3);
 
         skrivBrukereTilTestindeks(brukere);
-
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
-
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of(TILTAKSHENDELSER));
@@ -3289,6 +3290,116 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getAntall()).isEqualTo(2);
         assertThat(sorterteBrukere.get(0).getFnr()).isEqualTo(bruker2Fnr.toString());
         assertThat(sorterteBrukere.get(1).getFnr()).isEqualTo(bruker3Fnr.toString());
+
+        var statustall = opensearchService.hentStatustallForVeilederPortefolje(TEST_VEILEDER_0, TEST_ENHET);
+        assertThat(statustall.getTiltakshendelser()).isEqualTo(2);
+    }
+
+    @Test
+    public void test_sortering_tiltakshendelser_opprettet() {
+        Fnr bruker1Fnr = Fnr.of("01010111111");
+        UUID bruker1UUID = UUID.randomUUID();
+        LocalDateTime bruker1Opprettet = LocalDateTime.of(2024, 06, 01, 0, 0);
+        String bruker1tekst = "Dette er noko tekst som startar på D.";
+        String lenke = "http.cat/200";
+        Tiltakstype tiltakstype = Tiltakstype.ARBFORB;
+
+        OppfolgingsBruker bruker1 = new OppfolgingsBruker()
+                .setFnr(bruker1Fnr.toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakshendelse(new Tiltakshendelse(bruker1UUID, bruker1Opprettet, bruker1tekst, lenke, tiltakstype, bruker1Fnr));
+
+
+        Fnr bruker2Fnr = Fnr.of("02020222222");
+        UUID bruker2UUID = UUID.randomUUID();
+        LocalDateTime bruker2Opprettet = LocalDateTime.of(2023, 06, 01, 0, 0);
+        String bruker2Tekst = "Akkurat slik startar du ein setning med bokstaven A.";
+
+        OppfolgingsBruker bruker2 = new OppfolgingsBruker()
+                .setFnr(bruker2Fnr.toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakshendelse(new Tiltakshendelse(bruker2UUID, bruker2Opprettet, bruker2Tekst, lenke, tiltakstype, bruker2Fnr));
+
+
+        Fnr bruker3Fnr = Fnr.of("03030333333");
+        UUID bruker3UUID = UUID.randomUUID();
+        LocalDateTime bruker3Opprettet = LocalDateTime.of(2022, 06, 01, 0, 0);
+        String bruker3Tekst = "Byrjinga av denne teksten er bokstaven B.";
+
+        OppfolgingsBruker bruker3 = new OppfolgingsBruker()
+                .setFnr(bruker3Fnr.toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakshendelse(new Tiltakshendelse(bruker3UUID, bruker3Opprettet, bruker3Tekst, lenke, tiltakstype, bruker3Fnr));
+
+
+        List<OppfolgingsBruker> brukere = List.of(bruker1, bruker2, bruker3);
+
+        skrivBrukereTilTestindeks(brukere);
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
+
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of(TILTAKSHENDELSER));
+
+        BrukereMedAntall responseDefaultSortering = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filterValg,
+                null,
+                null
+        );
+        List<Bruker> brukereDefaultRekkefolge = responseDefaultSortering.getBrukere();
+
+        assertThat(responseDefaultSortering.getAntall()).isEqualTo(3);
+        assertThat(brukereDefaultRekkefolge.get(0).getFnr()).isEqualTo(bruker3Fnr.toString());
+        assertThat(brukereDefaultRekkefolge.get(1).getFnr()).isEqualTo(bruker2Fnr.toString());
+        assertThat(brukereDefaultRekkefolge.get(2).getFnr()).isEqualTo(bruker1Fnr.toString());
+
+
+        BrukereMedAntall responseSortertNyesteDato = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "descending",
+                "tiltakshendelse_dato_opprettet",
+                filterValg,
+                null,
+                null
+        );
+        List<Bruker> brukereOpprettetSortertPaNyeste = responseSortertNyesteDato.getBrukere();
+
+        assertThat(responseSortertNyesteDato.getAntall()).isEqualTo(3);
+        assertThat(brukereOpprettetSortertPaNyeste.get(0).getFnr()).isEqualTo(bruker1Fnr.toString());
+        assertThat(brukereOpprettetSortertPaNyeste.get(1).getFnr()).isEqualTo(bruker2Fnr.toString());
+        assertThat(brukereOpprettetSortertPaNyeste.get(2).getFnr()).isEqualTo(bruker3Fnr.toString());
+
+        BrukereMedAntall responseSortertAlfabetisk = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "tiltakshendelse_tekst",
+                filterValg,
+                null,
+                null
+        );
+        List<Bruker> brukereTekstSortertAlfabetisk = responseSortertAlfabetisk.getBrukere();
+
+        assertThat(responseSortertAlfabetisk.getAntall()).isEqualTo(3);
+        assertThat(brukereTekstSortertAlfabetisk.get(0).getFnr()).isEqualTo(bruker2Fnr.toString());
+        assertThat(brukereTekstSortertAlfabetisk.get(1).getFnr()).isEqualTo(bruker3Fnr.toString());
+        assertThat(brukereTekstSortertAlfabetisk.get(2).getFnr()).isEqualTo(bruker1Fnr.toString());
     }
 
     @Test
