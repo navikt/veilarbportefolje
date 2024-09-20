@@ -71,6 +71,7 @@ spec:
     outbound:
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
+        - host: veilarboppfolging-gcp.intern.no
   resources:
     limits:
       cpu: "4"
@@ -82,9 +83,9 @@ spec:
     - name: JAVA_OPTS
       value: "-Xms4096m -Xmx10144m --illegal-access=permit --add-opens=java.base/java.lang=ALL-UNNAMED"
     - name: VEILARBOPPFOLGING_URL
-      value: "http://veilarboppfolging.pto.svc.nais.local/veilarboppfolging"
+      value: "https://veilarboppfolging-gcp.intern.nav.no/veilarboppfolging"
     - name: VEILARBOPPFOLGING_TOKEN_SCOPE
-      value: "api://prod-fss.pto.veilarboppfolging/.default"
+      value: "api://prod-gcp.poao.veilarboppfolging/.default"
     - name: VEILARBVEDTAKSSTOTTE_URL
       value: "http://veilarbvedtaksstotte.pto.svc.nais.local/veilarbvedtaksstotte"
     - name: VEILARBVEDTAKSSTOTTE_TOKEN_SCOPE
