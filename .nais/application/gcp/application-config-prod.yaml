@@ -82,10 +82,11 @@ spec:
           namespace: poao
         - application: paw-arbeidssoekerregisteret-api-oppslag
           namespace: paw
+        - application: veilarboppfolging
+          namespace: poao
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
-        - host: veilarboppfolging.prod-fss-pub.nais.io
         - host: veilarbvedtaksstotte.prod-fss-pub.nais.io
         - host: veilarbveileder.prod-fss-pub.nais.io
         - host: veilarbarena.prod-fss-pub.nais.io
@@ -100,9 +101,9 @@ spec:
     - name: JAVA_OPTS
       value: "-Xms4096m -Xmx10144m --illegal-access=permit --add-opens=java.base/java.lang=ALL-UNNAMED"
     - name: VEILARBOPPFOLGING_URL
-      value: "https://veilarboppfolging.prod-fss-pub.nais.io/veilarboppfolging"
+      value: "http://veilarboppfolging.poao/veilarboppfolging"
     - name: VEILARBOPPFOLGING_TOKEN_SCOPE
-      value: "api://prod-fss.pto.veilarboppfolging/.default"
+      value: "api://prod-gcp.poao.veilarboppfolging/.default"
     - name: VEILARBVEDTAKSSTOTTE_URL
       value: "https://veilarbvedtaksstotte.prod-fss-pub.nais.io/veilarbvedtaksstotte"
     - name: VEILARBVEDTAKSSTOTTE_TOKEN_SCOPE
