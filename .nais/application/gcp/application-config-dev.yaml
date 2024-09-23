@@ -86,10 +86,11 @@ spec:
           namespace: paw
         - application: veilarbvedtaksstotte
           namespace: obo
+        - application: veilarboppfolging
+          namespace: poao
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
-        - host: veilarboppfolging.dev-fss-pub.nais.io
         - host: veilarbveileder.dev-fss-pub.nais.io
         - host: veilarbarena.dev-fss-pub.nais.io
   resources:
@@ -103,9 +104,9 @@ spec:
     - name: JAVA_OPTS
       value: "-Xms4098m -Xmx8096m --illegal-access=permit --add-opens=java.base/java.lang=ALL-UNNAMED"
     - name: VEILARBOPPFOLGING_URL
-      value: "https://veilarboppfolging.dev-fss-pub.nais.io/veilarboppfolging"
+      value: "http://veilarboppfolging.poao/veilarboppfolging"
     - name: VEILARBOPPFOLGING_TOKEN_SCOPE
-      value: "api://dev-fss.pto.veilarboppfolging/.default"
+      value: "api://dev-gcp.poao.veilarboppfolging/.default"
     - name: VEILARBVEDTAKSSTOTTE_URL
       value: "http://veilarbvedtaksstotte.obo/veilarbvedtaksstotte"
     - name: VEILARBVEDTAKSSTOTTE_TOKEN_SCOPE
