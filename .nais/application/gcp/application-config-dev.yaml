@@ -88,10 +88,11 @@ spec:
           namespace: obo
         - application: veilarboppfolging
           namespace: poao
+        - application: veilarbveileder
+          namespace: obo
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
-        - host: veilarbveileder.dev-fss-pub.nais.io
         - host: veilarbarena.dev-fss-pub.nais.io
   resources:
     limits:
@@ -112,9 +113,9 @@ spec:
     - name: VEILARBVEDTAKSSTOTTE_TOKEN_SCOPE
       value: "api://dev-gcp.obo.veilarbvedtaksstotte/.default"
     - name: VEILARBVEILEDER_URL
-      value: "https://veilarbveileder.dev-fss-pub.nais.io/veilarbveileder"
+      value: "http://veilarbveileder.obo/veilarbveileder"
     - name: VEILARBVEILEDER_TOKEN_SCOPE
-      value: "api://dev-fss.pto.veilarbveileder/.default"
+      value: "api://dev-gcp.obo.veilarbveileder/.default"
     - name: VEILARBARENA_URL
       value: "https://veilarbarena.dev-fss-pub.nais.io/veilarbarena"
     - name: VEILARBARENA_TOKEN_SCOPE
