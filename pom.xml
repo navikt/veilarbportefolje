@@ -18,7 +18,7 @@
         <java.version>21</java.version>
         <common.version>3.2023.10.23_12.41-bafec3836d28</common.version>
         <jaxb.version>2.3.1</jaxb.version>
-        <testcontainers.version>1.20.1</testcontainers.version>
+        <testcontainers.version>1.20.2</testcontainers.version>
 
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
