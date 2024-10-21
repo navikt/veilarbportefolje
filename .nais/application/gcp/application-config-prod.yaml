@@ -72,6 +72,8 @@ spec:
         - application: veilarbvedtaksstotte
           namespace: pto
           cluster: prod-fss
+        - application: veilarbvedtaksstotte
+          namespace: obo
         - application: veilarbarena
           namespace: pto
           cluster: prod-fss
