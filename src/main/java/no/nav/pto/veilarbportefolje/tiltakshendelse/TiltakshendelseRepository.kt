@@ -14,10 +14,12 @@ import java.util.UUID
 class TiltakshendelseRepository(private val db: JdbcTemplate) {
 
     fun tryLagreTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelseData: KafkaTiltakshendelse): Boolean {
-        return upsertTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelseData)
+        verifiserTiltakshendelseTilhorerSammePerson(tiltakshendelseData.fnr, tiltakshendelseData.id)
+        upsertTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelseData)
+        return hentEldsteTiltakshendelse(tiltakshendelseData.fnr)?.id?.equals(tiltakshendelseData.id) ?: false
     }
 
-    fun upsertTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelse: KafkaTiltakshendelse): Boolean {
+    fun upsertTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelse: KafkaTiltakshendelse) {
         try {
             db.update(
                 """
@@ -57,9 +59,6 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
                 tiltakshendelse.tiltakstype.name,
                 tiltakshendelse.avsender.name
             )
-            return hentEldsteTiltakshendelse(tiltakshendelse.fnr)?.id?.equals(tiltakshendelse.id) ?: false
-        } catch (e: KunneIkkeHenteEldsteTiltakhendelseException) {
-            throw e
         } catch (e: Exception) {
             secureLog.error(e.message, e)
             throw RuntimeException("Kunne ikke lagre tiltakshendelse for hendelsesid: " + tiltakshendelse.id)
@@ -67,6 +66,7 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
     }
 
     fun slettTiltakshendelseOgHentEldste(tiltakshendelseId: UUID, fnr: Fnr): Tiltakshendelse? {
+        verifiserTiltakshendelseTilhorerSammePerson(fnr, tiltakshendelseId)
         val sql = "DELETE FROM tiltakshendelse WHERE id = ?"
         try {
             db.update(sql, tiltakshendelseId)
@@ -113,6 +113,21 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
             throw KunneIkkeHenteEldsteTiltakhendelseException("Kunne ikke hente eldste tiltakshendelse for bruker.")
         }
     }
+
+    fun verifiserTiltakshendelseTilhorerSammePerson(fnrPaaNyTiltakshendelsemelding: Fnr, tiltakshendelseId: UUID) {
+        val lagretFnrPaTiltakshendelse: String? = try {
+            val sql = "SELECT fnr FROM tiltakshendelse WHERE id = ?"
+            db.queryForObject(sql, String::class.java, tiltakshendelseId)
+        } catch (_: Exception) {
+            //finnes det ingen tiltakshendelse med id, så er alt ok
+            return
+        }
+        if (lagretFnrPaTiltakshendelse != fnrPaaNyTiltakshendelsemelding.toString()) {
+            secureLog.error("Tiltakshendelse med id $tiltakshendelseId tilhører ikke samme person som fnr $fnrPaaNyTiltakshendelsemelding")
+            throw TiltakshendelseTilhorerIkkePersonException("Tiltakshendelse tilhører ikke samme person som allerede er lagret i database")
+        }
+    }
 }
 
 class KunneIkkeHenteEldsteTiltakhendelseException(message: String) : RuntimeException(message)
+class TiltakshendelseTilhorerIkkePersonException(message: String) : RuntimeException(message)

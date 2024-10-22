@@ -72,6 +72,31 @@ class TiltakshendelseRepositoryTest {
     }
 
     @Test
+    void kanIkkeOppdatereTiltakshendelseEtterEndretFnr() {
+        UUID id = UUID.randomUUID();
+        LocalDateTime opprettet = LocalDateTime.now();
+        String tekst = "Forslag: endre varighet";
+        String lenke = "http.cat/200";
+        String oppdatertTekst = "Forslag: endre utkast";
+        Fnr fnr = Fnr.of("11223312345");
+        Fnr nyttFnr = Fnr.of("12345112233");
+
+        KafkaTiltakshendelse gammelKafkaData = new KafkaTiltakshendelse(id, true, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse oppdatertKafkaData = new KafkaTiltakshendelse(id, true, opprettet.plusDays(1), oppdatertTekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse oppdatertMedNyttFnrKafkaData = new KafkaTiltakshendelse(id, true, opprettet.plusDays(2), tekst, lenke, Tiltakstype.ARBFORB, nyttFnr, Avsender.KOMET);
+        Tiltakshendelse expected = new Tiltakshendelse(id, opprettet.plusDays(1), oppdatertTekst, lenke, Tiltakstype.ARBFORB, fnr);
+
+        assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(gammelKafkaData));
+        assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(oppdatertKafkaData));
+
+        List<Tiltakshendelse> tiltakshendelser = repository.hentAlleTiltakshendelser();
+        assert (tiltakshendelser.size() == 1);
+        assert (tiltakshendelser.getFirst().tekst().equals(expected.tekst()));
+
+        assertThrowsExactly(TiltakshendelseTilhorerIkkePersonException.class, () -> repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(oppdatertMedNyttFnrKafkaData));
+    }
+
+    @Test
     void kanLagreFlereTiltakshendelserPaSammePerson() {
         UUID id = UUID.randomUUID();
         UUID idNyMelding = UUID.randomUUID();
