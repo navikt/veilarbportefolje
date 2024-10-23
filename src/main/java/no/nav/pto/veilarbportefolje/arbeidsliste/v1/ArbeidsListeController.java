@@ -145,7 +145,7 @@ public class ArbeidsListeController {
         if (arbeidslisteService.getArbeidsliste(fnr).get() == null) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(fnr).orElse(null);
-            secureLog.warn("Arbeidsliste kunne ikke oppdateres, var null, fnr: {}, veileder: {}, på enhet: {}", fnrString, veilederId, enhet);
+            secureLog.warn("Arbeidsliste kunne ikke oppdateres, var null, fnr: {}, veileder: {}, på enhet: {}", fnr.get(), veilederId, enhet);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Kunne ikke oppdatere. Fant ikke arbeidsliste for bruker");
         }
 
