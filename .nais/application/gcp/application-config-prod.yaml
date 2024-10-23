@@ -70,8 +70,7 @@ spec:
           namespace: pdl
           cluster: prod-fss
         - application: veilarbvedtaksstotte
-          namespace: pto
-          cluster: prod-fss
+          namespace: obo
         - application: veilarbarena
           namespace: pto
           cluster: prod-fss
@@ -89,14 +88,12 @@ spec:
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
-        - host: veilarbvedtaksstotte.prod-fss-pub.nais.io
         - host: veilarbarena.prod-fss-pub.nais.io
   resources:
     limits:
-      cpu: "4"
       memory: 10Gi
     requests:
-      cpu: "1"
+      cpu: 1
       memory: 4Gi
   env:
     - name: JAVA_OPTS
@@ -106,9 +103,9 @@ spec:
     - name: VEILARBOPPFOLGING_TOKEN_SCOPE
       value: "api://prod-gcp.poao.veilarboppfolging/.default"
     - name: VEILARBVEDTAKSSTOTTE_URL
-      value: "https://veilarbvedtaksstotte.prod-fss-pub.nais.io/veilarbvedtaksstotte"
+      value: "http://veilarbvedtaksstotte.obo/veilarbvedtaksstotte"
     - name: VEILARBVEDTAKSSTOTTE_TOKEN_SCOPE
-      value: "api://prod-fss.pto.veilarbvedtaksstotte/.default"
+      value: "api://prod-gcp.obo.veilarbvedtaksstotte/.default"
     - name: VEILARBVEILEDER_URL
       value: "http://veilarbveileder.obo/veilarbveileder"
     - name: VEILARBVEILEDER_TOKEN_SCOPE
