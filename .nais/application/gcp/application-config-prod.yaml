@@ -93,7 +93,7 @@ spec:
     limits:
       memory: 10Gi
     requests:
-      cpu: 1
+      cpu: "1"
       memory: 4Gi
   env:
     - name: JAVA_OPTS
