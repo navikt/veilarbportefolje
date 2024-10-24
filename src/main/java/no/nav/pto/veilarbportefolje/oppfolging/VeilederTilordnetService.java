@@ -1,10 +1,13 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
@@ -29,7 +32,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
     private final FargekategoriService fargekategoriService;
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final PdlIdentRepository pdlIdentRepository;
-
+    private final DefaultUnleash defaultUnleash;
 
     @Override
     public void behandleKafkaMeldingLogikk(VeilederTilordnetDTO dto) {
@@ -46,10 +49,13 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId);
         secureLog.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
-        final boolean harByttetNavKontor = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));
-        if (harByttetNavKontor) {
-            arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr);
+
+        if (!FeatureToggle.skjulArbeidslistefunksjonalitet(defaultUnleash)) {
+            final boolean harByttetNavKontorArbeidsliste = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
+            if (harByttetNavKontorArbeidsliste) {
+                arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr);
+            }
         }
 
         final boolean brukerHarByttetNavkontorHuskelapp = huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktoerId, maybeFnr);
