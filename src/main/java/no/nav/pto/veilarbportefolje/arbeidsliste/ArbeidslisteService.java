@@ -84,7 +84,7 @@ public class ArbeidslisteService {
         }
 
         if (FeatureToggle.skjulArbeidslistefunksjonalitet(defaultUnleash)) {
-            throw new SlettArbeidslisteException(String.format("Kunne ikke slette arbeidsliste. Årsak: arbeidslistefunksjonalitet er deaktivert."));
+            throw new SlettArbeidslisteException("Kunne ikke slette arbeidsliste. Årsak: arbeidslistefunksjonalitet er deaktivert.");
         }
 
         if (slettFargekategori) {
