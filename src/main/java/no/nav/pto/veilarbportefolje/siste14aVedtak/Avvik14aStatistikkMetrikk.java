@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Component
@@ -38,8 +39,7 @@ public class Avvik14aStatistikkMetrikk implements MeterBinder {
         this.antallMedInnsatsgruppeManglerINyKilde = meterRegistry.gauge("veilarbportefolje_avvik14astatistikk_innsatsgruppe_mangler", new AtomicLong(avvik14aStatistikk.antallMedInnsatsgruppeManglerINyKilde()));
     }
 
-    // Kjøres klokken 3 hver natt
-    @Scheduled(cron = "0 0 3 * * ?")
+    @Scheduled(initialDelay = 10, fixedRate = 60, timeUnit = TimeUnit.MINUTES)
     public void oppdaterMetrikk() {
         log.info("Kjører schedulert jobb \"Oppdaterer metrikker for avvik 14 a statistikk\" ");
 

@@ -96,3 +96,4 @@ Er du ansatt i NAV kan du stille spørsmål på Slack i kanalen #produktområdet
 ## Kode generert av GitHub Copilot
 
 Dette repoet bruker GitHub Copilot til å generere kode.
+
