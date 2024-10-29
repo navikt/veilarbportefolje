@@ -129,6 +129,7 @@ public class ArbeidsListeV2Controller {
 
         try {
             arbeidslisteService.slettArbeidsliste(gyldigFnr, slettFargekategori);
+            log.info("Arbeidsliste slettet fra endepunkt 'DELETE /api/v2/arbeidsliste'");
         } catch (SlettArbeidslisteException e) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             secureLog.warn("Kunne ikke slette arbeidsliste for fnr: {}, av veileder: {}, på enhet: {}", gyldigFnr.get(), veilederId.toString(), enhet);
