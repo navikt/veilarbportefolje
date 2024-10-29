@@ -16,10 +16,9 @@
 
     <properties>
         <java.version>21</java.version>
-        <common.version>3.2023.10.23_12.41-bafec3836d28</common.version>
+        <common.version>3.2024.10.25_13.44-9db48a0dbe67</common.version>
         <jaxb.version>2.3.1</jaxb.version>
         <testcontainers.version>1.20.1</testcontainers.version>
-
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.release>21</maven.compiler.release>
@@ -166,7 +165,7 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>5.1.0</version>
+            <version>6.0.0</version>
         </dependency>
 
         <!-- Kafka -->
@@ -207,49 +206,50 @@
 
         <!-- Common -->
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>rest</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>types</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>auth</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>metrics</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.getunleash</groupId>
-            <artifactId>unleash-client-java</artifactId>
-            <version>${unleash.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>client</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>token-client</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>log</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>kafka</artifactId>
             <version>${common.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.getunleash</groupId>
+            <artifactId>unleash-client-java</artifactId>
+            <version>${unleash.version}</version>
         </dependency>
 
         <dependency>
@@ -417,6 +417,10 @@
                 <repository>
                     <id>jitpack</id>
                     <url>https://jitpack.io</url>
+                </repository>
+                <repository>
+                    <id>github</id>
+                    <url>https://github-package-registry-mirror.gc.nav.no/cached/maven-release</url>
                 </repository>
             </repositories>
         </profile>
