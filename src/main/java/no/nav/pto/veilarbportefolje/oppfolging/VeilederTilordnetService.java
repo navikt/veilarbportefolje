@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
@@ -54,7 +53,7 @@ public class VeilederTilordnetService extends KafkaCommonConsumerService<Veilede
         if (!FeatureToggle.skjulArbeidslistefunksjonalitet(defaultUnleash)) {
             final boolean harByttetNavKontorArbeidsliste = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
             if (harByttetNavKontorArbeidsliste) {
-                arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr);
+                arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr, "VeilederTilodnetService, 'tilordneVeileder(AktorId aktoerId, VeilederId veilederId)'");
             }
         }
 

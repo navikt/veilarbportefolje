@@ -4,6 +4,7 @@ import io.getunleash.DefaultUnleash;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -27,6 +28,7 @@ import static java.lang.String.format;
 import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ArbeidslisteService {
@@ -80,21 +82,25 @@ public class ArbeidslisteService {
         Optional<AktorId> aktoerId = brukerServiceV2.hentAktorId(fnr);
 
         if (aktoerId.isEmpty()) {
+            log.info("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr.");
             throw new SlettArbeidslisteException(String.format("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: %s", fnr.get()));
         }
 
         if (FeatureToggle.skjulArbeidslistefunksjonalitet(defaultUnleash)) {
+            log.info("Kunne ikke slette arbeidsliste. Årsak: arbeidslistefunksjonalitet er deaktivert.");
             throw new SlettArbeidslisteException("Kunne ikke slette arbeidsliste. Årsak: arbeidslistefunksjonalitet er deaktivert.");
         }
 
         if (slettFargekategori) {
-            slettArbeidsliste(aktoerId.get(), Optional.of(fnr));
+            log.info("Sletter arbeidsliste i ArbeidslisteService. (Har ikkje blitt stoppa av sjekk for skjulArbeidslistefunksjonalitet-toggle.)");
+            slettArbeidsliste(aktoerId.get(), Optional.of(fnr), "ArbeidslisteService, 'slettArbeidsliste(Fnr fnr, Boolean slettFargekategori)'");
         } else {
             slettArbeidslisteUtenFargekategori(aktoerId.get());
         }
     }
 
-    public void slettArbeidsliste(AktorId aktoerId, Optional<Fnr> fnr) {
+    public void slettArbeidsliste(AktorId aktoerId, Optional<Fnr> fnr, String slettetFra) {
+        log.info("Sletter arbeidsliste. Slette-funksjon kalla frå: {}", slettetFra);
         final int antallSlettedeArbeidslister = arbeidslisteRepositoryV2.slettArbeidsliste(aktoerId, fnr);
 
         if (antallSlettedeArbeidslister <= 0) {
