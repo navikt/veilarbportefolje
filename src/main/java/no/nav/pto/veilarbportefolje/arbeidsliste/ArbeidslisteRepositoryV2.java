@@ -20,7 +20,6 @@ import java.util.UUID;
 import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSLISTE.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
@@ -135,6 +134,7 @@ public class ArbeidslisteRepositoryV2 {
             return 0;
         }
         secureLog.info("Sletter arbeidsliste pa bruker: {}", aktoerId);
+        log.info("Sletter arbeidsliste på bruker i ArbeidslisteRepositoryV2, 'slettArbeidsliste(AktorId aktoerId, Optional<Fnr> maybeFnr)'");
 
         int oppdaterteRaderArbeidsliste = db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
 
