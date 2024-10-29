@@ -165,6 +165,7 @@ public class ArbeidsListeController {
 
         try {
             arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr), true);
+            log.info("Arbeidsliste slettet fra endepunkt 'DELETE /api/arbeidsliste/{fnr}'");
         } catch (SlettArbeidslisteException e) {
             VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
             NavKontor enhet = brukerService.hentNavKontor(Fnr.ofValidFnr(fnr)).orElse(null);
