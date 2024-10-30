@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
@@ -373,6 +374,21 @@ public class OpensearchIndexerV2 {
                 .endObject();
 
         update(aktorId, content, format("Slettet tiltakshendelse for aktorId: %s", aktorId.get()));
+    }
+
+    @SneakyThrows
+    public void updateSiste14aVedtak(Siste14aVedtak siste14aVedtak, AktorId aktorId) throws IOException{
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .startObject("siste14aVedtak")
+                .field("innsatsgruppe", siste14aVedtak.getInnsatsgruppe())
+                .field("hovedmal", siste14aVedtak.getHovedmal())
+                .field("fattetDato", siste14aVedtak.getFattetDato())
+                .field("fraArena", siste14aVedtak.isFraArena())
+                .endObject()
+                .endObject();
+
+        update(aktorId, content, format("Oppdaterte siste14aVedtak for aktorId: %s", aktorId.get()));
     }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
