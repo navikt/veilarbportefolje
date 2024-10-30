@@ -269,6 +269,19 @@
             "type": "keyword"
           }
         }
+      },
+      "vedtak14a": {
+        "properties": {
+          "innsatsgruppe": {
+            "type": "keyword"
+          },
+          "hovedmal": {
+            "type": "keyword"
+          },
+          "fattetDato": {
+            "type": "date"
+          }
+        }
       }
     }
   }
