@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
@@ -38,7 +37,7 @@ public class Siste14aVedtakRepository {
 
         db.update(
                 sql,
-                siste14aVedtak.brukerId,
+                siste14aVedtak.aktorId.get(),
                 siste14aVedtak.hovedmal != null ? siste14aVedtak.hovedmal.name() : null,
                 siste14aVedtak.innsatsgruppe.name(),
                 Timestamp.from(siste14aVedtak.fattetDato.toInstant()),
@@ -73,7 +72,7 @@ public class Siste14aVedtakRepository {
     @SneakyThrows
     private Siste14aVedtak siste14aVedtakMapper(ResultSet rs) {
         return new Siste14aVedtak(
-                rs.getString("bruker_id"),
+                Optional.ofNullable(rs.getString("bruker_id")).map(AktorId::of).orElse(null),
                 Innsatsgruppe.valueOf(rs.getString("innsatsgruppe")),
                 Optional.ofNullable(rs.getString("hovedmal")).map(Hovedmal::valueOf).orElse(null),
                 toZonedDateTime(rs.getTimestamp("fattet_dato")),

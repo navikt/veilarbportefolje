@@ -48,7 +48,7 @@ public class Siste14aVedtakRepositoryTest {
         IdenterForBruker identerForAnnenBruker = new IdenterForBruker(List.of(aktorIdForAnnenBruker.get(), randomAktorId().get()));
 
         Siste14aVedtak siste14aVedtakForAnnenBruker = new Siste14aVedtak(
-                aktorIdForAnnenBruker.get(),
+                aktorIdForAnnenBruker,
                 Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
                 Hovedmal.OKE_DELTAKELSE,
                 ZonedDateTime.parse("2022-01-01T11:33:22.133000+02:00"),
@@ -60,7 +60,7 @@ public class Siste14aVedtakRepositoryTest {
         assertLagretVedtak(siste14aVedtakForAnnenBruker, identerForAnnenBruker);
 
         Siste14aVedtak siste14aVedtak = new Siste14aVedtak(
-                aktorId1.get(),
+                aktorId1,
                 STANDARD_INNSATS,
                 SKAFFE_ARBEID,
                 ZonedDateTime.parse("2021-05-04T09:48:58.762000+02:00"),
@@ -72,7 +72,7 @@ public class Siste14aVedtakRepositoryTest {
         assertLagretVedtak(siste14aVedtak, identerForBruker);
 
         Siste14aVedtak oppdatert14aVedtak = new Siste14aVedtak(
-                aktorId2.get(),
+                aktorId2,
                 SITUASJONSBESTEMT_INNSATS,
                 BEHOLDE_ARBEID,
                 ZonedDateTime.parse("2022-01-04T10:01:32.689000+02:00"),
@@ -118,7 +118,7 @@ public class Siste14aVedtakRepositoryTest {
         Siste14aVedtak resultat = kanskjeResultat.get();
 
         assertEquals(expected.getFattetDato().toInstant(), resultat.getFattetDato().toInstant());
-        assertEquals(expected.getBrukerId(), resultat.getBrukerId());
+        assertEquals(expected.getAktorId(), resultat.getAktorId());
         assertEquals(expected.getHovedmal(), resultat.getHovedmal());
         assertEquals(expected.getInnsatsgruppe(), resultat.getInnsatsgruppe());
         assertEquals(expected.isFraArena(), resultat.isFraArena());
@@ -148,7 +148,7 @@ public class Siste14aVedtakRepositoryTest {
     private Siste14aVedtak upsertSiste14aForBrukersIdenterOgReturnerSiste(List<PDLIdent> identer) {
         List<Siste14aVedtak> vedtakListe = identer.stream().map(ident ->
                 new Siste14aVedtak(
-                        ident.getIdent(),
+                        AktorId.of(ident.getIdent()),
                         randomInnsatsgruppe(),
                         randomHovedmal(),
                         randomZonedDate(),

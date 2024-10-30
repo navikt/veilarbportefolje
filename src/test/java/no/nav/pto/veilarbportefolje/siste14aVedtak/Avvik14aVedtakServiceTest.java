@@ -41,13 +41,13 @@ public class Avvik14aVedtakServiceTest {
                 .hovedmaalkode(ArenaHovedmal.BEHOLDEA.name())
                 .build();
         Siste14aVedtak siste14aVedtak = Siste14aVedtak.builder()
-                .brukerId(ident1.getAktorId().get())
+                .aktorId(ident1.getAktorId())
                 .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(AktorId.of(siste14aVedtak.brukerId), siste14aVedtak));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14aVedtak.aktorId, siste14aVedtak));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.keySet()).containsAll(identer);
@@ -64,13 +64,13 @@ public class Avvik14aVedtakServiceTest {
                 .hovedmaalkode(ArenaHovedmal.BEHOLDEA.name())
                 .build();
         Siste14aVedtak siste14aVedtak = Siste14aVedtak.builder()
-                .brukerId(ident1.getAktorId().get())
+                .aktorId(ident1.getAktorId())
                 .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(AktorId.of(siste14aVedtak.brukerId), siste14aVedtak));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14aVedtak.aktorId, siste14aVedtak));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.keySet()).containsAll(identer);
@@ -87,13 +87,13 @@ public class Avvik14aVedtakServiceTest {
                 .hovedmaalkode(ArenaHovedmal.BEHOLDEA.name())
                 .build();
         Siste14aVedtak siste14aVedtak = Siste14aVedtak.builder()
-                .brukerId(ident1.getAktorId().get())
+                .aktorId(ident1.getAktorId())
                 .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(AktorId.of(siste14aVedtak.brukerId), siste14aVedtak));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14aVedtak.aktorId, siste14aVedtak));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.keySet()).containsAll(identer);
@@ -110,13 +110,13 @@ public class Avvik14aVedtakServiceTest {
                 .hovedmaalkode(null)
                 .build();
         Siste14aVedtak siste14aVedtak = Siste14aVedtak.builder()
-                .brukerId(ident1.getAktorId().get())
+                .aktorId(ident1.getAktorId())
                 .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(AktorId.of(siste14aVedtak.brukerId), siste14aVedtak));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14aVedtak.aktorId, siste14aVedtak));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.keySet()).containsAll(identer);
@@ -133,13 +133,13 @@ public class Avvik14aVedtakServiceTest {
                 .hovedmaalkode(ArenaHovedmal.BEHOLDEA.name())
                 .build();
         Siste14aVedtak siste14aVedtak = Siste14aVedtak.builder()
-                .brukerId(ident1.getAktorId().get())
+                .aktorId(ident1.getAktorId())
                 .innsatsgruppe(Innsatsgruppe.SITUASJONSBESTEMT_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(AktorId.of(siste14aVedtak.brukerId), siste14aVedtak));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14aVedtak.aktorId, siste14aVedtak));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.values()).containsOnly(Avvik14aVedtak.INNSATSGRUPPE_ULIK);
@@ -155,13 +155,13 @@ public class Avvik14aVedtakServiceTest {
                 .hovedmaalkode(ArenaHovedmal.OKEDELT.name())
                 .build();
         Siste14aVedtak siste14aVedtak = Siste14aVedtak.builder()
-                .brukerId(ident1.getAktorId().get())
+                .aktorId(ident1.getAktorId())
                 .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(AktorId.of(siste14aVedtak.brukerId), siste14aVedtak));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14aVedtak.aktorId, siste14aVedtak));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.values()).containsOnly(Avvik14aVedtak.HOVEDMAAL_ULIK);
@@ -177,13 +177,13 @@ public class Avvik14aVedtakServiceTest {
                 .hovedmaalkode(ArenaHovedmal.OKEDELT.name())
                 .build();
         Siste14aVedtak siste14aVedtak = Siste14aVedtak.builder()
-                .brukerId(ident1.getAktorId().get())
+                .aktorId(ident1.getAktorId())
                 .innsatsgruppe(Innsatsgruppe.SITUASJONSBESTEMT_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(AktorId.of(siste14aVedtak.brukerId), siste14aVedtak));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14aVedtak.aktorId, siste14aVedtak));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.values()).containsOnly(Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK);
@@ -199,12 +199,12 @@ public class Avvik14aVedtakServiceTest {
                 .hovedmaalkode(ArenaHovedmal.BEHOLDEA.name())
                 .build();
         Siste14aVedtak siste14aVedtak = Siste14aVedtak.builder()
-                .brukerId(ident1.getAktorId().get())
+                .aktorId(ident1.getAktorId())
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(AktorId.of(siste14aVedtak.brukerId), siste14aVedtak));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14aVedtak.aktorId, siste14aVedtak));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.values()).containsOnly(Avvik14aVedtak.INNSATSGRUPPE_MANGLER_I_NY_KILDE);
