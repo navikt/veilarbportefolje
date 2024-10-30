@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
@@ -16,6 +17,7 @@ public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVe
     private final PdlIdentRepository pdlIdentRepository;
     private final Siste14aVedtakRepository siste14aVedtakRepository;
     private final VedtaksstotteClient vedtaksstotteClient;
+    private final OpensearchIndexerV2 opensearchIndexerV2;
 
     @Override
     protected void behandleKafkaMeldingLogikk(Siste14aVedtakKafkaDto kafkaMelding) {
@@ -26,12 +28,14 @@ public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVe
         if (pdlIdentRepository.erBrukerUnderOppfolging(siste14aVedtak.aktorId.get())) {
             IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(siste14aVedtak.aktorId.get());
             siste14aVedtakRepository.upsert(siste14aVedtak, identer);
+            opensearchIndexerV2.updateSiste14aVedtak(siste14aVedtak, siste14aVedtak.getAktorId());
         }
     }
 
     public void slettSiste14aVedtak(String brukerId) {
         IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(brukerId);
         siste14aVedtakRepository.delete(identer);
+        opensearchIndexerV2.slettSiste14aVedtak(AktorId.of(brukerId));
     }
 
     public void hentOgLagreSiste14aVedtak(AktorId aktorId) {

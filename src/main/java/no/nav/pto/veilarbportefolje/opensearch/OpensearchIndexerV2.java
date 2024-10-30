@@ -377,7 +377,7 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void updateSiste14aVedtak(Siste14aVedtak siste14aVedtak, AktorId aktorId) throws IOException{
+    public void updateSiste14aVedtak(Siste14aVedtak siste14aVedtak, AktorId aktorId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .startObject("siste14aVedtak")
@@ -389,6 +389,16 @@ public class OpensearchIndexerV2 {
                 .endObject();
 
         update(aktorId, content, format("Oppdaterte siste14aVedtak for aktorId: %s", aktorId.get()));
+    }
+
+    @SneakyThrows
+    public void slettSiste14aVedtak(AktorId aktorId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .nullField("siste14aVedtak")
+                .endObject();
+
+        update(aktorId, content, format("Slettet siste14aVedtak for aktorId: %s", aktorId.get()));
     }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
