@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 
 import java.time.LocalDate;
@@ -131,4 +132,6 @@ public class OppfolgingsBruker {
     String fargekategori;
     String fargekategori_enhetId;
     Tiltakshendelse tiltakshendelse;
+
+    Siste14aVedtak siste14aVedtak;
 }
