@@ -23,8 +23,8 @@ public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVe
     }
 
     public void lagreSiste14aVedtak(Siste14aVedtak siste14aVedtak) {
-        if (pdlIdentRepository.erBrukerUnderOppfolging(siste14aVedtak.brukerId)) {
-            IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(siste14aVedtak.brukerId);
+        if (pdlIdentRepository.erBrukerUnderOppfolging(siste14aVedtak.aktorId.get())) {
+            IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(siste14aVedtak.aktorId.get());
             siste14aVedtakRepository.upsert(siste14aVedtak, identer);
         }
     }
@@ -38,7 +38,7 @@ public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVe
         Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktorId);
 
         vedtaksstotteClient.hentSiste14aVedtak(fnr)
-                .map(siste14aVedtak -> Siste14aVedtak.fraApiDto(siste14aVedtak, aktorId.get()))
+                .map(siste14aVedtak -> Siste14aVedtak.fraApiDto(siste14aVedtak, aktorId))
                 .ifPresent(this::lagreSiste14aVedtak);
     }
 }

@@ -174,7 +174,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         IdenterForBruker identerForBruker = pdlIdentRepository.hentIdenterForBruker(aktorId.get());
         Optional<Siste14aVedtak> siste14aVedtak = siste14aVedtakRepository.hentSiste14aVedtak(identerForBruker);
         assertThat(siste14aVedtak).isNotEmpty();
-        assertThat(siste14aVedtak).isEqualTo(Optional.of(Siste14aVedtak.fraApiDto(siste14aVedtakApiDto, aktorId.get())));
+        assertThat(siste14aVedtak).isEqualTo(Optional.of(Siste14aVedtak.fraApiDto(siste14aVedtakApiDto, aktorId)));
     }
 
     @Test
@@ -299,7 +299,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         testDataClient.lagreBrukerUnderOppfolging(aktorId, tilfeldigDatoTilbakeITid());
 
         siste14aVedtakService.lagreSiste14aVedtak(
-                new Siste14aVedtak(aktorId.get(), STANDARD_INNSATS, BEHOLDE_ARBEID, tilfeldigDatoTilbakeITid(), false)
+                new Siste14aVedtak(aktorId, STANDARD_INNSATS, BEHOLDE_ARBEID, tilfeldigDatoTilbakeITid(), false)
         );
 
         assertFalse(siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get()))).isEmpty());
