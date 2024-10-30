@@ -19,6 +19,8 @@ import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
@@ -48,6 +50,7 @@ public class PostgresOpensearchMapper {
     private final EnsligeForsorgereService ensligeForsorgereService;
     private final ArbeidssoekerService arbeidssoekerService;
     private final TiltakshendelseRepository tiltakshendelseRepository;
+    private final Siste14aVedtakRepository siste14aVedtakRepository;
 
     public void flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -226,5 +229,12 @@ public class PostgresOpensearchMapper {
                 }
             });
         });
+    }
+
+    public void flettInnSiste14aVedtak(List<OppfolgingsBruker> brukere) {
+        Map<AktorId, Siste14aVedtak> aktorIdSiste14aVedtakMap = siste14aVedtakRepository.hentSiste14aVedtakForBrukere(brukere.stream().map(bruker ->
+                AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet())
+        );
+        brukere.forEach(bruker -> bruker.setSiste14aVedtak(aktorIdSiste14aVedtakMap.get(AktorId.of(bruker.getAktoer_id()))));
     }
 }
