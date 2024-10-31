@@ -63,7 +63,7 @@ object TestDataUtils {
 
     @JvmStatic
     fun tilfeldigDatoTilbakeITid(): ZonedDateTime {
-        return ZonedDateTime.now().minus(Duration.ofDays(RandomUtils.nextLong(30, 1000))).withNano(0)
+        return ZonedDateTime.now().minus(Duration.ofDays(RandomUtils.nextLong(30, 1000))).withNano(0);
     }
 
     @JvmStatic
