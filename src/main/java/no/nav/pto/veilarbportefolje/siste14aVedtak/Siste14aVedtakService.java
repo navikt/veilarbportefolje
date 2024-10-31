@@ -35,7 +35,6 @@ public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVe
     public void slettSiste14aVedtak(String brukerId) {
         IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(brukerId);
         siste14aVedtakRepository.delete(identer);
-        opensearchIndexerV2.slettSiste14aVedtak(AktorId.of(brukerId));
     }
 
     public void hentOgLagreSiste14aVedtak(AktorId aktorId) {
