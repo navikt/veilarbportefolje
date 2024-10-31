@@ -19,7 +19,7 @@ import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakForBruker;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -232,9 +231,9 @@ public class PostgresOpensearchMapper {
     }
 
     public void flettInnSiste14aVedtak(List<OppfolgingsBruker> brukere) {
-        Map<AktorId, Siste14aVedtak> aktorIdSiste14aVedtakMap = siste14aVedtakRepository.hentSiste14aVedtakForBrukere(brukere.stream().map(bruker ->
+        Map<AktorId, Siste14aVedtakForBruker> aktorIdSiste14aVedtakMap = siste14aVedtakRepository.hentSiste14aVedtakForBrukere(brukere.stream().map(bruker ->
                 AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet())
         );
-        brukere.forEach(bruker -> bruker.setSiste14aVedtak(aktorIdSiste14aVedtakMap.get(AktorId.of(bruker.getAktoer_id()))));
+        brukere.forEach(bruker -> bruker.setSiste14AVedtakForBruker(aktorIdSiste14aVedtakMap.get(AktorId.of(bruker.getAktoer_id()))));
     }
 }

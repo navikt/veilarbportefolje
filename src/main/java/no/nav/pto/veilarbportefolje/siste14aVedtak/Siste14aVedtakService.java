@@ -21,14 +21,14 @@ public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVe
 
     @Override
     protected void behandleKafkaMeldingLogikk(Siste14aVedtakKafkaDto kafkaMelding) {
-        lagreSiste14aVedtak(Siste14aVedtak.fraKafkaDto(kafkaMelding));
+        lagreSiste14aVedtak(Siste14aVedtakForBruker.fraKafkaDto(kafkaMelding));
     }
 
-    public void lagreSiste14aVedtak(Siste14aVedtak siste14aVedtak) {
-        if (pdlIdentRepository.erBrukerUnderOppfolging(siste14aVedtak.aktorId.get())) {
-            IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(siste14aVedtak.aktorId.get());
-            siste14aVedtakRepository.upsert(siste14aVedtak, identer);
-            opensearchIndexerV2.updateSiste14aVedtak(siste14aVedtak, siste14aVedtak.getAktorId());
+    public void lagreSiste14aVedtak(Siste14aVedtakForBruker siste14AVedtakForBruker) {
+        if (pdlIdentRepository.erBrukerUnderOppfolging(siste14AVedtakForBruker.aktorId.get())) {
+            IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(siste14AVedtakForBruker.aktorId.get());
+            siste14aVedtakRepository.upsert(siste14AVedtakForBruker, identer);
+            opensearchIndexerV2.updateSiste14aVedtak(siste14AVedtakForBruker, siste14AVedtakForBruker.getAktorId());
         }
     }
 
@@ -41,7 +41,7 @@ public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVe
         Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktorId);
 
         vedtaksstotteClient.hentSiste14aVedtak(fnr)
-                .map(siste14aVedtak -> Siste14aVedtak.fraApiDto(siste14aVedtak, aktorId))
+                .map(siste14aVedtak -> Siste14aVedtakForBruker.fraApiDto(siste14aVedtak, aktorId))
                 .ifPresent(this::lagreSiste14aVedtak);
     }
 }

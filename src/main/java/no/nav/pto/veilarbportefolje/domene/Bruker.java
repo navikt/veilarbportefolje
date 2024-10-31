@@ -11,7 +11,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakForBruker;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
@@ -114,7 +114,7 @@ public class Bruker {
     String fargekategoriEnhetId;
 
     TiltakshendelseForBruker tiltakshendelse;
-    Siste14aVedtak siste14aVedtak;
+    Siste14aVedtakForBruker siste14AVedtakForBruker;
 
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
@@ -213,7 +213,7 @@ public class Bruker {
                 .setFargekategori(bruker.getFargekategori())
                 .setFargekategoriEnhetId(bruker.getFargekategori_enhetId())
                 .setTiltakshendelse(TiltakshendelseForBruker.of(bruker.getTiltakshendelse()))
-                .setSiste14aVedtak(bruker.getSiste14aVedtak());
+                .setSiste14AVedtakForBruker(bruker.getSiste14AVedtakForBruker());
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {

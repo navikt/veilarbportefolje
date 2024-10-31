@@ -39,7 +39,7 @@ public class Avvik14aVedtakService {
                         brukere.stream().map(GjeldendeIdenter::getFnr).collect(Collectors.toSet())
                 );
 
-        Map<AktorId, Siste14aVedtak> aktorIdSiste14aVedtakMap =
+        Map<AktorId, Siste14aVedtakForBruker> aktorIdSiste14aVedtakMap =
                 siste14aVedtakRepository.hentSiste14aVedtakForBrukere(
                         brukere.stream().map(GjeldendeIdenter::getAktorId).collect(Collectors.toSet())
                 );
@@ -53,15 +53,15 @@ public class Avvik14aVedtakService {
         }).collect(toMap(Entry::getKey, Entry::getValue));
     }
 
-    private Vedtak14aInfo mapTilVedtak14aInfo(Map<Fnr, OppfolgingsbrukerEntity> fnrOppfolgingsbrukerEntityMap, Map<AktorId, Siste14aVedtak> aktorIdSiste14aVedtakMap, GjeldendeIdenter identer) {
+    private Vedtak14aInfo mapTilVedtak14aInfo(Map<Fnr, OppfolgingsbrukerEntity> fnrOppfolgingsbrukerEntityMap, Map<AktorId, Siste14aVedtakForBruker> aktorIdSiste14aVedtakMap, GjeldendeIdenter identer) {
         Optional<OppfolgingsbrukerEntity> oppfolgingsbruker = Optional.ofNullable(fnrOppfolgingsbrukerEntityMap.getOrDefault(identer.getFnr(), null));
-        Optional<Siste14aVedtak> siste14aVedtak = Optional.ofNullable(aktorIdSiste14aVedtakMap.getOrDefault(identer.getAktorId(), null));
+        Optional<Siste14aVedtakForBruker> siste14aVedtak = Optional.ofNullable(aktorIdSiste14aVedtakMap.getOrDefault(identer.getAktorId(), null));
 
         return Vedtak14aInfo.builder()
                 .arenaInnsatsgruppe(oppfolgingsbruker.map(OppfolgingsbrukerEntity::kvalifiseringsgruppekode).map(kvalifiseringsgruppeKode -> valueOfOrNull(ArenaInnsatsgruppe.class, kvalifiseringsgruppeKode)).orElse(null))
                 .arenaHovedmal(oppfolgingsbruker.map(OppfolgingsbrukerEntity::hovedmaalkode).map(hovedmaal -> valueOfOrNull(ArenaHovedmal.class, hovedmaal)).orElse(null))
-                .innsatsgruppe(siste14aVedtak.map(Siste14aVedtak::getInnsatsgruppe).orElse(null))
-                .hovedmal(siste14aVedtak.map(Siste14aVedtak::getHovedmal).orElse(null)).build();
+                .innsatsgruppe(siste14aVedtak.map(Siste14aVedtakForBruker::getInnsatsgruppe).orElse(null))
+                .hovedmal(siste14aVedtak.map(Siste14aVedtakForBruker::getHovedmal).orElse(null)).build();
     }
 
     private Avvik14aVedtak finnAvvik(Vedtak14aInfo vedtak14aInfo) {
