@@ -175,6 +175,15 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         Optional<Siste14aVedtak> siste14aVedtak = siste14aVedtakRepository.hentSiste14aVedtak(identerForBruker);
         assertThat(siste14aVedtak).isNotEmpty();
         assertThat(siste14aVedtak).isEqualTo(Optional.of(Siste14aVedtak.fraApiDto(siste14aVedtakApiDto, aktorId)));
+
+        Siste14aVedtak siste14aVedtakFraOpenSearch = opensearchTestClient.hentBrukerFraOpensearch(aktorId).getSiste14aVedtak();
+        assertThat(siste14aVedtakFraOpenSearch).isNotNull();
+        assertThat(siste14aVedtakFraOpenSearch).isEqualTo(Siste14aVedtak.fraApiDto(
+                    /*Vi må kvitte oss med ZoneId siden dates lagret i OpenSearch ikke får med dette (kun tidssone).
+                       Derfor gjør vi denne toOffsetDataTime().toZonedDateTime() "hacken".*/
+                    siste14aVedtakApiDto.setFattetDato(siste14aVedtakApiDto.getFattetDato().toOffsetDateTime().toZonedDateTime()), aktorId
+                )
+        );
     }
 
     @Test
