@@ -270,7 +270,7 @@
           }
         }
       },
-      "vedtak14a": {
+      "siste14aVedtak": {
         "properties": {
           "innsatsgruppe": {
             "type": "keyword"
@@ -280,6 +280,9 @@
           },
           "fattetDato": {
             "type": "date"
+          },
+          "fraArena": {
+            "type": "boolean"
           }
         }
       }
