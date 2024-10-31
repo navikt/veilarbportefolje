@@ -13,7 +13,7 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakForBruker;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
@@ -377,14 +377,14 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void updateSiste14aVedtak(Siste14aVedtak siste14aVedtak, AktorId aktorId) {
+    public void updateSiste14aVedtak(Siste14aVedtakForBruker siste14AVedtakForBruker, AktorId aktorId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .startObject("siste14aVedtak")
-                .field("innsatsgruppe", siste14aVedtak.getInnsatsgruppe())
-                .field("hovedmal", siste14aVedtak.getHovedmal())
-                .field("fattetDato", siste14aVedtak.getFattetDato())
-                .field("fraArena", siste14aVedtak.isFraArena())
+                .field("innsatsgruppe", siste14AVedtakForBruker.getInnsatsgruppe())
+                .field("hovedmal", siste14AVedtakForBruker.getHovedmal())
+                .field("fattetDato", siste14AVedtakForBruker.getFattetDato())
+                .field("fraArena", siste14AVedtakForBruker.isFraArena())
                 .endObject()
                 .endObject();
 

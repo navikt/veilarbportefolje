@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
-public class Siste14aVedtakRepositoryTest {
+public class Siste14AVedtakForBrukerRepositoryTest {
 
     @Autowired
     private Siste14aVedtakRepository siste14aVedtakRepository;
@@ -47,7 +47,7 @@ public class Siste14aVedtakRepositoryTest {
         AktorId aktorIdForAnnenBruker = randomAktorId();
         IdenterForBruker identerForAnnenBruker = new IdenterForBruker(List.of(aktorIdForAnnenBruker.get(), randomAktorId().get()));
 
-        Siste14aVedtak siste14aVedtakForAnnenBruker = new Siste14aVedtak(
+        Siste14aVedtakForBruker siste14AVedtakForBrukerForAnnenBruker = new Siste14aVedtakForBruker(
                 aktorIdForAnnenBruker,
                 Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
                 Hovedmal.OKE_DELTAKELSE,
@@ -55,11 +55,11 @@ public class Siste14aVedtakRepositoryTest {
                 false
         );
 
-        siste14aVedtakRepository.upsert(siste14aVedtakForAnnenBruker, identerForAnnenBruker);
+        siste14aVedtakRepository.upsert(siste14AVedtakForBrukerForAnnenBruker, identerForAnnenBruker);
 
-        assertLagretVedtak(siste14aVedtakForAnnenBruker, identerForAnnenBruker);
+        assertLagretVedtak(siste14AVedtakForBrukerForAnnenBruker, identerForAnnenBruker);
 
-        Siste14aVedtak siste14aVedtak = new Siste14aVedtak(
+        Siste14aVedtakForBruker siste14AVedtakForBruker = new Siste14aVedtakForBruker(
                 aktorId1,
                 STANDARD_INNSATS,
                 SKAFFE_ARBEID,
@@ -67,11 +67,11 @@ public class Siste14aVedtakRepositoryTest {
                 false
         );
 
-        siste14aVedtakRepository.upsert(siste14aVedtak, identerForBruker);
+        siste14aVedtakRepository.upsert(siste14AVedtakForBruker, identerForBruker);
 
-        assertLagretVedtak(siste14aVedtak, identerForBruker);
+        assertLagretVedtak(siste14AVedtakForBruker, identerForBruker);
 
-        Siste14aVedtak oppdatert14aVedtak = new Siste14aVedtak(
+        Siste14aVedtakForBruker oppdatert14aVedtak = new Siste14aVedtakForBruker(
                 aktorId2,
                 SITUASJONSBESTEMT_INNSATS,
                 BEHOLDE_ARBEID,
@@ -86,7 +86,7 @@ public class Siste14aVedtakRepositoryTest {
         siste14aVedtakRepository.delete(identerForBruker);
 
         assertSlettetVedtak(identerForBruker);
-        assertLagretVedtak(siste14aVedtakForAnnenBruker, identerForAnnenBruker);
+        assertLagretVedtak(siste14AVedtakForBrukerForAnnenBruker, identerForAnnenBruker);
     }
 
     @Test
@@ -98,24 +98,24 @@ public class Siste14aVedtakRepositoryTest {
                 lagreIdenterForTilfeldigBruker()
         );
 
-        Map<AktorId, Siste14aVedtak> forventet =
+        Map<AktorId, Siste14aVedtakForBruker> forventet =
                 pdlIdenterForBrukere.stream().collect(Collectors.toMap(
                         identer -> AktorId.of(identer.stream().filter(pdlIdent -> pdlIdent.getGruppe() == AKTORID).map(PDLIdent::getIdent).findAny().get()),
                         this::upsertSiste14aForBrukersIdenterOgReturnerSiste));
 
-        Map<AktorId, Siste14aVedtak> resultat =
+        Map<AktorId, Siste14aVedtakForBruker> resultat =
                 siste14aVedtakRepository.hentSiste14aVedtakForBrukere(forventet.keySet());
 
         assertThat(resultat).containsExactlyInAnyOrderEntriesOf(forventet);
     }
 
-    private void assertLagretVedtak(Siste14aVedtak expected, IdenterForBruker identer) {
-        Optional<Siste14aVedtak> kanskjeResultat =
+    private void assertLagretVedtak(Siste14aVedtakForBruker expected, IdenterForBruker identer) {
+        Optional<Siste14aVedtakForBruker> kanskjeResultat =
                 siste14aVedtakRepository.hentSiste14aVedtak(identer);
 
         assertTrue(kanskjeResultat.isPresent());
 
-        Siste14aVedtak resultat = kanskjeResultat.get();
+        Siste14aVedtakForBruker resultat = kanskjeResultat.get();
 
         assertEquals(expected.getFattetDato().toInstant(), resultat.getFattetDato().toInstant());
         assertEquals(expected.getAktorId(), resultat.getAktorId());
@@ -125,7 +125,7 @@ public class Siste14aVedtakRepositoryTest {
     }
 
     private void assertSlettetVedtak(IdenterForBruker identer) {
-        Optional<Siste14aVedtak> kanskjeResultat =
+        Optional<Siste14aVedtakForBruker> kanskjeResultat =
                 siste14aVedtakRepository.hentSiste14aVedtak(identer);
 
         assertFalse(kanskjeResultat.isPresent());
@@ -145,9 +145,9 @@ public class Siste14aVedtakRepositoryTest {
         return alleIdenter;
     }
 
-    private Siste14aVedtak upsertSiste14aForBrukersIdenterOgReturnerSiste(List<PDLIdent> identer) {
-        List<Siste14aVedtak> vedtakListe = identer.stream().map(ident ->
-                new Siste14aVedtak(
+    private Siste14aVedtakForBruker upsertSiste14aForBrukersIdenterOgReturnerSiste(List<PDLIdent> identer) {
+        List<Siste14aVedtakForBruker> vedtakListe = identer.stream().map(ident ->
+                new Siste14aVedtakForBruker(
                         AktorId.of(ident.getIdent()),
                         randomInnsatsgruppe(),
                         randomHovedmal(),

@@ -20,7 +20,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakForBruker;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakApiDto;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
@@ -172,13 +172,13 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
         IdenterForBruker identerForBruker = pdlIdentRepository.hentIdenterForBruker(aktorId.get());
-        Optional<Siste14aVedtak> siste14aVedtak = siste14aVedtakRepository.hentSiste14aVedtak(identerForBruker);
+        Optional<Siste14aVedtakForBruker> siste14aVedtak = siste14aVedtakRepository.hentSiste14aVedtak(identerForBruker);
         assertThat(siste14aVedtak).isNotEmpty();
-        assertThat(siste14aVedtak).isEqualTo(Optional.of(Siste14aVedtak.fraApiDto(siste14aVedtakApiDto, aktorId)));
+        assertThat(siste14aVedtak).isEqualTo(Optional.of(Siste14aVedtakForBruker.fraApiDto(siste14aVedtakApiDto, aktorId)));
 
-        Siste14aVedtak siste14aVedtakFraOpenSearch = opensearchTestClient.hentBrukerFraOpensearch(aktorId).getSiste14aVedtak();
-        assertThat(siste14aVedtakFraOpenSearch).isNotNull();
-        assertThat(siste14aVedtakFraOpenSearch).isEqualTo(Siste14aVedtak.fraApiDto(
+        Siste14aVedtakForBruker siste14AVedtakForBrukerFraOpenSearch = opensearchTestClient.hentBrukerFraOpensearch(aktorId).getSiste14AVedtakForBruker();
+        assertThat(siste14AVedtakForBrukerFraOpenSearch).isNotNull();
+        assertThat(siste14AVedtakForBrukerFraOpenSearch).isEqualTo(Siste14aVedtakForBruker.fraApiDto(
                     /*Vi må kvitte oss med ZoneId siden dates lagret i OpenSearch ikke får med dette (kun tidssone).
                        Derfor gjør vi denne toOffsetDataTime().toZonedDateTime() "hacken".*/
                     siste14aVedtakApiDto.setFattetDato(siste14aVedtakApiDto.getFattetDato().toOffsetDateTime().toZonedDateTime()), aktorId
@@ -308,7 +308,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         testDataClient.lagreBrukerUnderOppfolging(aktorId, tilfeldigDatoTilbakeITid());
 
         siste14aVedtakService.lagreSiste14aVedtak(
-                new Siste14aVedtak(aktorId, STANDARD_INNSATS, BEHOLDE_ARBEID, tilfeldigDatoTilbakeITid(), false)
+                new Siste14aVedtakForBruker(aktorId, STANDARD_INNSATS, BEHOLDE_ARBEID, tilfeldigDatoTilbakeITid(), false)
         );
 
         assertFalse(siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get()))).isEmpty());
