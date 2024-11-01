@@ -56,6 +56,7 @@ public class Filtervalg {
     public List<Avvik14aVedtak> avvik14aVedtak;
     public List<EnsligeForsorgere> ensligeForsorgere;
     public List<String> fargekategorier = new ArrayList<>();
+    public List<String> siste14aVedtak = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
@@ -91,7 +92,12 @@ public class Filtervalg {
                 harBostedFilter() ||
                 harAvvik14aVedtakFilter() ||
                 harEnsligeForsorgereFilter() ||
-                harFargeKategoriFilter();
+                harFargeKategoriFilter() ||
+                harSiste14aVedtakFilter();
+    }
+
+    public boolean harSiste14aVedtakFilter() {
+        return siste14aVedtak != null && !siste14aVedtak.isEmpty();
     }
 
     public boolean harEnsligeForsorgereFilter() {
@@ -231,7 +237,12 @@ public class Filtervalg {
                 .map(Filtervalg::erGyldigAldersSpenn)
                 .reduce(true, and());
 
-        return alderOk && fodselsdatoOk && veiledereOk && utdanningOK && sisteEndringOK && barnAlderOk;
+        Boolean siste14aVedtakOk = siste14aVedtak
+                .stream()
+                .map(Siste14aVedtakFilter::contains)
+                .reduce(true, and());
+
+        return alderOk && fodselsdatoOk && veiledereOk && utdanningOK && sisteEndringOK && barnAlderOk && siste14aVedtakOk;
     }
 
     private BinaryOperator<Boolean> and() {

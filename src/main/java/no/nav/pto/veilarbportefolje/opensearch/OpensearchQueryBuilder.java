@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -403,6 +404,19 @@ public class OpensearchQueryBuilder {
 
             });
             queryBuilder.must(brukerensUtdanningSubQuery);
+        }
+
+        if (filtervalg.harSiste14aVedtakFilter()) {
+            List<Siste14aVedtakFilter> valgteSiste14aVedtakFilter = filtervalg.siste14aVedtak.stream().map(Siste14aVedtakFilter::valueOf).toList();
+            BoolQueryBuilder subQuery = boolQuery();
+
+            if (valgteSiste14aVedtakFilter.contains(Siste14aVedtakFilter.HAR_14A_VEDTAK)
+                    && !valgteSiste14aVedtakFilter.contains(Siste14aVedtakFilter.HAR_IKKE_14A_VEDTAK)) {
+                subQuery.must(existsQuery("siste_14a_vedtak"));
+            } else if (valgteSiste14aVedtakFilter.contains(Siste14aVedtakFilter.HAR_IKKE_14A_VEDTAK)
+                    && !valgteSiste14aVedtakFilter.contains(Siste14aVedtakFilter.HAR_14A_VEDTAK)) {
+                subQuery.mustNot(existsQuery("siste_14a_vedtak"));
+            }
         }
     }
 
