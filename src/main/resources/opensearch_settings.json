@@ -269,6 +269,22 @@
             "type": "keyword"
           }
         }
+      },
+      "siste14aVedtak": {
+        "properties": {
+          "innsatsgruppe": {
+            "type": "keyword"
+          },
+          "hovedmal": {
+            "type": "keyword"
+          },
+          "fattetDato": {
+            "type": "date"
+          },
+          "fraArena": {
+            "type": "boolean"
+          }
+        }
       }
     }
   }
