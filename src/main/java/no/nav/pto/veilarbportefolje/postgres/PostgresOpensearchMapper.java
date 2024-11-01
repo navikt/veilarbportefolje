@@ -17,10 +17,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarDa
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakForBruker;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.*;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
@@ -234,6 +231,14 @@ public class PostgresOpensearchMapper {
         Map<AktorId, Siste14aVedtakForBruker> aktorIdSiste14aVedtakMap = siste14aVedtakRepository.hentSiste14aVedtakForBrukere(brukere.stream().map(bruker ->
                 AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet())
         );
-        brukere.forEach(bruker -> bruker.setSiste14AVedtakForBruker(aktorIdSiste14aVedtakMap.get(AktorId.of(bruker.getAktoer_id()))));
+        brukere.forEach(bruker -> {
+            Optional<Siste14aVedtakForBruker> maybeSiste14aVedtakForBruker = Optional.ofNullable(aktorIdSiste14aVedtakMap.get(AktorId.of(bruker.getAktoer_id())));
+            bruker.setSiste14aVedtak(maybeSiste14aVedtakForBruker.map(siste14aVedtakForBruker -> new Siste14aVedtak(
+                    siste14aVedtakForBruker.getInnsatsgruppe(),
+                    siste14aVedtakForBruker.getHovedmal(),
+                    siste14aVedtakForBruker.getFattetDato(),
+                    siste14aVedtakForBruker.isFraArena()
+            )).orElse(null));
+        });
     }
 }
