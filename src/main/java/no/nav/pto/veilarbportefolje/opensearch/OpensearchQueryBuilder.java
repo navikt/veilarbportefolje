@@ -413,9 +413,11 @@ public class OpensearchQueryBuilder {
             if (valgteSiste14aVedtakFilter.contains(Siste14aVedtakFilter.HAR_14A_VEDTAK)
                     && !valgteSiste14aVedtakFilter.contains(Siste14aVedtakFilter.HAR_IKKE_14A_VEDTAK)) {
                 subQuery.must(existsQuery("siste14aVedtak"));
+                queryBuilder.must(subQuery);
             } else if (valgteSiste14aVedtakFilter.contains(Siste14aVedtakFilter.HAR_IKKE_14A_VEDTAK)
                     && !valgteSiste14aVedtakFilter.contains(Siste14aVedtakFilter.HAR_14A_VEDTAK)) {
                 subQuery.mustNot(existsQuery("siste14aVedtak"));
+                queryBuilder.must(subQuery);
             }
         }
     }
