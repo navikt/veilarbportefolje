@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
@@ -56,7 +55,7 @@ public class Filtervalg {
     public List<Avvik14aVedtak> avvik14aVedtak;
     public List<EnsligeForsorgere> ensligeForsorgere;
     public List<String> fargekategorier = new ArrayList<>();
-    public List<String> siste14aVedtak = new ArrayList<>();
+    public List<String> gjeldendeVedtak14a = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
@@ -93,11 +92,11 @@ public class Filtervalg {
                 harAvvik14aVedtakFilter() ||
                 harEnsligeForsorgereFilter() ||
                 harFargeKategoriFilter() ||
-                harSiste14aVedtakFilter();
+                harGjeldendeVedtak14aFilter();
     }
 
-    public boolean harSiste14aVedtakFilter() {
-        return siste14aVedtak != null && !siste14aVedtak.isEmpty();
+    public boolean harGjeldendeVedtak14aFilter() {
+        return gjeldendeVedtak14a != null && !gjeldendeVedtak14a.isEmpty();
     }
 
     public boolean harEnsligeForsorgereFilter() {
@@ -237,12 +236,12 @@ public class Filtervalg {
                 .map(Filtervalg::erGyldigAldersSpenn)
                 .reduce(true, and());
 
-        Boolean siste14aVedtakOk = siste14aVedtak
+        Boolean gjeldendeVedtak14aOk = gjeldendeVedtak14a
                 .stream()
-                .map(Siste14aVedtakFilter::contains)
+                .map(GjeldendeVedtak14aFilter::contains)
                 .reduce(true, and());
 
-        return alderOk && fodselsdatoOk && veiledereOk && utdanningOK && sisteEndringOK && barnAlderOk && siste14aVedtakOk;
+        return alderOk && fodselsdatoOk && veiledereOk && utdanningOK && sisteEndringOK && barnAlderOk && gjeldendeVedtak14aOk;
     }
 
     private BinaryOperator<Boolean> and() {

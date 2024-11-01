@@ -377,18 +377,17 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void updateSiste14aVedtak(Siste14aVedtakForBruker siste14AVedtakForBruker, AktorId aktorId) {
+    public void updateGjeldendeVedtak14a(Siste14aVedtakForBruker siste14AVedtakForBruker, AktorId aktorId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .startObject("siste14aVedtak")
+                .startObject("gjeldendeVedtak14a")
                 .field("innsatsgruppe", siste14AVedtakForBruker.getInnsatsgruppe())
                 .field("hovedmal", siste14AVedtakForBruker.getHovedmal())
                 .field("fattetDato", siste14AVedtakForBruker.getFattetDato())
-                .field("fraArena", siste14AVedtakForBruker.isFraArena())
                 .endObject()
                 .endObject();
 
-        update(aktorId, content, format("Oppdaterte siste14aVedtak for aktorId: %s", aktorId.get()));
+        update(aktorId, content, format("Oppdaterte gjeldendeVedtak14a for aktorId: %s", aktorId.get()));
     }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {

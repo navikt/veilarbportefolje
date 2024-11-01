@@ -22,7 +22,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakForBruker;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype;
@@ -4263,11 +4263,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                                 .setAktoer_id(brukerMedSiste14aVedtakAktorId.get())
                                 .setEnhet_id(TEST_ENHET)
                                 .setOppfolging(true)
-                                .setSiste14aVedtak(new Siste14aVedtak(
+                                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
                                         siste14aVedtakForBruker.getInnsatsgruppe(),
                                         siste14aVedtakForBruker.getHovedmal(),
-                                        siste14aVedtakForBruker.getFattetDato(),
-                                        siste14aVedtakForBruker.isFraArena()
+                                        siste14aVedtakForBruker.getFattetDato()
                                 )),
                         new OppfolgingsBruker()
                                 .setFnr(brukerUtenSiste14aVedtakFnr.get())
@@ -4283,7 +4282,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 empty(),
                 "ascending",
                 "ikke_satt",
-                new Filtervalg().setFerdigfilterListe(emptyList()).setSiste14aVedtak(List.of("HAR_14A_VEDTAK")),
+                new Filtervalg().setFerdigfilterListe(emptyList()).setGjeldendeVedtak14a(List.of("HAR_14A_VEDTAK")),
                 null,
                 null
         );
@@ -4291,12 +4290,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         Bruker brukerFraOpenSearch = respons.getBrukere().getFirst();
         assertThat(brukerFraOpenSearch.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr.get());
         assertThat(brukerFraOpenSearch.getAktoerid()).isEqualTo(brukerMedSiste14aVedtakAktorId.get());
-        Siste14aVedtak brukerFraOpenSearchSiste14aVedtak = brukerFraOpenSearch.getSiste14aVedtak();
-        assertThat(brukerFraOpenSearchSiste14aVedtak).isNotNull();
-        assertThat(brukerFraOpenSearchSiste14aVedtak.innsatsgruppe()).isEqualTo(innsatsgruppe);
-        assertThat(brukerFraOpenSearchSiste14aVedtak.hovedmal()).isEqualTo(hovedmal);
-        assertThat(brukerFraOpenSearchSiste14aVedtak.fattetDato()).isEqualTo(fattetDato.toOffsetDateTime().toZonedDateTime());
-        assertThat(brukerFraOpenSearchSiste14aVedtak.fraArena()).isEqualTo(fraArena);
+        GjeldendeVedtak14a brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.getGjeldendeVedtak14a();
+        assertThat(brukerFraOpenSearchGjeldendeVedtak14a).isNotNull();
+        assertThat(brukerFraOpenSearchGjeldendeVedtak14a.innsatsgruppe()).isEqualTo(innsatsgruppe);
+        assertThat(brukerFraOpenSearchGjeldendeVedtak14a.hovedmal()).isEqualTo(hovedmal);
+        assertThat(brukerFraOpenSearchGjeldendeVedtak14a.fattetDato()).isEqualTo(fattetDato.toOffsetDateTime().toZonedDateTime());
     }
 
     @Test
@@ -4323,11 +4321,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                                 .setAktoer_id(brukerMedSiste14aVedtakAktorId.get())
                                 .setEnhet_id(TEST_ENHET)
                                 .setOppfolging(true)
-                                .setSiste14aVedtak(new Siste14aVedtak(
+                                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
                                         siste14aVedtakForBruker.getInnsatsgruppe(),
                                         siste14aVedtakForBruker.getHovedmal(),
-                                        siste14aVedtakForBruker.getFattetDato(),
-                                        siste14aVedtakForBruker.isFraArena()
+                                        siste14aVedtakForBruker.getFattetDato()
                                 )),
                         new OppfolgingsBruker()
                                 .setFnr(brukerUtenSiste14aVedtakFnr.get())
@@ -4343,7 +4340,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 empty(),
                 "ascending",
                 "ikke_satt",
-                new Filtervalg().setFerdigfilterListe(emptyList()).setSiste14aVedtak(List.of("HAR_IKKE_14A_VEDTAK")),
+                new Filtervalg().setFerdigfilterListe(emptyList()).setGjeldendeVedtak14a(List.of("HAR_IKKE_14A_VEDTAK")),
                 null,
                 null
         );
@@ -4351,8 +4348,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         Bruker brukerFraOpenSearch = respons.getBrukere().getFirst();
         assertThat(brukerFraOpenSearch.getFnr()).isEqualTo(brukerUtenSiste14aVedtakFnr.get());
         assertThat(brukerFraOpenSearch.getAktoerid()).isEqualTo(brukerUtenSiste14aVedtakAktorId.get());
-        Siste14aVedtak brukerFraOpenSearchSiste14aVedtak = brukerFraOpenSearch.getSiste14aVedtak();
-        assertThat(brukerFraOpenSearchSiste14aVedtak).isNull();
+        GjeldendeVedtak14a brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.getGjeldendeVedtak14a();
+        assertThat(brukerFraOpenSearchGjeldendeVedtak14a).isNull();
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
