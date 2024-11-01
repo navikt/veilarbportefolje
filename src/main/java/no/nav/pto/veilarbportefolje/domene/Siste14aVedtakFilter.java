@@ -1,16 +1,18 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public enum Siste14aVedtakFilter {
     HAR_14A_VEDTAK,
     HAR_IKKE_14A_VEDTAK;
 
     public static boolean contains(String value) {
         try {
-            SisteEndringsKategori.valueOf(value);
+            Siste14aVedtakFilter.valueOf(value);
             return true;
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+            log.warn("Kunne ikke instanstiere enum - fikk ugyldig verdi.");
             return false;
         }
     }
