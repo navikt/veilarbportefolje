@@ -233,11 +233,10 @@ public class PostgresOpensearchMapper {
         );
         brukere.forEach(bruker -> {
             Optional<Siste14aVedtakForBruker> maybeSiste14aVedtakForBruker = Optional.ofNullable(aktorIdSiste14aVedtakMap.get(AktorId.of(bruker.getAktoer_id())));
-            bruker.setSiste14aVedtak(maybeSiste14aVedtakForBruker.map(siste14aVedtakForBruker -> new Siste14aVedtak(
+            bruker.setGjeldendeVedtak14a(maybeSiste14aVedtakForBruker.map(siste14aVedtakForBruker -> new GjeldendeVedtak14a(
                     siste14aVedtakForBruker.getInnsatsgruppe(),
                     siste14aVedtakForBruker.getHovedmal(),
-                    siste14aVedtakForBruker.getFattetDato(),
-                    siste14aVedtakForBruker.isFraArena()
+                    siste14aVedtakForBruker.getFattetDato()
             )).orElse(null));
         });
     }

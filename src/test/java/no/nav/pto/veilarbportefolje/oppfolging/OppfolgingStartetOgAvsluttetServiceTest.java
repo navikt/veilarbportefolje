@@ -169,21 +169,20 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
         IdenterForBruker identerForBruker = pdlIdentRepository.hentIdenterForBruker(aktorId.get());
-        Optional<Siste14aVedtakForBruker> siste14aVedtak = siste14aVedtakRepository.hentSiste14aVedtak(identerForBruker);
-        assertThat(siste14aVedtak).isNotEmpty();
-        assertThat(siste14aVedtak).isEqualTo(Optional.of(Siste14aVedtakForBruker.fraApiDto(siste14aVedtakApiDto, aktorId)));
+        Optional<Siste14aVedtakForBruker> siste14aVedtakForBruker = siste14aVedtakRepository.hentSiste14aVedtak(identerForBruker);
+        assertThat(siste14aVedtakForBruker).isNotEmpty();
+        assertThat(siste14aVedtakForBruker).isEqualTo(Optional.of(Siste14aVedtakForBruker.fraApiDto(siste14aVedtakApiDto, aktorId)));
 
-        Siste14aVedtak siste14aVedtakFraOpenSearch = opensearchTestClient.hentBrukerFraOpensearch(aktorId).getSiste14aVedtak();
-        Siste14aVedtak forventetSiste14aVedtak = new Siste14aVedtak(
+        GjeldendeVedtak14a gjeldendeVedtak14aFraOpenSearch = opensearchTestClient.hentBrukerFraOpensearch(aktorId).getGjeldendeVedtak14a();
+        GjeldendeVedtak14a forventetGjeldendeVedtak14a = new GjeldendeVedtak14a(
                 siste14aVedtakApiDto.getInnsatsgruppe(),
                 siste14aVedtakApiDto.getHovedmal(),
                 // Vi må kvitte oss med ZoneId siden dates lagret i OpenSearch ikke får med dette (kun tidssone).
                 // Derfor gjør vi denne toOffsetDataTime().toZonedDateTime() "hacken".
-                siste14aVedtakApiDto.getFattetDato().toOffsetDateTime().toZonedDateTime(),
-                siste14aVedtakApiDto.isFraArena()
+                siste14aVedtakApiDto.getFattetDato().toOffsetDateTime().toZonedDateTime()
         );
-        assertThat(siste14aVedtakFraOpenSearch).isNotNull();
-        assertThat(siste14aVedtakFraOpenSearch).isEqualTo(forventetSiste14aVedtak);
+        assertThat(gjeldendeVedtak14aFraOpenSearch).isNotNull();
+        assertThat(gjeldendeVedtak14aFraOpenSearch).isEqualTo(forventetGjeldendeVedtak14a);
     }
 
     @Test

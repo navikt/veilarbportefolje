@@ -5,10 +5,9 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
 
 import java.time.ZonedDateTime;
 
-public record Siste14aVedtak(
+public record GjeldendeVedtak14a(
         Innsatsgruppe innsatsgruppe,
         Hovedmal hovedmal,
-        ZonedDateTime fattetDato,
-        boolean fraArena
+        ZonedDateTime fattetDato
 ) {
 }
