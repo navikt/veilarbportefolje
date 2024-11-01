@@ -20,10 +20,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakForBruker;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakApiDto;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.*;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
@@ -176,14 +173,17 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         assertThat(siste14aVedtak).isNotEmpty();
         assertThat(siste14aVedtak).isEqualTo(Optional.of(Siste14aVedtakForBruker.fraApiDto(siste14aVedtakApiDto, aktorId)));
 
-        Siste14aVedtakForBruker siste14AVedtakForBrukerFraOpenSearch = opensearchTestClient.hentBrukerFraOpensearch(aktorId).getSiste14AVedtakForBruker();
-        assertThat(siste14AVedtakForBrukerFraOpenSearch).isNotNull();
-        assertThat(siste14AVedtakForBrukerFraOpenSearch).isEqualTo(Siste14aVedtakForBruker.fraApiDto(
-                    /*Vi må kvitte oss med ZoneId siden dates lagret i OpenSearch ikke får med dette (kun tidssone).
-                       Derfor gjør vi denne toOffsetDataTime().toZonedDateTime() "hacken".*/
-                    siste14aVedtakApiDto.setFattetDato(siste14aVedtakApiDto.getFattetDato().toOffsetDateTime().toZonedDateTime()), aktorId
-                )
+        Siste14aVedtak siste14aVedtakFraOpenSearch = opensearchTestClient.hentBrukerFraOpensearch(aktorId).getSiste14aVedtak();
+        Siste14aVedtak forventetSiste14aVedtak = new Siste14aVedtak(
+                siste14aVedtakApiDto.getInnsatsgruppe(),
+                siste14aVedtakApiDto.getHovedmal(),
+                // Vi må kvitte oss med ZoneId siden dates lagret i OpenSearch ikke får med dette (kun tidssone).
+                // Derfor gjør vi denne toOffsetDataTime().toZonedDateTime() "hacken".
+                siste14aVedtakApiDto.getFattetDato().toOffsetDateTime().toZonedDateTime(),
+                siste14aVedtakApiDto.isFraArena()
         );
+        assertThat(siste14aVedtakFraOpenSearch).isNotNull();
+        assertThat(siste14aVedtakFraOpenSearch).isEqualTo(forventetSiste14aVedtak);
     }
 
     @Test
