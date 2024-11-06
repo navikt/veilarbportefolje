@@ -103,7 +103,7 @@ spec:
       memory: 4Gi
   env:
     - name: JAVA_OPTS
-      value: "-Xms4098m -Xmx8096m --illegal-access=permit --add-opens=java.base/java.lang=ALL-UNNAMED"
+      value: "-Xms4098m -Xmx8096m --illegal-access=permit --add-opens=java.base/java.lang=ALL-UNNAMED -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heap.hprof"
     - name: VEILARBOPPFOLGING_URL
       value: "http://veilarboppfolging.poao/veilarboppfolging"
     - name: VEILARBOPPFOLGING_TOKEN_SCOPE
