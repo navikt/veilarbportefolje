@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.*;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse.AAP;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse.DAGPENGER;
@@ -55,6 +56,20 @@ public class YtelsesService {
         }
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
+
+        if(isDevelopment().orElse(false) && "-1".equals(aktorId.get())) {
+            // TODO: Dette er en midlertidig fiks siden vi har et tilfelle der vi fyller YTELSESVEDTAK DB-tabellen med
+            // masse "-1" verdier i AKTORID-kolonna. Grunnen til at dette skjer er fordi `getAktorId(...)`-metoden
+            // returnerer "-1" dersom den får inn en verdi som ikke kvalifiserer som et gyldig fødselsnummer OG
+            // vi er i dev-miljøet (i prod kastes exception).
+            // Inntil videre ignorerer vi disse meldingene i dette scenariet til vi vet hva vi ønsker å gjøre med
+            // disse fnr-ene som ikke er gyldige fødselsnummer.
+            // 07.11.2024 Sondre
+
+            secureLog.warn("(Hendelse i dev-miljø) Fikk verdi \"-1\" når vi forsøkte å hente AktørID for fnr {}. Ignorerer melding.", innhold.getFnr());
+            return;
+        }
+
         if (skalSlettesGoldenGate(kafkaMelding)) {
             secureLog.info("Postgres: Sletter ytelse: {}, pa aktorId: {}", innhold.getVedtakId(), aktorId);
             ytelsesRepositoryV2.slettYtelse(innhold.getVedtakId());
