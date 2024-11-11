@@ -14,18 +14,18 @@ import java.time.ZonedDateTime;
 @Builder
 @Accessors(chain = true)
 @AllArgsConstructor
-public class Siste14aVedtak {
+public class Siste14aVedtakForBruker {
     AktorId aktorId;
     Innsatsgruppe innsatsgruppe;
     Hovedmal hovedmal;
     ZonedDateTime fattetDato;
     boolean fraArena;
 
-    public static Siste14aVedtak fraKafkaDto(Siste14aVedtakKafkaDto dto) {
-        return new Siste14aVedtak(dto.aktorId, dto.innsatsgruppe, dto.hovedmal, dto.fattetDato, dto.fraArena);
+    public static Siste14aVedtakForBruker fraKafkaDto(Siste14aVedtakKafkaDto dto) {
+        return new Siste14aVedtakForBruker(dto.aktorId, dto.innsatsgruppe, dto.hovedmal, dto.fattetDato, dto.fraArena);
     }
 
-    public static Siste14aVedtak fraApiDto(Siste14aVedtakApiDto dto, AktorId aktorId) {
-        return new Siste14aVedtak(aktorId, dto.innsatsgruppe, dto.hovedmal, dto.fattetDato, dto.fraArena);
+    public static Siste14aVedtakForBruker fraApiDto(Siste14aVedtakApiDto dto, AktorId aktorId) {
+        return new Siste14aVedtakForBruker(aktorId, dto.innsatsgruppe, dto.hovedmal, dto.fattetDato, dto.fraArena);
     }
 }

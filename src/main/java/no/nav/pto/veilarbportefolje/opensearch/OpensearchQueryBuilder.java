@@ -404,6 +404,21 @@ public class OpensearchQueryBuilder {
             });
             queryBuilder.must(brukerensUtdanningSubQuery);
         }
+
+        if (filtervalg.harGjeldendeVedtak14aFilter()) {
+            List<GjeldendeVedtak14aFilter> valgteGjeldendeVedtak14aFilter = filtervalg.gjeldendeVedtak14a.stream().map(GjeldendeVedtak14aFilter::valueOf).toList();
+            BoolQueryBuilder subQuery = boolQuery();
+
+            if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)
+                    && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)) {
+                subQuery.must(existsQuery("gjeldendeVedtak14a"));
+                queryBuilder.must(subQuery);
+            } else if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)
+                    && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)) {
+                subQuery.mustNot(existsQuery("gjeldendeVedtak14a"));
+                queryBuilder.must(subQuery);
+            }
+        }
     }
 
     static List<BoolQueryBuilder> byggAktivitetFilterQuery(Filtervalg filtervalg, BoolQueryBuilder queryBuilder) {
