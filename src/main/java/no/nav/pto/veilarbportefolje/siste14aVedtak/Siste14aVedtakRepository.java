@@ -29,7 +29,7 @@ public class Siste14aVedtakRepository {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate dbReadOnly;
 
-    private void insert(Siste14aVedtak siste14aVedtak) {
+    private void insert(Siste14aVedtakForBruker siste14AVedtakForBruker) {
         String sql = """
                  insert into siste_14a_vedtak(bruker_id, hovedmal, innsatsgruppe, fattet_dato, fra_arena)
                  values (?, ?, ?, ?, ?)
@@ -37,11 +37,11 @@ public class Siste14aVedtakRepository {
 
         db.update(
                 sql,
-                siste14aVedtak.aktorId.get(),
-                siste14aVedtak.hovedmal != null ? siste14aVedtak.hovedmal.name() : null,
-                siste14aVedtak.innsatsgruppe.name(),
-                Timestamp.from(siste14aVedtak.fattetDato.toInstant()),
-                siste14aVedtak.fraArena
+                siste14AVedtakForBruker.aktorId.get(),
+                siste14AVedtakForBruker.hovedmal != null ? siste14AVedtakForBruker.hovedmal.name() : null,
+                siste14AVedtakForBruker.innsatsgruppe.name(),
+                Timestamp.from(siste14AVedtakForBruker.fattetDato.toInstant()),
+                siste14AVedtakForBruker.fraArena
         );
     }
 
@@ -50,13 +50,13 @@ public class Siste14aVedtakRepository {
     }
 
     @Transactional
-    public void upsert(Siste14aVedtak siste14aVedtak, IdenterForBruker identer) {
+    public void upsert(Siste14aVedtakForBruker siste14AVedtakForBruker, IdenterForBruker identer) {
         delete(identer);
-        insert(siste14aVedtak);
+        insert(siste14AVedtakForBruker);
     }
 
     @SneakyThrows
-    public Optional<Siste14aVedtak> hentSiste14aVedtak(IdenterForBruker identer) {
+    public Optional<Siste14aVedtakForBruker> hentSiste14aVedtak(IdenterForBruker identer) {
 
         String sql = "select * from siste_14a_vedtak where bruker_id = any (?::varchar[])";
 
@@ -70,8 +70,8 @@ public class Siste14aVedtakRepository {
     }
 
     @SneakyThrows
-    private Siste14aVedtak siste14aVedtakMapper(ResultSet rs) {
-        return new Siste14aVedtak(
+    private Siste14aVedtakForBruker siste14aVedtakMapper(ResultSet rs) {
+        return new Siste14aVedtakForBruker(
                 Optional.ofNullable(rs.getString("bruker_id")).map(AktorId::of).orElse(null),
                 Innsatsgruppe.valueOf(rs.getString("innsatsgruppe")),
                 Optional.ofNullable(rs.getString("hovedmal")).map(Hovedmal::valueOf).orElse(null),
@@ -80,8 +80,8 @@ public class Siste14aVedtakRepository {
     }
 
     @SneakyThrows
-    public Map<AktorId, Siste14aVedtak> hentSiste14aVedtakForBrukere(Set<AktorId> brukerIder) {
-        Map<AktorId, Siste14aVedtak> result = new HashMap<>();
+    public Map<AktorId, Siste14aVedtakForBruker> hentSiste14aVedtakForBrukere(Set<AktorId> brukerIder) {
+        Map<AktorId, Siste14aVedtakForBruker> result = new HashMap<>();
         String sql = """
                 select bi1.ident as oppslag_ident, s.*
                 from siste_14a_vedtak s
@@ -101,7 +101,7 @@ public class Siste14aVedtakRepository {
                 });
     }
 
-    private Siste14aVedtak siste14aVedtakRowMapper(ResultSet rs, int rowNum) {
+    private Siste14aVedtakForBruker siste14aVedtakRowMapper(ResultSet rs, int rowNum) {
         return siste14aVedtakMapper(rs);
     }
 

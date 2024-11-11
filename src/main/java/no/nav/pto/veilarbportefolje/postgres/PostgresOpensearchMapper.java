@@ -17,8 +17,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarDa
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.*;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,6 +46,7 @@ public class PostgresOpensearchMapper {
     private final EnsligeForsorgereService ensligeForsorgereService;
     private final ArbeidssoekerService arbeidssoekerService;
     private final TiltakshendelseRepository tiltakshendelseRepository;
+    private final Siste14aVedtakRepository siste14aVedtakRepository;
 
     public void flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -225,6 +224,20 @@ public class PostgresOpensearchMapper {
                     bruker.setProfilering_resultat(profilering.getProfileringsresultat().name());
                 }
             });
+        });
+    }
+
+    public void flettInnSiste14aVedtak(List<OppfolgingsBruker> brukere) {
+        Map<AktorId, Siste14aVedtakForBruker> aktorIdSiste14aVedtakMap = siste14aVedtakRepository.hentSiste14aVedtakForBrukere(brukere.stream().map(bruker ->
+                AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet())
+        );
+        brukere.forEach(bruker -> {
+            Optional<Siste14aVedtakForBruker> maybeSiste14aVedtakForBruker = Optional.ofNullable(aktorIdSiste14aVedtakMap.get(AktorId.of(bruker.getAktoer_id())));
+            bruker.setGjeldendeVedtak14a(maybeSiste14aVedtakForBruker.map(siste14aVedtakForBruker -> new GjeldendeVedtak14a(
+                    siste14aVedtakForBruker.getInnsatsgruppe(),
+                    siste14aVedtakForBruker.getHovedmal(),
+                    siste14aVedtakForBruker.getFattetDato()
+            )).orElse(null));
         });
     }
 }
