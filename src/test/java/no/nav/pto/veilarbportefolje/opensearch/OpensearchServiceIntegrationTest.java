@@ -4352,6 +4352,56 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(brukerFraOpenSearchGjeldendeVedtak14a).isNull();
     }
 
+    @Test
+    public void skal_hente_brukere_med_og_uten_gjeldendeVedtak14a() {
+        Fnr brukerMedSiste14aVedtakFnr = randomFnr();
+        Fnr brukerUtenSiste14aVedtakFnr = randomFnr();
+        AktorId brukerMedSiste14aVedtakAktorId = randomAktorId();
+        AktorId brukerUtenSiste14aVedtakAktorId = randomAktorId();
+        Innsatsgruppe innsatsgruppe = Innsatsgruppe.STANDARD_INNSATS;
+        Hovedmal hovedmal = Hovedmal.BEHOLDE_ARBEID;
+        ZonedDateTime fattetDato = ZonedDateTime.now();
+        boolean fraArena = false;
+        Siste14aVedtakForBruker siste14aVedtakForBruker = new Siste14aVedtakForBruker(
+                brukerMedSiste14aVedtakAktorId,
+                innsatsgruppe,
+                hovedmal,
+                fattetDato,
+                fraArena
+        );
+        skrivBrukereTilTestindeks(
+                List.of(
+                        new OppfolgingsBruker()
+                                .setFnr(brukerMedSiste14aVedtakFnr.get())
+                                .setAktoer_id(brukerMedSiste14aVedtakAktorId.get())
+                                .setEnhet_id(TEST_ENHET)
+                                .setOppfolging(true)
+                                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
+                                        siste14aVedtakForBruker.getInnsatsgruppe(),
+                                        siste14aVedtakForBruker.getHovedmal(),
+                                        siste14aVedtakForBruker.getFattetDato()
+                                )),
+                        new OppfolgingsBruker()
+                                .setFnr(brukerUtenSiste14aVedtakFnr.get())
+                                .setAktoer_id(brukerUtenSiste14aVedtakAktorId.get())
+                                .setEnhet_id(TEST_ENHET)
+                                .setOppfolging(true)
+                )
+        );
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == 2);
+
+        BrukereMedAntall respons = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                new Filtervalg().setFerdigfilterListe(emptyList()).setGjeldendeVedtak14a(List.of("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK")),
+                null,
+                null
+        );
+        assertThat(respons.getAntall()).isEqualTo(2);
+    }
+
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
         return brukere.getBrukere().stream().anyMatch(bruker -> veilederId.equals(bruker.getVeilederId()));
     }
