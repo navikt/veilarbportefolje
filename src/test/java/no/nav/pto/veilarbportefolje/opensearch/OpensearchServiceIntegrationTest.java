@@ -4240,7 +4240,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void skal_hente_brukere_med_siste14avedtak() {
+    public void skal_hente_brukere_med_gjeldendeVedtak14a() {
         Fnr brukerMedSiste14aVedtakFnr = randomFnr();
         Fnr brukerUtenSiste14aVedtakFnr = randomFnr();
         AktorId brukerMedSiste14aVedtakAktorId = randomAktorId();
@@ -4298,7 +4298,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void skal_hente_brukere_uten_siste14avedtak() {
+    public void skal_hente_brukere_uten_gjeldendeVedtak14a() {
         Fnr brukerMedSiste14aVedtakFnr = randomFnr();
         Fnr brukerUtenSiste14aVedtakFnr = randomFnr();
         AktorId brukerMedSiste14aVedtakAktorId = randomAktorId();
