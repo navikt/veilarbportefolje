@@ -28,7 +28,12 @@ public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVe
         if (pdlIdentRepository.erBrukerUnderOppfolging(siste14AVedtakForBruker.aktorId.get())) {
             IdenterForBruker identer = pdlIdentRepository.hentIdenterForBruker(siste14AVedtakForBruker.aktorId.get());
             siste14aVedtakRepository.upsert(siste14AVedtakForBruker, identer);
-            opensearchIndexerV2.updateGjeldendeVedtak14a(siste14AVedtakForBruker, siste14AVedtakForBruker.getAktorId());
+
+            opensearchIndexerV2.updateGjeldendeVedtak14a(new GjeldendeVedtak14a(
+                    siste14AVedtakForBruker.getInnsatsgruppe(),
+                    siste14AVedtakForBruker.getHovedmal(),
+                    siste14AVedtakForBruker.getFattetDato()
+            ), siste14AVedtakForBruker.getAktorId());
         }
     }
 
