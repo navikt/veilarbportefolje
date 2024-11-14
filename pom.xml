@@ -18,7 +18,7 @@
         <java.version>21</java.version>
         <common.version>3.2024.10.25_13.44-9db48a0dbe67</common.version>
         <jaxb.version>2.3.1</jaxb.version>
-        <testcontainers.version>1.20.1</testcontainers.version>
+        <testcontainers.version>1.20.3</testcontainers.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.release>21</maven.compiler.release>
@@ -336,7 +336,7 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.13.4</version>
+            <version>1.14.0</version>
         </dependency>
 
         <!-- Swagger -->
