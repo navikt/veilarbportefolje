@@ -4400,11 +4400,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void skal_sortere_brukere_med_og_uten_gjeldendeVedtak14a() {
-        Fnr brukerMedSiste14aVedtakFnr1 = randomFnr();
-        Fnr brukerMedSiste14aVedtakFnr2 = randomFnr();
-        Fnr brukerMedSiste14aVedtakFnr3 = randomFnr();
-        Fnr brukerUtenSiste14aVedtakFnr = randomFnr();
+    public void skal_kunne_sortere_brukere_med_og_uten_gjeldendeVedtak14a_pa_14a_kolonner() {
+        Fnr brukerMedSiste14aVedtakFnr1 = Fnr.of("11111111111");
+        Fnr brukerMedSiste14aVedtakFnr2 = Fnr.of("22222222222");
+        Fnr brukerMedSiste14aVedtakFnr3 = Fnr.of("33333333333");
+        Fnr brukerUtenSiste14aVedtakFnr = Fnr.of("44444444444");
         AktorId brukerMedSiste14aVedtakAktorId1 = AktorId.of("1111111111111");
         AktorId brukerMedSiste14aVedtakAktorId2 = AktorId.of("2222222222222");
         AktorId brukerMedSiste14aVedtakAktorId3 = AktorId.of("3333333333333");
@@ -4458,7 +4458,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFerdigfilterListe(emptyList())
                 .setGjeldendeVedtak14a(List.of("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK"));
 
-        /* Standard-sortering (aktør-id). Forventa: 1, 2, 3, U */
+        /* Standard-sortering (aktør-id). Forventa rekkefølgje: 1, 2, 3, Utan */
         BrukereMedAntall responsStandardsortering = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
@@ -4474,12 +4474,12 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertEquals(responsStandardsortering.getBrukere().get(2).getFnr(), bruker3.getFnr());
         assertEquals(responsStandardsortering.getBrukere().get(3).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
 
-        /* Innsatsgruppe, stigande. Forventa: 2, 3, 1, U */
+        /* Innsatsgruppe, stigande. Forventa rekkefølgje: 2, 3, 1, Uten */
         BrukereMedAntall responsInnsatsgruppeStigende = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt", // TODO sett til Innsatsgruppe
+                "gjeldende_vedtak_14a_innsatsgruppe",
                 filtervalg,
                 null,
                 null
@@ -4490,28 +4490,28 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertEquals(responsInnsatsgruppeStigende.getBrukere().get(2).getFnr(), bruker1.getFnr());
         assertEquals(responsInnsatsgruppeStigende.getBrukere().get(3).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
 
-        /* Innsatsgruppe, synkande. Forventa: U, 1, 3, 2 */
+        /* Innsatsgruppe, synkande. Forventa rekkefølgje: 1, 3, 2, Uten */
         BrukereMedAntall responsInnsatsgruppeSynkende = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "descending",
-                "ikke_satt", // TODO sett til Innsatsgruppe
+                "gjeldende_vedtak_14a_innsatsgruppe",
                 filtervalg,
                 null,
                 null
         );
         assertThat(responsInnsatsgruppeSynkende.getAntall()).isEqualTo(4);
-        assertEquals(responsInnsatsgruppeSynkende.getBrukere().get(0).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
-        assertEquals(responsInnsatsgruppeSynkende.getBrukere().get(1).getFnr(), bruker1.getFnr());
-        assertEquals(responsInnsatsgruppeSynkende.getBrukere().get(2).getFnr(), bruker3.getFnr());
-        assertEquals(responsInnsatsgruppeSynkende.getBrukere().get(3).getFnr(), bruker2.getFnr());
+        assertEquals(responsInnsatsgruppeSynkende.getBrukere().get(0).getFnr(), bruker1.getFnr());
+        assertEquals(responsInnsatsgruppeSynkende.getBrukere().get(1).getFnr(), bruker3.getFnr());
+        assertEquals(responsInnsatsgruppeSynkende.getBrukere().get(2).getFnr(), bruker2.getFnr());
+        assertEquals(responsInnsatsgruppeSynkende.getBrukere().get(3).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
 
-        /* Hovedmål, stigande. Forventa: 3, 1, 2, U */
+        /* Hovedmål, stigande. Forventa: 3, 1, 2, Uten */
         BrukereMedAntall responsHovedmalStigende = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt", // TODO sett til Hovedmål
+                "gjeldende_vedtak_14a_hovedmal",
                 filtervalg,
                 null,
                 null
@@ -4522,12 +4522,12 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertEquals(responsHovedmalStigende.getBrukere().get(2).getFnr(), bruker2.getFnr());
         assertEquals(responsHovedmalStigende.getBrukere().get(3).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
 
-        /* Vedtaksdato, stigande. Forventa: 3, 2, 1, U */
+        /* Vedtaksdato, stigande. Forventa rekkefølgje: 3, 2, 1, Uten */
         BrukereMedAntall responsVedtaksdatoStigende = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt", // TODO sett til Vedtaksdato
+                "gjeldende_vedtak_14a_vedtaksdato",
                 filtervalg,
                 null,
                 null
