@@ -38,10 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -4400,6 +4397,146 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(respons.getAntall()).isEqualTo(2);
+    }
+
+    @Test
+    public void skal_kunne_sortere_brukere_med_og_uten_gjeldendeVedtak14a_pa_14a_kolonner() {
+        Fnr brukerMedSiste14aVedtakFnr1 = Fnr.of("11111111111");
+        Fnr brukerMedSiste14aVedtakFnr2 = Fnr.of("22222222222");
+        Fnr brukerMedSiste14aVedtakFnr3 = Fnr.of("33333333333");
+        Fnr brukerUtenSiste14aVedtakFnr = Fnr.of("44444444444");
+        AktorId brukerMedSiste14aVedtakAktorId1 = AktorId.of("1111111111111");
+        AktorId brukerMedSiste14aVedtakAktorId2 = AktorId.of("2222222222222");
+        AktorId brukerMedSiste14aVedtakAktorId3 = AktorId.of("3333333333333");
+        AktorId brukerUtenSiste14aVedtakAktorId = AktorId.of("4444444444444");
+
+        OppfolgingsBruker bruker1 = new OppfolgingsBruker()
+                .setFnr(brukerMedSiste14aVedtakFnr1.get())
+                .setAktoer_id(brukerMedSiste14aVedtakAktorId1.get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
+                        Innsatsgruppe.VARIG_TILPASSET_INNSATS,
+                        Hovedmal.OKE_DELTAKELSE,
+                        ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                ));
+
+        OppfolgingsBruker bruker2 = new OppfolgingsBruker()
+                .setFnr(brukerMedSiste14aVedtakFnr2.get())
+                .setAktoer_id(brukerMedSiste14aVedtakAktorId2.get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
+                        Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
+                        Hovedmal.SKAFFE_ARBEID,
+                        ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                ));
+
+        OppfolgingsBruker bruker3 = new OppfolgingsBruker()
+                .setFnr(brukerMedSiste14aVedtakFnr3.get())
+                .setAktoer_id(brukerMedSiste14aVedtakAktorId3.get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
+                        Innsatsgruppe.STANDARD_INNSATS,
+                        Hovedmal.BEHOLDE_ARBEID,
+                        ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                ));
+
+        OppfolgingsBruker brukerUtenGjeldendeVedtak = new OppfolgingsBruker()
+                .setFnr(brukerUtenSiste14aVedtakFnr.get())
+                .setAktoer_id(brukerUtenSiste14aVedtakAktorId.get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true);
+
+        var liste = List.of(bruker1, bruker2, bruker3, brukerUtenGjeldendeVedtak);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Filtervalg filtervalg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setGjeldendeVedtak14a(List.of("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK"));
+
+        /* Standard-sortering (aktør-id). Forventa rekkefølgje: 1, 2, 3, Utan */
+        BrukereMedAntall responsStandardsortering = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ikke_satt",
+                filtervalg,
+                null,
+                null
+        );
+        assertThat(responsStandardsortering.getAntall()).isEqualTo(4);
+        assertEquals(responsStandardsortering.getBrukere().get(0).getFnr(), bruker1.getFnr());
+        assertEquals(responsStandardsortering.getBrukere().get(1).getFnr(), bruker2.getFnr());
+        assertEquals(responsStandardsortering.getBrukere().get(2).getFnr(), bruker3.getFnr());
+        assertEquals(responsStandardsortering.getBrukere().get(3).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
+
+        /* Innsatsgruppe, stigande. Forventa rekkefølgje: 2, 3, 1, Uten */
+        BrukereMedAntall responsInnsatsgruppeStigende = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "gjeldende_vedtak_14a_innsatsgruppe",
+                filtervalg,
+                null,
+                null
+        );
+        assertThat(responsInnsatsgruppeStigende.getAntall()).isEqualTo(4);
+        assertEquals(responsInnsatsgruppeStigende.getBrukere().get(0).getFnr(), bruker2.getFnr());
+        assertEquals(responsInnsatsgruppeStigende.getBrukere().get(1).getFnr(), bruker3.getFnr());
+        assertEquals(responsInnsatsgruppeStigende.getBrukere().get(2).getFnr(), bruker1.getFnr());
+        assertEquals(responsInnsatsgruppeStigende.getBrukere().get(3).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
+
+        /* Innsatsgruppe, synkande. Forventa rekkefølgje: 1, 3, 2, Uten */
+        BrukereMedAntall responsInnsatsgruppeSynkende = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "descending",
+                "gjeldende_vedtak_14a_innsatsgruppe",
+                filtervalg,
+                null,
+                null
+        );
+        assertThat(responsInnsatsgruppeSynkende.getAntall()).isEqualTo(4);
+        assertEquals(responsInnsatsgruppeSynkende.getBrukere().get(0).getFnr(), bruker1.getFnr());
+        assertEquals(responsInnsatsgruppeSynkende.getBrukere().get(1).getFnr(), bruker3.getFnr());
+        assertEquals(responsInnsatsgruppeSynkende.getBrukere().get(2).getFnr(), bruker2.getFnr());
+        assertEquals(responsInnsatsgruppeSynkende.getBrukere().get(3).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
+
+        /* Hovedmål, stigande. Forventa: 3, 1, 2, Uten */
+        BrukereMedAntall responsHovedmalStigende = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "gjeldende_vedtak_14a_hovedmal",
+                filtervalg,
+                null,
+                null
+        );
+        assertThat(responsHovedmalStigende.getAntall()).isEqualTo(4);
+        assertEquals(responsHovedmalStigende.getBrukere().get(0).getFnr(), bruker3.getFnr());
+        assertEquals(responsHovedmalStigende.getBrukere().get(1).getFnr(), bruker1.getFnr());
+        assertEquals(responsHovedmalStigende.getBrukere().get(2).getFnr(), bruker2.getFnr());
+        assertEquals(responsHovedmalStigende.getBrukere().get(3).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
+
+        /* Vedtaksdato, stigande. Forventa rekkefølgje: 3, 2, 1, Uten */
+        BrukereMedAntall responsVedtaksdatoStigende = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "gjeldende_vedtak_14a_vedtaksdato",
+                filtervalg,
+                null,
+                null
+        );
+        assertThat(responsVedtaksdatoStigende.getAntall()).isEqualTo(4);
+        assertEquals(responsVedtaksdatoStigende.getBrukere().get(0).getFnr(), bruker3.getFnr());
+        assertEquals(responsVedtaksdatoStigende.getBrukere().get(1).getFnr(), bruker2.getFnr());
+        assertEquals(responsVedtaksdatoStigende.getBrukere().get(2).getFnr(), bruker1.getFnr());
+        assertEquals(responsVedtaksdatoStigende.getBrukere().get(3).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
