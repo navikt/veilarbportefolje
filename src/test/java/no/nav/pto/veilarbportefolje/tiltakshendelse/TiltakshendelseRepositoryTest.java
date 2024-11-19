@@ -81,10 +81,10 @@ class TiltakshendelseRepositoryTest {
         Fnr fnr = Fnr.of("11223312345");
         Fnr nyttFnr = Fnr.of("12345112233");
 
-        KafkaTiltakshendelse gammelKafkaData = new KafkaTiltakshendelse(id, true, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
-        KafkaTiltakshendelse oppdatertKafkaData = new KafkaTiltakshendelse(id, true, opprettet.plusDays(1), oppdatertTekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
-        KafkaTiltakshendelse oppdatertMedNyttFnrKafkaData = new KafkaTiltakshendelse(id, true, opprettet.plusDays(2), tekst, lenke, Tiltakstype.ARBFORB, nyttFnr, Avsender.KOMET);
-        Tiltakshendelse expected = new Tiltakshendelse(id, opprettet.plusDays(1), oppdatertTekst, lenke, Tiltakstype.ARBFORB, fnr);
+        KafkaTiltakshendelse gammelKafkaData = new KafkaTiltakshendelse(id, true, opprettet, tekst, lenke, Tiltakstype.AVKLARAG, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse oppdatertKafkaData = new KafkaTiltakshendelse(id, true, opprettet.plusDays(1), oppdatertTekst, lenke, Tiltakstype.JOBBK, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse oppdatertMedNyttFnrKafkaData = new KafkaTiltakshendelse(id, true, opprettet.plusDays(2), tekst, lenke, Tiltakstype.GRUFAGYRKE, nyttFnr, Avsender.KOMET);
+        Tiltakshendelse expected = new Tiltakshendelse(id, opprettet.plusDays(1), oppdatertTekst, lenke, Tiltakstype.JOBBK, fnr);
 
         assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(gammelKafkaData));
         assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(oppdatertKafkaData));
@@ -106,8 +106,8 @@ class TiltakshendelseRepositoryTest {
         String lenke = "http.cat/200";
         Fnr fnr = Fnr.of("11223312345");
 
-        KafkaTiltakshendelse hendelsePaEnPerson = new KafkaTiltakshendelse(id, true, opprettet, tekst, tekst, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
-        KafkaTiltakshendelse nyHendelsePaSammePerson = new KafkaTiltakshendelse(idNyMelding, true, opprettetNyMelding, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse hendelsePaEnPerson = new KafkaTiltakshendelse(id, true, opprettet, tekst, tekst, Tiltakstype.INDOPPFAG, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse nyHendelsePaSammePerson = new KafkaTiltakshendelse(idNyMelding, true, opprettetNyMelding, tekst, lenke, Tiltakstype.DIGIOPPARB, fnr, Avsender.KOMET);
 
         assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(hendelsePaEnPerson));
         assertFalse(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(nyHendelsePaSammePerson));
@@ -124,7 +124,7 @@ class TiltakshendelseRepositoryTest {
         String lenke = "http.cat/200";
         Fnr fnr = Fnr.of("11223312345");
 
-        KafkaTiltakshendelse hendelsePaEnPerson = new KafkaTiltakshendelse(id, true, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse hendelsePaEnPerson = new KafkaTiltakshendelse(id, true, opprettet, tekst, lenke, Tiltakstype.GRUPPEAMO, fnr, Avsender.KOMET);
 
         assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(hendelsePaEnPerson));
 
@@ -148,7 +148,7 @@ class TiltakshendelseRepositoryTest {
         Fnr fnr = Fnr.of("11223312345");
 
         KafkaTiltakshendelse hendelsePaEnPerson = new KafkaTiltakshendelse(id, true, opprettet, tekst, tekst, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
-        KafkaTiltakshendelse nyHendelsePaSammePerson = new KafkaTiltakshendelse(idNyMelding, true, opprettetNyMelding, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse nyHendelsePaSammePerson = new KafkaTiltakshendelse(idNyMelding, true, opprettetNyMelding, tekst, lenke, Tiltakstype.ARBRRHDAG, fnr, Avsender.KOMET);
 
         assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(hendelsePaEnPerson));
         assertFalse(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(nyHendelsePaSammePerson));
@@ -175,8 +175,8 @@ class TiltakshendelseRepositoryTest {
         LocalDateTime opprettet3 = LocalDateTime.of(2020, 6, 1, 12, 0);
 
         KafkaTiltakshendelse tiltakshendelse1 = new KafkaTiltakshendelse(id1, true, opprettet1, "Forslag: endre varighet", "http.cat/204", Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
-        KafkaTiltakshendelse tiltakshendelse2 = new KafkaTiltakshendelse(id2, true, opprettet2, "Forslag: endre varighet", "http.cat/204", Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
-        KafkaTiltakshendelse tiltakshendelse3 = new KafkaTiltakshendelse(id3, true, opprettet3, "Forslag: endre varighet", "http.cat/204", Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse tiltakshendelse2 = new KafkaTiltakshendelse(id2, true, opprettet2, "Forslag: endre varighet", "http.cat/204", Tiltakstype.ARBRRHDAG, fnr, Avsender.KOMET);
+        KafkaTiltakshendelse tiltakshendelse3 = new KafkaTiltakshendelse(id3, true, opprettet3, "Forslag: endre varighet", "http.cat/204", Tiltakstype.VASV, fnr, Avsender.KOMET);
 
         // Lagrar hendelsane i motsett rekkefølgje av oppretta-tidspunktet
         assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelse1));

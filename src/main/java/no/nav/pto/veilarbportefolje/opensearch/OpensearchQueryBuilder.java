@@ -471,6 +471,10 @@ public class OpensearchQueryBuilder {
             case "aap_type" -> searchSourceBuilder.sort("ytelse", order);
             case "aap_vurderingsfrist" -> sorterAapVurderingsfrist(searchSourceBuilder, order, filtervalg);
             case "aaprettighetsperiode" -> sorterAapRettighetsPeriode(searchSourceBuilder, order);
+            case "gjeldende_vedtak_14a_innsatsgruppe" ->
+                    searchSourceBuilder.sort("gjeldendeVedtak14a.innsatsgruppe", order);
+            case "gjeldende_vedtak_14a_hovedmal" -> searchSourceBuilder.sort("gjeldendeVedtak14a.hovedmal", order);
+            case "gjeldende_vedtak_14a_vedtaksdato" -> searchSourceBuilder.sort("gjeldendeVedtak14a.fattetDato", order) ;
             case "utkast_14a_status" -> searchSourceBuilder.sort("utkast_14a_status", order);
             case "arbeidslistekategori" -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
             case "siste_endring_tidspunkt" -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
