@@ -57,10 +57,6 @@ class ArbeidssoekerService(
 
     @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: Periode) {
-        if (!FeatureToggle.brukNyttArbeidssoekerregisterKafka(defaultUnleash)) {
-            secureLog.info("Bryter for å lytte på kafkameldinger fra nytt arbeidssøkerregister er skrudd av. Ignorerer melding.")
-            return
-        }
         val periodeId = kafkaMelding.id
         val identitetsnummer = kafkaMelding.identitetsnummer
 
@@ -76,6 +72,14 @@ class ArbeidssoekerService(
         val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(fnr)
 
         sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(fnr)
+
+        if (kafkaMelding.avsluttet != null) {
+            secureLog.info("Slettet siste arbeidssøkerperiode med tilhørende opplysninger og profilering for bruker med fnr: $fnr")
+            opensearchIndexerV2.deleteOpplysningerOmArbeidssoeker(aktorId)
+            opensearchIndexerV2.deleteProfilering(aktorId)
+            return
+        }
+
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId, fnr.get()))
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
 
@@ -115,10 +119,6 @@ class ArbeidssoekerService(
 
     @Transactional
     fun behandleKafkaMeldingLogikk(opplysninger: OpplysningerOmArbeidssoekerKafkaMelding) {
-        if (!FeatureToggle.brukNyttArbeidssoekerregisterKafka(defaultUnleash)) {
-            secureLog.info("Bryter for å lytte på kafkameldinger fra nytt arbeidssøkerregister er skrudd av. Ignorerer melding.")
-            return
-        }
         val arbeidssoekerPeriodeId = opplysninger.periodeId
         val opplysningerOmArbeidssoekerId = opplysninger.id
 
