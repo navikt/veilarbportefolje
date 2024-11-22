@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
 import org.apache.commons.lang3.StringUtils;
 
@@ -58,6 +59,7 @@ public class Filtervalg {
     public List<String> fargekategorier = new ArrayList<>();
     public List<String> gjeldendeVedtak14a = new ArrayList<>();
     public List<Innsatsgruppe> innsatsgruppeGjeldendeVedtak14a = new ArrayList<>();
+    public List<Hovedmal> hovedmalGjeldendeVedtak14a = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
@@ -95,7 +97,8 @@ public class Filtervalg {
                 harEnsligeForsorgereFilter() ||
                 harFargeKategoriFilter() ||
                 harGjeldendeVedtak14aFilter() ||
-                harInnsatsgruppeGjeldendeVedtak14a();
+                harInnsatsgruppeGjeldendeVedtak14a() ||
+                harHovedmalGjeldendeVedtak14a();
     }
 
     public boolean harGjeldendeVedtak14aFilter() {
@@ -104,6 +107,10 @@ public class Filtervalg {
 
     public boolean harInnsatsgruppeGjeldendeVedtak14a() {
         return innsatsgruppeGjeldendeVedtak14a != null && !innsatsgruppeGjeldendeVedtak14a.isEmpty();
+    }
+
+    public boolean harHovedmalGjeldendeVedtak14a() {
+        return hovedmalGjeldendeVedtak14a != null && !hovedmalGjeldendeVedtak14a.isEmpty();
     }
 
     public boolean harEnsligeForsorgereFilter() {
@@ -255,8 +262,13 @@ public class Filtervalg {
                 .map(Innsatsgruppe::contains)
                 .reduce(true, and());
 
+        Boolean hovedmalGjeldendeVedtak14aOk = hovedmalGjeldendeVedtak14a
+                .stream()
+                .map(Hovedmal::contains)
+                .reduce(true, and());
+
         return alderOk && fodselsdatoOk && veiledereOk && utdanningOK && sisteEndringOK && barnAlderOk &&
-                gjeldendeVedtak14aOk && innsatsgruppeGjeldendeVedtak14aOk;
+                gjeldendeVedtak14aOk && innsatsgruppeGjeldendeVedtak14aOk && hovedmalGjeldendeVedtak14aOk;
     }
 
     private BinaryOperator<Boolean> and() {
