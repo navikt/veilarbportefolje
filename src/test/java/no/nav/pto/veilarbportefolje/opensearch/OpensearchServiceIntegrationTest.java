@@ -4416,6 +4416,117 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
+    public void standardsortering_skal_fungere_pa_alle_gjeldendeVedtak14a_filter() {
+        Fnr brukerMedSiste14aVedtakFnr1 = Fnr.of("11111111111");
+        Fnr brukerMedSiste14aVedtakFnr2 = Fnr.of("22222222222");
+        Fnr brukerMedSiste14aVedtakFnr3 = Fnr.of("33333333333");
+        Fnr brukerUtenSiste14aVedtakFnr = Fnr.of("44444444444");
+
+        OppfolgingsBruker bruker1 = new OppfolgingsBruker()
+                .setFnr(brukerMedSiste14aVedtakFnr1.get())
+                .setAktoer_id(randomAktorId().get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
+                        Innsatsgruppe.VARIG_TILPASSET_INNSATS,
+                        Hovedmal.OKE_DELTAKELSE,
+                        ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+
+                ));
+
+        OppfolgingsBruker bruker2 = new OppfolgingsBruker()
+                .setFnr(brukerMedSiste14aVedtakFnr2.get())
+                .setAktoer_id(randomAktorId().get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
+                        Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
+                        Hovedmal.SKAFFE_ARBEID,
+                        ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                ));
+
+        OppfolgingsBruker bruker3 = new OppfolgingsBruker()
+                .setFnr(brukerMedSiste14aVedtakFnr3.get())
+                .setAktoer_id(randomAktorId().get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
+                        Innsatsgruppe.STANDARD_INNSATS,
+                        Hovedmal.BEHOLDE_ARBEID,
+                        ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                ));
+
+        OppfolgingsBruker brukerUtenGjeldendeVedtak = new OppfolgingsBruker()
+                .setFnr(brukerUtenSiste14aVedtakFnr.get())
+                .setAktoer_id(randomAktorId().get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true);
+
+        var liste = List.of(bruker1, bruker2, bruker3, brukerUtenGjeldendeVedtak);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Filtervalg filtrertHarGjeldendeVedtak = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setGjeldendeVedtak14a(List.of("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK"));
+
+        /* Standard-sortering (vedtaksdato, stigande). Forventa rekkefølgje: 3, 2, 1, Utan */
+        BrukereMedAntall responsFiltrertGjeldendeVedtak = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                filtrertHarGjeldendeVedtak,
+                null,
+                null
+        );
+        assertThat(responsFiltrertGjeldendeVedtak.getAntall()).isEqualTo(4);
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(0).getFnr(), bruker1.getFnr());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(1).getFnr(), bruker2.getFnr());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(2).getFnr(), bruker3.getFnr());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(3).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
+
+        Filtervalg filtrertInnsatsgruppe = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setInnsatsgruppeGjeldendeVedtak14a(List.of(Innsatsgruppe.STANDARD_INNSATS, Innsatsgruppe.VARIG_TILPASSET_INNSATS, Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS));
+
+        /* Standard-sortering (vedtaksdato, stigande). Forventa rekkefølgje: 3, 2, 1, Utan */
+        BrukereMedAntall responsFiltrertInnsatsgruppe = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                filtrertInnsatsgruppe,
+                null,
+                null
+        );
+        assertThat(responsFiltrertInnsatsgruppe.getAntall()).isEqualTo(3);
+        assertEquals(responsFiltrertInnsatsgruppe.getBrukere().get(0).getFnr(), bruker1.getFnr());
+        assertEquals(responsFiltrertInnsatsgruppe.getBrukere().get(1).getFnr(), bruker2.getFnr());
+        assertEquals(responsFiltrertInnsatsgruppe.getBrukere().get(2).getFnr(), bruker3.getFnr());
+
+        Filtervalg filtrertHovedmal = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setHovedmalGjeldendeVedtak14a(List.of(Hovedmal.SKAFFE_ARBEID, Hovedmal.BEHOLDE_ARBEID, Hovedmal.OKE_DELTAKELSE));
+
+        /* Standard-sortering (vedtaksdato, stigande). Forventa rekkefølgje: 3, 2, 1, Utan */
+        BrukereMedAntall responsFiltrertHovedmal = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                filtrertHovedmal,
+                null,
+                null
+        );
+        assertThat(responsFiltrertHovedmal.getAntall()).isEqualTo(3);
+        assertEquals(responsFiltrertHovedmal.getBrukere().get(0).getFnr(), bruker1.getFnr());
+        assertEquals(responsFiltrertHovedmal.getBrukere().get(1).getFnr(), bruker2.getFnr());
+        assertEquals(responsFiltrertHovedmal.getBrukere().get(2).getFnr(), bruker3.getFnr());
+    }
+
+    @Test
     public void skal_kunne_sortere_brukere_med_og_uten_gjeldendeVedtak14a_pa_14a_kolonner() {
         Fnr brukerMedSiste14aVedtakFnr1 = Fnr.of("11111111111");
         Fnr brukerMedSiste14aVedtakFnr2 = Fnr.of("22222222222");
