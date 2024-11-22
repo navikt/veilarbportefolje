@@ -456,6 +456,15 @@ public class OpensearchQueryBuilder {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC);
             return searchSourceBuilder;
         }
+        /* Dersom det er filtrert på ei av filtera for gjeldande § 14 a-vedtak, sorter på vedtaksdato. */
+        if (IKKE_SATT.equals(sorteringsfelt) && (
+                filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
+                (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && filtervalg.innsatsgruppeGjeldendeVedtak14a.size() > 0) ||
+                (filtervalg.hovedmal != null && filtervalg.innsatsgruppeGjeldendeVedtak14a.size() > 0))
+        ) {
+            sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder, SortOrder.ASC);
+            return searchSourceBuilder;
+        }
         if (IKKE_SATT.equals(sorteringsfelt)) {
             searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
             return searchSourceBuilder;
@@ -480,7 +489,7 @@ public class OpensearchQueryBuilder {
             case GJELDENDE_VEDTAK_14A_INNSATSGRUPPE ->
                     searchSourceBuilder.sort("gjeldendeVedtak14a.innsatsgruppe", order);
             case GJELDENDE_VEDTAK_14A_HOVEDMAL -> searchSourceBuilder.sort("gjeldendeVedtak14a.hovedmal", order);
-            case GJELDENDE_VEDTAK_14A_VEDTAKSDATO -> searchSourceBuilder.sort("gjeldendeVedtak14a.fattetDato", order);
+            case GJELDENDE_VEDTAK_14A_VEDTAKSDATO -> sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder, order);
             case UTKAST_14A_STATUS -> searchSourceBuilder.sort("utkast_14a_status", order);
             case ARBEIDSLISTE_KATEGORI -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
             case SISTE_ENDRING_DATO -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
@@ -547,6 +556,10 @@ public class OpensearchQueryBuilder {
 
     static void sorterTiltakshendelseOpprettetDato(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
         searchSourceBuilder.sort("tiltakshendelse.opprettet", order);
+    }
+
+    static void sorterGjeldendeVedtak14aVedtaksdato(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        searchSourceBuilder.sort("gjeldendeVedtak14a.fattetDato", order);
     }
 
     static void sorterTolkeSpraak(Filtervalg filtervalg, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
