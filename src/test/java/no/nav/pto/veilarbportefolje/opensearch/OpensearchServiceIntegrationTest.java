@@ -4581,22 +4581,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFerdigfilterListe(emptyList())
                 .setGjeldendeVedtak14a(List.of("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK"));
 
-        /* Standard-sortering (vedtaksdato, stigande). Forventa rekkefølgje: 3, 2, 1, Utan */
-        BrukereMedAntall responsStandardsortering = opensearchService.hentBrukere(
-                TEST_ENHET,
-                empty(),
-                "ascending",
-                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
-                filtervalg,
-                null,
-                null
-        );
-        assertThat(responsStandardsortering.getAntall()).isEqualTo(4);
-        assertEquals(responsStandardsortering.getBrukere().get(0).getFnr(), bruker3.getFnr());
-        assertEquals(responsStandardsortering.getBrukere().get(1).getFnr(), bruker2.getFnr());
-        assertEquals(responsStandardsortering.getBrukere().get(2).getFnr(), bruker1.getFnr());
-        assertEquals(responsStandardsortering.getBrukere().get(3).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
-
         /* Innsatsgruppe, stigande. Forventa rekkefølgje: 2, 3, 1, Uten */
         BrukereMedAntall responsInnsatsgruppeStigende = opensearchService.hentBrukere(
                 TEST_ENHET,

@@ -460,7 +460,7 @@ public class OpensearchQueryBuilder {
         if (IKKE_SATT.equals(sorteringsfelt) && (
                 filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
                 (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && filtervalg.innsatsgruppeGjeldendeVedtak14a.size() > 0) ||
-                (filtervalg.hovedmal != null && filtervalg.innsatsgruppeGjeldendeVedtak14a.size() > 0))
+                (filtervalg.hovedmalGjeldendeVedtak14a != null && filtervalg.hovedmalGjeldendeVedtak14a.size() > 0))
         ) {
             sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder, SortOrder.ASC);
             return searchSourceBuilder;
