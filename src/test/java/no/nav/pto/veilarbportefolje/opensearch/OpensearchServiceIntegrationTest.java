@@ -4545,6 +4545,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         Fnr brukerMedSiste14aVedtakFnr2 = Fnr.of("22222222222");
         Fnr brukerMedSiste14aVedtakFnr3 = Fnr.of("33333333333");
         Fnr brukerUtenSiste14aVedtakFnr = Fnr.of("44444444444");
+
         OppfolgingsBruker bruker1 = new OppfolgingsBruker()
                 .setFnr(brukerMedSiste14aVedtakFnr1.get())
                 .setAktoer_id(randomAktorId().get())
@@ -4608,6 +4609,78 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(brukerFraOpenSearch.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr3.get());
         Bruker brukerFraOpenSearch1 = respons.getBrukere().get(1);
         assertThat(brukerFraOpenSearch1.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr1.get());
+    }
+
+    @Test
+    public void skal_hente_brukere_med_hovedmalGjeldendeVedtak14a() {
+        Fnr brukerMedSiste14aVedtakFnr1 = Fnr.of("11111111111");
+        Fnr brukerMedSiste14aVedtakFnr2 = Fnr.of("22222222222");
+        Fnr brukerMedSiste14aVedtakFnr3 = Fnr.of("33333333333");
+        Fnr brukerUtenSiste14aVedtakFnr = Fnr.of("44444444444");
+
+        OppfolgingsBruker bruker1 = new OppfolgingsBruker()
+                .setFnr(brukerMedSiste14aVedtakFnr1.get())
+                .setAktoer_id(randomAktorId().get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
+                        Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
+                        Hovedmal.OKE_DELTAKELSE,
+                        ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                ));
+
+        OppfolgingsBruker bruker2 = new OppfolgingsBruker()
+                .setFnr(brukerMedSiste14aVedtakFnr2.get())
+                .setAktoer_id(randomAktorId().get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
+                        Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
+                        Hovedmal.SKAFFE_ARBEID,
+                        ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                ));
+
+        OppfolgingsBruker bruker3 = new OppfolgingsBruker()
+                .setFnr(brukerMedSiste14aVedtakFnr3.get())
+                .setAktoer_id(randomAktorId().get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true)
+                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
+                        Innsatsgruppe.STANDARD_INNSATS,
+                        Hovedmal.BEHOLDE_ARBEID,
+                        ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                ));
+
+        OppfolgingsBruker brukerUtenGjeldendeVedtak = new OppfolgingsBruker()
+                .setFnr(brukerUtenSiste14aVedtakFnr.get())
+                .setAktoer_id(randomAktorId().get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true);
+
+        var liste = List.of(bruker1, bruker2, bruker3, brukerUtenGjeldendeVedtak);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Filtervalg filtervalg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setHovedmalGjeldendeVedtak14a(List.of(Hovedmal.SKAFFE_ARBEID, Hovedmal.OKE_DELTAKELSE));
+
+        BrukereMedAntall respons = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "gjeldende_vedtak_14a_hovedmal",
+                filtervalg,
+                null,
+                null
+        );
+
+        assertThat(respons.getAntall()).isEqualTo(2);
+        Bruker brukerFraOpenSearch = respons.getBrukere().get(0);
+        assertThat(brukerFraOpenSearch.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr1.get());
+        Bruker brukerFraOpenSearch1 = respons.getBrukere().get(1);
+        assertThat(brukerFraOpenSearch1.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr2.get());
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {

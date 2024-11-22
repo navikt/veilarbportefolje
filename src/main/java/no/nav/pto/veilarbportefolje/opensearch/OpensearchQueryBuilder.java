@@ -189,6 +189,7 @@ public class OpensearchQueryBuilder {
         byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter");
         byggManuellFilter(filtervalg.alleAktiviteter, queryBuilder, "alleAktiviteter");
         byggManuellFilter(filtervalg.innsatsgruppeGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.innsatsgruppe");
+        byggManuellFilter(filtervalg.hovedmalGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.hovedmal");
 
         if (filtervalg.harYtelsefilter()) {
             BoolQueryBuilder subQuery = boolQuery();
