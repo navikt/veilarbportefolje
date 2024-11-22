@@ -4624,7 +4624,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setOppfolging(true)
                 .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
-                        Innsatsgruppe.VARIG_TILPASSET_INNSATS,
+                        Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
                         Hovedmal.OKE_DELTAKELSE,
                         ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
                 ));
@@ -4670,7 +4670,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "gjeldende_vedtak_14a_innsatsgruppe",
+                "gjeldende_vedtak_14a_hovedmal",
                 filtervalg,
                 null,
                 null
@@ -4678,9 +4678,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         assertThat(respons.getAntall()).isEqualTo(2);
         Bruker brukerFraOpenSearch = respons.getBrukere().get(0);
-        assertThat(brukerFraOpenSearch.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr2.get());
+        assertThat(brukerFraOpenSearch.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr1.get());
         Bruker brukerFraOpenSearch1 = respons.getBrukere().get(1);
-        assertThat(brukerFraOpenSearch1.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr1.get());
+        assertThat(brukerFraOpenSearch1.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr2.get());
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
