@@ -1,0 +1,91 @@
+"$schema": https://json-schema.org/draft-07/schema
+"$id": "https://navikt.github.io/veilarbportefolje/kafka/hendelse.v1.schema.yml"
+required:
+  - personId
+  - avsender
+  - kategori
+  - operasjon
+  - hendelse
+type: object
+additionalProperties: false
+properties:
+  personId:
+    type: string
+    description: |
+      En naturlig identifikator (fødselsnummer, D-nummer, etc.) for personen under arbeidsrettet oppfølging som 
+      hendelsen er knyttet til.
+    examples:
+      - "23418514612"
+  avsender:
+    type: string
+    description: |
+      En verdi som representerer systemet som produserte meldingen. Eksempelvis kan dette være navnet på applikasjonen. 
+      Brukes i forbindelse med eventuell sporing og/eller feilsøking relatert til produserte meldinger, så det 
+      oppfordres derfor til at denne verdien korresponderer med ID-en som systemet ellers bruker for å identifisere seg.
+    examples:
+      - veilarbaktivitet
+      - "prod-gcp:obo:veilarbvedtaksstotte"
+  kategori:
+    type: string
+    enum:
+      - UTGATT_VARSEL
+    description: |
+      En kategori som hendelsen skal grupperes under. Denne brukes blant annet for å formidle til veileder hvilket 
+      overordnet område/domene/subdomene som hendelsen er knyttet til. Det forventes at brukere av denne tjenesten 
+      (dvs. andre team som skal produsere på dette topicet) kontakter teamet som forvalter tjenesten for å bli enige 
+      om hvilke enum-nøkler dere/vi trenger.
+  operasjon:
+    type: string
+    enum:
+      - START
+      - ENDRING
+      - STOPP
+    description: |
+      Hvilken operasjon en gitt record representerer: 
+      * `START` = det har skjedd en ny hendelse
+      * `ENDRING` = data om hendelsen skal oppdateres
+      * `STOPP` = hendelsen er ikke lenger relevant
+      
+      En hendelse skal minimum ha en start (`operasjon = START`) og en slutt (`operasjon = STOPP`). Når det eventuelt 
+      er relevant å starte en hendelse er opp til produsenten å bestemme, men det forventes at det kommer en 
+      `STOPP`-hendelse når veileder har utført oppgaven som hendelsen er knyttet til. Det kan gjøres endringer i data 
+      knyttet til en hendelse ved å spesifisere `operasjon = ENDRING` og sende en ny record med samme `key`. 
+      Hendelsesdata som formidles til veileder vil da oppdateres med tilsvarende endring (eksempel: man ønsker å endre 
+      `hendelse.lenke`).
+  hendelse:
+    type: object
+    description: Data om selve hendelsen
+    required:
+      - navn
+      - dato
+      - lenke
+    additionalProperties: false
+    properties:
+      navn:
+        type: string
+        description: |
+          Tekst som beskriver hva veileder skal gjøre / hva hendelsen _er_. I nåværende versjon av tjenesten vil denne 
+          teksten også benyttes som lenketekst (se: `hendelse.lenke`).
+        examples:
+          - "Forslag: Endre deltakelse"
+      dato:
+        type: string
+        format: date-time
+        description: |
+          Dato som er relevant for hendelsen. Typisk når hendelsen ble opprettet, men dette er opp til produsent å 
+          bestemme.
+        examples:
+          - "2024-11-25T14:30:00+02:00"
+      lenke:
+        type: string
+        format: uri
+        description: |
+          En lenke (URI) som tar veileder dit hen kan agere på hendelsen.
+        examples:
+          - "https://veilarbpersonflate.intern.nav.no/vedtaksstotte"
+      detaljer:
+        type: string
+        description: |
+          Eventuell ekstra informasjon/kodeord som veileder kan bruke for å sortere/gruppere hendelser på.
+        examples:
+          - "Tiltaktstype: VTA"

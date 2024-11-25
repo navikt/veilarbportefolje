@@ -1,0 +1,52 @@
+asyncapi: 3.0.0
+info:
+  title: Porteføljeoversikten
+  version: 0.0.1
+  description: |
+    Asynkrone tjenester knyttet til porteføljeoversikten / Oversikten i Modia arbeidsrettet oppfølging
+  contact:
+    name: Team OBO
+    url: 'https://nav-it.slack.com/archives/C02G0292ULW'
+defaultContentType: application/json
+channels:
+  obo.hendelsesfilter-v1:
+    bindings:
+      kafka:
+        topic: "obo.hendelsesfilter-v1"
+    description: | 
+      Tjeneste for å kunne starte, redigere og stoppe hendelser. En hendelse i denne konteksten er en 
+      hendelse knyttet til en person under arbeidsrettet oppfølging som det er forventet at veileder skal følge opp. 
+      Per dags dato vil hendelsen bli formidlet til veileder som et innslag i statusfiltrene i Oversikten i Modia 
+      arbeidsrettet oppfølging.
+      
+      En hendelse skal minimum ha en start (`operasjon = START`) og en slutt (`operasjon = STOPP`). Når det eventuelt 
+      er relevant å starte en hendelse er opp til produsenten å bestemme, men det forventes at det kommer en 
+      STOPP-hendelse når veileder har utført oppgaven som hendelsen er knyttet til. Det kan gjøres endringer i data 
+      knyttet til en hendelse ved å spesifisere `operasjon = ENDRING` og sende en ny record med samme `key`. 
+      Hendelsesdata som formidles til veileder vil da oppdateres med tilsvarende endring (eksempel: man ønsker å endre 
+      `hendelse.lenke`).
+    messages:
+      hendelse:
+        $ref: '#/components/messages/hendelse'
+
+operations:
+  hendelse:
+    action: send
+    channel:
+      $ref: '#/channels/obo.hendelsesfilter-v1'
+    messages:
+      - $ref: '#/channels/obo.hendelsesfilter-v1/messages/hendelse'
+
+components:
+  messages:
+    hendelse:
+      name: hendelse
+      title: Hendelse
+      summary: Hendelse payload
+      bindings:
+        kafka:
+          key:
+            type: string
+            format: uuid
+      payload:
+        $ref: hendelse.v1.schema.yml
