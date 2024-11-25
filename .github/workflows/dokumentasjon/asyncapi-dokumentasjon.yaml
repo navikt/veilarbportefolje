@@ -1,0 +1,44 @@
+name: Generer AsyncAPI dokumentasjon og publiser til GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - 'asyncapi-dokumentasjon.yaml'
+      - '../../src/main/resources/schemas/**'
+permissions:
+  contents: write
+
+concurrency:
+  group: veilarbportefolje-asyncapi-dokumentasjon
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Installer @asyncapi-generator
+        run: npm install -g @asyncapi/generator
+
+      - name: Generer AsyncAPI dokumentasjon (denne tar litt tid)
+        working-directory: src/main/resources/schemas
+        run: ag veilarbportefolje.asyncapi.yml @asyncapi/html-template -o ./veilarbportefolje-doc
+
+      - name: Deploy GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          folder: src/main/resources/schemas/veilarbportefolje-doc
+          target-folder: veilarbportefoljeV1
