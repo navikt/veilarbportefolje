@@ -1,10 +1,17 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter.domain;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Hendelse {
-    String navn;
-    LocalDateTime dato;
-    String lenke;
-    String detaljer;
+public record Hendelse(
+        String personID,
+        String avsender,
+        Kategori kategori,
+        Operasjon operasjon,
+        @JsonProperty(value = "hendelse")
+        HendelseInnhold hendelseInnhold
+) {
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public Hendelse {
+    }
 }
