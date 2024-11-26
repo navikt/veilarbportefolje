@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.siste14aVedtak;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class Siste14aVedtakService extends KafkaCommonConsumerService<Siste14aVedtakKafkaDto> {
+public class Siste14aVedtakService extends KafkaCommonNonKeyedConsumerService<Siste14aVedtakKafkaDto> {
 
     private final PdlIdentRepository pdlIdentRepository;
     private final Siste14aVedtakRepository siste14aVedtakRepository;
