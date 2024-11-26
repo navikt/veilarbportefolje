@@ -14,7 +14,7 @@ class HendelseService : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
 
         when (kafkaMelding.operasjon) {
             Operasjon.START -> startHendelse(hendelse)
-            Operasjon.ENDRING -> oppdaterHendelse(hendelse)
+            Operasjon.OPPDATER -> oppdaterHendelse(hendelse)
             Operasjon.STOPP -> stoppHendelse(hendelse)
         }
     }
