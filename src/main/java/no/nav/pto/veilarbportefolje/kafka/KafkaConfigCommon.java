@@ -125,8 +125,9 @@ public class KafkaConfigCommon {
 
         PDL_BRUKERDATA("pdl.pdl-persondokument-v1"),
 
-        TILTAKSHENDELSE("obo.tiltakshendelse-v1");
+        TILTAKSHENDELSE("obo.tiltakshendelse-v1"),
 
+        PORTEFOLJE_HENDELSESFILTER("obo.portefolje-hendelsesfilter-v1");
 
         @Getter
         final String topicName;
@@ -419,6 +420,16 @@ public class KafkaConfigCommon {
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.TILTAKSHENDELSE.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(KafkaTiltakshendelse.class),
+                                        tiltakshendelseService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, KafkaTiltakshendelse>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(KafkaTiltakshendelse.class),
                                         tiltakshendelseService::behandleKafkaRecord
