@@ -1,8 +1,6 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import no.nav.common.types.identer.EksternBrukerId
-import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
 import java.time.LocalDateTime
 import java.util.*
@@ -31,7 +29,7 @@ enum class Kategori {
 enum class Operasjon {
     START,
     STOPP,
-    ENDRING
+    OPPDATER
 }
 
 /* Interne typer */
