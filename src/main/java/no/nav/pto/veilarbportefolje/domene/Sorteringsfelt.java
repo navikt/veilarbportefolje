@@ -88,4 +88,13 @@ public enum Sorteringsfelt {
     public String toString() {
         return this.value;
     }
+
+    public static Sorteringsfelt nameFromValue(String value) {
+        for (Sorteringsfelt sorteringsfelt : values()) {
+            if (sorteringsfelt.value.equals(value)) {
+                return sorteringsfelt;
+            }
+        }
+        throw new IllegalArgumentException("Ugyldig verdi for enum: " + value ); // TODO betre feilhandtering ved ugyldige values?
+    }
 }
