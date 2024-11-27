@@ -5,6 +5,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 @Slf4j
 public abstract class KafkaCommonNonKeyedConsumerService<T> extends KafkaCommonConsumerService<T> {
+
+    @Override
     public void behandleKafkaRecord(ConsumerRecord<String, T> kafkaMelding) {
         loggKafkaMeldingInformasjon(kafkaMelding);
         behandleKafkaMeldingLogikk(kafkaMelding.value());
