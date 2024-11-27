@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service
 class HendelseService : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     val log = LoggerFactory.getLogger(HendelseService::class.java)
 
-    override fun behandleKafkaMeldingLogikk(kafkaMelding: HendelseRecordValue, nokkel: String) {
-        val hendelse = toHendelse(kafkaMelding, nokkel)
+    override fun behandleKafkaRecordLogikk(hendelseRecordValue: HendelseRecordValue, nokkel: String) {
+        val hendelse = toHendelse(hendelseRecordValue, nokkel)
         // TODO: Handtere eventuelle feil i mapping
 
-        when (kafkaMelding.operasjon) {
+        when (hendelseRecordValue.operasjon) {
             Operasjon.START -> startHendelse(hendelse)
             Operasjon.OPPDATER -> oppdaterHendelse(hendelse)
             Operasjon.STOPP -> stoppHendelse(hendelse)
