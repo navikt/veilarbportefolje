@@ -331,7 +331,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 new Filtervalg(),
                 null,
                 null
@@ -369,7 +369,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filtervalg,
                 null,
                 null
@@ -424,7 +424,14 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
-        var response = opensearchService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "asc",
+                Sorteringsfelt.IKKE_SATT.toString(),
+                filtervalg,
+                null,
+                null);
 
         assertThat(response.getAntall()).isEqualTo(2);
     }
@@ -462,7 +469,14 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
         var filtervalg = new Filtervalg().setFerdigfilterListe(List.of(UFORDELTE_BRUKERE));
-        var response = opensearchService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "asc",
+                Sorteringsfelt.IKKE_SATT.toString(),
+                filtervalg,
+                null,
+                null);
         assertThat(response.getAntall()).isEqualTo(2);
     }
 
@@ -984,7 +998,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.empty(),
                 "desc",
-                "arbeidslistekategori",
+                Sorteringsfelt.ARBEIDSLISTE_KATEGORI.toString(),
                 new Filtervalg(),
                 null,
                 null
@@ -1044,7 +1058,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.empty(),
                 "desc",
-                "valgteaktiviteter",
+                Sorteringsfelt.VALGTE_AKTIVITETER.toString(),
                 filtervalg1,
                 null,
                 null
@@ -1053,7 +1067,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.empty(),
                 "desc",
-                "valgteaktiviteter",
+                Sorteringsfelt.VALGTE_AKTIVITETER.toString(),
                 filtervalg2,
                 null,
                 null
@@ -1101,7 +1115,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.empty(),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 new Filtervalg().setFerdigfilterListe(List.of(TRENGER_VURDERING)),
                 null,
                 null
@@ -1116,7 +1130,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.empty(),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 new Filtervalg().setFerdigfilterListe(ferdigFiltere),
                 null,
                 null
@@ -1150,7 +1164,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.empty(),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 new Filtervalg(),
                 null,
                 null
@@ -1161,7 +1175,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 new Filtervalg(),
                 null,
                 null
@@ -1200,7 +1214,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.of(LITE_PRIVILEGERT_VEILEDER),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 new Filtervalg().setFerdigfilterListe(List.of(UFORDELTE_BRUKERE)),
                 null,
                 null
@@ -1245,7 +1259,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1287,7 +1301,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1329,7 +1343,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1394,7 +1408,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1445,7 +1459,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1494,7 +1508,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1545,7 +1559,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1597,7 +1611,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1672,7 +1686,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "utkast_14a_ansvarlig_veileder",
+                Sorteringsfelt.UTKAST_14A_ANSVARLIG_VEILEDER.toString(),
                 filterValg,
                 null,
                 null
@@ -1747,7 +1761,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1766,7 +1780,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1782,7 +1796,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1802,7 +1816,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1819,7 +1833,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1903,7 +1917,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1922,7 +1936,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1939,7 +1953,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -1955,7 +1969,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -2047,7 +2061,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "fodeland",
+                Sorteringsfelt.FODELAND.toString(),
                 filterValg,
                 null,
                 null
@@ -2065,7 +2079,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "descending",
-                "fodeland",
+                Sorteringsfelt.FODELAND.toString(),
                 filterValg,
                 null,
                 null
@@ -2083,7 +2097,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "statsborgerskap",
+                Sorteringsfelt.STATSBORGERSKAP.toString(),
                 filterValg,
                 null,
                 null
@@ -2159,7 +2173,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -2177,7 +2191,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -2194,7 +2208,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -2267,7 +2281,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "kommunenummer",
+                Sorteringsfelt.BOSTED_KOMMUNE.toString(),
                 filterValg,
                 null,
                 null
@@ -2284,7 +2298,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "descending",
-                "bydelsnummer",
+                Sorteringsfelt.BOSTED_BYDEL.toString(),
                 filterValg,
                 null,
                 null
@@ -2350,7 +2364,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -2413,7 +2427,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -2474,7 +2488,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -2523,7 +2537,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 "descending",
-                "etternavn",
+                Sorteringsfelt.ETTERNAVN.toString(),
                 filterValg,
                 null,
                 null
@@ -2571,7 +2585,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "descending",
-                "etternavn",
+                Sorteringsfelt.ETTERNAVN.toString(),
                 filterValg,
                 null,
                 null
@@ -2645,7 +2659,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "enslige_forsorgere_utlop_ytelse",
+                Sorteringsfelt.ENSLIGE_FORSORGERE_UTLOP_YTELSE.toString(),
                 filterValg,
                 null,
                 null
@@ -2662,7 +2676,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "enslige_forsorgere_om_barnet",
+                Sorteringsfelt.ENSLIGE_FORSORGERE_OM_BARNET.toString(),
                 filterValg,
                 null,
                 null
@@ -2679,7 +2693,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "enslige_forsorgere_aktivitetsplikt",
+                Sorteringsfelt.ENSLIGE_FORSORGERE_AKTIVITETSPLIKT.toString(),
                 filterValg,
                 null,
                 null
@@ -2695,7 +2709,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "enslige_forsorgere_vedtaksperiodetype",
+                Sorteringsfelt.ENSLIGE_FORSORGERE_VEDTAKSPERIODETYPE.toString(),
                 filterValg,
                 null,
                 null
@@ -2779,7 +2793,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -2835,7 +2849,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -2889,7 +2903,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -2955,7 +2969,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -3019,7 +3033,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -3128,7 +3142,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "barn_under_18_aar",
+                Sorteringsfelt.BARN_UNDER_18_AR.toString(),
                 filterValg,
                 null,
                 null
@@ -3212,7 +3226,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "barn_under_18_aar",
+                Sorteringsfelt.BARN_UNDER_18_AR.toString(),
                 filterValg,
                 null,
                 null
@@ -3281,7 +3295,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -3357,7 +3371,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -3374,7 +3388,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "descending",
-                "tiltakshendelse_dato_opprettet",
+                Sorteringsfelt.TILTAKSHENDELSE_DATO_OPPRETTET.toString(),
                 filterValg,
                 null,
                 null
@@ -3390,7 +3404,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "tiltakshendelse_tekst",
+                Sorteringsfelt.TILTAKSHENDELSE_TEKST.toString(),
                 filterValg,
                 null,
                 null
@@ -3542,7 +3556,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "barn_under_18_aar",
+                Sorteringsfelt.BARN_UNDER_18_AR.toString(),
                 filterValg,
                 null,
                 null
@@ -3696,7 +3710,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "barn_under_18_aar",
+                Sorteringsfelt.BARN_UNDER_18_AR.toString(),
                 filterValg,
                 null,
                 null
@@ -3846,7 +3860,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "barn_under_18_aar",
+                Sorteringsfelt.BARN_UNDER_18_AR.toString(),
                 filterValg,
                 null,
                 null
@@ -3935,7 +3949,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "aap_vurderingsfrist",
+                Sorteringsfelt.AAP_VURDERINGSFRIST.toString(),
                 filterValg,
                 null,
                 null
@@ -3954,7 +3968,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "aap_vurderingsfrist",
+                Sorteringsfelt.AAP_VURDERINGSFRIST.toString(),
                 filterValg,
                 null,
                 null
@@ -4034,7 +4048,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "huskelapp_kommentar",
+                Sorteringsfelt.HUSKELAPP_KOMMENTAR.toString(),
                 filterValg,
                 null,
                 null
@@ -4051,7 +4065,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "descending",
-                "huskelapp_frist",
+                Sorteringsfelt.HUSKELAPP_FRIST.toString(),
                 filterValg,
                 null,
                 null
@@ -4133,7 +4147,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -4150,7 +4164,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filterValg,
                 null,
                 null
@@ -4167,7 +4181,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "fargekategori",
+                Sorteringsfelt.FARGEKATEGORI.toString(),
                 filterValg,
                 null,
                 null
@@ -4225,7 +4239,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 new Filtervalg().setFerdigfilterListe(emptyList()),
                 null,
                 null
@@ -4278,7 +4292,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 new Filtervalg().setFerdigfilterListe(emptyList()).setGjeldendeVedtak14a(List.of("HAR_14A_VEDTAK")),
                 null,
                 null
@@ -4336,7 +4350,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 new Filtervalg().setFerdigfilterListe(emptyList()).setGjeldendeVedtak14a(List.of("HAR_IKKE_14A_VEDTAK")),
                 null,
                 null
@@ -4391,7 +4405,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 new Filtervalg().setFerdigfilterListe(emptyList()).setGjeldendeVedtak14a(List.of("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK")),
                 null,
                 null
@@ -4463,7 +4477,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 filtervalg,
                 null,
                 null
@@ -4479,7 +4493,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "gjeldende_vedtak_14a_innsatsgruppe",
+                Sorteringsfelt.GJELDENDE_VEDTAK_14A_INNSATSGRUPPE.toString(),
                 filtervalg,
                 null,
                 null
@@ -4495,7 +4509,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "descending",
-                "gjeldende_vedtak_14a_innsatsgruppe",
+                Sorteringsfelt.GJELDENDE_VEDTAK_14A_INNSATSGRUPPE.toString(),
                 filtervalg,
                 null,
                 null
@@ -4511,7 +4525,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "gjeldende_vedtak_14a_hovedmal",
+                Sorteringsfelt.GJELDENDE_VEDTAK_14A_HOVEDMAL.toString(),
                 filtervalg,
                 null,
                 null
@@ -4527,7 +4541,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "gjeldende_vedtak_14a_vedtaksdato",
+                Sorteringsfelt.GJELDENDE_VEDTAK_14A_VEDTAKSDATO.toString(),
                 filtervalg,
                 null,
                 null
@@ -4598,7 +4612,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "gjeldende_vedtak_14a_innsatsgruppe",
+                Sorteringsfelt.GJELDENDE_VEDTAK_14A_INNSATSGRUPPE.toString(),
                 filtervalg,
                 null,
                 null
@@ -4670,7 +4684,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 empty(),
                 "ascending",
-                "gjeldende_vedtak_14a_hovedmal",
+                Sorteringsfelt.GJELDENDE_VEDTAK_14A_HOVEDMAL.toString(),
                 filtervalg,
                 null,
                 null
@@ -4712,7 +4726,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                         TEST_ENHET,
                         empty(),
                         "asc",
-                        "ikke_satt",
+                        Sorteringsfelt.IKKE_SATT.toString(),
                         new Filtervalg(),
                         null,
                         null
@@ -4727,7 +4741,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                         TEST_ENHET,
                         Optional.of(veilederId),
                         "asc",
-                        "ikke_satt",
+                        Sorteringsfelt.IKKE_SATT.toString(),
                         new Filtervalg(),
                         null,
                         null

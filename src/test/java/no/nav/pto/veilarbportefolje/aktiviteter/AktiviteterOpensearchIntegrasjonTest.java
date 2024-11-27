@@ -5,10 +5,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.Moteplan;
-import no.nav.pto.veilarbportefolje.domene.StillingFraNAVFilter;
+import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
@@ -84,7 +81,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            "ikke_satt",
+                            Sorteringsfelt.IKKE_SATT.toString(),
                             new Filtervalg().setFerdigfilterListe(List.of(I_AKTIVITET)),
                             null,
                             null);
@@ -118,7 +115,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            "ikke_satt",
+                            Sorteringsfelt.IKKE_SATT.toString(),
                             new Filtervalg().setNavnEllerFnrQuery(fodselsnummer.toString()).setFerdigfilterListe(new ArrayList<>()),
                             null,
                             null);
@@ -169,7 +166,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                     navKontor.getValue(),
                     empty(),
                     "asc",
-                    "ikke_satt",
+                    Sorteringsfelt.IKKE_SATT.toString(),
                     new Filtervalg().setFerdigfilterListe(List.of(I_AKTIVITET)),
                     null,
                     null);
@@ -183,7 +180,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                 navKontor.getValue(),
                 empty(),
                 "asc",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.toString(),
                 new Filtervalg().setStillingFraNavFilter(List.of(StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA)).setFerdigfilterListe(new ArrayList<>()),
                 null,
                 null);

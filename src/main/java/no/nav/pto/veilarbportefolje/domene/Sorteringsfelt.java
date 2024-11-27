@@ -21,6 +21,7 @@ public enum Sorteringsfelt {
     VENTER_PA_SVAR_FRA_NAV("venterpasvarfranav"),
     VENTER_PA_SVAR_FRA_BRUKER("venterpasvarfrabruker"),
 
+    // TODO: Vi har andre enumar som heiter I_AVTALT_AKTIVITET og ein del andre brukarstatusar, bør namna her seie at dei er filtervarianten?
     I_AVTALT_AKTIVITET("iavtaltaktivitet"),
     UTLOPTE_AKTIVITETER("utlopteaktiviteter"),
     STARTDATO_FOR_AVTALT_AKTIVITET("aktivitet_start"),

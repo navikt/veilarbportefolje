@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
@@ -76,7 +77,7 @@ public class ArbeidslistaSorteringOpensearchTest extends EndToEndTest {
                     enhetId.getValue(),
                     empty(),
                     "ascending",
-                    "ikke_satt",
+                    Sorteringsfelt.IKKE_SATT.toString(),
                     getArbeidslisteFilter(),
                     null,
                     null);
@@ -88,7 +89,7 @@ public class ArbeidslistaSorteringOpensearchTest extends EndToEndTest {
                 enhetId.getValue(),
                 empty(),
                 "ascending",
-                "arbeidsliste_overskrift",
+                Sorteringsfelt.ARBEIDSLISTE_OVERSKRIFT.toString(),
                 getArbeidslisteFilter(),
                 null,
                 null);
@@ -97,7 +98,7 @@ public class ArbeidslistaSorteringOpensearchTest extends EndToEndTest {
                 enhetId.getValue(),
                 empty(),
                 "desc",
-                "arbeidsliste_overskrift",
+                Sorteringsfelt.ARBEIDSLISTE_OVERSKRIFT.toString(),
                 getArbeidslisteFilter(),
                 null,
                 null);

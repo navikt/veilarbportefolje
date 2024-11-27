@@ -8,10 +8,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
-import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
@@ -188,7 +185,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            "ikke_satt",
+                            Sorteringsfelt.IKKE_SATT.toString(),
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
@@ -199,7 +196,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            "ikke_satt",
+                            Sorteringsfelt.IKKE_SATT.toString(),
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
                             null);
@@ -295,7 +292,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            "ikke_satt",
+                            Sorteringsfelt.IKKE_SATT.toString(),
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
@@ -306,7 +303,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            "ikke_satt",
+                            Sorteringsfelt.IKKE_SATT.toString(),
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
                             null);
@@ -347,7 +344,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            "ikke_satt",
+                            Sorteringsfelt.IKKE_SATT.toString(),
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
@@ -646,7 +643,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            "ikke_satt",
+                            Sorteringsfelt.IKKE_SATT.toString(),
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
@@ -655,7 +652,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            "ikke_satt",
+                            Sorteringsfelt.IKKE_SATT.toString(),
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
                             null);
