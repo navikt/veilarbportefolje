@@ -7,10 +7,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 public abstract class KafkaCommonNonKeyedConsumerService<T> extends KafkaCommonConsumerService<T> {
 
     @Override
-    public void behandleKafkaRecord(ConsumerRecord<String, T> kafkaMelding) {
-        loggKafkaMeldingInformasjon(kafkaMelding);
-        behandleKafkaMeldingLogikk(kafkaMelding.value());
+    public void behandleKafkaRecord(ConsumerRecord<String, T> kafkaRecord) {
+        loggKafkaRecordInformasjon(kafkaRecord);
+        behandleKafkaMeldingLogikk(kafkaRecord.value());
     }
 
-    protected abstract void behandleKafkaMeldingLogikk(T kafkaMelding);
+    protected abstract void behandleKafkaMeldingLogikk(T kafkaRecordValue);
 }
