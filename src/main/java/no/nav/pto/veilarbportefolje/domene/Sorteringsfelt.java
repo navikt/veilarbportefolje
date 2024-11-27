@@ -1,5 +1,19 @@
 package no.nav.pto.veilarbportefolje.domene;
 
+/** "Sorteringsfelt" tilsvarer (med få unntak) kolonner ein kan sortere på i frontend (veilarbportefoljeflatefs).
+ *
+ * name – eksempel: IKKE_SATT, Sorteringsfelt.IKKE_SATT
+ * - skildrar sorterinsgfeltet
+ * - vert brukt i backendkoden
+ * - tilsvarer stort sett namna på enumverdiane i frontend
+ * - er notert med SCREAMING_SNAKE_CASE
+ * - kan nåast i koden med .name() om ein treng hente den som tekst
+ *
+ * value - eksempel: "ikke_satt"
+ * - verdien som blir sendt mellom backend og frontend, og brukt til å sortere resultata
+ * - har ymse noteringsformat, oftast snake_case
+ * - kan hentast ut ved .value eller .toString()
+ * */
 public enum Sorteringsfelt {
     IKKE_SATT("ikke_satt"),
     VALGTE_AKTIVITETER("valgteaktiviteter"),
@@ -79,12 +93,16 @@ public enum Sorteringsfelt {
     TILTAKSHENDELSE_TEKST("tiltakshendelse_tekst"),
     TILTAKSHENDELSE_DATO_OPPRETTET("tiltakshendelse_dato_opprettet");
 
+    /** Filterverdien som vert sendt mellom frontend og backend */
     public final String value;
 
     Sorteringsfelt(String value) {
         this.value = value;
     }
 
+    /** toString() returnerer verdien til enumen, ikkje namnet.
+     * Eksempel: BOSTED_KOMMUNE.toString() -> "kommunenummer"
+     * "value" er verdien som vert sendt mellom frontend og backend. */
     @Override
     public String toString() {
         return this.value;
