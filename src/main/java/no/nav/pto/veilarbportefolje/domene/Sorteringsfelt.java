@@ -78,8 +78,14 @@ public enum Sorteringsfelt {
     TILTAKSHENDELSE_TEKST("tiltakshendelse_tekst"),
     TILTAKSHENDELSE_DATO_OPPRETTET("tiltakshendelse_dato_opprettet");
 
+    public final String value;
 
-    Sorteringsfelt(String sorteringsfelt) {
-        Sorteringsfelt.valueOf(sorteringsfelt);
+    Sorteringsfelt(String value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return this.value;
     }
 }
