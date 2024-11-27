@@ -10,7 +10,7 @@ import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
-import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class VeilederTilordnetService extends KafkaCommonConsumerService<VeilederTilordnetDTO> {
+public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService<VeilederTilordnetDTO> {
     private final OppfolgingService oppfolgingService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final ArbeidslisteService arbeidslisteService;
