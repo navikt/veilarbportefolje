@@ -37,6 +37,7 @@ import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerMapperK
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.TILTAKSHENDELSER;
+import static no.nav.pto.veilarbportefolje.domene.Sorteringsfelt.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.opensearch.index.query.QueryBuilders.*;
@@ -446,64 +447,65 @@ public class OpensearchQueryBuilder {
     static SearchSourceBuilder sorterQueryParametere(String sortOrder, String
             sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg, BrukerinnsynTilganger brukerinnsynTilganger) {
         SortOrder order = "ascending".equals(sortOrder) ? SortOrder.ASC : SortOrder.DESC;
+        Sorteringsfelt sorteringsfelt = Sorteringsfelt.nameFromValue(sortField);
 
         /* Null-sjekken er fordi testane kan ha ferdigfilterliste = null */
-        if ("ikke_satt".equals(sortField) && filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(TILTAKSHENDELSER)) {
+        if (IKKE_SATT.equals(sorteringsfelt) && filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(TILTAKSHENDELSER)) {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC);
             return searchSourceBuilder;
         }
-        if ("ikke_satt".equals(sortField)) {
+        if (IKKE_SATT.equals(sorteringsfelt)) {
             searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
             return searchSourceBuilder;
         }
 
-        switch (sortField) {
-            case "valgteaktiviteter" -> sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
-            case "moterMedNAVIdag" -> searchSourceBuilder.sort("alle_aktiviteter_mote_startdato", order);
-            case "motestatus" -> searchSourceBuilder.sort("aktivitet_mote_startdato", order);
-            case "iavtaltaktivitet" -> {
+        switch (sorteringsfelt) {
+            case VALGTE_AKTIVITETER -> sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
+            case MOTER_MED_NAV_IDAG -> searchSourceBuilder.sort("alle_aktiviteter_mote_startdato", order);
+            case MOTESTATUS -> searchSourceBuilder.sort("aktivitet_mote_startdato", order);
+            case I_AVTALT_AKTIVITET -> {
                 FieldSortBuilder builder = new FieldSortBuilder("aktivitet_utlopsdatoer")
                         .order(order)
                         .sortMode(MIN);
                 searchSourceBuilder.sort(builder);
             }
-            case "fodselsnummer" -> searchSourceBuilder.sort("fnr.raw", order);
-            case "utlopteaktiviteter" -> searchSourceBuilder.sort("nyesteutlopteaktivitet", order);
-            case "arbeidslistefrist" -> searchSourceBuilder.sort("arbeidsliste_frist", order);
-            case "aap_type" -> searchSourceBuilder.sort("ytelse", order);
-            case "aap_vurderingsfrist" -> sorterAapVurderingsfrist(searchSourceBuilder, order, filtervalg);
-            case "aaprettighetsperiode" -> sorterAapRettighetsPeriode(searchSourceBuilder, order);
-            case "gjeldende_vedtak_14a_innsatsgruppe" ->
+            case FODSELSNUMMER -> searchSourceBuilder.sort("fnr.raw", order);
+            case UTLOPTE_AKTIVITETER -> searchSourceBuilder.sort("nyesteutlopteaktivitet", order);
+            case ARBEIDSLISTE_FRIST -> searchSourceBuilder.sort("arbeidsliste_frist", order);
+            case AAP_TYPE -> searchSourceBuilder.sort("ytelse", order);
+            case AAP_VURDERINGSFRIST -> sorterAapVurderingsfrist(searchSourceBuilder, order, filtervalg);
+            case AAP_RETTIGHETSPERIODE -> sorterAapRettighetsPeriode(searchSourceBuilder, order);
+            case GJELDENDE_VEDTAK_14A_INNSATSGRUPPE ->
                     searchSourceBuilder.sort("gjeldendeVedtak14a.innsatsgruppe", order);
-            case "gjeldende_vedtak_14a_hovedmal" -> searchSourceBuilder.sort("gjeldendeVedtak14a.hovedmal", order);
-            case "gjeldende_vedtak_14a_vedtaksdato" -> searchSourceBuilder.sort("gjeldendeVedtak14a.fattetDato", order) ;
-            case "utkast_14a_status" -> searchSourceBuilder.sort("utkast_14a_status", order);
-            case "arbeidslistekategori" -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
-            case "siste_endring_tidspunkt" -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
-            case "arbeidsliste_overskrift" -> sorterArbeidslisteOverskrift(searchSourceBuilder, order);
-            case "fodeland" -> sorterFodeland(searchSourceBuilder, order);
-            case "statsborgerskap" -> sorterStatsborgerskap(searchSourceBuilder, order);
-            case "statsborgerskap_gyldig_fra" -> sorterStatsborgerskapGyldigFra(searchSourceBuilder, order);
-            case "tolkespraak" -> sorterTolkeSpraak(filtervalg, searchSourceBuilder, order);
-            case "tolkebehov_sistoppdatert" -> searchSourceBuilder.sort("tolkBehovSistOppdatert", order);
-            case "enslige_forsorgere_utlop_ytelse" -> sorterEnsligeForsorgereUtlopsDato(searchSourceBuilder, order);
-            case "enslige_forsorgere_vedtaksperiodetype" ->
+            case GJELDENDE_VEDTAK_14A_HOVEDMAL -> searchSourceBuilder.sort("gjeldendeVedtak14a.hovedmal", order);
+            case GJELDENDE_VEDTAK_14A_VEDTAKSDATO -> searchSourceBuilder.sort("gjeldendeVedtak14a.fattetDato", order) ;
+            case UTKAST_14A_STATUS -> searchSourceBuilder.sort("utkast_14a_status", order);
+            case ARBEIDSLISTE_KATEGORI -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
+            case SISTE_ENDRING_DATO -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
+            case ARBEIDSLISTE_OVERSKRIFT -> sorterArbeidslisteOverskrift(searchSourceBuilder, order);
+            case FODELAND -> sorterFodeland(searchSourceBuilder, order);
+            case STATSBORGERSKAP -> sorterStatsborgerskap(searchSourceBuilder, order);
+            case STATSBORGERSKAP_GYLDIG_FRA -> sorterStatsborgerskapGyldigFra(searchSourceBuilder, order);
+            case TOLKESPRAK -> sorterTolkeSpraak(filtervalg, searchSourceBuilder, order);
+            case TOLKEBEHOV_SIST_OPPDATERT -> searchSourceBuilder.sort("tolkBehovSistOppdatert", order);
+            case ENSLIGE_FORSORGERE_UTLOP_YTELSE -> sorterEnsligeForsorgereUtlopsDato(searchSourceBuilder, order);
+            case ENSLIGE_FORSORGERE_VEDTAKSPERIODETYPE ->
                     sorterEnsligeForsorgereVedtaksPeriode(searchSourceBuilder, order);
-            case "enslige_forsorgere_aktivitetsplikt" ->
+            case ENSLIGE_FORSORGERE_AKTIVITETSPLIKT ->
                     sorterEnsligeForsorgereAktivitetsPlikt(searchSourceBuilder, order);
-            case "enslige_forsorgere_om_barnet" -> sorterEnsligeForsorgereOmBarnet(searchSourceBuilder, order);
-            case "barn_under_18_aar" ->
+            case ENSLIGE_FORSORGERE_OM_BARNET -> sorterEnsligeForsorgereOmBarnet(searchSourceBuilder, order);
+            case BARN_UNDER_18_AR ->
                     sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger, filtervalg);
-            case "brukersSituasjonSistEndret" -> searchSourceBuilder.sort("brukers_situasjon_sist_endret", order);
-            case "utdanningOgSituasjonSistEndret" ->
+            case BRUKERS_SITUASJON_SIST_ENDRET -> searchSourceBuilder.sort("brukers_situasjon_sist_endret", order);
+            case UTDANNING_OG_SITUASJON_SIST_ENDRET ->
                     searchSourceBuilder.sort("utdanning_og_situasjon_sist_endret", order);
-            case "huskelapp_frist" -> sorterHuskelappFrist(searchSourceBuilder, order);
-            case "huskelapp" -> sorterHuskelappEksistere(searchSourceBuilder, order);
-            case "huskelapp_kommentar" -> searchSourceBuilder.sort("huskelapp.kommentar", order);
-            case "fargekategori" -> searchSourceBuilder.sort("fargekategori", order);
-            case "tiltakshendelse_dato_opprettet" -> sorterTiltakshendelseOpprettetDato(searchSourceBuilder, order);
-            case "tiltakshendelse_tekst" -> searchSourceBuilder.sort("tiltakshendelse.tekst", order);
-            default -> defaultSort(sortField, searchSourceBuilder, order);
+            case HUSKELAPP_FRIST -> sorterHuskelappFrist(searchSourceBuilder, order);
+            case HUSKELAPP -> sorterHuskelappEksistere(searchSourceBuilder, order);
+            case HUSKELAPP_KOMMENTAR -> searchSourceBuilder.sort("huskelapp.kommentar", order);
+            case FARGEKATEGORI -> searchSourceBuilder.sort("fargekategori", order);
+            case TILTAKSHENDELSE_DATO_OPPRETTET -> sorterTiltakshendelseOpprettetDato(searchSourceBuilder, order);
+            case TILTAKSHENDELSE_TEKST -> searchSourceBuilder.sort("tiltakshendelse.tekst", order);
+            default -> defaultSort(sorteringsfelt, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);
         return searchSourceBuilder;
@@ -920,9 +922,15 @@ public class OpensearchQueryBuilder {
         queryBuilder.must(existsQuery("siste_endringer." + sisteEndringKategori.get(0)));
     }
 
-    private static void defaultSort(String sortField, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
-        if (ValideringsRegler.sortFields.contains(sortField)) {
-            searchSourceBuilder.sort(sortField, order);
+    /**
+     * Sorter alfabetisk på OpenSearch-feltet som er likt filterverdien.
+     * Eksempel der det fungerer: "etternavn" (filter) og "etternavn" (OpenSearch)
+     * Eksempel der det ikkje fungerer: "aap_type" (filter) og "ytelse" (OpenSearch), eller
+     *      "gjeldende_vedtak_14a_innsatsgruppe" (filter) og "gjeldendeVedtak14a.innsatsgruppe" (OpenSearch)
+     * */
+    private static void defaultSort(Sorteringsfelt sortField, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        if (ValideringsRegler.sortFields.contains(sortField.value)) {
+            searchSourceBuilder.sort(sortField.value, order);
         } else {
             throw new IllegalStateException();
         }
