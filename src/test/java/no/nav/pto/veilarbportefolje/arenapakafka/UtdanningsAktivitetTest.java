@@ -39,7 +39,7 @@ public class UtdanningsAktivitetTest {
     private final Fnr fnr = Fnr.of("12345678912");
 
     @Autowired
-    public UtdanningsAktivitetTest(AktivitetService aktivitetService, AktivitetOpensearchService aktivitetOpensearchService,  JdbcTemplate jbPostgres) {
+    public UtdanningsAktivitetTest(AktivitetService aktivitetService, AktivitetOpensearchService aktivitetOpensearchService, JdbcTemplate jbPostgres) {
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.jbPostgres = jbPostgres;
         this.aktivitetService = aktivitetService;

@@ -5,7 +5,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
-import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
@@ -19,7 +19,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as O
 @Service
 class ArbeidssoekerPeriodeKafkaMeldingService(
     private val arbeidssoekerService: ArbeidssoekerService
-) : KafkaCommonConsumerService<Periode>() {
+) : KafkaCommonNonKeyedConsumerService<Periode>() {
     override fun behandleKafkaMeldingLogikk(kafkaMelding: Periode) {
         arbeidssoekerService.behandleKafkaMeldingLogikk(kafkaMelding)
     }
@@ -28,7 +28,7 @@ class ArbeidssoekerPeriodeKafkaMeldingService(
 @Service
 class ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService(
     private val arbeidssoekerService: ArbeidssoekerService
-) : KafkaCommonConsumerService<OpplysningerOmArbeidssoekerKafkaMelding>() {
+) : KafkaCommonNonKeyedConsumerService<OpplysningerOmArbeidssoekerKafkaMelding>() {
     override fun behandleKafkaMeldingLogikk(kafkaMelding: OpplysningerOmArbeidssoekerKafkaMelding) {
         arbeidssoekerService.behandleKafkaMeldingLogikk(kafkaMelding)
     }
@@ -37,7 +37,7 @@ class ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService(
 @Service
 class ArbeidssoekerProfileringKafkaMeldingService(
     private val arbeidssoekerService: ArbeidssoekerService
-) : KafkaCommonConsumerService<ProfileringKafkaMelding>() {
+) : KafkaCommonNonKeyedConsumerService<ProfileringKafkaMelding>() {
     override fun behandleKafkaMeldingLogikk(kafkaMelding: ProfileringKafkaMelding) {
         arbeidssoekerService.behandleKafkaMeldingLogikk(kafkaMelding)
     }

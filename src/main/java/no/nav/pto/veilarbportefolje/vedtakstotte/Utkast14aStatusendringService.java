@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class Utkast14aStatusendringService extends KafkaCommonConsumerService<Kafka14aStatusendring> {
+public class Utkast14aStatusendringService extends KafkaCommonNonKeyedConsumerService<Kafka14aStatusendring> {
     private final Utkast14aStatusRepository utkast14aStatusRepository;
     private final OpensearchIndexer opensearchIndexer;
 

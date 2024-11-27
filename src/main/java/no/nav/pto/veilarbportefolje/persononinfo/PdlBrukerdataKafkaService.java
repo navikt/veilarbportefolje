@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
-import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
@@ -31,7 +31,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PdlBrukerdataKafkaService extends KafkaCommonConsumerService<PdlDokument> {
+public class PdlBrukerdataKafkaService extends KafkaCommonNonKeyedConsumerService<PdlDokument> {
     private final PdlService pdlService;
 
     private final PdlIdentRepository pdlIdentRepository;

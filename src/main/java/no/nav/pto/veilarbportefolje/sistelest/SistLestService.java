@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.sistelest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class SistLestService extends KafkaCommonConsumerService<SistLestKafkaMelding> {
+public class SistLestService extends KafkaCommonNonKeyedConsumerService<SistLestKafkaMelding> {
     private final BrukerServiceV2 brukerService;
     private final SisteEndringService sisteEndringService;
 
