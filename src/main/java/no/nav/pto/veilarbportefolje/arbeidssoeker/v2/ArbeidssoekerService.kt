@@ -69,7 +69,7 @@ class ArbeidssoekerService(
         secureLog.info("Behandler endring på arbeidssøkerperiode for bruker med fnr: $fnr, periodeId: $periodeId")
 
         if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr.get())) {
-            secureLog.info("Bruker er ikke under oppfølging, ignorerer endring på bruker med fnr: {}", fnr.get())
+            secureLog.info("Bruker er ikke under oppfølging, ignorerer endring for arbeidssøkerregisterdata på bruker med fnr: {}", fnr.get())
             return
         }
 
@@ -77,7 +77,7 @@ class ArbeidssoekerService(
 
         sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(fnr)
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId, fnr.get()))
-        secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
+        secureLog.info("Lagret siste arbeidssøkerperiode fra topic for bruker med fnr: $fnr")
 
         val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity? =
             hentSisteOpplysningerOmArbeidssoeker(fnr, periodeId)?.toOpplysningerOmArbeidssoekerEntity()
@@ -92,7 +92,7 @@ class ArbeidssoekerService(
             opensearchIndexerV2.updateOpplysningerOmArbeidssoeker(aktorId,opplysningerOmArbeidssoeker)
         }
 
-        secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
+        secureLog.info("Lagret opplysninger om arbeidssøker fra topic for bruker med fnr: $fnr")
 
 
         val profilering: ProfileringEntity? = hentSisteProfilering(
@@ -110,7 +110,7 @@ class ArbeidssoekerService(
         if (aktorId != null) {
             opensearchIndexerV2.updateProfilering(aktorId, profilering)
         }
-        secureLog.info("Lagret profilering for bruker med fnr: $fnr")
+        secureLog.info("Lagret profilering fra topic for bruker med fnr: $fnr")
     }
 
     @Transactional
