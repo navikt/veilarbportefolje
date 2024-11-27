@@ -2,10 +2,13 @@ package no.nav.pto.veilarbportefolje.hendelsesfilter
 
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonKeyedConsumerService
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class HendelseService : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
+class HendelseService(
+    @Autowired private val hendelseRepository: HendelseRepository,
+) : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     val log = LoggerFactory.getLogger(HendelseService::class.java)
 
     override fun behandleKafkaRecordLogikk(hendelseRecordValue: HendelseRecordValue, nokkel: String) {
@@ -20,14 +23,17 @@ class HendelseService : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     }
 
     private fun startHendelse(hendelse: Hendelse) {
-        log.info("Starter hendelse med id ${hendelse.id}.")
+        hendelseRepository.upsert(hendelse)
+        log.info("Hendelse med id ${hendelse.id} ble startet")
     }
 
     private fun oppdaterHendelse(hendelse: Hendelse) {
-        log.info("Oppdaterer hendelse med id ${hendelse.id}.")
+        hendelseRepository.upsert(hendelse)
+        log.info("Hendelse med id ${hendelse.id} ble oppdatert")
     }
 
     private fun stoppHendelse(hendelse: Hendelse) {
-        log.info("Sletter hendelse med id ${hendelse.id}.")
+        hendelseRepository.delete(hendelse.id)
+        log.info("Hendelse med id ${hendelse.id} ble stoppet")
     }
 }
