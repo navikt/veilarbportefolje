@@ -35,6 +35,8 @@ import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.search.builder.SearchSourceBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -4715,6 +4717,29 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         } catch (Exception e) {
             AssertionsForClassTypes.assertThat(e).isNotNull();
         }
+    }
+
+    @Test
+    public void skal_kunne_sortere_pa_alle_gyldige_sorteringsverdier() {
+        Sorteringsfelt[] alleSorteringsfelt = Sorteringsfelt.values();
+        ArrayList<Sorteringsfelt> sorteringsfeltSomFeilerISortering = new ArrayList<Sorteringsfelt>();
+
+        for (Sorteringsfelt sorteringsfelt: alleSorteringsfelt) {
+            try {
+                opensearchService.hentBrukere(
+                        TEST_ENHET,
+                        empty(),
+                        "ascending",
+                        sorteringsfelt.sorteringsverdi,
+                        new Filtervalg().setFerdigfilterListe(emptyList()),
+                        null,
+                        null
+                );
+            } catch (Exception e) {
+                sorteringsfeltSomFeilerISortering.add(sorteringsfelt);
+            }
+        }
+        assertThat(sorteringsfeltSomFeilerISortering).isEmpty();
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
