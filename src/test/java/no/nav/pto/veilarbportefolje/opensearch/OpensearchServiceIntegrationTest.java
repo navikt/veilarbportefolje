@@ -35,8 +35,6 @@ import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.search.builder.SearchSourceBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -4789,6 +4787,50 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(brukerFraOpenSearch.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr1.get());
         Bruker brukerFraOpenSearch1 = respons.getBrukere().get(1);
         assertThat(brukerFraOpenSearch1.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr2.get());
+    }
+
+    @Test
+    public void skal_sortere_pa_aktorid_om_ikke_sorteringsfelt_er_valgt() {
+        AktorId aktoridBruker1 = AktorId.of("3333333333333");
+        AktorId aktoridBruker2 = AktorId.of("1111111111111");
+        AktorId aktoridBruker3 = AktorId.of("2222222222222");
+
+        OppfolgingsBruker bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().get())
+                .setAktoer_id(aktoridBruker1.get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true);
+
+        OppfolgingsBruker bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().get())
+                .setAktoer_id(aktoridBruker2.get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true);
+
+        OppfolgingsBruker bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().get())
+                .setAktoer_id(aktoridBruker3.get())
+                .setEnhet_id(TEST_ENHET)
+                .setOppfolging(true);
+
+        var liste = List.of(bruker1, bruker2, bruker3);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        BrukereMedAntall respons = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                new Filtervalg().setFerdigfilterListe(emptyList()),
+                null,
+                null
+        );
+        assertThat(respons.getAntall()).isEqualTo(3);
+        assertEquals(respons.getBrukere().get(0).getAktoerid(), bruker2.getAktoer_id());
+        assertEquals(respons.getBrukere().get(1).getAktoerid(), bruker3.getAktoer_id());
+        assertEquals(respons.getBrukere().get(2).getAktoerid(), bruker1.getAktoer_id());
     }
 
     @Test
