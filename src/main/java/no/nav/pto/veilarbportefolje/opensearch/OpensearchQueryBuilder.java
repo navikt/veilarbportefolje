@@ -504,8 +504,8 @@ public class OpensearchQueryBuilder {
     }
 
     private static void brukStandardsorteringBasertPaValgteFilter(Filtervalg filtervalg, SearchSourceBuilder searchSourceBuilder) {
-        Boolean filtrertPaTiltakshendelse = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(TILTAKSHENDELSER);
-        Boolean filtrertPaEtGjeldendeVedtak14aFilter = filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
+        boolean filtrertPaTiltakshendelse = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(TILTAKSHENDELSER);
+        boolean filtrertPaEtGjeldendeVedtak14aFilter = filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
                                                        (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && filtervalg.innsatsgruppeGjeldendeVedtak14a.isEmpty()) ||
                                                        (filtervalg.hovedmalGjeldendeVedtak14a != null && filtervalg.hovedmalGjeldendeVedtak14a.isEmpty());
 
