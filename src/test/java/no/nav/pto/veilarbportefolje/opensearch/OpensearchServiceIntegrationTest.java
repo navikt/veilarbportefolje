@@ -48,7 +48,6 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test.insertArbeidsliste;
 import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test.insertFargekategori;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
-import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggArbeidslisteQuery;
@@ -362,7 +361,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         skrivBrukereTilTestindeks(brukere);
 
-        var filtervalg = new Filtervalg().setFerdigfilterListe(List.of(I_AVTALT_AKTIVITET));
+        var filtervalg = new Filtervalg().setFerdigfilterListe(List.of(Brukerstatus.I_AVTALT_AKTIVITET));
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
         var response = opensearchService.hentBrukere(
@@ -418,7 +417,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         skrivBrukereTilTestindeks(brukere);
 
         var filtervalg = new Filtervalg()
-                .setFerdigfilterListe(List.of(UTLOPTE_AKTIVITETER))
+                .setFerdigfilterListe(List.of(Brukerstatus.UTLOPTE_AKTIVITETER))
                 .setVeiledere(List.of(TEST_VEILEDER_0, TEST_VEILEDER_1));
 
 
@@ -468,7 +467,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
-        var filtervalg = new Filtervalg().setFerdigfilterListe(List.of(UFORDELTE_BRUKERE));
+        var filtervalg = new Filtervalg().setFerdigfilterListe(List.of(Brukerstatus.UFORDELTE_BRUKERE));
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
@@ -1116,14 +1115,14 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 Optional.empty(),
                 "asc",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
-                new Filtervalg().setFerdigfilterListe(List.of(TRENGER_VURDERING)),
+                new Filtervalg().setFerdigfilterListe(List.of(Brukerstatus.TRENGER_VURDERING)),
                 null,
                 null
         ).getAntall() == liste.size());
 
         List<Brukerstatus> ferdigFiltere = List.of(
-                UFORDELTE_BRUKERE,
-                TRENGER_VURDERING
+                Brukerstatus.UFORDELTE_BRUKERE,
+                Brukerstatus.TRENGER_VURDERING
         );
 
         var response = opensearchService.hentBrukere(
@@ -1215,7 +1214,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 Optional.of(LITE_PRIVILEGERT_VEILEDER),
                 "asc",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
-                new Filtervalg().setFerdigfilterListe(List.of(UFORDELTE_BRUKERE)),
+                new Filtervalg().setFerdigfilterListe(List.of(Brukerstatus.UFORDELTE_BRUKERE)),
                 null,
                 null
         );
@@ -1680,7 +1679,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var filterValg = new Filtervalg()
-                .setFerdigfilterListe(List.of(UNDER_VURDERING));
+                .setFerdigfilterListe(List.of(Brukerstatus.UNDER_VURDERING));
 
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -3289,7 +3288,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
         Filtervalg filterValg = new Filtervalg()
-                .setFerdigfilterListe(List.of(TILTAKSHENDELSER));
+                .setFerdigfilterListe(List.of(Brukerstatus.TILTAKSHENDELSER));
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -3365,7 +3364,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
 
         Filtervalg filterValg = new Filtervalg()
-                .setFerdigfilterListe(List.of(TILTAKSHENDELSER));
+                .setFerdigfilterListe(List.of(Brukerstatus.TILTAKSHENDELSER));
 
         BrukereMedAntall responseDefaultSortering = opensearchService.hentBrukere(
                 TEST_ENHET,
