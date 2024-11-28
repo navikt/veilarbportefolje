@@ -74,7 +74,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                             navKontor.toString(),
                             empty(),
                             "asc",
-                            Sorteringsfelt.IKKE_SATT.toString(),
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             filtervalg,
                             null,
                             null);
@@ -114,7 +114,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                             navKontor.toString(),
                             empty(),
                             "asc",
-                            Sorteringsfelt.IKKE_SATT.toString(),
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             filtervalg,
                             null,
                             null);
@@ -174,7 +174,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                 navKontor.toString(),
                 empty(),
                 "ascending",
-                Sorteringsfelt.IKKE_SATT.toString(),
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
                 null

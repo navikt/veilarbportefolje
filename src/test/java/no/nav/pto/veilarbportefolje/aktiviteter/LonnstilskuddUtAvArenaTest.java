@@ -185,7 +185,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            Sorteringsfelt.IKKE_SATT.toString(),
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
@@ -196,7 +196,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            Sorteringsfelt.IKKE_SATT.toString(),
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
                             null);
@@ -292,7 +292,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            Sorteringsfelt.IKKE_SATT.toString(),
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
@@ -303,7 +303,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            Sorteringsfelt.IKKE_SATT.toString(),
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
                             null);
@@ -344,7 +344,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            Sorteringsfelt.IKKE_SATT.toString(),
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
@@ -643,7 +643,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            Sorteringsfelt.IKKE_SATT.toString(),
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
@@ -652,7 +652,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            Sorteringsfelt.IKKE_SATT.toString(),
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
                             null);

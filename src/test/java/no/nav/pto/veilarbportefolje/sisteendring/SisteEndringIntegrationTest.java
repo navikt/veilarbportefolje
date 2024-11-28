@@ -159,7 +159,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     testEnhet.getValue(),
                     empty(),
                     "asc",
-                    Sorteringsfelt.IKKE_SATT.toString(),
+                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                     getFiltervalg(FULLFORT_IJOBB),
                     null,
                     null);
@@ -171,7 +171,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     testEnhet.getValue(),
                     empty(),
                     "asc",
-                    Sorteringsfelt.IKKE_SATT.toString(),
+                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                     getFiltervalg(FULLFORT_IJOBB),
                     null,
                     null);
@@ -192,7 +192,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     testEnhet.getValue(),
                     empty(),
                     "asc",
-                    Sorteringsfelt.IKKE_SATT.toString(),
+                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                     new Filtervalg(),
                     null,
                     null);
@@ -204,7 +204,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 testEnhet.getValue(),
                 empty(),
                 "asc",
-                Sorteringsfelt.IKKE_SATT.toString(),
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 getFiltervalg(FULLFORT_IJOBB, true),
                 null,
                 null);
@@ -227,7 +227,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     testEnhet.getValue(),
                     empty(),
                     "asc",
-                    Sorteringsfelt.IKKE_SATT.toString(),
+                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                     new Filtervalg(),
                     null,
                     null);
@@ -249,7 +249,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     testEnhet.getValue(),
                     empty(),
                     "asc",
-                    Sorteringsfelt.IKKE_SATT.toString(),
+                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                     getFiltervalg(NY_IJOBB),
                     null,
                     null);
@@ -263,7 +263,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     testEnhet.getValue(),
                     empty(),
                     "asc",
-                    Sorteringsfelt.IKKE_SATT.toString(),
+                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                     getFiltervalg(FULLFORT_IJOBB, true),
                     null,
                     null);
@@ -274,7 +274,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 testEnhet.getValue(),
                 empty(),
                 "asc",
-                Sorteringsfelt.IKKE_SATT.toString(),
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 getFiltervalg(NY_IJOBB, true),
                 null,
                 null);
@@ -285,7 +285,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 testEnhet.getValue(),
                 empty(),
                 "asc",
-                Sorteringsfelt.IKKE_SATT.toString(),
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 getFiltervalg(FULLFORT_IJOBB, true),
                 null,
                 null);
@@ -315,7 +315,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     testEnhet.getValue(),
                     empty(),
                     "asc",
-                    Sorteringsfelt.IKKE_SATT.toString(),
+                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                     new Filtervalg(),
                     null,
                     null);
@@ -348,7 +348,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     testEnhet.getValue(),
                     empty(),
                     "ascending",
-                    Sorteringsfelt.IKKE_SATT.toString(),
+                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                     getFiltervalg(FULLFORT_IJOBB),
                     null,
                     null);
@@ -361,7 +361,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     testEnhet.getValue(),
                     empty(),
                     "ascending",
-                    Sorteringsfelt.IKKE_SATT.toString(),
+                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                     getFiltervalg(FULLFORT_EGEN),
                     null,
                     null);
@@ -373,7 +373,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 testEnhet.getValue(),
                 empty(),
                 "descending",
-                Sorteringsfelt.SISTE_ENDRING_DATO.toString(),
+                Sorteringsfelt.SISTE_ENDRING_DATO.sorteringsverdi,
                 getFiltervalg(FULLFORT_IJOBB),
                 null,
                 null);
@@ -386,7 +386,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 testEnhet.getValue(),
                 empty(),
                 "ascending",
-                Sorteringsfelt.SISTE_ENDRING_DATO.toString(),
+                Sorteringsfelt.SISTE_ENDRING_DATO.sorteringsverdi,
                 getFiltervalg(FULLFORT_EGEN),
                 null,
                 null);
@@ -400,7 +400,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 testEnhet.getValue(),
                 empty(),
                 "descending",
-                Sorteringsfelt.SISTE_ENDRING_DATO.toString(),
+                Sorteringsfelt.SISTE_ENDRING_DATO.sorteringsverdi,
                 getFiltervalg(NY_IJOBB),
                 null,
                 null);
@@ -414,7 +414,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                         testEnhet.getValue(),
                         empty(),
                         "descending",
-                        Sorteringsfelt.SISTE_ENDRING_DATO.toString(),
+                        Sorteringsfelt.SISTE_ENDRING_DATO.sorteringsverdi,
                         getFiltervalg(FULLFORT_IJOBB, FULLFORT_EGEN),
                         null,
                         null));

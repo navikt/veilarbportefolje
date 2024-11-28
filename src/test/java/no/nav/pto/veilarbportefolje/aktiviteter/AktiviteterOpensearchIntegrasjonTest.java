@@ -81,7 +81,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            Sorteringsfelt.IKKE_SATT.toString(),
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             new Filtervalg().setFerdigfilterListe(List.of(I_AKTIVITET)),
                             null,
                             null);
@@ -115,7 +115,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                             navKontor.getValue(),
                             empty(),
                             "asc",
-                            Sorteringsfelt.IKKE_SATT.toString(),
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             new Filtervalg().setNavnEllerFnrQuery(fodselsnummer.toString()).setFerdigfilterListe(new ArrayList<>()),
                             null,
                             null);
@@ -166,7 +166,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                     navKontor.getValue(),
                     empty(),
                     "asc",
-                    Sorteringsfelt.IKKE_SATT.toString(),
+                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                     new Filtervalg().setFerdigfilterListe(List.of(I_AKTIVITET)),
                     null,
                     null);
@@ -180,7 +180,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                 navKontor.getValue(),
                 empty(),
                 "asc",
-                Sorteringsfelt.IKKE_SATT.toString(),
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 new Filtervalg().setStillingFraNavFilter(List.of(StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA)).setFerdigfilterListe(new ArrayList<>()),
                 null,
                 null);

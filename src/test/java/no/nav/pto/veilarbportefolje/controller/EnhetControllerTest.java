@@ -63,7 +63,7 @@ public class EnhetControllerTest {
 
         authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
-                () -> enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", Sorteringsfelt.IKKE_SATT.toString(), new Filtervalg())
+                () -> enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", Sorteringsfelt.IKKE_SATT.sorteringsverdi, new Filtervalg())
         );
         verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
     }
@@ -76,7 +76,7 @@ public class EnhetControllerTest {
 
         authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
-                () -> enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", Sorteringsfelt.IKKE_SATT.toString(), new Filtervalg())
+                () -> enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", Sorteringsfelt.IKKE_SATT.sorteringsverdi, new Filtervalg())
         );
         verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
     }
@@ -89,7 +89,7 @@ public class EnhetControllerTest {
         authContextHolder
                 .withContext(
                         new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
-                        () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", Sorteringsfelt.IKKE_SATT.toString(), new Filtervalg())
+                        () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", Sorteringsfelt.IKKE_SATT.sorteringsverdi, new Filtervalg())
                 );
 
         verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), isNull(), any());
@@ -100,7 +100,7 @@ public class EnhetControllerTest {
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(new Decision.Deny("", ""));
         authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
-                () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", Sorteringsfelt.IKKE_SATT.toString(), new Filtervalg())
+                () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", Sorteringsfelt.IKKE_SATT.sorteringsverdi, new Filtervalg())
         );
     }
 }

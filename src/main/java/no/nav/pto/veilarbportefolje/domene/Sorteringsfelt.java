@@ -9,10 +9,10 @@ package no.nav.pto.veilarbportefolje.domene;
  * - er notert med SCREAMING_SNAKE_CASE
  * - kan nåast i koden med .name() om ein treng hente den som tekst
  *
- * value - eksempel: "ikke_satt"
+ * sorteringsverdi - eksempel: "ikke_satt"
  * - verdien som blir sendt mellom backend og frontend, og brukt til å sortere resultata
  * - har ymse noteringsformat, oftast snake_case
- * - kan hentast ut ved .value eller .toString()
+ * - kan hentast ut ved .value
  * */
 public enum Sorteringsfelt {
     IKKE_SATT("ikke_satt"),
@@ -35,7 +35,6 @@ public enum Sorteringsfelt {
     VENTER_PA_SVAR_FRA_NAV("venterpasvarfranav"),
     VENTER_PA_SVAR_FRA_BRUKER("venterpasvarfrabruker"),
 
-    // TODO: Vi har andre enumar som heiter I_AVTALT_AKTIVITET og ein del andre brukarstatusar, bør namna her seie at dei er filtervarianten?
     I_AVTALT_AKTIVITET("iavtaltaktivitet"),
     UTLOPTE_AKTIVITETER("utlopteaktiviteter"),
     STARTDATO_FOR_AVTALT_AKTIVITET("aktivitet_start"),
@@ -94,26 +93,18 @@ public enum Sorteringsfelt {
     TILTAKSHENDELSE_DATO_OPPRETTET("tiltakshendelse_dato_opprettet");
 
     /** Filterverdien som vert sendt mellom frontend og backend */
-    public final String value;
+    public final String sorteringsverdi;
 
-    Sorteringsfelt(String value) {
-        this.value = value;
-    }
-
-    /** toString() returnerer verdien til enumen, ikkje namnet.
-     * Eksempel: BOSTED_KOMMUNE.toString() -> "kommunenummer"
-     * "value" er verdien som vert sendt mellom frontend og backend. */
-    @Override
-    public String toString() {
-        return this.value;
+    Sorteringsfelt(String sorteringsverdi) {
+        this.sorteringsverdi = sorteringsverdi;
     }
 
     public static Sorteringsfelt nameFromValue(String value) {
         for (Sorteringsfelt sorteringsfelt : values()) {
-            if (sorteringsfelt.value.equals(value)) {
+            if (sorteringsfelt.sorteringsverdi.equals(value)) {
                 return sorteringsfelt;
             }
         }
-        throw new IllegalArgumentException("Ugyldig verdi for enum: " + value ); // TODO betre feilhandtering ved ugyldige values?
+        throw new IllegalArgumentException("Ugyldig verdi for enum: " + value );
     }
 }

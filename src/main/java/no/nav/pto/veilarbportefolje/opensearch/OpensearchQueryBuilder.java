@@ -929,8 +929,8 @@ public class OpensearchQueryBuilder {
      *      "gjeldende_vedtak_14a_innsatsgruppe" (filter) og "gjeldendeVedtak14a.innsatsgruppe" (OpenSearch)
      * */
     private static void defaultSort(Sorteringsfelt sortField, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
-        if (ValideringsRegler.sortFields.contains(sortField.value)) {
-            searchSourceBuilder.sort(sortField.value, order);
+        if (ValideringsRegler.sortFields.contains(sortField.sorteringsverdi)) {
+            searchSourceBuilder.sort(sortField.sorteringsverdi, order);
         } else {
             throw new IllegalStateException();
         }

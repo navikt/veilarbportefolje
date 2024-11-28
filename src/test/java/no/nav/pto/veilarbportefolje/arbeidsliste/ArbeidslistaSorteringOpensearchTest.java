@@ -77,7 +77,7 @@ public class ArbeidslistaSorteringOpensearchTest extends EndToEndTest {
                     enhetId.getValue(),
                     empty(),
                     "ascending",
-                    Sorteringsfelt.IKKE_SATT.toString(),
+                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                     getArbeidslisteFilter(),
                     null,
                     null);
@@ -89,7 +89,7 @@ public class ArbeidslistaSorteringOpensearchTest extends EndToEndTest {
                 enhetId.getValue(),
                 empty(),
                 "ascending",
-                Sorteringsfelt.ARBEIDSLISTE_OVERSKRIFT.toString(),
+                Sorteringsfelt.ARBEIDSLISTE_OVERSKRIFT.sorteringsverdi,
                 getArbeidslisteFilter(),
                 null,
                 null);
@@ -98,7 +98,7 @@ public class ArbeidslistaSorteringOpensearchTest extends EndToEndTest {
                 enhetId.getValue(),
                 empty(),
                 "desc",
-                Sorteringsfelt.ARBEIDSLISTE_OVERSKRIFT.toString(),
+                Sorteringsfelt.ARBEIDSLISTE_OVERSKRIFT.sorteringsverdi,
                 getArbeidslisteFilter(),
                 null,
                 null);
