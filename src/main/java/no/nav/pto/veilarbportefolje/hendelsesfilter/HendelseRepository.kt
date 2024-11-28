@@ -13,7 +13,13 @@ class HendelseRepository(
     @Autowired private val jdbcTemplate: JdbcTemplate
 ) {
 
-    fun upsert(hendelse: Hendelse) {
+    /**
+     * Lagre en hendelse:
+     *
+     * * dersom ingen hendelse med samme [Hendelse.id] eksisterer fra før lagres hendelsen
+     * * dersom en hendelse med samme [Hendelse.id] eksisterer fra før kastes [HendelseIdEksistererAlleredeException].
+     */
+    fun insert(hendelse: Hendelse) {
         val (id, personIdent, avsender, kategori, _, hendelseInnhold) = hendelse
         val (navn, dato, lenke, detaljer) = hendelseInnhold
 
@@ -31,7 +37,41 @@ class HendelseRepository(
                 $OPPRETTET,
                 $SIST_ENDRET
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT ($ID) DO UPDATE SET(
+            ON CONFLICT ($ID) DO NOTHING
+            """
+
+        val affectedRows = jdbcTemplate.update(
+            sql,
+            id,
+            personIdent,
+            navn,
+            dato,
+            lenke,
+            detaljer,
+            kategori,
+            avsender,
+            toTimestamp(LocalDateTime.now()),
+            toTimestamp(LocalDateTime.now()),
+        )
+
+        if(affectedRows == 0) {
+            throw HendelseIdEksistererAlleredeException("Hendelse med id $id eksisterer allerede.")
+        }
+    }
+
+    /**
+     * Oppdater en hendelse:
+     *
+     * * dersom en hendelse med samme [Hendelse.id] eksisterer fra før oppdateres denne med data fra [hendelse]
+     * * dersom ingen hendelse med samme [Hendelse.id] eksisterer fra før kastes [IngenHendelseMedIdException]
+     */
+    fun update(hendelse: Hendelse) {
+        val (id, personIdent, avsender, kategori, _, hendelseInnhold) = hendelse
+        val (navn, dato, lenke, detaljer) = hendelseInnhold
+
+        // language=postgresql
+        val sql = """
+            UPDATE $TABLE_NAME SET (
                 $PERSON_IDENT,
                 $HENDELSE_NAVN,
                 $HENDELSE_DATO,
@@ -41,18 +81,42 @@ class HendelseRepository(
                 $AVSENDER,
                 $SIST_ENDRET
             ) = (?, ?, ?, ?, ?, ?, ?, ?)
+            WHERE $ID = ?
             """
 
-        jdbcTemplate.update(
+        val affectedRows = jdbcTemplate.update(
             sql,
-            id, personIdent, navn, dato, lenke, detaljer, kategori, avsender, toTimestamp(LocalDateTime.now()), toTimestamp(LocalDateTime.now()),
-            personIdent, navn, dato, lenke, detaljer, kategori, avsender, toTimestamp(LocalDateTime.now()),
+            personIdent,
+            navn,
+            dato,
+            lenke,
+            detaljer,
+            kategori,
+            avsender,
+            toTimestamp(LocalDateTime.now()),
+            id
         )
+
+        if(affectedRows == 0) {
+            throw IngenHendelseMedIdException(id.toString())
+        }
     }
 
+    /**
+     * Slett en hendelse:
+     *
+     * * dersom en hendelse eksisterer med ID lik [id] slettes hendelsen
+     * * dersom ingen hendelse eksisterer med ID lik [id] kastes [IngenHendelseMedIdException]
+     */
     fun delete(id: UUID) {
         val sql = "DELETE FROM $TABLE_NAME WHERE $ID = ?"
-        jdbcTemplate.update(sql, id)
+        val affectedRows = jdbcTemplate.update(sql, id)
+
+        if(affectedRows == 0) {
+            throw IngenHendelseMedIdException(id.toString())
+        }
     }
 }
 
+data class HendelseIdEksistererAlleredeException(override val message: String) : RuntimeException(message)
+data class IngenHendelseMedIdException(val id: String, override val message: String = "Fant ingen hendelse med id $id.") : RuntimeException(message)

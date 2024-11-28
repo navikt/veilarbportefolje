@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 @Service
 class HendelseService(
     @Autowired private val hendelseRepository: HendelseRepository,
-    private val pdlIdentRepository: PdlIdentRepository,
+    @Autowired private val pdlIdentRepository: PdlIdentRepository,
 ) : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     private val logger: Logger = LoggerFactory.getLogger(HendelseService::class.java)
 
@@ -34,17 +34,32 @@ class HendelseService(
     }
 
     private fun startHendelse(hendelse: Hendelse) {
-        hendelseRepository.upsert(hendelse)
-        logger.info("Hendelse med id ${hendelse.id} ble startet")
+        try {
+            hendelseRepository.insert(hendelse)
+            logger.info("Hendelse med id ${hendelse.id} ble startet")
+        } catch (ex: HendelseIdEksistererAlleredeException) {
+            // TODO: Ignorer melding eller kast exception slik at den blir fanga opp av retry-mekanismen?
+            logger.info("Hendelse med ID ${hendelse.id} allerede startet. Ignorerer melding.")
+        }
     }
 
     private fun oppdaterHendelse(hendelse: Hendelse) {
-        hendelseRepository.upsert(hendelse)
-        logger.info("Hendelse med id ${hendelse.id} ble oppdatert")
+        try {
+            hendelseRepository.update(hendelse)
+            logger.info("Hendelse med id ${hendelse.id} ble oppdatert")
+        } catch (ex: IngenHendelseMedIdException) {
+            // TODO: Ignorer melding eller kast exception slik at den blir fanga opp av retry-mekanismen?
+            logger.warn("Fikk hendelse med operasjon ${Operasjon.OPPDATER} og ID ${hendelse.id}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
+        }
     }
 
     private fun stoppHendelse(hendelse: Hendelse) {
-        hendelseRepository.delete(hendelse.id)
-        logger.info("Hendelse med id ${hendelse.id} ble stoppet")
+        try {
+            hendelseRepository.delete(hendelse.id)
+            logger.info("Hendelse med id ${hendelse.id} ble stoppet")
+        } catch (ex: IngenHendelseMedIdException) {
+            // TODO: Ignorer melding eller kast exception slik at den blir fanga opp av retry-mekanismen?
+            logger.warn("Fikk hendelse med operasjon ${Operasjon.STOPP} og ID ${hendelse.id}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
+        }
     }
 }
