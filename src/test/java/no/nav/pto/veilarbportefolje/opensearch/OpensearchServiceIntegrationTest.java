@@ -3313,11 +3313,16 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void test_sortering_tiltakshendelser_opprettet() {
+    public void test_sortering_tiltakshendelser() {
         Fnr bruker1Fnr = Fnr.of("01010111111");
-        UUID bruker1UUID = UUID.randomUUID();
+        Fnr bruker2Fnr = Fnr.of("02020222222");
+        Fnr bruker3Fnr = Fnr.of("03030333333");
         LocalDateTime bruker1Opprettet = LocalDateTime.of(2024, 06, 01, 0, 0);
+        LocalDateTime bruker2Opprettet = LocalDateTime.of(2023, 06, 01, 0, 0);
+        LocalDateTime bruker3Opprettet = LocalDateTime.of(2022, 06, 01, 0, 0);
         String bruker1tekst = "Dette er noko tekst som startar på D.";
+        String bruker2Tekst = "Akkurat slik startar du ein setning med bokstaven A.";
+        String bruker3Tekst = "Byrjinga av denne teksten er bokstaven B.";
         String lenke = "http.cat/200";
         Tiltakstype tiltakstype = Tiltakstype.ARBFORB;
 
@@ -3328,13 +3333,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setTiltakshendelse(new Tiltakshendelse(bruker1UUID, bruker1Opprettet, bruker1tekst, lenke, tiltakstype, bruker1Fnr));
-
-
-        Fnr bruker2Fnr = Fnr.of("02020222222");
-        UUID bruker2UUID = UUID.randomUUID();
-        LocalDateTime bruker2Opprettet = LocalDateTime.of(2023, 06, 01, 0, 0);
-        String bruker2Tekst = "Akkurat slik startar du ein setning med bokstaven A.";
+                .setTiltakshendelse(new Tiltakshendelse(UUID.randomUUID(), bruker1Opprettet, bruker1tekst, lenke, tiltakstype, bruker1Fnr));
 
         OppfolgingsBruker bruker2 = new OppfolgingsBruker()
                 .setFnr(bruker2Fnr.toString())
@@ -3343,13 +3342,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setTiltakshendelse(new Tiltakshendelse(bruker2UUID, bruker2Opprettet, bruker2Tekst, lenke, tiltakstype, bruker2Fnr));
-
-
-        Fnr bruker3Fnr = Fnr.of("03030333333");
-        UUID bruker3UUID = UUID.randomUUID();
-        LocalDateTime bruker3Opprettet = LocalDateTime.of(2022, 06, 01, 0, 0);
-        String bruker3Tekst = "Byrjinga av denne teksten er bokstaven B.";
+                .setTiltakshendelse(new Tiltakshendelse(UUID.randomUUID(), bruker2Opprettet, bruker2Tekst, lenke, tiltakstype, bruker2Fnr));
 
         OppfolgingsBruker bruker3 = new OppfolgingsBruker()
                 .setFnr(bruker3Fnr.toString())
@@ -3358,7 +3351,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
-                .setTiltakshendelse(new Tiltakshendelse(bruker3UUID, bruker3Opprettet, bruker3Tekst, lenke, tiltakstype, bruker3Fnr));
+                .setTiltakshendelse(new Tiltakshendelse(UUID.randomUUID(), bruker3Opprettet, bruker3Tekst, lenke, tiltakstype, bruker3Fnr));
 
 
         List<OppfolgingsBruker> brukere = List.of(bruker1, bruker2, bruker3);
@@ -3369,10 +3362,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of(Brukerstatus.TILTAKSHENDELSER));
 
+        /* Om ein filtrerer på tiltakshendelse og ikkje har valgt sortering: sorter på opprettet-tidspunkt stigande. */
         BrukereMedAntall responseDefaultSortering = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "ascending",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -3384,7 +3378,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(brukereDefaultRekkefolge.get(0).getFnr()).isEqualTo(bruker3Fnr.toString());
         assertThat(brukereDefaultRekkefolge.get(1).getFnr()).isEqualTo(bruker2Fnr.toString());
         assertThat(brukereDefaultRekkefolge.get(2).getFnr()).isEqualTo(bruker1Fnr.toString());
-
 
         BrukereMedAntall responseSortertNyesteDato = opensearchService.hentBrukere(
                 TEST_ENHET,
