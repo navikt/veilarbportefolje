@@ -7,7 +7,18 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.util.*
+import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 
+/**
+ * Håndterer behandling av Kafka-meldinger fra [Topic.PORTEFOLJE_HENDELSESFILTER].
+ *
+ * Topic-et er et generisk topic som andre team kan produsere generelle oppfølgingshendelser på.
+ * Bruksområdet for disse hendelsene er i hovedsak å populere statusfiltre i Oversikten (veilarbportefoljeflatefs).
+ * Et eksempel på en hendelse er "Utgått varsel" som i skrivende stund produseres av "aktivitetsplan"-applikasjonen.
+ *
+ * Denne klassen håndterer således funksjonalitet knyttet til å starte (les: lagre), oppdatere og stoppe (les: slette)
+ * hendelser.
+ */
 @Service
 class HendelseService(
     @Autowired private val hendelseRepository: HendelseRepository,
@@ -15,10 +26,16 @@ class HendelseService(
 ) : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     private val logger: Logger = LoggerFactory.getLogger(HendelseService::class.java)
 
-    override fun behandleKafkaRecordLogikk(hendelseRecordValue: HendelseRecordValue, nokkel: String) {
+    /**
+     * Behandle en [HendelseRecordValue] og tilhørende `hendelseId`:
+     *
+     * * dersom `hendelseRecordValue.operasjon` = [Operasjon.START] vil hendelsen kombineres med ID-en og persisteres
+     * * dersom `hendelseRecordValue.operasjon` = [Operasjon.OPPDATER] vil persistert hendelse identifisert med `hendelseId` oppdateres
+     * * dersom `hendelseRecordValue.operasjon` = [Operasjon.STOPP] vil persistert hendelse identifisert med `hendelseId` slettes
+     */
+    override fun behandleKafkaRecordLogikk(hendelseRecordValue: HendelseRecordValue, hendelseId: String) {
         val operasjon = hendelseRecordValue.operasjon
-        val hendelse = toHendelse(hendelseRecordValue, nokkel)
-        // TODO: Handtere eventuelle feil i mapping
+        val hendelse = toHendelse(hendelseRecordValue, hendelseId)
 
         val isUnderArbeidsrettetOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(hendelse.personIdent.get())
 
