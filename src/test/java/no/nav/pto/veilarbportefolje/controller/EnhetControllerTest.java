@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.persononinfo.bosted.BostedService;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
@@ -62,7 +63,7 @@ public class EnhetControllerTest {
 
         authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
-                () -> enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg())
+                () -> enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", Sorteringsfelt.IKKE_SATT.sorteringsverdi, new Filtervalg())
         );
         verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
     }
@@ -75,7 +76,7 @@ public class EnhetControllerTest {
 
         authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
-                () -> enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", "ikke_satt", new Filtervalg())
+                () -> enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", Sorteringsfelt.IKKE_SATT.sorteringsverdi, new Filtervalg())
         );
         verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
     }
@@ -88,7 +89,7 @@ public class EnhetControllerTest {
         authContextHolder
                 .withContext(
                         new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
-                        () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
+                        () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", Sorteringsfelt.IKKE_SATT.sorteringsverdi, new Filtervalg())
                 );
 
         verify(opensearchService, times(1)).hentBrukere(any(), any(), any(), any(), any(), isNull(), any());
@@ -99,7 +100,7 @@ public class EnhetControllerTest {
         when(poaoTilgangWrapper.harVeilederTilgangTilModia()).thenReturn(new Decision.Deny("", ""));
         authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, TestDataUtils.generateJWT("A111111")),
-                () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
+                () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", Sorteringsfelt.IKKE_SATT.sorteringsverdi, new Filtervalg())
         );
     }
 }
