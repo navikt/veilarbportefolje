@@ -4416,11 +4416,14 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void standardsortering_skal_fungere_pa_alle_gjeldendeVedtak14a_filter() {
+    public void sorter_pa_vedtaksdato_som_standard_ved_filtrering_pa_alle_gjeldendeVedtak14a_filter() {
         Fnr brukerMedSiste14aVedtakFnr1 = Fnr.of("11111111111");
         Fnr brukerMedSiste14aVedtakFnr2 = Fnr.of("22222222222");
         Fnr brukerMedSiste14aVedtakFnr3 = Fnr.of("33333333333");
         Fnr brukerUtenSiste14aVedtakFnr = Fnr.of("44444444444");
+        ZonedDateTime vedtaksdatoBruker1 = ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
+        ZonedDateTime vedtaksdatoBruker2 = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
+        ZonedDateTime vedtaksdatoBruker3 = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
 
         OppfolgingsBruker bruker1 = new OppfolgingsBruker()
                 .setFnr(brukerMedSiste14aVedtakFnr1.get())
@@ -4430,8 +4433,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
                         Innsatsgruppe.VARIG_TILPASSET_INNSATS,
                         Hovedmal.OKE_DELTAKELSE,
-                        ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
-
+                        vedtaksdatoBruker1
                 ));
 
         OppfolgingsBruker bruker2 = new OppfolgingsBruker()
@@ -4442,7 +4444,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
                         Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
                         Hovedmal.SKAFFE_ARBEID,
-                        ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                        vedtaksdatoBruker2
                 ));
 
         OppfolgingsBruker bruker3 = new OppfolgingsBruker()
@@ -4453,7 +4455,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
                         Innsatsgruppe.STANDARD_INNSATS,
                         Hovedmal.BEHOLDE_ARBEID,
-                        ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                        vedtaksdatoBruker3
                 ));
 
         OppfolgingsBruker brukerUtenGjeldendeVedtak = new OppfolgingsBruker()
@@ -4471,7 +4473,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFerdigfilterListe(emptyList())
                 .setGjeldendeVedtak14a(List.of("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK"));
 
-        /* Standard-sortering (vedtaksdato, stigande). Forventa rekkefølgje: 3, 2, 1, Utan */
         BrukereMedAntall responsFiltrertGjeldendeVedtak = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
@@ -4491,7 +4492,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFerdigfilterListe(emptyList())
                 .setInnsatsgruppeGjeldendeVedtak14a(List.of(Innsatsgruppe.STANDARD_INNSATS, Innsatsgruppe.VARIG_TILPASSET_INNSATS, Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS));
 
-        /* Standard-sortering (vedtaksdato, stigande). Forventa rekkefølgje: 3, 2, 1, Utan */
         BrukereMedAntall responsFiltrertInnsatsgruppe = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
@@ -4510,7 +4510,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFerdigfilterListe(emptyList())
                 .setHovedmalGjeldendeVedtak14a(List.of(Hovedmal.SKAFFE_ARBEID, Hovedmal.BEHOLDE_ARBEID, Hovedmal.OKE_DELTAKELSE));
 
-        /* Standard-sortering (vedtaksdato, stigande). Forventa rekkefølgje: 3, 2, 1, Utan */
         BrukereMedAntall responsFiltrertHovedmal = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
@@ -4532,6 +4531,15 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         Fnr brukerMedSiste14aVedtakFnr2 = Fnr.of("22222222222");
         Fnr brukerMedSiste14aVedtakFnr3 = Fnr.of("33333333333");
         Fnr brukerUtenSiste14aVedtakFnr = Fnr.of("44444444444");
+        Innsatsgruppe innsatsgruppeBruker1 = Innsatsgruppe.VARIG_TILPASSET_INNSATS;
+        Innsatsgruppe innsatsgruppeBruker2 = Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS;
+        Innsatsgruppe innsatsgruppeBruker3 = Innsatsgruppe.STANDARD_INNSATS;
+        Hovedmal hovedmalBruker1 = Hovedmal.OKE_DELTAKELSE;
+        Hovedmal hovedmalBruker2 = Hovedmal.SKAFFE_ARBEID;
+        Hovedmal hovedmalBruker3 = Hovedmal.BEHOLDE_ARBEID;
+        ZonedDateTime vedtaksdatoBruker1 = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
+        ZonedDateTime vedtaksdatoBruker2 = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
+        ZonedDateTime vedtaksdatoBruker3 = ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
 
         OppfolgingsBruker bruker1 = new OppfolgingsBruker()
                 .setFnr(brukerMedSiste14aVedtakFnr1.get())
@@ -4539,9 +4547,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setOppfolging(true)
                 .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
-                        Innsatsgruppe.VARIG_TILPASSET_INNSATS,
-                        Hovedmal.OKE_DELTAKELSE,
-                        ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                        innsatsgruppeBruker1,
+                        hovedmalBruker1,
+                        vedtaksdatoBruker1
                 ));
 
         OppfolgingsBruker bruker2 = new OppfolgingsBruker()
@@ -4550,9 +4558,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setOppfolging(true)
                 .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
-                        Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
-                        Hovedmal.SKAFFE_ARBEID,
-                        ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                        innsatsgruppeBruker2,
+                        hovedmalBruker2,
+                        vedtaksdatoBruker2
                 ));
 
         OppfolgingsBruker bruker3 = new OppfolgingsBruker()
@@ -4561,9 +4569,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setOppfolging(true)
                 .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
-                        Innsatsgruppe.STANDARD_INNSATS,
-                        Hovedmal.BEHOLDE_ARBEID,
-                        ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                        innsatsgruppeBruker3,
+                        hovedmalBruker3,
+                        vedtaksdatoBruker3
                 ));
 
         OppfolgingsBruker brukerUtenGjeldendeVedtak = new OppfolgingsBruker()
