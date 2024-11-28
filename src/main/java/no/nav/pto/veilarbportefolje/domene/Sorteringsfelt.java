@@ -107,4 +107,9 @@ public enum Sorteringsfelt {
         }
         throw new IllegalArgumentException("Ugyldig verdi for enum: " + value );
     }
+
+    @Override
+    public String toString() {
+        return this.name() + " (" + this.sorteringsverdi + ")";
+    }
 }
