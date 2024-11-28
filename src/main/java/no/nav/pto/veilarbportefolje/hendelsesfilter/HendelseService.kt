@@ -34,8 +34,12 @@ class HendelseService(
         }
     }
 
-    fun hentHendelse(id: UUID): Hendelse {
-        return hendelseRepository.get(id)
+    fun hentHendelse(id: UUID): Hendelse? {
+        return try {
+            hendelseRepository.get(id)
+        } catch (ex: IngenHendelseMedIdException) {
+            null
+        }
     }
 
     private fun startHendelse(hendelse: Hendelse) {

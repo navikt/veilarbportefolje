@@ -21,7 +21,7 @@ class HendelseRepository(
 ) {
 
     /**
-     * Henter en hedelse:
+     * Henter en hendelse:
      *
      * * dersom en hendelse med ID [id] eksisterer returneres denne
      * * dersom ingen hendelse med ID [id] eksisterer kastes en [IngenHendelseMedIdException]
@@ -127,14 +127,14 @@ class HendelseRepository(
 
         val affectedRows = jdbcTemplate.update(
             sql,
-            personIdent,
+            personIdent.get(),
             navn,
-            dato,
-            lenke,
+            toTimestamp(dato),
+            lenke.toString(),
             detaljer,
-            kategori,
+            kategori.name,
             avsender,
-            toTimestamp(LocalDateTime.now()),
+            toTimestamp(ZonedDateTime.now()),
             id
         )
 
