@@ -22,6 +22,7 @@ import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.sor
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.sorterValgteAktiviteter;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.opensearch.index.query.QueryBuilders.boolQuery;
 import static org.opensearch.search.sort.SortOrder.ASC;
 
@@ -35,9 +36,21 @@ public class OpensearchQueryBuilderTest {
 
     @Test
     public void skal_sortere_etternavn_paa_etternavn_feltet() {
-        var searchSourceBuilder = sorterQueryParametere("asc", Sorteringsfelt.ETTERNAVN.sorteringsverdi, new SearchSourceBuilder(), new Filtervalg(), new BrukerinnsynTilganger(true,true,true));
+        var searchSourceBuilder = sorterQueryParametere("asc", Sorteringsfelt.ETTERNAVN.sorteringsverdi, new SearchSourceBuilder(), new Filtervalg(), new BrukerinnsynTilganger(true, true, true));
         var fieldName = searchSourceBuilder.sorts().get(0).toString();
         assertThat(fieldName).contains(Sorteringsfelt.ETTERNAVN.sorteringsverdi);
+    }
+
+    @Test
+    public void skal_ikke_sortere_pa_ugyldig_sorteringsverdi() {
+        String ugyldigSorteringsverdi = "Dette kommer sannsynligvis aldri til å bli en gyldig filterverdi";
+
+        try {
+            sorterQueryParametere("asc", ugyldigSorteringsverdi, new SearchSourceBuilder(), new Filtervalg(), new BrukerinnsynTilganger(true, true, true));
+            fail("Ugyldig input ble godtatt og brukt til sortering");
+        } catch (Exception e) {
+            assertThat(e).isNotNull();
+        }
     }
 
     @Test

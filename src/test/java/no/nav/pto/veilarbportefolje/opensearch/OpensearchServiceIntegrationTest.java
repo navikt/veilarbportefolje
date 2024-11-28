@@ -31,6 +31,7 @@ import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.search.builder.SearchSourceBuilder;
@@ -4694,6 +4695,26 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(brukerFraOpenSearch.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr1.get());
         Bruker brukerFraOpenSearch1 = respons.getBrukere().get(1);
         assertThat(brukerFraOpenSearch1.getFnr()).isEqualTo(brukerMedSiste14aVedtakFnr2.get());
+    }
+
+    @Test
+    public void skal_ikke_kunne_sortere_pa_ugyldig_sorteringsverdi() {
+        String ugyldigSorteringsverdi = "Dette kommer sannsynligvis aldri til å bli en gyldig filterverdi";
+
+        try {
+            opensearchService.hentBrukere(
+                    TEST_ENHET,
+                    empty(),
+                    "ascending",
+                    ugyldigSorteringsverdi,
+                    new Filtervalg().setFerdigfilterListe(emptyList()),
+                    null,
+                    null
+            );
+            fail("Ugyldig input ble godtatt og brukt til sortering");
+        } catch (Exception e) {
+            AssertionsForClassTypes.assertThat(e).isNotNull();
+        }
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
