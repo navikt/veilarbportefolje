@@ -56,8 +56,7 @@ data class Hendelse(
     val personIdent: NorskIdent,
     val avsender: String,
     val kategori: Kategori,
-    val operasjon: Operasjon,
-    val hendelseInnhold: Hendelse.HendelseInnhold
+    val hendelseInnhold: HendelseInnhold
 ) {
     data class HendelseInnhold(
         val navn: String,
@@ -73,7 +72,6 @@ fun toHendelse(hendelseRecordValue: HendelseRecordValue, hendelseKey: String): H
         personIdent = hendelseRecordValue.personID,
         avsender = hendelseRecordValue.avsender,
         kategori = hendelseRecordValue.kategori,
-        operasjon = hendelseRecordValue.operasjon,
         hendelseInnhold = Hendelse.HendelseInnhold(
             navn = hendelseRecordValue.hendelse.navn,
             dato = hendelseRecordValue.hendelse.dato,

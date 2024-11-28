@@ -110,7 +110,6 @@ class DataformatTest {
             personIdent = NorskIdent("11111199999"),
             avsender = "dev-gcp:dab:aktivitetsplan",
             kategori = Kategori.UTGATT_VARSEL,
-            operasjon = Operasjon.START,
             hendelseInnhold = Hendelse.HendelseInnhold(
                 navn = "Bruker har et utgått varsel",
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),

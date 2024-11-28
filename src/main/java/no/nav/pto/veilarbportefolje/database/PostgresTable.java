@@ -406,7 +406,7 @@ public class PostgresTable {
     public static final class HENDELSE {
         private HENDELSE() { /* no-op */ }
 
-        public static final String TABLE_NAME = "HENDELSE";
+        public static final String TABLE_NAME = "FILTERHENDELSER";
         public static final String ID = "ID";
         public static final String PERSON_IDENT = "PERSON_IDENT";
         public static final String HENDELSE_NAVN = "HENDELSE_NAVN";

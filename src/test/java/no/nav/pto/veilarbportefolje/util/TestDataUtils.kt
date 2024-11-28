@@ -11,6 +11,7 @@ import com.nimbusds.jwt.SignedJWT
 import lombok.SneakyThrows
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor
 import no.nav.pto.veilarbportefolje.domene.value.PersonId
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId
@@ -40,6 +41,11 @@ object TestDataUtils {
     @JvmStatic
     fun randomPersonId(): PersonId {
         return PersonId.of(ThreadLocalRandom.current().nextInt().toString())
+    }
+
+    @JvmStatic
+    fun randomNorskIdent(): NorskIdent {
+        return NorskIdent(randomDigits(11))
     }
 
     @JvmStatic
