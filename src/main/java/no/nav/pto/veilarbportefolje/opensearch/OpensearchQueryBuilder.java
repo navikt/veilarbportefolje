@@ -456,11 +456,11 @@ public class OpensearchQueryBuilder {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC);
             return searchSourceBuilder;
         }
-        /* Dersom det er filtrert på ei av filtera for gjeldande § 14 a-vedtak, sorter på vedtaksdato. */
+        /* Dersom det er filtrert på eit av filtera for gjeldande § 14 a-vedtak, sorter på vedtaksdato. */
         if (IKKE_SATT.equals(sorteringsfelt) && (
                 filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
-                (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && filtervalg.innsatsgruppeGjeldendeVedtak14a.size() > 0) ||
-                (filtervalg.hovedmalGjeldendeVedtak14a != null && filtervalg.hovedmalGjeldendeVedtak14a.size() > 0))
+                (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && filtervalg.innsatsgruppeGjeldendeVedtak14a.isEmpty()) ||
+                (filtervalg.hovedmalGjeldendeVedtak14a != null && filtervalg.hovedmalGjeldendeVedtak14a.isEmpty()))
         ) {
             sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder, SortOrder.ASC);
             return searchSourceBuilder;
