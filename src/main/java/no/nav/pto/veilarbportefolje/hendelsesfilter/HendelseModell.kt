@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.hendelsesfilter
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import no.nav.common.types.identer.NorskIdent
-import java.time.LocalDateTime
+import java.net.URL
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -18,7 +18,7 @@ import java.util.*
 * */
 data class HendelseRecordValue @JsonCreator constructor(
     @JsonProperty("personID")
-    val personID: String,
+    val personID: NorskIdent,
     @JsonProperty("avsender")
     val avsender: String,
     @JsonProperty("kategori")
@@ -26,19 +26,19 @@ data class HendelseRecordValue @JsonCreator constructor(
     @JsonProperty("operasjon")
     val operasjon: Operasjon,
     @JsonProperty(value = "hendelse")
-    val hendelseInnhold: HendelseInnhold
-)
-
-data class HendelseInnhold @JsonCreator constructor(
-    @JsonProperty("navn")
-    val navn: String,
-    @JsonProperty("dato")
-    val dato: ZonedDateTime,
-    @JsonProperty("lenke")
-    val lenke: String,
-    @JsonProperty("detaljer")
-    val detaljer: String?
-)
+    val hendelse: HendelseInnhold
+) {
+    data class HendelseInnhold @JsonCreator constructor(
+        @JsonProperty("navn")
+        val navn: String,
+        @JsonProperty("dato")
+        val dato: ZonedDateTime,
+        @JsonProperty("lenke")
+        val lenke: URL,
+        @JsonProperty("detaljer")
+        val detaljer: String?
+    )
+}
 
 enum class Kategori {
     UTGATT_VARSEL
@@ -57,16 +57,28 @@ data class Hendelse(
     val avsender: String,
     val kategori: Kategori,
     val operasjon: Operasjon,
-    val hendelseInnhold: HendelseInnhold
-)
+    val hendelseInnhold: Hendelse.HendelseInnhold
+) {
+    data class HendelseInnhold(
+        val navn: String,
+        val dato: ZonedDateTime,
+        val lenke: URL,
+        val detaljer: String?
+    )
+}
 
 fun toHendelse(hendelseRecordValue: HendelseRecordValue, hendelseKey: String): Hendelse {
     return Hendelse(
         id = UUID.fromString(hendelseKey),
-        personIdent = NorskIdent.of(hendelseRecordValue.personID),
+        personIdent = hendelseRecordValue.personID,
         avsender = hendelseRecordValue.avsender,
         kategori = hendelseRecordValue.kategori,
         operasjon = hendelseRecordValue.operasjon,
-        hendelseInnhold = hendelseRecordValue.hendelseInnhold
+        hendelseInnhold = Hendelse.HendelseInnhold(
+            navn = hendelseRecordValue.hendelse.navn,
+            dato = hendelseRecordValue.hendelse.dato,
+            lenke = hendelseRecordValue.hendelse.lenke,
+            detaljer = hendelseRecordValue.hendelse.detaljer,
+        )
     )
 }
