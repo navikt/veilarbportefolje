@@ -413,11 +413,11 @@ public class OpensearchQueryBuilder {
             BoolQueryBuilder subQuery = boolQuery();
 
             if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)
-                    && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)) {
+                && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)) {
                 subQuery.must(existsQuery("gjeldendeVedtak14a"));
                 queryBuilder.must(subQuery);
             } else if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)
-                    && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)) {
+                       && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)) {
                 subQuery.mustNot(existsQuery("gjeldendeVedtak14a"));
                 queryBuilder.must(subQuery);
             }
@@ -447,6 +447,8 @@ public class OpensearchQueryBuilder {
     static SearchSourceBuilder sorterQueryParametere(String sortOrder, String
             sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg, BrukerinnsynTilganger brukerinnsynTilganger) {
         SortOrder order = "ascending".equals(sortOrder) ? SortOrder.ASC : SortOrder.DESC;
+
+        /* På sikt (tm) skal vi typesikre sortField slik at vi får Sorteringsfelt her, gjerne allereie på Controller-nivå. I denne omgangen lagar eg berre enumen for sorteringsfelta. 2024-11-28, Ingrid. */
         Sorteringsfelt sorteringsfelt = Sorteringsfelt.nameFromValue(sortField);
 
         /* Null-sjekken er fordi testane kan ha ferdigfilterliste = null */
@@ -478,7 +480,7 @@ public class OpensearchQueryBuilder {
             case GJELDENDE_VEDTAK_14A_INNSATSGRUPPE ->
                     searchSourceBuilder.sort("gjeldendeVedtak14a.innsatsgruppe", order);
             case GJELDENDE_VEDTAK_14A_HOVEDMAL -> searchSourceBuilder.sort("gjeldendeVedtak14a.hovedmal", order);
-            case GJELDENDE_VEDTAK_14A_VEDTAKSDATO -> searchSourceBuilder.sort("gjeldendeVedtak14a.fattetDato", order) ;
+            case GJELDENDE_VEDTAK_14A_VEDTAKSDATO -> searchSourceBuilder.sort("gjeldendeVedtak14a.fattetDato", order);
             case UTKAST_14A_STATUS -> searchSourceBuilder.sort("utkast_14a_status", order);
             case ARBEIDSLISTE_KATEGORI -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
             case SISTE_ENDRING_DATO -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
@@ -494,8 +496,7 @@ public class OpensearchQueryBuilder {
             case ENSLIGE_FORSORGERE_AKTIVITETSPLIKT ->
                     sorterEnsligeForsorgereAktivitetsPlikt(searchSourceBuilder, order);
             case ENSLIGE_FORSORGERE_OM_BARNET -> sorterEnsligeForsorgereOmBarnet(searchSourceBuilder, order);
-            case BARN_UNDER_18_AR ->
-                    sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger, filtervalg);
+            case BARN_UNDER_18_AR -> sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger, filtervalg);
             case BRUKERS_SITUASJON_SIST_ENDRET -> searchSourceBuilder.sort("brukers_situasjon_sist_endret", order);
             case UTDANNING_OG_SITUASJON_SIST_ENDRET ->
                     searchSourceBuilder.sort("utdanning_og_situasjon_sist_endret", order);
@@ -926,8 +927,8 @@ public class OpensearchQueryBuilder {
      * Sorter alfabetisk på OpenSearch-feltet som er likt filterverdien.
      * Eksempel der det fungerer: "etternavn" (filter) og "etternavn" (OpenSearch)
      * Eksempel der det ikkje fungerer: "aap_type" (filter) og "ytelse" (OpenSearch), eller
-     *      "gjeldende_vedtak_14a_innsatsgruppe" (filter) og "gjeldendeVedtak14a.innsatsgruppe" (OpenSearch)
-     * */
+     * "gjeldende_vedtak_14a_innsatsgruppe" (filter) og "gjeldendeVedtak14a.innsatsgruppe" (OpenSearch)
+     */
     private static void defaultSort(Sorteringsfelt sortField, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
         if (ValideringsRegler.sortFields.contains(sortField.sorteringsverdi)) {
             searchSourceBuilder.sort(sortField.sorteringsverdi, order);
