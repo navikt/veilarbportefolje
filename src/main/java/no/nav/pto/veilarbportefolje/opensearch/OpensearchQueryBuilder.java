@@ -742,6 +742,9 @@ public class OpensearchQueryBuilder {
             case TILTAKSHENDELSER:
                 queryBuilder = existsQuery("tiltakshendelse");
                 break;
+            case UTGATTE_VARSEL:
+                queryBuilder = existsQuery("utgatt_varsel");
+                break;
             default:
                 throw new IllegalStateException();
 
