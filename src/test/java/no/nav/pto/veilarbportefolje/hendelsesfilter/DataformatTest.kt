@@ -110,7 +110,7 @@ class DataformatTest {
             personIdent = NorskIdent("11111199999"),
             avsender = "veilarbdialog",
             kategori = Kategori.UTGATT_VARSEL,
-            hendelseInnhold = Hendelse.HendelseInnhold(
+            hendelse = Hendelse.HendelseInnhold(
                 beskrivelse = "Bruker har et utgått varsel",
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),

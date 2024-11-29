@@ -68,7 +68,7 @@ class HendelseRepository(
             personIdent = NorskIdent(resultSet.getString(HENDELSE.PERSON_IDENT)),
             avsender = resultSet.getString(HENDELSE.AVSENDER),
             kategori = Kategori.valueOf(resultSet.getString(HENDELSE.KATEGORI)),
-            hendelseInnhold = HendelseInnhold(
+            hendelse = HendelseInnhold(
                 beskrivelse = resultSet.getString(HENDELSE.HENDELSE_NAVN),
                 dato = toZonedDateTime(resultSet.getTimestamp(HENDELSE.HENDELSE_DATO)),
                 lenke = URI.create(resultSet.getString(HENDELSE.HENDELSE_LENKE)).toURL(),
@@ -93,7 +93,7 @@ class HendelseRepository(
                 personIdent = NorskIdent(rows[HENDELSE.PERSON_IDENT] as String),
                 avsender = rows[HENDELSE.AVSENDER] as String,
                 kategori = Kategori.valueOf(rows[HENDELSE.KATEGORI] as String),
-                hendelseInnhold = HendelseInnhold(
+                hendelse = HendelseInnhold(
                     beskrivelse = rows[HENDELSE.HENDELSE_NAVN] as String,
                     dato = toZonedDateTime(rows[HENDELSE.HENDELSE_DATO] as Timestamp),
                     lenke = URI.create(rows[HENDELSE.HENDELSE_LENKE] as String).toURL(),

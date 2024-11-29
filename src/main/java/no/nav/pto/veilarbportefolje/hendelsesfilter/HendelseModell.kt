@@ -51,17 +51,26 @@ enum class Operasjon {
 }
 
 /* Interne typer */
-data class Hendelse(
+data class Hendelse @JsonCreator constructor(
+    @JsonProperty("id")
     val id: UUID,
+    @JsonProperty("personIdent")
     val personIdent: NorskIdent,
+    @JsonProperty("avsender")
     val avsender: String,
+    @JsonProperty("kategori")
     val kategori: Kategori,
-    val hendelseInnhold: HendelseInnhold
+    @JsonProperty(value = "hendelse")
+    val hendelse: HendelseInnhold
 ) {
-    data class HendelseInnhold(
+    data class HendelseInnhold @JsonCreator constructor(
+        @JsonProperty("beskrivelse")
         val beskrivelse: String,
+        @JsonProperty("dato")
         val dato: ZonedDateTime,
+        @JsonProperty("lenke")
         val lenke: URL,
+        @JsonProperty("detaljer")
         val detaljer: String?
     )
 }
@@ -72,7 +81,7 @@ fun toHendelse(hendelseRecordValue: HendelseRecordValue, hendelseKey: String): H
         personIdent = hendelseRecordValue.personID,
         avsender = hendelseRecordValue.avsender,
         kategori = hendelseRecordValue.kategori,
-        hendelseInnhold = Hendelse.HendelseInnhold(
+        hendelse = Hendelse.HendelseInnhold(
             beskrivelse = hendelseRecordValue.hendelse.beskrivelse,
             dato = hendelseRecordValue.hendelse.dato,
             lenke = hendelseRecordValue.hendelse.lenke,

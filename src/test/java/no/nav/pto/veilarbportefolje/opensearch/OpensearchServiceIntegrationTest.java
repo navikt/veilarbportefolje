@@ -7,6 +7,7 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NorskIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
@@ -17,6 +18,8 @@ import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
@@ -35,11 +38,10 @@ import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.search.builder.SearchSourceBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.net.URI;
 import java.sql.Timestamp;
 import java.time.*;
 import java.util.*;
@@ -4742,6 +4744,47 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         // Viser at vi får feil slik kodebasen er no. Målet er at sorteringsfeltSomFeilerISortering skal vere tom.
         assertThat(sorteringsfeltSomFeilerISortering).isNotEmpty();
+    }
+
+    @Test
+    @SneakyThrows
+    void skal_indeksere_hendelse_data_riktig() {
+        Hendelse hendelse = new Hendelse(
+                UUID.fromString("96463d56-019e-4b30-ae9b-7365cf002a09"),
+                new NorskIdent("11111199999"),
+                "veilarbdialog",
+                Kategori.UTGATT_VARSEL,
+                new Hendelse.HendelseInnhold(
+                        "Bruker har et utgått varsel",
+                        ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
+                        URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
+                        null
+                )
+        );
+        OppfolgingsBruker bruker = new OppfolgingsBruker()
+                .setFnr("11111199999")
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_D.name())
+                .setFargekategori_enhetId(TEST_ENHET)
+                .setUtgatt_varsel(hendelse);
+        skrivBrukereTilTestindeks(bruker);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == 1);
+
+        BrukereMedAntall respons = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                new Filtervalg().setFerdigfilterListe(emptyList()),
+                null,
+                null
+        );
+
+        assertThat(respons.getAntall()).isEqualTo(1);
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {

@@ -1,20 +1,17 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
 import no.nav.common.types.identer.Fnr
-import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNorskIdent
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.apache.kafka.clients.producer.KafkaProducer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.net.URI
 import java.time.ZonedDateTime
 import java.util.*
@@ -120,7 +117,7 @@ class HendelseServiceTest(
                 personIdent = it.personID,
                 avsender = it.avsender,
                 kategori = it.kategori,
-                hendelseInnhold = Hendelse.HendelseInnhold(
+                hendelse = Hendelse.HendelseInnhold(
                     beskrivelse = it.hendelse.beskrivelse,
                     dato = it.hendelse.dato,
                     lenke = it.hendelse.lenke,
@@ -186,7 +183,7 @@ class HendelseServiceTest(
                 personIdent = it.personID,
                 avsender = it.avsender,
                 kategori = it.kategori,
-                hendelseInnhold = Hendelse.HendelseInnhold(
+                hendelse = Hendelse.HendelseInnhold(
                     beskrivelse = it.hendelse.beskrivelse,
                     dato = it.hendelse.dato,
                     lenke = it.hendelse.lenke,
