@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.GjeldendeVedtak14a;
@@ -388,6 +389,36 @@ public class OpensearchIndexerV2 {
                 .endObject();
 
         update(aktorId, content, format("Oppdaterte gjeldendeVedtak14a for aktorId: %s", aktorId.get()));
+    }
+
+    @SneakyThrows
+    public void oppdaterUtgattVarsel(Hendelse hendelse, AktorId aktorId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .startObject("utgatt_varsel")
+                .field("personID", hendelse.getPersonIdent().get())
+                .field("avsender", hendelse.getAvsender())
+                .field("kategori", hendelse.getKategori().name())
+                .startObject("hendelse")
+                .field("navn", hendelse.getHendelseInnhold().getBeskrivelse())
+                .field("dato", hendelse.getHendelseInnhold().getDato())
+                .field("lenke", hendelse.getHendelseInnhold().getLenke().toString())
+                .field("detaljer", hendelse.getHendelseInnhold().getDetaljer())
+                .endObject()
+                .endObject()
+                .endObject();
+
+        update(aktorId, content, format("Oppdaterte utgått varsel for aktorId: %s", aktorId.get()));
+    }
+
+    @SneakyThrows
+    public void slettUtgattVarsel(AktorId aktorId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .nullField("utgatt_varsel")
+                .endObject();
+
+        update(aktorId, content, format("Slettet utgått varsel for aktorId: %s", aktorId.get()));
     }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {

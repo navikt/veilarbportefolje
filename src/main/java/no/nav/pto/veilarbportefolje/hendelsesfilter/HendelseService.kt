@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
+import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.util.*
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
 
 /**
  * Håndterer behandling av Kafka-meldinger fra [Topic.PORTEFOLJE_HENDELSESFILTER].
@@ -24,6 +26,7 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 class HendelseService(
     @Autowired private val hendelseRepository: HendelseRepository,
     @Autowired private val pdlIdentRepository: PdlIdentRepository,
+    @Autowired private val opensearchIndexerV2: OpensearchIndexerV2
 ) : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     private val logger: Logger = LoggerFactory.getLogger(HendelseService::class.java)
 
@@ -67,6 +70,18 @@ class HendelseService(
     private fun startHendelse(hendelse: Hendelse) {
         try {
             hendelseRepository.insert(hendelse)
+
+            // 2024-11-29, Sondre
+            // Egentlig unødvendig if-sjekk så lenge kun Team DAB er på med "utgåtte varsel"
+            // Men har den med likevel for å tydeliggjøre at det er "utgått varsel"-feltet i OpenSearch
+            // som oppdateres her. Vi må huske å oppdatere håndtering etterhvert som denne tjenesten
+            // blir mer generalisert/får flere produsenter med flere kategorier.
+            if (Kategori.UTGATT_VARSEL == hendelse.kategori) {
+                // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
+                val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
+                opensearchIndexerV2.oppdaterUtgattVarsel(hendelse, aktorId)
+            }
+
             logger.info("Hendelse med id ${hendelse.id} ble startet")
         } catch (ex: HendelseIdEksistererAlleredeException) {
             // TODO: Ignorer melding eller kast exception slik at den blir fanga opp av retry-mekanismen?
@@ -77,6 +92,18 @@ class HendelseService(
     private fun oppdaterHendelse(hendelse: Hendelse) {
         try {
             hendelseRepository.update(hendelse)
+
+            // 2024-11-29, Sondre
+            // Egentlig unødvendig if-sjekk så lenge kun Team DAB er på med "utgåtte varsel"
+            // Men har den med likevel for å tydeliggjøre at det er "utgått varsel"-feltet i OpenSearch
+            // som oppdateres her. Vi må huske å oppdatere håndtering etterhvert som denne tjenesten
+            // blir mer generalisert/får flere produsenter med flere kategorier.
+            if (Kategori.UTGATT_VARSEL == hendelse.kategori) {
+                // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
+                val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
+                opensearchIndexerV2.oppdaterUtgattVarsel(hendelse, aktorId)
+            }
+
             logger.info("Hendelse med id ${hendelse.id} ble oppdatert")
         } catch (ex: IngenHendelseMedIdException) {
             // TODO: Ignorer melding eller kast exception slik at den blir fanga opp av retry-mekanismen?
@@ -87,6 +114,18 @@ class HendelseService(
     private fun stoppHendelse(hendelse: Hendelse) {
         try {
             hendelseRepository.delete(hendelse.id)
+
+            // 2024-11-29, Sondre
+            // Egentlig unødvendig if-sjekk så lenge kun Team DAB er på med "utgåtte varsel"
+            // Men har den med likevel for å tydeliggjøre at det er "utgått varsel"-feltet i OpenSearch
+            // som oppdateres her. Vi må huske å oppdatere håndtering etterhvert som denne tjenesten
+            // blir mer generalisert/får flere produsenter med flere kategorier.
+            if (Kategori.UTGATT_VARSEL == hendelse.kategori) {
+                // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
+                val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
+                opensearchIndexerV2.slettUtgattVarsel(aktorId)
+            }
+
             logger.info("Hendelse med id ${hendelse.id} ble stoppet")
         } catch (ex: IngenHendelseMedIdException) {
             // TODO: Ignorer melding eller kast exception slik at den blir fanga opp av retry-mekanismen?
@@ -94,3 +133,5 @@ class HendelseService(
         }
     }
 }
+
+data class UkjentHendelseKategoriException(override val message: String) : RuntimeException(message)
