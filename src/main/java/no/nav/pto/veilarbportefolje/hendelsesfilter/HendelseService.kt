@@ -133,5 +133,3 @@ class HendelseService(
         }
     }
 }
-
-data class UkjentHendelseKategoriException(override val message: String) : RuntimeException(message)
