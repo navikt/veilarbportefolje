@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.net.URI
 import java.sql.ResultSet
+import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
@@ -52,6 +53,34 @@ class HendelseRepository(
 
         return resultat
             ?: throw RuntimeException("Ukjent feil ved henting av hendelse med ID $id. Forventet å få en instans av ${Hendelse::class.simpleName} men fikk null.")
+    }
+
+    /**
+     * Henter hendelser:
+     *
+     * * dersom en eller flere hendelser med person_ident [personIdent] eksisterer returneres en liste med disse
+     *
+     */
+    fun list(personIdent: NorskIdent): List<Hendelse> {
+        // language=postgresql
+        val sql = "SELECT * FROM ${HENDELSE.TABLE_NAME} WHERE ${HENDELSE.PERSON_IDENT} = ?"
+
+        val toHendelse = { rows: Map<String, Any> ->
+            Hendelse(
+                id = UUID.fromString(rows[HENDELSE.ID] as String),
+                personIdent = NorskIdent(rows[HENDELSE.PERSON_IDENT] as String),
+                avsender = rows[HENDELSE.AVSENDER] as String,
+                kategori = Kategori.valueOf(rows[HENDELSE.KATEGORI] as String),
+                hendelseInnhold = HendelseInnhold(
+                    navn = rows[HENDELSE.HENDELSE_NAVN] as String,
+                    dato = toZonedDateTime(rows[HENDELSE.HENDELSE_DATO] as Timestamp),
+                    lenke = URI.create(rows[HENDELSE.HENDELSE_LENKE] as String).toURL(),
+                    detaljer = rows[HENDELSE.HENDELSE_DETALJER] as String,
+                )
+            )
+        }
+
+        return jdbcTemplate.queryForList(sql, personIdent.get()).map(toHendelse)
     }
 
     /**

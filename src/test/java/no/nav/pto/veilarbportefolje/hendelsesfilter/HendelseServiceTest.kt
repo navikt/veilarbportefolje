@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
@@ -231,5 +232,11 @@ class HendelseServiceTest(
 
         // Then
         assertThat(lagretHendelse).isNull()
+    }
+
+    @Test
+    fun `list`() {
+        val hendelser = hendelseService.hentHendelserForPerson(NorskIdent.of("11111199999"))
+        assertThat(hendelser).isNotEmpty
     }
 }

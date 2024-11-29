@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
+import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import org.slf4j.Logger
@@ -57,6 +58,10 @@ class HendelseService(
         } catch (ex: IngenHendelseMedIdException) {
             null
         }
+    }
+
+    fun hentHendelserForPerson(personIdent: NorskIdent): List<Hendelse> {
+        return hendelseRepository.list(personIdent)
     }
 
     private fun startHendelse(hendelse: Hendelse) {
