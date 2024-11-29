@@ -30,22 +30,7 @@ class HendelseRepository(
         // language=postgresql
         val sql = "SELECT * FROM ${HENDELSE.TABLE_NAME} WHERE ${HENDELSE.ID} = ?"
         val resultat = try {
-            val toHendelse = { rs: ResultSet, _: Int ->
-                Hendelse(
-                    id = UUID.fromString(rs.getString(HENDELSE.ID)),
-                    personIdent = NorskIdent(rs.getString(HENDELSE.PERSON_IDENT)),
-                    avsender = rs.getString(HENDELSE.AVSENDER),
-                    kategori = Kategori.valueOf(rs.getString(HENDELSE.KATEGORI)),
-                    hendelseInnhold = HendelseInnhold(
-                        beskrivelse = rs.getString(HENDELSE.HENDELSE_NAVN),
-                        dato = toZonedDateTime(rs.getTimestamp(HENDELSE.HENDELSE_DATO)),
-                        lenke = URI.create(rs.getString(HENDELSE.HENDELSE_LENKE)).toURL(),
-                        detaljer = rs.getString(HENDELSE.HENDELSE_DETALJER),
-                    )
-                )
-            }
-
-            jdbcTemplate.queryForObject(sql, toHendelse, id)
+            jdbcTemplate.queryForObject(sql, ::toHendelse, id)
         } catch (ex: EmptyResultDataAccessException) {
             throw IngenHendelseMedIdException(id = id.toString(), cause = ex)
         }
