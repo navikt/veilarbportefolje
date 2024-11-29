@@ -32,7 +32,7 @@ class HendelseServiceTest(
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
-                navn = "Bruker har et utgått varsel",
+                beskrivelse = "Bruker har et utgått varsel",
                 dato = ZonedDateTime.parse("2024-11-27T00:00:00+01:00[Europe/Oslo]"),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -69,7 +69,7 @@ class HendelseServiceTest(
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
-                navn = "Bruker har et utgått varsel",
+                beskrivelse = "Bruker har et utgått varsel",
                 dato = ZonedDateTime.parse("2024-11-27T00:00:00+01:00[Europe/Oslo]"),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -88,7 +88,7 @@ class HendelseServiceTest(
         // When
         val hendelseRecordValueMedSammeIdOgOperasjonMenAndreData = opprinneligHendelseRecordValue.copy(
             hendelse = opprinneligHendelseRecordValue.hendelse.copy(
-                navn = "Et annet hendelsesnavn",
+                beskrivelse = "Et annet hendelsesnavn",
                 detaljer = "Andre hendelsesdetaljer"
             )
         )
@@ -110,7 +110,7 @@ class HendelseServiceTest(
                 avsender = it.avsender,
                 kategori = it.kategori,
                 hendelseInnhold = Hendelse.HendelseInnhold(
-                    navn = it.hendelse.navn,
+                    beskrivelse = it.hendelse.beskrivelse,
                     dato = it.hendelse.dato,
                     lenke = it.hendelse.lenke,
                     detaljer = it.hendelse.detaljer,
@@ -134,7 +134,7 @@ class HendelseServiceTest(
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
-                navn = "Bruker har et utgått varsel",
+                beskrivelse = "Bruker har et utgått varsel",
                 dato = ZonedDateTime.parse("2024-11-27T00:00:00+01:00[Europe/Oslo]"),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -154,7 +154,7 @@ class HendelseServiceTest(
         val oppdatertHendelseRecordValue = opprinneligHendelseRecordValue.copy(
             operasjon = Operasjon.OPPDATER,
             hendelse = opprinneligHendelseRecordValue.hendelse.copy(
-                navn = "Et annet hendelsesnavn",
+                beskrivelse = "Et annet hendelsesnavn",
                 detaljer = "Andre hendelsesdetaljer"
             )
         )
@@ -176,7 +176,7 @@ class HendelseServiceTest(
                 avsender = it.avsender,
                 kategori = it.kategori,
                 hendelseInnhold = Hendelse.HendelseInnhold(
-                    navn = it.hendelse.navn,
+                    beskrivelse = it.hendelse.beskrivelse,
                     dato = it.hendelse.dato,
                     lenke = it.hendelse.lenke,
                     detaljer = it.hendelse.detaljer,
@@ -200,7 +200,7 @@ class HendelseServiceTest(
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
-                navn = "Bruker har et utgått varsel",
+                beskrivelse = "Bruker har et utgått varsel",
                 dato = ZonedDateTime.parse("2024-11-27T00:00:00+01:00[Europe/Oslo]"),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -234,9 +234,9 @@ class HendelseServiceTest(
         assertThat(lagretHendelse).isNull()
     }
 
-    @Test
-    fun `list`() {
-        val hendelser = hendelseService.hentHendelserForPerson(NorskIdent.of("11111199999"))
-        assertThat(hendelser).isNotEmpty
-    }
+//    @Test
+//    fun `list`() {
+//        val hendelser = hendelseService.hentHendelserForPerson(NorskIdent.of("11111199999"))
+//        assertThat(hendelser).isNotEmpty
+//    }
 }

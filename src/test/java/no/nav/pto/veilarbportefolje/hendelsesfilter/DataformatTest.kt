@@ -25,7 +25,7 @@ class DataformatTest {
               "kategori": "UTGATT_VARSEL",
               "operasjon": "START",
               "hendelse": {
-                "navn": "Bruker har et utgått varsel",
+                "beskrivelse": "Bruker har et utgått varsel",
                 "dato": "2024-11-27T00:00:00.000+01:00",
                 "lenke": "https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan",
                 "detaljer": null
@@ -41,7 +41,7 @@ class DataformatTest {
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
-                navn = "Bruker har et utgått varsel",
+                beskrivelse = "Bruker har et utgått varsel",
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -59,7 +59,7 @@ class DataformatTest {
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
-                navn = "Bruker har et utgått varsel",
+                beskrivelse = "Bruker har et utgått varsel",
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -76,7 +76,7 @@ class DataformatTest {
               "kategori": "UTGATT_VARSEL",
               "operasjon": "START",
               "hendelse": {
-                "navn": "Bruker har et utgått varsel",
+                "beskrivelse": "Bruker har et utgått varsel",
                 "dato": "2024-11-27T00:00:00+01:00",
                 "lenke": "https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan",
                 "detaljer": null
@@ -96,7 +96,7 @@ class DataformatTest {
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
-                navn = "Bruker har et utgått varsel",
+                beskrivelse = "Bruker har et utgått varsel",
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -111,7 +111,7 @@ class DataformatTest {
             avsender = "veilarbdialog",
             kategori = Kategori.UTGATT_VARSEL,
             hendelseInnhold = Hendelse.HendelseInnhold(
-                navn = "Bruker har et utgått varsel",
+                beskrivelse = "Bruker har et utgått varsel",
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,

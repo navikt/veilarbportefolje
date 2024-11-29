@@ -29,8 +29,8 @@ data class HendelseRecordValue @JsonCreator constructor(
     val hendelse: HendelseInnhold
 ) {
     data class HendelseInnhold @JsonCreator constructor(
-        @JsonProperty("navn")
-        val navn: String,
+        @JsonProperty("beskrivelse")
+        val beskrivelse: String,
         @JsonProperty("dato")
         val dato: ZonedDateTime,
         @JsonProperty("lenke")
@@ -59,7 +59,7 @@ data class Hendelse(
     val hendelseInnhold: HendelseInnhold
 ) {
     data class HendelseInnhold(
-        val navn: String,
+        val beskrivelse: String,
         val dato: ZonedDateTime,
         val lenke: URL,
         val detaljer: String?
@@ -73,7 +73,7 @@ fun toHendelse(hendelseRecordValue: HendelseRecordValue, hendelseKey: String): H
         avsender = hendelseRecordValue.avsender,
         kategori = hendelseRecordValue.kategori,
         hendelseInnhold = Hendelse.HendelseInnhold(
-            navn = hendelseRecordValue.hendelse.navn,
+            beskrivelse = hendelseRecordValue.hendelse.beskrivelse,
             dato = hendelseRecordValue.hendelse.dato,
             lenke = hendelseRecordValue.hendelse.lenke,
             detaljer = hendelseRecordValue.hendelse.detaljer,

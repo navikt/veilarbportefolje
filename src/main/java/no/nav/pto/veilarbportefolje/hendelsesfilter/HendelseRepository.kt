@@ -38,7 +38,7 @@ class HendelseRepository(
                     avsender = rs.getString(HENDELSE.AVSENDER),
                     kategori = Kategori.valueOf(rs.getString(HENDELSE.KATEGORI)),
                     hendelseInnhold = HendelseInnhold(
-                        navn = rs.getString(HENDELSE.HENDELSE_NAVN),
+                        beskrivelse = rs.getString(HENDELSE.HENDELSE_NAVN),
                         dato = toZonedDateTime(rs.getTimestamp(HENDELSE.HENDELSE_DATO)),
                         lenke = URI.create(rs.getString(HENDELSE.HENDELSE_LENKE)).toURL(),
                         detaljer = rs.getString(HENDELSE.HENDELSE_DETALJER),
@@ -72,7 +72,7 @@ class HendelseRepository(
                 avsender = rows[HENDELSE.AVSENDER] as String,
                 kategori = Kategori.valueOf(rows[HENDELSE.KATEGORI] as String),
                 hendelseInnhold = HendelseInnhold(
-                    navn = rows[HENDELSE.HENDELSE_NAVN] as String,
+                    beskrivelse = rows[HENDELSE.HENDELSE_NAVN] as String,
                     dato = toZonedDateTime(rows[HENDELSE.HENDELSE_DATO] as Timestamp),
                     lenke = URI.create(rows[HENDELSE.HENDELSE_LENKE] as String).toURL(),
                     detaljer = rows[HENDELSE.HENDELSE_DETALJER] as String,
