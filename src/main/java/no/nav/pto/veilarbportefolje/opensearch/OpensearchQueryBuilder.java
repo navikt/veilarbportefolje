@@ -451,17 +451,8 @@ public class OpensearchQueryBuilder {
         /* På sikt (tm) skal vi typesikre sortField slik at vi får Sorteringsfelt her, gjerne allereie på Controller-nivå. I denne omgangen lagar eg berre enumen for sorteringsfelta. 2024-11-28, Ingrid. */
         Sorteringsfelt sorteringsfelt = Sorteringsfelt.nameFromValue(sortField);
 
-        /* Null-sjekken er fordi testane kan ha ferdigfilterliste = null */
-        if (IKKE_SATT.equals(sorteringsfelt) && filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(TILTAKSHENDELSER)) {
-            sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC);
-            return searchSourceBuilder;
-        }
-        if (IKKE_SATT.equals(sorteringsfelt)) {
-            searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
-            return searchSourceBuilder;
-        }
-
         switch (sorteringsfelt) {
+            case IKKE_SATT -> brukStandardsorteringBasertPaValgteFilter(filtervalg, searchSourceBuilder);
             case VALGTE_AKTIVITETER -> sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
             case MOTER_MED_NAV_IDAG -> searchSourceBuilder.sort("alle_aktiviteter_mote_startdato", order);
             case MOTESTATUS -> searchSourceBuilder.sort("aktivitet_mote_startdato", order);
@@ -480,7 +471,7 @@ public class OpensearchQueryBuilder {
             case GJELDENDE_VEDTAK_14A_INNSATSGRUPPE ->
                     searchSourceBuilder.sort("gjeldendeVedtak14a.innsatsgruppe", order);
             case GJELDENDE_VEDTAK_14A_HOVEDMAL -> searchSourceBuilder.sort("gjeldendeVedtak14a.hovedmal", order);
-            case GJELDENDE_VEDTAK_14A_VEDTAKSDATO -> searchSourceBuilder.sort("gjeldendeVedtak14a.fattetDato", order);
+            case GJELDENDE_VEDTAK_14A_VEDTAKSDATO -> sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder, order);
             case UTKAST_14A_STATUS -> searchSourceBuilder.sort("utkast_14a_status", order);
             case ARBEIDSLISTE_KATEGORI -> searchSourceBuilder.sort("arbeidsliste_kategori", order);
             case SISTE_ENDRING_DATO -> sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
@@ -510,6 +501,22 @@ public class OpensearchQueryBuilder {
         }
         addSecondarySort(searchSourceBuilder);
         return searchSourceBuilder;
+    }
+
+    private static void brukStandardsorteringBasertPaValgteFilter(Filtervalg filtervalg, SearchSourceBuilder searchSourceBuilder) {
+        boolean filtrertPaTiltakshendelse = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(TILTAKSHENDELSER);
+        boolean filtrertPaEtGjeldendeVedtak14aFilter = filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
+                                                       (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && !filtervalg.innsatsgruppeGjeldendeVedtak14a.isEmpty()) ||
+                                                       (filtervalg.hovedmalGjeldendeVedtak14a != null && !filtervalg.hovedmalGjeldendeVedtak14a.isEmpty());
+
+        if (filtrertPaTiltakshendelse) {
+            sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC);
+        }
+        else if (filtrertPaEtGjeldendeVedtak14aFilter) {
+            sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder, SortOrder.ASC);
+        } else {
+            searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
+        }
     }
 
     static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
@@ -547,6 +554,10 @@ public class OpensearchQueryBuilder {
 
     static void sorterTiltakshendelseOpprettetDato(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
         searchSourceBuilder.sort("tiltakshendelse.opprettet", order);
+    }
+
+    static void sorterGjeldendeVedtak14aVedtaksdato(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        searchSourceBuilder.sort("gjeldendeVedtak14a.fattetDato", order);
     }
 
     static void sorterTolkeSpraak(Filtervalg filtervalg, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
