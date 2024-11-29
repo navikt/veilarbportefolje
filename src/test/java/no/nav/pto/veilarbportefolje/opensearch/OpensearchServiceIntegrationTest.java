@@ -1866,7 +1866,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFoedelandFulltNavn("Estland")
                 .setLandgruppe("2")
                 .setHovedStatsborgerskap(new Statsborgerskap("Estland", LocalDate.now(), null));
-        ;
 
         var brukerFraLandGruppe3_1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -1879,7 +1878,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFoedelandFulltNavn("Aserbajdsjan")
                 .setLandgruppe("3")
                 .setHovedStatsborgerskap(new Statsborgerskap("Norge", LocalDate.now(), null));
-        ;
 
         var brukerFraLandGruppe3_2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -1901,7 +1899,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
                 .setHovedStatsborgerskap(new Statsborgerskap("Norge", LocalDate.now(), null));
-        ;
 
         var liste = List.of(brukerFraLandGruppe1, brukerFraLandGruppe2, brukerFraLandGruppe3_1, brukerFraLandGruppe3_2, brukerUkjentLandGruppe);
 
@@ -2003,7 +2000,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFoedelandFulltNavn("Estland")
                 .setLandgruppe("2")
                 .setHovedStatsborgerskap(new Statsborgerskap("Estland", LocalDate.now(), null));
-        ;
 
         var brukerFraLandGruppe3_1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -2776,7 +2772,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
                 .setBarn_under_18_aar(List.of(new BarnUnder18AarData(5, "19"), new BarnUnder18AarData(11, null)));
-        ;
 
         var liste = List.of(bruker1, bruker2, bruker3, bruker4, bruker5, bruker6);
 
@@ -4819,7 +4814,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setTiltakshendelse(new Tiltakshendelse(UUID.randomUUID(), datoBruker1.toLocalDateTime(), "", "", Tiltakstype.ARBFORB, fnrBruker1))
                 .setGjeldendeVedtak14a(new GjeldendeVedtak14a(Innsatsgruppe.STANDARD_INNSATS, Hovedmal.SKAFFE_ARBEID, datoBruker1));
-        ;
 
         OppfolgingsBruker bruker2 = new OppfolgingsBruker()
                 .setFnr(fnrBruker2.get())

@@ -42,8 +42,7 @@ public class YtelsesRepositoryV2 {
                         """,
                 innhold.getVedtakId(), aktorId.get(), innhold.getPersonId(),
                 type.toString(), innhold.getSaksId(), innhold.getSakstypeKode(), innhold.getRettighetstypeKode(), startdato, utlopsdato,
-                innhold.getAntallUkerIgjen(), innhold.getAntallUkerIgjenUnderPermittering(), innhold.getAntallDagerIgjenUnntak(), innhold.getAntallDagerIgjen(), endretDato)
-        ;
+                innhold.getAntallUkerIgjen(), innhold.getAntallUkerIgjenUnderPermittering(), innhold.getAntallDagerIgjenUnntak(), innhold.getAntallDagerIgjen(), endretDato);
     }
 
     public List<YtelseDAO> getYtelser(AktorId aktorId) {
