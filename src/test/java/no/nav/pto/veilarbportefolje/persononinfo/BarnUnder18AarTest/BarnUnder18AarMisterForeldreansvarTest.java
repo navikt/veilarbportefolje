@@ -95,7 +95,6 @@ public class BarnUnder18AarMisterForeldreansvarTest {
         server.start();
 
         PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
-        ;
 
 
         barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
