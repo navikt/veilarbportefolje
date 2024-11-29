@@ -126,6 +126,7 @@ public class OpensearchIndexer {
         postgresOpensearchMapper.flettInnBarnUnder18Aar(brukere);
         postgresOpensearchMapper.flettInnTiltakshendelser(brukere);
         postgresOpensearchMapper.flettInnSiste14aVedtak(brukere);
+        postgresOpensearchMapper.flettInnUtgatteVarsel(brukere);
         if (FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)) {
             postgresOpensearchMapper.flettInnOpplysningerOmArbeidssoekerData(brukere);
         }

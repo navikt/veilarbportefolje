@@ -240,4 +240,8 @@ public class PostgresOpensearchMapper {
             )).orElse(null));
         });
     }
+
+    public void flettInnUtgatteVarsel(List<OppfolgingsBruker> brukere) {
+
+    }
 }

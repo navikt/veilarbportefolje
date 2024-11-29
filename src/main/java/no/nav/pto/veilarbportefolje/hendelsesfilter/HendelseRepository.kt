@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository
 import java.net.URI
 import java.sql.ResultSet
 import java.sql.Timestamp
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -53,6 +52,44 @@ class HendelseRepository(
 
         return resultat
             ?: throw RuntimeException("Ukjent feil ved henting av hendelse med ID $id. Forventet å få en instans av ${Hendelse::class.simpleName} men fikk null.")
+    }
+
+    /**
+     * Henter den eldste hendelse:
+     *
+     * * dersom minst en hendelse eksisterer for [personIdent] returneres den eldste av disse
+     * * dersom ingen hendelser eksisterer for [personIdent] kastes en [IngenHendelseForPersonException]
+     */
+    fun getEldste(personIdent: NorskIdent): Hendelse {
+        // language=postgresql
+        val sql = """
+            SELECT * FROM ${HENDELSE.TABLE_NAME} WHERE ${HENDELSE.PERSON_IDENT} = ?
+            ORDER BY ${HENDELSE.HENDELSE_DATO} LIMIT 1
+            """.trimIndent()
+
+        val resultat = try {
+            jdbcTemplate.queryForObject(sql, ::toHendelse, personIdent)
+        } catch (ex: EmptyResultDataAccessException) {
+            throw IngenHendelseForPersonException(cause = ex)
+        }
+
+        return resultat
+            ?: throw RuntimeException("Ukjent feil ved henting av hendelse for person. Forventet å få en instans av ${Hendelse::class.simpleName} men fikk null.")
+    }
+
+    private fun toHendelse(resultSet: ResultSet, affectedRows: Int): Hendelse {
+        return Hendelse(
+            id = UUID.fromString(resultSet.getString(HENDELSE.ID)),
+            personIdent = NorskIdent(resultSet.getString(HENDELSE.PERSON_IDENT)),
+            avsender = resultSet.getString(HENDELSE.AVSENDER),
+            kategori = Kategori.valueOf(resultSet.getString(HENDELSE.KATEGORI)),
+            hendelseInnhold = HendelseInnhold(
+                beskrivelse = resultSet.getString(HENDELSE.HENDELSE_NAVN),
+                dato = toZonedDateTime(resultSet.getTimestamp(HENDELSE.HENDELSE_DATO)),
+                lenke = URI.create(resultSet.getString(HENDELSE.HENDELSE_LENKE)).toURL(),
+                detaljer = resultSet.getString(HENDELSE.HENDELSE_DETALJER),
+            )
+        )
     }
 
     /**
@@ -195,3 +232,8 @@ data class IngenHendelseMedIdException(
     override val message: String = "Fant ingen hendelse med id $id.",
     override val cause: Throwable? = null
 ) : RuntimeException(message, cause)
+
+data class IngenHendelseForPersonException(
+    override val message: String = "Fant ingen hendelse for personen.",
+    override val cause: Throwable
+) : RuntimeException(message)
