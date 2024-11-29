@@ -4498,7 +4498,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         /* Nuller sorteringa ved å sortere på etternamn */
         BrukereMedAntall responsNullstilling = sorterBrukerePaStandardsorteringenAktorid(opensearchService);
-        assertEquals(responsNullstilling.getBrukere().get(0).getAktoerid(), aktoridBrukerUtenVedtak);
+        assertEquals(responsNullstilling.getBrukere().get(0).getAktoerid(), brukerUtenGjeldendeVedtak.getAktoer_id());
         assertEquals(responsNullstilling.getBrukere().get(1).getAktoerid(), bruker3.getAktoer_id());
         assertEquals(responsNullstilling.getBrukere().get(2).getAktoerid(), bruker2.getAktoer_id());
         assertEquals(responsNullstilling.getBrukere().get(3).getAktoerid(), bruker1.getAktoer_id());
