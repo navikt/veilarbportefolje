@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
@@ -115,6 +116,7 @@ public class Bruker {
 
     TiltakshendelseForBruker tiltakshendelse;
     GjeldendeVedtak14a gjeldendeVedtak14a;
+    Hendelse utgattVarsel;
 
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 
@@ -213,7 +215,8 @@ public class Bruker {
                 .setFargekategori(bruker.getFargekategori())
                 .setFargekategoriEnhetId(bruker.getFargekategori_enhetId())
                 .setTiltakshendelse(TiltakshendelseForBruker.of(bruker.getTiltakshendelse()))
-                .setGjeldendeVedtak14a(bruker.getGjeldendeVedtak14a());
+                .setGjeldendeVedtak14a(bruker.getGjeldendeVedtak14a())
+                .setUtgattVarsel(bruker.getUtgatt_varsel());
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {
