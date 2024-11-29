@@ -28,7 +28,7 @@ class HendelseServiceTest(
         val key = "96463d56-019e-4b30-ae9b-7365cf002a09"
         val hendelseRecordValue = HendelseRecordValue(
             personID = norskIdent,
-            avsender = "dev-gcp:dab:aktivitetsplan",
+            avsender = "veilarbdialog",
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
@@ -65,7 +65,7 @@ class HendelseServiceTest(
         val key = "96463d56-019e-4b30-ae9b-7365cf002a09"
         val opprinneligHendelseRecordValue = HendelseRecordValue(
             personID = norskIdent,
-            avsender = "dev-gcp:dab:aktivitetsplan",
+            avsender = "veilarbdialog",
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
@@ -130,7 +130,7 @@ class HendelseServiceTest(
         val key = "96463d56-019e-4b30-ae9b-7365cf002a09"
         val opprinneligHendelseRecordValue = HendelseRecordValue(
             personID = norskIdent,
-            avsender = "dev-gcp:dab:aktivitetsplan",
+            avsender = "veilarbdialog",
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
@@ -196,7 +196,7 @@ class HendelseServiceTest(
         val key = "96463d56-019e-4b30-ae9b-7365cf002a09"
         val hendelseRecordValue = HendelseRecordValue(
             personID = norskIdent,
-            avsender = "dev-gcp:dab:aktivitetsplan",
+            avsender = "veilarbdialog",
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(

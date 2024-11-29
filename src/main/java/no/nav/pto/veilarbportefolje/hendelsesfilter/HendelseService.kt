@@ -15,7 +15,7 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
  *
  * Topic-et er et generisk topic som andre team kan produsere generelle oppfølgingshendelser på.
  * Bruksområdet for disse hendelsene er i hovedsak å populere statusfiltre i Oversikten (veilarbportefoljeflatefs).
- * Et eksempel på en hendelse er "Utgått varsel" som i skrivende stund produseres av "aktivitetsplan"-applikasjonen.
+ * Et eksempel på en hendelse er "Utgått varsel" som i skrivende stund produseres av "veilarbdialog"-applikasjonen.
  *
  * Denne klassen håndterer således funksjonalitet knyttet til å starte (les: lagre), oppdatere og stoppe (les: slette)
  * hendelser.

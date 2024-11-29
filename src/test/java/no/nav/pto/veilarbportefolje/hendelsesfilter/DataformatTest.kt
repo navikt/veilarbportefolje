@@ -21,7 +21,7 @@ class DataformatTest {
         val jsonInput = """
             {
               "personID": "11111199999",
-              "avsender": "dev-gcp:dab:aktivitetsplan",
+              "avsender": "veilarbdialog",
               "kategori": "UTGATT_VARSEL",
               "operasjon": "START",
               "hendelse": {
@@ -37,7 +37,7 @@ class DataformatTest {
 
         val forventetHendelseRecordValue = HendelseRecordValue(
             personID = NorskIdent("11111199999"),
-            avsender = "dev-gcp:dab:aktivitetsplan",
+            avsender = "veilarbdialog",
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
@@ -55,7 +55,7 @@ class DataformatTest {
     fun `serialisering av HendelseRecordValue gir forventet JSON`() {
         val hendelseRecordValueInput = HendelseRecordValue(
             personID = NorskIdent("11111199999"),
-            avsender = "dev-gcp:dab:aktivitetsplan",
+            avsender = "veilarbdialog",
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
@@ -72,7 +72,7 @@ class DataformatTest {
         val forventetJson = """
             {
               "personID": "11111199999",
-              "avsender": "dev-gcp:dab:aktivitetsplan",
+              "avsender": "veilarbdialog",
               "kategori": "UTGATT_VARSEL",
               "operasjon": "START",
               "hendelse": {
@@ -92,7 +92,7 @@ class DataformatTest {
         val hendelseID = "96463d56-019e-4b30-ae9b-7365cf002a09"
         val hendelseRecordValueInput = HendelseRecordValue(
             personID = NorskIdent("11111199999"),
-            avsender = "dev-gcp:dab:aktivitetsplan",
+            avsender = "veilarbdialog",
             kategori = Kategori.UTGATT_VARSEL,
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
@@ -108,7 +108,7 @@ class DataformatTest {
         val forventetHendeles = Hendelse(
             id = UUID.fromString("96463d56-019e-4b30-ae9b-7365cf002a09"),
             personIdent = NorskIdent("11111199999"),
-            avsender = "dev-gcp:dab:aktivitetsplan",
+            avsender = "veilarbdialog",
             kategori = Kategori.UTGATT_VARSEL,
             hendelseInnhold = Hendelse.HendelseInnhold(
                 navn = "Bruker har et utgått varsel",
