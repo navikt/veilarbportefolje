@@ -4408,17 +4408,18 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void sorter_pa_vedtaksdato_som_standard_ved_filtrering_pa_alle_gjeldendeVedtak14a_filter() {
-        Fnr brukerMedSiste14aVedtakFnr1 = Fnr.of("11111111111");
-        Fnr brukerMedSiste14aVedtakFnr2 = Fnr.of("22222222222");
-        Fnr brukerMedSiste14aVedtakFnr3 = Fnr.of("33333333333");
-        Fnr brukerUtenSiste14aVedtakFnr = Fnr.of("44444444444");
+        AktorId aktoridBrukerMedGjeldendeVedtak14a1 = AktorId.of("4444444444444");
+        AktorId aktoridBrukerMedGjeldendeVedtak14a2 = AktorId.of("3333333333333");
+        AktorId aktoridBrukerMedGjeldendeVedtak14a3 = AktorId.of("2222222222222");
+        AktorId aktoridBrukerUtenVedtak = AktorId.of("1111111111111");
+
         ZonedDateTime vedtaksdatoBruker1 = ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
         ZonedDateTime vedtaksdatoBruker2 = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
         ZonedDateTime vedtaksdatoBruker3 = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
 
         OppfolgingsBruker bruker1 = new OppfolgingsBruker()
-                .setFnr(brukerMedSiste14aVedtakFnr1.get())
-                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().get())
+                .setAktoer_id(aktoridBrukerMedGjeldendeVedtak14a1.get())
                 .setEnhet_id(TEST_ENHET)
                 .setOppfolging(true)
                 .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
@@ -4428,8 +4429,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 ));
 
         OppfolgingsBruker bruker2 = new OppfolgingsBruker()
-                .setFnr(brukerMedSiste14aVedtakFnr2.get())
-                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().get())
+                .setAktoer_id(aktoridBrukerMedGjeldendeVedtak14a2.get())
                 .setEnhet_id(TEST_ENHET)
                 .setOppfolging(true)
                 .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
@@ -4439,8 +4440,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 ));
 
         OppfolgingsBruker bruker3 = new OppfolgingsBruker()
-                .setFnr(brukerMedSiste14aVedtakFnr3.get())
-                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().get())
+                .setAktoer_id(aktoridBrukerMedGjeldendeVedtak14a3.get())
                 .setEnhet_id(TEST_ENHET)
                 .setOppfolging(true)
                 .setGjeldendeVedtak14a(new GjeldendeVedtak14a(
@@ -4450,8 +4451,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 ));
 
         OppfolgingsBruker brukerUtenGjeldendeVedtak = new OppfolgingsBruker()
-                .setFnr(brukerUtenSiste14aVedtakFnr.get())
-                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().get())
+                .setAktoer_id(aktoridBrukerUtenVedtak.get())
                 .setEnhet_id(TEST_ENHET)
                 .setOppfolging(true);
 
@@ -4467,17 +4468,20 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         BrukereMedAntall responsFiltrertGjeldendeVedtak = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "ascending",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filtrertHarGjeldendeVedtak,
                 null,
                 null
         );
         assertThat(responsFiltrertGjeldendeVedtak.getAntall()).isEqualTo(4);
-        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(0).getFnr(), bruker1.getFnr());
-        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(1).getFnr(), bruker2.getFnr());
-        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(2).getFnr(), bruker3.getFnr());
-        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(3).getFnr(), brukerUtenGjeldendeVedtak.getFnr());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(0).getAktoerid(), bruker1.getAktoer_id());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(1).getAktoerid(), bruker2.getAktoer_id());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(2).getAktoerid(), bruker3.getAktoer_id());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(3).getAktoerid(), brukerUtenGjeldendeVedtak.getAktoer_id());
+
+        /* Nuller sorteringa ved å sortere på etternamn */
+        sorterBrukerePaStandardsorteringenAktorid(opensearchService);
 
         Filtervalg filtrertInnsatsgruppe = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
@@ -4486,16 +4490,23 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         BrukereMedAntall responsFiltrertInnsatsgruppe = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "ascending",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filtrertInnsatsgruppe,
                 null,
                 null
         );
         assertThat(responsFiltrertInnsatsgruppe.getAntall()).isEqualTo(3);
-        assertEquals(responsFiltrertInnsatsgruppe.getBrukere().get(0).getFnr(), bruker1.getFnr());
-        assertEquals(responsFiltrertInnsatsgruppe.getBrukere().get(1).getFnr(), bruker2.getFnr());
-        assertEquals(responsFiltrertInnsatsgruppe.getBrukere().get(2).getFnr(), bruker3.getFnr());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(0).getAktoerid(), bruker1.getAktoer_id());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(1).getAktoerid(), bruker2.getAktoer_id());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(2).getAktoerid(), bruker3.getAktoer_id());
+
+        /* Nuller sorteringa ved å sortere på etternamn */
+        BrukereMedAntall responsNullstilling = sorterBrukerePaStandardsorteringenAktorid(opensearchService);
+        assertEquals(responsNullstilling.getBrukere().get(0).getAktoerid(), aktoridBrukerUtenVedtak);
+        assertEquals(responsNullstilling.getBrukere().get(1).getAktoerid(), bruker3.getAktoer_id());
+        assertEquals(responsNullstilling.getBrukere().get(2).getAktoerid(), bruker2.getAktoer_id());
+        assertEquals(responsNullstilling.getBrukere().get(3).getAktoerid(), bruker1.getAktoer_id());
 
         Filtervalg filtrertHovedmal = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
@@ -4504,16 +4515,16 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         BrukereMedAntall responsFiltrertHovedmal = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "ascending",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filtrertHovedmal,
                 null,
                 null
         );
         assertThat(responsFiltrertHovedmal.getAntall()).isEqualTo(3);
-        assertEquals(responsFiltrertHovedmal.getBrukere().get(0).getFnr(), bruker1.getFnr());
-        assertEquals(responsFiltrertHovedmal.getBrukere().get(1).getFnr(), bruker2.getFnr());
-        assertEquals(responsFiltrertHovedmal.getBrukere().get(2).getFnr(), bruker3.getFnr());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(0).getAktoerid(), bruker1.getAktoer_id());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(1).getAktoerid(), bruker2.getAktoer_id());
+        assertEquals(responsFiltrertGjeldendeVedtak.getBrukere().get(2).getAktoerid(), bruker3.getAktoer_id());
     }
 
     @Test
@@ -4876,6 +4887,18 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         // Viser at vi får feil slik kodebasen er no. Målet er at sorteringsfeltSomFeilerISortering skal vere tom.
         assertThat(sorteringsfeltSomFeilerISortering).isNotEmpty();
+    }
+
+    private BrukereMedAntall sorterBrukerePaStandardsorteringenAktorid(OpensearchService osService) {
+        return osService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "asc",
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                new Filtervalg().setFerdigfilterListe(emptyList()),
+                null,
+                null
+        );
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
