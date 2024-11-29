@@ -53,7 +53,7 @@ class HendelseRepository(
             """.trimIndent()
 
         val resultat = try {
-            jdbcTemplate.queryForObject(sql, ::toHendelse, personIdent)
+            jdbcTemplate.queryForObject(sql, ::toHendelse, personIdent.get())
         } catch (ex: EmptyResultDataAccessException) {
             throw IngenHendelseForPersonException(cause = ex)
         }
