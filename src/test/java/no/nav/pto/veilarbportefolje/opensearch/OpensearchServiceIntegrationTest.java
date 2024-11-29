@@ -4802,27 +4802,40 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void skal_sortere_pa_aktorid_om_ikke_sorteringsfelt_er_valgt() {
+        Fnr fnrBruker1 = Fnr.of("11111111111");
+        Fnr fnrBruker2 = Fnr.of("22222222222");
+        Fnr fnrBruker3 = Fnr.of("33333333333");
         AktorId aktoridBruker1 = AktorId.of("3333333333333");
         AktorId aktoridBruker2 = AktorId.of("1111111111111");
         AktorId aktoridBruker3 = AktorId.of("2222222222222");
+        ZonedDateTime datoBruker1 = ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
+        ZonedDateTime datoBruker2 = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
+        ZonedDateTime datoBruker3 = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
 
         OppfolgingsBruker bruker1 = new OppfolgingsBruker()
-                .setFnr(randomFnr().get())
+                .setFnr(fnrBruker1.get())
                 .setAktoer_id(aktoridBruker1.get())
                 .setEnhet_id(TEST_ENHET)
-                .setOppfolging(true);
+                .setOppfolging(true)
+                .setTiltakshendelse(new Tiltakshendelse(UUID.randomUUID(), datoBruker1.toLocalDateTime(), "", "", Tiltakstype.ARBFORB, fnrBruker1))
+                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(Innsatsgruppe.STANDARD_INNSATS, Hovedmal.SKAFFE_ARBEID, datoBruker1));
+        ;
 
         OppfolgingsBruker bruker2 = new OppfolgingsBruker()
-                .setFnr(randomFnr().get())
+                .setFnr(fnrBruker2.get())
                 .setAktoer_id(aktoridBruker2.get())
                 .setEnhet_id(TEST_ENHET)
-                .setOppfolging(true);
+                .setOppfolging(true)
+                .setTiltakshendelse(new Tiltakshendelse(UUID.randomUUID(), datoBruker2.toLocalDateTime(), "", "", Tiltakstype.ARBFORB, fnrBruker2))
+                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(Innsatsgruppe.STANDARD_INNSATS, Hovedmal.SKAFFE_ARBEID, datoBruker2));
 
         OppfolgingsBruker bruker3 = new OppfolgingsBruker()
-                .setFnr(randomFnr().get())
+                .setFnr(fnrBruker3.get())
                 .setAktoer_id(aktoridBruker3.get())
                 .setEnhet_id(TEST_ENHET)
-                .setOppfolging(true);
+                .setOppfolging(true)
+                .setTiltakshendelse(new Tiltakshendelse(UUID.randomUUID(), datoBruker3.toLocalDateTime(), "", "", Tiltakstype.ARBFORB, fnrBruker3))
+                .setGjeldendeVedtak14a(new GjeldendeVedtak14a(Innsatsgruppe.STANDARD_INNSATS, Hovedmal.SKAFFE_ARBEID, datoBruker1));
 
         var liste = List.of(bruker1, bruker2, bruker3);
         skrivBrukereTilTestindeks(liste);
