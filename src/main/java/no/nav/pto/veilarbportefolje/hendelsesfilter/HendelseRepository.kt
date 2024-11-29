@@ -110,6 +110,7 @@ class HendelseRepository(
             ON CONFLICT (${HENDELSE.ID}) DO NOTHING
             """
 
+        val timestampAkkuratNaa = toTimestamp(ZonedDateTime.now())
         val affectedRows = jdbcTemplate.update(
             sql,
             id,
@@ -120,8 +121,8 @@ class HendelseRepository(
             detaljer,
             kategori.name,
             avsender,
-            toTimestamp(LocalDateTime.now()),
-            toTimestamp(LocalDateTime.now()),
+            timestampAkkuratNaa,
+            timestampAkkuratNaa,
         )
 
         if (affectedRows == 0) {
