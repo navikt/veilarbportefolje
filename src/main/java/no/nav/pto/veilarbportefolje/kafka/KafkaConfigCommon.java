@@ -64,13 +64,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_STOP;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KONSUMER_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.STOPP_KONSUMERING_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
@@ -478,8 +477,9 @@ public class KafkaConfigCommon {
         consumerClientAivenPortefoljeHendelsesFilter = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfig(portefoljeHendelsesFilterTopicConfig)
-                .withToggle(() -> defaultUnleash.isEnabled(KONSUMER_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC) || kafkaAivenUnleash.get())
+                .withToggle(() -> defaultUnleash.isEnabled(STOPP_KONSUMERING_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC))
                 .build();
+        // TODO: Må endre KONSUMER_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC til at den er TRUE når skrudd av og FALSE når skrudd på
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> allTopicConfigs = new java.util.ArrayList<>();
         allTopicConfigs.addAll(topicConfigsAiven);
