@@ -62,21 +62,6 @@ class HendelseRepository(
             ?: throw RuntimeException("Ukjent feil ved henting av hendelse for person. Forventet å få en instans av ${Hendelse::class.simpleName} men fikk null.")
     }
 
-    private fun toHendelse(resultSet: ResultSet, affectedRows: Int): Hendelse {
-        return Hendelse(
-            id = UUID.fromString(resultSet.getString(HENDELSE.ID)),
-            personIdent = NorskIdent(resultSet.getString(HENDELSE.PERSON_IDENT)),
-            avsender = resultSet.getString(HENDELSE.AVSENDER),
-            kategori = Kategori.valueOf(resultSet.getString(HENDELSE.KATEGORI)),
-            hendelse = HendelseInnhold(
-                beskrivelse = resultSet.getString(HENDELSE.HENDELSE_NAVN),
-                dato = toZonedDateTime(resultSet.getTimestamp(HENDELSE.HENDELSE_DATO)),
-                lenke = URI.create(resultSet.getString(HENDELSE.HENDELSE_LENKE)).toURL(),
-                detaljer = resultSet.getString(HENDELSE.HENDELSE_DETALJER),
-            )
-        )
-    }
-
     /**
      * Henter hendelser:
      *
@@ -209,6 +194,22 @@ class HendelseRepository(
             throw IngenHendelseMedIdException(id.toString())
         }
     }
+
+}
+
+private fun toHendelse(resultSet: ResultSet, affectedRows: Int): Hendelse {
+    return Hendelse(
+        id = UUID.fromString(resultSet.getString(HENDELSE.ID)),
+        personIdent = NorskIdent(resultSet.getString(HENDELSE.PERSON_IDENT)),
+        avsender = resultSet.getString(HENDELSE.AVSENDER),
+        kategori = Kategori.valueOf(resultSet.getString(HENDELSE.KATEGORI)),
+        hendelse = HendelseInnhold(
+            beskrivelse = resultSet.getString(HENDELSE.HENDELSE_NAVN),
+            dato = toZonedDateTime(resultSet.getTimestamp(HENDELSE.HENDELSE_DATO)),
+            lenke = URI.create(resultSet.getString(HENDELSE.HENDELSE_LENKE)).toURL(),
+            detaljer = resultSet.getString(HENDELSE.HENDELSE_DETALJER),
+        )
+    )
 }
 
 data class HendelseIdEksistererAlleredeException(override val message: String) : RuntimeException(message)
