@@ -67,7 +67,6 @@ class HendelseService(
 
             logger.info("Hendelse med id ${hendelse.id} ble startet")
         } catch (ex: HendelseIdEksistererAlleredeException) {
-            // TODO: Ignorer melding eller kast exception slik at den blir fanga opp av retry-mekanismen?
             logger.info("Hendelse med ID ${hendelse.id} allerede startet. Ignorerer melding.")
         }
     }
@@ -78,7 +77,10 @@ class HendelseService(
 
             logger.info("Hendelse med id ${hendelse.id} ble oppdatert")
         } catch (ex: IngenHendelseMedIdException) {
-            // TODO: Ignorer melding eller kast exception slik at den blir fanga opp av retry-mekanismen?
+            // 2024-12-02, Sondre:
+            // Per no ignorer vi melding, då vi forventar å alltid få ei "START"-melding før ei eventuell "OPPDATER"- eller "STOPP"-melding.
+            // Dette går fint så lenge vi ikkje har skrudd på "compaction" på topicet. Dersom vi har "compaction" på er det ikkje gitt
+            // at vi berre kan ignorere, sidan vi då potensielt går glipp av hendelsar ved ein eventuell rewind på topic-et.
             logger.warn("Fikk hendelse med operasjon ${Operasjon.OPPDATER} og ID ${hendelse.id}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
         }
     }
@@ -89,7 +91,10 @@ class HendelseService(
 
             logger.info("Hendelse med id ${hendelse.id} ble stoppet")
         } catch (ex: IngenHendelseMedIdException) {
-            // TODO: Ignorer melding eller kast exception slik at den blir fanga opp av retry-mekanismen?
+            // 2024-12-02, Sondre:
+            // Per no ignorer vi melding, då vi forventar å alltid få ei "START"-melding før ei eventuell "OPPDATER"- eller "STOPP"-melding.
+            // Dette går fint så lenge vi ikkje har skrudd på "compaction" på topicet. Dersom vi har "compaction" på er det ikkje gitt
+            // at vi berre kan ignorere, sidan vi då potensielt går glipp av hendelsar ved ein eventuell rewind på topic-et.
             logger.warn("Fikk hendelse med operasjon ${Operasjon.STOPP} og ID ${hendelse.id}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
         }
     }
