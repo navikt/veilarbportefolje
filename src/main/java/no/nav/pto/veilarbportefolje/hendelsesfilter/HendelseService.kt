@@ -15,9 +15,9 @@ import java.util.*
  *
  * Topic-et er et generisk topic som andre team kan produsere generelle oppfølgingshendelser på.
  * Bruksområdet for disse hendelsene er i hovedsak å populere statusfiltre i Oversikten (veilarbportefoljeflatefs).
- * Et eksempel på en hendelse er "Utgått varsel" som i skrivende stund produseres av "veilarbdialog"-applikasjonen.
+ * Et eksempel på en hendelse er "Utgått varsel" som i skrivende stund produseres av "veilarbdialog"-applikasjonen. (2024-12-03)
  *
- * Denne klassen håndterer således funksjonalitet knyttet til å starte (les: lagre), oppdatere og stoppe (les: slette)
+ * Denne klassen håndterer funksjonalitet knyttet til å starte (les: lagre), oppdatere og stoppe (les: slette)
  * hendelser.
  */
 @Service
