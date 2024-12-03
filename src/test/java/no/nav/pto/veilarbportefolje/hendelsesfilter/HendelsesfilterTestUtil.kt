@@ -49,7 +49,7 @@ fun randomKategori(): Kategori {
 
 fun randomDetaljer(): String? {
     return if (Random.nextBoolean()) {
-        ""
+        "Detaljer_${Random.nextInt(until = 10)}"
     } else {
         null
     }
