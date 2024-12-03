@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
 import no.nav.common.types.identer.NorskIdent
+import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
 import no.nav.pto.veilarbportefolje.domene.Bruker
 import no.nav.pto.veilarbportefolje.domene.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
@@ -11,15 +12,28 @@ import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.jdbc.core.JdbcTemplate
 import java.util.*
 
 class HendelseIntegrationTest(
     @Autowired private val opensearchService: OpensearchService,
     @Autowired private val hendelseService: HendelseService,
-    @Autowired private val hendelseRepository: HendelseRepository
+    @Autowired private val hendelseRepository: HendelseRepository,
+    @Autowired private val jdbcTemplate: JdbcTemplate
 ) : EndToEndTest() {
+
+    @BeforeEach
+    fun reset() {
+        jdbcTemplate.update("TRUNCATE aktiviteter")
+        jdbcTemplate.update("TRUNCATE oppfolgingsbruker_arena_v2")
+        jdbcTemplate.update("TRUNCATE bruker_identer")
+        jdbcTemplate.update("TRUNCATE oppfolging_data")
+        jdbcTemplate.update("TRUNCATE nom_skjerming")
+        jdbcTemplate.update("TRUNCATE TABLE ${HENDELSE.TABLE_NAME}")
+    }
 
     @Test
     fun `skal oppdatere data om utgått varsel på bruker i OpenSearch ved indeksering når vi har hendelse-data for bruker`() {
