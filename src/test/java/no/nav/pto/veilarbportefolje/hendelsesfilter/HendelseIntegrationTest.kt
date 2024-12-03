@@ -81,4 +81,132 @@ class HendelseIntegrationTest(
         assertThat(brukerFraRespons).isNotNull
         assertThat(brukerFraRespons.utgattVarsel).isNull()
     }
+
+    @Test
+    fun `skal sette inn data om utgått varsel på bruker i OpenSearch når vi får START-melding`() {
+        // Given
+        val brukerAktorId = randomAktorId()
+        val brukerFnr = randomFnr()
+        val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
+        val brukerOppfolgingsEnhet = randomNavKontor()
+        testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
+        opensearchIndexer.indekser(brukerAktorId)
+
+        // When
+        val hendelseId = UUID.randomUUID().toString()
+        val hendelseRecordValue =
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+        val hendelseConsumerRecord =
+            genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = hendelseId)
+        hendelseService.behandleKafkaRecord(hendelseConsumerRecord)
+
+        // Then
+        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
+        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+            brukerOppfolgingsEnhet.value,
+            Optional.empty(),
+            "asc",
+            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Filtervalg().setFerdigfilterListe(emptyList()),
+            null,
+            null
+        ).brukere.first()
+        assertThat(brukerFraRespons).isNotNull
+        assertThat(brukerFraRespons.utgattVarsel).isNotNull
+        val forventetHendelse = toHendelse(hendelseRecordValue, hendelseId)
+        assertThat(brukerFraRespons.utgattVarsel.avsender).isEqualTo(forventetHendelse.avsender)
+        assertThat(brukerFraRespons.utgattVarsel.kategori).isEqualTo(forventetHendelse.kategori)
+        assertThat(brukerFraRespons.utgattVarsel.personIdent).isEqualTo(forventetHendelse.personIdent)
+        assertThat(brukerFraRespons.utgattVarsel.hendelse.beskrivelse).isEqualTo(forventetHendelse.hendelse.beskrivelse)
+        assertThat(brukerFraRespons.utgattVarsel.hendelse.detaljer).isEqualTo(forventetHendelse.hendelse.detaljer)
+        assertThat(brukerFraRespons.utgattVarsel.hendelse.lenke).isEqualTo(forventetHendelse.hendelse.lenke)
+    }
+
+    @Test
+    fun `skal oppdatere data om utgått varsel på bruker i OpenSearch når vi får OPPDATER-melding`() {
+        // Given
+        val brukerAktorId = randomAktorId()
+        val brukerFnr = randomFnr()
+        val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
+        val brukerOppfolgingsEnhet = randomNavKontor()
+        testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
+        opensearchIndexer.indekser(brukerAktorId)
+        val hendelseId = UUID.randomUUID().toString()
+        val hendelseRecordValue =
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+        val hendelseConsumerRecord =
+            genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = hendelseId)
+        hendelseService.behandleKafkaRecord(hendelseConsumerRecord)
+
+        // When
+        val oppdatertHendelseRecordValue = hendelseRecordValue.copy(
+            operasjon = Operasjon.OPPDATER,
+            hendelse = hendelseRecordValue.hendelse.copy(beskrivelse = "Ny beskrivelse")
+        )
+        val oppdatertHendelseConsumerRecord = genererRandomHendelseConsumerRecord(
+            key = hendelseId,
+            recordValue = oppdatertHendelseRecordValue
+        )
+        hendelseService.behandleKafkaRecord(oppdatertHendelseConsumerRecord)
+
+        // Then
+        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
+        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+            brukerOppfolgingsEnhet.value,
+            Optional.empty(),
+            "asc",
+            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Filtervalg().setFerdigfilterListe(emptyList()),
+            null,
+            null
+        ).brukere.first()
+        assertThat(brukerFraRespons).isNotNull
+        assertThat(brukerFraRespons.utgattVarsel).isNotNull
+        val forventetHendelse = toHendelse(oppdatertHendelseRecordValue, hendelseId)
+        assertThat(brukerFraRespons.utgattVarsel.avsender).isEqualTo(forventetHendelse.avsender)
+        assertThat(brukerFraRespons.utgattVarsel.kategori).isEqualTo(forventetHendelse.kategori)
+        assertThat(brukerFraRespons.utgattVarsel.personIdent).isEqualTo(forventetHendelse.personIdent)
+        assertThat(brukerFraRespons.utgattVarsel.hendelse.beskrivelse).isEqualTo(forventetHendelse.hendelse.beskrivelse)
+        assertThat(brukerFraRespons.utgattVarsel.hendelse.detaljer).isEqualTo(forventetHendelse.hendelse.detaljer)
+        assertThat(brukerFraRespons.utgattVarsel.hendelse.lenke).isEqualTo(forventetHendelse.hendelse.lenke)
+    }
+
+    @Test
+    fun `skal fjerne data om utgått varsel på bruker i OpenSearch når vi får STOPP-melding`() {
+        // Given
+        val brukerAktorId = randomAktorId()
+        val brukerFnr = randomFnr()
+        val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
+        val brukerOppfolgingsEnhet = randomNavKontor()
+        testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
+        opensearchIndexer.indekser(brukerAktorId)
+        val hendelseId = UUID.randomUUID().toString()
+        val hendelseRecordValue =
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+        val hendelseConsumerRecord =
+            genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = hendelseId)
+        hendelseService.behandleKafkaRecord(hendelseConsumerRecord)
+
+        // When
+        val oppdatertHendelseRecordValue = hendelseRecordValue.copy(operasjon = Operasjon.STOPP)
+        val oppdatertHendelseConsumerRecord = genererRandomHendelseConsumerRecord(
+            key = hendelseId,
+            recordValue = oppdatertHendelseRecordValue
+        )
+        hendelseService.behandleKafkaRecord(oppdatertHendelseConsumerRecord)
+
+        // Then
+        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
+        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+            brukerOppfolgingsEnhet.value,
+            Optional.empty(),
+            "asc",
+            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Filtervalg().setFerdigfilterListe(emptyList()),
+            null,
+            null
+        ).brukere.first()
+        assertThat(brukerFraRespons).isNotNull
+        assertThat(brukerFraRespons.utgattVarsel).isNull()
+    }
 }

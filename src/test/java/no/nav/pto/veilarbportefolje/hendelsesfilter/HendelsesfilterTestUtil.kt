@@ -88,12 +88,12 @@ fun genererRandomHendelseConsumerRecord(
     )
 }
 
-private fun randomUrl(): URL =
+fun randomUrl(): URL =
     URI.create("https://veilarbpersonflate.intern.dev.nav.no/${Random.nextInt(until = 10)}").toURL()
 
-private fun randomBeskrivelse() = "Beskrivelse_${Random.nextInt(until = 10)}"
+fun randomBeskrivelse() = "Beskrivelse_${Random.nextInt(until = 10)}"
 
-private fun randomAvsender() = "Avsender_${Random.nextInt(until = 10)}"
+fun randomAvsender() = "Avsender_${Random.nextInt(until = 10)}"
 
 fun randomKategori(): Kategori {
     val kategoriValues = Kategori.entries
