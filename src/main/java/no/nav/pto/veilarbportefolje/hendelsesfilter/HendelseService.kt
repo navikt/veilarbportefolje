@@ -41,7 +41,7 @@ class HendelseService(
         val isUnderArbeidsrettetOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(hendelse.personIdent.get())
 
         if (!isUnderArbeidsrettetOppfolging) {
-            logger.info("Fikk melding på bruker som ikke er under oppfølging. Ignorerer melding.")
+            logger.info("Fikk melding/hendelse med hendelse ID $hendelseId for bruker som ikke er under oppfølging. Ignorerer melding.")
             return
         }
 
