@@ -1,10 +1,10 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
-import Hendelse
-import Kategori
 import no.nav.common.types.identer.NorskIdent
+import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNorskIdent
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomZonedDate
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import java.net.URI
 import java.net.URL
 import java.time.ZonedDateTime
@@ -35,6 +35,45 @@ fun genererRandomHendelse(
     )
 }
 
+fun genererRandomHendelseRecordValue(
+    personID: NorskIdent = randomNorskIdent(),
+    avsender: String = randomAvsender(),
+    kategori: Kategori = randomKategori(),
+    operasjon: Operasjon = randomOperasjon(),
+    hendelseBeskrivelse: String = randomBeskrivelse(),
+    hendelseDato: ZonedDateTime = randomZonedDate(),
+    hendelseLenke: URL = randomUrl(),
+    hendelseDetaljer: String? = randomDetaljer(),
+): HendelseRecordValue {
+    return HendelseRecordValue(
+        personID = personID,
+        avsender = avsender,
+        kategori = kategori,
+        operasjon = operasjon,
+        hendelse = HendelseRecordValue.HendelseInnhold(
+            beskrivelse = hendelseBeskrivelse,
+            dato = hendelseDato,
+            lenke = hendelseLenke,
+            detaljer = hendelseDetaljer,
+        ),
+    )
+}
+
+fun genererRandomHendelseConsumerRecord(
+    key: String = UUID.randomUUID().toString(),
+    recordValue: HendelseRecordValue = genererRandomHendelseRecordValue(),
+    partition: Int = Random.nextInt(until = 5),
+    offset: Long = Random.nextLong(until = 10_000),
+): ConsumerRecord<String, HendelseRecordValue> {
+    return ConsumerRecord(
+        KafkaConfigCommon.Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
+        partition,
+        offset,
+        key,
+        recordValue
+    )
+}
+
 private fun randomUrl(): URL =
     URI.create("https://veilarbpersonflate.intern.dev.nav.no/${Random.nextInt(until = 10)}").toURL()
 
@@ -45,6 +84,11 @@ private fun randomAvsender() = "Avsender_${Random.nextInt(until = 10)}"
 fun randomKategori(): Kategori {
     val kategoriValues = Kategori.entries
     return Random.nextInt(kategoriValues.size).let { kategoriValues[it] }
+}
+
+fun randomOperasjon(): Operasjon {
+    val operasjonValues = Operasjon.entries
+    return Random.nextInt(operasjonValues.size).let { operasjonValues[it] }
 }
 
 fun randomDetaljer(): String? {

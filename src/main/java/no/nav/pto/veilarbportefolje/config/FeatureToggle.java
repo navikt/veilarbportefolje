@@ -21,6 +21,8 @@ public class FeatureToggle {
 
     public static final String SKJUL_ARBEIDSLISTEFUNKSJONALITET = "veilarbportefoljeflatefs.skjul_arbeidslistefunksjonalitet";
 
+    public static final String STOPP_KONSUMERING_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC = "veilarbportefolje.stopp_konsumering_fra_portefolje_hendelsesfilter_topic";
+
     public static boolean brukAvAliasIndeksering(DefaultUnleash defaultUnleash) {
         return defaultUnleash.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
     }
@@ -40,9 +42,11 @@ public class FeatureToggle {
     public static boolean brukNyttArbeidssoekerregister(DefaultUnleash defaultUnleash) {
         return defaultUnleash.isEnabled(FeatureToggle.BRUK_NYTT_ARBEIDSSOEKERREGISTER);
     }
+
     public static boolean brukNyttArbeidssoekerregisterKafka(DefaultUnleash defaultUnleash) {
         return defaultUnleash.isEnabled(FeatureToggle.BRUK_NYTT_ARBEIDSSOEKERREGISTER_KAFKA);
     }
+
     public static boolean skjulArbeidslistefunksjonalitet(DefaultUnleash defaultUnleash) {
         return defaultUnleash.isEnabled(FeatureToggle.SKJUL_ARBEIDSLISTEFUNKSJONALITET);
     }
