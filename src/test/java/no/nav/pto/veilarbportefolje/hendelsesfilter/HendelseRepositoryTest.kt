@@ -49,7 +49,7 @@ class HendelseRepositoryTest(
         hendelseRepository.insert(opprinneligHendelse)
 
         // When
-        val nyHendelseMedSammeId = genererRandomHendelse().copy(id = opprinneligHendelse.id)
+        val nyHendelseMedSammeId = genererRandomHendelse(id = opprinneligHendelse.id)
         val resultatAvOpprettelse = try {
             hendelseRepository.insert(nyHendelseMedSammeId)
         } catch (ex: RuntimeException) {
@@ -135,7 +135,7 @@ class HendelseRepositoryTest(
 
         // When
         val hendelseMedSammeIDOgOppdatertData =
-            genererRandomHendelse().copy(id = opprinneligHendelse.id, personIdent = opprinneligHendelse.personIdent)
+            genererRandomHendelse(id = opprinneligHendelse.id, personIdent = opprinneligHendelse.personIdent)
         val resultatAvOppdatering = try {
             hendelseRepository.update(hendelseMedSammeIDOgOppdatertData)
         } catch (ex: RuntimeException) {
