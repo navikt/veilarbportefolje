@@ -50,17 +50,26 @@ enum class Operasjon {
     OPPDATER
 }
 
-data class Hendelse(
+data class Hendelse @JsonCreator constructor(
+    @JsonProperty("id")
     val id: UUID,
+    @JsonProperty("personIdent")
     val personIdent: NorskIdent,
+    @JsonProperty("avsender")
     val avsender: String,
+    @JsonProperty("kategori")
     val kategori: Kategori,
+    @JsonProperty("hendelse")
     val hendelse: HendelseInnhold
 ) {
-    data class HendelseInnhold(
+    data class HendelseInnhold @JsonCreator constructor(
+        @JsonProperty("beskrivelse")
         val beskrivelse: String,
+        @JsonProperty("dato")
         val dato: ZonedDateTime,
+        @JsonProperty("lenke")
         val lenke: URL,
+        @JsonProperty("detaljer")
         val detaljer: String?
     )
 }
