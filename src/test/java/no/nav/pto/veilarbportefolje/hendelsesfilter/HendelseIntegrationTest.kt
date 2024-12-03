@@ -62,6 +62,7 @@ class HendelseIntegrationTest(
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
+        assertThat(brukerFraRespons.utgattVarsel.id).isEqualTo(hendelse.id)
         assertThat(brukerFraRespons.utgattVarsel.avsender).isEqualTo(hendelse.avsender)
         assertThat(brukerFraRespons.utgattVarsel.kategori).isEqualTo(hendelse.kategori)
         assertThat(brukerFraRespons.utgattVarsel.personIdent).isEqualTo(hendelse.personIdent)
@@ -128,6 +129,7 @@ class HendelseIntegrationTest(
         assertThat(brukerFraRespons).isNotNull
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
         val forventetHendelse = toHendelse(hendelseRecordValue, hendelseId)
+        assertThat(brukerFraRespons.utgattVarsel.id).isEqualTo(forventetHendelse.id)
         assertThat(brukerFraRespons.utgattVarsel.avsender).isEqualTo(forventetHendelse.avsender)
         assertThat(brukerFraRespons.utgattVarsel.kategori).isEqualTo(forventetHendelse.kategori)
         assertThat(brukerFraRespons.utgattVarsel.personIdent).isEqualTo(forventetHendelse.personIdent)
@@ -177,6 +179,7 @@ class HendelseIntegrationTest(
         assertThat(brukerFraRespons).isNotNull
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
         val forventetHendelse = toHendelse(oppdatertHendelseRecordValue, hendelseId)
+        assertThat(brukerFraRespons.utgattVarsel.id).isEqualTo(forventetHendelse.id)
         assertThat(brukerFraRespons.utgattVarsel.avsender).isEqualTo(forventetHendelse.avsender)
         assertThat(brukerFraRespons.utgattVarsel.kategori).isEqualTo(forventetHendelse.kategori)
         assertThat(brukerFraRespons.utgattVarsel.personIdent).isEqualTo(forventetHendelse.personIdent)
@@ -222,5 +225,111 @@ class HendelseIntegrationTest(
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
         assertThat(brukerFraRespons.utgattVarsel).isNull()
+    }
+
+    @Test
+    fun `dersom ny hendelse med operasjon=START er eldre enn allerede lagret hendelse, skal ny hendelse overskrive utgått varsel i OpenSearch for bruker`() {
+        // Given
+        val brukerAktorId = randomAktorId()
+        val brukerFnr = randomFnr()
+        val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
+        val brukerOppfolgingsEnhet = randomNavKontor()
+        testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
+        opensearchIndexer.indekser(brukerAktorId)
+        val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
+        val yngreHendelseRecordValue =
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+        val yngreHendelseConsumerRecord =
+            genererRandomHendelseConsumerRecord(recordValue = yngreHendelseRecordValue, key = yngreHendelseId)
+        hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
+
+        // When
+        val eldreHendelseId = "56d9b9d1-0920-4a2f-bd62-0953d563ce2a"
+        val eldreHendelseRecordValue =
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10)
+            )
+        val eldreHendelseConsumerRecord =
+            genererRandomHendelseConsumerRecord(recordValue = eldreHendelseRecordValue, key = eldreHendelseId)
+        hendelseService.behandleKafkaRecord(eldreHendelseConsumerRecord)
+
+        // Then
+        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
+        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+            brukerOppfolgingsEnhet.value,
+            Optional.empty(),
+            "asc",
+            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Filtervalg().setFerdigfilterListe(emptyList()),
+            null,
+            null
+        ).brukere.first()
+        assertThat(brukerFraRespons).isNotNull
+        assertThat(brukerFraRespons.utgattVarsel).isNotNull
+        val forventetHendelse = toHendelse(eldreHendelseRecordValue, eldreHendelseId)
+        assertThat(brukerFraRespons.utgattVarsel.id).isEqualTo(forventetHendelse.id)
+        assertThat(brukerFraRespons.utgattVarsel.avsender).isEqualTo(forventetHendelse.avsender)
+        assertThat(brukerFraRespons.utgattVarsel.kategori).isEqualTo(forventetHendelse.kategori)
+        assertThat(brukerFraRespons.utgattVarsel.personIdent).isEqualTo(forventetHendelse.personIdent)
+        assertThat(brukerFraRespons.utgattVarsel.hendelse.beskrivelse).isEqualTo(forventetHendelse.hendelse.beskrivelse)
+        assertThat(brukerFraRespons.utgattVarsel.hendelse.detaljer).isEqualTo(forventetHendelse.hendelse.detaljer)
+        assertThat(brukerFraRespons.utgattVarsel.hendelse.lenke).isEqualTo(forventetHendelse.hendelse.lenke)
+    }
+
+    @Test
+    fun `dersom ny hendelse med operasjon=STOPP var den eldste lagrede hendelsen, skal utgått varsel i OpenSearch for bruker oppdateres med det som nå er ny eldste hendelse`() {
+        // Given
+        val brukerAktorId = randomAktorId()
+        val brukerFnr = randomFnr()
+        val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
+        val brukerOppfolgingsEnhet = randomNavKontor()
+        testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
+        opensearchIndexer.indekser(brukerAktorId)
+        val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
+        val yngreHendelseRecordValue =
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+        val yngreHendelseConsumerRecord =
+            genererRandomHendelseConsumerRecord(recordValue = yngreHendelseRecordValue, key = yngreHendelseId)
+        hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
+        val eldreHendelseId = "56d9b9d1-0920-4a2f-bd62-0953d563ce2a"
+        val eldreHendelseRecordValueStart =
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10)
+            )
+        val eldreHendelseConsumerRecordStart =
+            genererRandomHendelseConsumerRecord(recordValue = eldreHendelseRecordValueStart, key = eldreHendelseId)
+        hendelseService.behandleKafkaRecord(eldreHendelseConsumerRecordStart)
+
+        // When
+        val eldreHendelseRecordValueStopp = eldreHendelseRecordValueStart.copy(operasjon = Operasjon.STOPP)
+        val eldreHendelseConsumerRecordStopp =
+            genererRandomHendelseConsumerRecord(recordValue = eldreHendelseRecordValueStopp, key = eldreHendelseId)
+        hendelseService.behandleKafkaRecord(eldreHendelseConsumerRecordStopp)
+
+        // Then
+        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
+        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+            brukerOppfolgingsEnhet.value,
+            Optional.empty(),
+            "asc",
+            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Filtervalg().setFerdigfilterListe(emptyList()),
+            null,
+            null
+        ).brukere.first()
+        assertThat(brukerFraRespons).isNotNull
+        assertThat(brukerFraRespons.utgattVarsel).isNotNull
+        val forventetHendelse = toHendelse(yngreHendelseRecordValue, yngreHendelseId)
+        assertThat(brukerFraRespons.utgattVarsel.id).isEqualTo(forventetHendelse.id)
+        assertThat(brukerFraRespons.utgattVarsel.avsender).isEqualTo(forventetHendelse.avsender)
+        assertThat(brukerFraRespons.utgattVarsel.kategori).isEqualTo(forventetHendelse.kategori)
+        assertThat(brukerFraRespons.utgattVarsel.personIdent).isEqualTo(forventetHendelse.personIdent)
+        assertThat(brukerFraRespons.utgattVarsel.hendelse.beskrivelse).isEqualTo(forventetHendelse.hendelse.beskrivelse)
+        assertThat(brukerFraRespons.utgattVarsel.hendelse.detaljer).isEqualTo(forventetHendelse.hendelse.detaljer)
+        assertThat(brukerFraRespons.utgattVarsel.hendelse.lenke).isEqualTo(forventetHendelse.hendelse.lenke)
     }
 }
