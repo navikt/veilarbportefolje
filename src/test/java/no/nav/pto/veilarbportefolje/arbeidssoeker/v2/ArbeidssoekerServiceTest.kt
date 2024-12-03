@@ -46,7 +46,10 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.Instant
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalUnit
 import java.util.*
+import java.util.concurrent.TimeUnit
 import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke as JaNeiVetIkkeEkstern
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkamelding
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkamelding
@@ -325,6 +328,53 @@ class ArbeidssoekerServiceTest(
         assertTrue(harNyOpplysninger)
         assertFalse(harGammelProfilering)
         assertTrue(harNyProfilering)
+    }
+
+    @Test
+    fun `Ved kafkamelding om avsluttet arbeidssøkerperiode skal all data fra arbeidssøkerregisteret slettes`() {
+        // Arrange
+        `when`(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true)
+        val arbeidssoekerPeriodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
+        val fnr = Fnr.of("17858998980")
+        val aktorId = randomAktorId()
+
+        mockPdlIdenterRespons(aktorId, fnr)
+        mockPdlPersonRespons(fnr)
+        mockPdlPersonBarnRespons()
+        mockHentOppfolgingsbrukerResponse(fnr)
+        mockHentArbeidssoekerPerioderResponse(fnr)
+        mockHentOpplysningerOmArbeidssoekerResponse(fnr, arbeidssoekerPeriodeId)
+        mockHentProfileringResponse(fnr, arbeidssoekerPeriodeId)
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
+
+        val arbeidssoekerPeriodeMeldingMedAvsluttDato = Periode(
+            arbeidssoekerPeriodeId,
+            fnr.get(),
+            Metadata(
+                Instant.now().minus(1, ChronoUnit.DAYS),
+                null,
+                null,
+                null
+            ),
+            Metadata(
+                Instant.now(),
+                null,
+                null,
+                null
+            )
+        )
+
+        // Act
+        val lagretArbeidssoekerPeriodeForAvslutting = sisteArbeidssoekerPeriodeRepository.hentSisteArbeidssoekerPeriode(arbeidssoekerPeriodeId)
+        arbeidssoekerService.behandleKafkaMeldingLogikk(arbeidssoekerPeriodeMeldingMedAvsluttDato)
+        val lagretArbeidssoekerPeriodeEtterAvslutting = sisteArbeidssoekerPeriodeRepository.hentSisteArbeidssoekerPeriode(arbeidssoekerPeriodeId)
+
+        // Assert
+        assertThat(lagretArbeidssoekerPeriodeForAvslutting).isNotNull
+        assertThat(lagretArbeidssoekerPeriodeForAvslutting?.arbeidssoekerperiodeId).isEqualTo(arbeidssoekerPeriodeId)
+        assertThat(lagretArbeidssoekerPeriodeEtterAvslutting).isNull()
+        // TODO: Litt fleire asserts
     }
 
     @Test

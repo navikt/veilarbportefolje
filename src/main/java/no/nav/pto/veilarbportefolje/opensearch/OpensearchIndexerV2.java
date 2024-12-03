@@ -63,6 +63,30 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
+    public void deleteProfilering(AktorId aktoerId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .nullField("profilering_resultat")
+                .endObject();
+
+        update(aktoerId, content, "Oppdater profileringsresultat");
+    }
+
+    @SneakyThrows
+    public void deleteOpplysningerOmArbeidssoeker(AktorId aktoerId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .nullField("brukers_situasjoner")
+                .nullField("utdanning")
+                .nullField("utdanning_bestatt")
+                .nullField("utdanning_godkjent")
+                .nullField("utdanning_og_situasjon_sist_endret")
+                .endObject();
+
+        update(aktoerId, content, "Oppdater opplysninger om arbeidssøker");
+    }
+
+    @SneakyThrows
     public void updateProfilering(AktorId aktoerId, ProfileringEntity profileringEntity) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
