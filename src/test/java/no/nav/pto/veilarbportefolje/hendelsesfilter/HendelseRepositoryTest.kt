@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID.randomUUID
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
@@ -95,7 +96,7 @@ class HendelseRepositoryTest(
     fun `skal hente den eldste Hendelse når flere hendelser eksisterer for person`() {
         // Given
         val personIdent = randomNorskIdent()
-        val naa = ZonedDateTime.now()
+        val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
         val hendelseEldste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(2))
         val hendelseNestEldste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(1))
         val hendelseNyeste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa)
