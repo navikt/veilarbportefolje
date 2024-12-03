@@ -37,6 +37,8 @@ import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsstønadArbeidsoppfølging;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRecordValue;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseService;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.AivenAvroDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
@@ -68,6 +70,7 @@ import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfig
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_STOP;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.STOPP_KONSUMERING_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
@@ -125,7 +128,9 @@ public class KafkaConfigCommon {
 
         PDL_BRUKERDATA("pdl.pdl-persondokument-v1"),
 
-        TILTAKSHENDELSE("obo.tiltakshendelse-v1");
+        TILTAKSHENDELSE("obo.tiltakshendelse-v1"),
+
+        PORTEFOLJE_HENDELSESFILTER("obo.portefolje-hendelsesfilter-v1");
 
 
         @Getter
@@ -138,6 +143,7 @@ public class KafkaConfigCommon {
 
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final KafkaConsumerClient consumerClientAivenSiste14a; // Midlertidig adskilt for egen toggle
+    private final KafkaConsumerClient consumerClientAivenPortefoljeHendelsesFilter; // Midlertidig adskilt for egen toggle
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
@@ -151,7 +157,8 @@ public class KafkaConfigCommon {
                              JdbcTemplate jdbcTemplate, DefaultUnleash defaultUnleash, PdlBrukerdataKafkaService pdlBrukerdataKafkaService,
                              EnsligeForsorgereService ensligeForsorgereService, ArbeidssoekerPeriodeKafkaMeldingService arbeidssoekerPeriodeKafkaMeldingService,
                              ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService,
-                             ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService, TiltakshendelseService tiltakshendelseService
+                             ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService, TiltakshendelseService tiltakshendelseService,
+                             HendelseService hendelseService
     ) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
@@ -425,7 +432,6 @@ public class KafkaConfigCommon {
                                 )
                 );
 
-
         KafkaAivenUnleash kafkaAivenUnleash = new KafkaAivenUnleash(defaultUnleash);
 
         Properties aivenConsumerProperties = aivenDefaultConsumerProperties(CLIENT_ID_CONFIG);
@@ -452,19 +458,41 @@ public class KafkaConfigCommon {
                                 siste14aVedtakService::behandleKafkaRecord
                         );
 
+        KafkaConsumerClientBuilder.TopicConfig<String, HendelseRecordValue> portefoljeHendelsesFilterTopicConfig =
+                new KafkaConsumerClientBuilder.TopicConfig<String, HendelseRecordValue>()
+                        .withLogging()
+                        .withMetrics(prometheusMeterRegistry)
+                        .withStoreOnFailure(consumerRepository)
+                        .withConsumerConfig(
+                                Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
+                                Deserializers.stringDeserializer(),
+                                Deserializers.jsonDeserializer(HendelseRecordValue.class),
+                                hendelseService::behandleKafkaRecord
+                        );
+
         consumerClientAivenSiste14a = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfig(siste14aTopicConfig)
                 .withToggle(() -> defaultUnleash.isEnabled(KAFKA_SISTE_14A_STOP) || kafkaAivenUnleash.get())
                 .build();
 
+        consumerClientAivenPortefoljeHendelsesFilter = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
+                .withTopicConfig(portefoljeHendelsesFilterTopicConfig)
+                .withToggle(() -> defaultUnleash.isEnabled(STOPP_KONSUMERING_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC) || kafkaAivenUnleash.get())
+                .build();
+
+        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> allTopicConfigs = new java.util.ArrayList<>();
+        allTopicConfigs.addAll(topicConfigsAiven);
+        allTopicConfigs.add(siste14aTopicConfig);
+        allTopicConfigs.add(portefoljeHendelsesFilterTopicConfig);
+
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
-                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(
-                        Stream.concat(topicConfigsAiven.stream(), Stream.of(siste14aTopicConfig)).collect(Collectors.toList())))
-                .withBackoffStrategy(new LinearBackoffStrategy(0, 1 * 60 * 60, 200))
+                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(allTopicConfigs))
+                .withBackoffStrategy(new LinearBackoffStrategy(0, 60 * 60, 200))
                 .build();
     }
 
@@ -474,6 +502,7 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientAivenSiste14a.start();
+        consumerClientAivenPortefoljeHendelsesFilter.start();
     }
 
 
