@@ -4930,7 +4930,13 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         assertThat(respons.getAntall()).isEqualTo(1);
         assertThat(utgattVarsel).isNotNull();
-        assertThat(utgattVarsel).isEqualTo(oppfolgingsBruker.getUtgatt_varsel());
+        assertThat(utgattVarsel.getId()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getId());
+        assertThat(utgattVarsel.getAvsender()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getAvsender());
+        assertThat(utgattVarsel.getKategori()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getKategori());
+        assertThat(utgattVarsel.getPersonIdent()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getPersonIdent());
+        assertThat(utgattVarsel.getHendelse().getBeskrivelse()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getHendelse().getBeskrivelse());
+        assertThat(utgattVarsel.getHendelse().getDetaljer()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getHendelse().getDetaljer());
+        assertThat(utgattVarsel.getHendelse().getLenke()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getHendelse().getLenke());
     }
 
     private BrukereMedAntall sorterBrukerePaStandardsorteringenAktorid(OpensearchService osService) {
