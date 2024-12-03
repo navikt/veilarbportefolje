@@ -3,10 +3,12 @@ package no.nav.pto.veilarbportefolje.hendelsesfilter
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
+import org.jetbrains.annotations.TestOnly
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.util.*
 
 /**
  * Håndterer behandling av Kafka-meldinger fra [Topic.PORTEFOLJE_HENDELSESFILTER].
@@ -47,6 +49,15 @@ class HendelseService(
             Operasjon.START -> startHendelse(hendelse)
             Operasjon.OPPDATER -> oppdaterHendelse(hendelse)
             Operasjon.STOPP -> stoppHendelse(hendelse)
+        }
+    }
+
+    @TestOnly
+    fun hentHendelse(id: UUID): Hendelse? {
+        return try {
+            hendelseRepository.get(id)
+        } catch (ex: IngenHendelseMedIdException) {
+            null
         }
     }
 

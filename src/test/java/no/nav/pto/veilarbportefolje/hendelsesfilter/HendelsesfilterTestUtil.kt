@@ -33,6 +33,30 @@ fun genererRandomHendelse(
     )
 }
 
+fun genererRandomHendelseRecordValue(
+    personID: NorskIdent = randomNorskIdent(),
+    avsender: String = randomAvsender(),
+    kategori: Kategori = randomKategori(),
+    operasjon: Operasjon = randomOperasjon(),
+    hendelseBeskrivelse: String = randomBeskrivelse(),
+    hendelseDato: ZonedDateTime = randomZonedDate(),
+    hendelseLenke: URL = randomUrl(),
+    hendelseDetaljer: String? = randomDetaljer(),
+): HendelseRecordValue {
+    return HendelseRecordValue(
+        personID = personID,
+        avsender = avsender,
+        kategori = kategori,
+        operasjon = operasjon,
+        hendelse = HendelseRecordValue.HendelseInnhold(
+            beskrivelse = hendelseBeskrivelse,
+            dato = hendelseDato,
+            lenke = hendelseLenke,
+            detaljer = hendelseDetaljer,
+        ),
+    )
+}
+
 private fun randomUrl(): URL =
     URI.create("https://veilarbpersonflate.intern.dev.nav.no/${Random.nextInt(until = 10)}").toURL()
 
@@ -43,6 +67,11 @@ private fun randomAvsender() = "Avsender_${Random.nextInt(until = 10)}"
 fun randomKategori(): Kategori {
     val kategoriValues = Kategori.entries
     return Random.nextInt(kategoriValues.size).let { kategoriValues[it] }
+}
+
+fun randomOperasjon(): Operasjon {
+    val operasjonValues = Operasjon.entries
+    return Random.nextInt(operasjonValues.size).let { operasjonValues[it] }
 }
 
 fun randomDetaljer(): String? {
