@@ -479,7 +479,7 @@ public class KafkaConfigCommon {
         consumerClientAivenPortefoljeHendelsesFilter = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfig(portefoljeHendelsesFilterTopicConfig)
-                .withToggle(() -> defaultUnleash.isEnabled(STOPP_KONSUMERING_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC) || kafkaAivenUnleash.get())
+                .withToggle(() -> defaultUnleash.isEnabled(STOPP_KONSUMERING_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC, true) || kafkaAivenUnleash.get())
                 .build();
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> allTopicConfigs = new java.util.ArrayList<>();

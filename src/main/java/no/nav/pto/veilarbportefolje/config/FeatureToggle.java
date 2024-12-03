@@ -21,7 +21,7 @@ public class FeatureToggle {
 
     public static final String SKJUL_ARBEIDSLISTEFUNKSJONALITET = "veilarbportefoljeflatefs.skjul_arbeidslistefunksjonalitet";
 
-    public static final String STOPP_KONSUMERING_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC = "veilarbportefolje.konsumer_fra_portefolje_hendelsesfilter_topic";
+    public static final String STOPP_KONSUMERING_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC = "veilarbportefolje.stopp_konsumering_fra_portefolje_hendelsesfilter_topic";
 
     public static boolean brukAvAliasIndeksering(DefaultUnleash defaultUnleash) {
         return defaultUnleash.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
