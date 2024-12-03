@@ -10,6 +10,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 /**
@@ -38,6 +39,7 @@ class HendelseService(
      * * dersom `hendelseRecordValue.operasjon` = [Operasjon.OPPDATER] vil lagret hendelse identifisert med `hendelseId` oppdateres
      * * dersom `hendelseRecordValue.operasjon` = [Operasjon.STOPP] vil lagret hendelse identifisert med `hendelseId` slettes
      */
+    @Transactional
     override fun behandleKafkaRecordLogikk(hendelseRecordValue: HendelseRecordValue, hendelseId: String) {
         val operasjon = hendelseRecordValue.operasjon
         val hendelse = toHendelse(hendelseRecordValue, hendelseId)
@@ -66,62 +68,85 @@ class HendelseService(
     }
 
     private fun startHendelse(hendelse: Hendelse) {
-        try {
+        val resultatAvInsertNyHendelse = try {
             hendelseRepository.insert(hendelse)
-
-            val eldsteHendelse = hendelseRepository.getEldste(hendelse.personIdent)
-            if (eldsteHendelse.id == hendelse.id) {
-                oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
-            }
-
-            logger.info("Hendelse med id ${hendelse.id} ble startet")
         } catch (ex: HendelseIdEksistererAlleredeException) {
+            ex
+        }
+
+        if (resultatAvInsertNyHendelse is HendelseIdEksistererAlleredeException) {
             logger.info("Hendelse med ID ${hendelse.id} allerede startet. Ignorerer melding.")
-        } catch (ex: IngenHendelseForPersonException) {
-            // Not good - vi opprettet en hendelse men klarte ikke hente den igjen
-            // Kan ha vært en race-condition (eks. en annen pod slettet hendelsen vi nettopp opprettet 🤷‍♂️)
+            return
+        }
+
+        val eldsteHendelse = hendelseRepository.getEldste(hendelse.personIdent)
+
+        if (eldsteHendelse.id == hendelse.id) {
+            oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
+
+            logger.info("Hendelse med id ${hendelse.id} ble lagret i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med samme id.")
+        } else {
+            logger.info("Hendelse med id ${hendelse.id} ble lagret i DB")
         }
     }
 
     private fun oppdaterHendelse(hendelse: Hendelse) {
-        try {
+        val resultatAvUpdateHendelse = try {
             hendelseRepository.update(hendelse)
-
-            val eldsteHendelse = hendelseRepository.getEldste(hendelse.personIdent)
-            if (eldsteHendelse.id == hendelse.id) {
-                oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
-            }
-
-            logger.info("Hendelse med id ${hendelse.id} ble oppdatert")
         } catch (ex: IngenHendelseMedIdException) {
+            ex
+        }
+
+        if (resultatAvUpdateHendelse is IngenHendelseMedIdException) {
             // 2024-12-02, Sondre:
             // Per no ignorer vi melding, då vi forventar å alltid få ei "START"-melding før ei eventuell "OPPDATER"- eller "STOPP"-melding.
             // Dette går fint så lenge vi ikkje har skrudd på "compaction" på topic-et. Dersom vi har "compaction" på er det ikkje gitt
             // at vi berre kan ignorere, sidan vi då potensielt går glipp av hendelsar ved ein eventuell rewind på topic-et.
             logger.warn("Fikk hendelse med operasjon ${Operasjon.OPPDATER} og ID ${hendelse.id}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
-        } catch (ex: IngenHendelseForPersonException) {
-            // Not good - vi oppdaterte en persistert hendelse men klarte ikke hente den igjen
-            // Kan ha vært en race-condition (dvs. en annen pod slettet hendelsen vi nettopp oppdaterte 🤷‍♂️)
+            return
+        }
+
+        val eldsteHendelse = hendelseRepository.getEldste(hendelse.personIdent)
+        if (eldsteHendelse.id == hendelse.id) {
+            oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
+            logger.info("Hendelse med id ${hendelse.id} ble oppdatert i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med samme id.")
+        } else {
+            logger.info("Hendelse med id ${hendelse.id} ble oppdatert i DB")
         }
     }
 
     private fun stoppHendelse(hendelse: Hendelse) {
-        try {
+        val resultatAvDeleteHendelse = try {
             hendelseRepository.delete(hendelse.id)
-
-            val eldsteHendelse = hendelseRepository.getEldste(hendelse.personIdent)
-            oppdaterUgattVarselForBrukerIOpenSearch(eldsteHendelse)
-
-            logger.info("Hendelse med id ${hendelse.id} ble stoppet")
         } catch (ex: IngenHendelseMedIdException) {
+            ex
+        }
+
+        if (resultatAvDeleteHendelse is IngenHendelseMedIdException) {
             // 2024-12-02, Sondre:
             // Per no ignorer vi melding, då vi forventar å alltid få ei "START"-melding før ei eventuell "OPPDATER"- eller "STOPP"-melding.
             // Dette går fint så lenge vi ikkje har skrudd på "compaction" på topic-et. Dersom vi har "compaction" på er det ikkje gitt
             // at vi berre kan ignorere, sidan vi då potensielt går glipp av hendelsar ved ein eventuell rewind på topic-et.
             logger.warn("Fikk hendelse med operasjon ${Operasjon.STOPP} og ID ${hendelse.id}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
+        }
+
+        val resultatAvGetEldsteHendelse = try {
+            hendelseRepository.getEldste(hendelse.personIdent)
         } catch (ex: IngenHendelseForPersonException) {
+            ex
+        }
+
+        if (resultatAvGetEldsteHendelse is IngenHendelseForPersonException) {
             // All good - det var ingen flere hendelser for personen etter at vi slettet den som kom inn som argument
             slettUgattVarselForBrukerIOpenSearch(hendelse)
+            logger.info("Hendelse med id ${hendelse.id} ble slettet i DB og utgått varsel ble fjernet for person i OpenSearch siden personen ikke hadde andre hendelser.")
+            return
+        }
+
+        if (resultatAvGetEldsteHendelse is Hendelse) {
+            oppdaterUgattVarselForBrukerIOpenSearch(resultatAvGetEldsteHendelse)
+
+            logger.info("Hendelse med id ${hendelse.id} ble slettet i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med id ${resultatAvGetEldsteHendelse.id}")
         }
     }
 
