@@ -1,8 +1,10 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
 import no.nav.common.types.identer.NorskIdent
+import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNorskIdent
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomZonedDate
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import java.net.URI
 import java.net.URL
 import java.time.ZonedDateTime
@@ -54,6 +56,21 @@ fun genererRandomHendelseRecordValue(
             lenke = hendelseLenke,
             detaljer = hendelseDetaljer,
         ),
+    )
+}
+
+fun genererRandomHendelseConsumerRecord(
+    key: String = UUID.randomUUID().toString(),
+    recordValue: HendelseRecordValue = genererRandomHendelseRecordValue(),
+    partition: Int = Random.nextInt(until = 5),
+    offset: Long = Random.nextLong(until = 10_000),
+): ConsumerRecord<String, HendelseRecordValue> {
+    return ConsumerRecord(
+        KafkaConfigCommon.Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
+        partition,
+        offset,
+        key,
+        recordValue
     )
 }
 

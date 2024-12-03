@@ -61,13 +61,7 @@ class HendelseServiceTest(
         val opprinneligHendelseRecordValue =
             genererRandomHendelseRecordValue(personID = norskIdent, operasjon = Operasjon.START)
         val opprinneligHendelseRecord =
-            ConsumerRecord(
-                KafkaConfigCommon.Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
-                0,
-                0,
-                key,
-                opprinneligHendelseRecordValue
-            )
+            genererRandomHendelseConsumerRecord(key = key, recordValue = opprinneligHendelseRecordValue)
         hendelseService.behandleKafkaRecord(opprinneligHendelseRecord)
 
         // When
@@ -77,12 +71,9 @@ class HendelseServiceTest(
                 detaljer = "Andre hendelsesdetaljer"
             )
         )
-        val nyHendelseRecord = ConsumerRecord(
-            KafkaConfigCommon.Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
-            0,
-            1,
-            key,
-            hendelseRecordValueMedSammeIdOgOperasjonMenAndreData
+        val nyHendelseRecord = genererRandomHendelseConsumerRecord(
+            key = key,
+            recordValue = hendelseRecordValueMedSammeIdOgOperasjonMenAndreData
         )
         hendelseService.behandleKafkaRecord(nyHendelseRecord)
 
@@ -116,13 +107,7 @@ class HendelseServiceTest(
         val opprinneligHendelseRecordValue =
             genererRandomHendelseRecordValue(personID = norskIdent, operasjon = Operasjon.START)
         val opprinneligHendelseRecord =
-            ConsumerRecord(
-                KafkaConfigCommon.Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
-                0,
-                0,
-                key,
-                opprinneligHendelseRecordValue
-            )
+            genererRandomHendelseConsumerRecord(key = key, recordValue = opprinneligHendelseRecordValue)
         hendelseService.behandleKafkaRecord(opprinneligHendelseRecord)
 
         // When
@@ -133,31 +118,13 @@ class HendelseServiceTest(
                 detaljer = "Andre hendelsesdetaljer"
             )
         )
-        val nyHendelseRecord = ConsumerRecord(
-            KafkaConfigCommon.Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
-            0,
-            1,
-            key,
-            oppdatertHendelseRecordValue
-        )
+        val nyHendelseRecord =
+            genererRandomHendelseConsumerRecord(key = key, recordValue = oppdatertHendelseRecordValue)
         hendelseService.behandleKafkaRecord(nyHendelseRecord)
 
         // Then
         val lagretHendelse = hendelseService.hentHendelse(UUID.fromString(key))
-        val forventetHendelse = oppdatertHendelseRecordValue.let {
-            Hendelse(
-                id = UUID.fromString(key),
-                personIdent = it.personID,
-                avsender = it.avsender,
-                kategori = it.kategori,
-                hendelse = Hendelse.HendelseInnhold(
-                    beskrivelse = it.hendelse.beskrivelse,
-                    dato = it.hendelse.dato,
-                    lenke = it.hendelse.lenke,
-                    detaljer = it.hendelse.detaljer,
-                ),
-            )
-        }
+        val forventetHendelse = toHendelse(oppdatertHendelseRecordValue, key)
         assertThat(lagretHendelse).isEqualTo(forventetHendelse)
     }
 
@@ -170,26 +137,16 @@ class HendelseServiceTest(
         insertOppfolgingsInformasjon(aktorId, fnr)
         val key = "96463d56-019e-4b30-ae9b-7365cf002a09"
         val hendelseRecordValue = genererRandomHendelseRecordValue(personID = norskIdent, operasjon = Operasjon.START)
-        val hendelseRecord =
-            ConsumerRecord(
-                KafkaConfigCommon.Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
-                0,
-                0,
-                key,
-                hendelseRecordValue
-            )
+        val hendelseRecord = genererRandomHendelseConsumerRecord(key = key, recordValue = hendelseRecordValue)
         hendelseService.behandleKafkaRecord(hendelseRecord)
 
         // When
         val hendelseRecordValueMedSammeIdOgDataMenOperasjonStopp = hendelseRecordValue.copy(
             operasjon = Operasjon.STOPP
         )
-        val nyHendelseRecord = ConsumerRecord(
-            KafkaConfigCommon.Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
-            0,
-            1,
-            key,
-            hendelseRecordValueMedSammeIdOgDataMenOperasjonStopp
+        val nyHendelseRecord = genererRandomHendelseConsumerRecord(
+            key = key,
+            recordValue = hendelseRecordValueMedSammeIdOgDataMenOperasjonStopp
         )
         hendelseService.behandleKafkaRecord(nyHendelseRecord)
         val lagretHendelse = hendelseService.hentHendelse(UUID.fromString(key))
