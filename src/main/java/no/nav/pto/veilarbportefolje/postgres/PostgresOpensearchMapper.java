@@ -4,11 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NorskIdent;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.IngenHendelseForPersonException;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
@@ -47,6 +51,7 @@ public class PostgresOpensearchMapper {
     private final ArbeidssoekerService arbeidssoekerService;
     private final TiltakshendelseRepository tiltakshendelseRepository;
     private final Siste14aVedtakRepository siste14aVedtakRepository;
+    private final HendelseRepository hendelseRepository;
 
     public void flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -238,6 +243,18 @@ public class PostgresOpensearchMapper {
                     siste14aVedtakForBruker.getHovedmal(),
                     siste14aVedtakForBruker.getFattetDato()
             )).orElse(null));
+        });
+    }
+
+    public void flettInnEldsteUtgattVarsel(List<OppfolgingsBruker> brukere) {
+        brukere.forEach(bruker -> {
+            try {
+                Hendelse eldsteHendelsePaPerson = hendelseRepository.getEldste(NorskIdent.of(bruker.getFnr()));
+                bruker.setUtgatt_varsel(eldsteHendelsePaPerson);
+            } catch (IngenHendelseForPersonException ex) {
+                log.info("Fant ingen hendelse/utgått varsel for person, så ingen data å flette inn.");
+                // Ingen hendelse for bruker = ingenting å flette inn
+            }
         });
     }
 }
