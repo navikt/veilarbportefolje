@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
-import Hendelse
-import Kategori
 import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNorskIdent
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomZonedDate
