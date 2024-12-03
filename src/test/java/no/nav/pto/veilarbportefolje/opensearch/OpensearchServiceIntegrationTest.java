@@ -7,6 +7,7 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NorskIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
@@ -17,6 +18,8 @@ import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
@@ -38,6 +41,7 @@ import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.net.URI;
 import java.sql.Timestamp;
 import java.time.*;
 import java.util.*;
@@ -49,6 +53,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test.insertArbeidsliste;
 import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test.insertFargekategori;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
+import static no.nav.pto.veilarbportefolje.hendelsesfilter.HendelsesfilterTestUtilKt.genererRandomHendelse;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggArbeidslisteQuery;
@@ -4894,6 +4899,38 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         // Viser at vi får feil slik kodebasen er no. Målet er at sorteringsfeltSomFeilerISortering skal vere tom.
         assertThat(sorteringsfeltSomFeilerISortering).isNotEmpty();
+    }
+
+    @Test
+    @SneakyThrows
+    void skal_indeksere_hendelse_data_riktig() {
+        Hendelse hendelse = genererRandomHendelse();
+        OppfolgingsBruker oppfolgingsBruker = new OppfolgingsBruker()
+                .setFnr("11111199999")
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setUtgatt_varsel(hendelse);
+        skrivBrukereTilTestindeks(oppfolgingsBruker);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == 1);
+
+        BrukereMedAntall respons = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                new Filtervalg().setFerdigfilterListe(emptyList()),
+                null,
+                null
+        );
+        Bruker bruker = respons.getBrukere().getFirst();
+        Hendelse utgattVarsel = bruker.getUtgattVarsel();
+
+        assertThat(respons.getAntall()).isEqualTo(1);
+        assertThat(utgattVarsel).isNotNull();
+        assertThat(utgattVarsel).isEqualTo(oppfolgingsBruker.getUtgatt_varsel());
     }
 
     private BrukereMedAntall sorterBrukerePaStandardsorteringenAktorid(OpensearchService osService) {

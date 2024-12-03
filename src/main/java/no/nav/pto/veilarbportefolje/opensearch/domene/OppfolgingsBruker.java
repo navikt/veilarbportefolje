@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.siste14aVedtak.GjeldendeVedtak14a;
@@ -134,4 +135,5 @@ public class OppfolgingsBruker {
     Tiltakshendelse tiltakshendelse;
 
     GjeldendeVedtak14a gjeldendeVedtak14a;
+    Hendelse utgatt_varsel;
 }

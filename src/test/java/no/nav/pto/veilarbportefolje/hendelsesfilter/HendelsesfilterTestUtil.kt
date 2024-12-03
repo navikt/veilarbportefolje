@@ -11,6 +11,20 @@ import java.time.ZonedDateTime
 import java.util.*
 import kotlin.random.Random
 
+// For å kunne kalle funksjonen fra Java uten å måtte sende inn argument
+fun genererRandomHendelse(): Hendelse {
+    return genererRandomHendelse(
+        UUID.randomUUID(),
+        randomNorskIdent(),
+        randomAvsender(),
+        randomKategori(),
+        randomBeskrivelse(),
+        randomZonedDate(),
+        randomUrl(),
+        randomDetaljer(),
+    )
+}
+
 fun genererRandomHendelse(
     id: UUID = UUID.randomUUID(),
     personIdent: NorskIdent = randomNorskIdent(),
