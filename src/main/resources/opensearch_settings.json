@@ -282,6 +282,22 @@
             "type": "date"
           }
         }
+      },
+      "utgatt_varsel": {
+        "properties": {
+          "beskrivelse": {
+            "type": "keyword"
+          },
+          "dato": {
+            "type": "date"
+          },
+          "lenke": {
+            "type": "keyword"
+          },
+          "detaljer": {
+            "type": "keyword"
+          }
+        }
       }
     }
   }
