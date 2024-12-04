@@ -396,16 +396,10 @@ public class OpensearchIndexerV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .startObject("utgatt_varsel")
-                .field("id", hendelse.getId().toString())
-                .field("personIdent", hendelse.getPersonIdent().get())
-                .field("avsender", hendelse.getAvsender())
-                .field("kategori", hendelse.getKategori().name())
-                .startObject("hendelse")
                 .field("beskrivelse", hendelse.getHendelse().getBeskrivelse())
                 .field("dato", hendelse.getHendelse().getDato())
                 .field("lenke", hendelse.getHendelse().getLenke().toString())
                 .field("detaljer", hendelse.getHendelse().getDetaljer())
-                .endObject()
                 .endObject()
                 .endObject();
 

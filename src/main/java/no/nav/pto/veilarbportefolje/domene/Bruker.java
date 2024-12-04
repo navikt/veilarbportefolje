@@ -116,7 +116,7 @@ public class Bruker {
 
     TiltakshendelseForBruker tiltakshendelse;
     GjeldendeVedtak14a gjeldendeVedtak14a;
-    Hendelse utgattVarsel;
+    Hendelse.HendelseInnhold utgattVarsel;
 
     public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
 

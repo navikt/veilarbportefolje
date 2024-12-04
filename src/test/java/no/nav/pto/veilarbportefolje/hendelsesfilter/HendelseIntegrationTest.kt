@@ -62,13 +62,9 @@ class HendelseIntegrationTest(
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
-        assertThat(brukerFraRespons.utgattVarsel.id).isEqualTo(hendelse.id)
-        assertThat(brukerFraRespons.utgattVarsel.avsender).isEqualTo(hendelse.avsender)
-        assertThat(brukerFraRespons.utgattVarsel.kategori).isEqualTo(hendelse.kategori)
-        assertThat(brukerFraRespons.utgattVarsel.personIdent).isEqualTo(hendelse.personIdent)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.beskrivelse).isEqualTo(hendelse.hendelse.beskrivelse)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.detaljer).isEqualTo(hendelse.hendelse.detaljer)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.lenke).isEqualTo(hendelse.hendelse.lenke)
+        assertThat(brukerFraRespons.utgattVarsel.beskrivelse).isEqualTo(hendelse.hendelse.beskrivelse)
+        assertThat(brukerFraRespons.utgattVarsel.detaljer).isEqualTo(hendelse.hendelse.detaljer)
+        assertThat(brukerFraRespons.utgattVarsel.lenke).isEqualTo(hendelse.hendelse.lenke)
     }
 
     @Test
@@ -128,14 +124,10 @@ class HendelseIntegrationTest(
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
-        val forventetHendelse = toHendelse(hendelseRecordValue, hendelseId)
-        assertThat(brukerFraRespons.utgattVarsel.id).isEqualTo(forventetHendelse.id)
-        assertThat(brukerFraRespons.utgattVarsel.avsender).isEqualTo(forventetHendelse.avsender)
-        assertThat(brukerFraRespons.utgattVarsel.kategori).isEqualTo(forventetHendelse.kategori)
-        assertThat(brukerFraRespons.utgattVarsel.personIdent).isEqualTo(forventetHendelse.personIdent)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.beskrivelse).isEqualTo(forventetHendelse.hendelse.beskrivelse)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.detaljer).isEqualTo(forventetHendelse.hendelse.detaljer)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.lenke).isEqualTo(forventetHendelse.hendelse.lenke)
+        val forventetHendelseInnhold = toHendelse(hendelseRecordValue, hendelseId).hendelse
+        assertThat(brukerFraRespons.utgattVarsel.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
+        assertThat(brukerFraRespons.utgattVarsel.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
+        assertThat(brukerFraRespons.utgattVarsel.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
     @Test
@@ -178,14 +170,10 @@ class HendelseIntegrationTest(
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
-        val forventetHendelse = toHendelse(oppdatertHendelseRecordValue, hendelseId)
-        assertThat(brukerFraRespons.utgattVarsel.id).isEqualTo(forventetHendelse.id)
-        assertThat(brukerFraRespons.utgattVarsel.avsender).isEqualTo(forventetHendelse.avsender)
-        assertThat(brukerFraRespons.utgattVarsel.kategori).isEqualTo(forventetHendelse.kategori)
-        assertThat(brukerFraRespons.utgattVarsel.personIdent).isEqualTo(forventetHendelse.personIdent)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.beskrivelse).isEqualTo(forventetHendelse.hendelse.beskrivelse)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.detaljer).isEqualTo(forventetHendelse.hendelse.detaljer)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.lenke).isEqualTo(forventetHendelse.hendelse.lenke)
+        val forventetHendelseInnhold = toHendelse(oppdatertHendelseRecordValue, hendelseId).hendelse
+        assertThat(brukerFraRespons.utgattVarsel.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
+        assertThat(brukerFraRespons.utgattVarsel.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
+        assertThat(brukerFraRespons.utgattVarsel.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
     @Test
@@ -268,14 +256,10 @@ class HendelseIntegrationTest(
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
-        val forventetHendelse = toHendelse(eldreHendelseRecordValue, eldreHendelseId)
-        assertThat(brukerFraRespons.utgattVarsel.id).isEqualTo(forventetHendelse.id)
-        assertThat(brukerFraRespons.utgattVarsel.avsender).isEqualTo(forventetHendelse.avsender)
-        assertThat(brukerFraRespons.utgattVarsel.kategori).isEqualTo(forventetHendelse.kategori)
-        assertThat(brukerFraRespons.utgattVarsel.personIdent).isEqualTo(forventetHendelse.personIdent)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.beskrivelse).isEqualTo(forventetHendelse.hendelse.beskrivelse)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.detaljer).isEqualTo(forventetHendelse.hendelse.detaljer)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.lenke).isEqualTo(forventetHendelse.hendelse.lenke)
+        val forventetHendelseInnhold = toHendelse(eldreHendelseRecordValue, eldreHendelseId).hendelse
+        assertThat(brukerFraRespons.utgattVarsel.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
+        assertThat(brukerFraRespons.utgattVarsel.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
+        assertThat(brukerFraRespons.utgattVarsel.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
     @Test
@@ -323,13 +307,9 @@ class HendelseIntegrationTest(
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
-        val forventetHendelse = toHendelse(yngreHendelseRecordValue, yngreHendelseId)
-        assertThat(brukerFraRespons.utgattVarsel.id).isEqualTo(forventetHendelse.id)
-        assertThat(brukerFraRespons.utgattVarsel.avsender).isEqualTo(forventetHendelse.avsender)
-        assertThat(brukerFraRespons.utgattVarsel.kategori).isEqualTo(forventetHendelse.kategori)
-        assertThat(brukerFraRespons.utgattVarsel.personIdent).isEqualTo(forventetHendelse.personIdent)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.beskrivelse).isEqualTo(forventetHendelse.hendelse.beskrivelse)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.detaljer).isEqualTo(forventetHendelse.hendelse.detaljer)
-        assertThat(brukerFraRespons.utgattVarsel.hendelse.lenke).isEqualTo(forventetHendelse.hendelse.lenke)
+        val forventetHendelseInnhold = toHendelse(yngreHendelseRecordValue, yngreHendelseId).hendelse
+        assertThat(brukerFraRespons.utgattVarsel.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
+        assertThat(brukerFraRespons.utgattVarsel.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
+        assertThat(brukerFraRespons.utgattVarsel.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 }

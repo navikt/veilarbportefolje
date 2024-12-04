@@ -7,7 +7,6 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.common.types.identer.NorskIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
@@ -19,7 +18,6 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
-import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
@@ -41,7 +39,6 @@ import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.net.URI;
 import java.sql.Timestamp;
 import java.time.*;
 import java.util.*;
@@ -4911,7 +4908,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
-                .setUtgatt_varsel(hendelse);
+                .setUtgatt_varsel(hendelse.getHendelse());
         skrivBrukereTilTestindeks(oppfolgingsBruker);
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == 1);
@@ -4926,17 +4923,13 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         Bruker bruker = respons.getBrukere().getFirst();
-        Hendelse utgattVarsel = bruker.getUtgattVarsel();
+        Hendelse.HendelseInnhold utgattVarsel = bruker.getUtgattVarsel();
 
         assertThat(respons.getAntall()).isEqualTo(1);
         assertThat(utgattVarsel).isNotNull();
-        assertThat(utgattVarsel.getId()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getId());
-        assertThat(utgattVarsel.getAvsender()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getAvsender());
-        assertThat(utgattVarsel.getKategori()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getKategori());
-        assertThat(utgattVarsel.getPersonIdent()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getPersonIdent());
-        assertThat(utgattVarsel.getHendelse().getBeskrivelse()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getHendelse().getBeskrivelse());
-        assertThat(utgattVarsel.getHendelse().getDetaljer()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getHendelse().getDetaljer());
-        assertThat(utgattVarsel.getHendelse().getLenke()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getHendelse().getLenke());
+        assertThat(utgattVarsel.getBeskrivelse()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getBeskrivelse());
+        assertThat(utgattVarsel.getDetaljer()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getDetaljer());
+        assertThat(utgattVarsel.getLenke()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getLenke());
     }
 
     private BrukereMedAntall sorterBrukerePaStandardsorteringenAktorid(OpensearchService osService) {

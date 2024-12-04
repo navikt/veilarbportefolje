@@ -135,5 +135,5 @@ public class OppfolgingsBruker {
     Tiltakshendelse tiltakshendelse;
 
     GjeldendeVedtak14a gjeldendeVedtak14a;
-    Hendelse utgatt_varsel;
+    Hendelse.HendelseInnhold utgatt_varsel;
 }
