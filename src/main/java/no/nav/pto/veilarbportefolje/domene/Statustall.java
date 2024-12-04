@@ -34,6 +34,7 @@ public class Statustall {
     private long fargekategoriF;
     private long fargekategoriIngenKategori;
     private long tiltakshendelser;
+    private long utgatteVarsel;
 
     public Statustall() {
         this.totalt = 0;
@@ -63,6 +64,7 @@ public class Statustall {
         this.fargekategoriF = 0;
         this.fargekategoriIngenKategori = 0;
         this.tiltakshendelser = 0;
+        this.utgatteVarsel = 0;
     }
 
     public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
@@ -93,5 +95,6 @@ public class Statustall {
         this.fargekategoriF = buckets.getFargekategoriF().getDoc_count();
         this.fargekategoriIngenKategori = buckets.getFargekategoriIngenKategori().getDoc_count();
         this.tiltakshendelser = buckets.getTiltakshendelser().getDoc_count();
+        this.utgatteVarsel = buckets.getUtgatteVarsel().getDoc_count();
     }
 }

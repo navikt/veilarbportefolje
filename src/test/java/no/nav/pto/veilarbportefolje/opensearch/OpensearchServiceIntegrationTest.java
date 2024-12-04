@@ -7,6 +7,7 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NorskIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
@@ -3405,6 +3406,73 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(brukereTekstSortertAlfabetisk.get(0).getFnr()).isEqualTo(bruker2Fnr.toString());
         assertThat(brukereTekstSortertAlfabetisk.get(1).getFnr()).isEqualTo(bruker3Fnr.toString());
         assertThat(brukereTekstSortertAlfabetisk.get(2).getFnr()).isEqualTo(bruker1Fnr.toString());
+    }
+
+    @Test
+    public void test_filtrering_og_statustall_utgatte_varsel() {
+        OppfolgingsBruker oppfolgingsBruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setUtgatt_varsel(null);
+
+
+        Fnr oppfolgingsBruker2Fnr = Fnr.of("02020222222");
+        Hendelse.HendelseInnhold utgattVarselBruker2 = genererRandomHendelse().getHendelse();
+
+        OppfolgingsBruker oppfolgingsBruker2 = new OppfolgingsBruker()
+                .setFnr(oppfolgingsBruker2Fnr.toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setUtgatt_varsel(utgattVarselBruker2);
+
+
+        Fnr oppfolgingsBruker3Fnr = Fnr.of("03030333333");
+        Hendelse.HendelseInnhold utgattVarselBruker3 = genererRandomHendelse().getHendelse();
+
+        OppfolgingsBruker bruker3 = new OppfolgingsBruker()
+                .setFnr(oppfolgingsBruker3Fnr.toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setUtgatt_varsel(utgattVarselBruker3);
+
+
+        List<OppfolgingsBruker> brukere = List.of(oppfolgingsBruker1, oppfolgingsBruker2, bruker3);
+
+        skrivBrukereTilTestindeks(brukere);
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
+
+        Filtervalg filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of(Brukerstatus.UTGATTE_VARSEL));
+
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                filterValg,
+                null,
+                null
+        );
+        List<Bruker> sorterteBrukere = response.getBrukere().stream().sorted(new BrukerComparator()).toList();
+
+        assertThat(response.getAntall()).isEqualTo(2);
+        assertThat(sorterteBrukere.get(0).getFnr()).isEqualTo(oppfolgingsBruker2Fnr.toString());
+        assertThat(sorterteBrukere.get(1).getFnr()).isEqualTo(oppfolgingsBruker3Fnr.toString());
+
+        var statustallForVeiledar = opensearchService.hentStatustallForVeilederPortefolje(TEST_VEILEDER_0, TEST_ENHET);
+        assertThat(statustallForVeiledar.getUtgatteVarsel()).isEqualTo(2);
+
+        var statustallForEnhet = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        assertThat(statustallForEnhet.getUtgatteVarsel()).isEqualTo(2);
     }
 
     @Test
