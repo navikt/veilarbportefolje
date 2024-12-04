@@ -84,7 +84,7 @@ class HendelseService(
         if (eldsteHendelse.id == hendelse.id) {
             oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
 
-            logger.info("Hendelse med id ${hendelse.id} ble lagret i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med samme id.")
+            logger.info("Hendelse med id ${hendelse.id} ble lagret i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
         } else {
             logger.info("Hendelse med id ${hendelse.id} ble lagret i DB")
         }
@@ -109,7 +109,7 @@ class HendelseService(
         val eldsteHendelse = hendelseRepository.getEldste(hendelse.personIdent)
         if (eldsteHendelse.id == hendelse.id) {
             oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
-            logger.info("Hendelse med id ${hendelse.id} ble oppdatert i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med samme id.")
+            logger.info("Hendelse med id ${hendelse.id} ble oppdatert i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
         } else {
             logger.info("Hendelse med id ${hendelse.id} ble oppdatert i DB")
         }

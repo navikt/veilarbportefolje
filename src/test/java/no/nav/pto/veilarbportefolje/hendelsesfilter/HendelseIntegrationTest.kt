@@ -228,7 +228,7 @@ class HendelseIntegrationTest(
     }
 
     @Test
-    fun `dersom ny hendelse med operasjon=START er eldre enn allerede lagret hendelse, skal ny hendelse overskrive utgått varsel i OpenSearch for bruker`() {
+    fun `dersom ny hendelse med operasjon=START har eldst hendelse-dato, skal ny hendelse overskrive utgått varsel i OpenSearch for bruker`() {
         // Given
         val brukerAktorId = randomAktorId()
         val brukerFnr = randomFnr()
@@ -279,7 +279,7 @@ class HendelseIntegrationTest(
     }
 
     @Test
-    fun `dersom ny hendelse med operasjon=STOPP var den eldste lagrede hendelsen, skal utgått varsel i OpenSearch for bruker oppdateres med det som nå er ny eldste hendelse`() {
+    fun `dersom ny hendelse med operasjon=STOPP har eldst hendelse-dato, skal utgått varsel i OpenSearch for bruker oppdateres hendelsen som har nest eldst hendelse-dato`() {
         // Given
         val brukerAktorId = randomAktorId()
         val brukerFnr = randomFnr()
