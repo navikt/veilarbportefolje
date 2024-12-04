@@ -253,7 +253,6 @@ public class PostgresOpensearchMapper {
                 bruker.setUtgatt_varsel(eldsteHendelsePaPerson);
             } catch (IngenHendelseForPersonException ex) {
                 log.info("Fant ingen hendelse/utgått varsel for person, så ingen data å flette inn.");
-                // Ingen hendelse for bruker = ingenting å flette inn
             }
         });
     }
