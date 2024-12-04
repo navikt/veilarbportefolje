@@ -1,13 +1,16 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
+import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import org.jetbrains.annotations.TestOnly
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 /**
@@ -23,7 +26,8 @@ import java.util.*
 @Service
 class HendelseService(
     @Autowired private val hendelseRepository: HendelseRepository,
-    @Autowired private val pdlIdentRepository: PdlIdentRepository
+    @Autowired private val pdlIdentRepository: PdlIdentRepository,
+    @Autowired private val opensearchIndexerV2: OpensearchIndexerV2
 ) : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     private val logger: Logger = LoggerFactory.getLogger(HendelseService::class.java)
 
@@ -35,6 +39,7 @@ class HendelseService(
      * * dersom `hendelseRecordValue.operasjon` = [Operasjon.OPPDATER] vil lagret hendelse identifisert med `hendelseId` oppdateres
      * * dersom `hendelseRecordValue.operasjon` = [Operasjon.STOPP] vil lagret hendelse identifisert med `hendelseId` slettes
      */
+    @Transactional
     override fun behandleKafkaRecordLogikk(hendelseRecordValue: HendelseRecordValue, hendelseId: String) {
         val operasjon = hendelseRecordValue.operasjon
         val hendelse = toHendelse(hendelseRecordValue, hendelseId)
@@ -63,40 +68,112 @@ class HendelseService(
     }
 
     private fun startHendelse(hendelse: Hendelse) {
-        try {
+        val resultatAvInsertNyHendelse = try {
             hendelseRepository.insert(hendelse)
-
-            logger.info("Hendelse med id ${hendelse.id} ble startet")
         } catch (ex: HendelseIdEksistererAlleredeException) {
+            ex
+        }
+
+        if (resultatAvInsertNyHendelse is HendelseIdEksistererAlleredeException) {
             logger.info("Hendelse med ID ${hendelse.id} allerede startet. Ignorerer melding.")
+            return
+        }
+
+        val eldsteHendelse = hendelseRepository.getEldste(hendelse.personIdent)
+
+        if (eldsteHendelse.id == hendelse.id) {
+            oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
+
+            logger.info("Hendelse med id ${hendelse.id} ble lagret i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
+        } else {
+            logger.info("Hendelse med id ${hendelse.id} ble lagret i DB")
         }
     }
 
     private fun oppdaterHendelse(hendelse: Hendelse) {
-        try {
+        val resultatAvUpdateHendelse = try {
             hendelseRepository.update(hendelse)
-
-            logger.info("Hendelse med id ${hendelse.id} ble oppdatert")
         } catch (ex: IngenHendelseMedIdException) {
+            ex
+        }
+
+        if (resultatAvUpdateHendelse is IngenHendelseMedIdException) {
             // 2024-12-02, Sondre:
             // Per no ignorer vi melding, då vi forventar å alltid få ei "START"-melding før ei eventuell "OPPDATER"- eller "STOPP"-melding.
-            // Dette går fint så lenge vi ikkje har skrudd på "compaction" på topicet. Dersom vi har "compaction" på er det ikkje gitt
+            // Dette går fint så lenge vi ikkje har skrudd på "compaction" på topic-et. Dersom vi har "compaction" på er det ikkje gitt
             // at vi berre kan ignorere, sidan vi då potensielt går glipp av hendelsar ved ein eventuell rewind på topic-et.
             logger.warn("Fikk hendelse med operasjon ${Operasjon.OPPDATER} og ID ${hendelse.id}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
+            return
+        }
+
+        val eldsteHendelse = hendelseRepository.getEldste(hendelse.personIdent)
+        if (eldsteHendelse.id == hendelse.id) {
+            oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
+            logger.info("Hendelse med id ${hendelse.id} ble oppdatert i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
+        } else {
+            logger.info("Hendelse med id ${hendelse.id} ble oppdatert i DB")
         }
     }
 
     private fun stoppHendelse(hendelse: Hendelse) {
-        try {
+        val resultatAvDeleteHendelse = try {
             hendelseRepository.delete(hendelse.id)
-
-            logger.info("Hendelse med id ${hendelse.id} ble stoppet")
         } catch (ex: IngenHendelseMedIdException) {
+            ex
+        }
+
+        if (resultatAvDeleteHendelse is IngenHendelseMedIdException) {
             // 2024-12-02, Sondre:
             // Per no ignorer vi melding, då vi forventar å alltid få ei "START"-melding før ei eventuell "OPPDATER"- eller "STOPP"-melding.
-            // Dette går fint så lenge vi ikkje har skrudd på "compaction" på topicet. Dersom vi har "compaction" på er det ikkje gitt
+            // Dette går fint så lenge vi ikkje har skrudd på "compaction" på topic-et. Dersom vi har "compaction" på er det ikkje gitt
             // at vi berre kan ignorere, sidan vi då potensielt går glipp av hendelsar ved ein eventuell rewind på topic-et.
             logger.warn("Fikk hendelse med operasjon ${Operasjon.STOPP} og ID ${hendelse.id}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
+            return
+        }
+
+        val resultatAvGetEldsteHendelse = try {
+            hendelseRepository.getEldste(hendelse.personIdent)
+        } catch (ex: IngenHendelseForPersonException) {
+            ex
+        }
+
+        if (resultatAvGetEldsteHendelse is IngenHendelseForPersonException) {
+            // All good - det var ingen flere hendelser for personen etter at vi slettet den som kom inn som argument
+            slettUgattVarselForBrukerIOpenSearch(hendelse)
+            logger.info("Hendelse med id ${hendelse.id} ble slettet i DB og utgått varsel ble fjernet for person i OpenSearch siden personen ikke hadde andre hendelser.")
+            return
+        }
+
+        if (resultatAvGetEldsteHendelse is Hendelse) {
+            oppdaterUgattVarselForBrukerIOpenSearch(resultatAvGetEldsteHendelse)
+
+            logger.info("Hendelse med id ${hendelse.id} ble slettet i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med id ${resultatAvGetEldsteHendelse.id}")
+        }
+    }
+
+    private fun oppdaterUgattVarselForBrukerIOpenSearch(hendelse: Hendelse) {
+        // 2024-11-29, Sondre
+        // Egentlig unødvendig if-sjekk så lenge kun Team DAB er på med "utgåtte varsel"
+        // Men har den med likevel for å tydeliggjøre at det er "utgått varsel"-feltet i OpenSearch
+        // som oppdateres her. Vi må huske å oppdatere håndtering etterhvert som denne tjenesten
+        // blir mer generalisert/får flere produsenter
+        if (Kategori.UTGATT_VARSEL == hendelse.kategori) {
+            // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
+            val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
+            opensearchIndexerV2.oppdaterUtgattVarsel(hendelse, aktorId)
+        }
+    }
+
+    private fun slettUgattVarselForBrukerIOpenSearch(hendelse: Hendelse) {
+        // 2024-11-29, Sondre
+        // Egentlig unødvendig if-sjekk så lenge kun Team DAB er på med "utgåtte varsel"
+        // Men har den med likevel for å tydeliggjøre at det er "utgått varsel"-feltet i OpenSearch
+        // som oppdateres her. Vi må huske å oppdatere håndtering etterhvert som denne tjenesten
+        // blir mer generalisert/får flere produsenter
+        if (Kategori.UTGATT_VARSEL == hendelse.kategori) {
+            // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
+            val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
+            opensearchIndexerV2.slettUtgattVarsel(aktorId)
         }
     }
 }

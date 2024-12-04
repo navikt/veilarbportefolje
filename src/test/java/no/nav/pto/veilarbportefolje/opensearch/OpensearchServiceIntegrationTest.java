@@ -17,6 +17,7 @@ import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
@@ -49,6 +50,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test.insertArbeidsliste;
 import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test.insertFargekategori;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
+import static no.nav.pto.veilarbportefolje.hendelsesfilter.HendelsesfilterTestUtilKt.genererRandomHendelse;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggArbeidslisteQuery;
@@ -4894,6 +4896,40 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         // Viser at vi får feil slik kodebasen er no. Målet er at sorteringsfeltSomFeilerISortering skal vere tom.
         assertThat(sorteringsfeltSomFeilerISortering).isNotEmpty();
+    }
+
+    @Test
+    @SneakyThrows
+    void skal_indeksere_hendelse_data_riktig() {
+        Hendelse hendelse = genererRandomHendelse();
+        OppfolgingsBruker oppfolgingsBruker = new OppfolgingsBruker()
+                .setFnr("11111199999")
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setUtgatt_varsel(hendelse.getHendelse());
+        skrivBrukereTilTestindeks(oppfolgingsBruker);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == 1);
+
+        BrukereMedAntall respons = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                new Filtervalg().setFerdigfilterListe(emptyList()),
+                null,
+                null
+        );
+        Bruker bruker = respons.getBrukere().getFirst();
+        Hendelse.HendelseInnhold utgattVarsel = bruker.getUtgattVarsel();
+
+        assertThat(respons.getAntall()).isEqualTo(1);
+        assertThat(utgattVarsel).isNotNull();
+        assertThat(utgattVarsel.getBeskrivelse()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getBeskrivelse());
+        assertThat(utgattVarsel.getDetaljer()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getDetaljer());
+        assertThat(utgattVarsel.getLenke()).isEqualTo(oppfolgingsBruker.getUtgatt_varsel().getLenke());
     }
 
     private BrukereMedAntall sorterBrukerePaStandardsorteringenAktorid(OpensearchService osService) {
