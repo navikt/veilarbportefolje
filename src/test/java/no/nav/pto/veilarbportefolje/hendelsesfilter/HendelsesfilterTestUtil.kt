@@ -11,6 +11,20 @@ import java.time.ZonedDateTime
 import java.util.*
 import kotlin.random.Random
 
+// For å kunne kalle funksjonen fra Java uten å måtte sende inn argument
+fun genererRandomHendelse(): Hendelse {
+    return genererRandomHendelse(
+        UUID.randomUUID(),
+        randomNorskIdent(),
+        randomAvsender(),
+        randomKategori(),
+        randomBeskrivelse(),
+        randomZonedDate(),
+        randomUrl(),
+        randomDetaljer(),
+    )
+}
+
 fun genererRandomHendelse(
     id: UUID = UUID.randomUUID(),
     personIdent: NorskIdent = randomNorskIdent(),
@@ -74,12 +88,12 @@ fun genererRandomHendelseConsumerRecord(
     )
 }
 
-private fun randomUrl(): URL =
+fun randomUrl(): URL =
     URI.create("https://veilarbpersonflate.intern.dev.nav.no/${Random.nextInt(until = 10)}").toURL()
 
-private fun randomBeskrivelse() = "Beskrivelse_${Random.nextInt(until = 10)}"
+fun randomBeskrivelse() = "Beskrivelse_${Random.nextInt(until = 10)}"
 
-private fun randomAvsender() = "Avsender_${Random.nextInt(until = 10)}"
+fun randomAvsender() = "Avsender_${Random.nextInt(until = 10)}"
 
 fun randomKategori(): Kategori {
     val kategoriValues = Kategori.entries
