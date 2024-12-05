@@ -25,6 +25,20 @@ fun genererRandomHendelse(): Hendelse {
     )
 }
 
+// For å kunne kalle funksjonen fra Java og bare sende inn hendelsedato
+fun genererRandomHendelse(hendelseDato: ZonedDateTime): Hendelse {
+    return genererRandomHendelse(
+        UUID.randomUUID(),
+        randomNorskIdent(),
+        randomAvsender(),
+        randomKategori(),
+        randomBeskrivelse(),
+        hendelseDato,
+        randomUrl(),
+        randomDetaljer(),
+    )
+}
+
 fun genererRandomHendelse(
     id: UUID = UUID.randomUUID(),
     personIdent: NorskIdent = randomNorskIdent(),
