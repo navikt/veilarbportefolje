@@ -127,7 +127,8 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
 
         if (oppfolgingsbrukerDTO.isEmpty()) {
             secureLog.error("Fant ingen oppfølgingsbrukerdata for bruker med fnr: {}.", fnr);
-            throw new RuntimeException("Fant ingen oppfølgingsbrukerdata for brukeren.");
+//            throw new RuntimeException("Fant ingen oppfølgingsbrukerdata for brukeren.");
+            return;
         }
 
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity = new OppfolgingsbrukerEntity(
