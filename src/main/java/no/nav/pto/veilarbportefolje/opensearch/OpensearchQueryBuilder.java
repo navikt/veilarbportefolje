@@ -36,8 +36,6 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerMapperKt.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
-import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.TILTAKSHENDELSER;
-import static no.nav.pto.veilarbportefolje.domene.Sorteringsfelt.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.opensearch.index.query.QueryBuilders.*;
@@ -504,13 +502,17 @@ public class OpensearchQueryBuilder {
     }
 
     private static void brukStandardsorteringBasertPaValgteFilter(Filtervalg filtervalg, SearchSourceBuilder searchSourceBuilder) {
-        boolean filtrertPaTiltakshendelse = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(TILTAKSHENDELSER);
+        boolean filtrertPaTiltakshendelse = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.TILTAKSHENDELSER);
+        boolean filtrertPaUtgatteVarsel = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL);
         boolean filtrertPaEtGjeldendeVedtak14aFilter = filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
                                                        (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && !filtervalg.innsatsgruppeGjeldendeVedtak14a.isEmpty()) ||
                                                        (filtervalg.hovedmalGjeldendeVedtak14a != null && !filtervalg.hovedmalGjeldendeVedtak14a.isEmpty());
 
         if (filtrertPaTiltakshendelse) {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC);
+        }
+        else if (filtrertPaUtgatteVarsel) {
+            sorterUtgattVarselHendelseDato(searchSourceBuilder, SortOrder.ASC);
         }
         else if (filtrertPaEtGjeldendeVedtak14aFilter) {
             sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder, SortOrder.ASC);
@@ -554,6 +556,10 @@ public class OpensearchQueryBuilder {
 
     static void sorterTiltakshendelseOpprettetDato(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
         searchSourceBuilder.sort("tiltakshendelse.opprettet", order);
+    }
+
+    static void sorterUtgattVarselHendelseDato(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        searchSourceBuilder.sort("utgatt_varsel.dato", order);
     }
 
     static void sorterGjeldendeVedtak14aVedtaksdato(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
