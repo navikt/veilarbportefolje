@@ -290,12 +290,6 @@
           },
           "dato": {
             "type": "date"
-          },
-          "lenke": {
-            "type": "keyword"
-          },
-          "detaljer": {
-            "type": "keyword"
           }
         }
       }
