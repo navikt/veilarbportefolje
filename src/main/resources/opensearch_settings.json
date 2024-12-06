@@ -282,6 +282,16 @@
             "type": "date"
           }
         }
+      },
+      "utgatt_varsel": {
+        "properties": {
+          "beskrivelse": {
+            "type": "keyword"
+          },
+          "dato": {
+            "type": "date"
+          }
+        }
       }
     }
   }
