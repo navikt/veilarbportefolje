@@ -332,7 +332,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 new Filtervalg(),
                 null,
@@ -370,7 +370,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filtervalg,
                 null,
@@ -429,7 +429,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filtervalg,
                 null,
@@ -474,7 +474,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filtervalg,
                 null,
@@ -1113,15 +1113,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(nyForEnhet, ikkeNyForEnhet);
         skrivBrukereTilTestindeks(liste);
 
-        pollOpensearchUntil(() -> opensearchService.hentBrukere(
-                TEST_ENHET,
-                Optional.empty(),
-                "asc",
-                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
-                new Filtervalg().setFerdigfilterListe(List.of(Brukerstatus.TRENGER_VURDERING)),
-                null,
-                null
-        ).getAntall() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         List<Brukerstatus> ferdigFiltere = List.of(
                 Brukerstatus.UFORDELTE_BRUKERE,
@@ -1131,7 +1123,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 new Filtervalg().setFerdigfilterListe(ferdigFiltere),
                 null,
@@ -1162,21 +1154,12 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(brukerVeilederHarTilgangTil, brukerVeilederIkkeHarTilgangTil);
         skrivBrukereTilTestindeks(liste);
 
-        pollOpensearchUntil(() -> opensearchService.hentBrukere(
-                TEST_ENHET,
-                Optional.empty(),
-                "asc",
-                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
-                new Filtervalg(),
-                null,
-                null
-        ).getAntall() == 1);
-
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 new Filtervalg(),
                 null,
@@ -1215,7 +1198,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(LITE_PRIVILEGERT_VEILEDER),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 new Filtervalg().setFerdigfilterListe(List.of(Brukerstatus.UFORDELTE_BRUKERE)),
                 null,
@@ -1260,7 +1243,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1302,7 +1285,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1344,7 +1327,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1409,7 +1392,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1460,7 +1443,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1509,7 +1492,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1560,7 +1543,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1612,7 +1595,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -5136,7 +5119,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         return osService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 new Filtervalg().setFerdigfilterListe(emptyList()),
                 null,
@@ -5172,7 +5155,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 () -> opensearchService.hentBrukere(
                         TEST_ENHET,
                         empty(),
-                        "asc",
+                        "ikke_satt",
                         Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                         new Filtervalg(),
                         null,
@@ -5187,7 +5170,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 () -> opensearchService.hentBrukere(
                         TEST_ENHET,
                         Optional.of(veilederId),
-                        "asc",
+                        "ikke_satt",
                         Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                         new Filtervalg(),
                         null,
