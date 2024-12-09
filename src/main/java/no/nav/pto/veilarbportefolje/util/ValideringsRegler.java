@@ -82,7 +82,8 @@ public class ValideringsRegler {
            FARGEKATEGORI.sorteringsverdi,
            UTDANNING_OG_SITUASJON_SIST_ENDRET.sorteringsverdi,
            TILTAKSHENDELSE_DATO_OPPRETTET.sorteringsverdi,
-           TILTAKSHENDELSE_TEKST.sorteringsverdi
+           TILTAKSHENDELSE_TEKST.sorteringsverdi,
+           UTGATT_VARSEL_DATO.sorteringsverdi
     );
 
     public static void sjekkEnhet(String enhet) {

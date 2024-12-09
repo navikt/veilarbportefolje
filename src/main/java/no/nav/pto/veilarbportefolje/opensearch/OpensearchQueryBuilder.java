@@ -495,6 +495,7 @@ public class OpensearchQueryBuilder {
             case FARGEKATEGORI -> searchSourceBuilder.sort("fargekategori", order);
             case TILTAKSHENDELSE_DATO_OPPRETTET -> sorterTiltakshendelseOpprettetDato(searchSourceBuilder, order);
             case TILTAKSHENDELSE_TEKST -> searchSourceBuilder.sort("tiltakshendelse.tekst", order);
+            case UTGATT_VARSEL_DATO -> sorterUtgattVarselHendelseDato(searchSourceBuilder, order);
             default -> defaultSort(sorteringsfelt, searchSourceBuilder, order);
         }
         addSecondarySort(searchSourceBuilder);

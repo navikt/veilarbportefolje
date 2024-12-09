@@ -7,7 +7,6 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.common.types.identer.NorskIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
@@ -333,7 +332,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 new Filtervalg(),
                 null,
@@ -371,7 +370,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filtervalg,
                 null,
@@ -430,7 +429,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filtervalg,
                 null,
@@ -475,7 +474,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filtervalg,
                 null,
@@ -1114,15 +1113,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(nyForEnhet, ikkeNyForEnhet);
         skrivBrukereTilTestindeks(liste);
 
-        pollOpensearchUntil(() -> opensearchService.hentBrukere(
-                TEST_ENHET,
-                Optional.empty(),
-                "asc",
-                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
-                new Filtervalg().setFerdigfilterListe(List.of(Brukerstatus.TRENGER_VURDERING)),
-                null,
-                null
-        ).getAntall() == liste.size());
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         List<Brukerstatus> ferdigFiltere = List.of(
                 Brukerstatus.UFORDELTE_BRUKERE,
@@ -1132,7 +1123,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 new Filtervalg().setFerdigfilterListe(ferdigFiltere),
                 null,
@@ -1163,21 +1154,12 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var liste = List.of(brukerVeilederHarTilgangTil, brukerVeilederIkkeHarTilgangTil);
         skrivBrukereTilTestindeks(liste);
 
-        pollOpensearchUntil(() -> opensearchService.hentBrukere(
-                TEST_ENHET,
-                Optional.empty(),
-                "asc",
-                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
-                new Filtervalg(),
-                null,
-                null
-        ).getAntall() == 1);
-
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 new Filtervalg(),
                 null,
@@ -1216,7 +1198,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(LITE_PRIVILEGERT_VEILEDER),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 new Filtervalg().setFerdigfilterListe(List.of(Brukerstatus.UFORDELTE_BRUKERE)),
                 null,
@@ -1261,7 +1243,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1303,7 +1285,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1345,7 +1327,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1410,7 +1392,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1461,7 +1443,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1510,7 +1492,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1561,7 +1543,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -1613,7 +1595,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
@@ -3542,6 +3524,73 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
+    void skal_kunne_sortere_pa_hendelsesdato_pa_utgatt_varsel() {
+        // Given
+        AktorId aktoridBruker1 = AktorId.of("1111111111111");
+        AktorId aktoridBruker2 = AktorId.of("2222222222222");
+        AktorId aktoridBruker3 = AktorId.of("3333333333333");
+        ZonedDateTime hendelsedatoBruker1 = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
+        ZonedDateTime hendelsedatoBruker2 = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
+        ZonedDateTime hendelsedatoBruker3 = ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
+
+        Hendelse.HendelseInnhold utgattVarselBruker1 = genererRandomHendelse(hendelsedatoBruker1).getHendelse();
+        Hendelse.HendelseInnhold utgattVarselBruker2 = genererRandomHendelse(hendelsedatoBruker2).getHendelse();
+        Hendelse.HendelseInnhold utgattVarselBruker3 = genererRandomHendelse(hendelsedatoBruker3).getHendelse();
+
+        OppfolgingsBruker bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(aktoridBruker1.toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setEnhet_id(TEST_ENHET)
+                .setUtgatt_varsel(utgattVarselBruker1);
+
+        OppfolgingsBruker bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(aktoridBruker2.toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setUtgatt_varsel(utgattVarselBruker2);
+
+        OppfolgingsBruker bruker3 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(aktoridBruker3.toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setUtgatt_varsel(utgattVarselBruker3);
+
+        List<OppfolgingsBruker> brukere = List.of(bruker1, bruker2, bruker3);
+
+        skrivBrukereTilTestindeks(brukere);
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == brukere.size());
+
+        // When
+        Filtervalg filtervalg = new Filtervalg()
+                .setFerdigfilterListe(List.of(Brukerstatus.UTGATTE_VARSEL));
+
+        BrukereMedAntall response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                Sorteringsfelt.UTGATT_VARSEL_DATO.sorteringsverdi,
+                filtervalg,
+                null,
+                null
+        );
+
+
+        // Then
+        assertThat(response.getAntall()).isEqualTo(3);
+        assertEquals(bruker3.getAktoer_id(), response.getBrukere().get(0).getAktoerid());
+        assertEquals(bruker1.getAktoer_id(), response.getBrukere().get(1).getAktoerid());
+        assertEquals(bruker2.getAktoer_id(), response.getBrukere().get(2).getAktoerid());
+    }
+
+    @Test
     public void test_sorting_barn_under_18_veileder_tilgang_6_7() {
 
         var bruker1B = new OppfolgingsBruker()
@@ -5070,7 +5119,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         return osService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ikke_satt",
                 Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 new Filtervalg().setFerdigfilterListe(emptyList()),
                 null,
@@ -5106,7 +5155,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 () -> opensearchService.hentBrukere(
                         TEST_ENHET,
                         empty(),
-                        "asc",
+                        "ikke_satt",
                         Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                         new Filtervalg(),
                         null,
@@ -5121,7 +5170,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 () -> opensearchService.hentBrukere(
                         TEST_ENHET,
                         Optional.of(veilederId),
-                        "asc",
+                        "ikke_satt",
                         Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                         new Filtervalg(),
                         null,
