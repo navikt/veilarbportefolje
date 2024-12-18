@@ -41,7 +41,8 @@ data class HendelseRecordValue @JsonCreator constructor(
 }
 
 enum class Kategori {
-    UTGATT_VARSEL
+    UTGATT_VARSEL,
+    UDELT_SAMTALEREFERAT
 }
 
 enum class Operasjon {

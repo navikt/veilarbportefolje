@@ -93,13 +93,29 @@ class HendelseRepositoryTest(
     }
 
     @Test
-    fun `skal hente den eldste Hendelse når flere hendelser eksisterer for person`() {
+    fun `skal hente den eldste Hendelse når det bare er en Utgått varsel-hendelse på person`() {
         // Given
         val personIdent = randomNorskIdent()
         val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
-        val hendelseEldste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(2))
-        val hendelseNestEldste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(1))
-        val hendelseNyeste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa)
+        val hendelse = genererRandomHendelse(personIdent = personIdent, kategori = Kategori.UTGATT_VARSEL)
+        hendelseRepository.insert(hendelse)
+
+        // When
+        val resultatAvHenting = hendelseRepository.getEldste(personIdent)
+
+        // Then
+        val forventetHendelse = hendelse.copy()
+        assertThat(resultatAvHenting).isEqualTo(forventetHendelse)
+    }
+
+    @Test
+    fun `skal hente den eldste Hendelse når flere hendelser med Utgått varsel-kategori eksisterer for person`() {
+        // Given
+        val personIdent = randomNorskIdent()
+        val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
+        val hendelseEldste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(2), kategori = Kategori.UTGATT_VARSEL)
+        val hendelseNestEldste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(1), kategori = Kategori.UTGATT_VARSEL)
+        val hendelseNyeste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa, kategori = Kategori.UTGATT_VARSEL)
         hendelseRepository.insert(hendelseNyeste)
         hendelseRepository.insert(hendelseNestEldste)
         hendelseRepository.insert(hendelseEldste)
@@ -109,6 +125,26 @@ class HendelseRepositoryTest(
 
         // Then
         val forventetHendelse = hendelseEldste.copy()
+        assertThat(resultatAvHenting).isEqualTo(forventetHendelse)
+    }
+
+    @Test
+    fun `skal hente den eldste Utgått varsel Hendelse når flere hendelser med ulike kategorier eksisterer for person`() {
+        // Given
+        val personIdent = randomNorskIdent()
+        val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
+        val hendelseEldste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(2), kategori = Kategori.UDELT_SAMTALEREFERAT)
+        val hendelseNestEldste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(1), kategori = Kategori.UTGATT_VARSEL)
+        val hendelseNyeste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa, kategori = Kategori.UTGATT_VARSEL)
+        hendelseRepository.insert(hendelseNyeste)
+        hendelseRepository.insert(hendelseNestEldste)
+        hendelseRepository.insert(hendelseEldste)
+
+        // When
+        val resultatAvHenting = hendelseRepository.getEldste(personIdent)
+
+        // Then
+        val forventetHendelse = hendelseNestEldste.copy()
         assertThat(resultatAvHenting).isEqualTo(forventetHendelse)
     }
 

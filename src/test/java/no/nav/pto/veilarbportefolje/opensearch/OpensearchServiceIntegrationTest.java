@@ -5084,7 +5084,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     @SneakyThrows
-    void skal_indeksere_hendelse_data_riktig() {
+    void skal_indeksere_hendelse_data_riktig_for_utgatt_varsel() {
         Hendelse hendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL);
         OppfolgingsBruker oppfolgingsBruker = new OppfolgingsBruker()
                 .setFnr("11111199999")
