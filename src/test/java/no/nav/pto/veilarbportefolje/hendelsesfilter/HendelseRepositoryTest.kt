@@ -93,7 +93,7 @@ class HendelseRepositoryTest(
     }
 
     @Test
-    fun `skal hente den eldste Hendelse når det bare er en Utgått varsel-hendelse på person`() {
+    fun `skal hente eldste Hendelse med utgått varsel-kategori når det bare er en Utgått varsel-hendelse på person`() {
         // Given
         val personIdent = randomNorskIdent()
         val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
@@ -101,7 +101,7 @@ class HendelseRepositoryTest(
         hendelseRepository.insert(hendelse)
 
         // When
-        val resultatAvHenting = hendelseRepository.getEldste(personIdent)
+        val resultatAvHenting = hendelseRepository.getEldsteUtgattVarsel(personIdent)
 
         // Then
         val forventetHendelse = hendelse.copy()
@@ -109,7 +109,7 @@ class HendelseRepositoryTest(
     }
 
     @Test
-    fun `skal hente den eldste Hendelse når flere hendelser med Utgått varsel-kategori eksisterer for person`() {
+    fun `skal hente eldste Hendelse med Utgått varsel-kategori når det eksisterer flere Utgått varsel-hendelser på person`() {
         // Given
         val personIdent = randomNorskIdent()
         val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
@@ -121,7 +121,7 @@ class HendelseRepositoryTest(
         hendelseRepository.insert(hendelseEldste)
 
         // When
-        val resultatAvHenting = hendelseRepository.getEldste(personIdent)
+        val resultatAvHenting = hendelseRepository.getEldsteUtgattVarsel(personIdent)
 
         // Then
         val forventetHendelse = hendelseEldste.copy()
@@ -129,7 +129,7 @@ class HendelseRepositoryTest(
     }
 
     @Test
-    fun `skal hente den eldste Utgått varsel Hendelse når flere hendelser med ulike kategorier eksisterer for person`() {
+    fun `skal hente eldste Hendelse med utgått varsel-kategori når det eksisterer flere hendelser med ulike kategorier for person`() {
         // Given
         val personIdent = randomNorskIdent()
         val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
@@ -141,7 +141,7 @@ class HendelseRepositoryTest(
         hendelseRepository.insert(hendelseEldste)
 
         // When
-        val resultatAvHenting = hendelseRepository.getEldste(personIdent)
+        val resultatAvHenting = hendelseRepository.getEldsteUtgattVarsel(personIdent)
 
         // Then
         val forventetHendelse = hendelseNestEldste.copy()
@@ -155,7 +155,7 @@ class HendelseRepositoryTest(
 
         // When
         val resultatAvHenting = try {
-            hendelseRepository.getEldste(personIdent)
+            hendelseRepository.getEldsteUtgattVarsel(personIdent)
         } catch (ex: IngenHendelseForPersonException) {
             ex
         }

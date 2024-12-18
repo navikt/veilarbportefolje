@@ -79,9 +79,9 @@ class HendelseService(
             return
         }
 
-        val eldsteHendelse = hendelseRepository.getEldste(hendelse.personIdent)
+        val eldsteUtgattVarselHendelse = hendelseRepository.getEldsteUtgattVarsel(hendelse.personIdent)
 
-        if (eldsteHendelse.id == hendelse.id) {
+        if (eldsteUtgattVarselHendelse.id == hendelse.id) {
             oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
 
             logger.info("Hendelse med id ${hendelse.id} ble lagret i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
@@ -106,8 +106,8 @@ class HendelseService(
             return
         }
 
-        val eldsteHendelse = hendelseRepository.getEldste(hendelse.personIdent)
-        if (eldsteHendelse.id == hendelse.id) {
+        val eldsteUtgattVarselHendelse = hendelseRepository.getEldsteUtgattVarsel(hendelse.personIdent)
+        if (eldsteUtgattVarselHendelse.id == hendelse.id) {
             oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
             logger.info("Hendelse med id ${hendelse.id} ble oppdatert i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
         } else {
@@ -131,23 +131,23 @@ class HendelseService(
             return
         }
 
-        val resultatAvGetEldsteHendelse = try {
-            hendelseRepository.getEldste(hendelse.personIdent)
+        val resultatAvGetEldsteUtgattVarselHendelse = try {
+            hendelseRepository.getEldsteUtgattVarsel(hendelse.personIdent)
         } catch (ex: IngenHendelseForPersonException) {
             ex
         }
 
-        if (resultatAvGetEldsteHendelse is IngenHendelseForPersonException) {
+        if (resultatAvGetEldsteUtgattVarselHendelse is IngenHendelseForPersonException) {
             // All good - det var ingen flere hendelser for personen etter at vi slettet den som kom inn som argument
             slettUgattVarselForBrukerIOpenSearch(hendelse)
             logger.info("Hendelse med id ${hendelse.id} ble slettet i DB og utgått varsel ble fjernet for person i OpenSearch siden personen ikke hadde andre hendelser.")
             return
         }
 
-        if (resultatAvGetEldsteHendelse is Hendelse) {
-            oppdaterUgattVarselForBrukerIOpenSearch(resultatAvGetEldsteHendelse)
+        if (resultatAvGetEldsteUtgattVarselHendelse is Hendelse) {
+            oppdaterUgattVarselForBrukerIOpenSearch(resultatAvGetEldsteUtgattVarselHendelse)
 
-            logger.info("Hendelse med id ${hendelse.id} ble slettet i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med id ${resultatAvGetEldsteHendelse.id}")
+            logger.info("Hendelse med id ${hendelse.id} ble slettet i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med id ${resultatAvGetEldsteUtgattVarselHendelse.id}")
         }
     }
 

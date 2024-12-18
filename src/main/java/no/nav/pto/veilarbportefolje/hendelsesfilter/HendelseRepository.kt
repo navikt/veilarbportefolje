@@ -38,20 +38,20 @@ class HendelseRepository(
     }
 
     /**
-     * Henter den eldste hendelsen:
+     * Henter den eldste hendelsen av typen UTGATT_VARSEL:
      *
      * * dersom minst en hendelse eksisterer for [personIdent] returneres den eldste av disse
      * * dersom ingen hendelser eksisterer for [personIdent] kastes en [IngenHendelseForPersonException]
      */
-    fun getEldste(personIdent: NorskIdent): Hendelse {
+    fun getEldsteUtgattVarsel(personIdent: NorskIdent): Hendelse {
         // language=postgresql
         val sql = """
-            SELECT * FROM ${HENDELSE.TABLE_NAME} WHERE ${HENDELSE.PERSON_IDENT} = ?
+            SELECT * FROM ${HENDELSE.TABLE_NAME} WHERE ${HENDELSE.PERSON_IDENT} = ? AND ${HENDELSE.KATEGORI} = ?
             ORDER BY ${HENDELSE.HENDELSE_DATO} LIMIT 1
             """.trimIndent()
 
         val resultat = try {
-            jdbcTemplate.queryForObject(sql, ::toHendelse, personIdent.get())
+            jdbcTemplate.queryForObject(sql, ::toHendelse, personIdent.get(), Kategori.UTGATT_VARSEL.toString())
         } catch (ex: EmptyResultDataAccessException) {
             throw IngenHendelseForPersonException(cause = ex)
         }
