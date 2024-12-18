@@ -79,6 +79,12 @@ class HendelseService(
             return
         }
 
+        /* Vi treng ikkje sjekke eldsteUtgattVarselHendelse om ikkje kategori var UTGATT_VARSEL */
+        if (hendelse.kategori != Kategori.UTGATT_VARSEL) {
+            logger.info("Hendelse med id ${hendelse.id} ble lagret i DB")
+            return
+        }
+
         val eldsteUtgattVarselHendelse = hendelseRepository.getEldsteUtgattVarsel(hendelse.personIdent)
 
         if (eldsteUtgattVarselHendelse.id == hendelse.id) {
@@ -106,6 +112,12 @@ class HendelseService(
             return
         }
 
+        /* Vi treng ikkje sjekke eldsteUtgattVarselHendelse om ikkje kategori var UTGATT_VARSEL */
+        if (hendelse.kategori != Kategori.UTGATT_VARSEL) {
+            logger.info("Hendelse med id ${hendelse.id} ble oppdatert i DB")
+            return
+        }
+
         val eldsteUtgattVarselHendelse = hendelseRepository.getEldsteUtgattVarsel(hendelse.personIdent)
         if (eldsteUtgattVarselHendelse.id == hendelse.id) {
             oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
@@ -128,6 +140,12 @@ class HendelseService(
             // Dette går fint så lenge vi ikkje har skrudd på "compaction" på topic-et. Dersom vi har "compaction" på er det ikkje gitt
             // at vi berre kan ignorere, sidan vi då potensielt går glipp av hendelsar ved ein eventuell rewind på topic-et.
             logger.warn("Fikk hendelse med operasjon ${Operasjon.STOPP} og ID ${hendelse.id}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
+            return
+        }
+
+        /* Vi treng ikkje sjekke eldsteUtgattVarselHendelse om ikkje kategori var UTGATT_VARSEL */
+        if (hendelse.kategori != Kategori.UTGATT_VARSEL) {
+            logger.info("Hendelse med id ${hendelse.id} ble slettet i DB.")
             return
         }
 
