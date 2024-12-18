@@ -38,7 +38,7 @@ class HendelseRepository(
     }
 
     /**
-     * Henter den eldste hendelsen av typen UTGATT_VARSEL:
+     * Henter den eldste hendelsen med kategori UTGATT_VARSEL:
      *
      * * dersom minst en hendelse eksisterer for [personIdent] returneres den eldste av disse
      * * dersom ingen hendelser eksisterer for [personIdent] kastes en [IngenHendelseForPersonException]
