@@ -42,7 +42,7 @@ class HendelseIntegrationTest(
         val brukerFnr = randomFnr()
         val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
         val brukerOppfolgingsEnhet = randomNavKontor()
-        val hendelse = genererRandomHendelse(personIdent = brukerNorskIdent)
+        val hendelse = genererRandomHendelse(personIdent = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
         hendelseRepository.insert(hendelse)
 
@@ -106,7 +106,7 @@ class HendelseIntegrationTest(
         // When
         val hendelseId = UUID.randomUUID().toString()
         val hendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         val hendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = hendelseId)
         hendelseService.behandleKafkaRecord(hendelseConsumerRecord)
@@ -141,7 +141,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val hendelseId = UUID.randomUUID().toString()
         val hendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         val hendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = hendelseId)
         hendelseService.behandleKafkaRecord(hendelseConsumerRecord)
@@ -187,7 +187,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val hendelseId = UUID.randomUUID().toString()
         val hendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         val hendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = hendelseId)
         hendelseService.behandleKafkaRecord(hendelseConsumerRecord)
@@ -226,7 +226,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val yngreHendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         val yngreHendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = yngreHendelseRecordValue, key = yngreHendelseId)
         hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
@@ -237,7 +237,8 @@ class HendelseIntegrationTest(
             genererRandomHendelseRecordValue(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
-                hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10)
+                hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10),
+                kategori = Kategori.UTGATT_VARSEL
             )
         val eldreHendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = eldreHendelseRecordValue, key = eldreHendelseId)
@@ -273,7 +274,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val yngreHendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         val yngreHendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = yngreHendelseRecordValue, key = yngreHendelseId)
         hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
@@ -282,7 +283,8 @@ class HendelseIntegrationTest(
             genererRandomHendelseRecordValue(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
-                hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10)
+                hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10),
+                kategori = Kategori.UTGATT_VARSEL
             )
         val eldreHendelseConsumerRecordStart =
             genererRandomHendelseConsumerRecord(recordValue = eldreHendelseRecordValueStart, key = eldreHendelseId)

@@ -18,6 +18,7 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
@@ -3402,7 +3403,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
 
         Fnr oppfolgingsBruker2Fnr = Fnr.of("02020222222");
-        Hendelse.HendelseInnhold utgattVarselBruker2 = genererRandomHendelse().getHendelse();
+        Hendelse.HendelseInnhold utgattVarselBruker2 = genererRandomHendelse(Kategori.UTGATT_VARSEL).getHendelse();
 
         OppfolgingsBruker oppfolgingsBruker2 = new OppfolgingsBruker()
                 .setFnr(oppfolgingsBruker2Fnr.toString())
@@ -3415,7 +3416,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
 
         Fnr oppfolgingsBruker3Fnr = Fnr.of("03030333333");
-        Hendelse.HendelseInnhold utgattVarselBruker3 = genererRandomHendelse().getHendelse();
+        Hendelse.HendelseInnhold utgattVarselBruker3 = genererRandomHendelse(Kategori.UTGATT_VARSEL).getHendelse();
 
         OppfolgingsBruker bruker3 = new OppfolgingsBruker()
                 .setFnr(oppfolgingsBruker3Fnr.toString())
@@ -3467,9 +3468,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         ZonedDateTime hendelsedatoBruker2 = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
         ZonedDateTime hendelsedatoBruker3 = ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
 
-        Hendelse.HendelseInnhold utgattVarselBruker1 = genererRandomHendelse(hendelsedatoBruker1).getHendelse();
-        Hendelse.HendelseInnhold utgattVarselBruker2 = genererRandomHendelse(hendelsedatoBruker2).getHendelse();
-        Hendelse.HendelseInnhold utgattVarselBruker3 = genererRandomHendelse(hendelsedatoBruker3).getHendelse();
+        Hendelse.HendelseInnhold utgattVarselBruker1 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker1).getHendelse();
+        Hendelse.HendelseInnhold utgattVarselBruker2 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker2).getHendelse();
+        Hendelse.HendelseInnhold utgattVarselBruker3 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker3).getHendelse();
 
         OppfolgingsBruker bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -3533,9 +3534,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         ZonedDateTime hendelsedatoBruker2 = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
         ZonedDateTime hendelsedatoBruker3 = ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault());
 
-        Hendelse.HendelseInnhold utgattVarselBruker1 = genererRandomHendelse(hendelsedatoBruker1).getHendelse();
-        Hendelse.HendelseInnhold utgattVarselBruker2 = genererRandomHendelse(hendelsedatoBruker2).getHendelse();
-        Hendelse.HendelseInnhold utgattVarselBruker3 = genererRandomHendelse(hendelsedatoBruker3).getHendelse();
+        Hendelse.HendelseInnhold utgattVarselBruker1 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker1).getHendelse();
+        Hendelse.HendelseInnhold utgattVarselBruker2 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker2).getHendelse();
+        Hendelse.HendelseInnhold utgattVarselBruker3 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker3).getHendelse();
 
         OppfolgingsBruker bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -5084,7 +5085,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     @Test
     @SneakyThrows
     void skal_indeksere_hendelse_data_riktig() {
-        Hendelse hendelse = genererRandomHendelse();
+        Hendelse hendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL);
         OppfolgingsBruker oppfolgingsBruker = new OppfolgingsBruker()
                 .setFnr("11111199999")
                 .setAktoer_id(randomAktorId().toString())
