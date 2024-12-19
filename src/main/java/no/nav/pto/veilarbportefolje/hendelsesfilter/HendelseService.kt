@@ -75,7 +75,7 @@ class HendelseService(
         }
 
         if (resultatAvInsertNyHendelse is HendelseIdEksistererAlleredeException) {
-            logger.info("Hendelse med ID ${hendelse.id} allerede startet. Ignorerer melding.")
+            logger.info("Hendelse med ID ${hendelse.id} og kategori ${hendelse.kategori} allerede startet. Ignorerer melding.")
             return
         }
 
@@ -111,7 +111,7 @@ class HendelseService(
             // Per no ignorer vi melding, då vi forventar å alltid få ei "START"-melding før ei eventuell "OPPDATER"- eller "STOPP"-melding.
             // Dette går fint så lenge vi ikkje har skrudd på "compaction" på topic-et. Dersom vi har "compaction" på er det ikkje gitt
             // at vi berre kan ignorere, sidan vi då potensielt går glipp av hendelsar ved ein eventuell rewind på topic-et.
-            logger.warn("Fikk hendelse med operasjon ${Operasjon.OPPDATER} og ID ${hendelse.id}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
+            logger.warn("Fikk hendelse med operasjon ${Operasjon.OPPDATER}, ID ${hendelse.id} og kategori ${hendelse.kategori}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
             return
         }
 
@@ -144,7 +144,7 @@ class HendelseService(
             // Per no ignorer vi melding, då vi forventar å alltid få ei "START"-melding før ei eventuell "OPPDATER"- eller "STOPP"-melding.
             // Dette går fint så lenge vi ikkje har skrudd på "compaction" på topic-et. Dersom vi har "compaction" på er det ikkje gitt
             // at vi berre kan ignorere, sidan vi då potensielt går glipp av hendelsar ved ein eventuell rewind på topic-et.
-            logger.warn("Fikk hendelse med operasjon ${Operasjon.STOPP} og ID ${hendelse.id}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
+            logger.warn("Fikk hendelse med operasjon ${Operasjon.STOPP}, ID ${hendelse.id} og kategori ${hendelse.kategori}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
             return
         }
 
