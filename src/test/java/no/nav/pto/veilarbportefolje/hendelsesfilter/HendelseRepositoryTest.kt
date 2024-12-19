@@ -101,7 +101,7 @@ class HendelseRepositoryTest(
         hendelseRepository.insert(hendelse)
 
         // When
-        val resultatAvHenting = hendelseRepository.getEldsteUtgattVarsel(personIdent)
+        val resultatAvHenting = hendelseRepository.getEldste(personIdent, Kategori.UTGATT_VARSEL)
 
         // Then
         val forventetHendelse = hendelse.copy()
@@ -121,7 +121,7 @@ class HendelseRepositoryTest(
         hendelseRepository.insert(hendelseEldste)
 
         // When
-        val resultatAvHenting = hendelseRepository.getEldsteUtgattVarsel(personIdent)
+        val resultatAvHenting = hendelseRepository.getEldste(personIdent, Kategori.UTGATT_VARSEL)
 
         // Then
         val forventetHendelse = hendelseEldste.copy()
@@ -141,7 +141,7 @@ class HendelseRepositoryTest(
         hendelseRepository.insert(hendelseEldste)
 
         // When
-        val resultatAvHenting = hendelseRepository.getEldsteUtgattVarsel(personIdent)
+        val resultatAvHenting = hendelseRepository.getEldste(personIdent, Kategori.UTGATT_VARSEL)
 
         // Then
         val forventetHendelse = hendelseNestEldste.copy()
@@ -155,7 +155,7 @@ class HendelseRepositoryTest(
 
         // When
         val resultatAvHenting = try {
-            hendelseRepository.getEldsteUtgattVarsel(personIdent)
+            hendelseRepository.getEldste(personIdent, Kategori.UTGATT_VARSEL)
         } catch (ex: IngenHendelseForPersonException) {
             ex
         }

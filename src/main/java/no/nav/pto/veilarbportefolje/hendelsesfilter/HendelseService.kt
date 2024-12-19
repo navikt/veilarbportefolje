@@ -79,20 +79,23 @@ class HendelseService(
             return
         }
 
-        /* Vi treng ikkje sjekke eldsteUtgattVarselHendelse om ikkje kategori var UTGATT_VARSEL */
-        if (hendelse.kategori != Kategori.UTGATT_VARSEL) {
-            logger.info("Hendelse med id ${hendelse.id} ble lagret i DB")
-            return
-        }
+        when (hendelse.kategori) {
+            Kategori.UTGATT_VARSEL -> {
+                val eldsteUtgattVarselHendelse =
+                    hendelseRepository.getEldste(hendelse.personIdent, Kategori.UTGATT_VARSEL)
 
-        val eldsteUtgattVarselHendelse = hendelseRepository.getEldsteUtgattVarsel(hendelse.personIdent)
+                if (eldsteUtgattVarselHendelse.id == hendelse.id) {
+                    oppdaterUtgattVarselForBrukerIOpenSearch(hendelse)
 
-        if (eldsteUtgattVarselHendelse.id == hendelse.id) {
-            oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
+                    logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble lagret i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
+                } else {
+                    logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble lagret i DB")
+                }
+            }
 
-            logger.info("Hendelse med id ${hendelse.id} ble lagret i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
-        } else {
-            logger.info("Hendelse med id ${hendelse.id} ble lagret i DB")
+            Kategori.UDELT_SAMTALEREFERAT -> {
+                logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble lagret i DB")
+            }
         }
     }
 
@@ -112,18 +115,20 @@ class HendelseService(
             return
         }
 
-        /* Vi treng ikkje sjekke eldsteUtgattVarselHendelse om ikkje kategori var UTGATT_VARSEL */
-        if (hendelse.kategori != Kategori.UTGATT_VARSEL) {
-            logger.info("Hendelse med id ${hendelse.id} ble oppdatert i DB")
-            return
-        }
+        when (hendelse.kategori) {
+            Kategori.UTGATT_VARSEL -> {
+                val eldsteUtgattVarselHendelse = hendelseRepository.getEldste(hendelse.personIdent, Kategori.UTGATT_VARSEL)
 
-        val eldsteUtgattVarselHendelse = hendelseRepository.getEldsteUtgattVarsel(hendelse.personIdent)
-        if (eldsteUtgattVarselHendelse.id == hendelse.id) {
-            oppdaterUgattVarselForBrukerIOpenSearch(hendelse)
-            logger.info("Hendelse med id ${hendelse.id} ble oppdatert i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
-        } else {
-            logger.info("Hendelse med id ${hendelse.id} ble oppdatert i DB")
+                if (eldsteUtgattVarselHendelse.id == hendelse.id) {
+                    oppdaterUtgattVarselForBrukerIOpenSearch(hendelse)
+                    logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble oppdatert i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
+                } else {
+                    logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble oppdatert i DB")
+                }
+            }
+            Kategori.UDELT_SAMTALEREFERAT -> {
+                logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble oppdatert i DB")
+            }
         }
     }
 
@@ -143,55 +148,42 @@ class HendelseService(
             return
         }
 
-        /* Vi treng ikkje sjekke eldsteUtgattVarselHendelse om ikkje kategori var UTGATT_VARSEL */
-        if (hendelse.kategori != Kategori.UTGATT_VARSEL) {
-            logger.info("Hendelse med id ${hendelse.id} ble slettet i DB.")
-            return
-        }
+        when (hendelse.kategori) {
+            Kategori.UTGATT_VARSEL ->  {
+                val resultatAvGetEldsteUtgattVarselHendelse = try {
+                    hendelseRepository.getEldste(hendelse.personIdent, Kategori.UTGATT_VARSEL)
+                } catch (ex: IngenHendelseForPersonException) {
+                    ex
+                }
 
-        val resultatAvGetEldsteUtgattVarselHendelse = try {
-            hendelseRepository.getEldsteUtgattVarsel(hendelse.personIdent)
-        } catch (ex: IngenHendelseForPersonException) {
-            ex
-        }
+                if (resultatAvGetEldsteUtgattVarselHendelse is IngenHendelseForPersonException) {
+                    // All good - det var ingen flere hendelser for personen etter at vi slettet den som kom inn som argument
+                    slettUgattVarselForBrukerIOpenSearch(hendelse)
+                    logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble slettet i DB og utgått varsel ble fjernet for person i OpenSearch siden personen ikke hadde andre hendelser.")
+                    return
+                }
 
-        if (resultatAvGetEldsteUtgattVarselHendelse is IngenHendelseForPersonException) {
-            // All good - det var ingen flere hendelser for personen etter at vi slettet den som kom inn som argument
-            slettUgattVarselForBrukerIOpenSearch(hendelse)
-            logger.info("Hendelse med id ${hendelse.id} ble slettet i DB og utgått varsel ble fjernet for person i OpenSearch siden personen ikke hadde andre hendelser.")
-            return
-        }
+                if (resultatAvGetEldsteUtgattVarselHendelse is Hendelse) {
+                    oppdaterUtgattVarselForBrukerIOpenSearch(resultatAvGetEldsteUtgattVarselHendelse)
 
-        if (resultatAvGetEldsteUtgattVarselHendelse is Hendelse) {
-            oppdaterUgattVarselForBrukerIOpenSearch(resultatAvGetEldsteUtgattVarselHendelse)
-
-            logger.info("Hendelse med id ${hendelse.id} ble slettet i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med id ${resultatAvGetEldsteUtgattVarselHendelse.id}")
+                    logger.info("Hendelse med id ${hendelse.id}  og kategori ${Kategori.UTGATT_VARSEL} ble slettet i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med id ${resultatAvGetEldsteUtgattVarselHendelse.id}")
+                }
+            }
+            Kategori.UDELT_SAMTALEREFERAT -> {
+                logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble slettet i DB.")
+            }
         }
     }
 
-    private fun oppdaterUgattVarselForBrukerIOpenSearch(hendelse: Hendelse) {
-        // 2024-11-29, Sondre
-        // Egentlig unødvendig if-sjekk så lenge kun Team DAB er på med "utgåtte varsel"
-        // Men har den med likevel for å tydeliggjøre at det er "utgått varsel"-feltet i OpenSearch
-        // som oppdateres her. Vi må huske å oppdatere håndtering etterhvert som denne tjenesten
-        // blir mer generalisert/får flere produsenter
-        if (Kategori.UTGATT_VARSEL == hendelse.kategori) {
-            // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
-            val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
-            opensearchIndexerV2.oppdaterUtgattVarsel(hendelse, aktorId)
-        }
+    private fun oppdaterUtgattVarselForBrukerIOpenSearch(hendelse: Hendelse) {
+        // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
+        val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
+        opensearchIndexerV2.oppdaterUtgattVarsel(hendelse, aktorId)
     }
 
     private fun slettUgattVarselForBrukerIOpenSearch(hendelse: Hendelse) {
-        // 2024-11-29, Sondre
-        // Egentlig unødvendig if-sjekk så lenge kun Team DAB er på med "utgåtte varsel"
-        // Men har den med likevel for å tydeliggjøre at det er "utgått varsel"-feltet i OpenSearch
-        // som oppdateres her. Vi må huske å oppdatere håndtering etterhvert som denne tjenesten
-        // blir mer generalisert/får flere produsenter
-        if (Kategori.UTGATT_VARSEL == hendelse.kategori) {
-            // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
-            val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
-            opensearchIndexerV2.slettUtgattVarsel(aktorId)
-        }
+        // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
+        val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
+        opensearchIndexerV2.slettUtgattVarsel(aktorId)
     }
 }

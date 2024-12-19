@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerO
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.IngenHendelseForPersonException;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
@@ -249,7 +250,7 @@ public class PostgresOpensearchMapper {
     public void flettInnEldsteUtgattVarsel(List<OppfolgingsBruker> brukere) {
         brukere.forEach(bruker -> {
             try {
-                Hendelse eldsteHendelsePaPerson = hendelseRepository.getEldsteUtgattVarsel(NorskIdent.of(bruker.getFnr()));
+                Hendelse eldsteHendelsePaPerson = hendelseRepository.getEldste(NorskIdent.of(bruker.getFnr()), Kategori.UTGATT_VARSEL);
                 bruker.setUtgatt_varsel(eldsteHendelsePaPerson.getHendelse());
             } catch (IngenHendelseForPersonException ex) {
                 log.info("Fant ingen hendelse/utgått varsel for person, så ingen data å flette inn.");
