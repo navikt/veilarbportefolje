@@ -25,13 +25,27 @@ fun genererRandomHendelse(): Hendelse {
     )
 }
 
-// For å kunne kalle funksjonen fra Java og bare sende inn hendelsedato
-fun genererRandomHendelse(hendelseDato: ZonedDateTime): Hendelse {
+// For å kunne kalle funksjonen fra Java og bare sende inn kategori
+fun genererRandomHendelse(kategori: Kategori): Hendelse {
     return genererRandomHendelse(
         UUID.randomUUID(),
         randomNorskIdent(),
         randomAvsender(),
-        randomKategori(),
+        kategori,
+        randomBeskrivelse(),
+        randomZonedDate(),
+        randomUrl(),
+        randomDetaljer(),
+    )
+}
+
+// For å kunne kalle funksjonen fra Java og sende inn hendelsedato og kategori
+fun genererRandomHendelse(kategori: Kategori, hendelseDato: ZonedDateTime): Hendelse {
+    return genererRandomHendelse(
+        UUID.randomUUID(),
+        randomNorskIdent(),
+        randomAvsender(),
+        kategori,
         randomBeskrivelse(),
         hendelseDato,
         randomUrl(),
