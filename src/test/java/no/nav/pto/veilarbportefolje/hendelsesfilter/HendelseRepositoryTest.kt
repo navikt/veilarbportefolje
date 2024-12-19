@@ -6,6 +6,8 @@ import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNorskIdent
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
@@ -24,10 +26,11 @@ class HendelseRepositoryTest(
         jdbcTemplate.update("TRUNCATE TABLE ${HENDELSE.TABLE_NAME}")
     }
 
-    @Test
-    fun `skal lagre Hendelse når hendelse med ID ikke eksisterer fra før`() {
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal lagre Hendelse når hendelse med ID ikke eksisterer fra før`(kategori: Kategori) {
         // Given
-        val hendelse = genererRandomHendelse()
+        val hendelse = genererRandomHendelse(kategori = kategori)
 
         // When
         val resultatAvOpprettelse = try {
@@ -43,14 +46,17 @@ class HendelseRepositoryTest(
         assertThat(resultatAvHenting).isNotNull
     }
 
-    @Test
-    fun `skal kaste HendelseIdEksistererAlleredeException ved opprettelse når hendelse med ID eksisterer fra før`() {
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal kaste HendelseIdEksistererAlleredeException ved opprettelse når hendelse med ID eksisterer fra før`(
+        kategori: Kategori
+    ) {
         // Given
-        val opprinneligHendelse = genererRandomHendelse()
+        val opprinneligHendelse = genererRandomHendelse(kategori = kategori)
         hendelseRepository.insert(opprinneligHendelse)
 
         // When
-        val nyHendelseMedSammeId = genererRandomHendelse(id = opprinneligHendelse.id)
+        val nyHendelseMedSammeId = genererRandomHendelse(id = opprinneligHendelse.id, kategori = kategori)
         val resultatAvOpprettelse = try {
             hendelseRepository.insert(nyHendelseMedSammeId)
         } catch (ex: RuntimeException) {
@@ -62,10 +68,11 @@ class HendelseRepositoryTest(
         assertThat(resultatAvOpprettelse).isInstanceOf(HendelseIdEksistererAlleredeException::class.java)
     }
 
-    @Test
-    fun `skal hente Hendelse når hendelse med ID eksisterer`() {
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal hente Hendelse når hendelse med ID eksisterer`(kategori: Kategori) {
         // Given
-        val hendelse = genererRandomHendelse()
+        val hendelse = genererRandomHendelse(kategori = kategori)
         hendelseRepository.insert(hendelse)
 
         // When
@@ -92,70 +99,94 @@ class HendelseRepositoryTest(
         assertThat(resultatAvHenting).isInstanceOf(IngenHendelseMedIdException::class.java)
     }
 
-    @Test
-    fun `skal hente eldste Hendelse med utgått varsel-kategori når det bare er en Utgått varsel-hendelse på person`() {
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal hente eldste Hendelse når det bare er en hendelse på person`(kategori: Kategori) {
         // Given
         val personIdent = randomNorskIdent()
-        val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
-        val hendelse = genererRandomHendelse(personIdent = personIdent, kategori = Kategori.UTGATT_VARSEL)
-        hendelseRepository.insert(hendelse)
+        val hendelse = genererRandomHendelse(personIdent = personIdent, kategori = kategori)
+        hendelseRepository.insert(hendelse = hendelse)
 
         // When
-        val resultatAvHenting = hendelseRepository.getEldste(personIdent, Kategori.UTGATT_VARSEL)
+        val resultatAvHenting = hendelseRepository.getEldste(personIdent = personIdent, kategori = kategori)
 
         // Then
         val forventetHendelse = hendelse.copy()
         assertThat(resultatAvHenting).isEqualTo(forventetHendelse)
     }
 
-    @Test
-    fun `skal hente eldste Hendelse med Utgått varsel-kategori når det eksisterer flere Utgått varsel-hendelser på person`() {
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal hente eldste Hendelse når det eksisterer flere hendelser med en bestemt kategori på person`(kategori: Kategori) {
         // Given
         val personIdent = randomNorskIdent()
         val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
-        val hendelseEldste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(2), kategori = Kategori.UTGATT_VARSEL)
-        val hendelseNestEldste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(1), kategori = Kategori.UTGATT_VARSEL)
-        val hendelseNyeste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa, kategori = Kategori.UTGATT_VARSEL)
-        hendelseRepository.insert(hendelseNyeste)
-        hendelseRepository.insert(hendelseNestEldste)
-        hendelseRepository.insert(hendelseEldste)
+        val hendelseEldste =
+            genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(2), kategori = kategori)
+        val hendelseNestEldste =
+            genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(1), kategori = kategori)
+        val hendelseNyeste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa, kategori = kategori)
+        hendelseRepository.insert(hendelse = hendelseNyeste)
+        hendelseRepository.insert(hendelse = hendelseNestEldste)
+        hendelseRepository.insert(hendelse = hendelseEldste)
 
         // When
-        val resultatAvHenting = hendelseRepository.getEldste(personIdent, Kategori.UTGATT_VARSEL)
+        val resultatAvHenting = hendelseRepository.getEldste(personIdent = personIdent, kategori = kategori)
 
         // Then
         val forventetHendelse = hendelseEldste.copy()
         assertThat(resultatAvHenting).isEqualTo(forventetHendelse)
     }
 
-    @Test
-    fun `skal hente eldste Hendelse med utgått varsel-kategori når det eksisterer flere hendelser med ulike kategorier for person`() {
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal hente eldste Hendelse av en bestemt kategori for bruker, selv når det finnes hendelser av andre kategorier som er eldre`(kategori: Kategori) {
         // Given
         val personIdent = randomNorskIdent()
         val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
-        val hendelseEldste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(2), kategori = Kategori.UDELT_SAMTALEREFERAT)
-        val hendelseNestEldste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(1), kategori = Kategori.UTGATT_VARSEL)
-        val hendelseNyeste = genererRandomHendelse(personIdent = personIdent, hendelseDato = naa, kategori = Kategori.UTGATT_VARSEL)
-        hendelseRepository.insert(hendelseNyeste)
-        hendelseRepository.insert(hendelseNestEldste)
-        hendelseRepository.insert(hendelseEldste)
+        val hendelseEldsteAvKategori =
+            genererRandomHendelse(personIdent = personIdent, hendelseDato = naa.minusDays(1), kategori = kategori)
+        val hendelseNyesteAvKategori =
+            genererRandomHendelse(personIdent = personIdent, hendelseDato = naa, kategori = kategori)
+        hendelseRepository.insert(hendelseNyesteAvKategori)
+        hendelseRepository.insert(hendelseEldsteAvKategori)
+
+        Kategori.values().filter { it !== kategori }.forEach {
+            hendelseRepository.insert(
+                genererRandomHendelse(
+                    personIdent = personIdent,
+                    hendelseDato = naa.minusDays(2),
+                    kategori = it
+                )
+            )
+        }
 
         // When
-        val resultatAvHenting = hendelseRepository.getEldste(personIdent, Kategori.UTGATT_VARSEL)
+        val resultatAvHenting = hendelseRepository.getEldste(personIdent = personIdent, kategori = kategori)
 
         // Then
-        val forventetHendelse = hendelseNestEldste.copy()
+        val forventetHendelse = hendelseEldsteAvKategori.copy()
         assertThat(resultatAvHenting).isEqualTo(forventetHendelse)
     }
 
-    @Test
-    fun `skal kaste IngenHendelseForPersonException ved henting av eldste når ingen hendelser eksisterer for person`() {
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal kaste IngenHendelseForPersonException ved henting av eldste når ingen hendelser eksisterer for person`(kategori: Kategori) {
         // Given
         val personIdent = randomNorskIdent()
 
+        Kategori.values().filter { it !== kategori }.forEach {
+            hendelseRepository.insert(
+                genererRandomHendelse(
+                    personIdent = personIdent,
+                    kategori = it
+                )
+            )
+        }
+
         // When
         val resultatAvHenting = try {
-            hendelseRepository.getEldste(personIdent, Kategori.UTGATT_VARSEL)
+            hendelseRepository.getEldste(personIdent = personIdent, kategori = kategori)
         } catch (ex: IngenHendelseForPersonException) {
             ex
         }
@@ -164,15 +195,36 @@ class HendelseRepositoryTest(
         assertThat(resultatAvHenting).isInstanceOf(IngenHendelseForPersonException::class.java)
     }
 
-    @Test
-    fun `skal oppdatere hendelse når hendelse med ID eksisterer`() {
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal kaste IngenHendelseForPersonException ved henting av eldste når ingen hendelser med rett kategori eksisterer for person`(kategori: Kategori) {
         // Given
-        val opprinneligHendelse = genererRandomHendelse()
+        val personIdent = randomNorskIdent()
+
+        // When
+        val resultatAvHenting = try {
+            hendelseRepository.getEldste(personIdent = personIdent, kategori = kategori)
+        } catch (ex: IngenHendelseForPersonException) {
+            ex
+        }
+
+        // Then
+        assertThat(resultatAvHenting).isInstanceOf(IngenHendelseForPersonException::class.java)
+    }
+
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal oppdatere hendelse når hendelse med ID eksisterer`(kategori: Kategori) {
+        // Given
+        val opprinneligHendelse = genererRandomHendelse(kategori = kategori)
         hendelseRepository.insert(opprinneligHendelse)
 
         // When
-        val hendelseMedSammeIDOgOppdatertData =
-            genererRandomHendelse(id = opprinneligHendelse.id, personIdent = opprinneligHendelse.personIdent)
+        val hendelseMedSammeIDOgOppdatertData = opprinneligHendelse.copy(
+            hendelse = opprinneligHendelse.hendelse.copy(
+                beskrivelse = "En annen beskrivelse"
+            )
+        )
         val resultatAvOppdatering = try {
             hendelseRepository.update(hendelseMedSammeIDOgOppdatertData)
         } catch (ex: RuntimeException) {
@@ -185,13 +237,14 @@ class HendelseRepositoryTest(
         assertThat(hendelseMedSammeIDOgOppdatertData).isEqualTo(resultatAvHenting)
     }
 
-    @Test
-    fun `skal kaste IngenHendelseMedIdException ved oppdatering når hendelse med ID ikke eksisterer`() {
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal kaste IngenHendelseMedIdException ved oppdatering når hendelse med ID ikke eksisterer`(kategori: Kategori) {
         // Given
         val hendelseIdSomIkkeEksisterer = randomUUID()
 
         // When
-        val hendelseMedIdSomIkkeEksisterer = genererRandomHendelse(id = hendelseIdSomIkkeEksisterer)
+        val hendelseMedIdSomIkkeEksisterer = genererRandomHendelse(id = hendelseIdSomIkkeEksisterer, kategori = kategori)
         val resultatAvOppdatering = try {
             hendelseRepository.update(hendelseMedIdSomIkkeEksisterer)
         } catch (ex: RuntimeException) {
@@ -202,10 +255,11 @@ class HendelseRepositoryTest(
         assertThat(resultatAvOppdatering).isInstanceOf(IngenHendelseMedIdException::class.java)
     }
 
-    @Test
-    fun `skal slette hendelse når hendelse med ID eksisterer`() {
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal slette hendelse når hendelse med ID eksisterer`(kategori: Kategori) {
         // Given
-        val hendelse = genererRandomHendelse()
+        val hendelse = genererRandomHendelse(kategori = kategori)
         hendelseRepository.insert(hendelse)
 
         // When
@@ -225,10 +279,11 @@ class HendelseRepositoryTest(
         assertThat(resultatAvHenting).isInstanceOf(IngenHendelseMedIdException::class.java)
     }
 
-    @Test
-    fun `skal kaste IngenHendelseMedIdException ved sletting når ingen hendelse med ID eksisterer`() {
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal kaste IngenHendelseMedIdException ved sletting når ingen hendelse med ID eksisterer`(kategori: Kategori) {
         // Given
-        val hendelseIdSomIkkeEksisterer = genererRandomHendelse()
+        val hendelseIdSomIkkeEksisterer = genererRandomHendelse(kategori = kategori)
 
         // When
         val resultatAvSletting = try {
