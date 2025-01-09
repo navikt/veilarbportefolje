@@ -3,10 +3,7 @@ package no.nav.pto.veilarbportefolje.ensligforsorger;
 import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
-import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
@@ -77,7 +74,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                             navKontor.toString(),
                             empty(),
                             "asc",
-                            "ikke_satt",
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             filtervalg,
                             null,
                             null);
@@ -117,7 +114,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                             navKontor.toString(),
                             empty(),
                             "asc",
-                            "ikke_satt",
+                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                             filtervalg,
                             null,
                             null);
@@ -177,7 +174,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                 navKontor.toString(),
                 empty(),
                 "ascending",
-                "ikke_satt",
+                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
                 filterValg,
                 null,
                 null

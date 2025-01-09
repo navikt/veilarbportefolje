@@ -49,6 +49,7 @@ public class StatustallResponse {
                 Bucket fargekategoriF;
                 Bucket fargekategoriIngenKategori;
                 Bucket tiltakshendelser;
+                Bucket utgatteVarsel;
             }
         }
     }

@@ -172,13 +172,13 @@ public class ArbeidslisteService {
         Optional<String> navKontorForArbeidsliste = arbeidslisteRepositoryV2.hentNavKontorForArbeidsliste(aktoerId);
 
         if (navKontorForArbeidsliste.isEmpty()) {
-            secureLog.info("Bruker {} har ikke NAV-kontor på arbeidsliste", aktoerId.toString());
+            secureLog.info("Bruker {} har ikke Nav-kontor på arbeidsliste", aktoerId.toString());
             return false;
         }
 
         final Optional<String> navKontorForBruker = brukerServiceV2.hentNavKontor(aktoerId).map(NavKontor::getValue);
         if (navKontorForBruker.isEmpty()) {
-            secureLog.error("Kunne ikke hente NAV-kontor fra db-link til arena for bruker {}", aktoerId.toString());
+            secureLog.error("Kunne ikke hente Nav-kontor fra db-link til arena for bruker {}", aktoerId.toString());
             return false;
         }
 
