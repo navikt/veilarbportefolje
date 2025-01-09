@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OppfolgingPeriodeService extends KafkaCommonConsumerService<SisteOppfolgingsperiodeV1> {
+public class OppfolgingPeriodeService extends KafkaCommonNonKeyedConsumerService<SisteOppfolgingsperiodeV1> {
     private final OppfolgingStartetService oppfolgingStartetService;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
 

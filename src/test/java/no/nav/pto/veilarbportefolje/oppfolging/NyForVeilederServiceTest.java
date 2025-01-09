@@ -25,7 +25,6 @@ public class NyForVeilederServiceTest extends EndToEndTest {
     @Test
     public void skal_sette_ny_for_veileder_til_false_om_veileder_har_vært_inne_i_aktivitetsplan_til_bruker() {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
-        ;
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         oppfolgingRepository.settNyForVeileder(aktoerId, true);
 

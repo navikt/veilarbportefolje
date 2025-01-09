@@ -153,13 +153,13 @@ public class HuskelappService {
         Optional<String> navKontorPaHuskelapp = huskelappRepository.hentNavkontorPaHuskelapp(maybeFnr.get());
 
         if (navKontorPaHuskelapp.isEmpty()) {
-            secureLog.info("Bruker {} har ikke NAV-kontor på huskelapp", aktoerId.toString());
+            secureLog.info("Bruker {} har ikke Nav-kontor på huskelapp", aktoerId.toString());
             return false;
         }
 
         final Optional<String> navKontorForBruker = brukerServiceV2.hentNavKontor(aktoerId).map(NavKontor::getValue);
         if (navKontorForBruker.isEmpty()) {
-            secureLog.error("Kunne ikke hente NAV-kontor for bruker {}", aktoerId.toString());
+            secureLog.error("Kunne ikke hente Nav-kontor for bruker {}", aktoerId.toString());
             return false;
         }
 
