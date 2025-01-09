@@ -20,7 +20,7 @@ public class DialogService extends KafkaCommonNonKeyedConsumerService<Dialogdata
     public void behandleKafkaMeldingLogikk(Dialogdata melding) {
         dialogRepositoryV2.oppdaterDialogInfoForBruker(melding);
 
-        secureLog.info("Oppdatert dialog for bruker: {} med 'venter på svar fra NAV': {}, 'venter på svar fra bruker': {}, sist endret: {}", melding.getAktorId(), toIsoUTC(melding.getTidspunktEldsteUbehandlede()), toIsoUTC(melding.getTidspunktEldsteVentende()), melding.getSisteEndring());
+        secureLog.info("Oppdatert dialog for bruker: {} med 'venter på svar fra Nav': {}, 'venter på svar fra bruker': {}, sist endret: {}", melding.getAktorId(), toIsoUTC(melding.getTidspunktEldsteUbehandlede()), toIsoUTC(melding.getTidspunktEldsteVentende()), melding.getSisteEndring());
         opensearchIndexerV2.updateDialog(melding);
     }
 }

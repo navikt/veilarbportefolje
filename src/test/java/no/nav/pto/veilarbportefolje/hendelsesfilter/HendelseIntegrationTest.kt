@@ -42,7 +42,7 @@ class HendelseIntegrationTest(
         val brukerFnr = randomFnr()
         val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
         val brukerOppfolgingsEnhet = randomNavKontor()
-        val hendelse = genererRandomHendelse(personIdent = brukerNorskIdent)
+        val hendelse = genererRandomHendelse(personIdent = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
         hendelseRepository.insert(hendelse)
 
@@ -106,7 +106,7 @@ class HendelseIntegrationTest(
         // When
         val hendelseId = UUID.randomUUID().toString()
         val hendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         val hendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = hendelseId)
         hendelseService.behandleKafkaRecord(hendelseConsumerRecord)
@@ -141,7 +141,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val hendelseId = UUID.randomUUID().toString()
         val hendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         val hendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = hendelseId)
         hendelseService.behandleKafkaRecord(hendelseConsumerRecord)
@@ -187,7 +187,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val hendelseId = UUID.randomUUID().toString()
         val hendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         val hendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = hendelseId)
         hendelseService.behandleKafkaRecord(hendelseConsumerRecord)
@@ -226,7 +226,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val yngreHendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         val yngreHendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = yngreHendelseRecordValue, key = yngreHendelseId)
         hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
@@ -237,7 +237,8 @@ class HendelseIntegrationTest(
             genererRandomHendelseRecordValue(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
-                hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10)
+                hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10),
+                kategori = Kategori.UTGATT_VARSEL
             )
         val eldreHendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = eldreHendelseRecordValue, key = eldreHendelseId)
@@ -273,7 +274,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val yngreHendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent)
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         val yngreHendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = yngreHendelseRecordValue, key = yngreHendelseId)
         hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
@@ -282,7 +283,8 @@ class HendelseIntegrationTest(
             genererRandomHendelseRecordValue(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
-                hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10)
+                hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10),
+                kategori = Kategori.UTGATT_VARSEL
             )
         val eldreHendelseConsumerRecordStart =
             genererRandomHendelseConsumerRecord(recordValue = eldreHendelseRecordValueStart, key = eldreHendelseId)
@@ -308,6 +310,146 @@ class HendelseIntegrationTest(
         assertThat(brukerFraRespons).isNotNull
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
         val forventetHendelseInnhold = toHendelse(yngreHendelseRecordValue, yngreHendelseId).hendelse
+        assertThat(brukerFraRespons.utgattVarsel.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
+        assertThat(brukerFraRespons.utgattVarsel.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
+        assertThat(brukerFraRespons.utgattVarsel.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+    }
+
+    @Test
+    fun `skal ikke sette inn data om utgått varsel på bruker i OpenSearch når vi får START-melding på andre typer enn Utgått varsel`() {
+        // Given
+        val brukerAktorId = randomAktorId()
+        val brukerFnr = randomFnr()
+        val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
+        val brukerOppfolgingsEnhet = randomNavKontor()
+        testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
+        opensearchIndexer.indekser(brukerAktorId)
+
+        // When
+        val hendelseId = UUID.randomUUID().toString()
+        val hendelseRecordValue =
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UDELT_SAMTALEREFERAT)
+        val hendelseConsumerRecord =
+            genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = hendelseId)
+        hendelseService.behandleKafkaRecord(hendelseConsumerRecord)
+
+        // Then
+        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
+        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+            brukerOppfolgingsEnhet.value,
+            Optional.empty(),
+            "asc",
+            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Filtervalg().setFerdigfilterListe(emptyList()),
+            null,
+            null
+        ).brukere.first()
+
+        assertThat(brukerFraRespons).isNotNull()
+        assertThat(brukerFraRespons.utgattVarsel).isNull()
+    }
+
+
+    @Test
+    fun `ny hendelse som ikke er Utgått varsel, men har tidligere dato, skal ikke overskrive utgått varsel i OpenSearch for bruker`() {
+        // Given
+        val brukerAktorId = randomAktorId()
+        val brukerFnr = randomFnr()
+        val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
+        val brukerOppfolgingsEnhet = randomNavKontor()
+        testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
+        opensearchIndexer.indekser(brukerAktorId)
+        val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
+        val yngreHendelseRecordValue =
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
+        val yngreHendelseConsumerRecord =
+            genererRandomHendelseConsumerRecord(recordValue = yngreHendelseRecordValue, key = yngreHendelseId)
+        hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
+
+        // When
+        val eldreHendelseId = "56d9b9d1-0920-4a2f-bd62-0953d563ce2a"
+        val eldreHendelseRecordValue =
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10),
+                kategori = Kategori.UDELT_SAMTALEREFERAT
+            )
+        val eldreHendelseConsumerRecord =
+            genererRandomHendelseConsumerRecord(recordValue = eldreHendelseRecordValue, key = eldreHendelseId)
+        hendelseService.behandleKafkaRecord(eldreHendelseConsumerRecord)
+
+        // Then
+        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
+        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+            brukerOppfolgingsEnhet.value,
+            Optional.empty(),
+            "asc",
+            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Filtervalg().setFerdigfilterListe(emptyList()),
+            null,
+            null
+        ).brukere.first()
+        assertThat(brukerFraRespons).isNotNull
+        assertThat(brukerFraRespons.utgattVarsel).isNotNull
+        val forventetHendelseInnhold = toHendelse(yngreHendelseRecordValue, yngreHendelseId).hendelse
+        assertThat(brukerFraRespons.utgattVarsel.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
+        assertThat(brukerFraRespons.utgattVarsel.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
+        assertThat(brukerFraRespons.utgattVarsel.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+    }
+
+    @Test
+    fun `ny hendelse som blir ny eldste Utgått varsel-hendelse skal skrives til OpenSearch for bruker, også når det finnes eldre hendelser med andre kategorier i databasen`() {
+        // Given
+        val brukerAktorId = randomAktorId()
+        val brukerFnr = randomFnr()
+        val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
+        val brukerOppfolgingsEnhet = randomNavKontor()
+        testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
+        opensearchIndexer.indekser(brukerAktorId)
+        val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
+        val yngreHendelseRecordValue =
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL, hendelseBeskrivelse = "Yngste hendelse, kategori Utgått varsel")
+        val yngreHendelseConsumerRecord =
+            genererRandomHendelseConsumerRecord(recordValue = yngreHendelseRecordValue, key = yngreHendelseId)
+        hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
+
+        val eldsteAvAlleKategorierHendelseId = "7d5cb509-1fa3-4b92-a552-f91c00c3aba7"
+        val eldsteAvAlleKategorierHendelseRecordValue =
+            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UDELT_SAMTALEREFERAT, hendelseBeskrivelse = "Eldste hendelse, kategori Udelt samtalereferat")
+        val eldsteHendelseConsumerRecord =
+            genererRandomHendelseConsumerRecord(recordValue = eldsteAvAlleKategorierHendelseRecordValue, key = eldsteAvAlleKategorierHendelseId)
+        hendelseService.behandleKafkaRecord(eldsteHendelseConsumerRecord)
+
+        // When
+        val eldsteUtgattVarselHendelseId = "56d9b9d1-0920-4a2f-bd62-0953d563ce2a"
+        val eldsteUtgattVarselHendelseRecordValue =
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10),
+                kategori = Kategori.UTGATT_VARSEL,
+                hendelseBeskrivelse = "Midterste hendelse, kategori Utgått varsel"
+            )
+        val eldsteUtgattVarselHendelseConsumerRecord =
+            genererRandomHendelseConsumerRecord(recordValue = eldsteUtgattVarselHendelseRecordValue, key = eldsteUtgattVarselHendelseId)
+        hendelseService.behandleKafkaRecord(eldsteUtgattVarselHendelseConsumerRecord)
+
+        // Then
+        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
+        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+            brukerOppfolgingsEnhet.value,
+            Optional.empty(),
+            "asc",
+            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Filtervalg().setFerdigfilterListe(emptyList()),
+            null,
+            null
+        ).brukere.first()
+
+        assertThat(brukerFraRespons).isNotNull
+        assertThat(brukerFraRespons.utgattVarsel).isNotNull
+        val forventetHendelseInnhold = toHendelse(eldsteUtgattVarselHendelseRecordValue, eldsteUtgattVarselHendelseId).hendelse
         assertThat(brukerFraRespons.utgattVarsel.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
         assertThat(brukerFraRespons.utgattVarsel.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
         assertThat(brukerFraRespons.utgattVarsel.lenke).isEqualTo(forventetHendelseInnhold.lenke)

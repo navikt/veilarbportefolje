@@ -219,7 +219,7 @@ public class OpensearchQueryBuilder {
                         switch (stillingFraNAVFilter) {
                             case CV_KAN_DELES_STATUS_JA ->
                                     queryBuilder.must(matchQuery("neste_cv_kan_deles_status", "JA"));
-                            default -> throw new IllegalStateException("Stilling fra NAV ikke funnet");
+                            default -> throw new IllegalStateException("Stilling fra Nav ikke funnet");
                         }
                     });
         }
