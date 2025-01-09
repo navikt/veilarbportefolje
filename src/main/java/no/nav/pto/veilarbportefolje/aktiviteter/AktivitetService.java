@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService;
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -25,7 +25,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AktivitetService extends KafkaCommonConsumerService<KafkaAktivitetMelding> {
+public class AktivitetService extends KafkaCommonNonKeyedConsumerService<KafkaAktivitetMelding> {
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final SisteEndringService sisteEndringService;

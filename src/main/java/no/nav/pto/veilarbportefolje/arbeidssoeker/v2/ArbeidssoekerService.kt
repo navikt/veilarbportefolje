@@ -5,7 +5,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
-import no.nav.pto.veilarbportefolje.kafka.KafkaCommonConsumerService
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
@@ -19,7 +19,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as O
 @Service
 class ArbeidssoekerPeriodeKafkaMeldingService(
     private val arbeidssoekerService: ArbeidssoekerService
-) : KafkaCommonConsumerService<Periode>() {
+) : KafkaCommonNonKeyedConsumerService<Periode>() {
     override fun behandleKafkaMeldingLogikk(kafkaMelding: Periode) {
         arbeidssoekerService.behandleKafkaMeldingLogikk(kafkaMelding)
     }
@@ -28,7 +28,7 @@ class ArbeidssoekerPeriodeKafkaMeldingService(
 @Service
 class ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService(
     private val arbeidssoekerService: ArbeidssoekerService
-) : KafkaCommonConsumerService<OpplysningerOmArbeidssoekerKafkaMelding>() {
+) : KafkaCommonNonKeyedConsumerService<OpplysningerOmArbeidssoekerKafkaMelding>() {
     override fun behandleKafkaMeldingLogikk(kafkaMelding: OpplysningerOmArbeidssoekerKafkaMelding) {
         arbeidssoekerService.behandleKafkaMeldingLogikk(kafkaMelding)
     }
@@ -37,7 +37,7 @@ class ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService(
 @Service
 class ArbeidssoekerProfileringKafkaMeldingService(
     private val arbeidssoekerService: ArbeidssoekerService
-) : KafkaCommonConsumerService<ProfileringKafkaMelding>() {
+) : KafkaCommonNonKeyedConsumerService<ProfileringKafkaMelding>() {
     override fun behandleKafkaMeldingLogikk(kafkaMelding: ProfileringKafkaMelding) {
         arbeidssoekerService.behandleKafkaMeldingLogikk(kafkaMelding)
     }
@@ -69,7 +69,7 @@ class ArbeidssoekerService(
         secureLog.info("Behandler endring på arbeidssøkerperiode for bruker med fnr: $fnr, periodeId: $periodeId")
 
         if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr.get())) {
-            secureLog.info("Bruker er ikke under oppfølging, ignorerer endring på bruker med fnr: {}", fnr.get())
+            secureLog.info("Bruker er ikke under oppfølging, ignorerer endring for arbeidssøkerregisterdata på bruker med fnr: {}", fnr.get())
             return
         }
 
@@ -77,7 +77,7 @@ class ArbeidssoekerService(
 
         sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(fnr)
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId, fnr.get()))
-        secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
+        secureLog.info("Lagret siste arbeidssøkerperiode fra topic for bruker med fnr: $fnr")
 
         val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity? =
             hentSisteOpplysningerOmArbeidssoeker(fnr, periodeId)?.toOpplysningerOmArbeidssoekerEntity()
@@ -92,7 +92,7 @@ class ArbeidssoekerService(
             opensearchIndexerV2.updateOpplysningerOmArbeidssoeker(aktorId,opplysningerOmArbeidssoeker)
         }
 
-        secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
+        secureLog.info("Lagret opplysninger om arbeidssøker fra topic for bruker med fnr: $fnr")
 
 
         val profilering: ProfileringEntity? = hentSisteProfilering(
@@ -110,7 +110,7 @@ class ArbeidssoekerService(
         if (aktorId != null) {
             opensearchIndexerV2.updateProfilering(aktorId, profilering)
         }
-        secureLog.info("Lagret profilering for bruker med fnr: $fnr")
+        secureLog.info("Lagret profilering fra topic for bruker med fnr: $fnr")
     }
 
     @Transactional
