@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
-import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -13,11 +12,8 @@ import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
-import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusRepository;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.enums.arena.Rettighetsgruppe;
@@ -30,7 +26,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.brukOppfolgingsbrukerPaPostgres;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
@@ -39,10 +34,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerService<EndringPaaOppfoelgingsBrukerV2> {
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
     private final BrukerServiceV2 brukerServiceV2;
-    private final OpensearchIndexerV2 opensearchIndexerV2;
     private final OpensearchIndexer opensearchIndexer;
-    private final Utkast14aStatusRepository utkast14aStatusRepository;
-    private final DefaultUnleash defaultUnleash;
     private final VeilarbarenaClient veilarbarenaClient;
     private final PdlIdentRepository pdlIdentRepository;
     private final VeilarbVeilederClient veilarbVeilederClient;
@@ -82,11 +74,9 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
         brukerServiceV2.hentAktorId(Fnr.of(fodselsnummer))
                 .ifPresent(id -> {
                     secureLog.info("Fikk endring pa oppfolgingsbruker (V2): {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v2", id);
-                    if (brukOppfolgingsbrukerPaPostgres(defaultUnleash)) {
-                        opensearchIndexer.indekser(id);
-                    } else {
-                        oppdaterOpensearch(id, oppfolgingsbruker);
-                    }
+
+                    opensearchIndexer.indekser(id);
+
                 });
     }
 
@@ -96,7 +86,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
             aktorIdForBruker.ifPresent(aktorId -> {
                 Optional<NavKontor> navKontorForBruker = brukerServiceV2.hentNavKontor(fnr);
                 if (navKontorForBruker.isPresent() && !Objects.equals(navKontorForBruker.get().getValue(), enhetForBruker.get())) {
-                    brukerServiceV2.hentVeilederForBruker(aktorId).ifPresent( veilederForBruker -> {
+                    brukerServiceV2.hentVeilederForBruker(aktorId).ifPresent(veilederForBruker -> {
                         List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhetMachineToMachine(enhetForBruker);
                         boolean brukerBlirAutomatiskTilordnetVeileder = veiledereMedTilgangTilEnhet.contains(veilederForBruker.getValue());
                         if (brukerBlirAutomatiskTilordnetVeileder) {
@@ -110,14 +100,6 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
         } catch (Exception e) {
             secureLog.error("Kunne ikke oppdatere enhet på huskelapp, fargekategori eller arbeidsliste ved kontrobytte for bruker: " + fnr, e);
         }
-    }
-
-    private void oppdaterOpensearch(AktorId aktorId, OppfolgingsbrukerEntity oppfolgingsbruker) {
-        String utkast14aStatus = utkast14aStatusRepository.hentStatusEndringForBruker(aktorId.get())
-                .map(Kafka14aStatusendring::getVedtakStatusEndring)
-                .map(Kafka14aStatusendring.Status::toString)
-                .orElse(null);
-        opensearchIndexerV2.updateOppfolgingsbruker(aktorId, oppfolgingsbruker, utkast14aStatus);
     }
 
     public void hentOgLagreOppfolgingsbruker(AktorId aktorId) {
