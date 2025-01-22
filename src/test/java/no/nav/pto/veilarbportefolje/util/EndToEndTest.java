@@ -5,13 +5,11 @@ import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.IndexName;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
@@ -29,7 +27,6 @@ import java.util.Optional;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -43,9 +40,6 @@ public abstract class EndToEndTest {
 
     @Autowired
     protected OpensearchIndexer opensearchIndexer;
-
-    @Autowired
-    protected OpensearchIndexerV2 opensearchIndexerV2;
 
     @Autowired
     protected PdlIdentRepository pdlIdentRepository;
@@ -67,7 +61,6 @@ public abstract class EndToEndTest {
         try {
             TimeZone.setDefault(TimeZone.getTimeZone(Optional.ofNullable(System.getenv("TZ")).orElse("Europe/Oslo")));
             opensearchAdminService.opprettNyIndeks(indexName.getValue());
-            when(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true);
         } catch (Exception e) {
             opensearchAdminService.slettIndex(indexName.getValue());
             opensearchAdminService.opprettNyIndeks(indexName.getValue());

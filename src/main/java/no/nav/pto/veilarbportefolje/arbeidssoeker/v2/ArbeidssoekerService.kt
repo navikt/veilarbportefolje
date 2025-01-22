@@ -1,10 +1,8 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
-import io.getunleash.DefaultUnleash
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
@@ -50,17 +48,13 @@ class ArbeidssoekerService(
     private val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
     private val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
     private val profileringRepository: ProfileringRepository,
-    private val defaultUnleash: DefaultUnleash,
     private val arbeidssoekerDataRepository: ArbeidssoekerDataRepository,
     private val opensearchIndexerV2: OpensearchIndexerV2
 ) {
 
     @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: Periode) {
-        if (!FeatureToggle.brukNyttArbeidssoekerregisterKafka(defaultUnleash)) {
-            secureLog.info("Bryter for å lytte på kafkameldinger fra nytt arbeidssøkerregister er skrudd av. Ignorerer melding.")
-            return
-        }
+
         val periodeId = kafkaMelding.id
         val identitetsnummer = kafkaMelding.identitetsnummer
 
@@ -115,10 +109,7 @@ class ArbeidssoekerService(
 
     @Transactional
     fun behandleKafkaMeldingLogikk(opplysninger: OpplysningerOmArbeidssoekerKafkaMelding) {
-        if (!FeatureToggle.brukNyttArbeidssoekerregisterKafka(defaultUnleash)) {
-            secureLog.info("Bryter for å lytte på kafkameldinger fra nytt arbeidssøkerregister er skrudd av. Ignorerer melding.")
-            return
-        }
+
         val arbeidssoekerPeriodeId = opplysninger.periodeId
         val opplysningerOmArbeidssoekerId = opplysninger.id
 
@@ -135,7 +126,7 @@ class ArbeidssoekerService(
         val fnr = sisteArbeidssoekerPeriode.fnr
         if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr)) {
             secureLog.info(
-                "Bruker med fnr ${fnr} er ikke under oppfølging, men har arbeidssøkerpeiode lagret. " +
+                "Bruker med fnr $fnr er ikke under oppfølging, men har arbeidssøkerpeiode lagret. " +
                         "Dette betyr at arbeidssøkerdata ikke har blitt slettet riktig når bruker gikk ut av oppfølging. " +
                         "Ignorer melding, data må slettes manuelt og slettelogikk ved utgang av oppfølging bør kontrollsjekkes for feil."
             )
@@ -164,10 +155,7 @@ class ArbeidssoekerService(
 
     @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: ProfileringKafkaMelding) {
-        if (!FeatureToggle.brukNyttArbeidssoekerregisterKafka(defaultUnleash)) {
-            secureLog.info("Bryter for å lytte på kafkameldinger fra nytt arbeidssøkerregister er skrudd av. Ignorerer melding.")
-            return
-        }
+
         secureLog.info("Behandler endring på profilering for bruker med arbeidssoekerPeriodeId: ${kafkaMelding.periodeId}")
 
         val sisteArbeidssoekerPeriode =
@@ -181,7 +169,7 @@ class ArbeidssoekerService(
         val fnr = sisteArbeidssoekerPeriode.fnr
         if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr)) {
             secureLog.info(
-                "Bruker med fnr ${fnr} er ikke under oppfølging, men har arbeidssøkerpeiode lagret. " +
+                "Bruker med fnr $fnr er ikke under oppfølging, men har arbeidssøkerpeiode lagret. " +
                         "Dette betyr at arbeidssøkerdata ikke har blitt slettet riktig når bruker gikk ut av oppfølging. " +
                         "Ignorer melding, data må slettes manuelt og slettelogikk ved utgang av oppfølging bør kontrollsjekkes for feil."
             )
