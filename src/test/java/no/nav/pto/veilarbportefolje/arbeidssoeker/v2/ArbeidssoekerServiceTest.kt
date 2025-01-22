@@ -11,7 +11,6 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil
 import no.nav.paw.arbeidssokerregisteret.api.v2.Annet
 import no.nav.paw.arbeidssokerregisteret.api.v4.Utdanning
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
-import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO
@@ -141,7 +140,6 @@ class ArbeidssoekerServiceTest(
 
     @Test
     fun meldinger_om_periode_og_opplysninger_om_arbeidssoeker_skal_ignoreres_dersom_bruker_ikke_er_under_oppfolging() {
-        `when`(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true)
         val periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val opplysningerOmArbeidssoekerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
         val fnr = Fnr.of("17858998980")
@@ -262,7 +260,6 @@ class ArbeidssoekerServiceTest(
          */
 
         // Arrange
-        `when`(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true)
         val gammelPeriodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val nyPeriodeId = UUID.randomUUID()
         val gammelOpplysningerOmArbeidssoekerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
@@ -330,7 +327,6 @@ class ArbeidssoekerServiceTest(
     @Test
     fun ved_kafkamelding_om_nye_opplysninger_om_arbeidssoeker_paa_ny_arbeidssoekerperiode_ignoreres_meldingen_dersom_vi_ikke_har_data_paa_periodeId() {
         // Arrange
-        `when`(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true)
         val periodeIdVedOppfolgingStartet = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val nyPeriodeId = UUID.randomUUID()
         val opplysningerOmArbeidssoekerIdVedOppfolgingStartet = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
@@ -388,7 +384,6 @@ class ArbeidssoekerServiceTest(
     @Test
     fun ved_kafkamelding_om_nye_opplysninger_om_arbeidssoeker_paa_eksisterende_arbeidssoekerperiode_slettes_gammle_opplysninger_om_arbiedssoeker_og_ny_lagres() {
         // Arrange
-        `when`(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true)
         val periodeIdVedOppfolgingStartet = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val opplysningerOmArbeidssoekerIdVedOppfolgingStartet = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
@@ -452,7 +447,6 @@ class ArbeidssoekerServiceTest(
     @Test
     fun ved_kafkamelding_om_ny_profilering_for_arbeidssoeker_paa_eksisterende_arbeidssoekerperiode_slettes_gammel_profilering_om_arbiedssoeker_og_ny_lagres() {
         // Arrange
-        `when`(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true)
         val periodeIdVedOppfolgingStartet = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
         val fnr = Fnr.of("17858998980")
@@ -499,7 +493,6 @@ class ArbeidssoekerServiceTest(
     @Test
     fun ved_kafkamelding_om_ny_profilering_for_arbeidssoeker_paa_ny_arbeidssoekerperiode_ignoreres_dersom_vi_ikke_har_priodeId() {
         // Arrange
-        `when`(FeatureToggle.brukNyttArbeidssoekerregister(defaultUnleash)).thenReturn(true)
         val periodeIdVedOppfolgingStartet = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val periodeIdVedEndring = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab20a45")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
