@@ -12,7 +12,6 @@ import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
-import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.lucene.search.join.ScoreMode;
 import org.opensearch.index.query.*;
 import org.opensearch.script.Script;
@@ -446,7 +445,7 @@ public class OpensearchQueryBuilder {
     /**
      * Tar i mot en {@link SearchSourceBuilder} og utvider denne med sorteringsqueryer basert på valgt sorteringsrekkefølge,
      * sorteringsfelt og valgte filter.
-     *
+     * <p>
      * Merk: {@link Sorteringsfelt} er en enum som representerer lovlige sorteringsfelter slik frontend har definert dem.
      * Disse mappes til felter i OpenSearch, dvs. for enkelte verdier av {@link Sorteringsfelt} kan det være at feltet
      * det faktisk sorteres på heter noe annet i OpenSearch. Siden {@link OppfolgingsBruker} er "fasiten" for hvilke felter
@@ -460,6 +459,9 @@ public class OpensearchQueryBuilder {
         /* På sikt (tm) skal vi typesikre sortField slik at vi får Sorteringsfelt her, gjerne allereie på Controller-nivå. I denne omgangen lagar eg berre enumen for sorteringsfelta. 2024-11-28, Ingrid. */
         Sorteringsfelt sorteringsfelt = Sorteringsfelt.nameFromValue(sortField);
 
+        // Vi må assigne til en ny variabel for at kompilatoren sin exhaustiveness-check skal slå inn.
+        // Dette er strengt tatt ikke nødvendig da vi bare kunne returnert searchSourceBuilder direkte, men da ville vi
+        // mistet exhaustiveness-checken.
         SearchSourceBuilder hovedsortering = switch (sorteringsfelt) {
             case IKKE_SATT -> {
                 brukStandardsorteringBasertPaValgteFilter(filtervalg, searchSourceBuilder);
@@ -612,12 +614,14 @@ public class OpensearchQueryBuilder {
                 sorterUtgattVarselHendelseDato(searchSourceBuilder, order);
                 yield searchSourceBuilder;
             }
+            // Vi har eksplisitt latt være å definere en "default" case i switch-en for å tvinge oss selv til å håndtere
+            // alle sorteringsfeltene (exhaustivness check som gjøres av kompilatoren). Så i praksis er dette default-tilfellet.
             case ETTERNAVN, CV_SVARFRIST, AAP_MAXTID_UKE, AAP_UNNTAK_UKER_IGJEN, VENTER_PA_SVAR_FRA_NAV,
                  VENTER_PA_SVAR_FRA_BRUKER, STARTDATO_FOR_AVTALT_AKTIVITET, NESTE_STARTDATO_FOR_AVTALT_AKTIVITET,
                  FORRIGE_DATO_FOR_AVTALT_AKTIVITET, UTKAST_14A_STATUS_ENDRET, UTKAST_14A_ANSVARLIG_VEILEDER,
                  BOSTED_KOMMUNE, BOSTED_BYDEL, BOSTED_SIST_OPPDATERT, OPPFOLGING_STARTET, UTLOPSDATO, VEILEDER_IDENT,
                  DAGPENGER_UTLOP_UKE, DAGPENGER_PERM_UTLOP_UKE -> {
-                defaultSort(sorteringsfelt, searchSourceBuilder, order);
+                searchSourceBuilder.sort(sorteringsfelt.sorteringsverdi, order);
                 yield searchSourceBuilder;
             }
         };
@@ -1064,20 +1068,6 @@ public class OpensearchQueryBuilder {
             throw new IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.");
         }
         queryBuilder.must(existsQuery("siste_endringer." + sisteEndringKategori.get(0)));
-    }
-
-    /**
-     * Sorter alfabetisk på OpenSearch-feltet som er likt filterverdien.
-     * Eksempel der det fungerer: "etternavn" (filter) og "etternavn" (OpenSearch)
-     * Eksempel der det ikkje fungerer: "aap_type" (filter) og "ytelse" (OpenSearch), eller
-     * "gjeldende_vedtak_14a_innsatsgruppe" (filter) og "gjeldendeVedtak14a.innsatsgruppe" (OpenSearch)
-     */
-    private static void defaultSort(Sorteringsfelt sortField, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
-        if (ValideringsRegler.sortFields.contains(sortField.sorteringsverdi)) {
-            searchSourceBuilder.sort(sortField.sorteringsverdi, order);
-        } else {
-            throw new IllegalStateException();
-        }
     }
 
     private static void sorterEnsligeForsorgereUtlopsDato(SearchSourceBuilder builder, SortOrder order) {
