@@ -452,12 +452,14 @@ public class OpensearchQueryBuilder {
      * som er lov å sortere på i OpenSearch er det viktig at vi ikke legger til nye sorteringsfelter i {@link Sorteringsfelt}
      * uten å sørge for at disse også er tilgjengelige i {@link OppfolgingsBruker}.
      */
-    static SearchSourceBuilder sorterQueryParametere(String sortOrder, String
-            sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg, BrukerinnsynTilganger brukerinnsynTilganger) {
-        SortOrder order = "ascending".equals(sortOrder) ? SortOrder.ASC : SortOrder.DESC;
-
-        /* På sikt (tm) skal vi typesikre sortField slik at vi får Sorteringsfelt her, gjerne allereie på Controller-nivå. I denne omgangen lagar eg berre enumen for sorteringsfelta. 2024-11-28, Ingrid. */
-        Sorteringsfelt sorteringsfelt = Sorteringsfelt.nameFromValue(sortField);
+    static SearchSourceBuilder sorterQueryParametere(
+            Sorteringsrekkefolge sorteringsrekkefolge,
+            Sorteringsfelt sorteringsfelt,
+            SearchSourceBuilder searchSourceBuilder,
+            Filtervalg filtervalg,
+            BrukerinnsynTilganger brukerinnsynTilganger
+    ) {
+        SortOrder sorteringsrekkefolgeOpenSearch = Sorteringsrekkefolge.STIGENDE.equals(sorteringsrekkefolge) ? SortOrder.ASC : SortOrder.DESC;
 
         // Vi må assigne til en ny variabel for at kompilatoren sin exhaustiveness-check skal slå inn.
         // Dette er strengt tatt ikke nødvendig da vi bare kunne returnert searchSourceBuilder direkte, men da ville vi
@@ -468,150 +470,150 @@ public class OpensearchQueryBuilder {
                 yield searchSourceBuilder;
             }
             case VALGTE_AKTIVITETER -> {
-                sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
+                sorterValgteAktiviteter(filtervalg, searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case MOTER_MED_NAV_IDAG -> {
-                searchSourceBuilder.sort("alle_aktiviteter_mote_startdato", order);
+                searchSourceBuilder.sort("alle_aktiviteter_mote_startdato", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case MOTESTATUS -> {
-                searchSourceBuilder.sort("aktivitet_mote_startdato", order);
+                searchSourceBuilder.sort("aktivitet_mote_startdato", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case I_AVTALT_AKTIVITET -> {
                 FieldSortBuilder builder = new FieldSortBuilder("aktivitet_utlopsdatoer")
-                        .order(order)
+                        .order(sorteringsrekkefolgeOpenSearch)
                         .sortMode(MIN);
                 searchSourceBuilder.sort(builder);
                 yield searchSourceBuilder;
             }
             case FODSELSNUMMER -> {
-                searchSourceBuilder.sort("fnr.raw", order);
+                searchSourceBuilder.sort("fnr.raw", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case UTLOPTE_AKTIVITETER -> {
-                searchSourceBuilder.sort("nyesteutlopteaktivitet", order);
+                searchSourceBuilder.sort("nyesteutlopteaktivitet", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case ARBEIDSLISTE_FRIST -> {
-                searchSourceBuilder.sort("arbeidsliste_frist", order);
+                searchSourceBuilder.sort("arbeidsliste_frist", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case AAP_TYPE -> {
-                searchSourceBuilder.sort("ytelse", order);
+                searchSourceBuilder.sort("ytelse", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case AAP_VURDERINGSFRIST -> {
-                sorterAapVurderingsfrist(searchSourceBuilder, order, filtervalg);
+                sorterAapVurderingsfrist(searchSourceBuilder, sorteringsrekkefolgeOpenSearch, filtervalg);
                 yield searchSourceBuilder;
             }
             case AAP_RETTIGHETSPERIODE -> {
-                sorterAapRettighetsPeriode(searchSourceBuilder, order);
+                sorterAapRettighetsPeriode(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case GJELDENDE_VEDTAK_14A_INNSATSGRUPPE -> {
-                searchSourceBuilder.sort("gjeldendeVedtak14a.innsatsgruppe", order);
+                searchSourceBuilder.sort("gjeldendeVedtak14a.innsatsgruppe", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case GJELDENDE_VEDTAK_14A_HOVEDMAL -> {
-                searchSourceBuilder.sort("gjeldendeVedtak14a.hovedmal", order);
+                searchSourceBuilder.sort("gjeldendeVedtak14a.hovedmal", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case GJELDENDE_VEDTAK_14A_VEDTAKSDATO -> {
-                sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder, order);
+                sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case UTKAST_14A_STATUS -> {
-                searchSourceBuilder.sort("utkast_14a_status", order);
+                searchSourceBuilder.sort("utkast_14a_status", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case ARBEIDSLISTE_KATEGORI -> {
-                searchSourceBuilder.sort("arbeidsliste_kategori", order);
+                searchSourceBuilder.sort("arbeidsliste_kategori", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case SISTE_ENDRING_DATO -> {
-                sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
+                sorterSisteEndringTidspunkt(searchSourceBuilder, sorteringsrekkefolgeOpenSearch, filtervalg);
                 yield searchSourceBuilder;
             }
             case ARBEIDSLISTE_OVERSKRIFT -> {
-                sorterArbeidslisteOverskrift(searchSourceBuilder, order);
+                sorterArbeidslisteOverskrift(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case FODELAND -> {
-                sorterFodeland(searchSourceBuilder, order);
+                sorterFodeland(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case STATSBORGERSKAP -> {
-                sorterStatsborgerskap(searchSourceBuilder, order);
+                sorterStatsborgerskap(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case STATSBORGERSKAP_GYLDIG_FRA -> {
-                sorterStatsborgerskapGyldigFra(searchSourceBuilder, order);
+                sorterStatsborgerskapGyldigFra(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case TOLKESPRAK -> {
-                sorterTolkeSpraak(filtervalg, searchSourceBuilder, order);
+                sorterTolkeSpraak(filtervalg, searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case TOLKEBEHOV_SIST_OPPDATERT -> {
-                searchSourceBuilder.sort("tolkBehovSistOppdatert", order);
+                searchSourceBuilder.sort("tolkBehovSistOppdatert", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case ENSLIGE_FORSORGERE_UTLOP_YTELSE -> {
-                sorterEnsligeForsorgereUtlopsDato(searchSourceBuilder, order);
+                sorterEnsligeForsorgereUtlopsDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case ENSLIGE_FORSORGERE_VEDTAKSPERIODETYPE -> {
-                sorterEnsligeForsorgereVedtaksPeriode(searchSourceBuilder, order);
+                sorterEnsligeForsorgereVedtaksPeriode(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case ENSLIGE_FORSORGERE_AKTIVITETSPLIKT -> {
-                sorterEnsligeForsorgereAktivitetsPlikt(searchSourceBuilder, order);
+                sorterEnsligeForsorgereAktivitetsPlikt(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case ENSLIGE_FORSORGERE_OM_BARNET -> {
-                sorterEnsligeForsorgereOmBarnet(searchSourceBuilder, order);
+                sorterEnsligeForsorgereOmBarnet(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case BARN_UNDER_18_AR -> {
-                sorterBarnUnder18(searchSourceBuilder, order, brukerinnsynTilganger, filtervalg);
+                sorterBarnUnder18(searchSourceBuilder, sorteringsrekkefolgeOpenSearch, brukerinnsynTilganger, filtervalg);
                 yield searchSourceBuilder;
             }
             case BRUKERS_SITUASJON_SIST_ENDRET -> {
-                searchSourceBuilder.sort("brukers_situasjon_sist_endret", order);
+                searchSourceBuilder.sort("brukers_situasjon_sist_endret", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case UTDANNING_OG_SITUASJON_SIST_ENDRET -> {
-                searchSourceBuilder.sort("utdanning_og_situasjon_sist_endret", order);
+                searchSourceBuilder.sort("utdanning_og_situasjon_sist_endret", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case HUSKELAPP_FRIST -> {
-                sorterHuskelappFrist(searchSourceBuilder, order);
+                sorterHuskelappFrist(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case HUSKELAPP -> {
-                sorterHuskelappEksistere(searchSourceBuilder, order);
+                sorterHuskelappEksistere(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case HUSKELAPP_KOMMENTAR -> {
-                searchSourceBuilder.sort("huskelapp.kommentar", order);
+                searchSourceBuilder.sort("huskelapp.kommentar", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case FARGEKATEGORI -> {
-                searchSourceBuilder.sort("fargekategori", order);
+                searchSourceBuilder.sort("fargekategori", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case TILTAKSHENDELSE_DATO_OPPRETTET -> {
-                sorterTiltakshendelseOpprettetDato(searchSourceBuilder, order);
+                sorterTiltakshendelseOpprettetDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case TILTAKSHENDELSE_TEKST -> {
-                searchSourceBuilder.sort("tiltakshendelse.tekst", order);
+                searchSourceBuilder.sort("tiltakshendelse.tekst", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case UTGATT_VARSEL_DATO -> {
-                sorterUtgattVarselHendelseDato(searchSourceBuilder, order);
+                sorterUtgattVarselHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             // Vi har eksplisitt latt være å definere en "default" case i switch-en for å tvinge oss selv til å håndtere
@@ -621,7 +623,7 @@ public class OpensearchQueryBuilder {
                  FORRIGE_DATO_FOR_AVTALT_AKTIVITET, UTKAST_14A_STATUS_ENDRET, UTKAST_14A_ANSVARLIG_VEILEDER,
                  BOSTED_KOMMUNE, BOSTED_BYDEL, BOSTED_SIST_OPPDATERT, OPPFOLGING_STARTET, UTLOPSDATO, VEILEDER_IDENT,
                  DAGPENGER_UTLOP_UKE, DAGPENGER_PERM_UTLOP_UKE -> {
-                searchSourceBuilder.sort(sorteringsfelt.sorteringsverdi, order);
+                searchSourceBuilder.sort(sorteringsfelt.sorteringsverdi, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
         };

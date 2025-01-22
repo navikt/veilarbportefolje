@@ -101,13 +101,13 @@ public enum Sorteringsfelt {
         this.sorteringsverdi = sorteringsverdi;
     }
 
-    public static Sorteringsfelt nameFromValue(String value) {
+    public static Sorteringsfelt toSorteringsfelt(String sorteringsverdi) {
         for (Sorteringsfelt sorteringsfelt : values()) {
-            if (sorteringsfelt.sorteringsverdi.equals(value)) {
+            if (sorteringsfelt.sorteringsverdi.equals(sorteringsverdi)) {
                 return sorteringsfelt;
             }
         }
-        throw new IllegalArgumentException("Ugyldig verdi for enum: " + value );
+        throw new IllegalArgumentException("Ugyldig verdi for enum: " + sorteringsverdi);
     }
 
     @Override

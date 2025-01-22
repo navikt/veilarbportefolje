@@ -50,8 +50,8 @@ public class OpensearchService {
     public BrukereMedAntall hentBrukere(
             String enhetId,
             Optional<String> veilederIdent,
-            String sortOrder,
-            String sortField,
+            Sorteringsrekkefolge sorteringsrekkefolge,
+            Sorteringsfelt sorteringsfelt,
             Filtervalg filtervalg,
             Integer fra,
             Integer antall
@@ -102,7 +102,7 @@ public class OpensearchService {
             leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
-        sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg, authService.hentVeilederBrukerInnsynTilganger());
+        sorterQueryParametere(sorteringsrekkefolge, sorteringsfelt, searchSourceBuilder, filtervalg, authService.hentVeilederBrukerInnsynTilganger());
 
         OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();

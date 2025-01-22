@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt;
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
@@ -28,18 +29,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_EGEN;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.FULLFORT_IJOBB;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.MAL;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_IJOBB;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -158,8 +152,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                     testEnhet.getValue(),
                     empty(),
-                    "asc",
-                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                    Sorteringsrekkefolge.STIGENDE,
+                    Sorteringsfelt.IKKE_SATT,
                     getFiltervalg(FULLFORT_IJOBB),
                     null,
                     null);
@@ -170,8 +164,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             var responseBrukere = opensearchService.hentBrukere(
                     testEnhet.getValue(),
                     empty(),
-                    "asc",
-                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                    Sorteringsrekkefolge.STIGENDE,
+                    Sorteringsfelt.IKKE_SATT,
                     getFiltervalg(FULLFORT_IJOBB),
                     null,
                     null);
@@ -191,8 +185,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                     testEnhet.getValue(),
                     empty(),
-                    "asc",
-                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                    Sorteringsrekkefolge.STIGENDE,
+                    Sorteringsfelt.IKKE_SATT,
                     new Filtervalg(),
                     null,
                     null);
@@ -203,8 +197,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         var responseBrukere = opensearchService.hentBrukere(
                 testEnhet.getValue(),
                 empty(),
-                "asc",
-                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
                 getFiltervalg(FULLFORT_IJOBB, true),
                 null,
                 null);
@@ -226,8 +220,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                     testEnhet.getValue(),
                     empty(),
-                    "asc",
-                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                    Sorteringsrekkefolge.STIGENDE,
+                    Sorteringsfelt.IKKE_SATT,
                     new Filtervalg(),
                     null,
                     null);
@@ -248,8 +242,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                     testEnhet.getValue(),
                     empty(),
-                    "asc",
-                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                    Sorteringsrekkefolge.STIGENDE,
+                    Sorteringsfelt.IKKE_SATT,
                     getFiltervalg(NY_IJOBB),
                     null,
                     null);
@@ -262,8 +256,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                     testEnhet.getValue(),
                     empty(),
-                    "asc",
-                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                    Sorteringsrekkefolge.STIGENDE,
+                    Sorteringsfelt.IKKE_SATT,
                     getFiltervalg(FULLFORT_IJOBB, true),
                     null,
                     null);
@@ -273,8 +267,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         var responseBrukere1 = opensearchService.hentBrukere(
                 testEnhet.getValue(),
                 empty(),
-                "asc",
-                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
                 getFiltervalg(NY_IJOBB, true),
                 null,
                 null);
@@ -284,8 +278,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         var responseBrukere2 = opensearchService.hentBrukere(
                 testEnhet.getValue(),
                 empty(),
-                "asc",
-                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
                 getFiltervalg(FULLFORT_IJOBB, true),
                 null,
                 null);
@@ -314,8 +308,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                     testEnhet.getValue(),
                     empty(),
-                    "asc",
-                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                    Sorteringsrekkefolge.STIGENDE,
+                    Sorteringsfelt.IKKE_SATT,
                     new Filtervalg(),
                     null,
                     null);
@@ -347,8 +341,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                     testEnhet.getValue(),
                     empty(),
-                    "ascending",
-                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                    Sorteringsrekkefolge.STIGENDE,
+                    Sorteringsfelt.IKKE_SATT,
                     getFiltervalg(FULLFORT_IJOBB),
                     null,
                     null);
@@ -360,8 +354,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                     testEnhet.getValue(),
                     empty(),
-                    "ascending",
-                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                    Sorteringsrekkefolge.STIGENDE,
+                    Sorteringsfelt.IKKE_SATT,
                     getFiltervalg(FULLFORT_EGEN),
                     null,
                     null);
@@ -372,8 +366,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         var responseSortertFULLFORT_IJOBB = opensearchService.hentBrukere(
                 testEnhet.getValue(),
                 empty(),
-                "descending",
-                Sorteringsfelt.SISTE_ENDRING_DATO.sorteringsverdi,
+                Sorteringsrekkefolge.SYNKENDE,
+                Sorteringsfelt.SISTE_ENDRING_DATO,
                 getFiltervalg(FULLFORT_IJOBB),
                 null,
                 null);
@@ -385,8 +379,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         var responseSortertFULLFORT_EGEN = opensearchService.hentBrukere(
                 testEnhet.getValue(),
                 empty(),
-                "ascending",
-                Sorteringsfelt.SISTE_ENDRING_DATO.sorteringsverdi,
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.SISTE_ENDRING_DATO,
                 getFiltervalg(FULLFORT_EGEN),
                 null,
                 null);
@@ -399,8 +393,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         var responseSortertTomRes1 = opensearchService.hentBrukere(
                 testEnhet.getValue(),
                 empty(),
-                "descending",
-                Sorteringsfelt.SISTE_ENDRING_DATO.sorteringsverdi,
+                Sorteringsrekkefolge.SYNKENDE,
+                Sorteringsfelt.SISTE_ENDRING_DATO,
                 getFiltervalg(NY_IJOBB),
                 null,
                 null);
@@ -413,8 +407,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 () -> opensearchService.hentBrukere(
                         testEnhet.getValue(),
                         empty(),
-                        "descending",
-                        Sorteringsfelt.SISTE_ENDRING_DATO.sorteringsverdi,
+                        Sorteringsrekkefolge.SYNKENDE,
+                        Sorteringsfelt.SISTE_ENDRING_DATO,
                         getFiltervalg(FULLFORT_IJOBB, FULLFORT_EGEN),
                         null,
                         null));

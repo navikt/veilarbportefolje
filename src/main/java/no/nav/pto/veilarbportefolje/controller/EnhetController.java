@@ -61,12 +61,12 @@ public class EnhetController {
             @RequestBody Filtervalg filtervalg) {
 
         ValideringsRegler.sjekkEnhet(enhet);
-        ValideringsRegler.sjekkSortering(sortDirection, sortField);
-        ValideringsRegler.sjekkFiltervalg(filtervalg);
+        Sorteringsrekkefolge validertSorteringsrekkefolge = ValideringsRegler.sjekkSorteringsrekkefolge(sortDirection);
+        Sorteringsfelt validertSorteringsfelt = ValideringsRegler.sjekkSorteringsfelt(sortField);
         authService.innloggetVeilederHarTilgangTilOppfolging();
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
-        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), validertSorteringsrekkefolge, validertSorteringsfelt, filtervalg, fra, antall);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         return PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),

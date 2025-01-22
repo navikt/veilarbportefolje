@@ -4,6 +4,7 @@ import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt;
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensearch.index.query.BoolQueryBuilder;
@@ -14,15 +15,9 @@ import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggAktivitetFilterQuery;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggAlderQuery;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggPortefoljestorrelserQuery;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggVeilederPaaEnhetScript;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.sorterQueryParametere;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.sorterValgteAktiviteter;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.*;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.opensearch.index.query.QueryBuilders.boolQuery;
 import static org.opensearch.search.sort.SortOrder.ASC;
 
@@ -36,21 +31,9 @@ public class OpensearchQueryBuilderTest {
 
     @Test
     public void skal_sortere_etternavn_paa_etternavn_feltet() {
-        var searchSourceBuilder = sorterQueryParametere("asc", Sorteringsfelt.ETTERNAVN.sorteringsverdi, new SearchSourceBuilder(), new Filtervalg(), new BrukerinnsynTilganger(true, true, true));
+        var searchSourceBuilder = sorterQueryParametere(Sorteringsrekkefolge.STIGENDE, Sorteringsfelt.ETTERNAVN, new SearchSourceBuilder(), new Filtervalg(), new BrukerinnsynTilganger(true, true, true));
         var fieldName = searchSourceBuilder.sorts().get(0).toString();
         assertThat(fieldName).contains(Sorteringsfelt.ETTERNAVN.sorteringsverdi);
-    }
-
-    @Test
-    public void skal_ikke_sortere_pa_ugyldig_sorteringsverdi() {
-        String ugyldigSorteringsverdi = "Dette kommer sannsynligvis aldri til å bli en gyldig filterverdi";
-
-        try {
-            sorterQueryParametere("asc", ugyldigSorteringsverdi, new SearchSourceBuilder(), new Filtervalg(), new BrukerinnsynTilganger(true, true, true));
-            fail("Ugyldig input ble godtatt og brukt til sortering");
-        } catch (Exception e) {
-            assertThat(e).isNotNull();
-        }
     }
 
     @Test
