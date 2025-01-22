@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
-import io.getunleash.DefaultUnleash;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +8,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -26,7 +24,6 @@ import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -36,7 +33,6 @@ public class ArbeidslisteService {
     private final ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2;
     private final BrukerServiceV2 brukerServiceV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final DefaultUnleash defaultUnleash;
 
     public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
         return arbeidslisteRepositoryV2.retrieveArbeidsliste(fnr);
@@ -84,11 +80,6 @@ public class ArbeidslisteService {
         if (aktoerId.isEmpty()) {
             log.info("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr.");
             throw new SlettArbeidslisteException(String.format("Kunne ikke slette arbeidsliste. Årsak: fant ikke aktørId på fnr: %s", fnr.get()));
-        }
-
-        if (FeatureToggle.skjulArbeidslistefunksjonalitet(defaultUnleash)) {
-            log.info("Kunne ikke slette arbeidsliste. Årsak: arbeidslistefunksjonalitet er deaktivert.");
-            throw new SlettArbeidslisteException("Kunne ikke slette arbeidsliste. Årsak: arbeidslistefunksjonalitet er deaktivert.");
         }
 
         if (slettFargekategori) {
@@ -166,30 +157,5 @@ public class ArbeidslisteService {
             );
             arbeidslisteRepositoryV2.updateArbeidslisteUtenFargekategori(arbeidslisteDTO);
         }
-    }
-
-    public boolean brukerHarByttetNavKontor(AktorId aktoerId) {
-        Optional<String> navKontorForArbeidsliste = arbeidslisteRepositoryV2.hentNavKontorForArbeidsliste(aktoerId);
-
-        if (navKontorForArbeidsliste.isEmpty()) {
-            secureLog.info("Bruker {} har ikke Nav-kontor på arbeidsliste", aktoerId.toString());
-            return false;
-        }
-
-        final Optional<String> navKontorForBruker = brukerServiceV2.hentNavKontor(aktoerId).map(NavKontor::getValue);
-        if (navKontorForBruker.isEmpty()) {
-            secureLog.error("Kunne ikke hente Nav-kontor fra db-link til arena for bruker {}", aktoerId.toString());
-            return false;
-        }
-
-        boolean navkontorForBrukerUlikNavkontorForArbeidsliste = !navKontorForBruker.orElseThrow().equals(navKontorForArbeidsliste.orElseThrow());
-
-        if (navkontorForBrukerUlikNavkontorForArbeidsliste) {
-            secureLog.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på et annet kontor {}", aktoerId.toString(), navKontorForBruker.get(), navKontorForArbeidsliste.get());
-        } else {
-            secureLog.info("Bruker {} er på kontor {} og arbeidslisten er lagret på samme kontor {}", aktoerId.toString(), navKontorForBruker.get(), navKontorForArbeidsliste.get());
-        }
-
-        return navkontorForBrukerUlikNavkontorForArbeidsliste;
     }
 }
