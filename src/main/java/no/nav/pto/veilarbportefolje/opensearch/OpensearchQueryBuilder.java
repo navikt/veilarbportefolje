@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
@@ -443,13 +444,14 @@ public class OpensearchQueryBuilder {
     }
 
     /**
+     * Tar i mot en {@link SearchSourceBuilder} og utvider denne med sorteringsqueryer basert på valgt sorteringsrekkefølge,
+     * sorteringsfelt og valgte filter.
      *
-     * @param sortOrder
-     * @param sortField
-     * @param searchSourceBuilder
-     * @param filtervalg
-     * @param brukerinnsynTilganger
-     * @return
+     * Merk: {@link Sorteringsfelt} er en enum som representerer lovlige sorteringsfelter slik frontend har definert dem.
+     * Disse mappes til felter i OpenSearch, dvs. for enkelte verdier av {@link Sorteringsfelt} kan det være at feltet
+     * det faktisk sorteres på heter noe annet i OpenSearch. Siden {@link OppfolgingsBruker} er "fasiten" for hvilke felter
+     * som er lov å sortere på i OpenSearch er det viktig at vi ikke legger til nye sorteringsfelter i {@link Sorteringsfelt}
+     * uten å sørge for at disse også er tilgjengelige i {@link OppfolgingsBruker}.
      */
     static SearchSourceBuilder sorterQueryParametere(String sortOrder, String
             sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg, BrukerinnsynTilganger brukerinnsynTilganger) {
