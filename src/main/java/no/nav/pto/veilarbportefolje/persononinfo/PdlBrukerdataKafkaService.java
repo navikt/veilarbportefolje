@@ -1,12 +1,10 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
-import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
@@ -39,7 +37,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonNonKeyedConsumerServic
     private final BarnUnder18AarService barnUnder18AarService;
     private final OpensearchIndexer opensearchIndexer;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final DefaultUnleash defaultUnleash;
 
     @Override
     @SneakyThrows
@@ -60,14 +57,11 @@ public class PdlBrukerdataKafkaService extends KafkaCommonNonKeyedConsumerServic
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
             secureLog.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
-
             handterIdentEndring(pdlIdenter);
 
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-            if (!FeatureToggle.stoppOpensearchIndeksering(defaultUnleash)) {
-                oppdaterOpensearch(aktivAktorId, pdlIdenter);
-            }
+            oppdaterOpensearch(aktivAktorId, pdlIdenter);
         }
 
         if (barnUnder18AarService.erFnrBarnAvForelderUnderOppfolging(fnrs)) {
@@ -77,7 +71,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonNonKeyedConsumerServic
 
             handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-            if (!FeatureToggle.stoppOpensearchIndeksering(defaultUnleash)) {
                 List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnr);
 
                 foreldreTilBarn.forEach(fnrForelder -> {
@@ -89,7 +82,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonNonKeyedConsumerServic
                             }
                         }
                 );
-            }
         }
     }
 

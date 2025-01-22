@@ -75,8 +75,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
                 new BrukerServiceV2(pdlIdentRepository, oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2),
                 barnUnder18AarService,
                 opensearchIndexer,
-                opensearchIndexerV2,
-                mockUnleash
+                opensearchIndexerV2
         );
     }
 
