@@ -95,8 +95,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.common.utils.IdUtils.generateId;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_NYTT_ARBEIDSSOEKERREGISTER;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.SKJUL_ARBEIDSLISTEFUNKSJONALITET;
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchUtils.createClient;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
@@ -232,8 +230,6 @@ public class ApplicationConfigTest {
     public DefaultUnleash defaultUnleash() {
         final DefaultUnleash mock = mock(DefaultUnleash.class);
         when(mock.isEnabled(anyString())).thenReturn(true);
-        when(mock.isEnabled(BRUK_NYTT_ARBEIDSSOEKERREGISTER)).thenReturn(false);
-        when(mock.isEnabled(SKJUL_ARBEIDSLISTEFUNKSJONALITET)).thenReturn(false);
 
         return mock;
     }
