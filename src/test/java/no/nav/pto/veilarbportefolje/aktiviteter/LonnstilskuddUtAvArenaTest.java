@@ -184,8 +184,8 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                     BrukereMedAntall response1 = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
-                            "asc",
-                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
@@ -195,8 +195,8 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                     BrukereMedAntall response2 = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
-                            "asc",
-                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
                             null);
@@ -291,8 +291,8 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                     BrukereMedAntall response1 = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
-                            "asc",
-                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
@@ -302,8 +302,8 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                     BrukereMedAntall response2 = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
-                            "asc",
-                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
                             null);
@@ -343,8 +343,8 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                     BrukereMedAntall response1 = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
-                            "asc",
-                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
@@ -642,8 +642,8 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                     BrukereMedAntall responseBrukereMIDLONTIL = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
-                            "asc",
-                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
                             null,
                             null);
@@ -651,8 +651,8 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                     BrukereMedAntall responseBrukereLONNTILS = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
-                            "asc",
-                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
                             null);

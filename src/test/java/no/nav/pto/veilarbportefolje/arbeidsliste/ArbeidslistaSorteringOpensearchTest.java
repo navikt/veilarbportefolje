@@ -2,10 +2,7 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
-import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt;
+import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
@@ -76,8 +73,8 @@ public class ArbeidslistaSorteringOpensearchTest extends EndToEndTest {
             final BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
                     enhetId.getValue(),
                     empty(),
-                    "ascending",
-                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                    Sorteringsrekkefolge.STIGENDE,
+                    Sorteringsfelt.IKKE_SATT,
                     getArbeidslisteFilter(),
                     null,
                     null);
@@ -88,8 +85,8 @@ public class ArbeidslistaSorteringOpensearchTest extends EndToEndTest {
         var sortertResponsAscending = opensearchService.hentBrukere(
                 enhetId.getValue(),
                 empty(),
-                "ascending",
-                Sorteringsfelt.ARBEIDSLISTE_OVERSKRIFT.sorteringsverdi,
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.ARBEIDSLISTE_OVERSKRIFT,
                 getArbeidslisteFilter(),
                 null,
                 null);
@@ -97,8 +94,8 @@ public class ArbeidslistaSorteringOpensearchTest extends EndToEndTest {
         var sortertResponsDescending = opensearchService.hentBrukere(
                 enhetId.getValue(),
                 empty(),
-                "desc",
-                Sorteringsfelt.ARBEIDSLISTE_OVERSKRIFT.sorteringsverdi,
+                Sorteringsrekkefolge.SYNKENDE,
+                Sorteringsfelt.ARBEIDSLISTE_OVERSKRIFT,
                 getArbeidslisteFilter(),
                 null,
                 null);
