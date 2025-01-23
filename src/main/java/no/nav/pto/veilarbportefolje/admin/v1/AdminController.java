@@ -52,9 +52,9 @@ public class AdminController {
 
     @DeleteMapping("/oppfolgingsbruker")
     @Operation(summary = "Fjern bruker", description = "Sletter en bruker og fjerner tilhørende informasjon om brukeren. Brukeren vil ikke lenger eksistere i porteføljene.")
-    public String slettOppfolgingsbruker(@RequestBody String aktoerId) {
+    public String slettOppfolgingsbruker(@RequestBody SlettOppfolgingsbrukerRequest request) {
         sjekkTilgangTilAdmin();
-        oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(aktoerId));
+        oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(request.aktorId().get()));
         return "Oppfølgingsbruker ble slettet";
     }
 
@@ -68,9 +68,9 @@ public class AdminController {
 
     @PostMapping("/lastInnOppfolgingForBruker")
     @Operation(summary = "Oppdater data for bruker", description = "Oppdaterer oppfølgingsdata for en gitt bruker. Dersom brukeren eventuelt ikke er under oppfølging slettes den.")
-    public String lastInnOppfolgingsDataForBruker(@RequestBody String fnr) {
+    public String lastInnOppfolgingsDataForBruker(@RequestBody LastInnOppfolgingForBrukerRequest request) {
         sjekkTilgangTilAdmin();
-        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
+        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(request.fnr().get())).get();
         oppfolgingService.oppdaterBruker(AktorId.of(aktorId));
         return "Innlastning av oppfolgingsdata har startet";
     }
