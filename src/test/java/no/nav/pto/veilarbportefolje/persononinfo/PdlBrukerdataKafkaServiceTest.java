@@ -34,11 +34,6 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
 
     private static PdlBrukerdataKafkaService pdlBrukerdataKafkaService;
 
-    @MockBean
-    private static OpensearchIndexer opensearchIndexer;
-    @MockBean
-    private static OpensearchIndexerV2 opensearchIndexerV2;
-
     private static JdbcTemplate db;
 
     public PdlBrukerdataKafkaServiceTest() throws JsonProcessingException {
@@ -74,9 +69,8 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
                 , pdlIdentRepository,
                 new BrukerServiceV2(pdlIdentRepository, oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2),
                 barnUnder18AarService,
-                opensearchIndexer,
-                opensearchIndexerV2,
-                mockUnleash
+                Mockito.mock(OpensearchIndexer.class),
+                Mockito.mock(OpensearchIndexerV2.class)
         );
     }
 

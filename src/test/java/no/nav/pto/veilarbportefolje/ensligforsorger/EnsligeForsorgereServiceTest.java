@@ -73,8 +73,8 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                     BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                             navKontor.toString(),
                             empty(),
-                            "asc",
-                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
                             filtervalg,
                             null,
                             null);
@@ -113,8 +113,8 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                     BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                             navKontor.toString(),
                             empty(),
-                            "asc",
-                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
                             filtervalg,
                             null,
                             null);
@@ -173,8 +173,8 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         BrukereMedAntall response = opensearchService.hentBrukere(
                 navKontor.toString(),
                 empty(),
-                "ascending",
-                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
                 filterValg,
                 null,
                 null

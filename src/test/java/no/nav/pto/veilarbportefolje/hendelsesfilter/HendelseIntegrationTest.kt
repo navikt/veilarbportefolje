@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
 import no.nav.pto.veilarbportefolje.domene.Bruker
 import no.nav.pto.veilarbportefolje.domene.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil
@@ -54,8 +55,8 @@ class HendelseIntegrationTest(
         val brukerFraRespons: Bruker = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
-            "asc",
-            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.IKKE_SATT,
             Filtervalg().setFerdigfilterListe(emptyList()),
             null,
             null
@@ -83,8 +84,8 @@ class HendelseIntegrationTest(
         val brukerFraRespons: Bruker = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
-            "asc",
-            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.IKKE_SATT,
             Filtervalg().setFerdigfilterListe(emptyList()),
             null,
             null
@@ -116,8 +117,8 @@ class HendelseIntegrationTest(
         val brukerFraRespons: Bruker = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
-            "asc",
-            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.IKKE_SATT,
             Filtervalg().setFerdigfilterListe(emptyList()),
             null,
             null
@@ -162,8 +163,8 @@ class HendelseIntegrationTest(
         val brukerFraRespons: Bruker = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
-            "asc",
-            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.IKKE_SATT,
             Filtervalg().setFerdigfilterListe(emptyList()),
             null,
             null
@@ -205,8 +206,8 @@ class HendelseIntegrationTest(
         val brukerFraRespons: Bruker = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
-            "asc",
-            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.IKKE_SATT,
             Filtervalg().setFerdigfilterListe(emptyList()),
             null,
             null
@@ -249,8 +250,8 @@ class HendelseIntegrationTest(
         val brukerFraRespons: Bruker = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
-            "asc",
-            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.IKKE_SATT,
             Filtervalg().setFerdigfilterListe(emptyList()),
             null,
             null
@@ -301,8 +302,8 @@ class HendelseIntegrationTest(
         val brukerFraRespons: Bruker = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
-            "asc",
-            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.IKKE_SATT,
             Filtervalg().setFerdigfilterListe(emptyList()),
             null,
             null
@@ -338,8 +339,8 @@ class HendelseIntegrationTest(
         val brukerFraRespons: Bruker = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
-            "asc",
-            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.IKKE_SATT,
             Filtervalg().setFerdigfilterListe(emptyList()),
             null,
             null
@@ -384,8 +385,8 @@ class HendelseIntegrationTest(
         val brukerFraRespons: Bruker = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
-            "asc",
-            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.IKKE_SATT,
             Filtervalg().setFerdigfilterListe(emptyList()),
             null,
             null
@@ -440,8 +441,8 @@ class HendelseIntegrationTest(
         val brukerFraRespons: Bruker = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
-            "asc",
-            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.IKKE_SATT,
             Filtervalg().setFerdigfilterListe(emptyList()),
             null,
             null

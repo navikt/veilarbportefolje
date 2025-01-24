@@ -80,8 +80,8 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                     BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
-                            "asc",
-                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
                             new Filtervalg().setFerdigfilterListe(List.of(I_AKTIVITET)),
                             null,
                             null);
@@ -114,8 +114,8 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                     BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
-                            "asc",
-                            Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
                             new Filtervalg().setNavnEllerFnrQuery(fodselsnummer.toString()).setFerdigfilterListe(new ArrayList<>()),
                             null,
                             null);
@@ -165,8 +165,8 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
             BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                     navKontor.getValue(),
                     empty(),
-                    "asc",
-                    Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                    Sorteringsrekkefolge.STIGENDE,
+                    Sorteringsfelt.IKKE_SATT,
                     new Filtervalg().setFerdigfilterListe(List.of(I_AKTIVITET)),
                     null,
                     null);
@@ -179,8 +179,8 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                 navKontor.getValue(),
                 empty(),
-                "asc",
-                Sorteringsfelt.IKKE_SATT.sorteringsverdi,
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
                 new Filtervalg().setStillingFraNavFilter(List.of(StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA)).setFerdigfilterListe(new ArrayList<>()),
                 null,
                 null);

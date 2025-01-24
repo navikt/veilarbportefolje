@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.persononinfo.BarnUnder18AarTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import io.getunleash.DefaultUnleash;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -65,9 +64,6 @@ public class BarnUnder18AarMisterForeldreansvarTest {
     private final String pdlDokumentIngenBarn = readFileAsJsonString("/PDL_Files/pdl_dokument_ingen_barn.json", getClass());
     private final JdbcTemplate db;
 
-    @MockBean
-    private DefaultUnleash defaultUnleash;
-
     private final WireMockServer server = new WireMockServer();
 
 
@@ -94,7 +90,7 @@ public class BarnUnder18AarMisterForeldreansvarTest {
 
         server.start();
 
-        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN"));
+        PdlPortefoljeClient pdlPortefoljeClient = new PdlPortefoljeClient(new PdlClientImpl("http://localhost:" + server.port(), () -> "SYSTEM_TOKEN", "B555"));
 
 
         barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
@@ -108,8 +104,7 @@ public class BarnUnder18AarMisterForeldreansvarTest {
                 new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
                 this.barnUnder18AarService,
                 opensearchIndexer,
-                opensearchIndexerV2,
-                defaultUnleash
+                opensearchIndexerV2
         );
     }
 
