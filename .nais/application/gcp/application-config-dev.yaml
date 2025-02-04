@@ -44,6 +44,8 @@ spec:
         databases:
           - name: veilarbportefolje
             envVarPrefix: DB
+            users:
+              - name: bigquery_user
   azure:
     application:
       allowAllUsers: true
