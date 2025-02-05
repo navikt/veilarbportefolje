@@ -154,15 +154,15 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockPdlPersonBarnRespons(fnr);
         mockHentOppfolgingsbrukerResponse(fnr);
 
+        SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = genererStartetOppfolgingsperiode(aktorId);
         Siste14aVedtakApiDto siste14aVedtakApiDto = new Siste14aVedtakApiDto(
                 Innsatsgruppe.SITUASJONSBESTEMT_INNSATS,
                 Hovedmal.OKE_DELTAKELSE,
-                tilfeldigDatoTilbakeITid(),
+                sisteOppfolgingsperiodeV1.getStartDato().plusDays(1),
                 true
         );
         when(vedtaksstotteClient.hentSiste14aVedtak(fnr)).thenReturn(Optional.of(siste14aVedtakApiDto));
-
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(sisteOppfolgingsperiodeV1);
 
         IdenterForBruker identerForBruker = pdlIdentRepository.hentIdenterForBruker(aktorId.get());
         Optional<Siste14aVedtakForBruker> siste14aVedtakForBruker = siste14aVedtakRepository.hentSiste14aVedtak(identerForBruker);
