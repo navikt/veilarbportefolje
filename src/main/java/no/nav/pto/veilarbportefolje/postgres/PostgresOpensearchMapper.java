@@ -28,6 +28,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import org.springframework.stereotype.Service;
+
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -247,21 +248,24 @@ public class PostgresOpensearchMapper {
             Optional<Siste14aVedtakForBruker> maybeSiste14aVedtakForBruker = Optional.ofNullable(aktorIdSiste14aVedtakMap.get(AktorId.of(bruker.getAktoer_id())));
             Optional<ZonedDateTime> maybeStartDatoForOppfolging = aktorIdStartDatoForOppfolgingMap.getOrDefault(AktorId.of(bruker.getAktoer_id()), Optional.empty());
 
-            if(maybeStartDatoForOppfolging.isEmpty()) {
+            if (maybeStartDatoForOppfolging.isEmpty()) {
                 return;
             }
 
-            boolean harBrukerGjeldende14aVedtak = maybeSiste14aVedtakForBruker.map(siste14aVedtakForBruker ->
-                    siste14aVedtakForBruker.getFattetDato().isAfter(maybeStartDatoForOppfolging.get()) ||
-                    siste14aVedtakForBruker.getFattetDato().isBefore(ZonedDateTime.parse("2017-12-02T19:37:25+02:00"))
-            ).orElse(false);
+            if (maybeSiste14aVedtakForBruker.isPresent()) {
+                Siste14aVedtakForBruker siste14aVedtakForBruker = maybeSiste14aVedtakForBruker.get();
+                boolean erGjeldende14aVedtak = siste14aVedtakForBruker.getFattetDato().isAfter(maybeStartDatoForOppfolging.get()) ||
+                        siste14aVedtakForBruker.getFattetDato().isBefore(ZonedDateTime.parse("2017-12-02T19:37:25+02:00"));
 
-            if(harBrukerGjeldende14aVedtak) {
-                bruker.setGjeldendeVedtak14a(maybeSiste14aVedtakForBruker.map(siste14aVedtakForBruker -> new GjeldendeVedtak14a(
+                if (!erGjeldende14aVedtak) {
+                    return;
+                }
+
+                bruker.setGjeldendeVedtak14a(new GjeldendeVedtak14a(
                         siste14aVedtakForBruker.getInnsatsgruppe(),
                         siste14aVedtakForBruker.getHovedmal(),
                         siste14aVedtakForBruker.getFattetDato()
-                )).orElse(null));
+                ));
             }
         });
     }
