@@ -6,9 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakForBruker;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import org.springframework.boot.autoconfigure.data.jdbc.JdbcRepositoriesAutoConfiguration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -133,16 +131,7 @@ public class OppfolgingRepositoryV2 {
                 });
     }
 
-
-                Optional.ofNullable(
-                queryForObjectOrNull(
-                        () -> db.queryForObject("select startdato from oppfolging_data where aktoerid = any (?::varchar[])",
-                                (rs, i) -> DateUtils.toZonedDateTime(rs.getTimestamp("startdato")), aktoerId.get())
-                ));
-    }
-
     private static String listParam(List<String> identer) {
         return identer.stream().collect(Collectors.joining(",", "{", "}"));
     }
-
 }
