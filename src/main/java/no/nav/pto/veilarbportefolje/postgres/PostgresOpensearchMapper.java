@@ -17,6 +17,7 @@ import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
@@ -27,7 +28,6 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import org.springframework.stereotype.Service;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,7 +54,7 @@ public class PostgresOpensearchMapper {
     private final TiltakshendelseRepository tiltakshendelseRepository;
     private final Siste14aVedtakRepository siste14aVedtakRepository;
     private final HendelseRepository hendelseRepository;
-    private final OppfolgingRepository oppfolgingRepositoryV2;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     public void flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -239,20 +239,31 @@ public class PostgresOpensearchMapper {
         Map<AktorId, Siste14aVedtakForBruker> aktorIdSiste14aVedtakMap = siste14aVedtakRepository.hentSiste14aVedtakForBrukere(brukere.stream().map(bruker ->
                 AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet())
         );
-
-        /*Map<AktorId, ZonedDateTime> aktorIdStartDatoForOppfolgingMap = oppfolgingRepositoryV2.hentStartDatoForOppfolging(brukere.stream().map(bruker ->
+        Map<AktorId, Optional<ZonedDateTime>> aktorIdStartDatoForOppfolgingMap = oppfolgingRepositoryV2.hentStartDatoForOppfolging(brukere.stream().map(bruker ->
                 AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet())
         );
-/*
+
         brukere.forEach(bruker -> {
-            if()
             Optional<Siste14aVedtakForBruker> maybeSiste14aVedtakForBruker = Optional.ofNullable(aktorIdSiste14aVedtakMap.get(AktorId.of(bruker.getAktoer_id())));
-            bruker.setGjeldendeVedtak14a(maybeSiste14aVedtakForBruker.map(siste14aVedtakForBruker -> new GjeldendeVedtak14a(
-                    siste14aVedtakForBruker.getInnsatsgruppe(),
-                    siste14aVedtakForBruker.getHovedmal(),
-                    siste14aVedtakForBruker.getFattetDato()
-            )).orElse(null));
-        });*/
+            Optional<ZonedDateTime> maybeStartDatoForOppfolging = aktorIdStartDatoForOppfolgingMap.getOrDefault(AktorId.of(bruker.getAktoer_id()), Optional.empty());
+
+            if(maybeStartDatoForOppfolging.isEmpty()) {
+                return;
+            }
+
+            boolean harBrukerGjeldende14aVedtak = maybeSiste14aVedtakForBruker.map(siste14aVedtakForBruker ->
+                    siste14aVedtakForBruker.getFattetDato().isAfter(maybeStartDatoForOppfolging.get()) ||
+                    siste14aVedtakForBruker.getFattetDato().isBefore(ZonedDateTime.parse("2017-12-02T19:37:25+02:00"))
+            ).orElse(false);
+
+            if(harBrukerGjeldende14aVedtak) {
+                bruker.setGjeldendeVedtak14a(maybeSiste14aVedtakForBruker.map(siste14aVedtakForBruker -> new GjeldendeVedtak14a(
+                        siste14aVedtakForBruker.getInnsatsgruppe(),
+                        siste14aVedtakForBruker.getHovedmal(),
+                        siste14aVedtakForBruker.getFattetDato()
+                )).orElse(null));
+            }
+        });
     }
 
     public void flettInnEldsteUtgattVarsel(List<OppfolgingsBruker> brukere) {
