@@ -27,7 +27,8 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import org.springframework.stereotype.Service;
-
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -53,6 +54,7 @@ public class PostgresOpensearchMapper {
     private final TiltakshendelseRepository tiltakshendelseRepository;
     private final Siste14aVedtakRepository siste14aVedtakRepository;
     private final HendelseRepository hendelseRepository;
+    private final OppfolgingRepository oppfolgingRepositoryV2;
 
     public void flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -233,18 +235,24 @@ public class PostgresOpensearchMapper {
         });
     }
 
-    public void flettInnSiste14aVedtak(List<OppfolgingsBruker> brukere) {
+    public void flettInnGjeldende14aVedtak(List<OppfolgingsBruker> brukere) {
         Map<AktorId, Siste14aVedtakForBruker> aktorIdSiste14aVedtakMap = siste14aVedtakRepository.hentSiste14aVedtakForBrukere(brukere.stream().map(bruker ->
                 AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet())
         );
+
+        /*Map<AktorId, ZonedDateTime> aktorIdStartDatoForOppfolgingMap = oppfolgingRepositoryV2.hentStartDatoForOppfolging(brukere.stream().map(bruker ->
+                AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet())
+        );
+/*
         brukere.forEach(bruker -> {
+            if()
             Optional<Siste14aVedtakForBruker> maybeSiste14aVedtakForBruker = Optional.ofNullable(aktorIdSiste14aVedtakMap.get(AktorId.of(bruker.getAktoer_id())));
             bruker.setGjeldendeVedtak14a(maybeSiste14aVedtakForBruker.map(siste14aVedtakForBruker -> new GjeldendeVedtak14a(
                     siste14aVedtakForBruker.getInnsatsgruppe(),
                     siste14aVedtakForBruker.getHovedmal(),
                     siste14aVedtakForBruker.getFattetDato()
             )).orElse(null));
-        });
+        });*/
     }
 
     public void flettInnEldsteUtgattVarsel(List<OppfolgingsBruker> brukere) {
