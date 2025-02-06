@@ -240,8 +240,11 @@ public class PostgresOpensearchMapper {
         Map<AktorId, Siste14aVedtakForBruker> aktorIdSiste14aVedtakMap = siste14aVedtakRepository.hentSiste14aVedtakForBrukere(brukere.stream().map(bruker ->
                 AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet())
         );
-        Map<AktorId, Optional<ZonedDateTime>> aktorIdStartDatoForOppfolgingMap = oppfolgingRepositoryV2.hentStartDatoForOppfolging(brukere.stream().map(bruker ->
-                AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet())
+
+        Map<AktorId, Optional<ZonedDateTime>> aktorIdStartDatoForOppfolgingMap = oppfolgingRepositoryV2.hentStartDatoForOppfolging(
+                brukere.stream().map(
+                        bruker -> AktorId.of(bruker.getAktoer_id())
+                ).collect(Collectors.toSet())
         );
 
         brukere.forEach(bruker -> {
