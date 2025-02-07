@@ -44,6 +44,8 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalk
 @Service
 @RequiredArgsConstructor
 public class PostgresOpensearchMapper {
+    public static final ZonedDateTime LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE = ZonedDateTime.of(2017, 12, 4, 0, 0, 0, 0, ZoneId.systemDefault());
+
     private final AktivitetOpensearchService aktivitetOpensearchService;
     private final SisteEndringService sisteEndringService;
     private final PdlService pdlService;
@@ -261,8 +263,8 @@ public class PostgresOpensearchMapper {
                 Siste14aVedtakForBruker siste14aVedtakForBruker = maybeSiste14aVedtakForBruker.get();
                 boolean erGjeldende14aVedtak =
                         siste14aVedtakForBruker.getFattetDato().isAfter(maybeStartDatoForOppfolging.get()) ||
-                                (siste14aVedtakForBruker.getFattetDato().isBefore(ZonedDateTime.of(2017, 12, 4, 0, 0, 0, 0, ZoneId.systemDefault())) &&
-                                        !maybeStartDatoForOppfolging.get().isAfter(ZonedDateTime.of(2017, 12, 4, 0, 0, 0, 0, ZoneId.systemDefault())));
+                                (siste14aVedtakForBruker.getFattetDato().isBefore(LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE) &&
+                                        !maybeStartDatoForOppfolging.get().isAfter(LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE));
 
                 if (!erGjeldende14aVedtak) {
                     return;
