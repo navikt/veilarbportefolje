@@ -29,6 +29,8 @@ import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -257,8 +259,10 @@ public class PostgresOpensearchMapper {
 
             if (maybeSiste14aVedtakForBruker.isPresent()) {
                 Siste14aVedtakForBruker siste14aVedtakForBruker = maybeSiste14aVedtakForBruker.get();
-                boolean erGjeldende14aVedtak = siste14aVedtakForBruker.getFattetDato().isAfter(maybeStartDatoForOppfolging.get()) ||
-                        siste14aVedtakForBruker.getFattetDato().isBefore(ZonedDateTime.parse("2017-12-02T19:37:25+02:00"));
+                boolean erGjeldende14aVedtak =
+                        siste14aVedtakForBruker.getFattetDato().isAfter(maybeStartDatoForOppfolging.get()) ||
+                                (siste14aVedtakForBruker.getFattetDato().isBefore(ZonedDateTime.of(2017, 12, 4, 0, 0, 0, 0, ZoneId.systemDefault())) &&
+                                        !maybeStartDatoForOppfolging.get().isAfter(ZonedDateTime.of(2017, 12, 4, 0, 0, 0, 0, ZoneId.systemDefault())));
 
                 if (!erGjeldende14aVedtak) {
                     return;
