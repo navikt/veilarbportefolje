@@ -29,14 +29,13 @@ import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static no.nav.pto.veilarbportefolje.gjeldende14aVedtak.Gjeldende14aVedtakService.erVedtakGjeldende;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
 
@@ -44,8 +43,6 @@ import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalk
 @Service
 @RequiredArgsConstructor
 public class PostgresOpensearchMapper {
-    public static final ZonedDateTime LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE = ZonedDateTime.of(2017, 12, 4, 0, 0, 0, 0, ZoneId.systemDefault());
-
     private final AktivitetOpensearchService aktivitetOpensearchService;
     private final SisteEndringService sisteEndringService;
     private final PdlService pdlService;
@@ -262,9 +259,7 @@ public class PostgresOpensearchMapper {
             if (maybeSiste14aVedtakForBruker.isPresent()) {
                 Siste14aVedtakForBruker siste14aVedtakForBruker = maybeSiste14aVedtakForBruker.get();
                 boolean erGjeldende14aVedtak =
-                        siste14aVedtakForBruker.getFattetDato().isAfter(maybeStartDatoForOppfolging.get()) ||
-                                (siste14aVedtakForBruker.getFattetDato().isBefore(LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE) &&
-                                        !maybeStartDatoForOppfolging.get().isAfter(LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE));
+                        erVedtakGjeldende(siste14aVedtakForBruker, maybeStartDatoForOppfolging.get());
 
                 if (!erGjeldende14aVedtak) {
                     return;

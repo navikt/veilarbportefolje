@@ -19,6 +19,12 @@ public class Siste14aVedtakForBruker {
     Innsatsgruppe innsatsgruppe;
     Hovedmal hovedmal;
     ZonedDateTime fattetDato;
+
+    // Må manuelt skrive en get-er her for å kunne aksessere frå Kotlin
+    public ZonedDateTime getFattetDato() {
+        return fattetDato;
+    }
+
     boolean fraArena;
 
     public static Siste14aVedtakForBruker fraKafkaDto(Siste14aVedtakKafkaDto dto) {

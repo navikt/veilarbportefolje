@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper.LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE;
+import static no.nav.pto.veilarbportefolje.gjeldende14aVedtak.Gjeldende14aVedtakService.LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
