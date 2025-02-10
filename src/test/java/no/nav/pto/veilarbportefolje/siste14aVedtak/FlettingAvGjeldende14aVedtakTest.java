@@ -193,6 +193,69 @@ public class FlettingAvGjeldende14aVedtakTest {
     }
 
     @Test
+    public void skal_ikke_flette_inn_gjeldende_14a_vedtak_for_flere_brukere_med_ulike_utgangspunkt() {
+        GjeldendeIdenter oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter = genererGjeldendeIdent();
+        GjeldendeIdenter oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_gjeldendeIdenter = genererGjeldendeIdent();
+        GjeldendeIdenter oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode_gjeldendeIdenter = genererGjeldendeIdent();
+
+        OppfolgingsBruker oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode = new OppfolgingsBruker()
+                .setFnr(oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter.getFnr().get())
+                .setAktoer_id(oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId().get());
+        OppfolgingsBruker oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode = new OppfolgingsBruker()
+                .setFnr(oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_gjeldendeIdenter.getFnr().get())
+                .setAktoer_id(oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId().get());
+        OppfolgingsBruker oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode = new OppfolgingsBruker()
+                .setFnr(oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode_gjeldendeIdenter.getFnr().get())
+                .setAktoer_id(oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode_gjeldendeIdenter.getAktorId().get());
+
+        Siste14aVedtakForBruker oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_siste14AVedtak = Siste14aVedtakForBruker.builder()
+                .aktorId(oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId())
+                .hovedmal(Hovedmal.BEHOLDE_ARBEID)
+                .fattetDato(ZonedDateTime.parse("2015-01-20T10:00:00+02:00"))
+                .build();
+        Siste14aVedtakForBruker oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_siste14AVedtak = Siste14aVedtakForBruker.builder()
+                .aktorId(oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId())
+                .hovedmal(Hovedmal.BEHOLDE_ARBEID)
+                .fattetDato(ZonedDateTime.parse("2020-01-20T10:00:00+02:00"))
+                .build();
+
+
+        Map<AktorId, Siste14aVedtakForBruker> aktorIdSiste14aVedtakMap = Map.of(
+                oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId(),
+                oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_siste14AVedtak,
+                oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId(),
+                oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_siste14AVedtak
+        );
+
+        ZonedDateTime oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_startDatoOppfølging = LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE;
+        ZonedDateTime oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_startDatoOppfølging = LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE;
+        ZonedDateTime oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode_startDatoOppfølging = ZonedDateTime.parse("2020-12-02T10:00:00+02:00");
+
+        Map<AktorId, Optional<ZonedDateTime>> aktorIdStartDatoForOppfolgingMap =
+                Map.of(
+                        oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId(),
+                        Optional.of(oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_startDatoOppfølging),
+                        oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId(),
+                        Optional.of(oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_startDatoOppfølging),
+                        oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode_gjeldendeIdenter.getAktorId(),
+                        Optional.of(oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode_startDatoOppfølging)
+                );
+
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(any())).thenReturn(aktorIdSiste14aVedtakMap);
+        when(oppfolgingRepositoryV2.hentStartDatoForOppfolging(any())).thenReturn(aktorIdStartDatoForOppfolgingMap);
+
+        postgresOpensearchMapper.flettInnGjeldende14aVedtak(List.of(
+                oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode,
+                oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode,
+                oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode
+        ));
+
+        assertThat(oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode.getGjeldendeVedtak14a()).isNotNull();
+        assertThat(oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode.getGjeldendeVedtak14a()).isNotNull();
+        assertThat(oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode.getGjeldendeVedtak14a()).isNull();
+    }
+
+    @Test
     public void skal_ikke_flette_inn_gjeldende_14a_vedtak_når_personen_ikke_har_noen_14a_vedtak() {
         GjeldendeIdenter ident1 = genererGjeldendeIdent();
         GjeldendeIdenter ident2 = genererGjeldendeIdent();
