@@ -19,13 +19,27 @@ public class Siste14aVedtakForBruker {
     Innsatsgruppe innsatsgruppe;
     Hovedmal hovedmal;
     ZonedDateTime fattetDato;
+    boolean fraArena;
 
-    // Må manuelt skrive en get-er her for å kunne aksessere frå Kotlin
+    public AktorId getAktorId() {
+        return aktorId;
+    }
+
+    public Innsatsgruppe getInnsatsgruppe() {
+        return innsatsgruppe;
+    }
+
+    public Hovedmal getHovedmal() {
+        return hovedmal;
+    }
+
     public ZonedDateTime getFattetDato() {
         return fattetDato;
     }
 
-    boolean fraArena;
+    public boolean isFraArena() {
+        return fraArena;
+    }
 
     public static Siste14aVedtakForBruker fraKafkaDto(Siste14aVedtakKafkaDto dto) {
         return new Siste14aVedtakForBruker(dto.aktorId, dto.innsatsgruppe, dto.hovedmal, dto.fattetDato, dto.fraArena);

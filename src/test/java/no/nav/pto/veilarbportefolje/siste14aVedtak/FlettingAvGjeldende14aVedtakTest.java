@@ -2,10 +2,13 @@ package no.nav.pto.veilarbportefolje.siste14aVedtak;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
+import no.nav.pto.veilarbportefolje.gjeldende14aVedtak.Gjeldende14aVedtakService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
+import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
@@ -19,17 +22,16 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class FlettingAvGjeldende14aVedtakTest {
-
+    private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final Siste14aVedtakRepository siste14aVedtakRepository = mock(Siste14aVedtakRepository.class);
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2 = mock(OppfolgingRepositoryV2.class);
 
-    private final PostgresOpensearchMapper postgresOpensearchMapper;
-
     FlettingAvGjeldende14aVedtakTest() {
+        final Gjeldende14aVedtakService gjeldende14aVedtakService = new Gjeldende14aVedtakService(siste14aVedtakRepository, oppfolgingRepositoryV2);
+
         this.postgresOpensearchMapper = new PostgresOpensearchMapper(
                 null,
                 null,
@@ -40,10 +42,15 @@ public class FlettingAvGjeldende14aVedtakTest {
                 null,
                 null,
                 null,
-                siste14aVedtakRepository,
                 null,
-                oppfolgingRepositoryV2
+                gjeldende14aVedtakService
         );
+    }
+
+    @BeforeEach
+    public void resetMocks() {
+        reset(siste14aVedtakRepository);
+        reset(oppfolgingRepositoryV2);
     }
 
     @Test
@@ -56,6 +63,7 @@ public class FlettingAvGjeldende14aVedtakTest {
 
         Siste14aVedtakForBruker siste14AVedtakForBruker = Siste14aVedtakForBruker.builder()
                 .aktorId(ident1.getAktorId())
+                .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .fattetDato(ZonedDateTime.parse("2015-11-10T19:37:25+02:00"))
                 .build();
@@ -88,6 +96,7 @@ public class FlettingAvGjeldende14aVedtakTest {
 
         Siste14aVedtakForBruker siste14AVedtakForBruker = Siste14aVedtakForBruker.builder()
                 .aktorId(ident1.getAktorId())
+                .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .fattetDato(ZonedDateTime.parse("2020-11-10T10:00:00+02:00"))
                 .build();
@@ -120,6 +129,7 @@ public class FlettingAvGjeldende14aVedtakTest {
 
         Siste14aVedtakForBruker siste14AVedtakForBruker = Siste14aVedtakForBruker.builder()
                 .aktorId(ident1.getAktorId())
+                .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .fattetDato(ZonedDateTime.parse("2018-11-10T10:00:00+02:00"))
                 .build();
@@ -149,6 +159,7 @@ public class FlettingAvGjeldende14aVedtakTest {
 
         Siste14aVedtakForBruker siste14AVedtakForBruker = Siste14aVedtakForBruker.builder()
                 .aktorId(ident1.getAktorId())
+                .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .fattetDato(ZonedDateTime.parse("2018-11-10T10:00:00+02:00"))
                 .build();
@@ -173,6 +184,7 @@ public class FlettingAvGjeldende14aVedtakTest {
 
         Siste14aVedtakForBruker siste14AVedtakForBruker = Siste14aVedtakForBruker.builder()
                 .aktorId(ident1.getAktorId())
+                .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .fattetDato(ZonedDateTime.parse("2015-01-20T10:00:00+02:00"))
                 .build();
@@ -210,11 +222,13 @@ public class FlettingAvGjeldende14aVedtakTest {
 
         Siste14aVedtakForBruker oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_siste14AVedtak = Siste14aVedtakForBruker.builder()
                 .aktorId(oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId())
+                .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .fattetDato(ZonedDateTime.parse("2015-01-20T10:00:00+02:00"))
                 .build();
         Siste14aVedtakForBruker oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_siste14AVedtak = Siste14aVedtakForBruker.builder()
                 .aktorId(oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId())
+                .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .fattetDato(ZonedDateTime.parse("2020-01-20T10:00:00+02:00"))
                 .build();

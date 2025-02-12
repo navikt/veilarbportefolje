@@ -10,6 +10,8 @@ import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
+import no.nav.pto.veilarbportefolje.gjeldende14aVedtak.Gjeldende14aVedtak;
+import no.nav.pto.veilarbportefolje.gjeldende14aVedtak.Gjeldende14aVedtakService;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.IngenHendelseForPersonException;
@@ -17,25 +19,25 @@ import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.*;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtak;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
+import no.nav.pto.veilarbportefolje.siste14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static no.nav.pto.veilarbportefolje.gjeldende14aVedtak.Gjeldende14aVedtakService.erVedtakGjeldende;
+import static java.util.function.Function.identity;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerAvtalteAktivitetInformasjon;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper.kalkulerGenerellAktivitetInformasjon;
 
@@ -54,9 +56,8 @@ public class PostgresOpensearchMapper {
     private final EnsligeForsorgereService ensligeForsorgereService;
     private final ArbeidssoekerService arbeidssoekerService;
     private final TiltakshendelseRepository tiltakshendelseRepository;
-    private final Siste14aVedtakRepository siste14aVedtakRepository;
     private final HendelseRepository hendelseRepository;
-    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+    private final Gjeldende14aVedtakService gjeldende14aVedtakService;
 
     public void flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
         List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
@@ -238,37 +239,17 @@ public class PostgresOpensearchMapper {
     }
 
     public void flettInnGjeldende14aVedtak(List<OppfolgingsBruker> brukere) {
-        Map<AktorId, Siste14aVedtakForBruker> aktorIdSiste14aVedtakMap = siste14aVedtakRepository.hentSiste14aVedtakForBrukere(brukere.stream().map(bruker ->
-                AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet())
-        );
-
-        Map<AktorId, Optional<ZonedDateTime>> aktorIdStartDatoForOppfolgingMap = oppfolgingRepositoryV2.hentStartDatoForOppfolging(
-                brukere.stream().map(
-                        bruker -> AktorId.of(bruker.getAktoer_id())
-                ).collect(Collectors.toSet())
-        );
+        Set<AktorId> brukereSet = brukere.stream().map(bruker -> AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet());
+        Map<AktorId, Optional<Gjeldende14aVedtak>> aktorIdGjeldende14aVedtakMap = gjeldende14aVedtakService.hentGjeldende14aVedtak(brukereSet);
 
         brukere.forEach(bruker -> {
-            Optional<Siste14aVedtakForBruker> maybeSiste14aVedtakForBruker = Optional.ofNullable(aktorIdSiste14aVedtakMap.get(AktorId.of(bruker.getAktoer_id())));
-            Optional<ZonedDateTime> maybeStartDatoForOppfolging = aktorIdStartDatoForOppfolgingMap.getOrDefault(AktorId.of(bruker.getAktoer_id()), Optional.empty());
-
-            if (maybeStartDatoForOppfolging.isEmpty()) {
-                return;
-            }
-
-            if (maybeSiste14aVedtakForBruker.isPresent()) {
-                Siste14aVedtakForBruker siste14aVedtakForBruker = maybeSiste14aVedtakForBruker.get();
-                boolean erGjeldende14aVedtak =
-                        erVedtakGjeldende(siste14aVedtakForBruker, maybeStartDatoForOppfolging.get());
-
-                if (!erGjeldende14aVedtak) {
-                    return;
-                }
-
+            Optional<Gjeldende14aVedtak> maybeGjeldendeVedtak14a = Optional.ofNullable(aktorIdGjeldende14aVedtakMap.get(AktorId.of(bruker.getAktoer_id()))).flatMap(identity());
+            if (maybeGjeldendeVedtak14a.isPresent()) {
+                Gjeldende14aVedtak gjeldende14aVedtak = maybeGjeldendeVedtak14a.get();
                 bruker.setGjeldendeVedtak14a(new GjeldendeVedtak14a(
-                        siste14aVedtakForBruker.getInnsatsgruppe(),
-                        siste14aVedtakForBruker.getHovedmal(),
-                        siste14aVedtakForBruker.getFattetDato()
+                        gjeldende14aVedtak.getInnsatsgruppe(),
+                        gjeldende14aVedtak.getHovedmal(),
+                        gjeldende14aVedtak.getFattetDato()
                 ));
             }
         });
