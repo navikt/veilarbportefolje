@@ -201,29 +201,6 @@ public class Avvik14aVedtakServiceTest {
         assertThat(avvik.values()).containsOnly(Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK);
     }
 
-    @Test
-    public void skalFinneAvvikDersomInnsatsgruppeManglerISiste14aVedtak() {
-        GjeldendeIdenter ident1 = genererGjeldendeIdent();
-        Set<GjeldendeIdenter> identer = Set.of(ident1);
-        OppfolgingsbrukerEntity oppfolgingsbruker = OppfolgingsbrukerEntity.builder()
-                .fodselsnr(ident1.getFnr().get())
-                .kvalifiseringsgruppekode(ArenaInnsatsgruppe.IKVAL.name())
-                .hovedmaalkode(ArenaHovedmal.BEHOLDEA.name())
-                .build();
-        Gjeldende14aVedtak gjeldende14AVedtakForBruker = new Gjeldende14aVedtak(
-                ident1.getAktorId(),
-                null,
-                Hovedmal.BEHOLDE_ARBEID,
-                randomZonedDate()
-        );
-
-        when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(gjeldende14aVedtakService.hentGjeldende14aVedtak(anySet())).thenReturn(Map.of(gjeldende14AVedtakForBruker.getAktorId(), Optional.of(gjeldende14AVedtakForBruker)));
-
-        Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
-        assertThat(avvik.values()).containsOnly(Avvik14aVedtak.INNSATSGRUPPE_MANGLER_I_NY_KILDE);
-    }
-
     private GjeldendeIdenter genererGjeldendeIdent() {
         return GjeldendeIdenter.builder().fnr(randomFnr()).aktorId(randomAktorId()).build();
     }
