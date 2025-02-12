@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.siste14aVedtak;
+package no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
@@ -10,6 +10,8 @@ import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.domene.Vedtak14aInfo;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakForBruker;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;

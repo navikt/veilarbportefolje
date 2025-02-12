@@ -1,10 +1,11 @@
-package no.nav.pto.veilarbportefolje.siste14aVedtak;
+package no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
-import no.nav.pto.veilarbportefolje.gjeldende14aVedtak.Gjeldende14aVedtakService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakForBruker;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.gjeldende14aVedtak.Gjeldende14aVedtakService.LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE;
+import static no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjeldende14aVedtakService.LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,7 +82,7 @@ public class FlettingAvGjeldende14aVedtakTest {
         postgresOpensearchMapper.flettInnGjeldende14aVedtak(List.of(oppfolgingsbruker));
 
         assertThat(oppfolgingsbruker.getGjeldendeVedtak14a()).isNotNull();
-        assertThat(oppfolgingsbruker.getGjeldendeVedtak14a().fattetDato()).isEqualTo(siste14AVedtakForBruker.fattetDato);
+        assertThat(oppfolgingsbruker.getGjeldendeVedtak14a().fattetDato()).isEqualTo(siste14AVedtakForBruker.getFattetDato());
         assertThat(oppfolgingsbruker.getGjeldendeVedtak14a().innsatsgruppe()).isEqualTo(siste14AVedtakForBruker.getInnsatsgruppe());
         assertThat(oppfolgingsbruker.getGjeldendeVedtak14a().hovedmal()).isEqualTo(siste14AVedtakForBruker.getHovedmal());
     }
@@ -114,7 +115,7 @@ public class FlettingAvGjeldende14aVedtakTest {
         postgresOpensearchMapper.flettInnGjeldende14aVedtak(List.of(oppfolgingsbruker));
 
         assertThat(oppfolgingsbruker.getGjeldendeVedtak14a()).isNotNull();
-        assertThat(oppfolgingsbruker.getGjeldendeVedtak14a().fattetDato()).isEqualTo(siste14AVedtakForBruker.fattetDato);
+        assertThat(oppfolgingsbruker.getGjeldendeVedtak14a().fattetDato()).isEqualTo(siste14AVedtakForBruker.getFattetDato());
         assertThat(oppfolgingsbruker.getGjeldendeVedtak14a().innsatsgruppe()).isEqualTo(siste14AVedtakForBruker.getInnsatsgruppe());
         assertThat(oppfolgingsbruker.getGjeldendeVedtak14a().hovedmal()).isEqualTo(siste14AVedtakForBruker.getHovedmal());
     }

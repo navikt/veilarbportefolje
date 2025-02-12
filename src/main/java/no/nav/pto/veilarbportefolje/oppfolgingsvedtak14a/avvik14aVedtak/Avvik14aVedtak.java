@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.siste14aVedtak;
+package no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak;
 public enum Avvik14aVedtak {
     INNSATSGRUPPE_ULIK,
     HOVEDMAAL_ULIK,

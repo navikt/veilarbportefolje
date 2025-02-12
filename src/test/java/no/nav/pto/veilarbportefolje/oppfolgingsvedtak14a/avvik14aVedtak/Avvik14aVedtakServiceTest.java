@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.siste14aVedtak;
+package no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak;
 
 
 import no.nav.common.types.identer.Fnr;
@@ -8,6 +8,8 @@ import no.nav.pto.veilarbportefolje.domene.ArenaServicegruppe;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakForBruker;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
 import org.junit.jupiter.api.Test;
@@ -46,7 +48,7 @@ public class Avvik14aVedtakServiceTest {
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.aktorId, siste14AVedtakForBruker));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.getAktorId(), siste14AVedtakForBruker));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.keySet()).containsAll(identer);
@@ -69,7 +71,7 @@ public class Avvik14aVedtakServiceTest {
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.aktorId, siste14AVedtakForBruker));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.getAktorId(), siste14AVedtakForBruker));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.keySet()).containsAll(identer);
@@ -92,7 +94,7 @@ public class Avvik14aVedtakServiceTest {
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.aktorId, siste14AVedtakForBruker));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.getAktorId(), siste14AVedtakForBruker));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.keySet()).containsAll(identer);
@@ -115,7 +117,7 @@ public class Avvik14aVedtakServiceTest {
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.aktorId, siste14AVedtakForBruker));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.getAktorId(), siste14AVedtakForBruker));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.keySet()).containsAll(identer);
@@ -138,7 +140,7 @@ public class Avvik14aVedtakServiceTest {
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.aktorId, siste14AVedtakForBruker));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.getAktorId(), siste14AVedtakForBruker));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.values()).containsOnly(Avvik14aVedtak.INNSATSGRUPPE_ULIK);
@@ -160,7 +162,7 @@ public class Avvik14aVedtakServiceTest {
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.aktorId, siste14AVedtakForBruker));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.getAktorId(), siste14AVedtakForBruker));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.values()).containsOnly(Avvik14aVedtak.HOVEDMAAL_ULIK);
@@ -182,7 +184,7 @@ public class Avvik14aVedtakServiceTest {
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.aktorId, siste14AVedtakForBruker));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.getAktorId(), siste14AVedtakForBruker));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.values()).containsOnly(Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK);
@@ -203,7 +205,7 @@ public class Avvik14aVedtakServiceTest {
                 .build();
 
         when(oppfolgingsbrukerRepositoryV3.hentOppfolgingsBrukere(anySet())).thenReturn(Map.of(Fnr.of(oppfolgingsbruker.fodselsnr()), oppfolgingsbruker));
-        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.aktorId, siste14AVedtakForBruker));
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(anySet())).thenReturn(Map.of(siste14AVedtakForBruker.getAktorId(), siste14AVedtakForBruker));
 
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik = avvik14aVedtakService.hentAvvik(identer);
         assertThat(avvik.values()).containsOnly(Avvik14aVedtak.INNSATSGRUPPE_MANGLER_I_NY_KILDE);

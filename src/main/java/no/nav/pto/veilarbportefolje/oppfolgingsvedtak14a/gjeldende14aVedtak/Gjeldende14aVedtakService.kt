@@ -1,9 +1,9 @@
-package no.nav.pto.veilarbportefolje.gjeldende14aVedtak
+package no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak
 
 import no.nav.common.types.identer.AktorId
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakForBruker
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakForBruker
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 import org.springframework.beans.factory.annotation.Autowired
