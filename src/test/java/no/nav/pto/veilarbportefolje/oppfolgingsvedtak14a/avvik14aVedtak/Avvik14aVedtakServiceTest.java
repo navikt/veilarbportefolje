@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 public class Avvik14aVedtakServiceTest {
 
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = mock(OppfolgingsbrukerRepositoryV3.class);
-    private Gjeldende14aVedtakService gjeldende14aVedtakService = mock(Gjeldende14aVedtakService.class);
+    private final Gjeldende14aVedtakService gjeldende14aVedtakService = mock(Gjeldende14aVedtakService.class);
     private final Avvik14aVedtakService avvik14aVedtakService = new Avvik14aVedtakService(oppfolgingsbrukerRepositoryV3, gjeldende14aVedtakService);
 
     @BeforeEach
