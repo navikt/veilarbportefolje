@@ -243,7 +243,7 @@ public class PostgresOpensearchMapper {
         Map<AktorId, Optional<Gjeldende14aVedtak>> aktorIdGjeldende14aVedtakMap = gjeldende14aVedtakService.hentGjeldende14aVedtak(brukereSet);
 
         brukere.forEach(bruker -> {
-            Optional<Gjeldende14aVedtak> maybeGjeldendeVedtak14a = Optional.ofNullable(aktorIdGjeldende14aVedtakMap.get(AktorId.of(bruker.getAktoer_id()))).flatMap(identity());
+            Optional<Gjeldende14aVedtak> maybeGjeldendeVedtak14a = aktorIdGjeldende14aVedtakMap.getOrDefault(AktorId.of(bruker.getAktoer_id()), Optional.empty());
             if (maybeGjeldendeVedtak14a.isPresent()) {
                 Gjeldende14aVedtak gjeldende14aVedtak = maybeGjeldendeVedtak14a.get();
                 bruker.setGjeldendeVedtak14a(new GjeldendeVedtak14a(
