@@ -7,7 +7,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
