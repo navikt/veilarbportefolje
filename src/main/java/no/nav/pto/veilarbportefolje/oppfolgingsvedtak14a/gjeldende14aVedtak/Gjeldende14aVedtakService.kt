@@ -79,6 +79,6 @@ class Gjeldende14aVedtakService(
 data class Gjeldende14aVedtak(
     val aktorId: AktorId,
     val innsatsgruppe: Innsatsgruppe,
-    val hovedmal: Hovedmal,
+    val hovedmal: Hovedmal?,
     val fattetDato: ZonedDateTime
 )
