@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.vedtaksstotte;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakApiDto;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakApiDto;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.junit.Rule;
 import org.junit.Test;
