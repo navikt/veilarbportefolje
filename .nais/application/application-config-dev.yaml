@@ -69,9 +69,6 @@ spec:
         - application: azure-token-generator
           namespace: aura
           cluster: dev-gcp
-        - application: inngar
-          namespace: dab
-          cluster: dev-gcp
     outbound:
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
