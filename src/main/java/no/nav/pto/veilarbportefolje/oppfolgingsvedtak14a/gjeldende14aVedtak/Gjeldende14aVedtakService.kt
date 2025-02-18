@@ -61,15 +61,19 @@ class Gjeldende14aVedtakService(
             siste14aVedtakForBruker: Siste14aVedtakForBruker,
             startDatoInnevarendeOppfolgingsperiode: ZonedDateTime
         ): Boolean {
-            val erVedtaketFattetIInnevarendeOppfolgingsperiode =
-                siste14aVedtakForBruker.fattetDato.isAfter(startDatoInnevarendeOppfolgingsperiode)
+            // 2025-02-18
+            // Vi har oppdaget at vedtak fattet i Arena får "fattetDato" lik midnatt den dagen vedtaket ble fattet.
+            // Derfor har vi valgt å innfør en "grace periode" på 4 døgn. Dvs. dersom vedtaket ble fattet etter
+            // "oppfølgingsperiode startdato - 4 døgn", så anser vi det som gjeldende.
+            val erVedtaketFattetIInnevarendeOppfolgingsperiodeMedGracePeriodePa4Dogn =
+                siste14aVedtakForBruker.fattetDato.isAfter(startDatoInnevarendeOppfolgingsperiode.minusDays(4))
             val erVedtaketFattetForLanseringsdatoForVeilarboppfolging = siste14aVedtakForBruker.fattetDato
                 .isBefore(LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE)
             val erStartdatoForOppfolgingsperiodeLikLanseringsdatoForVeilarboppfolging =
                 !startDatoInnevarendeOppfolgingsperiode
                     .isAfter(LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE)
 
-            return erVedtaketFattetIInnevarendeOppfolgingsperiode ||
+            return erVedtaketFattetIInnevarendeOppfolgingsperiodeMedGracePeriodePa4Dogn ||
                     (erVedtaketFattetForLanseringsdatoForVeilarboppfolging
                             && erStartdatoForOppfolgingsperiodeLikLanseringsdatoForVeilarboppfolging)
         }
