@@ -67,6 +67,9 @@ spec:
         - application: azure-token-generator
           namespace: aura
           cluster: dev-gcp
+        - application: inngar
+          namespace: dab
+          cluster: dev-gcp
     outbound:
       rules:
         - application: kodeverk-api
