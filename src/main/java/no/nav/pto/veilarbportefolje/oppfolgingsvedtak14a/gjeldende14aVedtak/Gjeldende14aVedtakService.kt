@@ -51,6 +51,38 @@ class Gjeldende14aVedtakService(
         }
     }
 
+    fun hentGjeldende14aVedtak(brukerIdent: AktorId): Optional<Gjeldende14aVedtak> {
+        val aktorIdSiste14aVedtakMap: Map<AktorId, Optional<Siste14aVedtakForBruker>> =
+            siste14aVedtakRepository.hentSiste14aVedtakForBrukere(setOf(brukerIdent))
+                .mapValues { Optional.ofNullable(it.value) }
+        val aktorIdStartDatoOppfolgingMap: Map<AktorId, Optional<ZonedDateTime>> =
+            oppfolgingRepositoryV2.hentStartDatoForOppfolging(setOf(brukerIdent))
+
+        val maybeSiste14aVedtak: Optional<Siste14aVedtakForBruker> =
+            aktorIdSiste14aVedtakMap[brukerIdent] ?: Optional.empty()
+        val maybeStartDatoOppfolging: Optional<ZonedDateTime> =
+            aktorIdStartDatoOppfolgingMap[brukerIdent] ?: Optional.empty()
+
+        if (maybeSiste14aVedtak.isEmpty || maybeStartDatoOppfolging.isEmpty) {
+            return Optional.empty<Gjeldende14aVedtak>()
+        }
+
+        if (!sjekkOmVedtakErGjeldende(maybeSiste14aVedtak.get(), maybeStartDatoOppfolging.get())) {
+            return Optional.empty<Gjeldende14aVedtak>()
+        }
+
+        return maybeSiste14aVedtak.get().let {
+            Optional.of(
+                Gjeldende14aVedtak(
+                    aktorId = it.aktorId,
+                    innsatsgruppe = it.innsatsgruppe,
+                    hovedmal = it.hovedmal,
+                    fattetDato = it.fattetDato
+                )
+            )
+        }
+    }
+
     companion object {
         @JvmField
         val LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE: ZonedDateTime =
