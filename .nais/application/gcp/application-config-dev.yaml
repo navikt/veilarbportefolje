@@ -65,7 +65,7 @@ spec:
           namespace: pto
           cluster: dev-fss
         - application: azure-token-generator
-          namespace: aura
+          namespace: nais
           cluster: dev-gcp
         - application: inngar
           namespace: dab
