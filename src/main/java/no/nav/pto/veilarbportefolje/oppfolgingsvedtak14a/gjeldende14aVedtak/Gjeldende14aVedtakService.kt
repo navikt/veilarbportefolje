@@ -51,6 +51,38 @@ class Gjeldende14aVedtakService(
         }
     }
 
+    fun hentGjeldende14aVedtak(brukerIdent: AktorId): Optional<Gjeldende14aVedtak> {
+        val aktorIdSiste14aVedtakMap: Map<AktorId, Optional<Siste14aVedtakForBruker>> =
+            siste14aVedtakRepository.hentSiste14aVedtakForBrukere(setOf(brukerIdent))
+                .mapValues { Optional.ofNullable(it.value) }
+        val aktorIdStartDatoOppfolgingMap: Map<AktorId, Optional<ZonedDateTime>> =
+            oppfolgingRepositoryV2.hentStartDatoForOppfolging(setOf(brukerIdent))
+
+        val maybeSiste14aVedtak: Optional<Siste14aVedtakForBruker> =
+            aktorIdSiste14aVedtakMap[brukerIdent] ?: Optional.empty()
+        val maybeStartDatoOppfolging: Optional<ZonedDateTime> =
+            aktorIdStartDatoOppfolgingMap[brukerIdent] ?: Optional.empty()
+
+        if (maybeSiste14aVedtak.isEmpty || maybeStartDatoOppfolging.isEmpty) {
+            return Optional.empty<Gjeldende14aVedtak>()
+        }
+
+        if (!sjekkOmVedtakErGjeldende(maybeSiste14aVedtak.get(), maybeStartDatoOppfolging.get())) {
+            return Optional.empty<Gjeldende14aVedtak>()
+        }
+
+        return maybeSiste14aVedtak.get().let {
+            Optional.of(
+                Gjeldende14aVedtak(
+                    aktorId = it.aktorId,
+                    innsatsgruppe = it.innsatsgruppe,
+                    hovedmal = it.hovedmal,
+                    fattetDato = it.fattetDato
+                )
+            )
+        }
+    }
+
     companion object {
         @JvmField
         val LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE: ZonedDateTime =
@@ -61,15 +93,19 @@ class Gjeldende14aVedtakService(
             siste14aVedtakForBruker: Siste14aVedtakForBruker,
             startDatoInnevarendeOppfolgingsperiode: ZonedDateTime
         ): Boolean {
-            val erVedtaketFattetIInnevarendeOppfolgingsperiode =
-                siste14aVedtakForBruker.fattetDato.isAfter(startDatoInnevarendeOppfolgingsperiode)
+            // 2025-02-18
+            // Vi har oppdaget at vedtak fattet i Arena får "fattetDato" lik midnatt den dagen vedtaket ble fattet.
+            // Derfor har vi valgt å innfør en "grace periode" på 4 døgn. Dvs. dersom vedtaket ble fattet etter
+            // "oppfølgingsperiode startdato - 4 døgn", så anser vi det som gjeldende.
+            val erVedtaketFattetIInnevarendeOppfolgingsperiodeMedGracePeriodePa4Dogn =
+                siste14aVedtakForBruker.fattetDato.isAfter(startDatoInnevarendeOppfolgingsperiode.minusDays(4))
             val erVedtaketFattetForLanseringsdatoForVeilarboppfolging = siste14aVedtakForBruker.fattetDato
                 .isBefore(LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE)
             val erStartdatoForOppfolgingsperiodeLikLanseringsdatoForVeilarboppfolging =
                 !startDatoInnevarendeOppfolgingsperiode
                     .isAfter(LANSERINGSDATO_VEILARBOPPFOLGING_OPPFOLGINGSPERIODE)
 
-            return erVedtaketFattetIInnevarendeOppfolgingsperiode ||
+            return erVedtaketFattetIInnevarendeOppfolgingsperiodeMedGracePeriodePa4Dogn ||
                     (erVedtaketFattetForLanseringsdatoForVeilarboppfolging
                             && erStartdatoForOppfolgingsperiodeLikLanseringsdatoForVeilarboppfolging)
         }
