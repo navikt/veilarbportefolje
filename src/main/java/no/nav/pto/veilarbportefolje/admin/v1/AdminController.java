@@ -37,7 +37,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RequiredArgsConstructor
 @Tag(name = "Admin", description = "Admin-funksjonalitet som ikke er tilgjengelig for vanlige brukere. Funksjonaliteten er kun tilgjengelig for medlemmer av applikasjonens forvaltningsteam.")
 public class AdminController {
-    private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
+    private final String POAO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
             "prod-gcp" : "dev-gcp", "poao", "poao-admin").toString();
     private final AktorClient aktorClient;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
