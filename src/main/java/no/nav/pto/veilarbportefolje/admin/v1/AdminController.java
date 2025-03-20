@@ -26,7 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.erSystemkallFraAzureAd;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -230,10 +229,10 @@ public class AdminController {
     }
 
     private void sjekkTilgangTilAdmin() {
-        boolean erSystemBrukerFraAzure = erSystemkallFraAzureAd(authContextHolder);
+        boolean erInternBrukerFraAzure = authContextHolder.erInternBruker();
         boolean erPtoAdmin = PTO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
 
-        if (erPtoAdmin && erSystemBrukerFraAzure) {
+        if (erPtoAdmin && erInternBrukerFraAzure) {
             return;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
