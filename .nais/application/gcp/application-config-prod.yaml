@@ -62,6 +62,9 @@ spec:
         - application: pto-admin
           namespace: pto
           cluster: prod-fss
+        - application: inngar
+          namespace: dab
+          cluster: prod-gcp
     outbound:
       rules:
         - application: kodeverk-api

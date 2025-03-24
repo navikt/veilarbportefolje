@@ -32,6 +32,7 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereRepository;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriRepository;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjeldende14aVedtakService;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappRepository;
@@ -61,9 +62,9 @@ import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Avvik14aVedtakService;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakRepository;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.Siste14aVedtakService;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtakService;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
@@ -176,6 +177,7 @@ import static org.mockito.Mockito.when;
         TiltakshendelseService.class,
         HendelseRepository.class,
         HendelseService.class,
+        Gjeldende14aVedtakService.class
 })
 public class ApplicationConfigTest {
 

@@ -10,6 +10,8 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.*;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.*;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
@@ -19,7 +21,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
-import no.nav.pto.veilarbportefolje.siste14aVedtak.*;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
@@ -154,15 +155,15 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockPdlPersonBarnRespons(fnr);
         mockHentOppfolgingsbrukerResponse(fnr);
 
+        SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = genererStartetOppfolgingsperiode(aktorId);
         Siste14aVedtakApiDto siste14aVedtakApiDto = new Siste14aVedtakApiDto(
                 Innsatsgruppe.SITUASJONSBESTEMT_INNSATS,
                 Hovedmal.OKE_DELTAKELSE,
-                tilfeldigDatoTilbakeITid(),
+                sisteOppfolgingsperiodeV1.getStartDato().plusDays(1),
                 true
         );
         when(vedtaksstotteClient.hentSiste14aVedtak(fnr)).thenReturn(Optional.of(siste14aVedtakApiDto));
-
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(sisteOppfolgingsperiodeV1);
 
         IdenterForBruker identerForBruker = pdlIdentRepository.hentIdenterForBruker(aktorId.get());
         Optional<Siste14aVedtakForBruker> siste14aVedtakForBruker = siste14aVedtakRepository.hentSiste14aVedtak(identerForBruker);

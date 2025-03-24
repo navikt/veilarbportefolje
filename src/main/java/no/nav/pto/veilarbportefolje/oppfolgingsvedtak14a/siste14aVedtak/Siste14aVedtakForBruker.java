@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.siste14aVedtak;
+package no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +20,26 @@ public class Siste14aVedtakForBruker {
     Hovedmal hovedmal;
     ZonedDateTime fattetDato;
     boolean fraArena;
+
+    public AktorId getAktorId() {
+        return aktorId;
+    }
+
+    public Innsatsgruppe getInnsatsgruppe() {
+        return innsatsgruppe;
+    }
+
+    public Hovedmal getHovedmal() {
+        return hovedmal;
+    }
+
+    public ZonedDateTime getFattetDato() {
+        return fattetDato;
+    }
+
+    public boolean isFraArena() {
+        return fraArena;
+    }
 
     public static Siste14aVedtakForBruker fraKafkaDto(Siste14aVedtakKafkaDto dto) {
         return new Siste14aVedtakForBruker(dto.aktorId, dto.innsatsgruppe, dto.hovedmal, dto.fattetDato, dto.fraArena);

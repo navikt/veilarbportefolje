@@ -6,13 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.MANUELL;
@@ -114,5 +115,23 @@ public class OppfolgingRepositoryV2 {
                         () -> db.queryForObject("select veilederid from oppfolging_data where aktoerid = ?",
                                 (rs, i) -> VeilederId.veilederIdOrNull(rs.getString("veilederid")), aktoerId.get())
                 ));
+    }
+
+    public Map<AktorId, Optional<ZonedDateTime>> hentStartDatoForOppfolging(Set<AktorId> aktoerIder) {
+        Map<AktorId, Optional<ZonedDateTime>> result = new HashMap<>();
+        return db.query("select startdato, aktoerid from oppfolging_data where aktoerid = any (?::varchar[])",
+                ps -> ps.setString(1, listParam(aktoerIder.stream().map(AktorId::get).toList())),
+                (ResultSet rs) -> {
+                    while (rs.next()) {
+                        ZonedDateTime startDatoForOppfolging = DateUtils.toZonedDateTime(rs.getTimestamp("startdato"));
+                        AktorId aktoerid = AktorId.of(rs.getString("aktoerid"));
+                        result.put(aktoerid, Optional.ofNullable(startDatoForOppfolging));
+                    }
+                    return result;
+                });
+    }
+
+    private static String listParam(List<String> identer) {
+        return identer.stream().collect(Collectors.joining(",", "{", "}"));
     }
 }
