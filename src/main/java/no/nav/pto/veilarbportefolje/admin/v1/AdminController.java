@@ -230,9 +230,9 @@ public class AdminController {
 
     private void sjekkTilgangTilAdmin() {
         boolean erInternBrukerFraAzure = authContextHolder.erInternBruker();
-        boolean erPtoAdmin = PTO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
+        boolean erPoaoAdmin = POAO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
 
-        if (erPtoAdmin && erInternBrukerFraAzure) {
+        if (erPoaoAdmin && erInternBrukerFraAzure) {
             return;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);

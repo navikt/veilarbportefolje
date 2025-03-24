@@ -51,10 +51,10 @@ public class AdminV2Controller {
     }
 
     private void sjekkTilgangTilAdmin() {
-        boolean erSystemBrukerFraAzure = erSystemkallFraAzureAd(authContextHolder);
-        boolean erPtoAdmin = PTO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
+        boolean erInternBrukerFraAzure = authContextHolder.erInternBruker();
+        boolean erPoaoAdmin = POAO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
 
-        if (erPtoAdmin && erSystemBrukerFraAzure) {
+        if (erPoaoAdmin && erInternBrukerFraAzure) {
             return;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
